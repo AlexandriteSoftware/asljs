@@ -1,0 +1,34 @@
+{
+  "name": "asljs-observable",
+  "version": "0.1.2",
+  "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
+  "keywords": [
+    "events",
+    "javascript",
+    "js"
+  ],
+  "homepage": "https://github.com/alex-netkachov/asljs-observable#readme",
+  "bugs": {
+    "url": "https://github.com/alex-netkachov/asljs-observable/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-netkachov/asljs-observable.git"
+  },
+  "license": "MIT",
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "type": "module",
+  "main": "observable.js",
+  "types": "observable.d.ts",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --watch --test",
+    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  },
+  "dependencies": {
+    "asljs-eventful": "^0.1.2"
+  }
+}

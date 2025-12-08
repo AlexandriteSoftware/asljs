@@ -1,0 +1,31 @@
+{
+  "name": "asljs-eventful",
+  "version": "0.1.3",
+  "description": "Lightweight event helper adding on/off/emit to any object.",
+  "keywords": [
+    "events",
+    "javascript",
+    "js"
+  ],
+  "homepage": "https://github.com/alex-netkachov/asljs-eventful#readme",
+  "bugs": {
+    "url": "https://github.com/alex-netkachov/asljs-eventful/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-netkachov/asljs-eventful.git"
+  },
+  "license": "MIT",
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "type": "module",
+  "main": "eventful.js",
+  "types": "eventful.d.ts",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --watch --test",
+    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  }
+}

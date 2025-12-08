@@ -1,0 +1,15 @@
+{
+  "name": "asljs-money",
+  "version": "0.9.1",
+  "description": "Provides a library of routines supporting financial calculations in JavaScript.",
+  "main": "money.js",
+  "scripts": {
+    "test": "node money.test.js"
+  },
+  "keywords": [
+    "money",
+    "finance"
+  ],
+  "author": "Alex Netkachov <alex.netkachov@gmail.com>",
+  "license": "MIT"
+}
