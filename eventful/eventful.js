@@ -32,15 +32,15 @@ const eventful =
   (object = Object.create(null),
    options = { }) =>
   {
-    const emptySet =
-      new Set();
-
-    if (!isObject(object)
-        && !isFunction(object))
+    if ('object' !== typeof object
+        && 'function' !== typeof object)
     {
       throw new TypeError(
         'Expect an object or a function.');
     }
+
+    const emptySet =
+      new Set();
   
     const { strict = false,
             trace = null,
@@ -51,13 +51,13 @@ const eventful =
       eventful.options;
 
     const traceFn =
-      trace || globalOptions.trace;
+      trace
+      || globalOptions.trace;
 
-    if (traceFn) {
+    if (isFunction(traceFn)) {
       traceFn(
         object,
-        'new',
-        { object });
+        'new');
     }
 
     for (const method of
@@ -66,19 +66,23 @@ const eventful =
           'off',
           'emit',
           'emitAsync',
-          'has' ]) {
+          'has' ])
+    {
       if (method in object) {
         throw new Error(
           `Method "${method}" already exists.`);
       }
     }
-  
+
     /** @type {Map<string|symbol, Set<Function>>} */
     const map =
       new Map();
   
     const add =
       (event, listener) => {
+        eventTypeGuard(event);
+        functionTypeGuard(listener);
+
         let listeners =
           map.get(event);
   
@@ -92,6 +96,9 @@ const eventful =
   
     const remove =
       (event, listener) => {
+        eventTypeGuard(event);
+        functionTypeGuard(listener);
+
         const listeners =
           map.get(event);
   
@@ -108,9 +115,12 @@ const eventful =
       };
 
     const getListeners =
-      event =>
-        map.get(event)
-        || emptySet;
+      event => {
+        eventTypeGuard(event);
+
+        return map.get(event)
+               || emptySet;
+      };
   
     /**
      * Subscribe to an event.
@@ -119,13 +129,14 @@ const eventful =
      */
     const on =
       (event, listener) => {
+        eventTypeGuard(event);
         functionTypeGuard(listener);
   
         const traceFn =
           trace
           || globalOptions.trace;
 
-        if (traceFn) {
+        if (isFunction(traceFn)) {
           traceFn(
             object,
             'on',
@@ -158,6 +169,7 @@ const eventful =
      */
     const once =
       (event, listener) => {
+        eventTypeGuard(event);
         functionTypeGuard(listener);
   
         const off =
@@ -174,9 +186,12 @@ const eventful =
     
     /** @type {(event: string|symbol) => boolean} */
     const has =
-      event =>
-        map.get(event)?.size > 0
-        || false;
+      event => {
+        eventTypeGuard(event);
+
+        return map.get(event)?.size > 0
+               || false;
+      };
   
     /**
      * Emit an event synchronously.
@@ -188,6 +203,8 @@ const eventful =
      */
     const emit =
       (event, ...args) => {
+        eventTypeGuard(event);
+
         const listeners =
           getListeners(event);
 
@@ -195,7 +212,7 @@ const eventful =
           trace
           || globalOptions.trace;
 
-        if (traceFn) {
+        if (isFunction(traceFn)) {
           traceFn(
             object,
             'emit',
@@ -215,7 +232,7 @@ const eventful =
               error
               || globalOptions.error;
 
-            if (errorFn) {
+            if (isFunction(errorFn)) {
               const context =
                 { object,
                   event,
@@ -242,6 +259,8 @@ const eventful =
      */
     const emitAsync =
       async (event, ...args) => {
+        eventTypeGuard(event);
+
         const listeners =
           getListeners(event);
 
@@ -249,7 +268,7 @@ const eventful =
           trace
           || globalOptions.trace;
 
-        if (traceFn) {
+        if (isFunction(traceFn)) {
           traceFn(
             object,
             'emitAsync',
@@ -267,35 +286,42 @@ const eventful =
               new Promise(
                 (resolve, reject) => {
                   try {
-                    Promise.resolve(listener(...args))
-                      .then(resolve, err => {
-                        const errorFn =
-                          error
-                          || globalOptions.error;
-                        
-                        if (errorFn) {
-                          const context =
-                            { object,
-                              event,
-                              listener };
-
-                          errorFn(err, context);
-                        }
-
-                        reject(err);
-                      });
+                    Promise.resolve(
+                        listener(...args))
+                      .then(
+                        resolve,
+                        err => {
+                          const errorFn =
+                            error
+                            || globalOptions.error;
+                          
+                          if (isFunction(errorFn)) {
+                            const context =
+                              { object,
+                                event,
+                                listener };
+  
+                            errorFn(
+                              err,
+                              context);
+                          }
+  
+                          reject(err);
+                        });
                   } catch (err) {
                     const errorFn =
                       error
                       || globalOptions.error;
                     
-                    if (errorFn) {
+                    if (isFunction(errorFn)) {
                       const context =
                         { object,
                           event,
                           listener };
 
-                      errorFn(err, context);
+                      errorFn(
+                        err,
+                        context);
                     }
 
                     reject(err);
@@ -317,13 +343,14 @@ const eventful =
      */
     const off =
       (event, listener) => {
+        eventTypeGuard(event);
         functionTypeGuard(listener);
 
         const traceFn =
           trace
           || globalOptions.trace;
 
-        if (traceFn) {
+        if (isFunction(traceFn)) {
           traceFn(
             object,
             'off',
@@ -357,13 +384,17 @@ eventful.options =
   { trace: null,
     error: null };
 
-function isFunction(value) {
-  return typeof value === 'function';
+function eventTypeGuard(value) {
+  if ('string' !== typeof value
+      && 'symbol' !== typeof value)
+  {
+    throw new TypeError(
+      'Expect event to be a string or symbol.');
+  }
 }
 
-function isObject(value) {
-  return value !== null
-    && typeof value === 'object';
+function isFunction(value) {
+  return 'function' === typeof value;
 }
 
 function functionTypeGuard(value) {

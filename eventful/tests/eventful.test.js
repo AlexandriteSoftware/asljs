@@ -3,35 +3,51 @@ import assert from 'node:assert/strict';
 import { eventful } from '../eventful.js';
 
 test(
-  'trace is called on creation with action "new"',
+  'eventful does not create a new object',
   () => {
-    const traces = [];
-
     const original = { };
 
     const enhanced =
+      eventful(original);
+
+    assert.equal(
+      enhanced,
+      original);
+  });
+
+test(
+  'eventful extends a function',
+  () => {
+    const original =
+      () => { };
+
+    const enhanced =
+      eventful(original);
+
+    assert.equal(
+      enhanced,
+      original);
+  });
+
+test(
+  'trace is called on creation with action "new"',
+  () => {
+    const tracer =
+      createTracer();
+
+    const object =
       eventful(
-        original,
-        { trace:
-            (object, action, payload) =>
-              traces.push({ object, action, payload }) });
+        { },
+        { trace: tracer.trace });
 
     const creation =
-      traces.find(t => t.action === 'new');
-
+      tracer.getFirstTraceByAction('new');
+      
     assert.ok(creation);
 
     assert.equal(
-      creation.payload.object,
-      original);
-
-    assert.equal(
       creation.object,
-      enhanced);      
-
-    assert.equal(
-      creation.payload.object,
-      enhanced);      
+      object);      
   });
 
 test(
@@ -51,7 +67,14 @@ test(
 test(
   'eventful throws when an object has one of the event emitter methods',
   () => {
-    for (const method of ['on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
+    for (const method of
+        [ 'on',
+          'once',
+          'off',
+          'emit',
+          'emitAsync',
+          'has'])
+    {
       assert.throws(
         () => eventful({ [method]: () => { } }));
     }
@@ -61,9 +84,7 @@ test(
   'exceptions in listeners are suppressed by default',
   async () => {
     const obj =
-      eventful(
-        { },
-        { error: () => { } });
+      eventful();
 
     obj.on(
       'test',
@@ -137,13 +158,13 @@ test(
 test(
   'trace receives safe payload and action names',
   async () => {
-    const traces = [];
+    const tracer =
+      createTracer();
+
     const obj =
       eventful(
         { },
-        { trace:
-            (object, action, payload) =>
-              traces.push({ action, payload }) });
+        { trace: tracer.trace });
 
     const off = obj.on('e', () => {});
     obj.emit('e', 1, 2);
@@ -151,17 +172,20 @@ test(
     off();
 
     // Expect actions at least 'on', 'emit', 'emitAsync'
-    const actions = traces.map(t => t.action);
-    assert.ok(actions.includes('on'));
-    assert.ok(actions.includes('emit'));
-    assert.ok(actions.includes('emitAsync'));
+    assert.ok(tracer.getFirstTraceByAction('on'));
+    assert.ok(tracer.getFirstTraceByAction('emit'));
+    assert.ok(tracer.getFirstTraceByAction('emitAsync'));
 
-    const emitTrace = traces.find(t => t.action === 'emit');
+    const emitTrace =
+      tracer.getFirstTraceByAction('emit');
+
     assert.ok(Array.isArray(emitTrace.payload.listeners));
     assert.equal(emitTrace.payload.event, 'e');
     assert.deepEqual(emitTrace.payload.args, [1, 2]);
 
-    const emitAsyncTrace = traces.find(t => t.action === 'emitAsync');
+    const emitAsyncTrace =
+      tracer.getFirstTraceByAction('emitAsync');
+
     assert.ok(Array.isArray(emitAsyncTrace.payload.listeners));
     assert.equal(emitAsyncTrace.payload.event, 'e');
     assert.deepEqual(emitAsyncTrace.payload.args, [3, 4]);
@@ -185,12 +209,27 @@ test(
 test(
   'has reflects subscribe and unsubscribe',
   () => {
-    const obj = eventful();
-    assert.equal(obj.has('x'), false);
-    const off = obj.on('x', () => {});
-    assert.equal(obj.has('x'), true);
+    const obj =
+      eventful();
+
+    assert.equal(
+      obj.has('x'),
+      false);
+
+    const off =
+      obj.on(
+        'x',
+        () => { });
+
+    assert.equal(
+      obj.has('x'),
+      true);
+
     off();
-    assert.equal(obj.has('x'), false);
+
+    assert.equal(
+      obj.has('x'),
+      false);
   });
 
 test(
@@ -199,8 +238,68 @@ test(
     const obj =
       eventful(
         { },
-        { error: () => { }, strict: true });
+        { error: () => { },
+          strict: true });
 
-    obj.on('e', async () => { throw new Error('nope'); });
+    obj.on(
+      'e',
+      async () => { throw new Error('nope'); });
+
     await assert.rejects(() => obj.emitAsync('e'));
   });
+
+test(
+  'emit ignores errors when no error hook (non-strict)',
+  () => {
+    const obj =
+      eventful();
+
+    obj.on(
+      'x',
+      () => { throw new Error('boom'); });
+
+    assert.doesNotThrow(
+      () => obj.emit('x'));
+  });
+
+test(
+  'event must be string or symbol',
+  () => {
+    const obj =
+      eventful();
+
+    assert.throws(
+      () => obj.on(123, () => {}),
+      TypeError);
+
+    assert.throws(
+      () => obj.emit(123),
+      TypeError);
+
+    const s =
+      Symbol('e');
+
+    assert.doesNotThrow(
+      () => obj.on(s, () => {}));
+
+    assert.doesNotThrow(
+      () => obj.emit(s));
+  });
+
+function createTracer() {
+  const traces = [];
+
+  return {
+    trace:
+      (object, action, payload) =>
+        traces.push({ object, action, payload }),
+    getTraces:
+      () => traces,
+    getTracesByAction:
+      action =>
+        traces.filter(t => t.action === action),
+    getFirstTraceByAction:
+      action =>
+        traces.find(t => t.action === action)
+  };
+}

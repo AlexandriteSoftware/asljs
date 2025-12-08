@@ -1,19 +1,19 @@
 {
   "name": "asljs-eventful",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "Lightweight event helper adding on/off/emit to any object.",
   "keywords": [
     "events",
     "javascript",
     "js"
   ],
-  "homepage": "https://github.com/alex-netkachov/asljs-eventful#readme",
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
   "bugs": {
-    "url": "https://github.com/alex-netkachov/asljs-eventful/issues"
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alex-netkachov/asljs-eventful.git"
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
   },
   "license": "MIT",
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",

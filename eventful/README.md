@@ -1,6 +1,6 @@
 # eventful
 
-> Part of [Alexantrite Software Library][#1] - a set of high-quality and
+> Part of [Alexandrite Software Library][#1] – a set of high‑quality,
 performant JavaScript libraries for everyday use.
 
 Lightweight event helper adding on/off/emit to any object.
@@ -31,10 +31,12 @@ Trace event invocations to console:
 const obj =
   eventful(
     { },
-    { trace: (object, action, payload) =>
-        console.log(
-          `Action: ${action}`,
-          payload) });
+    { trace:
+        (object, action, payload) => {
+          console.log(
+            `Action: ${action}`,
+            payload);
+        } });
 
 // Tracing actions include:
 // - 'new' on creation: payload { object }
@@ -50,10 +52,12 @@ Custom error handler for listener errors:
 const obj =
   eventful(
     { },
-    { error: (err, { object, event, listener }) =>
-        console.error(
-          `Error in listener for event "${event}"`,
-          err) });
+    { error:
+        (err, { object, event, listener }) => {
+          console.error(
+            `Error in listener for event "${event}"`,
+            err);
+        } });
 ```
 
 Strict mode to propagate listener errors:
@@ -85,31 +89,51 @@ eventful.options.error =
 
 ### eventful([target], [options])
 
-Wraps the `target` object with event capabilities. If no target is provided, a new empty object is created.
+Wraps the `target` object with event capabilities. If no target is provided,
+a new empty object is created.
 
 - `target` (Object): The object to be enhanced with event capabilities.
 - `options` (Object): Configuration options.
-  - `error` (Function): Custom error handler for listener errors `(err, { object, event, listener })`.
-  - `trace` (Function): Custom trace hook `(object, action, payload)` for `new`, `on`, `off`, `emit`, `emitAsync`.
-  - `strict` (Boolean): If true, propagates listener errors; otherwise they are isolated. Defaults to false.
+  - `error` (Function | null): Custom error handler for listener errors
+    `(err, { object, event, listener })`. Defaults to `null`. Only called when
+    provided.
+  - `trace` (Function | null): Custom trace hook `(object, action, payload)`
+    for `new`, `on`, `off`, `emit`, `emitAsync`. Defaults to `null`. Only
+    called when provided.
+  - `strict` (Boolean): If true, propagates listener errors; otherwise they
+    are isolated. Defaults to false.
 
 ### on(event, listener)
 
 Registers a listener for the specified event.
 
 - `event` (String): The event name.
-- `listener` (Function): The callback function to be invoked when the event is emitted.
+- `listener` (Function): The callback function to be invoked when the event is
+  emitted.
 
 Returns a function to remove the listener.
 
 ### once(event, listener)
 
-Registers a one-time listener for the specified event. The listener is removed after its first invocation.
+Registers a one-time listener for the specified event. The listener is removed
+after its first invocation.
 
 - `event` (String): The event name.
-- `listener` (Function): The callback function to be invoked when the event is emitted.
+- `listener` (Function): The callback function to be invoked when the event is
+  emitted.
 
 Returns a function to remove the listener.
+
+Example:
+
+```js
+obj.once(
+  'tick',
+  n => console.log('first only', n));
+
+obj.emit('tick', 1); // logs
+obj.emit('tick', 2); // no-op; already unsubscribed
+```
 
 ### off(event, listener)
 
@@ -120,14 +144,17 @@ Removes a listener for the specified event.
 
 ### emit(event, ...args)
 
-Emits the specified event, invoking all registered listeners with the provided arguments.
+Emits the specified event, invoking all registered listeners with the provided
+arguments.
 
 - `event` (String): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
 
 ### emitAsync(event, ...args)
 
-Emits the specified event asynchronously, running listeners in parallel. In non-strict mode, all listeners run and rejections are isolated; in strict mode, the first rejection causes the returned promise to reject.
+Emits the specified event asynchronously, running listeners in parallel.
+In non-strict mode, all listeners run and rejections are isolated; in strict
+mode, the first rejection causes the returned promise to reject.
 
 - `event` (String): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
@@ -142,8 +169,19 @@ Checks if there are any listeners registered for the specified event.
 
 Returns `true` if there are listeners, otherwise `false`.
 
+Example:
+
+```js
+const off =
+  obj.on('e', () => {});
+
+console.log(obj.has('e')); // true
+off();
+console.log(obj.has('e')); // false
+```
+
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE.md) for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

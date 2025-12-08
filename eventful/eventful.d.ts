@@ -68,7 +68,7 @@ export interface EventfulOptions {
   trace?: ((
     object: object | Function,
     action: string,
-    payload: TracePayload
+    payload?: TracePayload
   ) => void) | null;
 
   /** Optional error hook; defaults to `eventful.error`. */
@@ -77,7 +77,6 @@ export interface EventfulOptions {
     context: ErrorContext
   ) => void) | null;
 }
-
 
 export interface EventfulFactory {
   <T extends object | Function | undefined,
@@ -92,7 +91,7 @@ export interface EventfulFactory {
     trace: (
       object: object | Function,
       action: string,
-      payload: TracePayload
+      payload?: TracePayload
     ) => void | null;
 
     /** Default error handler. Replace to integrate with your logger. */
