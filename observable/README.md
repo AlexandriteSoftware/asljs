@@ -1,7 +1,7 @@
 # observable
 
-> Part of [Alexantrite Software Library](docs/asljs.md) - a set of high-quality
-and performant JavaScript libraries for everyday use.
+> Part of [Alexantrite Software Library][#1] - a set of high-quality and
+performant JavaScript libraries for everyday use.
 
 Lightweight observable for JS. Emits events on property changes via on/off/emit.
 Works with objects, arrays, and primitives.
@@ -36,3 +36,5 @@ Wraps an object, array, or primitive to make it observable.
   - `attributes`: Property attributes for eventful methods (default: non-enumerable, non-writable, non-configurable).
 
 Returns the observable proxy of the original object.
+
+[#1]: https://github.com/AlexandriteSoftware/asljs

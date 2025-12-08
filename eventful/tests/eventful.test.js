@@ -7,22 +7,31 @@ test(
   () => {
     const traces = [];
 
-    const obj =
+    const original = { };
+
+    const enhanced =
       eventful(
-        { },
+        original,
         { trace:
             (object, action, payload) =>
-              traces.push({ action, payload }) });
-
-    assert.ok(
-      traces.find(t => t.action === 'new'));
+              traces.push({ object, action, payload }) });
 
     const creation =
       traces.find(t => t.action === 'new');
 
+    assert.ok(creation);
+
     assert.equal(
-      typeof creation.payload.object,
-      'object');
+      creation.payload.object,
+      original);
+
+    assert.equal(
+      creation.object,
+      enhanced);      
+
+    assert.equal(
+      creation.payload.object,
+      enhanced);      
   });
 
 test(

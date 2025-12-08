@@ -1,4 +1,6 @@
-# Design
+---
+applyTo: '**'
+---
 
 - **Naming & Scope:**
   - Package name begins with `asljs-` and aligns with its domain (e.g., observable, machine, eventful, money).

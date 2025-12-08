@@ -1,7 +1,7 @@
 # money
 
-> Part of [Alexantrite Software Library](docs/asljs.md) - a set of high-quality
-and performant JavaScript libraries for everyday use.
+> Part of [Alexantrite Software Library][#1] - a set of high-quality and
+performant JavaScript libraries for everyday use.
 
 Provides a lightweight type and a set of functions to support financial calculations in JavaScript.
 
@@ -57,3 +57,5 @@ const total =
     (sum, item) => sum.add(item),
     money.zero);
 ```
+
+[#1]: https://github.com/AlexandriteSoftware/asljs

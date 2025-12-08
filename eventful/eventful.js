@@ -52,6 +52,7 @@ const eventful =
 
     const traceFn =
       trace || globalOptions.trace;
+
     if (traceFn) {
       traceFn(
         object,
@@ -210,14 +211,20 @@ const eventful =
           try {
             listener(...args);
           } catch (err) {
-            const context =
-              { object,
-                event,
-                listener };
+            const errorFn =
+              error
+              || globalOptions.error;
 
-            (error || globalOptions.error)(
-              err,
-              context);
+            if (errorFn) {
+              const context =
+                { object,
+                  event,
+                  listener };
+
+              errorFn(
+                err,
+                context);
+            }
 
             if (strict)
               throw err;
