@@ -2,8 +2,18 @@ import type { Eventful, EventfulFactory } from 'asljs-eventful';
 
 /** Options for observable() */
 export interface ObservableOptions {
-  /** Custom factory to augment the target with eventful API (defaults to imported `asljsEventful`). */
+  /** Custom factory to augment the target with eventful API (defaults to imported `asljs-eventful`). */
   eventful?: EventfulFactory;
+
+  /** Options passed through to the underlying `eventful` when wrapping the target. */
+  eventfulOptions?: Parameters<EventfulFactory>[1];
+
+  /** Optional trace hook: `(object, action, payload)` invoked on 'new', 'set', 'delete', 'define'. */
+  trace?: ((
+    object: object | Function,
+    action: 'new' | 'set' | 'delete' | 'define',
+    payload?: any
+  ) => void) | null;
 }
 
 /** Utilities */
@@ -107,6 +117,6 @@ export function observable<T extends object>(
 
 /** Primitive overload (boxed as { value }) */
 export function observable<T>(
-  value: T,
+  value?: T,
   options?: ObservableOptions
 ): { value: T } & Eventful<ObservableEventsPrimitive<T>>;

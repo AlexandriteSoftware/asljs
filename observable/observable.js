@@ -1,214 +1,317 @@
-import { eventful as asljsEventful } from 'asljs-eventful';
+import { eventful } from 'asljs-eventful';
 
 /**
  * Creates an observable object/array/primitive that emits events on changes.
  *
  * Events:
- *   - 'set' / `set:<prop>`       payload: { property, value, oldValue }
- *   - 'delete' / `delete:<prop>` payload: { property, oldValue }
+ *   - 'set' / `set:<prop>`       payload: { property, value, previous }
+ *   - 'delete' / `delete:<prop>` payload: { property, previous }
  *   - 'define' / `define:<prop>` payload: { property, descriptor, previous }
  *
- * Note: Emissions are fire-and-forget; listeners run in parallel and errors are isolated
- * by the underlying `eventful.emit`.
+ * Emissions are synchronous and errors are isolated by the underlying
+ * `eventful.emit`.
  *
  * @param {*} value The initial value (object, array, or primitive).
  * @returns {Object} The proxied observable (augmented by `eventful`).
  */
-export function observable(value, options) {
-  const { eventful = asljsEventful } =
-    options || {};
+const observable =
+  (value, options = { }) => {
+    const { eventful: eventfulFn = eventful,
+            eventfulOptions = { },
+            trace = null } =
+      options;
 
-  if (typeof eventful !== 'function') {
-    throw new TypeError(
-      `observable: 'eventful' option must be a function if provided`);
-  }
+    functionTypeGuard(eventfulFn);
 
-  const hasOwn =
-    (obj, key) =>
-      Object.prototype.hasOwnProperty.call(obj, key);
+    const globalOptions =
+      observable.options;
 
-  const makeProxy =
-    (target, { includeDefine }) => {
-      let proxy;
+    const makeProxy =
+      (target,
+       { includeDefine }) =>
+      {
+        let proxy;
 
-      proxy =
-        eventful(
-          new Proxy(
-            target,
-            {
-              set(
-                tgt,
-                property,
-                newValue,
-                receiver)
+        proxy =
+          eventfulFn(
+            new Proxy(
+              target,
               {
-                const previous =
-                  Reflect.get(
-                    tgt,
-                    property,
-                    receiver);
-
-                const ok =
-                  Reflect.set(
-                    tgt,
-                    property,
-                    newValue,
-                    receiver);
-
-                if (proxy
-                    && ok)
+                set(
+                  tgt,
+                  property,
+                  newValue,
+                  receiver)
                 {
-                  const current =
+                  const previous =
                     Reflect.get(
                       tgt,
                       property,
                       receiver);
 
-                  if (!Object.is(previous, current)) {
+                  const ok =
+                    Reflect.set(
+                      tgt,
+                      property,
+                      newValue,
+                      receiver);
+
+                  if (proxy
+                      && ok)
+                  {
+                    const current =
+                      Reflect.get(
+                        tgt,
+                        property,
+                        receiver);
+
+                    if (!Object.is(previous, current)) {
+                      const payload =
+                        { property,
+                          value: current,
+                          previous };
+
+                      const traceFn =
+                        trace
+                        || globalOptions.trace;
+
+                      if (isFunction(traceFn)) {
+                        traceFn(
+                          proxy,
+                          'set',
+                          payload);
+                      }
+
+                      proxy.emit(
+                        'set',
+                        payload);
+
+                      proxy.emit(
+                        `set:${String(property)}`,
+                        payload);
+                    }
+                  }
+
+                  return ok;
+                },
+
+                deleteProperty(
+                  tgt,
+                  property)
+                {
+                  const had =
+                    hasOwn(tgt, property);
+
+                  const previous =
+                    had
+                      ? tgt[property]
+                      : undefined;
+
+                  const ok =
+                    Reflect.deleteProperty(
+                      tgt,
+                      property);
+
+                  if (proxy
+                      && ok
+                      && had)
+                  {
                     const payload =
                       { property,
-                        value: current,
                         previous };
 
+                    const traceFn =
+                      trace
+                      || globalOptions.trace;
+
+                    if (isFunction(traceFn)) {
+                      traceFn(
+                        proxy,
+                        'delete',
+                        payload);
+                    }
+
                     proxy.emit(
-                      'set',
+                      'delete',
                       payload);
 
                     proxy.emit(
-                      `set:${String(property)}`,
+                      `delete:${String(property)}`,
                       payload);
                   }
-                }
 
-                return ok;
-              },
+                  return ok;
+                },
 
-              deleteProperty(
-                tgt,
-                property)
-              {
-                const had =
-                  hasOwn(tgt, property);
-
-                const previous =
-                  had
-                    ? tgt[property]
-                    : undefined;
-
-                const ok =
-                  Reflect.deleteProperty(
-                    tgt,
-                    property);
-
-                if (proxy
-                    && ok
-                    && had)
+                defineProperty(
+                  tgt,
+                  property,
+                  descriptor)
                 {
-                  const payload =
-                    { property,
-                      previous };
-
-                  proxy.emit(
-                    'delete',
-                    payload);
-
-                  proxy.emit(
-                    `delete:${String(property)}`,
-                    payload);
-                }
-
-                return ok;
-              },
-
-              defineProperty(
-                tgt,
-                property,
-                descriptor)
-              {
-                if (!includeDefine) {
-                  return Reflect.defineProperty(
-                    tgt,
-                    property,
-                    descriptor);
-                }
-
-                const previous =
-                  Object.getOwnPropertyDescriptor(
+                  if (!includeDefine) {
+                    return Reflect.defineProperty(
                       tgt,
-                      property)
-                    ?? null;
+                      property,
+                      descriptor);
+                  }
 
-                const ok =
-                  Reflect.defineProperty(
-                    tgt,
-                    property,
-                    descriptor);
+                  const previous =
+                    Object.getOwnPropertyDescriptor(
+                        tgt,
+                        property)
+                      ?? null;
 
-                if (proxy
-                    && ok)
-                {
-                  const payload =
-                    { property,
-                      descriptor,
-                      previous };
+                  const ok =
+                    Reflect.defineProperty(
+                      tgt,
+                      property,
+                      descriptor);
 
-                  proxy.emit(
-                    'define',
-                    payload);
+                  if (proxy
+                      && ok)
+                  {
+                    const payload =
+                      { property,
+                        descriptor,
+                        previous };
 
-                  proxy.emit(
-                    `define:${String(property)}`,
-                    payload);
+                    const traceFn =
+                      trace
+                      || globalOptions.trace;
+
+                    if (isFunction(traceFn)) {
+                      traceFn(
+                        proxy,
+                        'define',
+                        payload);
+                    }
+
+                    proxy.emit(
+                      'define',
+                      payload);
+
+                    proxy.emit(
+                      `define:${String(property)}`,
+                      payload);
+                  }
+
+                  return ok;
                 }
+              }),
+            eventfulOptions);
 
-                return ok;
-              }
-            }));
+        return proxy;
+      };
+
+    const traceFn =
+      trace
+      || globalOptions.trace;
+
+    // Arrays
+    if (Array.isArray(value)) {
+      const proxy =
+        makeProxy(
+          value,
+          { includeDefine: false });
+
+      if (isFunction(traceFn)) {
+        traceFn(
+          proxy,
+          'new');
+      }
 
       return proxy;
-    };
+    }
 
-  // Arrays
-  if (Array.isArray(value)) {
-    return makeProxy(
-      value,
-      { includeDefine: false });
-  }
-
-  // Objects
-  if (value !== null
-      && typeof value === 'object')
-  {
-    return makeProxy(
-      value,
-      { includeDefine: true });
-  }
-
-  // Primitives → boxed with a single 'value' slot
-  return eventful(
+    // Objects
+    if (value !== null
+        && typeof value === 'object')
     {
-      get value() {
-        return value;
-      },
-      set value(v) {
-        if (Object.is(v, value))
-          return;
-  
-        const previous = value;
-        value = v;
-  
-        const payload =
-          { property: 'value',
-            value,
-            previous };
-  
-        this.emit(
-          'set',
-          payload);
-  
-        this.emit(
-          'set:value',
-          payload);
+      const proxy =
+        makeProxy(
+          value,
+          { includeDefine: true });
+
+      if (isFunction(traceFn)) {
+        traceFn(
+          proxy,
+          'new',
+          { object: proxy });
       }
-    });
+
+      return proxy;
+    }
+
+    // Primitives → boxed with a single 'value' slot
+    const boxed =
+      eventfulFn(
+        { get value() {
+            return value;
+          },
+          set value(v) {
+            if (Object.is(v, value))
+              return;
+      
+            const previous =
+              value;
+
+            value = v;
+      
+            const payload =
+              { property: 'value',
+                value,
+                previous };
+      
+            if (isFunction(traceFn)) {
+              traceFn(
+                boxed,
+                'set',
+                payload);
+            }
+
+            this.emit(
+              'set',
+              payload);
+      
+            this.emit(
+              'set:value',
+              payload);
+          } },
+        eventfulOptions);
+
+    if (isFunction(traceFn)) {
+      traceFn(
+        boxed,
+        'new',
+        { object: boxed });
+    }
+
+    return boxed;
+  };
+
+observable.options =
+  { trace: null };
+
+function isFunction(value) {
+  return 'function' === typeof value;
 }
+
+function functionTypeGuard(value) {
+  if (!isFunction(value)) {
+    throw new TypeError(
+      'Expect a function.');
+  }
+}
+
+function hasOwn(
+  object,
+  key)
+{
+  return Object.prototype
+    .hasOwnProperty
+    .call(
+      object,
+      key);
+}
+
+export { observable };
