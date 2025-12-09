@@ -1,15 +1,27 @@
 {
   "name": "asljs-money",
-  "version": "0.9.1",
-  "description": "Provides a library of routines supporting financial calculations in JavaScript.",
+  "version": "0.9.2",
+  "description": "Lightweight fixed-point Money type and helpers for financial calculations.",
+  "type": "module",
   "main": "money.js",
+  "types": "money.d.ts",
   "scripts": {
-    "test": "node money.test.js"
+    "test": "node --test",
+    "test:watch": "node --watch --test",
+    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "keywords": [
     "money",
     "finance"
   ],
   "author": "Alex Netkachov <alex.netkachov@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  }
 }

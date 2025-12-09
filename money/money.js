@@ -4,12 +4,16 @@
  * 
  * Available formats:
  * 
+ * - 'f' - full, e.g. '1,234.56 USD', '-1,123', '0.00' (default)
  * - 'c' - compact, e.g. '123.45', '-1123', '0'
  * 
  * @param {string} format The format of the string representation.
  * @returns {string} The string representation of the money amount.
  */
-function toString(format) {
+function toString(format = 'f') {
+  if (format === 'c')
+    return String(this.value / 100);
+
   const value = this.value;
   const sign = value < 0 ? '-' : '';
   const digits = Math.abs(value).toString().padStart(3, '0');
@@ -24,7 +28,13 @@ function toString(format) {
       break;
     }
   }
-  return `${sign}${text}`;
+
+  const amountText =
+    `${sign}${text}`;
+
+  return this.currency
+    ? `${amountText} ${this.currency}`
+    : amountText;
 }
 
 /**
@@ -42,7 +52,12 @@ function toNumber() {
  * @returns {Money} The sum of the current amount and the specified amounts.
  */
 function add() {
-  return money([...arguments].reduce((acc, value) => acc + value.value, this.value));
+  const values = [...arguments];
+  for (const v of values) {
+    currencyGuard(this.currency, v.currency);
+  }
+  const sum = values.reduce((acc, v) => acc + v.value, this.value);
+  return money(sum, this.currency);
 }
 
 /**
@@ -50,8 +65,17 @@ function add() {
  * 
  * @returns {Money} The difference between the current amount and the specified amounts.
  */
+function subtract() {
+  const values = [...arguments];
+  for (const v of values) {
+    currencyGuard(this.currency, v.currency);
+  }
+  const diff = values.reduce((acc, v) => acc - v.value, this.value);
+  return money(diff, this.currency);
+}
+
 function substract() {
-  return money([...arguments].reduce((acc, value) => acc - value.value, this.value));
+  return subtract.apply(this, arguments);
 }
 
 /**
@@ -60,7 +84,7 @@ function substract() {
  * @returns {Money} The inverse of the current amount.
  */
 function inverse() {
-  return money(-this.value);
+  return money(-this.value, this.currency);
 }
 
 /**
@@ -105,7 +129,7 @@ function distribute(recipients, unit = undefined) {
       throw new Error('recipients should be either a non-empty array of numbers or a positive integer number');
     recipients = new Array(recipients).fill(1);
   } else {
-    if (recipients.length < 1 || recipients.any(x => !Number.isFinite(x) || x < 0))
+    if (recipients.length < 1 || recipients.some(x => !Number.isFinite(x) || x < 0))
       throw new Error('recipient\'s share should be a positive finite number');
   }
 
@@ -143,7 +167,7 @@ function distribute(recipients, unit = undefined) {
   }
   amounts.sort((a, b) => a.i - b.i);
 
-  return amounts.map(x => money(x.value));
+  return amounts.map(x => money(x.value, this.currency));
 }
 
 /**
@@ -167,10 +191,12 @@ function minor() {
 const Money =
   { add,
     substract,
+    subtract,
     distribute,
     major,
     minor,
     inverse,
+    convert,
     toString,
     toNumber };
 
@@ -189,9 +215,9 @@ function isMoney(value) {
  * @param {Number|Money} value 
  * @returns 
  */
-function money(value) {
+function money(value, currency = null) {
   if (isMoney(value))
-    return money(value.value);
+    return money(value.value, value.currency);
 
   if ('number' !== typeof value)
     throw new Error('value is not a number');
@@ -203,8 +229,11 @@ function money(value) {
       : `number of minor units is greater than ${Number.MAX_SAFE_INTEGER}`);
   }
 
+  currencyTypeGuard(currency);
+
   return {
     value,
+    currency,
     __proto__ : Money
   };
 }
@@ -213,8 +242,8 @@ function parse(value) {
   if ('string' !== typeof value || !value.length)
     return null;
 
-  let sign = value[0] === '-' ? -1 : 1;
-  let start = sign === -1 ? 1 : 0;
+  const sign = value[0] === '-' ? -1 : 1;
+  const start = sign === -1 ? 1 : 0;
 
   let main = 0;
   let fraction = 0;
@@ -279,10 +308,10 @@ money.fromString = value => {
  *
  * @returns {Money}
  */
-money.fromMinor = value => {
+money.fromMinor = (value, currency = null) => {
   if (!Number.isSafeInteger(value))
     throw new Error('value is not an integer');
-  return money(value);
+  return money(value, currency);
 };
 
 /**
@@ -290,10 +319,23 @@ money.fromMinor = value => {
  * 
  * @returns {Money}
  */
-money.fromNumber = value => {
+money.fromNumber = (value, currency = null) => {
   if (!Number.isFinite(value))
     throw new Error('value is not a finite number');
-  return money(value * 100);
+  const minor = Math.trunc(value * 100);
+  return money(minor === 0 ? 0 : minor, currency);
+};
+
+/**
+ * Creates a money amount from the specified number of major units (e.g. dollars).
+ * The input must be an integer number of major units.
+ * 
+ * @returns {Money}
+ */
+money.fromMajor = (value, currency = null) => {
+  if (!Number.isSafeInteger(value))
+    throw new Error('value is not an integer');
+  return money(value * 100, currency);
 };
 
 /**
@@ -303,6 +345,33 @@ money.fromNumber = value => {
  */
 money.isMoney = value => value && value.__proto__ === Money;
 
-money.Money = money;
+export { money };
 
-module.exports = money;
+function currencyTypeGuard(value) {
+  if (value !== null
+      && typeof value !== 'string')
+  {
+    throw new TypeError('currency must be a string or null');
+  }
+}
+
+function currencyGuard(a, b) {
+  if (a !== b) {
+    throw new TypeError('currency mismatch');
+  }
+}
+
+/**
+ * Converts this amount to another currency using the exchange rate.
+ * Rate is applied to major units: minor' = trunc((value/100 * rate) * 100).
+ * @param {number} rate Positive finite exchange rate.
+ * @param {string|null} currency Target currency (string or null).
+ * @returns {Money}
+ */
+function convert(rate, currency) {
+  currencyTypeGuard(currency);
+  if (!Number.isFinite(rate) || rate <= 0)
+    throw new TypeError('rate must be a positive finite number');
+  const minor = Math.trunc((this.value / 100) * rate * 100);
+  return money(minor === 0 ? 0 : minor, currency ?? null);
+}

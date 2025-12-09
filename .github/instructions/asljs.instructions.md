@@ -6,7 +6,7 @@ applyTo: '**'
   - Package name begins with `asljs-` and aligns with its domain (e.g., observable, machine, eventful, money).
   - Keep the public API surface minimal, consistent, and orthogonal; avoid leaking internal structures.
 - **Module & Export Style:**
-  - Prefer ESM (`type: module`). Use clear, consistent export shapes (named or default) and reflect them in docs and typings.
+  - Prefer ESM `type: module` and `export { ... }` in source; avoid CommonJS `module.exports`. Use clear, consistent export shapes (named or default) and reflect them in docs and typings.
   - Ensure runtime, types, and README agree on how consumers import and use the package.
 - **Options & Hooks:**
   - Options should be explicit, optional, and default-safe. Hooks (like tracing or error handling) should be opt-in and invoked conditionally.
