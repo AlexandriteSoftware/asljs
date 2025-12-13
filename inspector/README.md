@@ -3,7 +3,8 @@
 > Part of [Alexantrite Software Library][#1] - a set of high-quality and
 performant JavaScript libraries for everyday use.
 
-Comprehensive workflow inspector for tracking function calls, durations, and errors for asljs libraries.
+Comprehensive workflow inspector for tracking function calls, durations, and
+errors for asljs libraries.
 
 ## Installation
 

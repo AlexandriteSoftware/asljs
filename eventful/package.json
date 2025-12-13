@@ -24,8 +24,20 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node --test",
-    "test:watch": "node --watch --test",
-    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+    "build": "tsc -p .",
+    "build:tests": "tsc -p tsconfig.tests.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
+    "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
+    "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^24.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
   }
 }

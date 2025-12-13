@@ -1,9 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { eventful } from '../eventful.js';
+
+import {
+  eventful,
+  ListenerError
+} from '../eventful.js';
 
 test(
-  'eventful does not create a new object',
+  'eventful extends an object',
   () => {
     const original = { };
 
@@ -13,6 +17,12 @@ test(
     assert.equal(
       enhanced,
       original);
+
+    assert.equal(typeof enhanced.on, 'function');
+    assert.equal(typeof enhanced.off, 'function');
+    assert.equal(typeof enhanced.emit, 'function');
+    assert.equal(typeof enhanced.emitAsync, 'function');
+    assert.equal(typeof enhanced.has, 'function');
   });
 
 test(
@@ -27,6 +37,27 @@ test(
     assert.equal(
       enhanced,
       original);
+
+    assert.equal(typeof enhanced.on, 'function');
+    assert.equal(typeof enhanced.off, 'function');
+    assert.equal(typeof enhanced.emit, 'function');
+    assert.equal(typeof enhanced.emitAsync, 'function');
+    assert.equal(typeof enhanced.has, 'function');
+  });
+
+test(
+  'eventful can be called without arguments',
+  () => {
+    const enhanced =
+      eventful();
+
+    assert.ok(enhanced !== null);
+
+    assert.equal(typeof enhanced.on, 'function');
+    assert.equal(typeof enhanced.off, 'function');
+    assert.equal(typeof enhanced.emit, 'function');
+    assert.equal(typeof enhanced.emitAsync, 'function');
+    assert.equal(typeof enhanced.has, 'function');
   });
 
 test(
@@ -38,50 +69,62 @@ test(
     const object =
       eventful(
         { },
-        { trace: tracer.trace });
+        tracer);
 
     const creation =
       tracer.getFirstTraceByAction('new');
-      
+
     assert.ok(creation);
 
     assert.equal(
-      creation.object,
-      object);      
+      creation.payload.object,
+      object);
   });
 
 test(
-  'eventful creates an empty event emitter object',
+  'global trace is called on creation with action "new"',
   () => {
-    const obj =
-      eventful();
+    const tracer =
+      createTracer();
 
-    assert.ok(obj);
-    assert.equal(typeof obj.on, 'function');
-    assert.equal(typeof obj.off, 'function');
-    assert.equal(typeof obj.emit, 'function');
-    assert.equal(typeof obj.emitAsync, 'function');
-    assert.equal(typeof obj.has, 'function');
+    const off =
+      eventful.on(
+        'new',
+        args => tracer.trace('new', args));
+
+    try {
+      const object =
+        eventful(
+          { },
+          tracer);
+
+      const creation =
+        tracer.getFirstTraceByAction('new');
+
+      assert.ok(creation);
+
+      assert.equal(
+        creation.payload.object,
+        object);
+    } finally {
+      off();
+    }
   });
 
 test(
   'eventful throws when an object has one of the event emitter methods',
   () => {
-    for (const method of
-        [ 'on',
-          'once',
-          'off',
-          'emit',
-          'emitAsync',
-          'has'])
-    {
+    for (const method of [ 'on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
       assert.throws(
-        () => eventful({ [method]: () => { } }));
+        () =>
+          eventful({
+            [method]: () => { }
+          }));
     }
   });
 
 test(
-  'exceptions in listeners are suppressed by default',
+  'exceptions in listeners are suppressed in async emit by default',
   async () => {
     const obj =
       eventful();
@@ -95,7 +138,21 @@ test(
   });
 
 test(
-  'strict mode propagates exceptions in listeners',
+  'exceptions in listeners are suppressed in emit by default',
+  () => {
+    const obj =
+      eventful();
+
+    obj.on(
+      'test',
+      () => { throw new Error('test error'); });
+
+    assert.doesNotThrow(
+      () => obj.emit('test'));
+  });
+
+test(
+  'strict mode propagates exceptions in listeners in async emit',
   async () => {
     const obj =
       eventful(
@@ -107,24 +164,25 @@ test(
       'test',
       () => { throw new Error('test error'); });
 
-    await assert.rejects(
-      () => obj.emitAsync('test'));
+    await assert.rejects(() => obj.emitAsync('test'));
   });
 
 test(
-  'async listener rejection is suppressed by default',
-  async () => {
+  'strict mode propagates exceptions in listeners in emit',
+  () => {
     const obj =
       eventful(
         { },
-        { error: () => {} });
+        { error: () => { },
+          strict: true });
 
     obj.on(
       'test',
-      async () => { throw new Error('async fail'); });
+      () => { throw new Error('test error'); });
 
-    await assert.doesNotReject(
-      () => obj.emitAsync('test'));
+    assert.throws(
+      () => obj.emit('test'),
+      Error);
   });
 
 test(
@@ -133,13 +191,13 @@ test(
     const obj =
       eventful(
         { },
-        { error: () => {} });
+        { error: () => { } });
 
     let ran = 0;
 
     obj.on(
       'test',
-      () => { ran += 1; });
+      () => ran += 1);
 
     obj.on(
       'test',
@@ -147,13 +205,13 @@ test(
 
     obj.on(
       'test',
-      () => { ran += 1; });
+      () => ran += 1);
 
     await assert.doesNotReject(
       () => obj.emitAsync('test'));
 
     assert.equal(ran, 2);
-  });  
+  });
 
 test(
   'trace receives safe payload and action names',
@@ -164,14 +222,16 @@ test(
     const obj =
       eventful(
         { },
-        { trace: tracer.trace });
+        tracer);
 
-    const off = obj.on('e', () => {});
+    const off =
+      obj.on(
+        'e',
+        () => { });
     obj.emit('e', 1, 2);
     await obj.emitAsync('e', 3, 4);
     off();
 
-    // Expect actions at least 'on', 'emit', 'emitAsync'
     assert.ok(tracer.getFirstTraceByAction('on'));
     assert.ok(tracer.getFirstTraceByAction('emit'));
     assert.ok(tracer.getFirstTraceByAction('emitAsync'));
@@ -179,12 +239,16 @@ test(
     const emitTrace =
       tracer.getFirstTraceByAction('emit');
 
+    assert.ok(emitTrace);
+
     assert.ok(Array.isArray(emitTrace.payload.listeners));
     assert.equal(emitTrace.payload.event, 'e');
     assert.deepEqual(emitTrace.payload.args, [1, 2]);
 
     const emitAsyncTrace =
       tracer.getFirstTraceByAction('emitAsync');
+
+    assert.ok(emitAsyncTrace);
 
     assert.ok(Array.isArray(emitAsyncTrace.payload.listeners));
     assert.equal(emitAsyncTrace.payload.event, 'e');
@@ -195,20 +259,25 @@ test(
   'error hook runs for async rejection (non-strict)',
   async () => {
     let errors = 0;
+
     const obj =
       eventful(
         { },
-        { error: () => { errors += 1; } });
+        { error: () => errors += 1 });
 
-    obj.on('e', async () => { throw new Error('reject'); });
+    obj.on(
+      'e',
+      async () => { throw new Error('reject'); });
 
-    await assert.doesNotReject(() => obj.emitAsync('e'));
+    await assert.doesNotReject(
+      () => obj.emitAsync('e'));
+
     assert.equal(errors, 1);
   });
 
 test(
   'has reflects subscribe and unsubscribe',
-  () => {
+  () =>  {
     const obj =
       eventful();
 
@@ -245,7 +314,8 @@ test(
       'e',
       async () => { throw new Error('nope'); });
 
-    await assert.rejects(() => obj.emitAsync('e'));
+    await assert.rejects(
+      () => obj.emitAsync('e'));
   });
 
 test(
@@ -263,43 +333,76 @@ test(
   });
 
 test(
+  'throw in global error listener does not loop',
+  () => {
+    let globalErrorCalls = 0;
+
+    const off =
+      eventful.on(
+        'error',
+        () => {
+          globalErrorCalls += 1;
+          if (globalErrorCalls > 1)
+            throw new Error('global error listener loop');
+          throw new Error('boom');
+        });
+
+    try {
+      const obj =
+        eventful();
+
+      obj.on(
+        'e',
+        () => { throw new Error('listener failed'); });
+
+      assert.throws(
+        () => obj.emit('e'),
+        Error);
+
+      assert.equal(globalErrorCalls, 1);
+    } finally {
+      off();
+    }
+  });
+
+test(
   'event must be string or symbol',
   () => {
     const obj =
       eventful();
 
     assert.throws(
-      () => obj.on(123, () => {}),
+      () => obj.on(123 as any, () => {}),
       TypeError);
 
     assert.throws(
-      () => obj.emit(123),
+      () => obj.emit(123 as any),
       TypeError);
 
     const s =
       Symbol('e');
 
     assert.doesNotThrow(
-      () => obj.on(s, () => {}));
+      () => obj.on(s, () => { }));
 
     assert.doesNotThrow(
       () => obj.emit(s));
   });
 
-function createTracer() {
-  const traces = [];
+function createTracer() 
+{
+  const traces: Array<{ action: string; payload: any }> = [];
 
   return {
-    trace:
-      (object, action, payload) =>
-        traces.push({ object, action, payload }),
+    trace: (action: any, payload: any) =>
+      traces.push({ action, payload }),
     getTraces:
       () => traces,
     getTracesByAction:
-      action =>
+      (action: string) =>
         traces.filter(t => t.action === action),
     getFirstTraceByAction:
-      action =>
+      (action: string) =>
         traces.find(t => t.action === action)
   };
 }

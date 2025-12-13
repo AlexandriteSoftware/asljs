@@ -1,0 +1,69 @@
+export type EventName = string | symbol;
+export type Listener = (...args: any[]) => any;
+export interface ListenerErrorArgs {
+    error: any;
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+}
+export declare class ListenerError extends Error implements ListenerErrorArgs {
+    error: any;
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+    constructor(message: string, error: any, object: object | Function, event: EventName, listener: Function);
+}
+export type TraceFn = {
+    (action: 'new', args: {
+        object: object | Function;
+    }): void;
+    (action: string, args: any): void;
+};
+export type EventfulFn = (<T extends object | Function | undefined>(object?: T, options?: EventfulOptions) => (T extends undefined ? {} : T) & Eventful) & Eventful;
+export interface EventfulOptions {
+    /**
+     * If true, exceptions from listeners are propagated (fail fast).
+     * When false, errors are isolated (ignored) after calling `error` hook.
+     */
+    strict?: boolean;
+    /**
+     * Optional tracing hook. Receives action name and a safe payload.
+     * Actions include: 'new', 'on', 'off', 'emit', 'emitAsync'.
+     * Use to integrate with your logger without exposing internals.
+     */
+    trace?: TraceFn | null;
+    /**
+     * Optional error hook. Receives structured context of listener failures
+     * (error, object, event, listener). Called for sync and async errors.
+     */
+    error?: ((error: ListenerErrorArgs) => void) | null;
+}
+export interface Eventful {
+    /**
+     * Subscribe to an event. Returns an unsubscribe function.
+     */
+    on(event: EventName, listener: Listener): () => boolean;
+    /**
+     * Subscribe once to an event. Returns an unsubscribe function
+     * (called automatically).
+     */
+    once(event: EventName, listener: Listener): () => boolean;
+    /**
+     * Unsubscribe a previously registered listener. Returns true if removed.
+     */
+    off(event: EventName, listener: Listener): boolean;
+    /**
+     * Emit an event synchronously. All listeners run in order.
+     * Errors are isolated (ignored) unless `strict` is true.
+     */
+    emit(event: EventName, ...args: any[]): void;
+    /**
+     * Emit an event and wait for all listeners (run in parallel).
+     * Errors are isolated (ignored) unless `strict` is true.
+     */
+    emitAsync(event: EventName, ...args: any[]): Promise<void>;
+    /**
+     * Returns true if there is at least one listener for the event.
+     */
+    has(event: EventName): boolean;
+}
