@@ -1,6 +1,6 @@
 {
   "name": "asljs-eventful",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Lightweight event helper adding on/off/emit to any object.",
   "keywords": [
     "events",

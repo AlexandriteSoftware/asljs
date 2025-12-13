@@ -37,17 +37,50 @@ export class ListenerError
   }
 }
 
-export type TraceFn = {
-  (
-    action: 'new',
-    args: { object: object | Function }
-  ): void;
+type TraceAction =
+  'new'
+  | 'on'
+  | 'off'
+  | 'emit'
+  | 'emitAsync';
 
-  (
-    action: string,
-    args: any
-  ): void;
+type TracePayloadByAction = {
+  new: {
+    object: object | Function;
+  };
+
+  on: {
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+  };
+
+  off: {
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+  };
+
+  emit: {
+    object: object | Function;
+    listeners: Function[];
+    event: EventName;
+    args: any[];
+  };
+
+  emitAsync: {
+    object: object | Function;
+    listeners: Function[];
+    event: EventName;
+    args: any[];
+  };
 };
+
+export type TraceFn =
+  <A extends TraceAction>(
+    action: A,
+    args: TracePayloadByAction[A]
+  ) => void;
 
 export type EventfulFn =
   (<T extends object | Function | undefined>(

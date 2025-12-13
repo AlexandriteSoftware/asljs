@@ -11,13 +11,19 @@ const eventfulImpl = (object = Object.create(null), options = {}) => {
         }
     }
     const { strict = false, trace = null, error = null } = options;
-    const traceHook = isFunction(trace)
+    const traceHook = typeof trace === 'function'
         ? trace
         : null;
-    const errorHook = isFunction(error)
+    const errorHook = typeof error === 'function'
         ? error
         : null;
     const enhanced = object !== eventful;
+    const traceFn = (action, payload) => {
+        traceHook?.(action, payload);
+        if (enhanced) {
+            eventful.emit(action, payload);
+        }
+    };
     traceFn('new', { object });
     const emptySet = new Set();
     const map = new Map();
@@ -31,12 +37,6 @@ const eventfulImpl = (object = Object.create(null), options = {}) => {
         emitAsync: Object.assign({ value: emitAsync }, properties),
         has: Object.assign({ value: has }, properties) });
     return object;
-    function traceFn(action, payload) {
-        traceHook?.(action, payload);
-        if (enhanced) {
-            eventful.emit(action, payload);
-        }
-    }
     function add(event, listener) {
         let listeners = map.get(event);
         if (!listeners) {

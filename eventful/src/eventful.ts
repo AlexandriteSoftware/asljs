@@ -6,6 +6,7 @@ import type {
   EventfulFn,
   EventfulOptions,
   ListenerErrorArgs,
+  TraceFn,
 } from './types.js';
 
 import {
@@ -41,18 +42,32 @@ const eventfulImpl =
       error = null
     } = options;
 
-    const traceHook =
-      isFunction(trace)
+    const traceHook: TraceFn | null =
+      typeof trace === 'function'
         ? trace
         : null;
 
-    const errorHook =
-      isFunction(error)
+    const errorHook: ((error: ListenerErrorArgs) => void) | null =
+      typeof error === 'function'
         ? error
         : null;
 
     const enhanced =
       (object as any) !== eventful;
+
+    const traceFn: TraceFn =
+      (action: any, payload: any) => 
+      {
+        traceHook?.(
+          action,
+          payload);
+
+        if (enhanced) {
+          eventful.emit(
+            action,
+            payload);
+        }
+      };
 
     traceFn(
       'new',
@@ -79,21 +94,6 @@ const eventfulImpl =
         has: Object.assign({ value: has }, properties) });
 
     return object as any;
-
-    function traceFn(
-      action: string,
-      payload: any)
-    {
-      traceHook?.(
-        action,
-        payload);
-
-      if (enhanced) {
-        eventful.emit(
-          action,
-          payload);
-      }
-    }
 
     function add(
       event: EventName,

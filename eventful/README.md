@@ -32,7 +32,7 @@ const obj =
   eventful(
     { },
     { trace:
-        (object, action, payload) => {
+        (action, payload) => {
           console.log(
             `Action: ${action}`,
             payload);
@@ -40,10 +40,10 @@ const obj =
 
 // Tracing actions include:
 // - 'new' on creation: payload { object }
-// - 'on' when subscribing: payload { event, listener }
-// - 'off' when unsubscribing: payload { event, listener }
-// - 'emit' for sync emit: payload { event, args, listeners }
-// - 'emitAsync' for async emit: payload { event, args, listeners }
+// - 'on' when subscribing: payload { object, event, listener }
+// - 'off' when unsubscribing: payload { object, event, listener }
+// - 'emit' for sync emit: payload { object, event, args, listeners }
+// - 'emitAsync' for async emit: payload { object, event, args, listeners }
 ```
 
 Custom error handler for listener errors:
@@ -53,10 +53,10 @@ const obj =
   eventful(
     { },
     { error:
-        (err, { object, event, listener }) => {
+        ({ error, object, event, listener }) => {
           console.error(
             `Error in listener for event "${event}"`,
-            err);
+            error);
         } });
 ```
 
@@ -69,21 +69,31 @@ const obj =
     { strict: true });
 ```
 
-Change the error handler or trace function globally:
+### Global Events
+
+`eventful` is also a global emitter. When you create an enhanced object via `eventful(target, options)`, its lifecycle and actions are traced via the per-instance `trace` hook and also emitted as global events on `eventful`.
 
 ```js
-eventful.options.trace =
-  (object, action, payload) =>
-    console.log(
-      `Action: ${action}`,
-      payload);
+const offNew =
+  eventful.on(
+    'new',
+    ({ object }) => {
+      console.log('created', object);
+    });
 
-eventful.options.error =
-  (err, { object, event, listener }) =>
-    console.error(
-      `Error in listener for event "${event}"`,
-      err);
+const offError =
+  eventful.on(
+    'error',
+    ({ error, object, event }) => {
+      console.error('listener error', event, error);
+    });
+
+// Later
+offNew();
+offError();
 ```
+
+Note: if a **global** `eventful.on('error', ...)` listener throws, `eventful` throws a `ListenerError` (an `Error` subclass with fields `{ error, object, event, listener }`) to avoid an infinite error loop.
 
 ## API
 
@@ -94,12 +104,8 @@ a new empty object is created.
 
 - `target` (Object): The object to be enhanced with event capabilities.
 - `options` (Object): Configuration options.
-  - `error` (Function | null): Custom error handler for listener errors
-    `(err, { object, event, listener })`. Defaults to `null`. Only called when
-    provided.
-  - `trace` (Function | null): Custom trace hook `(object, action, payload)`
-    for `new`, `on`, `off`, `emit`, `emitAsync`. Defaults to `null`. Only
-    called when provided.
+  - `error` (Function | null): Optional error hook called with `{ error, object, event, listener }`.
+  - `trace` (Function | null): Optional trace hook called with `(action, payload)`.
   - `strict` (Boolean): If true, propagates listener errors; otherwise they
     are isolated. Defaults to false.
 
@@ -107,7 +113,7 @@ a new empty object is created.
 
 Registers a listener for the specified event.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 - `listener` (Function): The callback function to be invoked when the event is
   emitted.
 
@@ -118,7 +124,7 @@ Returns a function to remove the listener.
 Registers a one-time listener for the specified event. The listener is removed
 after its first invocation.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 - `listener` (Function): The callback function to be invoked when the event is
   emitted.
 
@@ -139,7 +145,7 @@ obj.emit('tick', 2); // no-op; already unsubscribed
 
 Removes a listener for the specified event.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 - `listener` (Function): The callback function to be removed.
 
 ### emit(event, ...args)
@@ -147,7 +153,7 @@ Removes a listener for the specified event.
 Emits the specified event, invoking all registered listeners with the provided
 arguments.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
 
 ### emitAsync(event, ...args)
@@ -156,7 +162,7 @@ Emits the specified event asynchronously, running listeners in parallel.
 In non-strict mode, all listeners run and rejections are isolated; in strict
 mode, the first rejection causes the returned promise to reject.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
 
 Returns a Promise that resolves when all listeners have been invoked.
@@ -165,7 +171,7 @@ Returns a Promise that resolves when all listeners have been invoked.
 
 Checks if there are any listeners registered for the specified event.
 
-- `event` (String): The event name.
+- `event` (String | Symbol): The event name.
 
 Returns `true` if there are listeners, otherwise `false`.
 

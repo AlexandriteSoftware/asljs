@@ -13,12 +13,35 @@ export declare class ListenerError extends Error implements ListenerErrorArgs {
     listener: Function;
     constructor(message: string, error: any, object: object | Function, event: EventName, listener: Function);
 }
-export type TraceFn = {
-    (action: 'new', args: {
+type TraceAction = 'new' | 'on' | 'off' | 'emit' | 'emitAsync';
+type TracePayloadByAction = {
+    new: {
         object: object | Function;
-    }): void;
-    (action: string, args: any): void;
+    };
+    on: {
+        object: object | Function;
+        event: EventName;
+        listener: Function;
+    };
+    off: {
+        object: object | Function;
+        event: EventName;
+        listener: Function;
+    };
+    emit: {
+        object: object | Function;
+        listeners: Function[];
+        event: EventName;
+        args: any[];
+    };
+    emitAsync: {
+        object: object | Function;
+        listeners: Function[];
+        event: EventName;
+        args: any[];
+    };
 };
+export type TraceFn = <A extends TraceAction>(action: A, args: TracePayloadByAction[A]) => void;
 export type EventfulFn = (<T extends object | Function | undefined>(object?: T, options?: EventfulOptions) => (T extends undefined ? {} : T) & Eventful) & Eventful;
 export interface EventfulOptions {
     /**
@@ -67,3 +90,4 @@ export interface Eventful {
      */
     has(event: EventName): boolean;
 }
+export {};
