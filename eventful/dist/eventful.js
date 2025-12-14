@@ -73,9 +73,9 @@ const eventfulImpl = (object = Object.create(null), options = {}) => {
             listener });
         add(event, listener);
         let active = true;
-        return () => (active
+        return () => active
             ? ((active = false), remove(event, listener))
-            : false);
+            : false;
     }
     function once(event, listener) {
         eventTypeGuard(event);

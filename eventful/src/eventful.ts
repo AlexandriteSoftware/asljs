@@ -56,7 +56,8 @@ const eventfulImpl =
       (object as any) !== eventful;
 
     const traceFn: TraceFn =
-      (action: any, payload: any) => 
+      (action: any,
+        payload: any) =>
       {
         traceHook?.(
           action,
@@ -159,7 +160,7 @@ const eventfulImpl =
         errorArgs);
     }
 
-    function on (
+    function on(
       event: EventName,
       listener: Function)
     {
@@ -177,9 +178,10 @@ const eventfulImpl =
         listener);
 
       let active = true;
-      return () => (active
-        ? ((active = false), remove(event, listener))
-        : false);
+      return () =>
+        active
+          ? ((active = false), remove(event, listener))
+          : false;
     }
 
     function once(
