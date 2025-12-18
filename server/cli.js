@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { startServer } from './server/server.js';
+import { startServer } from './src/server.js';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
