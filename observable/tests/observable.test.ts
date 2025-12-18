@@ -1,7 +1,7 @@
+import { eventful } from 'asljs-eventful';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { observable } from '../observable.js';
-import { trace } from 'node:console';
 
 test(
   'observable number',
@@ -9,7 +9,7 @@ test(
     const obj =
       observable(42);
 
-    let newValue;
+    let newValue: number | undefined;
 
     obj.on(
       'set',
@@ -24,9 +24,9 @@ test(
   'observable <empty>',
   async () => {
     const obj =
-      observable();
+      observable<number>();
 
-    let newValue;
+    let newValue: number | undefined;
 
     obj.on(
       'set',
@@ -48,7 +48,9 @@ test(
     const obj =
       observable(
         { a: 1 },
-        { eventfulOptions: { trace: tracer.trace }});
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
     obj.a = 2;
 
@@ -70,7 +72,9 @@ test(
     const obj =
       observable(
         { a: 1 },
-        { eventfulOptions: { trace: tracer.trace }});
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
     Object.defineProperty(
       obj,
@@ -111,11 +115,11 @@ test(
     const obj =
       observable(
         { a: 1 },
-        { eventfulOptions: { trace: tracer.trace }});
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
-    delete obj.a;
-
-    console.log(tracer.getFirstEventParameters('delete'));
+    delete (obj as any).a;
 
     const eventParameters =
       { property: 'a',
@@ -138,8 +142,10 @@ test(
 
     const arr =
       observable(
-        [1, 2],
-        { eventfulOptions: { trace: tracer.trace } });
+        [ 1, 2 ],
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
     arr[1] = 42;
 
@@ -150,8 +156,7 @@ test(
     assert.deepEqual(
       tracer.getFirstEventParameters('set:1'),
       { property: '1', value: 42, previous: 2 });
-  }
-);
+  });
 
 test(
   'observable array length set event',
@@ -161,16 +166,17 @@ test(
 
     const arr =
       observable(
-        [1, 2],
-        { eventfulOptions: { trace: tracer.trace } });
+        [ 1, 2 ],
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
     arr.length = 1;
 
     assert.deepEqual(
       tracer.getFirstEventParameters('set:length'),
       { property: 'length', value: 1, previous: 2 });
-  }
-);
+  });
 
 test(
   'observable array keyed delete event',
@@ -180,48 +186,56 @@ test(
 
     const arr =
       observable(
-        [10, 20],
-        { eventfulOptions: { trace: tracer.trace } });
+        [ 10, 20 ],
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
 
     delete arr[1];
 
     assert.deepEqual(
       tracer.getFirstEventParameters('delete:1'),
       { property: '1', previous: 20 });
-  }
-);
+  });
 
 function createTracer() {
-  const traces =
-    [];
+  const traces: Array<{ object: any; action: any; payload: any }> = [];
 
   return {
     trace:
-      (object, action, payload) =>
+      (object: any, action: any, payload: any) =>
         traces.push(
           { object,
             action,
             payload }),
+
     clear:
       () => traces.splice(0, traces.length),
+
     getTraces:
       () => traces,
+
     getTracesByAction:
-      action =>
+      (action: any) =>
         traces.filter(
           t => t.action === action),
+
     getFirstTraceByAction:
-      action =>
+      (action: any) =>
         traces.find(
           t => t.action === action),
+
     getFirstEventParameters:
-      event =>
-        traces
-          .find(
+      (event: any) => {
+        const found =
+          traces.find(
             t =>
               t.action === 'emit'
-              && t.payload?.event === event)
-          .payload
-          .args[0]
+              && t.payload?.event === event);
+
+        assert.ok(found, `No emit trace found for event ${String(event)}`);
+
+        return found.payload.args[0];
+      }
   };
 }

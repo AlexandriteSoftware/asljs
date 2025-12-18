@@ -5,11 +5,8 @@
     "typescript",
     "typescriptreact"
   ],
-
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-
-  // ESLint is acting as the formatter (Prettier removed)
   "editor.formatOnSave": false
 }

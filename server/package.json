@@ -1,0 +1,30 @@
+{
+  "name": "asljs-server",
+  "version": "0.1.0",
+  "description": "A lightweight development-time static files server. Supports live-reload. Provides filesystem read-write API.",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": {
+    "asljs-server": "./cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --watch --test",
+    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  },
+  "keywords": [
+    "server",
+    "development",
+    "live-reload"
+  ],
+  "author": "Alex Netkachov <alex.netkachov@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  }
+}

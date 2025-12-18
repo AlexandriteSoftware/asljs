@@ -3,29 +3,45 @@ applyTo: '**'
 ---
 
 - **Naming & Scope:**
-  - Package name begins with `asljs-` and aligns with its domain (e.g., observable, machine, eventful, money).
-  - Keep the public API surface minimal, consistent, and orthogonal; avoid leaking internal structures.
+  - Package name begins with `asljs-` and aligns with its domain (e.g.,
+    observable, machine, eventful, money).
+  - Keep the public API surface minimal, consistent, and orthogonal; avoid
+    leaking internal structures.
 - **Module & Export Style:**
-  - Prefer ESM `type: module` and `export { ... }` in source; avoid CommonJS `module.exports`. Use clear, consistent export shapes (named or default) and reflect them in docs and typings.
-  - Ensure runtime, types, and README agree on how consumers import and use the package.
+  - Prefer ESM `type: module` and `export { ... }` in source; avoid CommonJS
+    `module.exports`. Use clear, consistent export shapes (named or default) and
+    reflect them in docs and typings.
+  - Ensure runtime, types, and README agree on how consumers import and use
+    the package.
 - **Options & Hooks:**
-  - Options should be explicit, optional, and default-safe. Hooks (like tracing or error handling) should be opt-in and invoked conditionally.
-  - Hook payloads must be stable, serializable, and avoid exposing mutable internals.
+  - Options should be explicit, optional, and default-safe. Hooks (like tracing
+    or error handling) should be opt-in and invoked conditionally.
+  - Hook payloads must be stable, serializable, and avoid exposing mutable
+    internals.
 - **Error Handling Philosophy:**
-  - Provide a clear strict vs non-strict behavior when relevant. In non-strict flows, isolate errors while still surfacing them via hooks or logs.
+  - Provide a clear strict vs non-strict behavior when relevant. In non-strict
+    flows, isolate errors while still surfacing them via hooks or logs.
   - In strict flows, fail fast and document the contract.
 - **State & Internals:**
-  - Use appropriate data structures (e.g., `Map`, `Set`) for internal state. Do not expose these directly; return safe views or booleans/counters.
-  - Ensure idempotent operations (e.g., unsubscribe closures) return consistent results.
+  - Use appropriate data structures (e.g., `Map`, `Set`) for internal state. Do
+    not expose these directly; return safe views or booleans/counters.
+  - Ensure idempotent operations (e.g., unsubscribe closures) return consistent
+    results.
 - **Guardrails:**
-  - Protect against name collisions and invalid inputs; validate function/object arguments with clear TypeErrors.
-  - Keep method/property descriptors non-enumerable unless intended for public iteration.
+  - Protect against name collisions and invalid inputs; validate function/object
+    arguments with clear TypeErrors.
+  - Keep method/property descriptors non-enumerable unless intended for public
+    iteration.
 - **Typings:**
-  - `.d.ts` must reflect the runtime accurately (return types, option shapes, global vs per-instance configuration).
-  - Avoid overly specific types tied to one package; keep them generic and reusable.
+  - `.d.ts` must reflect the runtime accurately (return types, option shapes,
+    global vs per-instance configuration).
+  - Avoid overly specific types tied to one package; keep them generic and
+    reusable.
 - **Documentation:**
-  - Provide minimal, accurate examples consistent with exports and options. Document strict/non-strict behaviors, hooks, and return values.
+  - Provide minimal, accurate examples consistent with exports and options.
+    Document strict/non-strict behaviors, hooks, and return values.
   - Keep README, types, and runtime synchronized whenever contracts change.
 - **Testing:**
-  - Use Node’s test runner or equivalent. Cover happy paths, error paths (strict/non-strict), and surface-level API contracts.
+  - Use Node’s test runner or equivalent. Cover happy paths, error paths
+    (strict/non-strict), and surface-level API contracts.
   - Add tests when changing behavior; prefer small, fast, deterministic cases.

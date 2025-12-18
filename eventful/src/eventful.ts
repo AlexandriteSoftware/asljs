@@ -1,4 +1,6 @@
-import { ListenerError } from './types.js';
+import {
+  ListenerError
+} from './types.js';
 
 import type {
   EventName,

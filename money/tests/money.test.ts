@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
 import { money } from '../money.js';
 
 test(
   'parse()',
   () => {
-    function assertParse(input, expectedMinorOrNull) {
+    function assertParse(input: any, expectedMinorOrNull: number | null) {
       const actual = money.parse(input);
+
       if (expectedMinorOrNull === null) {
         assert.equal(actual, null);
       } else {
@@ -32,7 +34,7 @@ test(
 test(
   'toString prints full format as expected default',
   () => {
-    function assertFormat(value) {
+    function assertFormat(value: string) {
       const actual = money.fromString(value).toString('f');
       assert.equal(actual, value);
     }
@@ -64,6 +66,11 @@ test(
 test(
   'toString prints compact format as expected',
   () => {
+    function assertFormat(value: string) {
+      const actual = money.fromString(value).toString('c');
+      assert.equal(actual, value);
+    }
+
     assert.equal(
       money.fromNumber(1).toString('c'),
       '1');
@@ -84,7 +91,7 @@ test(
 test(
   'fromString()',
   () => {
-    function assertMinor(value, expected) {
+    function assertMinor(value: string, expected: number) {
       const actual = money.fromString(value).value;
       assert.equal(actual, expected);
     }
@@ -106,7 +113,7 @@ test(
 test(
   'fromNumber()',
   () => {
-    function assertMinor(value, expected) {
+    function assertMinor(value: number, expected: number) {
       const actual = money.fromNumber(value).value;
       assert.equal(actual, expected);
     }
@@ -149,7 +156,6 @@ test(
     const usd = money.fromMinor(12345, 'USD'); // $123.45
     const eur = usd.convert(0.9, 'EUR');
     assert.equal(eur.currency, 'EUR');
-    // truncation at cents
     assert.equal(eur.value, Math.trunc((12345 / 100) * 0.9 * 100));
 
     assert.throws(() => usd.convert(-1, 'EUR'), /rate must be a positive finite number/);
@@ -159,7 +165,7 @@ test(
 test(
   'fromMajor()',
   () => {
-    function assertMinor(value, expected) {
+    function assertMinor(value: number, expected: number) {
       const actual = money.fromMajor(value).value;
       assert.equal(actual, expected);
     }
@@ -175,7 +181,7 @@ test(
 test(
   'distribute()',
   () => {
-    function assertDist(value, count, expected) {
+    function assertDist(value: string, count: number, expected: string) {
       const actual =
         money.fromString(value)
           .distribute(count)

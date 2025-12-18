@@ -1,17 +1,3 @@
-import type { EventName } from './types.js';
-
-export function eventTypeGuard(
-  value: any
-) : asserts value is EventName
-{
-  if (typeof value !== 'string'
-    && typeof value !== 'symbol')
-  {
-    throw new TypeError(
-      'Expect event to be a string or symbol.');
-  }
-}
-
 export function isFunction(
   value: any
 ) : value is Function 
