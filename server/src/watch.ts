@@ -1,14 +1,15 @@
 import fs from 'node:fs';
 
 export function watchStaticTree(
-  rootDir,
-  onChange)
+    rootDir: string,
+    onChange: () => void
+  ): () => void
 {
   // Best-effort cross-platform watcher.
   // On Windows/macOS, recursive fs.watch works.
   // On Linux, recursive is not supported, but this package is intended for dev-time usage.
 
-  let watcher;
+  let watcher: fs.FSWatcher;
 
   try {
     watcher =

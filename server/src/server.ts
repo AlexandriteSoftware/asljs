@@ -1,22 +1,33 @@
-/**
- * Simple static server + hot-reload (SSE) + JSON read/write API.
- *
- * Usage (direct): node server.js
- */
-
 import http from 'node:http';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { URL, pathToFileURL } from 'node:url';
+import {
+    URL,
+    pathToFileURL
+  } from 'node:url';
+import type {
+    IncomingMessage,
+    Server
+  } from 'node:http';
+import type {
+    ServerResponse
+  } from 'node:http';
 import * as send from './send.js';
-import { watchStaticTree } from './watch.js';
+import {
+    watchStaticTree
+  } from './watch.js';
 
-const isPathInside =
-  (child, parent) => {
-    const resolved = path.resolve(child);
-    return resolved === parent
-      || resolved.startsWith(parent + path.sep);
-  };
+function isPathInside(
+    child: string,
+    parent: string
+  ) : boolean
+{
+  const resolved =
+    path.resolve(child);
+
+  return resolved === parent
+    || resolved.startsWith(parent + path.sep);
+}
 
 // inject minimal client into served HTML
 const RELOAD_SNIPPET =
@@ -27,122 +38,31 @@ try {
 } catch (_) {}
 </script>`;
 
-// ---------- JSON API
-
 const safeJsonName =
-  (name) =>
+  (name: unknown) =>
     typeof name === 'string'
       && /^[a-zA-Z0-9._/-]+$/.test(name)
       ? name
       : null;
 
-const jsonFilePath =
-  (name) => {
-    const base =
-      safeJsonName(name);
-
-    if (!base)
-      return null;
-
-    const file =
-      base.endsWith('.json')
-        ? base
-        : (base + '.json');
-
-    const full =
-      path.join(FILES_DIR, file);
-
-    return isPathInside(full, FILES_DIR)
-      ? full
-      : null;
-  };
-
-async function handleJsonApi(
-  request,
-  response,
-  url)
-{
-  // FILES_DIR is injected via closure inside startServer
-  await fsp.mkdir(
-    FILES_DIR,
-    { recursive: true });
-
-  const name =
-    url.searchParams.get('file');
-
-  const file =
-    jsonFilePath(name);
-
-  if (!file) {
-    return send.badRequest(
-      response,
-      'Invalid "file" name. Allowed: [a-zA-Z0-9._-] and optional .json');
-  }
-
-  if (request.method === 'GET') {
-    try {
-      return send.json(
-        response,
-        200,
-        await fsp.readFile(file, 'utf8'));
-    } catch (e) {
-      if (e.code === 'ENOENT')
-        return send.notFound(response, 'JSON file not found');
-      throw e;
-    }
-  }
-
-  if (request.method === 'PUT'
-    || request.method === 'POST')
-  {
-    try {
-      // 1MB limit
-      const body =
-        await readBody(request, 1_000_000);
-
-      let parsed;
-      try {
-        parsed = JSON.parse(body);
-      } catch {
-        return send.badRequest(
-          response,
-          'Invalid JSON');
-      }
-
-      await fsp.writeFile(
-        file,
-        JSON.stringify(parsed, null, 2) + '\n',
-        'utf8');
-
-      return send.api(
-        response,
-        { file: path.basename(file) });
-    } catch (error) {
-      return send.apiError(
-        response,
-        error);
-    }
-  }
-
-  return send.methodNotAllowed(
-    response,
-    'GET, PUT, POST');
-}
-
 function readBody(
-  request,
-  limit)
+  request: IncomingMessage,
+  limit: number)
 {
-  return new Promise(
+  return new Promise<string>(
     (resolve, reject) => {
       let size = 0;
 
-      const chunks = [];
+      const chunks: Buffer[] = [];
 
       request.on(
         'data',
         chunk => {
-          size += chunk.length;
+          const buffer = Buffer.isBuffer(chunk)
+            ? chunk
+            : Buffer.from(chunk);
+
+          size += buffer.length;
 
           if (size > limit) {
             reject(
@@ -153,7 +73,7 @@ function readBody(
             return;
           }
 
-          chunks.push(chunk);
+          chunks.push(buffer);
         });
 
       request.on(
@@ -169,98 +89,17 @@ function readBody(
     });
 }
 
-async function serveStatic(
-  request,
-  response,
-  url)
-{
-  let pathname =
-    decodeURIComponent(url.pathname);
+export type ServerLogger = {
+  log: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+};
 
-  // SSE endpoint
-  if (pathname === '/__events') {
-    return serveSSE(
-      request,
-      response);
-  }
-
-  // JSON API: /api/json?file=name[.json]
-  if (pathname === '/api/json') {
-    return handleJsonApi(
-      request,
-      response,
-      url);
-  }
-
-  // Resolve file path
-  let filePath =
-    path.normalize(
-      path.join(
-        FILES_DIR,
-        pathname));
-
-  if (!isPathInside(
-    filePath,
-    FILES_DIR))
-  {
-    return send.forbidden(response);
-  }
-
-  // If path is dir, try index.html
-  let stat;
-  try {
-    stat =
-      await fsp.stat(filePath);
-
-    if (stat.isDirectory()) {
-      filePath =
-        path.join(
-          filePath,
-          'index.html');
-
-      stat =
-        await fsp.stat(filePath);
-    }
-  } catch {
-    return send.notFound(response);
-  }
-
-  const ext =
-    path.extname(filePath)
-      .toLowerCase();
-
-  // HTML: inject hot-reload snippet
-  if (ext === '.html'
-      && request.method === 'GET')
-  {
-    try {
-      const html =
-        await fsp.readFile(filePath, 'utf8');
-
-      const htmlWithReload =
-        html.includes('/__events')
-          ? html
-          : html.replace(
-            /<\/body\s*>/i,
-            m => `${RELOAD_SNIPPET}\n${m}`) +
-          (!html.match(/<\/body\s*>/i)
-            ? `\n${RELOAD_SNIPPET}`
-            : '');
-
-      return send.html(
-        response,
-        htmlWithReload);
-    } catch (error) {
-      return send.error(
-        response,
-        error);
-    }
-  }
-
-  return send.file(
-    response,
-    filePath);
-}
+export type StartServerOptions = {
+  root?: string;
+  port?: number;
+  host?: string;
+  logger?: ServerLogger;
+};
 
 const options =
   { 'access-control-allow-origin': '*',
@@ -273,7 +112,7 @@ export function startServer(
     port = 3000,
     host = 'localhost',
     logger = console
-  } = {})
+  }: StartServerOptions = {})
 {
   const FILES_DIR =
     path.resolve(root);
@@ -281,7 +120,7 @@ export function startServer(
   // ---------- hot reload (SSE)
 
   const sseClients =
-    new Set();
+    new Set<ServerResponse>();
 
   const sseHeaders =
     { 'content-type': 'text/event-stream',
@@ -290,7 +129,7 @@ export function startServer(
       'x-accel-buffering': 'no' };
 
   const serveSSE =
-    (req, res) => {
+    (req: IncomingMessage, res: ServerResponse) => {
       res.writeHead(200, sseHeaders);
       res.write(': connected\n\n'); // comment = keep-alive
 
@@ -337,7 +176,7 @@ export function startServer(
   // ---------- JSON API helpers
 
   const jsonFilePath =
-    (name) => {
+    (name: string | null) => {
       const base =
         safeJsonName(name);
 
@@ -358,9 +197,9 @@ export function startServer(
     };
 
   async function handleJsonApi(
-    request,
-    response,
-    url)
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL)
   {
     await fsp.mkdir(
       FILES_DIR,
@@ -385,7 +224,7 @@ export function startServer(
           200,
           await fsp.readFile(file, 'utf8'));
       } catch (e) {
-        if (e.code === 'ENOENT')
+        if (e && typeof e === 'object' && 'code' in e && (e as { code: unknown }).code === 'ENOENT')
           return send.notFound(response, 'JSON file not found');
         throw e;
       }
@@ -399,7 +238,7 @@ export function startServer(
         const body =
           await readBody(request, 1_000_000);
 
-        let parsed;
+        let parsed: unknown;
         try {
           parsed = JSON.parse(body);
         } catch {
@@ -429,11 +268,11 @@ export function startServer(
   }
 
   async function serveStatic(
-    request,
-    response,
-    url)
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL)
   {
-    let pathname =
+    const pathname =
       decodeURIComponent(url.pathname);
 
     // SSE endpoint
@@ -458,17 +297,14 @@ export function startServer(
           FILES_DIR,
           pathname));
 
-    if (!isPathInside(
-      filePath,
-      FILES_DIR))
-    {
-      return send.forbidden(response);
+    if (!isPathInside(filePath, FILES_DIR)) {
+      return send.forbidden(
+        response);
     }
 
     // If path is dir, try index.html
-    let stat;
     try {
-      stat =
+      const stat =
         await fsp.stat(filePath);
 
       if (stat.isDirectory()) {
@@ -477,8 +313,7 @@ export function startServer(
             filePath,
             'index.html');
 
-        stat =
-          await fsp.stat(filePath);
+        await fsp.stat(filePath);
       }
     } catch {
       return send.notFound(response);
@@ -500,8 +335,8 @@ export function startServer(
           html.includes('/__events')
             ? html
             : html.replace(
-              /<\/body\s*>/i,
-              m => `${RELOAD_SNIPPET}\n${m}`) +
+                /<\/body\s*>/i,
+                m => `${RELOAD_SNIPPET}\n${m}`) +
             (!html.match(/<\/body\s*>/i)
               ? `\n${RELOAD_SNIPPET}`
               : '');
@@ -523,7 +358,10 @@ export function startServer(
 
   const server =
     http.createServer(
-      (request, response) => {
+      (
+        request: IncomingMessage,
+        response: ServerResponse
+      ) => {
         if (request.method === 'OPTIONS') {
           return send.options(
             response,
@@ -536,7 +374,7 @@ export function startServer(
           request,
           response,
           new URL(
-            request.url,
+            request.url || '/',
             `http://${request.headers.host || `${host}:${port}`}`))
           .catch(
             error => {
@@ -556,7 +394,7 @@ export function startServer(
       logger.log(`URL:   http://${host}:${port}`);
     });
 
-  return server;
+  return server as Server;
 }
 
 const entryFile =

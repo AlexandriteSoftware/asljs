@@ -33,8 +33,6 @@ applyTo: '**'
   - Keep method/property descriptors non-enumerable unless intended for public
     iteration.
 - **Typings:**
-  - `.d.ts` must reflect the runtime accurately (return types, option shapes,
-    global vs per-instance configuration).
   - Avoid overly specific types tied to one package; keep them generic and
     reusable.
 - **Documentation:**
@@ -42,6 +40,32 @@ applyTo: '**'
     Document strict/non-strict behaviors, hooks, and return values.
   - Keep README, types, and runtime synchronized whenever contracts change.
 - **Testing:**
-  - Use Node’s test runner or equivalent. Cover happy paths, error paths
-    (strict/non-strict), and surface-level API contracts.
+  - Use Node’s test runner. Cover happy paths, error paths, and surface-level
+    API contracts.
   - Add tests when changing behavior; prefer small, fast, deterministic cases.
+- **Code style**
+  - Use 2-space indentation.
+  - Always use semicolons.
+  - Prefer single quotes for strings.
+  - Prefer multi-line formatting over long lines; wrap at logical boundaries.
+  - Prefer this assignment wrapping pattern for complex expressions:
+    - `const name =` on its own line, with the initializer starting on the next
+      line indented by two spaces.
+  - Prefer this multi-line function signature style:
+    - One parameter per double-indented line, closing `)` is indented once and
+      on its own line. Example:
+      `function name(\n    param1: Type1,\n    param2: Type2\n  ) : ReturnType\n{\n  ...`
+  - Prefer this arrow-function block style:
+    - Put the opening `{` on the next line after `=>`.
+  - Prefer fluent/chained call formatting with the `.` starting each chained
+    line, e.g.:
+    - `Object.prototype\n  .hasOwnProperty\n  .call(...)`
+  - For multi-line boolean expressions, place `&&` / `||` at the start of the
+    continued line and align indentation, e.g.:
+    - `if (a\n  && b\n  && c) { ... }`
+  - For multi-line imports/exports, use the brace-block style:
+    - `import {\n    a,\n    b\n  } from '...';`
+    - `export {\n    a\n  } from '...';`
+  - Prefer trailing commas in multi-line import lists and object/array literals.
+  - Keep blank lines between logical sections (imports, helpers, main impl,
+    exports).

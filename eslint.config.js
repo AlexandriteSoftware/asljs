@@ -24,7 +24,21 @@ export default [
       '@typescript-eslint': tsPlugin
     },
     rules: {
-      indent: ['error', 2, { SwitchCase: 1 }],
+      indent: [
+        'error',
+        2,
+        {
+          SwitchCase: 1,
+          FunctionDeclaration: { parameters: 2 },
+          FunctionExpression: { parameters: 2 },
+          ArrowFunctionExpression: { parameters: 2 },
+          ignoredNodes: [
+            // TypeScript adds nodes that the core indent rule can't
+            // consistently reason about (notably return type annotations).
+            'TSTypeAnnotation'
+          ]
+        }
+      ],
       'function-call-argument-newline': ['error', 'consistent'],
       'nonblock-statement-body-position': [
         'error',

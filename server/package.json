@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "description": "A lightweight development-time static files server. Supports live-reload. Provides filesystem read-write API.",
   "type": "module",
-  "main": "src/server.js",
+  "main": "server.js",
+  "types": "server.d.ts",
   "bin": {
     "asljs-server": "./cli.js"
   },
   "scripts": {
-    "test": "node --test",
-    "test:watch": "node --watch --test",
-    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+    "build": "tsc -p .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "npm run build && node --test",
+    "test:watch": "npm run build && node --watch --test",
+    "coverage": "npm run build && NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "keywords": [
     "server",
