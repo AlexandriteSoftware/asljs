@@ -27,6 +27,12 @@
   "type": "module",
   "main": "eventful.js",
   "types": "eventful.d.ts",
+  "exports": {
+    ".": {
+      "types": "./eventful.d.ts",
+      "default": "./eventful.js"
+    }
+  },
   "directories": {
     "doc": "docs"
   },

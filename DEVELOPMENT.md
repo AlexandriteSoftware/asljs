@@ -20,11 +20,11 @@ git push
 
 | Library    | Released   | Next  |
 |------------|------------|-------|
-| eventful   | [0.1.6][1] | 0.2.0 |
-| machine    |     [-][2] | 0.1.1 |
-| money      | [0.9.2][3] | 0.2.0 |
-| observable | [0.1.4][4] | 0.2.0 |
-| server     |     [-][5] | 0.1.0 |
+| eventful   | [0.2.0][1] |   -   |
+| machine    | [0.2.0][2] |   -   |
+| money      | [0.2.0][3] |   -   |
+| observable | [0.2.0][4] |   -   |
+| server     | [0.2.0][5] |   -   |
 
 [1]: https://www.npmjs.com/package/asljs-eventful
 [2]: https://www.npmjs.com/package/asljs-machine

@@ -4,7 +4,9 @@ export {
 
 export type {
   EventName,
+  EventMap,
   Eventful,
+  EventfulFactory,
   EventfulOptions,
   Listener,
   ListenerError,

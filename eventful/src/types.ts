@@ -1,8 +1,11 @@
 export type EventName =
   string | symbol;
 
-export type Listener =
-  (...args: any[]) => any;
+export type EventMap =
+  Record<EventName, any[]>;
+
+export type Listener<Args extends any[] = any[]> =
+  (...args: Args) => any;
 
 export interface ListenerErrorArgs {
   error: any;
@@ -84,10 +87,15 @@ export type TraceFn =
     ) => void;
 
 export type EventfulFn =
-  (<T extends object | Function | undefined>(
-      object?: T,
-      options?: EventfulOptions
-    ) => (T extends undefined ? {} : T) & Eventful) & Eventful;
+  EventfulFactory & Eventful;
+
+export interface EventfulFactory {
+  <T extends object | Function | undefined,
+   E extends EventMap = EventMap>(
+    object?: T,
+    options?: EventfulOptions
+  ): (T extends undefined ? {} : T) & Eventful<E>;
+}
 
 export interface EventfulOptions {
   /**
@@ -110,13 +118,13 @@ export interface EventfulOptions {
   error?: ((error: ListenerErrorArgs) => void) | null;
 }
 
-export interface Eventful {
+export interface Eventful<E extends EventMap = EventMap> {
   /**
    * Subscribe to an event. Returns an unsubscribe function.
    */
   on(
-      event: EventName,
-      listener: Listener
+      event: keyof E & EventName,
+      listener: Listener<E[keyof E & EventName]>
     ): () => boolean;
 
   /**
@@ -124,16 +132,16 @@ export interface Eventful {
    * (called automatically).
    */
   once(
-      event: EventName,
-      listener: Listener
+      event: keyof E & EventName,
+      listener: Listener<E[keyof E & EventName]>
     ): () => boolean;
 
   /**
    * Unsubscribe a previously registered listener. Returns true if removed.
    */
   off(
-      event: EventName,
-      listener: Listener
+      event: keyof E & EventName,
+      listener: Listener<E[keyof E & EventName]>
     ): boolean;
 
   /**
@@ -141,8 +149,8 @@ export interface Eventful {
    * Errors are isolated (ignored) unless `strict` is true.
    */
   emit(
-      event: EventName,
-      ...args: any[]
+      event: keyof E & EventName,
+      ...args: E[keyof E & EventName]
     ): void;
 
   /**
@@ -150,14 +158,14 @@ export interface Eventful {
    * Errors are isolated (ignored) unless `strict` is true.
    */
   emitAsync(
-      event: EventName,
-      ...args: any[]
+      event: keyof E & EventName,
+      ...args: E[keyof E & EventName]
     ): Promise<void>;
 
   /**
    * Returns true if there is at least one listener for the event.
    */
   has(
-      event: EventName
+      event: keyof E & EventName
     ): boolean;
 }

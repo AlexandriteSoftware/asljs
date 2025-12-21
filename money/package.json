@@ -5,6 +5,12 @@
   "type": "module",
   "main": "money.js",
   "types": "money.d.ts",
+  "exports": {
+    ".": {
+      "types": "./money.d.ts",
+      "default": "./money.js"
+    }
+  },
   "files": [
     "dist/**",
     "money.js",

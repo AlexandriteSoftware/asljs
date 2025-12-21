@@ -4,6 +4,7 @@
   "description": "Compact and powerful library for structuring control flow with state machines.",
   "files": [
     "machine.js",
+    "machine.d.ts",
     "README.md",
     "LICENSE.md"
   ],
@@ -12,18 +13,26 @@
     "javascript",
     "js"
   ],
-  "homepage": "https://github.com/alex-netkachov/asljs#readme",
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
   "bugs": {
-    "url": "https://github.com/alex-netkachov/asljs/issues"
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alex-netkachov/asljs.git"
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
   },
   "license": "MIT",
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "main": "machine.js",
+  "types": "machine.d.ts",
+  "exports": {
+    ".": {
+      "types": "./machine.d.ts",
+      "default": "./machine.js"
+    }
+  },
+  "sideEffects": false,
   "directories": {
     "doc": "docs"
   },

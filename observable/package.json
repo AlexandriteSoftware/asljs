@@ -27,6 +27,12 @@
   "type": "module",
   "main": "observable.js",
   "types": "observable.d.ts",
+  "exports": {
+    ".": {
+      "types": "./observable.d.ts",
+      "default": "./observable.js"
+    }
+  },
   "directories": {
     "doc": "docs"
   },

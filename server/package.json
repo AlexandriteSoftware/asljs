@@ -1,10 +1,16 @@
 {
   "name": "asljs-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A lightweight development-time static files server. Supports live-reload. Provides filesystem read-write API.",
   "type": "module",
   "main": "server.js",
   "types": "server.d.ts",
+  "exports": {
+    ".": {
+      "types": "./server.d.ts",
+      "default": "./server.js"
+    }
+  },
   "bin": {
     "asljs-server": "./cli.js"
   },
