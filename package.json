@@ -1,8 +1,23 @@
 {
   "name": "asljs",
+  "private": true,
   "license": "MIT",
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
+  "workspaces": [
+    "eventful",
+    "machine",
+    "money",
+    "observable",
+    "server"
+  ],
+  "scripts": {
+    "build": "npm --workspaces run build --if-present",
+    "lint": "npm --workspaces run lint --if-present",
+    "lint:fix": "npm --workspaces run lint:fix --if-present",
+    "test": "npm --workspaces run test --if-present",
+    "test:watch": "npm --workspaces run test:watch --if-present"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/node": "^24.5.2",

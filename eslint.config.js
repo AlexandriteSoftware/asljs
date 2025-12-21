@@ -68,7 +68,19 @@ export default [
       ],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
-      '@typescript-eslint/no-empty-object-type': 'off'
+      '@typescript-eslint/no-empty-object-type': 'off',
+
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          // Enforce explicit return types on declared functions/methods,
+          // but avoid making every inline callback noisy.
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true
+        }
+      ]
     }
   },
   {
