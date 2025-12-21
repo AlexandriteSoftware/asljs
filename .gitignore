@@ -1,3 +1,4 @@
+.npmrc
 .tests
 dist
 node_modules
