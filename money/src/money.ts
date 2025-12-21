@@ -38,12 +38,21 @@ function currencyTypeGuard(value: unknown): asserts value is Currency {
   }
 }
 
-function currencyGuard(a: Currency, b: Currency) {
+function currencyGuard(
+    a: Currency,
+    b: Currency
+  ): void
+{
   if (a !== b)
-    throw new TypeError('currency mismatch');
+    throw new TypeError(
+      'currency mismatch');
 }
 
-function toString(this: Money, format: string = 'f') {
+function toString(
+    this: Money,
+    format: string = 'f'
+  ): string
+{
   if (format === 'c')
     return String(this.value / 100);
 
@@ -84,11 +93,18 @@ function toString(this: Money, format: string = 'f') {
     : amountText;
 }
 
-function toNumber(this: Money) {
+function toNumber(
+    this: Money
+  ): number
+{
   return this.value / 100;
 }
 
-function add(this: Money, ...values: Money[]) {
+function add(
+    this: Money,
+    ...values: Money[]
+  ): Money
+{
   for (const v of values)
     currencyGuard(this.currency, v.currency);
 
@@ -100,7 +116,11 @@ function add(this: Money, ...values: Money[]) {
   return money(sum, this.currency);
 }
 
-function subtract(this: Money, ...values: Money[]) {
+function subtract(
+    this: Money,
+    ...values: Money[]
+  ): Money
+{
   for (const v of values)
     currencyGuard(this.currency, v.currency);
 
@@ -112,22 +132,29 @@ function subtract(this: Money, ...values: Money[]) {
   return money(diff, this.currency);
 }
 
-function substract(this: Money, ...values: Money[]) {
-  return subtract.apply(this, values);
+function inverse(
+    this: Money
+  ): Money
+{
+  return money(
+    -this.value,
+    this.currency);
 }
 
-function inverse(this: Money) {
-  return money(-this.value, this.currency);
-}
-
-function distribute(this: Money, recipients: number | number[], unit: Money | undefined = undefined) {
+function distribute(
+    this: Money,
+    recipients: number | number[],
+    unit: Money | undefined = undefined
+  ): Money[]
+{
   unit = unit || money.minor;
 
   if (!Array.isArray(recipients)) {
     if (!Number.isSafeInteger(recipients)
       || recipients < 1)
     {
-      throw new Error('recipients should be either a non-empty array of numbers or a positive integer number');
+      throw new TypeError(
+        'recipients should be either a non-empty array of numbers or a positive integer number');
     }
 
     recipients =
@@ -137,7 +164,8 @@ function distribute(this: Money, recipients: number | number[], unit: Money | un
     if (recipients.length < 1
       || recipients.some(x => !Number.isFinite(x) || x < 0))
     {
-      throw new Error('recipient\'s share should be a positive finite number');
+      throw new TypeError(
+        'recipient\'s share should be a positive finite number');
     }
   }
 
@@ -147,7 +175,8 @@ function distribute(this: Money, recipients: number | number[], unit: Money | un
   if (unit.value === money.major.value
     && this.value % 100 !== 0)
   {
-    throw new Error('cannot distribute major units with non-zero minor part');
+    throw new Error(
+      'cannot distribute major units with non-zero minor part');
   }
 
   if (recipients.length === 1)
@@ -196,21 +225,33 @@ function distribute(this: Money, recipients: number | number[], unit: Money | un
   return amounts.map(x => money(x.value, this.currency));
 }
 
-function major(this: Money) {
+function major(
+    this: Money
+  ): number
+{
   return ((this.value - (this.value % 100)) / 100) | 0;
 }
 
-function minor(this: Money) {
+function minor(
+    this: Money
+  ): number
+{
   return this.value % 100;
 }
 
-function convert(this: Money, rate: number, currency: Currency) {
+function convert(
+    this: Money,
+    rate: number,
+    currency: Currency
+  ): Money
+{
   currencyTypeGuard(currency);
 
   if (!Number.isFinite(rate)
     || rate <= 0)
   {
-    throw new TypeError('rate must be a positive finite number');
+    throw new TypeError(
+      'rate must be a positive finite number');
   }
 
   const minorValue =
@@ -223,7 +264,6 @@ function convert(this: Money, rate: number, currency: Currency) {
 
 const MoneyProto =
   { add,
-    substract,
     subtract,
     distribute,
     major,
@@ -238,7 +278,10 @@ function isMoney(value: unknown): value is Money {
     && (value as any).__proto__ === MoneyProto;
 }
 
-function parse(value: string) {
+function parse(
+    value: string
+  ): Money | null
+{
   if (typeof value !== 'string'
     || !value.length)
   {

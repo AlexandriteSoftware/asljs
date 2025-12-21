@@ -13,7 +13,7 @@ test(
 
     obj.on(
       'set',
-      v => newValue = v.value);
+      (v: any) => newValue = v.value);
 
     obj.value = 43;
 
@@ -30,7 +30,7 @@ test(
 
     obj.on(
       'set',
-      v => newValue = v.value);
+      (v: any) => newValue = v.value);
 
     obj.value = 43;
 
@@ -198,42 +198,56 @@ test(
       { property: '1', previous: 20 });
   });
 
-function createTracer() {
-  const traces: Array<{ object: any; action: any; payload: any }> = [];
+type TraceRecord = {
+  action: string;
+  payload: any;
+};
+
+type Tracer =
+  {
+    trace:
+      (action: any, payload: any) => void;
+    clear:
+      () => void;
+    getTraces:
+      () => TraceRecord[];
+    getTracesByAction:
+      (action: string) => TraceRecord[];
+    getFirstTraceByAction:
+      (action: string) => TraceRecord | undefined;
+    getFirstEventParameters:
+      (action: string) => any;
+  };
+
+function createTracer(): Tracer {
+  const traces: TraceRecord[] = [];
 
   return {
     trace:
-      (object: any, action: any, payload: any) =>
-        traces.push(
-          { object,
-            action,
-            payload }),
-
+      (action: any, payload: any): void => {
+        traces.push({ action, payload });
+      },
     clear:
       () => traces.splice(0, traces.length),
-
     getTraces:
-      () => traces,
-
+      (): TraceRecord[] => traces,
     getTracesByAction:
-      (action: any) =>
-        traces.filter(
-          t => t.action === action),
-
+      (action: string): TraceRecord[] =>
+        traces.filter(t => t.action === action),
     getFirstTraceByAction:
-      (action: any) =>
-        traces.find(
-          t => t.action === action),
-
+      (action: string): TraceRecord | undefined =>
+        traces.find(t => t.action === action),
     getFirstEventParameters:
-      (event: any) => {
+      (event: string): any => {
         const found =
           traces.find(
             t =>
               t.action === 'emit'
               && t.payload?.event === event);
 
-        assert.ok(found, `No emit trace found for event ${String(event)}`);
+        assert.ok(
+          found,
+          `No emit trace found for event ${String(event)}`);
 
         return found.payload.args[0];
       }

@@ -39,15 +39,16 @@ try {
 </script>`;
 
 const safeJsonName =
-  (name: unknown) =>
+  (name: unknown): string | null =>
     typeof name === 'string'
       && /^[a-zA-Z0-9._/-]+$/.test(name)
       ? name
       : null;
 
 function readBody(
-  request: IncomingMessage,
-  limit: number)
+    request: IncomingMessage,
+    limit: number
+  ): Promise<string>
 {
   return new Promise<string>(
     (resolve, reject) => {
@@ -107,12 +108,13 @@ const options =
     'access-control-allow-headers': 'content-type' };
 
 export function startServer(
-  {
-    root = '.',
-    port = 3000,
-    host = 'localhost',
-    logger = console
-  }: StartServerOptions = {})
+    {
+      root = '.',
+      port = 3000,
+      host = 'localhost',
+      logger = console
+    }: StartServerOptions = {}
+  ): Server
 {
   const FILES_DIR =
     path.resolve(root);
@@ -129,7 +131,11 @@ export function startServer(
       'x-accel-buffering': 'no' };
 
   const serveSSE =
-    (req: IncomingMessage, res: ServerResponse) => {
+    (
+        req: IncomingMessage,
+        res: ServerResponse
+      ): void =>
+    {
       res.writeHead(200, sseHeaders);
       res.write(': connected\n\n'); // comment = keep-alive
 
@@ -151,7 +157,7 @@ export function startServer(
   let reloadPending = false;
 
   const broadcastReload =
-    () => {
+    (): void => {
       if (reloadPending)
         return;
 
@@ -176,7 +182,7 @@ export function startServer(
   // ---------- JSON API helpers
 
   const jsonFilePath =
-    (name: string | null) => {
+    (name: string | null): string | null => {
       const base =
         safeJsonName(name);
 
@@ -197,9 +203,10 @@ export function startServer(
     };
 
   async function handleJsonApi(
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL)
+      request: IncomingMessage,
+      response: ServerResponse,
+      url: URL
+    ): Promise<void>
   {
     await fsp.mkdir(
       FILES_DIR,
@@ -268,9 +275,10 @@ export function startServer(
   }
 
   async function serveStatic(
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL)
+      request: IncomingMessage,
+      response: ServerResponse,
+      url: URL
+    ): Promise<void>
   {
     const pathname =
       decodeURIComponent(url.pathname);

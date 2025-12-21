@@ -1,8 +1,8 @@
 import type { EventName } from './types.js';
 
 export function eventTypeGuard(
-  value: any
-) : asserts value is EventName
+    value: any
+  ) : asserts value is EventName
 {
   if (typeof value !== 'string'
     && typeof value !== 'symbol')
@@ -13,23 +13,23 @@ export function eventTypeGuard(
 }
 
 export function isFunction(
-  value: any
-) : value is Function 
+    value: any
+  ) : value is Function 
 {
   return typeof value === 'function';
 }
 
 export function isObject(
-  value: any
-) : value is object 
+    value: any
+  ) : value is object 
 {
   return typeof value === 'object'
-  && value !== null;
+    && value !== null;
 }
 
 export function functionTypeGuard(
-  value: any
-) : asserts value is Function 
+    value: any
+  ) : asserts value is Function 
 {
   if (!isFunction(value)) {
     throw new TypeError(

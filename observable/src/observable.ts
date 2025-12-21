@@ -1,17 +1,21 @@
-import { eventful } from 'asljs-eventful';
 import {
-  ObservableOptions,
-  ObservableFn
-} from './types.js';
+    eventful
+  } from 'asljs-eventful';
+
 import {
-  functionTypeGuard,
-  isFunction,
-} from './guards.js';
+    ObservableOptions,
+    ObservableFn
+  } from './types.js';
+
+import {
+    functionTypeGuard,
+    isFunction,
+  } from './guards.js';
 
 function hasOwn(
     object: object,
     key: PropertyKey
-): boolean
+  ): boolean
 {
   return Object.prototype
     .hasOwnProperty
@@ -33,9 +37,9 @@ function hasOwn(
  */
 const observableImpl =
   (
-      value: any,
-      options: ObservableOptions = {}
-  ): any =>
+        value: any,
+        options: ObservableOptions = {}
+    ): any =>
   {
     const {
       eventful: eventfulFn = eventful,
@@ -48,7 +52,11 @@ const observableImpl =
         observable.options;
 
     const makeProxy =
-        (target: any, { includeDefine }: { includeDefine: boolean }) => {
+        (
+            target: any,
+            { includeDefine }: { includeDefine: boolean }
+          ): any =>
+        {
           let proxy: any;
 
           proxy =
@@ -60,7 +68,9 @@ const observableImpl =
                       tgt,
                       property,
                       newValue,
-                      receiver) {
+                      receiver
+                    ): boolean
+                  {
                     const previous =
                       Reflect.get(
                         tgt,
@@ -75,7 +85,8 @@ const observableImpl =
                         receiver);
 
                     if (proxy
-                      && ok) {
+                      && ok)
+                    {
                       const current =
                         Reflect.get(
                           tgt,
@@ -84,11 +95,9 @@ const observableImpl =
 
                       if (!Object.is(previous, current)) {
                         const payload =
-                        {
-                          property,
-                          value: current,
-                          previous
-                        };
+                          { property,
+                            value: current,
+                            previous };
 
                         const traceFn =
                           trace
@@ -116,7 +125,9 @@ const observableImpl =
 
                   deleteProperty(
                       tgt,
-                      property) {
+                      property
+                    ): boolean
+                  {
                     const had =
                       hasOwn(tgt, property);
 
@@ -132,12 +143,11 @@ const observableImpl =
 
                     if (proxy
                       && ok
-                      && had) {
+                      && had)
+                    {
                       const payload =
-                      {
-                        property,
-                        previous
-                      };
+                        { property,
+                          previous };
 
                       const traceFn =
                         trace
@@ -165,7 +175,9 @@ const observableImpl =
                   defineProperty(
                       tgt,
                       property,
-                      descriptor) {
+                      descriptor
+                    ): boolean
+                  {
                     if (!includeDefine) {
                       return Reflect.defineProperty(
                         tgt,
@@ -186,13 +198,12 @@ const observableImpl =
                         descriptor);
 
                     if (proxy
-                      && ok) {
+                      && ok)
+                    {
                       const payload =
-                      {
-                        property,
-                        descriptor,
-                        previous
-                      };
+                        { property,
+                          descriptor,
+                          previous };
 
                       const traceFn =
                         trace
@@ -243,7 +254,8 @@ const observableImpl =
 
     // Objects
     if (value !== null
-        && typeof value === 'object') {
+        && typeof value === 'object')
+    {
       const proxy =
           makeProxy(
             value,
@@ -276,11 +288,9 @@ const observableImpl =
               value = v;
 
               const payload =
-              {
-                property: 'value',
-                value,
-                previous
-              };
+                { property: 'value',
+                  value,
+                  previous };
 
               if (isFunction(traceFn)) {
                 traceFn(

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-function printHelp() {
+function printHelp(): void {
   process.stdout.write(
     `asljs-server
 
@@ -20,7 +20,7 @@ Options:
   );
 }
 
-function readVersion() {
+function readVersion(): string | undefined {
   const here =
     path.dirname(
       fileURLToPath(
@@ -37,7 +37,8 @@ function readVersion() {
       packageJsonPath,
       'utf8');
 
-  return (JSON.parse(raw) as { version?: unknown }).version;
+  return (JSON.parse(raw) as { version?: unknown })
+    .version as string | undefined;
 }
 
 type RunOptions =

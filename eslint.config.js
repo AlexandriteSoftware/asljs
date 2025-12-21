@@ -78,11 +78,6 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
-      indent: [
-        'error',
-        2,
-        { SwitchCase: 1 }
-      ],
       'function-call-argument-newline': [
         'error',
         'consistent'
