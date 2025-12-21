@@ -1,7 +1,12 @@
 {
-  "name": "asljs",
+  "name": "asljs-machine",
   "version": "0.2.0",
   "description": "Compact and powerful library for structuring control flow with state machines.",
+  "files": [
+    "machine.js",
+    "README.md",
+    "LICENSE.md"
+  ],
   "keywords": [
     "state-machine",
     "javascript",

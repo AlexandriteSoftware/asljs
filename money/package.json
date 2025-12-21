@@ -5,11 +5,19 @@
   "type": "module",
   "main": "money.js",
   "types": "money.d.ts",
+  "files": [
+    "dist/**",
+    "money.js",
+    "money.d.ts",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "build:tests": "tsc -p tsconfig.tests.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "prepack": "npm run build",
     "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
     "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
     "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""

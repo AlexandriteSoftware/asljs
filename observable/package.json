@@ -2,6 +2,13 @@
   "name": "asljs-observable",
   "version": "0.2.0",
   "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
+  "files": [
+    "dist/**",
+    "observable.js",
+    "observable.d.ts",
+    "README.md",
+    "LICENSE.md"
+  ],
   "keywords": [
     "events",
     "javascript",
@@ -28,6 +35,7 @@
     "build:tests": "tsc -p tsconfig.tests.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "prepack": "npm run build",
     "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
     "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
     "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""

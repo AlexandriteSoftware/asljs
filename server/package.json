@@ -8,10 +8,19 @@
   "bin": {
     "asljs-server": "./cli.js"
   },
+  "files": [
+    "dist/**",
+    "server.js",
+    "server.d.ts",
+    "cli.js",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "prepack": "npm run build",
     "test": "npm run build && node --test",
     "test:watch": "npm run build && node --watch --test",
     "coverage": "npm run build && NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
