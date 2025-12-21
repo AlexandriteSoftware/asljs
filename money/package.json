@@ -1,6 +1,6 @@
 {
   "name": "asljs-money",
-  "version": "0.9.2",
+  "version": "0.2.0",
   "description": "Lightweight fixed-point Money type and helpers for financial calculations.",
   "type": "module",
   "main": "money.js",

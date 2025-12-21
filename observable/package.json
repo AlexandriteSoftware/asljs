@@ -1,6 +1,6 @@
 {
   "name": "asljs-observable",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
   "keywords": [
     "events",
@@ -33,6 +33,6 @@
     "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "dependencies": {
-    "asljs-eventful": "^0.1.6"
+    "asljs-eventful": "^0.2.0"
   }
 }
