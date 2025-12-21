@@ -9,9 +9,10 @@ import {
 } from './guards.js';
 
 function hasOwn(
-  object: object,
-  key: PropertyKey
-) {
+    object: object,
+    key: PropertyKey
+): boolean
+{
   return Object.prototype
     .hasOwnProperty
     .call(
@@ -32,8 +33,8 @@ function hasOwn(
  */
 const observableImpl =
   (
-    value: any,
-    options: ObservableOptions = {}
+      value: any,
+      options: ObservableOptions = {}
   ): any =>
   {
     const {
@@ -56,10 +57,10 @@ const observableImpl =
                 target,
                 {
                   set(
-                    tgt,
-                    property,
-                    newValue,
-                    receiver) {
+                      tgt,
+                      property,
+                      newValue,
+                      receiver) {
                     const previous =
                       Reflect.get(
                         tgt,
@@ -114,8 +115,8 @@ const observableImpl =
                   },
 
                   deleteProperty(
-                    tgt,
-                    property) {
+                      tgt,
+                      property) {
                     const had =
                       hasOwn(tgt, property);
 
@@ -162,9 +163,9 @@ const observableImpl =
                   },
 
                   defineProperty(
-                    tgt,
-                    property,
-                    descriptor) {
+                      tgt,
+                      property,
+                      descriptor) {
                     if (!includeDefine) {
                       return Reflect.defineProperty(
                         tgt,

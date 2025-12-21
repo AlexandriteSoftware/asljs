@@ -29,7 +29,7 @@ test(
   'eventful extends a function',
   () => {
     const original =
-      () => { };
+      (): void => { };
 
     const enhanced =
       eventful(original);
@@ -389,20 +389,33 @@ test(
       () => obj.emit(s));
   });
 
-function createTracer() 
-{
-  const traces: Array<{ action: string; payload: any }> = [];
+type TraceRecord = {
+  action: string;
+  payload: any;
+};
+
+type Tracer = {
+  trace: (action: any, payload: any) => void;
+  getTraces: () => TraceRecord[];
+  getTracesByAction: (action: string) => TraceRecord[];
+  getFirstTraceByAction: (action: string) => TraceRecord | undefined;
+};
+
+function createTracer(): Tracer {
+  const traces: TraceRecord[] = [];
 
   return {
-    trace: (action: any, payload: any) =>
-      traces.push({ action, payload }),
+    trace:
+      (action: any, payload: any): void => {
+        traces.push({ action, payload });
+      },
     getTraces:
-      () => traces,
+      (): TraceRecord[] => traces,
     getTracesByAction:
-      (action: string) =>
+      (action: string): TraceRecord[] =>
         traces.filter(t => t.action === action),
     getFirstTraceByAction:
-      (action: string) =>
-        traces.find(t => t.action === action)
+      (action: string): TraceRecord | undefined =>
+        traces.find(t => t.action === action),
   };
 }

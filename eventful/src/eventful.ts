@@ -59,7 +59,7 @@ const eventfulImpl =
 
     const traceFn: TraceFn =
       (action: any,
-        payload: any) =>
+          payload: any) =>
       {
         traceHook?.(
           action,
@@ -99,8 +99,9 @@ const eventfulImpl =
     return object as any;
 
     function add(
-      event: EventName,
-      listener: Function)
+        event: EventName,
+        listener: Function
+    ): void
     {
       let listeners =
         map.get(event);
@@ -115,8 +116,9 @@ const eventfulImpl =
     }
 
     function remove(
-      event: EventName,
-      listener: Function)
+        event: EventName,
+        listener: Function
+    ): boolean
     {
       const listeners =
         map.get(event);
@@ -134,9 +136,10 @@ const eventfulImpl =
     }
 
     function reportListenerError(
-      event: EventName,
-      listener: Function,
-      err: any)
+        event: EventName,
+        listener: Function,
+        err: any
+    ): void
     {
       const errorArgs: ListenerErrorArgs =
         { error: err,
@@ -163,8 +166,9 @@ const eventfulImpl =
     }
 
     function on(
-      event: EventName,
-      listener: Function)
+        event: EventName,
+        listener: Function
+    ): () => boolean
     {
       eventTypeGuard(event);
       functionTypeGuard(listener);
@@ -187,8 +191,9 @@ const eventfulImpl =
     }
 
     function once(
-      event: EventName,
-      listener: Function)
+        event: EventName,
+        listener: Function
+    ): () => boolean
     {
       eventTypeGuard(event);
       functionTypeGuard(listener);
@@ -205,8 +210,9 @@ const eventfulImpl =
     }
 
     function off(
-      event: EventName,
-      listener: Function)
+        event: EventName,
+        listener: Function
+    ): boolean
     {
       eventTypeGuard(event);
       functionTypeGuard(listener);
@@ -223,15 +229,17 @@ const eventfulImpl =
     }
 
     function has(
-      event: EventName)
+        event: EventName
+    ): boolean
     {
       eventTypeGuard(event);
       return (map.get(event)?.size ?? 0) > 0;
     }
 
     function emit(
-      event: EventName,
-      ...args: any[])
+        event: EventName,
+        ...args: any[]
+    ): void
     {
       eventTypeGuard(event);
 
@@ -265,8 +273,9 @@ const eventfulImpl =
     }
 
     async function emitAsync(
-      event: EventName,
-      ...args: any[])
+        event: EventName,
+        ...args: any[]
+    ): Promise<void>
     {
       eventTypeGuard(event);
 
