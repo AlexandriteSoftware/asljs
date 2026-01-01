@@ -1,0 +1,50 @@
+{
+  "name": "asljs-kiosk",
+  "version": "0.1.0",
+  "description": "Build a single-file kiosk HTML by inlining a JS entrypoint into a template.",
+  "type": "module",
+  "main": "kiosk.js",
+  "types": "kiosk.d.ts",
+  "exports": {
+    ".": {
+      "types": "./kiosk.d.ts",
+      "default": "./kiosk.js"
+    }
+  },
+  "bin": {
+    "asljs-kiosk": "./cli.js"
+  },
+  "files": [
+    "dist/**",
+    "kiosk.js",
+    "kiosk.d.ts",
+    "cli.js",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "build:tests": "tsc -p tsconfig.tests.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepack": "npm run build",
+    "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
+    "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
+    "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  },
+  "keywords": [
+    "kiosk",
+    "html",
+    "template"
+  ],
+  "author": "Alex Netkachov <alex.netkachov@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  }
+}

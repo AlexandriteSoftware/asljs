@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "eventful",
+    "kiosk",
     "machine",
     "money",
     "observable",

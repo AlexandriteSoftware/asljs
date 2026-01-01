@@ -45,6 +45,53 @@ const safeJsonName =
       ? name
       : null;
 
+const safeRelativeApiPath =
+  (
+    value: unknown,
+    { allowEmpty = false}: {allowEmpty?: boolean } = {}
+  ): string | null =>
+  {
+    if (value === null
+      || value === undefined)
+    {
+      return allowEmpty
+        ? ''
+        : null;
+    }
+
+    if (typeof value !== 'string')
+      return null;
+
+    if (value === '')
+      return allowEmpty
+        ? ''
+        : null;
+
+    if (!/^[a-zA-Z0-9._/-]+$/.test(value))
+      return null;
+
+    // Force URL-style separators.
+    if (value.includes('\\'))
+      return null;
+
+    if (value.startsWith('/'))
+      return null;
+
+    const parts =
+      value.split('/');
+
+    for (const part of parts) {
+      if (!part
+        || part === '.'
+        || part === '..')
+      {
+        return null;
+      }
+    }
+
+    return value;
+  };
+
 function readBody(
     request: IncomingMessage,
     limit: number
@@ -179,30 +226,21 @@ export function startServer(
     FILES_DIR,
     () => broadcastReload());
 
-  // ---------- JSON API helpers
+  // ---------- File API helpers
 
-  const jsonFilePath =
-    (name: string | null): string | null => {
-      const base =
-        safeJsonName(name);
-
-      if (!base)
-        return null;
-
-      const file =
-        base.endsWith('.json')
-          ? base
-          : (base + '.json');
-
+  const fileApiPath =
+    (
+      relativePath: string
+    ): string | null => {
       const full =
-        path.join(FILES_DIR, file);
+        path.join(FILES_DIR, relativePath);
 
       return isPathInside(full, FILES_DIR)
         ? full
         : null;
     };
 
-  async function handleJsonApi(
+  async function handleFileApi(
       request: IncomingMessage,
       response: ServerResponse,
       url: URL
@@ -212,29 +250,28 @@ export function startServer(
       FILES_DIR,
       { recursive: true });
 
-    const name =
-      url.searchParams.get('file');
+    const relativePath =
+      safeRelativeApiPath(
+        url.searchParams.get('path'));
 
-    const file =
-      jsonFilePath(name);
-
-    if (!file) {
+    if (!relativePath) {
       return send.badRequest(
         response,
-        'Invalid "file" name. Allowed: [a-zA-Z0-9._-] and optional .json');
+        'Invalid "path". Use a relative path with URL-style separators.');
+    }
+
+    const filePath =
+      fileApiPath(relativePath);
+
+    if (!filePath) {
+      return send.forbidden(
+        response);
     }
 
     if (request.method === 'GET') {
-      try {
-        return send.json(
-          response,
-          200,
-          await fsp.readFile(file, 'utf8'));
-      } catch (e) {
-        if (e && typeof e === 'object' && 'code' in e && (e as { code: unknown }).code === 'ENOENT')
-          return send.notFound(response, 'JSON file not found');
-        throw e;
-      }
+      return send.file(
+        response,
+        filePath);
     }
 
     if (request.method === 'PUT'
@@ -245,23 +282,35 @@ export function startServer(
         const body =
           await readBody(request, 1_000_000);
 
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(body);
-        } catch {
-          return send.badRequest(
-            response,
-            'Invalid JSON');
-        }
+        await fsp.mkdir(
+          path.dirname(filePath),
+          { recursive: true });
 
-        await fsp.writeFile(
-          file,
-          JSON.stringify(parsed, null, 2) + '\n',
-          'utf8');
+        // Preserve the old behavior for JSON files.
+        if (path.extname(filePath).toLowerCase() === '.json') {
+          let parsed: unknown;
+          try {
+            parsed = JSON.parse(body);
+          } catch {
+            return send.badRequest(
+              response,
+              'Invalid JSON');
+          }
+
+          await fsp.writeFile(
+            filePath,
+            JSON.stringify(parsed, null, 2) + '\n',
+            'utf8');
+        } else {
+          await fsp.writeFile(
+            filePath,
+            body,
+            'utf8');
+        }
 
         return send.api(
           response,
-          { file: path.basename(file) });
+          { path: relativePath });
       } catch (error) {
         return send.apiError(
           response,
@@ -272,6 +321,89 @@ export function startServer(
     return send.methodNotAllowed(
       response,
       'GET, PUT, POST');
+  }
+
+  async function handleFilesApi(
+      request: IncomingMessage,
+      response: ServerResponse,
+      url: URL
+    ): Promise<void>
+  {
+    if (request.method !== 'GET') {
+      return send.methodNotAllowed(
+        response,
+        'GET');
+    }
+
+    await fsp.mkdir(
+      FILES_DIR,
+      { recursive: true });
+
+    const relativePath =
+      safeRelativeApiPath(
+        url.searchParams.get('path'),
+        { allowEmpty: true });
+
+    if (relativePath === null) {
+      return send.badRequest(
+        response,
+        'Invalid "path". Use a relative directory path.');
+    }
+
+    const directoryPath =
+      fileApiPath(relativePath);
+
+    if (!directoryPath) {
+      return send.forbidden(
+        response);
+    }
+
+    try {
+      const stat =
+        await fsp.stat(directoryPath);
+
+      if (!stat.isDirectory()) {
+        return send.badRequest(
+          response,
+          '"path" must point to a directory');
+      }
+    } catch (error) {
+      if (error
+          && typeof error === 'object'
+          && 'code' in error
+          && (error as { code: unknown }).code === 'ENOENT')
+      {
+        return send.notFound(
+          response,
+          'Directory not found');
+      }
+
+      return send.error(
+        response,
+        error);
+    }
+
+    try {
+      const entries =
+        await fsp.readdir(
+          directoryPath,
+          { withFileTypes: true });
+
+      const files =
+        entries
+          .filter(e => e.isFile())
+          .map(e => e.name)
+          .sort((a, b) => a.localeCompare(b));
+
+      return send.api(
+        response,
+        { path: relativePath,
+          files });
+    } catch (error) {
+      return send.apiError(
+        response,
+        error);
+    }
   }
 
   async function serveStatic(
@@ -290,9 +422,17 @@ export function startServer(
         response);
     }
 
-    // JSON API: /api/json?file=name[.json]
-    if (pathname === '/api/json') {
-      return handleJsonApi(
+    // File API: /api/file?path=relative/path.ext
+    if (pathname === '/api/file') {
+      return handleFileApi(
+        request,
+        response,
+        url);
+    }
+
+    // Directory listing API: /api/files?path=relative/dir
+    if (pathname === '/api/files') {
+      return handleFilesApi(
         request,
         response,
         url);

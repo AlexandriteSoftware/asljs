@@ -26,10 +26,11 @@ Or without installing:
   - `asljs-server --port 8080`
   - `asljs-server --host 0.0.0.0 --port 8080`
 
-## JSON API
+## File API
 
-- `GET /api/json?file=name[.json]` returns the JSON file
-- `PUT|POST /api/json?file=name[.json]` writes JSON (pretty-printed)
+- `GET /api/file?path=path` returns the file contents
+- `PUT|POST /api/file?path=path` writes the file
+- `GET /api/files?path=path` lists all files in the directory
 
 ## Live reload
 
