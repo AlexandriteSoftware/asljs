@@ -1,6 +1,6 @@
 {
   "name": "asljs-server",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "A lightweight development-time static files server. Supports live-reload. Provides filesystem read-write API.",
   "type": "module",
   "main": "server.js",
@@ -24,12 +24,13 @@
   ],
   "scripts": {
     "build": "tsc -p .",
+    "build:tests": "tsc -p tsconfig.tests.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepack": "npm run build",
-    "test": "npm run build && node --test",
-    "test:watch": "npm run build && node --watch --test",
-    "coverage": "npm run build && NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+    "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
+    "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
+    "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "keywords": [
     "server",
@@ -45,5 +46,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
   }
 }

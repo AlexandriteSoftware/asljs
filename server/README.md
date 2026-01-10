@@ -26,11 +26,19 @@ Or without installing:
   - `asljs-server --port 8080`
   - `asljs-server --host 0.0.0.0 --port 8080`
 
+- Map a folder under a virtual path:
+  - `asljs-server --mount assets=../Assets`
+  - Serves `../Assets/logo.png` as `/assets/logo.png`
+
 ## File API
 
 - `GET /api/file?path=path` returns the file contents
 - `PUT|POST /api/file?path=path` writes the file
 - `GET /api/files?path=path` lists all files in the directory
+
+Folder mappings apply to the File API too. For example, with `--mount assets=../Assets`:
+
+- `GET /api/file?path=assets/logo.png`
 
 ## Live reload
 

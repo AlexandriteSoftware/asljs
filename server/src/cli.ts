@@ -1,26 +1,27 @@
 import { startServer } from './server.js';
+import type { StartServerOptions } from './server.js';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yargs from 'yargs';
+import type {
+    Argv,
+    ArgumentsCamelCase
+  } from 'yargs';
 
-function printHelp(): void {
-  process.stdout.write(
-    `asljs-server
+type CliArgs =
+  { dir?: string;
+    root: string;
+    port: number;
+    host: string;
+    mount?: string[]; };
 
-Usage:
-  asljs-server [--root <dir>] [--port <number>] [--host <name>]
-
-Options:
-  --root <dir>     Root directory to serve (default: .)
-  --port <number>  Port to listen on (default: 3000)
-  --host <name>    Host/interface to bind (default: localhost)
-  --help           Show this help
-  --version        Print version
-`
-  );
-}
-
-function readVersion(): string | undefined {
+/**
+ * Reads the asljs-server version from package.json.
+ */
+function readVersion(
+  ): string | undefined
+{
   const here =
     path.dirname(
       fileURLToPath(
@@ -41,131 +42,140 @@ function readVersion(): string | undefined {
     .version as string | undefined;
 }
 
-type RunOptions =
-  { root: string;
-    port: number;
-    host: string };
-
-type ParsedArgs =
-  | { kind: 'help' }
-  | { kind: 'version' }
-  | { kind: 'run'; options: RunOptions };
-
-function parseArgs(
-    argv: string[]
-  ): ParsedArgs
+/**
+ * Converts array of strings `[ "<virtual>=<dir>", ... ]` into a map.
+ */
+function parseMounts(
+    mounts: string[] | undefined
+  ): Record<string, string>
 {
-  const options: RunOptions =
-    { root: '.',
-      port: 3000,
-      host: 'localhost' };
+  const map: Record<string, string> = { };
 
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+  if (!mounts)
+    return map;
 
-    if (arg === '--help'
-      || arg === '-h')
-    {
-      return { kind: 'help' };
+  for (const spec of mounts) {
+    const separatorIndex =
+      spec.indexOf('=');
+
+    if (separatorIndex === -1) {
+      throw new Error(
+        'Incorrect format, expect "<virtual>=<dir>".');
     }
 
-    if (arg === '--version'
-      || arg === '-v')
-    {
-      return { kind: 'version' };
-    }
+    const virtual =
+      spec.slice(0, separatorIndex);
 
-    if (arg === '--root') {
-      const value = argv[++i];
+    const dir =
+      spec.slice(separatorIndex + 1);
 
-      if (!value) {
-        throw new TypeError(
-          'Missing value for --root');
-      }
+    map[virtual] = dir;
+  }
 
-      options.root = value;
+  return map;
+}
 
-      continue;
-    }
+const version =
+  readVersion() ?? '';
 
-    if (arg === '--port') {
-      const value = argv[++i];
-
-      if (!value) {
-        throw new TypeError(
-          'Missing value for --port');
-      }
-
-      const parsed =
-        Number(value);
-
-      if (!Number.isFinite(parsed)
-        || parsed <= 0)
+yargs(
+    process.argv.slice(2))
+  .scriptName('asljs-server')
+  .usage(
+    '$0 [root] [options]')
+  .command(
+    '$0 [dir]',
+    'Start the server',
+    (y: Argv) =>
+      y
+        .positional(
+          'dir',
+          { type: 'string',
+            describe: 'Root directory to serve (default: .)' })
+        .option(
+          'root',
+          { type: 'string',
+            describe: 'Root directory to serve (default: .)',
+            default: '.' })
+        .option(
+          'port',
+          { type: 'number',
+            describe: 'Port to listen on (default: 3000)',
+            default: 3000 })
+        .option(
+          'host',
+          { type: 'string',
+            describe: 'Host/interface to bind (default: localhost)',
+            default: 'localhost' })
+        .option(
+          'mount',
+          { type: 'string',
+            alias: 'm',
+            array: true,
+            describe:
+              'Mount a folder under a virtual path (repeatable). Spec: <virtual>=<dir> (example: assets=../Assets)' }),
+    (argv: ArgumentsCamelCase<CliArgs>) => {
+      if (!Number.isFinite(argv.port)
+        || argv.port <= 0)
       {
-        throw new TypeError(
+        throw new Error(
           'Invalid --port');
       }
 
-      options.port = parsed;
-
-      continue;
-    }
-
-    if (arg === '--host') {
-      const value = argv[++i];
-
-      if (!value) {
-        throw new TypeError(
+      if (typeof argv.host !== 'string'
+        || !argv.host)
+      {
+        throw new Error(
           'Missing value for --host');
       }
 
-      options.host = value;
+      if (typeof argv.root !== 'string'
+        || !argv.root)
+      {
+        throw new Error(
+          'Missing value for --root');
+      }
 
-      continue;
-    }
+      let mounts : Record<string, string>;
 
-    if (arg.startsWith('-')) {
-      throw new TypeError(
-        `Unknown option: ${arg}`);
-    }
+      try {
+        mounts =
+          parseMounts(
+            argv.mount);
+      }
+      catch (err) {
+        throw new Error(
+          `Invalid --mount. ${(err as Error).message}`);
+      }
 
-    // Positional = root directory
-    options.root = arg;
-  }
+      const options: StartServerOptions =
+        { root: argv.dir ?? argv.root,
+          port: argv.port,
+          host: argv.host,
+          mounts };
 
-  return { kind: 'run', options };
-}
+      startServer(options);
+    })
+  .strict()
+  .help('help')
+  .alias('help', 'h')
+  .version('version', 'Print version', version)
+  .alias('version', 'v')
+  .exitProcess(false)
+  .fail(
+    (msg: string, err: Error | undefined, y: Argv) => {
+      const message =
+        err?.message
+          ? String(err.message)
+          : msg;
 
-try {
-  const parsed =
-    parseArgs(
-      process.argv.slice(2));
+      if (message) {
+        process.stderr.write(
+          `${message}\n\n`);
+      }
 
-  switch (parsed.kind) {
-    case 'help':
-      printHelp();
-      process.exitCode = 0;
-      break;
-    case 'version':
-      process.stdout.write(`${readVersion() ?? ''}\n`);
-      process.exitCode = 0;
-      break;
-    default:
-      startServer(parsed.options);
-      break;
-  }
-} catch (error) {
-  const message =
-    (error
-        && typeof error === 'object'
-        && 'message' in error)
-      ? String((error as { message: unknown }).message)
-      : String(error);
+      y.showHelp();
 
-  process.stderr.write(
-    `${message}\n\n`);
-
-  printHelp();
-
-  process.exitCode = 1;
-}
+      process.exitCode = 1;
+    })
+  .parse();

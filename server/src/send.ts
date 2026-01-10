@@ -1,9 +1,29 @@
+/**
+ * Functions for sending HTTP responses.
+ *
+ * Exported helpers:
+ * 
+ * - `options(ServerResponse, OutgoingHttpHeaders): void`
+ * - `api(ServerResponse, unknown): void`
+ * - `apiError(ServerResponse, unknown): void`
+ * - `json(ServerResponse, number, unknown): void`
+ * - `html(ServerResponse, string): void`
+ * - `badRequest(ServerResponse, string?): void`
+ * - `forbidden(ServerResponse, string?): void`
+ * - `notFound(ServerResponse, string?): void`
+ * - `methodNotAllowed(ServerResponse, string?): void`
+ * - `error(ServerResponse, unknown): void`
+ * - `file(ServerResponse, string): Promise<void>`
+ */
+
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { OutgoingHttpHeaders } from 'node:http';
 import type { ServerResponse } from 'node:http';
 
+// Map of file extensions to content types.
+// Used by `file()` to set the Content-Type header.
 const CONTENT_TYPES =
   new Map<string, string>(
     [ ['.html', 'text/html; charset=utf-8'],
@@ -23,6 +43,9 @@ const CONTENT_TYPES =
       ['.woff', 'font/woff'],
       ['.woff2', 'font/woff2'] ]);
 
+/**
+ * Returns the content type for the specified file path, based on its extension.
+ */
 function contentTypeFor(
     filePath: string
   ): string
@@ -35,6 +58,10 @@ function contentTypeFor(
     || 'application/octet-stream';
 }
 
+/**
+ * Sends an empty response to the client for an OPTIONS request.
+ * Typically used for CORS preflight requests.
+ */
 export function options(
     response: ServerResponse,
     headers: OutgoingHttpHeaders
@@ -44,6 +71,9 @@ export function options(
   response.end();
 }
 
+/**
+ * Sends a JSON API response with status 200.
+ */
 export function api(
     response: ServerResponse,
     payload: unknown
@@ -58,6 +88,9 @@ export function api(
       payload));
 }
 
+/**
+ * Sends an API error message to the response with status 500.
+ */
 export function apiError(
     response: ServerResponse,
     error: unknown
@@ -77,6 +110,9 @@ export function apiError(
       { error: message }));
 }
 
+/**
+ * Sends a JSON string to the response with the specified status.
+ */
 export function json(
     response: ServerResponse,
     status: number,
@@ -93,6 +129,9 @@ export function json(
     : JSON.stringify(jsonString));
 }
 
+/**
+ * Sends an HTML string to the response with status 200.
+ */
 export function html(
     response: ServerResponse,
     htmlString: string
@@ -105,6 +144,9 @@ export function html(
   response.end(htmlString);
 }
 
+/**
+ * Sends a "Bad request" error message to the response with status 400.
+ */
 export function badRequest(
     response: ServerResponse,
     message = 'Bad request'
@@ -117,6 +159,9 @@ export function badRequest(
   response.end(message);
 }
 
+/**
+ * Sends a "Forbidden" error message to the response with status 403.
+ */
 export function forbidden(
     response: ServerResponse,
     message = 'Forbidden'
@@ -129,6 +174,9 @@ export function forbidden(
   response.end(message);
 }
 
+/**
+ * Sends a "Not found" error message to the response with status 404.
+ */
 export function notFound(
     response: ServerResponse,
     message = 'Not found'
@@ -141,6 +189,9 @@ export function notFound(
   response.end(message);
 }
 
+/**
+ * Sends a "Method not allowed" error message to the response with status 405.
+ */
 export function methodNotAllowed(
     response: ServerResponse,
     allowed = 'GET'
@@ -155,6 +206,9 @@ export function methodNotAllowed(
     'Method not allowed');
 }
 
+/**
+ * Sends an error message to the response with status 500.
+ */
 export function error(
     response: ServerResponse,
     err: unknown
@@ -174,6 +228,10 @@ export function error(
   response.end(message);
 }
 
+/**
+ * Sends a static file, specified by `filePath`, to the response,
+ * asynchronously.
+ */
 export async function file(
     response: ServerResponse,
     filePath: string

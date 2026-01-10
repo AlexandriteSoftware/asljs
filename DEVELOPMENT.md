@@ -18,13 +18,13 @@ git push
 
 ## Versions
 
-| Library    | Released   | Next  |
-|------------|------------|-------|
-| eventful   | [0.2.0][1] |   -   |
-| machine    | [0.2.0][2] |   -   |
-| money      | [0.2.0][3] |   -   |
-| observable | [0.2.0][4] |   -   |
-| server     | [0.2.0][5] |   -   |
+| Library    | Released    | Next   |
+|------------|-------------|--------|
+| eventful   | [0.2.0][1]  |   -    |
+| machine    | [0.2.0][2]  |   -    |
+| money      | [0.2.0][3]  |   -    |
+| observable | [0.2.0][4]  |   -    |
+| server     | [0.2.3][5]  | 0.2.4  |
 
 [1]: https://www.npmjs.com/package/asljs-eventful
 [2]: https://www.npmjs.com/package/asljs-machine

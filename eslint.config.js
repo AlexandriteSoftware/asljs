@@ -33,7 +33,7 @@ export default [
       'multiline-ternary': ['error', 'always'],
       'operator-linebreak': [
         'error',
-        'after',
+        'before',
         {
           overrides: {
             '=': 'after',
@@ -92,7 +92,7 @@ export default [
       ],
       'operator-linebreak': [
         'error',
-        'after',
+        'before',
         {
           overrides: {
             '=': 'after',
