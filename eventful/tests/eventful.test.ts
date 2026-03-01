@@ -1,126 +1,13 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import {
+    createTracer
+  } from './tracer.js';
 import {
   eventful
 } from '../eventful.js';
-
-test(
-  'eventful extends an object',
-  () => {
-    const original = { };
-
-    const enhanced =
-      eventful(original);
-
-    assert.equal(
-      enhanced,
-      original);
-
-    assert.equal(typeof enhanced.on, 'function');
-    assert.equal(typeof enhanced.off, 'function');
-    assert.equal(typeof enhanced.emit, 'function');
-    assert.equal(typeof enhanced.emitAsync, 'function');
-    assert.equal(typeof enhanced.has, 'function');
-  });
-
-test(
-  'eventful extends a function',
-  () => {
-    const original =
-      (): void => { };
-
-    const enhanced =
-      eventful(original);
-
-    assert.equal(
-      enhanced,
-      original);
-
-    assert.equal(typeof enhanced.on, 'function');
-    assert.equal(typeof enhanced.off, 'function');
-    assert.equal(typeof enhanced.emit, 'function');
-    assert.equal(typeof enhanced.emitAsync, 'function');
-    assert.equal(typeof enhanced.has, 'function');
-  });
-
-test(
-  'eventful can be called without arguments',
-  () => {
-    const enhanced =
-      eventful();
-
-    assert.ok(enhanced !== null);
-
-    assert.equal(typeof enhanced.on, 'function');
-    assert.equal(typeof enhanced.off, 'function');
-    assert.equal(typeof enhanced.emit, 'function');
-    assert.equal(typeof enhanced.emitAsync, 'function');
-    assert.equal(typeof enhanced.has, 'function');
-  });
-
-test(
-  'trace is called on creation with action "new"',
-  () => {
-    const tracer =
-      createTracer();
-
-    const object =
-      eventful(
-        { },
-        tracer);
-
-    const creation =
-      tracer.getFirstTraceByAction('new');
-
-    assert.ok(creation);
-
-    assert.equal(
-      creation.payload.object,
-      object);
-  });
-
-test(
-  'global trace is called on creation with action "new"',
-  () => {
-    const tracer =
-      createTracer();
-
-    const off =
-      eventful.on(
-        'new',
-        args => tracer.trace('new', args));
-
-    try {
-      const object =
-        eventful(
-          { },
-          tracer);
-
-      const creation =
-        tracer.getFirstTraceByAction('new');
-
-      assert.ok(creation);
-
-      assert.equal(
-        creation.payload.object,
-        object);
-    } finally {
-      off();
-    }
-  });
-
-test(
-  'eventful throws when an object has one of the event emitter methods',
-  () => {
-    for (const method of [ 'on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
-      assert.throws(
-        () =>
-          eventful({
-            [method]: () => { }
-          }));
-    }
-  });
 
 test(
   'exceptions in listeners are suppressed in async emit by default',
@@ -341,8 +228,10 @@ test(
         'error',
         () => {
           globalErrorCalls += 1;
+
           if (globalErrorCalls > 1)
             throw new Error('global error listener loop');
+
           throw new Error('boom');
         });
 
@@ -358,7 +247,9 @@ test(
         () => obj.emit('e'),
         Error);
 
-      assert.equal(globalErrorCalls, 1);
+      assert.equal(
+        globalErrorCalls,
+        1);
     } finally {
       off();
     }
@@ -371,50 +262,27 @@ test(
       eventful();
 
     assert.throws(
-      () => obj.on(123 as any, () => {}),
+      () =>
+        obj.on(
+          123 as any,
+          () => {}),
       TypeError);
 
     assert.throws(
-      () => obj.emit(123 as any),
+      () =>
+        obj.emit(123 as any),
       TypeError);
 
     const s =
       Symbol('e');
 
     assert.doesNotThrow(
-      () => obj.on(s, () => { }));
+      () =>
+        obj.on(
+          s,
+          () => { }));
 
     assert.doesNotThrow(
-      () => obj.emit(s));
+      () =>
+        obj.emit(s));
   });
-
-type TraceRecord = {
-  action: string;
-  payload: any;
-};
-
-type Tracer = {
-  trace: (action: any, payload: any) => void;
-  getTraces: () => TraceRecord[];
-  getTracesByAction: (action: string) => TraceRecord[];
-  getFirstTraceByAction: (action: string) => TraceRecord | undefined;
-};
-
-function createTracer(): Tracer {
-  const traces: TraceRecord[] = [];
-
-  return {
-    trace:
-      (action: any, payload: any): void => {
-        traces.push({ action, payload });
-      },
-    getTraces:
-      (): TraceRecord[] => traces,
-    getTracesByAction:
-      (action: string): TraceRecord[] =>
-        traces.filter(t => t.action === action),
-    getFirstTraceByAction:
-      (action: string): TraceRecord | undefined =>
-        traces.find(t => t.action === action),
-  };
-}

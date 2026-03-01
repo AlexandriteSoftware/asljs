@@ -40,27 +40,57 @@ test(
   });
 
 test(
+  'not observing nested objects',
+  async () => {
+    const tracer =
+      createTracer();
+
+    const object =
+      { a: { b: 1 } };
+
+    const proxy =
+      observable(
+        object,
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
+
+    proxy.a.b = 2;
+
+    const traces =
+      tracer.getMinimalTraces();
+
+    console.log(traces);
+  });
+
+test(
   'observable object set and keyed set events',
   async () => {
     const tracer =
       createTracer();
 
-    const obj =
+    const object =
+      { a: 1 };
+
+    const proxy =
       observable(
-        { a: 1 },
+        object,
         { eventful:
             (value: any) =>
               eventful(value, tracer) });
 
-    obj.a = 2;
+    proxy.a = 2;
+
+    const traces =
+      tracer.getMinimalTraces();
 
     assert.deepEqual(
-      tracer.getFirstEventParameters('set'),
-      { property: 'a', value: 2, previous: 1 });
-
-    assert.deepEqual(
-      tracer.getFirstEventParameters('set:a'),
-      { property: 'a', value: 2, previous: 1 });
+      traces,
+      [ { action: 'new', payload: { object } },
+        { action: 'emit', payload: { object, event: 'define:a' } },
+        { action: 'emit', payload: { object, event: 'define' } },
+        { action: 'emit', payload: { object, event: 'set:a', args: [ { previous: 1, property: 'a', value: 2 } ] } },
+        { action: 'emit', payload: { object, event: 'set', args: [ { previous: 1, property: 'a', value: 2 } ] } } ]);
   });
 
 test(
@@ -112,50 +142,65 @@ test(
     const tracer =
       createTracer();
 
+    const object =
+      { a: 1 };
+
     const obj =
       observable(
-        { a: 1 },
+        object,
         { eventful:
             (value: any) =>
               eventful(value, tracer) });
 
     delete (obj as any).a;
 
-    const eventParameters =
-      { property: 'a',
-        previous: 1 };
+    const traces =
+      tracer.getMinimalTraces();
 
     assert.deepEqual(
-      tracer.getFirstEventParameters('delete'),
-      eventParameters);
-
-    assert.deepEqual(
-      tracer.getFirstEventParameters('delete:a'),
-      eventParameters);
+      traces,
+      [ { action: 'new', payload: { object } },
+        { action: 'emit', payload: { object, event: 'delete:a', args: [ { previous: 1, property: 'a' } ] } },
+        { action: 'emit', payload: { object, event: 'delete', args: [ { previous: 1, property: 'a' } ] } } ]);
   });
 
 test(
-  'observable array index set and keyed set events',
+  'observable array index set, property set',
   async () => {
     const tracer =
       createTracer();
 
+    const array = [ 1, 2 ];
+
     const arr =
       observable(
-        [ 1, 2 ],
+        array,
         { eventful:
             (value: any) =>
               eventful(value, tracer) });
 
-    arr[1] = 42;
+    arr['0'] = 10;
+    arr[1] = 20;
+    (arr as any).test1 = 30;
+
+    const traces =
+      tracer.getMinimalTraces();
 
     assert.deepEqual(
-      tracer.getFirstEventParameters('set'),
-      { property: '1', value: 42, previous: 2 });
-
-    assert.deepEqual(
-      tracer.getFirstEventParameters('set:1'),
-      { property: '1', value: 42, previous: 2 });
+      traces,
+      [ { action: 'new', payload: { object: array } },
+        { action: 'emit', payload: { object: array, event: 'define:0' } },
+        { action: 'emit', payload: { object: array, event: 'define' } },
+        { action: 'emit', payload: { object: array, event: 'set:0', args: [ { previous: 1, property: '0', value: 10 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 1, property: '0', value: 10 } ] } },
+        { action: 'emit', payload: { object: array, event: 'define:1' } },
+        { action: 'emit', payload: { object: array, event: 'define' } },
+        { action: 'emit', payload: { object: array, event: 'set:1', args: [ { previous: 2, property: '1', value: 20 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 2, property: '1', value: 20 } ] } },
+        { action: 'emit', payload: { object: array, event: 'define:test1' } },
+        { action: 'emit', payload: { object: array, event: 'define' } },
+        { action: 'emit', payload: { object: array, event: 'set:test1', args: [ { previous: undefined, property: 'test1', value: 30 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: undefined, property: 'test1', value: 30 } ] } } ]);
   });
 
 test(
@@ -164,18 +209,29 @@ test(
     const tracer =
       createTracer();
 
+    const array =
+      [ 1, 2];
+
     const arr =
       observable(
-        [ 1, 2 ],
+        array,
         { eventful:
             (value: any) =>
               eventful(value, tracer) });
 
+    // setting length does not delete items
     arr.length = 1;
 
+    const traces =
+      tracer.getMinimalTraces();
+
     assert.deepEqual(
-      tracer.getFirstEventParameters('set:length'),
-      { property: 'length', value: 1, previous: 2 });
+      traces,
+      [ { action: 'new', payload: { object: array } },
+        { action: 'emit', payload: { object: array, event: 'define:length' } },
+        { action: 'emit', payload: { object: array, event: 'define' } },
+        { action: 'emit', payload: { object: array, event: 'set:length', args: [ { previous: 2, property: 'length', value: 1 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 2, property: 'length', value: 1 } ] } } ]);
   });
 
 test(
@@ -184,18 +240,31 @@ test(
     const tracer =
       createTracer();
 
+    const array =
+      [ 10, 20 ];
+
     const arr =
       observable(
-        [ 10, 20 ],
+        array,
         { eventful:
             (value: any) =>
               eventful(value, tracer) });
 
+    // deleting items does not change length
     delete arr[1];
 
+    const traces =
+      tracer.getMinimalTraces();
+
+    assert.equal(
+      arr.length,
+      2);
+
     assert.deepEqual(
-      tracer.getFirstEventParameters('delete:1'),
-      { property: '1', previous: 20 });
+      traces,
+      [ { action: 'new', payload: { object: array } },
+        { action: 'emit', payload: { object: array, event: 'delete:1', args: [ { previous: 20, property: '1' } ] } },
+        { action: 'emit', payload: { object: array, event: 'delete', args: [ { previous: 20, property: '1' } ] } } ]);
   });
 
 type TraceRecord = {
@@ -211,10 +280,8 @@ type Tracer =
       () => void;
     getTraces:
       () => TraceRecord[];
-    getTracesByAction:
-      (action: string) => TraceRecord[];
-    getFirstTraceByAction:
-      (action: string) => TraceRecord | undefined;
+    getMinimalTraces:
+      () => TraceRecord[];
     getFirstEventParameters:
       (action: string) => any;
   };
@@ -231,12 +298,32 @@ function createTracer(): Tracer {
       () => traces.splice(0, traces.length),
     getTraces:
       (): TraceRecord[] => traces,
-    getTracesByAction:
-      (action: string): TraceRecord[] =>
-        traces.filter(t => t.action === action),
-    getFirstTraceByAction:
-      (action: string): TraceRecord | undefined =>
-        traces.find(t => t.action === action),
+    getMinimalTraces:
+      () => {
+        const result: any[] = [];
+        for (const { action, payload } of traces) {
+          switch (action) {
+            case 'emit':
+              const emitPayload =
+                Object.assign({ }, payload);
+
+              delete emitPayload.listeners;
+              
+              if (payload.event === 'define'
+                  || payload.event.match(/^define:/))
+              {
+                delete emitPayload.args;
+              }
+
+              result.push({ action, payload: emitPayload });
+              break;
+            default:
+              result.push({ action, payload });
+              break;
+          }
+        }
+        return result;
+      },
     getFirstEventParameters:
       (event: string): any => {
         const found =

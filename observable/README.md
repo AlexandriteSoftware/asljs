@@ -21,12 +21,12 @@ import { observable } from 'asljs-observable';
 
 const obj = observable({ a: 1, b: 2 });
 
-obj.on('set', ({ property, value, previous }) => {
-  console.log('set', property, previous, '→', value);
+obj.on('set:a', ({ value, previous }) => {
+  console.log(`obj.a ←`, value, '(was', previous, ')');
 });
 
-obj.on('set:a', ({ value }) => {
-  console.log('a changed to', value);
+obj.on('set', ({ property, value, previous }) => {
+  console.log(`obj.${property} ←`, value, '(was', previous, ')');
 });
 
 obj.a = 3;
@@ -36,9 +36,15 @@ Array example:
 
 ```js
 const arr = observable([1, 2, 3]);
+
 arr.on('set:1', ({ value, previous }) => {
-  console.log('index 1:', previous, '→', value);
+  console.log('arr[1] ←', value, '(was', previous, ')');
 });
+
+arr.on('set', ({ index, value, previous }) => {
+  console.log(`arr[${index}] ←`, value, '(was', previous, ')');
+});
+
 arr[1] = 42;
 ```
 
@@ -46,9 +52,11 @@ Primitive example:
 
 ```js
 const box = observable(10);
+
 box.on('set', ({ value, previous }) => {
   console.log('value:', previous, '→', value);
 });
+
 box.value = 11;
 ```
 
@@ -67,16 +75,14 @@ Returns the original value wrapped with Eventful API and change notifications.
 
 ### Events and payloads
 
-Objects emit:
+More concrete events are emitted first, followed by more generic ones.
+E.g., setting `obj.a` emits `set:a` first, then `set`.
 
-- `set` and `set:<prop>`: `{ property, value, previous }`
-- `delete` and `delete:<prop>`: `{ property, previous }`
-- `define` and `define:<prop>`: `{ property, descriptor, previous }`
+Objects and arrays emit:
 
-Arrays emit (no `define`):
-
-- `set` / `set:<index>` and `set:length`
-- `delete` / `delete:<index>`
+- `set` and `set:<property>`: `{ property, value, previous }`
+- `delete` and `delete:<property>`: `{ property, previous }`
+- `define` and `define:<property>`: `{ property, descriptor, previous }`
 
 Primitives (boxed as `{ value }`) emit:
 

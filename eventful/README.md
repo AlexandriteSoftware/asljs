@@ -11,16 +11,136 @@ Lightweight event helper adding on/off/emit to any object.
 npm install asljs-eventful
 ```
 
+NPM Package: [asljs-eventful](https://www.npmjs.com/package/asljs-eventful)
+
 ## Usage
 
-### Basic Example
+### Basic (JavaScript)
+
+Adding events to an object, add listeners, and emit events:
 
 ```js
 import { eventful } from 'asljs-eventful';
 
 const obj = eventful({ name: 'Alice' });
-obj.on('greet', msg => console.log(`${msg}, ${obj.name}!`));
-obj.emit('greet', 'Hello'); // Logs: "Hello, Alice!"
+
+obj.on('greet',
+  msg => console.log(`${msg}, ${obj.name}!`));
+ 
+// writes "Hello, Alice!" to console
+obj.emit('greet', 'Hello');
+```
+
+### Basic (TypeScript)
+
+```ts
+import { eventful, type Eventful } from 'asljs-eventful';
+
+const obj: Eventful<{ name: string }> =
+  eventful({ name: 'Alice' });
+
+obj.on('greet',
+  msg => console.log(`${msg}, ${obj.name}!`));
+
+// writes "Hello, Alice!" to console
+obj.emit('greet', 'Hello');
+```
+
+### Inheritance (JavaScript)
+
+Adding events to a class via inheritance:
+
+```js
+import { EventfulBase } from 'asljs-eventful';
+
+class MyClass extends EventfulBase {
+  constructor(name) {
+    super();
+
+    this.name = name;
+  }
+
+  greet() {
+    this.emit(
+      'greet',
+      `Hello, ${this.name}`);
+  }
+}
+```
+
+### Inheritance (TypeScript)
+
+```ts
+import { EventfulBase } from 'asljs-eventful';
+class MyClass extends EventfulBase {
+  name: string;
+
+  constructor(name: string) {
+    super();
+
+    this.name = name;
+  }
+
+  greet() {
+    this.emit(
+      'greet',
+      `Hello, ${this.name}`);
+  }
+}
+```
+
+### Construction (JavaScript)
+
+Adding events to an existing class during construction:
+
+```js
+import { eventful } from 'asljs-eventful';
+
+export class MyClass {
+  constructor(name) {
+    eventful(this);
+
+    this.name = name;
+  }
+
+  greet() {
+    this.emit(
+      'greet',
+      `Hello, ${this.name}`);
+  }
+}
+```
+
+### Construction (TypeScript)
+
+```ts
+import { eventful, type Eventful } from 'asljs-eventful';
+
+type MyClassEvents =
+  { greet: [message: string]; };
+
+export class MyClass implements Eventful<MyClassEvents> {
+  name: string;
+
+  declare on: Eventful<MyClassEvents>['on'];
+  declare once: Eventful<MyClassEvents>['once'];
+  declare off: Eventful<MyClassEvents>['off'];
+  declare emit: Eventful<MyClassEvents>['emit'];
+  declare emitAsync: Eventful<MyClassEvents>['emitAsync'];
+  declare has: Eventful<MyClassEvents>['has'];
+
+  constructor(name: string) {
+    eventful(this);
+
+    this.name = name;
+  }
+
+  greet() {
+    this.emit(
+      'greet',
+      `Hello, ${this.name}`);
+  }
+}
 ```
 
 ### Advanced Options

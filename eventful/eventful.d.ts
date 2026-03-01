@@ -1,5 +1,6 @@
 export {
-  eventful
+  eventful,
+  EventfulBase
 } from './dist/eventful.js';
 
 export type {

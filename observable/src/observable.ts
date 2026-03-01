@@ -53,8 +53,7 @@ const observableImpl =
 
     const makeProxy =
         (
-            target: any,
-            { includeDefine }: { includeDefine: boolean }
+            target: any
           ): any =>
         {
           let proxy: any;
@@ -103,6 +102,10 @@ const observableImpl =
                           trace
                           || globalOptions.trace;
 
+                        proxy.emit(
+                          `set:${String(property)}`,
+                          payload);
+
                         if (isFunction(traceFn)) {
                           traceFn(
                             proxy,
@@ -112,10 +115,6 @@ const observableImpl =
 
                         proxy.emit(
                           'set',
-                          payload);
-
-                        proxy.emit(
-                          `set:${String(property)}`,
                           payload);
                       }
                     }
@@ -153,6 +152,10 @@ const observableImpl =
                         trace
                         || globalOptions.trace;
 
+                      proxy.emit(
+                        `delete:${String(property)}`,
+                        payload);
+
                       if (isFunction(traceFn)) {
                         traceFn(
                           proxy,
@@ -162,10 +165,6 @@ const observableImpl =
 
                       proxy.emit(
                         'delete',
-                        payload);
-
-                      proxy.emit(
-                        `delete:${String(property)}`,
                         payload);
                     }
 
@@ -178,18 +177,11 @@ const observableImpl =
                       descriptor
                     ): boolean
                   {
-                    if (!includeDefine) {
-                      return Reflect.defineProperty(
-                        tgt,
-                        property,
-                        descriptor);
-                    }
-
                     const previous =
                       Object.getOwnPropertyDescriptor(
                         tgt,
-                        property) ??
-                      null;
+                        property)
+                      ?? null;
 
                     const ok =
                       Reflect.defineProperty(
@@ -209,6 +201,10 @@ const observableImpl =
                         trace
                         || globalOptions.trace;
 
+                      proxy.emit(
+                        `define:${String(property)}`,
+                        payload);
+
                       if (isFunction(traceFn)) {
                         traceFn(
                           proxy,
@@ -218,10 +214,6 @@ const observableImpl =
 
                       proxy.emit(
                         'define',
-                        payload);
-
-                      proxy.emit(
-                        `define:${String(property)}`,
                         payload);
                     }
 
@@ -240,8 +232,7 @@ const observableImpl =
     if (Array.isArray(value)) {
       const proxy =
           makeProxy(
-            value,
-            { includeDefine: false });
+            value);
 
       if (isFunction(traceFn)) {
         traceFn(
@@ -258,8 +249,7 @@ const observableImpl =
     {
       const proxy =
           makeProxy(
-            value,
-            { includeDefine: true });
+            value);
 
       if (isFunction(traceFn)) {
         traceFn(
@@ -292,6 +282,10 @@ const observableImpl =
                   value,
                   previous };
 
+              (boxed as any).emit(
+                'set:value',
+                payload);
+
               if (isFunction(traceFn)) {
                 traceFn(
                   boxed,
@@ -301,10 +295,6 @@ const observableImpl =
 
               (boxed as any).emit(
                 'set',
-                payload);
-
-              (boxed as any).emit(
-                'set:value',
                 payload);
             }
           });

@@ -3,6 +3,7 @@ import {
   } from './types.js';
 
 import type {
+    EventMap,
     EventName,
     Eventful,
     EventfulFn,
@@ -341,3 +342,21 @@ export const eventful =
   eventfulImpl as EventfulFn;
 
 (eventful as any)(eventful);
+
+export class EventfulBase<E extends EventMap = EventMap>
+  implements Eventful<E>
+{
+  declare on: Eventful<E>['on'];
+  declare once: Eventful<E>['once'];
+  declare off: Eventful<E>['off'];
+  declare emit: Eventful<E>['emit'];
+  declare emitAsync: Eventful<E>['emitAsync'];
+  declare has: Eventful<E>['has'];
+
+  constructor(
+      options: EventfulOptions = {},
+    )
+  {
+    eventful(this, options);
+  }
+}
