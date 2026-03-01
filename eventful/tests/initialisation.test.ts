@@ -60,7 +60,13 @@ test(
 test(
   'eventful can be extended by inheritance',
   () => {
-    class MyClass extends EventfulBase {
+    type MyClassEvents = {
+      greet: [message: string];
+    };
+
+    class MyClass
+      extends EventfulBase<MyClassEvents>
+    {
       name: string;
 
       constructor(
