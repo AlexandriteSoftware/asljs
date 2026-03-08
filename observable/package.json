@@ -48,6 +48,6 @@
     "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "dependencies": {
-    "asljs-eventful": "^0.2.0"
+    "asljs-eventful": "^0.3.0"
   }
 }
