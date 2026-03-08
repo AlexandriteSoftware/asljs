@@ -43,14 +43,14 @@ type ArraySetPayload<T extends readonly any[]> =
       value: number;
       previous: number }
   | { property: string;
-      value: any;
-      previous: any };
+      value: unknown;
+      previous: unknown };
 
 type ArrayDeletePayload<T extends readonly any[]> =
   | { index: ArrayIndex;
       previous: ArrayElement<T> | undefined }
   | { property: string;
-      previous: any };
+      previous: unknown };
 
 type KeyedArraySetEvents<T extends readonly any[]> =
   { [K in ArrayIndex as `set:${PropString<K>}`]:
@@ -155,13 +155,13 @@ export type ObservableEventsArray<T extends readonly any[]> =
   & KeyedArrayDeleteEvents<T>;
 
 export type ObservableFn = {
-  /** Array overload (no 'define' events) */
+  /** Array overload */
   <T extends readonly any[]>(
     value: T,
     options?: ObservableOptions
   ): T & Eventful<ObservableEventsArray<T>>;
 
-  /** Object overload (includes 'define' events) */
+  /** Object overload */
   <T extends object>(
     value: T,
     options?: ObservableOptions
@@ -169,9 +169,12 @@ export type ObservableFn = {
 
   /** Primitive overload (boxed as { value }) */
   <T>(
-    value?: T,
+    value: T,
     options?: ObservableOptions
   ): { value: T } & Eventful<ObservableEventsPrimitive<T>>;
+
+  /** Primitive overload without initial value */
+  (): { value: any } & Eventful<ObservableEventsPrimitive<any>>;
 
   options: ObservableGlobalOptions;
 };

@@ -3,10 +3,12 @@
 > Part of [Alexandrite Software Library][#1] – a set of high‑quality,
 performant JavaScript libraries for everyday use.
 
+## Overview
+
 Lightweight observable for JS. Emits events on property changes via on/off/emit.
 Works with objects, arrays, and primitives.
 
-## Install
+## Installation
 
 ```bash
 npm install asljs-observable
@@ -65,7 +67,7 @@ box.on('set', ({ value, previous }) => {
 box.value = 11;
 ```
 
-## API
+## API Reference
 
 ### `observable(value, [options])`
 
@@ -82,7 +84,7 @@ Returns the original value wrapped with Eventful API and change notifications.
 More concrete events are emitted first, followed by more generic ones.
 E.g., setting `obj.a` emits `set:a` first, then `set`.
 
-Objects and arrays emit:
+Objects emit:
 
 - `set` and `set:<property>`: `{ property, value, previous }`
 - `delete` and `delete:<property>`: `{ property, previous }`
@@ -94,9 +96,14 @@ For arrays:
   `index`.
 - non-index properties (including `'length'` and custom properties) emit
   payloads with string `property`.
+- `define` / `define:<property>` are emitted only for non-index properties.
 
 Primitives (boxed as `{ value }`) emit:
 
 - `set` and `set:value`: `{ property: 'value', value, previous }`
+
+## License
+
+MIT
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

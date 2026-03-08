@@ -55,8 +55,9 @@ function isArrayIndexProperty(
  * Creates an observable object/array/primitive that emits events on changes.
  *
  * Events:
- *   - 'set' / `set:<prop>`       payload: { property, value, previous }
- *   - 'delete' / `delete:<prop>` payload: { property, previous }
+ *   - objects: 'set' / `set:<prop>`, payload: `{ property, value, previous }`
+ *   - objects: 'delete' / `delete:<prop>`, payload: `{ property, previous }`
+ *   - arrays index: 'set' / `set:<index>`, payload `{ index, value, previous }`
  *   - 'define' / `define:<prop>` payload: { property, descriptor, previous }
  *
  * Emissions are synchronous and errors are isolated by the underlying

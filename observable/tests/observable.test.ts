@@ -24,9 +24,9 @@ test(
   'observable <empty>',
   async () => {
     const obj =
-      observable<number>();
+      observable();
 
-    let newValue: number | undefined;
+    let newValue: any;
 
     obj.on(
       'set',
@@ -60,7 +60,20 @@ test(
     const traces =
       tracer.getMinimalTraces();
 
-    console.log(traces);
+    assert.deepEqual(
+      traces,
+      [ { action: 'new', payload: { object } } ]);
+  });
+
+test(
+  'throws when eventful option is not a function',
+  async () => {
+    assert.throws(
+      () =>
+        observable(
+          { a: 1 },
+          { eventful: 123 as any }),
+      /Expect a function\./);
   });
 
 test(
@@ -259,6 +272,36 @@ test(
       [ { action: 'new', payload: { object: array } },
         { action: 'emit', payload: { object: array, event: 'delete:1', args: [ { previous: 20, index: 1 } ] } },
         { action: 'emit', payload: { object: array, event: 'delete', args: [ { previous: 20, index: 1 } ] } } ]);
+  });
+
+test(
+  'observable array non-canonical numeric-like key uses property payload',
+  async () => {
+    const tracer =
+      createTracer();
+
+    const array =
+      [ 1, 2 ];
+
+    const arr =
+      observable(
+        array,
+        { eventful:
+            (value: any) =>
+              eventful(value, tracer) });
+
+    (arr as any)['01'] = 99;
+
+    const traces =
+      tracer.getMinimalTraces();
+
+    assert.deepEqual(
+      traces,
+      [ { action: 'new', payload: { object: array } },
+        { action: 'emit', payload: { object: array, event: 'define:01' } },
+        { action: 'emit', payload: { object: array, event: 'define' } },
+        { action: 'emit', payload: { object: array, event: 'set:01', args: [ { previous: undefined, property: '01', value: 99 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: undefined, property: '01', value: 99 } ] } } ]);
   });
 
 type TraceRecord = {
