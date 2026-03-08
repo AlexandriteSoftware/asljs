@@ -3,8 +3,8 @@ import test
 import assert
   from 'node:assert/strict';
 import {
-    createTracer
-  } from './tracer.js';
+    createRecorder
+  } from './recorder.js';
 import {
   eventful
 } from '../eventful.js';
@@ -102,13 +102,13 @@ test(
 test(
   'trace receives safe payload and action names',
   async () => {
-    const tracer =
-      createTracer();
+    const recorder =
+      createRecorder();
 
     const obj =
       eventful(
         { },
-        tracer);
+        { trace: recorder.write });
 
     const off =
       obj.on(
@@ -118,12 +118,12 @@ test(
     await obj.emitAsync('e', 3, 4);
     off();
 
-    assert.ok(tracer.getFirstTraceByAction('on'));
-    assert.ok(tracer.getFirstTraceByAction('emit'));
-    assert.ok(tracer.getFirstTraceByAction('emitAsync'));
+    assert.ok(recorder.records().find(item => item.action === 'on'));
+    assert.ok(recorder.records().find(item => item.action === 'emit'));
+    assert.ok(recorder.records().find(item => item.action === 'emitAsync'));
 
     const emitTrace =
-      tracer.getFirstTraceByAction('emit');
+      recorder.records().find(item => item.action === 'emit');
 
     assert.ok(emitTrace);
 
@@ -132,7 +132,7 @@ test(
     assert.deepEqual(emitTrace.payload.args, [1, 2]);
 
     const emitAsyncTrace =
-      tracer.getFirstTraceByAction('emitAsync');
+      recorder.records().find(item => item.action === 'emitAsync');
 
     assert.ok(emitAsyncTrace);
 

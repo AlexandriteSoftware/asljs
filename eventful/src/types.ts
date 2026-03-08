@@ -122,50 +122,50 @@ export interface Eventful<E extends EventMap = EventMap> {
   /**
    * Subscribe to an event. Returns an unsubscribe function.
    */
-  on(
-      event: keyof E & EventName,
-      listener: Listener<E[keyof E & EventName]>
+  on<K extends keyof E & EventName>(
+      event: K,
+      listener: Listener<E[K]>
     ): () => boolean;
 
   /**
    * Subscribe once to an event. Returns an unsubscribe function
    * (called automatically).
    */
-  once(
-      event: keyof E & EventName,
-      listener: Listener<E[keyof E & EventName]>
+  once<K extends keyof E & EventName>(
+      event: K,
+      listener: Listener<E[K]>
     ): () => boolean;
 
   /**
    * Unsubscribe a previously registered listener. Returns true if removed.
    */
-  off(
-      event: keyof E & EventName,
-      listener: Listener<E[keyof E & EventName]>
+  off<K extends keyof E & EventName>(
+      event: K,
+      listener: Listener<E[K]>
     ): boolean;
 
   /**
    * Emit an event synchronously. All listeners run in order.
    * Errors are isolated (ignored) unless `strict` is true.
    */
-  emit(
-      event: keyof E & EventName,
-      ...args: E[keyof E & EventName]
+  emit<K extends keyof E & EventName>(
+      event: K,
+      ...args: E[K]
     ): void;
 
   /**
    * Emit an event and wait for all listeners (run in parallel).
    * Errors are isolated (ignored) unless `strict` is true.
    */
-  emitAsync(
-      event: keyof E & EventName,
-      ...args: E[keyof E & EventName]
+  emitAsync<K extends keyof E & EventName>(
+      event: K,
+      ...args: E[K]
     ): Promise<void>;
 
   /**
    * Returns true if there is at least one listener for the event.
    */
-  has(
-      event: keyof E & EventName
+  has<K extends keyof E & EventName>(
+      event: K
     ): boolean;
 }

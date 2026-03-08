@@ -13,7 +13,7 @@ import type {
   } from './types.js';
 
 import {
-    eventTypeGuard,
+    eventNameTypeGuard,
     functionTypeGuard,
     isFunction,
     isObject,
@@ -33,7 +33,7 @@ const eventfulImpl =
     }
 
     for (const method of ['on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
-      if ((object as any)[method] !== undefined) {
+      if (method in (object as any)) {
         throw new Error(
           `Method "${method}" already exists.`);
       }
@@ -191,7 +191,7 @@ const eventfulImpl =
         listener: Function
       ): () => boolean
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
       functionTypeGuard(listener);
 
       traceFn(
@@ -217,7 +217,7 @@ const eventfulImpl =
         listener: Function
       ): () => boolean
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
       functionTypeGuard(listener);
 
       const off =
@@ -236,7 +236,7 @@ const eventfulImpl =
         listener: Function
       ): boolean
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
       functionTypeGuard(listener);
 
       traceFn(
@@ -254,7 +254,7 @@ const eventfulImpl =
         event: EventName
       ): boolean
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
 
       return (map.get(event)?.size ?? 0) > 0;
     }
@@ -264,7 +264,7 @@ const eventfulImpl =
         ...args: any[]
       ): void
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
 
       const listeners =
           map.get(event)
@@ -300,7 +300,7 @@ const eventfulImpl =
         ...args: any[]
       ): Promise<void>
     {
-      eventTypeGuard(event);
+      eventNameTypeGuard(event);
 
       const listeners =
           map.get(event)

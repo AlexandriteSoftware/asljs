@@ -3,8 +3,8 @@ import test
 import assert
   from 'node:assert/strict';
 import {
-    createTracer
-  } from './tracer.js';
+    createRecorder
+  } from './recorder.js';
 import {
   eventful,
   EventfulBase,
@@ -159,16 +159,16 @@ test(
 test(
   'trace is called on creation with action "new"',
   () => {
-    const tracer =
-      createTracer();
+    const recorder =
+      createRecorder();
 
     const object =
       eventful(
         { },
-        tracer);
+        { trace: recorder.write });
 
     const creation =
-      tracer.getFirstTraceByAction('new');
+      recorder.records().find(item => item.action === 'new');
 
     assert.ok(creation);
 
@@ -180,22 +180,22 @@ test(
 test(
   'global trace is called on creation with action "new"',
   () => {
-    const tracer =
-      createTracer();
+    const recorder =
+      createRecorder();
 
     const off =
       eventful.on(
         'new',
-        args => tracer.trace('new', args));
+        args => recorder.write('new', args));
 
     try {
       const object =
         eventful(
           { },
-          tracer);
+          { trace: recorder.write });
 
       const creation =
-        tracer.getFirstTraceByAction('new');
+        recorder.records().find(item => item.action === 'new');
 
       assert.ok(
         creation);

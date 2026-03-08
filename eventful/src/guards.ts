@@ -1,6 +1,6 @@
 import type { EventName } from './types.js';
 
-export function eventTypeGuard(
+export function eventNameTypeGuard(
     value: any
   ) : asserts value is EventName
 {

@@ -36,7 +36,10 @@ obj.emit('greet', 'Hello');
 ```ts
 import { eventful, type Eventful } from 'asljs-eventful';
 
-const obj: Eventful<{ name: string }> =
+type Events =
+  { greet: [msg: string] };
+
+const obj: { name: string } & Eventful<Events> =
   eventful({ name: 'Alice' });
 
 obj.on('greet',
@@ -72,6 +75,7 @@ class MyClass extends EventfulBase {
 
 ```ts
 import { EventfulBase } from 'asljs-eventful';
+
 class MyClass extends EventfulBase {
   name: string;
 
@@ -158,12 +162,12 @@ const obj =
             payload);
         } });
 
-// Tracing actions include:
-// - 'new' on creation: payload { object }
-// - 'on' when subscribing: payload { object, event, listener }
-// - 'off' when unsubscribing: payload { object, event, listener }
-// - 'emit' for sync emit: payload { object, event, args, listeners }
-// - 'emitAsync' for async emit: payload { object, event, args, listeners }
+// Tracing (event, payload):
+// - 'new' on creation, { object }
+// - 'on' when subscribing, { object, event, listener }
+// - 'off' when unsubscribing, { object, event, listener }
+// - 'emit' for sync emit, { object, event, args, listeners }
+// - 'emitAsync' for async emit, { object, event, args, listeners }
 ```
 
 Custom error handler for listener errors:
@@ -191,7 +195,9 @@ const obj =
 
 ### Global Events
 
-`eventful` is also a global emitter. When you create an enhanced object via `eventful(target, options)`, its lifecycle and actions are traced via the per-instance `trace` hook and also emitted as global events on `eventful`.
+`eventful` is also a global emitter. When you create an enhanced object via
+`eventful(target, options)`, its lifecycle and actions are traced via the
+per-instance `trace` hook and also emitted as global events on `eventful`.
 
 ```js
 const offNew =
@@ -213,7 +219,9 @@ offNew();
 offError();
 ```
 
-Note: if a **global** `eventful.on('error', ...)` listener throws, `eventful` throws a `ListenerError` (an `Error` subclass with fields `{ error, object, event, listener }`) to avoid an infinite error loop.
+Note: if a **global** `eventful.on('error', ...)` listener throws, `eventful`
+throws a `ListenerError` (an `Error` subclass with fields
+`{ error, object, event, listener }`) to avoid an infinite error loop.
 
 ## API
 
@@ -224,8 +232,10 @@ a new empty object is created.
 
 - `target` (Object): The object to be enhanced with event capabilities.
 - `options` (Object): Configuration options.
-  - `error` (Function | null): Optional error hook called with `{ error, object, event, listener }`.
-  - `trace` (Function | null): Optional trace hook called with `(action, payload)`.
+  - `error` (Function | null): Optional error hook called with
+    `{ error, object, event, listener }`.
+  - `trace` (Function | null): Optional trace hook called with
+    `(action, payload)`.
   - `strict` (Boolean): If true, propagates listener errors; otherwise they
     are isolated. Defaults to false.
 
