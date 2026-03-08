@@ -24,7 +24,7 @@ test(
   'observable <empty>',
   async () => {
     const obj =
-      observable();
+      observable<number | undefined>(undefined);
 
     let newValue: any;
 
@@ -302,6 +302,106 @@ test(
         { action: 'emit', payload: { object: array, event: 'define' } },
         { action: 'emit', payload: { object: array, event: 'set:01', args: [ { previous: undefined, property: '01', value: 99 } ] } },
         { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: undefined, property: '01', value: 99 } ] } } ]);
+  });
+
+test(
+  'observable.watch tracks selected properties and emits initial callback',
+  async () => {
+    const obj =
+      observable(
+        { a: 1,
+          b: 2,
+          c: 3 });
+
+    const calls: Array<[number, number]> = [];
+
+    observable.watch(
+      obj,
+      [ 'a', 'b' ] as const,
+      (a, b) => {
+        calls.push([ a, b ]);
+      });
+
+    obj.a = 10;
+    obj.c = 30;
+    obj.b = 20;
+
+    assert.deepEqual(
+      calls,
+      [ [ 1, 2 ],
+        [ 10, 2 ],
+        [ 10, 20 ] ]);
+  });
+
+test(
+  'observable adds non-enumerable watch method when missing',
+  async () => {
+    const obj =
+      observable(
+        { a: 1,
+          b: 2 });
+
+    assert.equal(
+      typeof (obj as any).watch,
+      'function');
+
+    assert.equal(
+      Object.keys(obj).includes('watch'),
+      false);
+
+    const calls: Array<[number, number]> = [];
+
+    (obj as any).watch(
+      [ 'a', 'b' ],
+      (a: number, b: number) => {
+        calls.push([ a, b ]);
+      });
+
+    obj.b = 4;
+
+    assert.deepEqual(
+      calls,
+      [ [ 1, 2 ],
+        [ 1, 4 ] ]);
+  });
+
+test(
+  'observable does not override existing watch method',
+  async () => {
+    const originalWatch =
+      () => { };
+
+    const obj =
+      observable(
+        { a: 1,
+          watch: originalWatch } as any);
+
+    assert.equal(
+      obj.watch,
+      originalWatch);
+  });
+
+test(
+  'watching arrays is not supported',
+  async () => {
+    const arr =
+      observable(
+        [ 1, 2, 3 ]);
+
+    assert.throws(
+      () =>
+        observable.watch(
+          arr as any,
+          [ '0' ] as const,
+          () => { }),
+      /Watching arrays is not supported\./);
+
+    assert.throws(
+      () =>
+        (arr as any).watch(
+          [ '0' ],
+          () => { }),
+      /Watching arrays is not supported\./);
   });
 
 type TraceRecord = {

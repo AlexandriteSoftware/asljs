@@ -9,5 +9,7 @@ export type {
   ObservableFn,
   ObservableGlobalOptions,
   ObservableOptions,
-  ObservableTraceFn
+  ObservableTraceFn,
+  ObservableWatchFn,
+  WatchedValues
 } from './dist/types.js';

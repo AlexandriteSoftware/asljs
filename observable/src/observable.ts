@@ -4,7 +4,8 @@ import {
 
 import {
     ObservableOptions,
-    ObservableFn
+    ObservableFn,
+    ObservableWatchFn
   } from './types.js';
 
 import {
@@ -51,6 +52,77 @@ function isArrayIndexProperty(
   return key === String(numeric);
 }
 
+const watchImpl: ObservableWatchFn =
+  (
+      target,
+      properties,
+      callback
+    ): void =>
+  {
+    if (Array.isArray(target)) {
+      throw new TypeError(
+        'Watching arrays is not supported.');
+    }
+
+    functionTypeGuard(callback);
+
+    if (!isFunction((target as any).on)) {
+      throw new TypeError(
+        'Expect an eventful object with on().');
+    }
+
+    if (!Array.isArray(properties)) {
+      throw new TypeError(
+        'Expect properties to be an array.');
+    }
+
+    const getValues =
+      (): any =>
+      {
+        return properties.map(
+          property => (target as any)[property]) as any;
+      };
+
+    for (const property of properties) {
+      if (typeof property !== 'string') {
+        throw new TypeError(
+          'Expect properties to be an array of strings.');
+      }
+
+      (target as any).on(
+        `set:${property}`,
+        () => callback(...getValues()));
+    }
+
+    callback(...getValues());
+  };
+
+function ensureWatchMethod(
+    target: any
+  ): void
+{
+  if ('watch' in target) {
+    return;
+  }
+
+  Object.defineProperty(
+    target,
+    'watch',
+    { configurable: true,
+      writable: true,
+      enumerable: false,
+      value(
+          properties: readonly string[],
+          callback: (...values: any[]) => void
+        ): void
+      {
+        observable.watch(
+          this as any,
+          properties,
+          callback);
+      } });
+}
+
 /**
  * Creates an observable object/array/primitive that emits events on changes.
  *
@@ -86,6 +158,8 @@ const observableImpl =
         {
           const isArrayTarget =
             Array.isArray(target);
+
+          ensureWatchMethod(target);
 
           let proxy: any;
 
@@ -366,3 +440,6 @@ export const observable =
 
 observable.options =
   { trace: null };
+
+observable.watch =
+  watchImpl;

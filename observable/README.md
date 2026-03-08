@@ -67,6 +67,20 @@ box.on('set', ({ value, previous }) => {
 box.value = 11;
 ```
 
+Watch helper example:
+
+```js
+const state = observable({ firstName: 'Ada', lastName: 'Lovelace', age: 36 });
+
+observable.watch(
+  state,
+  [ 'firstName', 'lastName' ],
+  (firstName, lastName) => {
+    console.log('Name:', firstName, lastName);
+  }
+);
+```
+
 ## API Reference
 
 ### `observable(value, [options])`
@@ -78,6 +92,17 @@ Wraps an object, array, or primitive to make it observable.
 - `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
 
 Returns the original value wrapped with Eventful API and change notifications.
+When the target object does not already have a `watch` method, observable adds a
+non-enumerable `watch(properties, callback)` method to the wrapped object.
+
+### `observable.watch(target, properties, callback)`
+
+Watches the selected properties and invokes callback with their current values.
+
+- Runs the callback immediately with current values.
+- Re-runs callback each time one of the selected `set:<property>` events fires.
+- `target` must be eventful (`on` method available).
+- Arrays are not supported by `watch` yet and will throw `TypeError`.
 
 ### Events and payloads
 

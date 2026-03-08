@@ -148,6 +148,34 @@ export interface ObservableGlobalOptions {
   trace: ObservableTraceFn | null;
 }
 
+export type WatchedValues<
+    T,
+    K extends readonly (keyof T)[]
+  > =
+  { [I in keyof K]:
+      K[I] extends keyof T
+        ? T[K[I]]
+        : never; };
+
+export type ObservableWatchFn =
+  <
+      T extends Eventful,
+      K extends readonly (Extract<keyof T, string>)[]
+    >(
+      target: T,
+      properties: K,
+      callback: (...values: WatchedValues<T, K>) => void
+    ) => void;
+
+type WatchMethod<T extends Eventful> =
+  {
+    watch:
+      <K extends readonly (Extract<keyof T, string>)[]>(
+          properties: K,
+          callback: (...values: WatchedValues<T, K>) => void
+        ) => void;
+  };
+
 export type ObservableEventsArray<T extends readonly any[]> =
   & { 'set': [ArraySetPayload<T>] }
   & { 'delete': [ArrayDeletePayload<T>] }
@@ -159,13 +187,17 @@ export type ObservableFn = {
   <T extends readonly any[]>(
     value: T,
     options?: ObservableOptions
-  ): T & Eventful<ObservableEventsArray<T>>;
+  ): T
+    & Eventful<ObservableEventsArray<T>>
+    & WatchMethod<T & Eventful<ObservableEventsArray<T>>>;
 
   /** Object overload */
   <T extends object>(
     value: T,
     options?: ObservableOptions
-  ): T & Eventful<ObservableEventsObject<T>>;
+  ): T
+    & Eventful<ObservableEventsObject<T>>
+    & WatchMethod<T & Eventful<ObservableEventsObject<T>>>;
 
   /** Primitive overload (boxed as { value }) */
   <T>(
@@ -174,7 +206,9 @@ export type ObservableFn = {
   ): { value: T } & Eventful<ObservableEventsPrimitive<T>>;
 
   /** Primitive overload without initial value */
-  (): { value: any } & Eventful<ObservableEventsPrimitive<any>>;
+  (): { value: undefined } & Eventful<ObservableEventsPrimitive<undefined>>;
+
+  watch: ObservableWatchFn;
 
   options: ObservableGlobalOptions;
 };
