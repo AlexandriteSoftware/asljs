@@ -41,8 +41,13 @@ arr.on('set:1', ({ value, previous }) => {
   console.log('arr[1] ←', value, '(was', previous, ')');
 });
 
-arr.on('set', ({ index, value, previous }) => {
-  console.log(`arr[${index}] ←`, value, '(was', previous, ')');
+arr.on('set', (payload) => {
+  if ('index' in payload) {
+    console.log(`arr[${payload.index}] ←`, payload.value, '(was', payload.previous, ')');
+    return;
+  }
+
+  console.log(`arr.${payload.property} ←`, payload.value, '(was', payload.previous, ')');
 });
 
 arr[1] = 42;
@@ -68,7 +73,6 @@ Wraps an object, array, or primitive to make it observable.
 
 - `value`: Target object/array/primitive to observe.
 - `options.eventful` (optional): Custom `eventful` factory (defaults to `asljs-eventful`).
-- `options.eventfulOptions` (optional): Options passed to the underlying `eventful` wrapper.
 - `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
 
 Returns the original value wrapped with Eventful API and change notifications.
@@ -83,6 +87,13 @@ Objects and arrays emit:
 - `set` and `set:<property>`: `{ property, value, previous }`
 - `delete` and `delete:<property>`: `{ property, previous }`
 - `define` and `define:<property>`: `{ property, descriptor, previous }`
+
+For arrays:
+
+- index changes (`arr[0] = x`, `delete arr[1]`) emit payloads with numeric
+  `index`.
+- non-index properties (including `'length'` and custom properties) emit
+  payloads with string `property`.
 
 Primitives (boxed as `{ value }`) emit:
 

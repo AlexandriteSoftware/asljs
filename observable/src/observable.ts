@@ -24,6 +24,33 @@ function hasOwn(
       key);
 }
 
+function isArrayIndexProperty(
+    key: PropertyKey
+  ): boolean
+{
+  if (typeof key === 'symbol') {
+    return false;
+  }
+
+  const numeric =
+    typeof key === 'number'
+      ? key
+      : Number(key);
+
+  if (!Number.isInteger(numeric)
+    || numeric < 0
+    || numeric >= 4294967295)
+  {
+    return false;
+  }
+
+  if (typeof key === 'number') {
+    return true;
+  }
+
+  return key === String(numeric);
+}
+
 /**
  * Creates an observable object/array/primitive that emits events on changes.
  *
@@ -56,6 +83,9 @@ const observableImpl =
             target: any
           ): any =>
         {
+          const isArrayTarget =
+            Array.isArray(target);
+
           let proxy: any;
 
           proxy =
@@ -70,6 +100,10 @@ const observableImpl =
                       receiver
                     ): boolean
                   {
+                    const isArrayIndex =
+                      isArrayTarget
+                      && isArrayIndexProperty(property);
+
                     const previous =
                       Reflect.get(
                         tgt,
@@ -94,9 +128,13 @@ const observableImpl =
 
                       if (!Object.is(previous, current)) {
                         const payload =
-                          { property,
-                            value: current,
-                            previous };
+                          isArrayIndex
+                            ? { index: Number(property),
+                                value: current,
+                                previous }
+                            : { property,
+                                value: current,
+                                previous };
 
                         const traceFn =
                           trace
@@ -127,6 +165,10 @@ const observableImpl =
                       property
                     ): boolean
                   {
+                    const isArrayIndex =
+                      isArrayTarget
+                      && isArrayIndexProperty(property);
+
                     const had =
                       hasOwn(tgt, property);
 
@@ -145,8 +187,11 @@ const observableImpl =
                       && had)
                     {
                       const payload =
-                        { property,
-                          previous };
+                        isArrayIndex
+                          ? { index: Number(property),
+                              previous }
+                          : { property,
+                              previous };
 
                       const traceFn =
                         trace
@@ -189,7 +234,13 @@ const observableImpl =
                         property,
                         descriptor);
 
+                    const skipArrayDefine =
+                      isArrayTarget
+                      && (property === 'length'
+                          || isArrayIndexProperty(property));
+
                     if (proxy
+                      && !skipArrayDefine
                       && ok)
                     {
                       const payload =

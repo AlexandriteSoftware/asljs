@@ -189,14 +189,10 @@ test(
     assert.deepEqual(
       traces,
       [ { action: 'new', payload: { object: array } },
-        { action: 'emit', payload: { object: array, event: 'define:0' } },
-        { action: 'emit', payload: { object: array, event: 'define' } },
-        { action: 'emit', payload: { object: array, event: 'set:0', args: [ { previous: 1, property: '0', value: 10 } ] } },
-        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 1, property: '0', value: 10 } ] } },
-        { action: 'emit', payload: { object: array, event: 'define:1' } },
-        { action: 'emit', payload: { object: array, event: 'define' } },
-        { action: 'emit', payload: { object: array, event: 'set:1', args: [ { previous: 2, property: '1', value: 20 } ] } },
-        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 2, property: '1', value: 20 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set:0', args: [ { previous: 1, index: 0, value: 10 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 1, index: 0, value: 10 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set:1', args: [ { previous: 2, index: 1, value: 20 } ] } },
+        { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 2, index: 1, value: 20 } ] } },
         { action: 'emit', payload: { object: array, event: 'define:test1' } },
         { action: 'emit', payload: { object: array, event: 'define' } },
         { action: 'emit', payload: { object: array, event: 'set:test1', args: [ { previous: undefined, property: 'test1', value: 30 } ] } },
@@ -228,8 +224,6 @@ test(
     assert.deepEqual(
       traces,
       [ { action: 'new', payload: { object: array } },
-        { action: 'emit', payload: { object: array, event: 'define:length' } },
-        { action: 'emit', payload: { object: array, event: 'define' } },
         { action: 'emit', payload: { object: array, event: 'set:length', args: [ { previous: 2, property: 'length', value: 1 } ] } },
         { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: 2, property: 'length', value: 1 } ] } } ]);
   });
@@ -263,8 +257,8 @@ test(
     assert.deepEqual(
       traces,
       [ { action: 'new', payload: { object: array } },
-        { action: 'emit', payload: { object: array, event: 'delete:1', args: [ { previous: 20, property: '1' } ] } },
-        { action: 'emit', payload: { object: array, event: 'delete', args: [ { previous: 20, property: '1' } ] } } ]);
+        { action: 'emit', payload: { object: array, event: 'delete:1', args: [ { previous: 20, index: 1 } ] } },
+        { action: 'emit', payload: { object: array, event: 'delete', args: [ { previous: 20, index: 1 } ] } } ]);
   });
 
 type TraceRecord = {

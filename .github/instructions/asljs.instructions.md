@@ -39,6 +39,12 @@ applyTo: '**'
   - Provide minimal, accurate examples consistent with exports and options.
     Document strict/non-strict behaviors, hooks, and return values.
   - Keep README, types, and runtime synchronized whenever contracts change.
+  - README.md should have following sections:
+    - Overview (with reference to ASLJS monorepo)
+    - Installation (with link to NPM package).
+    - Usage (with examples)
+    - API Reference (brief, with links to types)
+    - License
 - **Testing:**
   - Use Node’s test runner. Cover happy paths, error paths, and surface-level
     API contracts.

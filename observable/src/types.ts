@@ -32,30 +32,39 @@ export interface ObservableOptions {
   ) => void) | null;
 }
 
-/** Arrays: no 'define' events (implementation sets includeDefine = false) */
+/** Arrays: no 'define' events */
 type ArrayIndex = number;
 
 type ArraySetPayload<T extends readonly any[]> =
-  | { property: ArrayIndex;
+  | { index: ArrayIndex;
       value: ArrayElement<T>;
       previous: ArrayElement<T> | undefined }
   | { property: 'length';
       value: number;
-      previous: number };
+      previous: number }
+  | { property: string;
+      value: any;
+      previous: any };
 
 type ArrayDeletePayload<T extends readonly any[]> =
-  { property: ArrayIndex;
-    previous: ArrayElement<T> | undefined };
+  | { index: ArrayIndex;
+      previous: ArrayElement<T> | undefined }
+  | { property: string;
+      previous: any };
 
 type KeyedArraySetEvents<T extends readonly any[]> =
   { [K in ArrayIndex as `set:${PropString<K>}`]:
-      [Extract<ArraySetPayload<T>, { property: K }>] }
-  & { 'set:length':
-        [Extract<ArraySetPayload<T>, { property: 'length' }>] };
+      [{ index: K;
+         value: ArrayElement<T>;
+         previous: ArrayElement<T> | undefined }] }
+  & { 'set:length': [{ property: 'length';
+                       value: number;
+                       previous: number }] };
 
 type KeyedArrayDeleteEvents<T extends readonly any[]> =
   { [K in ArrayIndex as `delete:${PropString<K>}`]:
-      [ArrayDeletePayload<T>] };
+      [{ index: K;
+         previous: ArrayElement<T> | undefined }] };
 
 type PropString<K> =
   K extends string
