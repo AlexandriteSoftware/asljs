@@ -59,6 +59,22 @@ export class ObservableObjectBase<T extends object>
 
     assign(value);
 
+    this.emitSet(
+      property,
+      previous,
+      value);
+
+    return true;
+  }
+
+  protected emitSet<
+      K extends Extract<keyof T, string>
+    >(
+      property: K,
+      previous: T[K],
+      value: T[K]
+    ): boolean
+  {
     const payload =
       { property,
         value,
