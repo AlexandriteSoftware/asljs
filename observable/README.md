@@ -14,9 +14,11 @@ Works with objects, arrays, and primitives.
 npm install asljs-observable
 ```
 
+NPM Package: [asljs-observable](https://www.npmjs.com/package/asljs-observable)
+
 ## Usage
 
-Object example:
+### Observing an object (JavaScript)
 
 ```js
 import { observable } from 'asljs-observable';
@@ -34,9 +36,11 @@ obj.on('set', ({ property, value, previous }) => {
 obj.a = 3;
 ```
 
-Array example:
+### Observing an array (JavaScript)
 
 ```js
+import { observable } from 'asljs-observable';
+
 const arr = observable([1, 2, 3]);
 
 arr.on('set:1', ({ value, previous }) => {
@@ -55,9 +59,11 @@ arr.on('set', (payload) => {
 arr[1] = 42;
 ```
 
-Primitive example:
+### Observing a number (JavaScript)
 
 ```js
+import { observable } from 'asljs-observable';
+
 const box = observable(10);
 
 box.on('set', ({ value, previous }) => {
@@ -67,18 +73,67 @@ box.on('set', ({ value, previous }) => {
 box.value = 11;
 ```
 
-Watch helper example:
+### Watch selected properties (JavaScript)
 
 ```js
-const state = observable({ firstName: 'Ada', lastName: 'Lovelace', age: 36 });
+import { observable } from 'asljs-observable';
 
-observable.watch(
-  state,
-  [ 'firstName', 'lastName' ],
-  (firstName, lastName) => {
-    console.log('Name:', firstName, lastName);
+const state = observable({ user: 'Alice', active: false });
+
+// logs "User: Alice Active: false"
+state.watch(
+  [ 'user', 'active' ],
+  (user, active) =>
+    console.log('User:', user, 'Active:', active));
+
+// logs "User: Alice Active: true"
+state.active = true;
+```
+
+### Watching an object's property (TypeScript)
+
+```ts
+import { observable, type Observable } from 'asljs-observable';
+
+const obj: Observable<{ name: string }> =
+  observable({ name: 'Alice' });
+
+obj.watch(
+  'name',
+  name => console.log(name));
+```
+
+### Observable class (TypeScript)
+
+```ts
+
+import { ObservableObjectBase } from 'asljs-observable';
+
+class User
+  extends ObservableObjectBase<{ name: string }>
+{
+  #name: string;
+
+  constructor(name: string) {
+    super();
+
+    this.#name = name;
   }
-);
+
+  get name() {
+    return this.#name;
+  }
+
+  set name(value: string) {
+    this.setAndEmit(
+      'name',
+      this.#name,
+      value,
+      next => {
+        this.#name = next;
+      });
+  }
+}
 ```
 
 ## API Reference
@@ -103,6 +158,8 @@ Watches the selected properties and invokes callback with their current values.
 - Re-runs callback each time one of the selected `set:<property>` events fires.
 - `target` must be eventful (`on` method available).
 - Arrays are not supported by `watch` yet and will throw `TypeError`.
+- Returns an unsubscribe function. Calling it removes all listeners attached by
+  this `watch` call.
 
 ### Events and payloads
 
@@ -129,6 +186,6 @@ Primitives (boxed as `{ value }`) emit:
 
 ## License
 
-MIT
+MIT License. See [LICENSE](LICENSE.md) for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

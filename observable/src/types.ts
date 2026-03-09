@@ -165,7 +165,7 @@ export type ObservableWatchFn =
       target: T,
       properties: K,
       callback: (...values: WatchedValues<T, K>) => void
-    ) => void;
+    ) => () => boolean;
 
 type WatchMethod<T extends Eventful> =
   {
@@ -173,8 +173,35 @@ type WatchMethod<T extends Eventful> =
       <K extends readonly (Extract<keyof T, string>)[]>(
           properties: K,
           callback: (...values: WatchedValues<T, K>) => void
-        ) => void;
+        ) => () => boolean;
   };
+
+type ObservableArray<T extends readonly any[]> =
+  T
+  & Eventful<ObservableEventsArray<T>>
+  & WatchMethod<T & Eventful<ObservableEventsArray<T>>>;
+
+type ObservableObject<T extends object> =
+  T
+  & Eventful<ObservableEventsObject<T>>
+  & WatchMethod<T & Eventful<ObservableEventsObject<T>>>;
+
+type ObservablePrimitive<T> =
+  { value: T }
+  & Eventful<ObservableEventsPrimitive<T>>;
+
+/**
+ * Public observable composition type.
+ *
+ * - objects/arrays include Eventful API and a `watch()` helper.
+ * - primitives are boxed into `{ value }` and include Eventful API.
+ */
+export type Observable<T> =
+  T extends readonly any[]
+    ? ObservableArray<T>
+    : T extends object
+      ? ObservableObject<T>
+      : ObservablePrimitive<T>;
 
 export type ObservableEventsArray<T extends readonly any[]> =
   & { 'set': [ArraySetPayload<T>] }
@@ -187,26 +214,22 @@ export type ObservableFn = {
   <T extends readonly any[]>(
     value: T,
     options?: ObservableOptions
-  ): T
-    & Eventful<ObservableEventsArray<T>>
-    & WatchMethod<T & Eventful<ObservableEventsArray<T>>>;
+  ): ObservableArray<T>;
 
   /** Object overload */
   <T extends object>(
     value: T,
     options?: ObservableOptions
-  ): T
-    & Eventful<ObservableEventsObject<T>>
-    & WatchMethod<T & Eventful<ObservableEventsObject<T>>>;
+  ): ObservableObject<T>;
 
   /** Primitive overload (boxed as { value }) */
   <T>(
     value: T,
     options?: ObservableOptions
-  ): { value: T } & Eventful<ObservableEventsPrimitive<T>>;
+  ): ObservablePrimitive<T>;
 
   /** Primitive overload without initial value */
-  (): { value: undefined } & Eventful<ObservableEventsPrimitive<undefined>>;
+  (): ObservablePrimitive<undefined>;
 
   watch: ObservableWatchFn;
 

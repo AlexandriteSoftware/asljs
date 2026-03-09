@@ -29,9 +29,8 @@ function isArrayIndexProperty(
     key: PropertyKey
   ): boolean
 {
-  if (typeof key === 'symbol') {
+  if (typeof key === 'symbol')
     return false;
-  }
 
   const numeric =
     typeof key === 'number'
@@ -45,11 +44,8 @@ function isArrayIndexProperty(
     return false;
   }
 
-  if (typeof key === 'number') {
-    return true;
-  }
-
-  return key === String(numeric);
+  return typeof key === 'number'
+         || key === String(numeric);
 }
 
 const watchImpl: ObservableWatchFn =
@@ -57,7 +53,7 @@ const watchImpl: ObservableWatchFn =
       target,
       properties,
       callback
-    ): void =>
+    ): () => boolean =>
   {
     if (Array.isArray(target)) {
       throw new TypeError(
@@ -76,34 +72,44 @@ const watchImpl: ObservableWatchFn =
         'Expect properties to be an array.');
     }
 
-    const getValues =
-      (): any =>
-      {
-        return properties.map(
-          property => (target as any)[property]) as any;
-      };
-
     for (const property of properties) {
       if (typeof property !== 'string') {
         throw new TypeError(
           'Expect properties to be an array of strings.');
       }
+    }
 
-      (target as any).on(
-        `set:${property}`,
-        () => callback(...getValues()));
+    const getValues =
+      (): any =>
+        properties.map(
+          property => (target as any)[property]) as any;
+
+    const unwatchers: Array<() => boolean> = [];
+
+    for (const property of properties) {
+      const unwatch =
+        (target as any).on(
+          `set:${property}`,
+          () => callback(...getValues()));
+
+      unwatchers.push(unwatch);
     }
 
     callback(...getValues());
+
+    return () : boolean =>
+      unwatchers.reduce(
+        (result, unwatch) =>
+          unwatch() || result,
+        false);
   };
 
 function ensureWatchMethod(
     target: any
   ): void
 {
-  if ('watch' in target) {
+  if ('watch' in target)
     return;
-  }
 
   Object.defineProperty(
     target,
@@ -114,9 +120,9 @@ function ensureWatchMethod(
       value(
           properties: readonly string[],
           callback: (...values: any[]) => void
-        ): void
+        ): () => boolean
       {
-        observable.watch(
+        return observable.watch(
           this as any,
           properties,
           callback);
@@ -149,216 +155,220 @@ const observableImpl =
     functionTypeGuard(eventfulFn);
 
     const globalOptions =
-        observable.options;
+      observable.options;
 
     const makeProxy =
-        (
-            target: any
-          ): any =>
-        {
-          const isArrayTarget =
-            Array.isArray(target);
+      (
+          target: any
+        ): any =>
+      {
+        const isArrayTarget =
+          Array.isArray(target);
 
-          ensureWatchMethod(target);
+        ensureWatchMethod(target);
 
-          let proxy: any;
+        let proxy: any;
 
-          proxy =
-            eventfulFn(
-              new Proxy(
-                target,
+        const proxiedTarget =
+          new Proxy(
+            target,
+            {
+              set(
+                  tgt,
+                  property,
+                  newValue,
+                  receiver
+                ): boolean
+              {
+                const isArrayIndex =
+                  isArrayTarget
+                  && isArrayIndexProperty(property);
+
+                const previous =
+                  Reflect.get(
+                    tgt,
+                    property,
+                    receiver);
+
+                const ok =
+                  Reflect.set(
+                    tgt,
+                    property,
+                    newValue,
+                    receiver);
+
+                if (proxy
+                  && ok)
                 {
-                  set(
+                  const current =
+                    Reflect.get(
                       tgt,
                       property,
-                      newValue,
-                      receiver
-                    ): boolean
-                  {
-                    const isArrayIndex =
-                      isArrayTarget
-                      && isArrayIndexProperty(property);
+                      receiver);
 
-                    const previous =
-                      Reflect.get(
-                        tgt,
-                        property,
-                        receiver);
+                  if (!Object.is(previous, current)) {
+                    const payload =
+                      isArrayIndex
+                        ? { index: Number(property),
+                            value: current,
+                            previous }
+                        : { property,
+                            value: current,
+                            previous };
 
-                    const ok =
-                      Reflect.set(
-                        tgt,
-                        property,
-                        newValue,
-                        receiver);
+                    const traceFn =
+                      trace
+                      || globalOptions.trace;
 
-                    if (proxy
-                      && ok)
-                    {
-                      const current =
-                        Reflect.get(
-                          tgt,
-                          property,
-                          receiver);
+                    proxy.emit(
+                      `set:${String(property)}`,
+                      payload);
 
-                      if (!Object.is(previous, current)) {
-                        const payload =
-                          isArrayIndex
-                            ? { index: Number(property),
-                                value: current,
-                                previous }
-                            : { property,
-                                value: current,
-                                previous };
-
-                        const traceFn =
-                          trace
-                          || globalOptions.trace;
-
-                        proxy.emit(
-                          `set:${String(property)}`,
-                          payload);
-
-                        if (isFunction(traceFn)) {
-                          traceFn(
-                            proxy,
-                            'set',
-                            payload);
-                        }
-
-                        proxy.emit(
-                          'set',
-                          payload);
-                      }
-                    }
-
-                    return ok;
-                  },
-
-                  deleteProperty(
-                      tgt,
-                      property
-                    ): boolean
-                  {
-                    const isArrayIndex =
-                      isArrayTarget
-                      && isArrayIndexProperty(property);
-
-                    const had =
-                      hasOwn(tgt, property);
-
-                    const previous =
-                      had
-                        ? tgt[property]
-                        : undefined;
-
-                    const ok =
-                      Reflect.deleteProperty(
-                        tgt,
-                        property);
-
-                    if (proxy
-                      && ok
-                      && had)
-                    {
-                      const payload =
-                        isArrayIndex
-                          ? { index: Number(property),
-                              previous }
-                          : { property,
-                              previous };
-
-                      const traceFn =
-                        trace
-                        || globalOptions.trace;
-
-                      proxy.emit(
-                        `delete:${String(property)}`,
-                        payload);
-
-                      if (isFunction(traceFn)) {
-                        traceFn(
-                          proxy,
-                          'delete',
-                          payload);
-                      }
-
-                      proxy.emit(
-                        'delete',
+                    if (isFunction(traceFn)) {
+                      traceFn(
+                        proxy,
+                        'set',
                         payload);
                     }
 
-                    return ok;
-                  },
+                    proxy.emit(
+                      'set',
+                      payload);
+                  }
+                }
 
-                  defineProperty(
-                      tgt,
-                      property,
-                      descriptor
-                    ): boolean
-                  {
-                    const previous =
-                      Object.getOwnPropertyDescriptor(
-                        tgt,
-                        property)
-                      ?? null;
+                return ok;
+              },
 
-                    const ok =
-                      Reflect.defineProperty(
-                        tgt,
-                        property,
-                        descriptor);
+              deleteProperty(
+                  tgt,
+                  property
+                ): boolean
+              {
+                const isArrayIndex =
+                  isArrayTarget
+                  && isArrayIndexProperty(property);
 
-                    const skipArrayDefine =
-                      isArrayTarget
-                      && (property === 'length'
-                          || isArrayIndexProperty(property));
+                const had =
+                  hasOwn(tgt, property);
 
-                    if (proxy
-                      && !skipArrayDefine
-                      && ok)
-                    {
-                      const payload =
-                        { property,
-                          descriptor,
+                const previous =
+                  had
+                    ? tgt[property]
+                    : undefined;
+
+                const ok =
+                  Reflect.deleteProperty(
+                    tgt,
+                    property);
+
+                if (proxy
+                  && ok
+                  && had)
+                {
+                  const payload =
+                    isArrayIndex
+                      ? { index: Number(property),
+                          previous }
+                      : { property,
                           previous };
 
-                      const traceFn =
-                        trace
-                        || globalOptions.trace;
+                  const traceFn =
+                    trace
+                    || globalOptions.trace;
 
-                      proxy.emit(
-                        `define:${String(property)}`,
-                        payload);
+                  proxy.emit(
+                    `delete:${String(property)}`,
+                    payload);
 
-                      if (isFunction(traceFn)) {
-                        traceFn(
-                          proxy,
-                          'define',
-                          payload);
-                      }
-
-                      proxy.emit(
-                        'define',
-                        payload);
-                    }
-
-                    return ok;
+                  if (isFunction(traceFn)) {
+                    traceFn(
+                      proxy,
+                      'delete',
+                      payload);
                   }
-                }));
 
-          return proxy;
-        };
+                  proxy.emit(
+                    'delete',
+                    payload);
+                }
+
+                return ok;
+              },
+
+              defineProperty(
+                  tgt,
+                  property,
+                  descriptor
+                ): boolean
+              {
+                const previous =
+                  Object.getOwnPropertyDescriptor(
+                    tgt,
+                    property)
+                  ?? null;
+
+                const ok =
+                  Reflect.defineProperty(
+                    tgt,
+                    property,
+                    descriptor);
+
+                const skipArrayDefine =
+                  isArrayTarget
+                  && (property === 'length'
+                      || isArrayIndexProperty(property));
+
+                if (proxy
+                  && !skipArrayDefine
+                  && ok)
+                {
+                  const payload =
+                    { property,
+                      descriptor,
+                      previous };
+
+                  const traceFn =
+                    trace
+                    || globalOptions.trace;
+
+                  proxy.emit(
+                    `define:${String(property)}`,
+                    payload);
+
+                  if (isFunction(traceFn)) {
+                    traceFn(
+                      proxy,
+                      'define',
+                      payload);
+                  }
+
+                  proxy.emit(
+                    'define',
+                    payload);
+                }
+
+                return ok;
+              }
+            });
+
+        proxy =
+          isFunction(target?.emit)
+            ? proxiedTarget
+            : eventfulFn(proxiedTarget);
+
+        return proxy;
+      };
 
     const traceFn =
-        trace
-        || globalOptions.trace;
+      trace
+      || globalOptions.trace;
 
     // Arrays
     if (Array.isArray(value)) {
       const proxy =
-          makeProxy(
-            value);
+        makeProxy(
+          value);
 
       if (isFunction(traceFn)) {
         traceFn(
@@ -374,8 +384,8 @@ const observableImpl =
         && typeof value === 'object')
     {
       const proxy =
-          makeProxy(
-            value);
+        makeProxy(
+          value);
 
       if (isFunction(traceFn)) {
         traceFn(
@@ -389,41 +399,41 @@ const observableImpl =
 
     // Primitives → boxed with a single 'value' slot
     const boxed =
-        eventfulFn(
-          {
-            get value() {
-              return value;
-            },
-            set value(v) {
-              if (Object.is(v, value))
-                return;
+      eventfulFn(
+        {
+          get value() {
+            return value;
+          },
+          set value(v) {
+            if (Object.is(v, value))
+              return;
 
-              const previous =
-                value;
+            const previous =
+              value;
 
-              value = v;
+            value = v;
 
-              const payload =
-                { property: 'value',
-                  value,
-                  previous };
+            const payload =
+              { property: 'value',
+                value,
+                previous };
 
-              (boxed as any).emit(
-                'set:value',
-                payload);
+            (boxed as any).emit(
+              'set:value',
+              payload);
 
-              if (isFunction(traceFn)) {
-                traceFn(
-                  boxed,
-                  'set',
-                  payload);
-              }
-
-              (boxed as any).emit(
+            if (isFunction(traceFn)) {
+              traceFn(
+                boxed,
                 'set',
                 payload);
             }
-          });
+
+            (boxed as any).emit(
+              'set',
+              payload);
+          }
+        });
 
     if (isFunction(traceFn)) {
       traceFn(
