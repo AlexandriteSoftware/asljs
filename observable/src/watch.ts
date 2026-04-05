@@ -11,6 +11,21 @@ function splitPath(
     path: string
   ): string[]
 {
+  if (path.trim() === '') {
+    throw new TypeError(
+      'Expect watch path to be a non-empty string.');
+  }
+
+  const rawSegments =
+    path.split('.');
+
+  for (const rawSegment of rawSegments) {
+    if (rawSegment.trim() === '') {
+      throw new TypeError(
+        'Expect watch path segments to be non-empty.');
+    }
+  }
+
   return path
     .split('.')
     .map(segment => segment.trim())
@@ -46,9 +61,9 @@ function readPathValue(
 
 export const watchImpl: ObservableWatchFn =
   (
-      target,
-      properties,
-      callback
+      target: any,
+      properties: readonly string[] | string,
+      callback: (...values: any[]) => void
     ): () => boolean =>
   {
     if (Array.isArray(target)) {
@@ -63,21 +78,28 @@ export const watchImpl: ObservableWatchFn =
         'Expect an eventful object with on().');
     }
 
-    if (!Array.isArray(properties)) {
+    const propertiesList =
+      typeof properties === 'string'
+        ? [ properties ]
+        : properties;
+
+    if (!Array.isArray(propertiesList)) {
       throw new TypeError(
-        'Expect properties to be an array.');
+        'Expect properties to be a string or an array of strings.');
     }
 
-    for (const property of properties) {
+    for (const property of propertiesList) {
       if (typeof property !== 'string') {
         throw new TypeError(
-          'Expect properties to be an array of strings.');
+          'Expect properties to be a string or an array of strings.');
       }
+
+      splitPath(property);
     }
 
     const getValues =
       (): any =>
-        properties.map(
+        propertiesList.map(
           property =>
             readPathValue(
               target,
@@ -85,13 +107,9 @@ export const watchImpl: ObservableWatchFn =
 
     const unwatchers: Array<() => boolean> = [];
 
-    for (const property of properties) {
+    for (const property of propertiesList) {
       const segments =
         splitPath(property);
-
-      if (segments.length === 0) {
-        continue;
-      }
 
       let unwatchPath: (() => boolean) | null = null;
 
@@ -182,10 +200,17 @@ export function ensureWatchMethod(
       writable: true,
       enumerable: false,
       value(
-          properties: readonly string[],
+          properties: readonly string[] | string,
           callback: (...values: any[]) => void
         ): () => boolean
       {
+        if (typeof properties === 'string') {
+          return watchFn(
+            this as any,
+            properties,
+            callback);
+        }
+
         return watchFn(
           this as any,
           properties,

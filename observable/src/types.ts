@@ -166,22 +166,39 @@ export type WatchedValues<
         : never; };
 
 export type ObservableWatchFn =
-  <
-      T extends Eventful,
-      K extends readonly string[]
-    >(
-      target: T,
-      properties: K,
-      callback: (...values: any[]) => void
-    ) => () => boolean;
+  {
+    <
+        T extends Eventful
+      >(
+        target: T,
+        property: string,
+        callback: (value: any) => void
+      ): () => boolean;
+
+    <
+        T extends Eventful,
+        K extends readonly string[]
+      >(
+        target: T,
+        properties: K,
+        callback: (...values: any[]) => void
+      ): () => boolean;
+  };
 
 type WatchMethod<T extends Eventful> =
   {
     watch:
-      <K extends readonly (Extract<keyof T, string>)[]>(
-          properties: K,
-          callback: (...values: WatchedValues<T, K>) => void
-        ) => () => boolean;
+      {
+        <K extends Extract<keyof T, string>>(
+            property: K,
+            callback: (value: T[K]) => void
+          ): () => boolean;
+
+        <K extends readonly (Extract<keyof T, string>)[]>(
+            properties: K,
+            callback: (...values: WatchedValues<T, K>) => void
+          ): () => boolean;
+      };
   };
 
 type ObservableArray<T extends readonly any[]> =

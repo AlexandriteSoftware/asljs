@@ -170,7 +170,10 @@ non-enumerable `watch(properties, callback)` method to the wrapped object.
 
 ### `observable.watch(target, properties, callback)`
 
-Watches selected properties/paths and invokes callback with current values.
+Watches one or more properties/paths and invokes callback with current values.
+
+- `properties` can be a single path string (e.g. `'user.name'`) or an array
+  of path strings.
 
 - Runs the callback immediately with current values.
 - Re-runs callback each time one of the selected `set:<propertyOrPath>` events

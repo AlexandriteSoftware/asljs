@@ -314,11 +314,22 @@ const observableImpl =
                     property)
                   ?? null;
 
+                const descriptorToDefine =
+                  Object.prototype
+                    .hasOwnProperty
+                    .call(
+                      descriptor,
+                      'value')
+                    ? { ...descriptor,
+                        value: convertNestedValue(
+                          descriptor.value) }
+                    : descriptor;
+
                 const ok =
                   Reflect.defineProperty(
                     tgt,
                     property,
-                    descriptor);
+                    descriptorToDefine);
 
                 const skipArrayDefine =
                   isArrayTarget
@@ -331,7 +342,7 @@ const observableImpl =
                 {
                   const payload =
                     { property,
-                      descriptor,
+                      descriptor: descriptorToDefine,
                       previous };
 
                   const traceFn =
