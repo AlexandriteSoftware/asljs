@@ -24,10 +24,8 @@ git push
 | machine    | [0.2.0][2]  |   -    |
 | money      | [0.2.0][3]  |   -    |
 | observable | [0.2.0][4]  |   -    |
-| server     | [0.2.3][5]  | 0.2.4  |
 
 [1]: https://www.npmjs.com/package/asljs-eventful
 [2]: https://www.npmjs.com/package/asljs-machine
 [3]: https://www.npmjs.com/package/asljs-money
 [4]: https://www.npmjs.com/package/asljs-observable
-[5]: https://www.npmjs.com/package/asljs-server

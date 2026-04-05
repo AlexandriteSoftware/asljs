@@ -1,10 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { eventful } from 'asljs-eventful';
-import {
-    observable,
-    ObservableObjectBase
-  } from '../observable.js';
+import { observable } from '../observable.js';
 
 test(
   'observable <empty>',
@@ -34,54 +31,6 @@ test(
           { a: 1 },
           { eventful: 123 as any }),
       /Expect a function\./);
-  });
-
-test(
-  'observable adds non-enumerable watch method when missing',
-  async () => {
-    const obj =
-      observable(
-        { a: 1,
-          b: 2 });
-
-    assert.equal(
-      typeof (obj as any).watch,
-      'function');
-
-    assert.equal(
-      Object.keys(obj).includes('watch'),
-      false);
-
-    const calls: Array<[number, number]> = [];
-
-    (obj as any).watch(
-      [ 'a', 'b' ],
-      (a: number, b: number) => {
-        calls.push([ a, b ]);
-      });
-
-    obj.b = 4;
-
-    assert.deepEqual(
-      calls,
-      [ [ 1, 2 ],
-        [ 1, 4 ] ]);
-  });
-
-test(
-  'observable does not override existing watch method',
-  async () => {
-    const originalWatch =
-      (): any => { };
-
-    const obj =
-      observable(
-        { a: 1,
-          watch: originalWatch } as any);
-
-    assert.equal(
-      obj.watch,
-      originalWatch);
   });
 
 test(

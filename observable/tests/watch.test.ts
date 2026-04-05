@@ -8,6 +8,77 @@ import {
   } from '../observable.js';
 
 test(
+  'observable adds non-enumerable watch method when missing',
+  async () => {
+    const obj =
+      observable(
+        { a: 1,
+          b: 2 });
+
+    assert.equal(
+      typeof (obj as any).watch,
+      'function');
+
+    assert.equal(
+      Object.keys(obj).includes('watch'),
+      false);
+
+    const calls: Array<[number, number]> = [];
+
+    (obj as any).watch(
+      [ 'a', 'b' ],
+      (a: number, b: number) => {
+        calls.push([ a, b ]);
+      });
+
+    obj.b = 4;
+
+    assert.deepEqual(
+      calls,
+      [ [ 1, 2 ],
+        [ 1, 4 ] ]);
+  });
+
+test(
+  'observable does not override existing watch method',
+  async () => {
+    const originalWatch =
+      (): any => { };
+
+    const obj =
+      observable(
+        { a: 1,
+          watch: originalWatch } as any);
+
+    assert.equal(
+      obj.watch,
+      originalWatch);
+  });
+
+test(
+  'watching arrays is not supported',
+  async () => {
+    const arr =
+      observable(
+        [ 1, 2, 3 ]);
+
+    assert.throws(
+      () =>
+        observable.watch(
+          arr as any,
+          [ '0' ] as const,
+          () => { }),
+      /Watching arrays is not supported\./);
+
+    assert.throws(
+      () =>
+        (arr as any).watch(
+          [ '0' ],
+          () => { }),
+      /Watching arrays is not supported\./);
+  });
+
+test(
   'observable.watch tracks selected properties and emits initial callback',
   async () => {
     const obj =
@@ -34,6 +105,62 @@ test(
       [ [ 1, 2 ],
         [ 10, 2 ],
         [ 10, 20 ] ]);
+  });
+
+test(
+  'observable.watch supports nested paths and nested updates',
+  async () => {
+    const state =
+      observable(
+        { user: { name: 'Alice' },
+          active: false });
+
+    const calls: Array<[string | undefined, boolean]> = [];
+
+    observable.watch(
+      state,
+      [ 'user.name', 'active' ] as const,
+      (userName: string | undefined, active: boolean) => {
+        calls.push([ userName, active ]);
+      });
+
+    state.active = true;
+    state.user.name = 'Bob';
+
+    assert.deepEqual(
+      calls,
+      [ [ 'Alice', false ],
+        [ 'Alice', true ],
+        [ 'Bob', true ] ]);
+  });
+
+test(
+  'observable.watch rebinds nested path when ancestor object changes',
+  async () => {
+    const state =
+      observable(
+        { user: { name: 'Alice' },
+          active: false });
+
+    const calls: Array<[string | undefined, boolean]> = [];
+
+    observable.watch(
+      state,
+      [ 'user.name', 'active' ] as const,
+      (userName: string | undefined, active: boolean) => {
+        calls.push([ userName, active ]);
+      });
+
+    state.user =
+      { name: 'Carol' } as any;
+
+    state.user.name = 'Dan';
+
+    assert.deepEqual(
+      calls,
+      [ [ 'Alice', false ],
+        [ 'Carol', false ],
+        [ 'Dan', false ] ]);
   });
 
 test(

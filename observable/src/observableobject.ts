@@ -29,6 +29,16 @@ export class ObservableObjectBase<T extends object>
     ): () => boolean;
 
   public watch(
+      properties: readonly string[],
+      callback: (...values: any[]) => void
+    ): () => boolean;
+
+  public watch(
+      property: string,
+      callback: (value: any) => void
+    ): () => boolean;
+
+  public watch(
       properties: readonly string[] | string,
       callback: (...values: any[]) => void
     ): () => boolean

@@ -90,6 +90,21 @@ state.watch(
 state.active = true;
 ```
 
+### Watch nested paths (JavaScript)
+
+```js
+import { observable } from 'asljs-observable';
+
+const state = observable({ user: { name: 'Alice' }, active: false });
+
+state.watch(
+  [ 'user.name', 'active' ],
+  (userName, active) =>
+    console.log('User:', userName, 'Active:', active));
+
+state.user.name = 'Bob';
+```
+
 ### Watching an object's property (TypeScript)
 
 ```ts
@@ -145,6 +160,9 @@ Wraps an object, array, or primitive to make it observable.
 - `value`: Target object/array/primitive to observe.
 - `options.eventful` (optional): Custom `eventful` factory (defaults to `asljs-eventful`).
 - `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
+- `options.shallow` (optional): Nested conversion mode.
+  - `false` (default): recursively converts nested objects and arrays.
+  - `true`: converts only the top-level value.
 
 Returns the original value wrapped with Eventful API and change notifications.
 When the target object does not already have a `watch` method, observable adds a
@@ -152,10 +170,12 @@ non-enumerable `watch(properties, callback)` method to the wrapped object.
 
 ### `observable.watch(target, properties, callback)`
 
-Watches the selected properties and invokes callback with their current values.
+Watches selected properties/paths and invokes callback with current values.
 
 - Runs the callback immediately with current values.
-- Re-runs callback each time one of the selected `set:<property>` events fires.
+- Re-runs callback each time one of the selected `set:<propertyOrPath>` events
+  fires.
+- Nested paths are supported, e.g. `'user.name'`.
 - `target` must be eventful (`on` method available).
 - Arrays are not supported by `watch` yet and will throw `TypeError`.
 - Returns an unsubscribe function. Calling it removes all listeners attached by

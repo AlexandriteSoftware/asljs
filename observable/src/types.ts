@@ -30,6 +30,14 @@ export interface ObservableOptions {
     action: 'new' | 'set' | 'delete' | 'define',
     payload?: any
   ) => void) | null;
+
+  /**
+   * Controls nested conversion for object/array inputs.
+   *
+   * - `false` (default): recursively converts nested objects and arrays.
+   * - `true`: converts only the top-level value.
+   */
+  shallow?: boolean;
 }
 
 /** Arrays: no 'define' events */
@@ -160,11 +168,11 @@ export type WatchedValues<
 export type ObservableWatchFn =
   <
       T extends Eventful,
-      K extends readonly (Extract<keyof T, string>)[]
+      K extends readonly string[]
     >(
       target: T,
       properties: K,
-      callback: (...values: WatchedValues<T, K>) => void
+      callback: (...values: any[]) => void
     ) => () => boolean;
 
 type WatchMethod<T extends Eventful> =

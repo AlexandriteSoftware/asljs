@@ -4,14 +4,18 @@ import {
 
 import {
     ObservableOptions,
-    ObservableFn,
-    ObservableWatchFn
+  ObservableFn
   } from './types.js';
 
 import {
     functionTypeGuard,
     isFunction,
+    isObject,
   } from './guards.js';
+import {
+    ensureWatchMethod,
+    watchImpl
+  } from './watch.js';
 
 function hasOwn(
     object: object,
@@ -48,85 +52,16 @@ function isArrayIndexProperty(
          || key === String(numeric);
 }
 
-const watchImpl: ObservableWatchFn =
-  (
-      target,
-      properties,
-      callback
-    ): () => boolean =>
-  {
-    if (Array.isArray(target)) {
-      throw new TypeError(
-        'Watching arrays is not supported.');
-    }
-
-    functionTypeGuard(callback);
-
-    if (!isFunction((target as any).on)) {
-      throw new TypeError(
-        'Expect an eventful object with on().');
-    }
-
-    if (!Array.isArray(properties)) {
-      throw new TypeError(
-        'Expect properties to be an array.');
-    }
-
-    for (const property of properties) {
-      if (typeof property !== 'string') {
-        throw new TypeError(
-          'Expect properties to be an array of strings.');
-      }
-    }
-
-    const getValues =
-      (): any =>
-        properties.map(
-          property => (target as any)[property]) as any;
-
-    const unwatchers: Array<() => boolean> = [];
-
-    for (const property of properties) {
-      const unwatch =
-        (target as any).on(
-          `set:${property}`,
-          () => callback(...getValues()));
-
-      unwatchers.push(unwatch);
-    }
-
-    callback(...getValues());
-
-    return () : boolean =>
-      unwatchers.reduce(
-        (result, unwatch) =>
-          unwatch() || result,
-        false);
-  };
-
-function ensureWatchMethod(
-    target: any
-  ): void
+function isEventfulObject(
+    value: any
+  ): boolean
 {
-  if ('watch' in target)
-    return;
+  const candidate =
+    value as { on?: unknown; emit?: unknown; };
 
-  Object.defineProperty(
-    target,
-    'watch',
-    { configurable: true,
-      writable: true,
-      enumerable: false,
-      value(
-          properties: readonly string[],
-          callback: (...values: any[]) => void
-        ): () => boolean
-      {
-        return observable.watch(
-          this as any,
-          properties,
-          callback);
-      } });
+  return isObject(value)
+    && isFunction(candidate.on)
+    && isFunction(candidate.emit);
 }
 
 /**
@@ -149,13 +84,80 @@ const observableImpl =
   {
     const {
       eventful: eventfulFn = eventful,
-      trace = null
+      trace = null,
+      shallow = false
     } = options;
 
     functionTypeGuard(eventfulFn);
 
     const globalOptions =
       observable.options;
+
+    const conversionCache =
+      new WeakMap<object, any>();
+
+    const convertNestedValue =
+      (
+        input: any
+      ): any =>
+      {
+        if (shallow) {
+          return input;
+        }
+
+        if (!isObject(input)
+          || isEventfulObject(input))
+        {
+          return input;
+        }
+
+        if (conversionCache.has(input)) {
+          return conversionCache.get(input);
+        }
+
+        const converted =
+          observableImpl(
+            input,
+            {
+              eventful: eventfulFn,
+              trace,
+              shallow
+            });
+
+        conversionCache.set(
+          input,
+          converted);
+
+        return converted;
+      };
+
+    const convertNestedMembers =
+      (
+        target: any
+      ): void =>
+      {
+        if (shallow) {
+          return;
+        }
+
+        if (Array.isArray(target)) {
+          for (let i = 0; i < target.length; i++) {
+            target[i] =
+              convertNestedValue(target[i]);
+          }
+
+          return;
+        }
+
+        for (const key of Reflect.ownKeys(target)) {
+          if (!hasOwn(target, key)) {
+            continue;
+          }
+
+          target[key] =
+            convertNestedValue(target[key]);
+        }
+      };
 
     const makeProxy =
       (
@@ -165,7 +167,11 @@ const observableImpl =
         const isArrayTarget =
           Array.isArray(target);
 
-        ensureWatchMethod(target);
+        convertNestedMembers(target);
+
+        ensureWatchMethod(
+          target,
+          watchImpl);
 
         let proxy: any;
 
@@ -194,7 +200,7 @@ const observableImpl =
                   Reflect.set(
                     tgt,
                     property,
-                    newValue,
+                    convertNestedValue(newValue),
                     receiver);
 
                 if (proxy

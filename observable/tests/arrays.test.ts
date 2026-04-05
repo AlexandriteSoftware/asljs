@@ -131,25 +131,3 @@ test(
         { action: 'emit', payload: { object: array, event: 'set', args: [ { previous: undefined, property: '01', value: 99 } ] } } ]);
   });
 
-test(
-  'watching arrays is not supported',
-  async () => {
-    const arr =
-      observable(
-        [ 1, 2, 3 ]);
-
-    assert.throws(
-      () =>
-        observable.watch(
-          arr as any,
-          [ '0' ] as const,
-          () => { }),
-      /Watching arrays is not supported\./);
-
-    assert.throws(
-      () =>
-        (arr as any).watch(
-          [ '0' ],
-          () => { }),
-      /Watching arrays is not supported\./);
-  });

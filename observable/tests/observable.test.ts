@@ -5,29 +5,44 @@ import { observable } from '../observable.js';
 import { createTracer } from './tracer.js';
 
 test(
-  'not observing nested objects',
+  'observes nested objects by default',
   async () => {
-    const tracer =
-      createTracer();
+    const object =
+      { a: { b: 1 } };
 
+    const proxy =
+      observable(object);
+
+    let seenValue =
+      0;
+
+    (proxy.a as any).on(
+      'set:b',
+      ({ value }: any) => {
+        seenValue = value;
+      });
+
+    proxy.a.b = 2;
+
+    assert.equal(
+      seenValue,
+      2);
+  });
+
+test(
+  'shallow:true keeps nested objects non-observable',
+  async () => {
     const object =
       { a: { b: 1 } };
 
     const proxy =
       observable(
         object,
-        { eventful:
-            (value: any) =>
-              eventful(value, tracer) });
+        { shallow: true });
 
-    proxy.a.b = 2;
-
-    const traces =
-      tracer.getMinimalTraces();
-
-    assert.deepEqual(
-      traces,
-      [ { action: 'new', payload: { object } } ]);
+    assert.equal(
+      typeof (proxy.a as any).on,
+      'undefined');
   });
 
 test(
