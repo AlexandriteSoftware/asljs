@@ -179,7 +179,10 @@ Watches one or more properties/paths and invokes callback with current values.
 - Re-runs callback each time one of the selected `set:<propertyOrPath>` events
   fires.
 - Nested paths are supported, e.g. `'user.name'`.
-- `target` must be eventful (`on` method available).
+- `target` may be a plain object; callback still runs immediately with a
+  snapshot.
+- Updates are observed only where an eventful segment exists along the watched
+  path.
 - Arrays are not supported by `watch` yet and will throw `TypeError`.
 - Returns an unsubscribe function. Calling it removes all listeners attached by
   this `watch` call.

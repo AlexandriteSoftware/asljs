@@ -7,6 +7,9 @@ import {
     isObject,
   } from './guards.js';
 
+type EventfulLike =
+  { on: (event: string, listener: () => void) => () => boolean; };
+
 function splitPath(
     path: string
   ): string[]
@@ -73,11 +76,6 @@ export const watchImpl: ObservableWatchFn =
 
     functionTypeGuard(callback);
 
-    if (!isFunction((target as any).on)) {
-      throw new TypeError(
-        'Expect an eventful object with on().');
-    }
-
     const propertiesList =
       typeof properties === 'string'
         ? [ properties ]
@@ -125,7 +123,6 @@ export const watchImpl: ObservableWatchFn =
           ): void =>
         {
           if (!isObject(current)
-            || !isFunction((current as { on?: unknown; }).on)
             || index >= segments.length)
           {
             return;
@@ -134,21 +131,23 @@ export const watchImpl: ObservableWatchFn =
           const segment =
             segments[index];
 
-          const unwatch =
-            (current as { on: (event: string, listener: () => void) => () => boolean; }).on(
-              `set:${segment}`,
-              () => {
-                callback(...getValues());
+          if (isFunction((current as { on?: unknown; }).on)) {
+            const unwatch =
+              (current as EventfulLike).on(
+                `set:${segment}`,
+                () => {
+                  callback(...getValues());
 
-                if (index < segments.length - 1
-                  && unwatchPath)
-                {
-                  unwatchPath();
-                  unwatchPath = bindPath();
-                }
-              });
+                  if (index < segments.length - 1
+                    && unwatchPath)
+                  {
+                    unwatchPath();
+                    unwatchPath = bindPath();
+                  }
+                });
 
-          localUnwatchers.push(unwatch);
+            localUnwatchers.push(unwatch);
+          }
 
           if (index < segments.length - 1) {
             bindFrom(

@@ -322,20 +322,72 @@ test(
   });
 
 /**
- * Non-eventful targets must be rejected so callers do not assume subscriptions
- * exist when no event source is present.
+ * Plain roots should still support an immediate snapshot even without any
+ * eventful source, but they cannot react to later updates.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch rejects non-eventful targets`,
+  `${CONTEXT_NAME}: observable.watch supports non-eventful root with snapshot only`,
   () => {
-    assert.throws(
-      () =>
-        observable.watch(
-          {} as any,
-          [ 'a' ],
-          () => { }),
-      /Expect an eventful object with on\(\)\./);
+    const plainState =
+      { user: { name: 'Alice' } };
+
+    const calls: Array<string | undefined> = [];
+
+    observable.watch(
+      plainState as any,
+      'user.name',
+      (name: string | undefined) => {
+        calls.push(name);
+      });
+
+    plainState.user.name =
+      'Bob';
+
+    assert.deepEqual(
+      calls,
+      [ 'Alice' ]);
   });
+
+    /**
+ * Even when the root is plain, nested eventful objects should still drive
+ * updates when a listener can be attached at the eventful segment.
+     */
+    test(
+  `${CONTEXT_NAME}: observable.watch supports non-eventful root with nested eventful segments`,
+      () => {
+    const user =
+      observable(
+        { name: 'Alice' },
+        { shallow: true });
+
+        const plainState =
+      { user };
+
+    const calls: Array<string | undefined> = [];
+
+    observable.watch(
+      plainState as any,
+      [ 'user.name' ],
+      (name: string | undefined) => {
+        calls.push(name);
+      });
+
+    user.name =
+      'Bob';
+
+    plainState.user =
+      observable(
+        { name: 'Carol' },
+        { shallow: true });
+
+    (plainState.user as any).name =
+      'Dan';
+
+    assert.deepEqual(
+      calls,
+      [ 'Alice',
+        'Bob' ]);
+      });
 
 /**
  * Non-string or non-array path selectors must fail fast to keep watch input
@@ -441,6 +493,42 @@ test(
       calls,
       [ undefined,
         'Alice' ]);
+  });
+
+/**
+ * Paths that traverse only plain nested objects (no eventful segments beyond
+ * the root) should still provide initial snapshots and refresh when an
+ * observable ancestor is replaced.
+ */
+test(
+  `${CONTEXT_NAME}: watches path when nested segments are non-eventful`,
+  () => {
+    const state =
+      observable(
+        { user: { info: { name: 'Alice' } } },
+        { shallow: true });
+
+    const calls: Array<string | undefined> = [];
+
+    observable.watch(
+      state,
+      'user.info.name',
+      (name: string | undefined) => {
+        calls.push(name);
+      });
+
+    // Leaf edits do not emit without eventful objects along nested segments.
+    state.user.info.name =
+      'Bob';
+
+    // Replacing the observable ancestor segment emits with refreshed value.
+    state.user =
+      { info: { name: 'Carol' } };
+
+    assert.deepEqual(
+      calls,
+      [ 'Alice',
+        'Carol' ]);
   });
 
 /**

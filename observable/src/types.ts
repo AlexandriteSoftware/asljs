@@ -168,7 +168,7 @@ export type WatchedValues<
 export type ObservableWatchFn =
   {
     <
-        T extends Eventful
+        T extends object
       >(
         target: T,
         property: string,
@@ -176,7 +176,7 @@ export type ObservableWatchFn =
       ): () => boolean;
 
     <
-        T extends Eventful,
+        T extends object,
         K extends readonly string[]
       >(
         target: T,
