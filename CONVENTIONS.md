@@ -3,7 +3,7 @@
 ## Baseline — General TypeScript Best Practices
 
 The following widely-accepted TypeScript practices apply here unless
-the exception is clearly documented..
+the exception is clearly documented.
 
 - Write type-safe code; avoid `any`.
 - Prefer `interface` for public API shapes; use `type` for unions, aliases, and
@@ -14,16 +14,14 @@ the exception is clearly documented..
 - Write deterministic, side-effect-free pure functions where possible.
 - Prefer `Map` and `Set` over plain objects for dynamic key/value storage.
 
----
-
 ## Conventions
 
 ### Module and export style
 
 - All packages use **ESM** (`"type": "module"` in `package.json`).
 - CommonJS (`require`, `module.exports`) is not used.
-- Use named exports and imports in **brace-block style**: one name per
-  double-indented line, with `}` or `} from` on a single-indented line:
+- When import or export has multiple items, use **brace-block style**: one name
+  per double-indented line, with `} from` on a single-indented line:
 
   ```ts
   export {
@@ -37,6 +35,14 @@ the exception is clearly documented..
       alpha,
       beta,
     } from './module.js';
+  ```
+
+- When import or export has one item, keep it on the same line with
+  export/import keyword and put `from` on a single-indented line:
+
+  ```ts
+  import path
+    from './path.js`;
   ```
 
 - For type-only names, use the inline `type` keyword rather than a separate
@@ -61,7 +67,9 @@ the exception is clearly documented..
 
 #### Indentation
 
-- **2-space** indentation throughout.
+- **2-space** indentation throughout, unless otherwise required by the syntax
+  (e.g. multi-line function parameters, object literals, if statements,
+  for loops).
 
 #### Semicolons
 
@@ -78,10 +86,39 @@ the exception is clearly documented..
 - Prefer **multi-line formatting** over long single lines.  Wrap at logical
   boundaries (after a comma, before an operator, after `;` in `for` loops).
 
+  ```ts
+  [ first,
+    second,
+    third ]
+
+  for (let rowIndex = 0;
+       rowIndex < limit;
+       rowIndex++)
+  {
+
+  (
+      context: MyContextObject,
+      parameters: Parameter[]
+    ) =>
+  {
+  ```
+
+- Prefer short similar items on the same line. E.g.,
+
+  ```ts
+  [ a, b, c ]
+
+  [ 1, 2, 3, 4 ]
+
+  for (let i = 1; i < 10; i++) {
+
+  (a, b, c) => {
+  ```
+
 #### Brace placement — named functions
 
-Named function bodies use **Allman-style braces**: the opening `{` is on its
-own line after the closing `)`:
+The opening `{` before named function bodies is on its own line after the
+closing `)`:
 
 ```ts
 function greet(
@@ -92,9 +129,6 @@ function greet(
   return `${greeting}, ${name}!`;
 }
 ```
-
-This applies to **named function declarations** and **class methods**.  It does
-**not** apply to arrow functions (see "Arrow functions" below).
 
 #### Function parameter style
 
@@ -113,6 +147,8 @@ function example(
 }
 ```
 
+Parameter types should always be specified.
+
 #### Assignment wrapping
 
 For complex initialisers, place `const name =` on its own line and start the
@@ -121,8 +157,8 @@ expression on the next line with 2-space indentation:
 ```ts
 const result =
   someComplexExpression(
-    a,
-    b);
+    argumentValue1,
+    argumentValue2);
 ```
 
 #### Arrow functions
@@ -131,7 +167,10 @@ Arrow function blocks place the opening `{` on the **next line after `=>`**:
 
 ```ts
 const handler =
-  (event: string): void =>
+  (
+      event: string,
+      details: EventDetails
+    ): void =>
   {
     doSomething(event);
   };
@@ -232,7 +271,8 @@ implementation, and exports.
   `guards.ts`); kebab-case for composite names (`observable-object.ts`).
 - **Functions and variables**: camelCase.
 - **Types, interfaces, and classes**: PascalCase.
-- **Constants and enum-like values**: camelCase (not `SCREAMING_SNAKE_CASE`).
+- **Constants and enum-like values**: camelCase, when constant is within
+  class, method or function. SCREAMING_SNAKE_CASE when on file level.
 - Internal/private helpers are unexported; they live in the same file as their
   consumer.
 
@@ -241,9 +281,32 @@ implementation, and exports.
 - Provide a **strict vs. non-strict** behaviour contract where relevant.
 - In **non-strict** flows: isolate listener/callback errors; surface them via
   error hooks or the global `eventful` error event rather than throwing.
+- In **non-strict** assume input parameters are provided in the right format,
+  do not check input parameters invariants.
 - In **strict** flows: fail fast and document the contract explicitly.
 - Validate function and object arguments at the entry point; throw
   `TypeError` with a clear message.
+
+```ts
+// define STRICT: boolean = ...
+function myMethod(
+    key: string
+  ): void
+{
+  if (STRICT) {
+    if (key === null
+        || (typeof key) != 'string'
+        || key === undefined
+        || key !== '')
+    {
+      throw new TypeError(
+        `${CONTEXT_NAME}: key should not be null or empty.`);
+    }
+  }
+
+  // main code, assume that key is non-empty string
+}
+```
 
 ### Internal state
 
@@ -265,3 +328,7 @@ exempt (matching the ESLint rule configuration).
 ### Testing
 
 - Use Node's **built-in test runner** (`node:test`).
+- All code files (even ones containing interfaces/types only) should have
+  a corresponding test file with at least basic coverage.
+- Test files are named with `.test.ts` suffix and live in the same directory as
+  the code they test.

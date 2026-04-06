@@ -8,5 +8,11 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-  "editor.formatOnSave": false
+  "editor.formatOnSave": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+      "*.ts": "$(capture).js, $(capture).d.ts, $(capture).test.ts",
+      "*.js": "$(capture).js, $(capture).d.ts, $(capture).js.map, $(capture).d.ts.map",
+      "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml"
+  }
 }
