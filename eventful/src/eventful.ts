@@ -1,18 +1,16 @@
 import {
-    ListenerError
-  } from './types.js';
-
-import type {
-    EventMap,
-    EventName,
-    Eventful,
-    EventfulFn,
-    EventfulOptions,
-    ListenerErrorArgs,
-    TraceFn,
+    ListenerError,
+  type ErrorFn,
+    type EventName,
+    type Eventful,
+    type EventfulFn,
+    type EventfulOptions,
+    type ListenerErrorArgs,
+  type TraceFn,
   } from './types.js';
 
 import {
+    asFunction,
     eventNameTypeGuard,
     functionTypeGuard,
     isFunction,
@@ -23,17 +21,18 @@ const eventfulImpl =
   <T extends object | Function | undefined>(
       object: T = Object.create(null),
       options: EventfulOptions = {},
-    ): (T extends undefined ? {} : T) & Eventful => 
+    ): (T extends undefined ? {} : T)
+       & Eventful => 
   {
     if (!isObject(object)
-      && !isFunction(object))
+        && !isFunction(object))
     {
       throw new TypeError(
         'Expect an object or a function.');
     }
 
     for (const method of ['on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
-      if (method in (object as any)) {
+      if (method in (object as object)) {
         throw new Error(
           `Method "${method}" already exists.`);
       }
@@ -42,26 +41,24 @@ const eventfulImpl =
     const {
         strict = false,
         trace = null,
-        error = null
+        error = null,
       } = options;
 
     const traceHook: TraceFn | null =
-      typeof trace === 'function'
-        ? trace
-        : null;
+      (asFunction(trace) as TraceFn | undefined)
+      ?? null;
 
-    const errorHook: ((error: ListenerErrorArgs) => void) | null =
-      typeof error === 'function'
-        ? error
-        : null;
+    const errorHook: ErrorFn | null =
+      (asFunction(error) as ErrorFn | undefined)
+      ?? null;
 
     const enhanced =
-      (object as any) !== eventful;
+      (object as unknown) !== eventful;
 
     const traceFn: TraceFn =
       (
-          action: any,
-          payload: any
+          action: Parameters<TraceFn>[0],
+          payload: Parameters<TraceFn>[1]
         ): void =>
       {
         traceHook?.(
@@ -91,7 +88,7 @@ const eventfulImpl =
         writable: true };
 
     Object.defineProperties(
-      object as any,
+      object as object,
       { on:
           Object.assign(
             { value: on },
@@ -117,7 +114,7 @@ const eventfulImpl =
             { value: has },
             properties) });
 
-    return object as any;
+    return object as (T extends undefined ? {} : T) & Eventful;
 
     function add(
         event: EventName,
@@ -159,24 +156,24 @@ const eventfulImpl =
     function reportListenerError(
         event: EventName,
         listener: Function,
-        err: any
+        err: unknown
       ): void
     {
       const errorArgs: ListenerErrorArgs =
         { error: err,
-          object: object as any,
+          object: object as object | Function,
           event,
           listener };
 
       errorHook?.(errorArgs);
 
-      if ((object as any) === eventful
-        && event === 'error') 
+      if ((object as unknown) === eventful
+          && event === 'error') 
       {
         throw new ListenerError(
           'Error in a global error listener.',
           err,
-          object as any,
+          object as object | Function,
           event,
           listener);
       }
@@ -223,7 +220,7 @@ const eventfulImpl =
       const off =
         on(
           event,
-          (...args: any[]) => {
+          (...args: unknown[]) => {
             off();
             listener(...args);
           });
@@ -261,7 +258,7 @@ const eventfulImpl =
 
     function emit(
         event: EventName,
-        ...args: any[]
+        ...args: unknown[]
       ): void
     {
       eventNameTypeGuard(event);
@@ -297,7 +294,7 @@ const eventfulImpl =
 
     async function emitAsync(
         event: EventName,
-        ...args: any[]
+        ...args: unknown[]
       ): Promise<void>
     {
       eventNameTypeGuard(event);
@@ -341,22 +338,4 @@ const eventfulImpl =
 export const eventful =
   eventfulImpl as EventfulFn;
 
-(eventful as any)(eventful);
-
-export class EventfulBase<E extends EventMap = EventMap>
-  implements Eventful<E>
-{
-  declare on: Eventful<E>['on'];
-  declare once: Eventful<E>['once'];
-  declare off: Eventful<E>['off'];
-  declare emit: Eventful<E>['emit'];
-  declare emitAsync: Eventful<E>['emitAsync'];
-  declare has: Eventful<E>['has'];
-
-  constructor(
-      options: EventfulOptions = {},
-    )
-  {
-    eventful(this, options);
-  }
-}
+eventful(eventful);

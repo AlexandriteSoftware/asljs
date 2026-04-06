@@ -1,6 +1,6 @@
 {
   "name": "asljs-eventful",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Lightweight event helper adding on/off/emit to any object.",
   "files": [
     "dist/**",
@@ -46,5 +46,8 @@
     "test": "npm run build:test && node --test dist/*.test.js",
     "test:watch": "npm run build:test && node --watch --test dist/*.test.js",
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+  },
+  "dependencies": {
+    "asljs-eventful": "file:"
   }
 }

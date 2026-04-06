@@ -2,13 +2,13 @@ export type EventName =
   string | symbol;
 
 export type EventMap =
-  Record<EventName, any[]>;
+  Record<EventName, unknown[]>;
 
-export type Listener<Args extends any[] = any[]> =
-  (...args: Args) => any;
+export type Listener<Args extends unknown[] = unknown[]> =
+  (...args: Args) => unknown;
 
 export interface ListenerErrorArgs {
-  error: any;
+  error: unknown;
   object: object | Function;
   event: EventName;
   listener: Function;
@@ -18,20 +18,21 @@ export class ListenerError
   extends Error
   implements ListenerErrorArgs
 {
-  error: any;
+  error: unknown;
   object: object | Function;
   event: EventName;
   listener: Function;
 
   constructor(
       message: string,
-      error: any,
+      error: unknown,
       object: object | Function,
       event: EventName,
       listener: Function
     )
   {
     super(message);
+
     this.name = 'ListenerError';
 
     this.error = error;
@@ -42,7 +43,7 @@ export class ListenerError
 }
 
 type TraceAction =
-  'new'
+  | 'new'
   | 'on'
   | 'off'
   | 'emit'
@@ -69,14 +70,14 @@ type TracePayloadByAction = {
     object: object | Function;
     listeners: Function[];
     event: EventName;
-    args: any[];
+    args: unknown[];
   };
 
   emitAsync: {
     object: object | Function;
     listeners: Function[];
     event: EventName;
-    args: any[];
+    args: unknown[];
   };
 };
 
@@ -86,8 +87,12 @@ export type TraceFn =
       args: TracePayloadByAction[A]
     ) => void;
 
+export type ErrorFn =
+  (error: ListenerErrorArgs) => void;
+
 export type EventfulFn =
-  EventfulFactory & Eventful;
+  EventfulFactory
+  & Eventful;
 
 export interface EventfulFactory {
   <T extends object | Function | undefined,
@@ -109,13 +114,13 @@ export interface EventfulOptions {
    * Actions include: 'new', 'on', 'off', 'emit', 'emitAsync'.
    * Use to integrate with your logger without exposing internals.
    */
-  trace?: TraceFn | null;
+  trace?: TraceFn;
 
   /**
    * Optional error hook. Receives structured context of listener failures
    * (error, object, event, listener). Called for sync and async errors.
    */
-  error?: ((error: ListenerErrorArgs) => void) | null;
+  error?: ErrorFn;
 }
 
 export interface Eventful<E extends EventMap = EventMap> {

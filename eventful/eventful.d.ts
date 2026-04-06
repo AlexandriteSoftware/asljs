@@ -1,15 +1,24 @@
 export {
   eventful,
-  EventfulBase
+  isEventfulLike,
+  asEventfulLike
 } from './dist/eventful.js';
 
+export {
+  EventfulBase
+} from './dist/eventful-base.js';
+
 export type {
-  EventName,
-  EventMap,
-  Eventful,
-  EventfulFactory,
-  EventfulOptions,
-  Listener,
+  EventfulLike
+} from './dist/eventful-like.js';
+
+export {
+  type EventName,
+  type EventMap,
+  type Eventful,
+  type EventfulFactory,
+  type EventfulOptions,
+  type Listener,
   ListenerError,
-  TraceFn
+  type TraceFn
 } from './dist/types.js';

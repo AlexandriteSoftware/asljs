@@ -1,7 +1,12 @@
 export {
-  eventful,
-  EventfulBase
-} from './dist/eventful.js';
+    eventful,
+    isEventfulLike,
+    asEventfulLike,
+  } from './dist/eventful.js';
+
+export {
+    EventfulBase,
+  } from './dist/eventful-base.js';
 
 export {
     ListenerError

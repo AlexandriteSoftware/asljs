@@ -1,11 +1,13 @@
-import type { EventName } from './types.js';
+import {
+    type EventName
+  } from './types.js';
 
 export function eventNameTypeGuard(
-    value: any
+  value: unknown
   ) : asserts value is EventName
 {
   if (typeof value !== 'string'
-    && typeof value !== 'symbol')
+      && typeof value !== 'symbol')
   {
     throw new TypeError(
       'Expect event to be a string or symbol.');
@@ -13,22 +15,33 @@ export function eventNameTypeGuard(
 }
 
 export function isFunction(
-    value: any
+  value: unknown
   ) : value is Function 
 {
   return typeof value === 'function';
 }
 
+export function asFunction(
+  value: unknown
+  ) : Function | undefined
+{
+  if (isFunction(value)) {
+    return value;
+  }
+
+  return undefined;
+}
+
 export function isObject(
-    value: any
+  value: unknown
   ) : value is object 
 {
   return typeof value === 'object'
-    && value !== null;
+         && value !== null;
 }
 
 export function functionTypeGuard(
-    value: any
+  value: unknown
   ) : asserts value is Function 
 {
   if (!isFunction(value)) {
