@@ -5,7 +5,7 @@
 The following widely-accepted TypeScript practices apply here unless a
 project-specific rule below overrides them.
 
-- Write type-safe code; avoid `any` unless unavoidable.
+- Write type-safe code; avoid `any` unless the exception is clearly documented.
 - Prefer `interface` for public API shapes; use `type` for unions, aliases, and
   computed types.
 - Prefer `const` over `let`; avoid `var`.
@@ -172,6 +172,55 @@ const label =
   condition
     ? 'yes'
     : 'no';
+```
+
+#### Object and array literals
+
+For multi-line **object literals**, place the first key on the same line as
+the opening `{`, double-indent the value on the next line, and close with `}`
+on the same line as the last value:
+
+```ts
+const options =
+  { verbose:
+      true };
+
+const config =
+  { server:
+      { host: 'localhost',
+        port: 3000 } };
+```
+
+A more complex example with mixed types:
+
+```ts
+const settings =
+  { retries:
+      3,
+    backoff:
+      { initial: 100,
+        max: 5000 },
+    tags:
+      [ 'prod',
+        'v2' ] };
+```
+
+For multi-line **array literals**, place the first element on the same line as
+`[`, indent subsequent elements to align with the first, and close with `]` on
+the same line as the last element:
+
+```ts
+const items =
+  [ 'alpha',
+    'beta',
+    'gamma' ];
+```
+
+Short arrays whose elements fit on one line may remain inline:
+
+```ts
+const flags = [true, false];
+const pair = [a, b];
 ```
 
 #### Blank lines
