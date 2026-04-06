@@ -1,6 +1,6 @@
 # Coding Conventions
 
-## 1. Baseline — General TypeScript Best Practices
+## Baseline — General TypeScript Best Practices
 
 The following widely-accepted TypeScript practices apply here unless a
 project-specific rule below overrides them.
@@ -16,9 +16,9 @@ project-specific rule below overrides them.
 
 ---
 
-## 2. Conventions
+## Conventions
 
-### 2.1 Module and export style
+### Module and export style
 
 - All packages use **ESM** (`"type": "module"` in `package.json`).
 - CommonJS (`require`, `module.exports`) is not used.
@@ -44,14 +44,14 @@ project-specific rule below overrides them.
 - Always include the `.js` extension in local import paths (NodeNext
   resolution).
 
-### 2.2 TypeScript compiler settings
+### TypeScript compiler settings
 
 - `strict: true` — all strict checks enabled.
 - `target: ES2020`, `module: NodeNext`, `moduleResolution: NodeNext`.
 - `declaration: true` — emit `.d.ts` files alongside compiled output.
 - `skipLibCheck: true`.
 
-### 2.3 Formatting and whitespace
+### Formatting and whitespace
 
 #### Indentation
 
@@ -90,7 +90,7 @@ function greet(
 ```
 
 This applies to **named function declarations** and **class methods**.  It does
-**not** apply to arrow functions (see §2.3 "Arrow functions" below).
+**not** apply to arrow functions (see "Arrow functions" below).
 
 #### Function parameter style
 
@@ -179,7 +179,7 @@ lists, object literals, and array literals.
 Keep a blank line between logical sections: imports, internal helpers, main
 implementation, and exports.
 
-### 2.4 Naming
+### Naming
 
 - **Files**: lowercase, no separators for single-concept files (`types.ts`,
   `guards.ts`); camelCase for multi-word names (`observableobject.ts`).
@@ -189,7 +189,7 @@ implementation, and exports.
 - Internal/private helpers are unexported; they live in the same file as their
   consumer.
 
-### 2.5 API design
+### API design
 
 - Prefer **factory functions** (e.g. `eventful(obj)`) over mandatory
   subclassing.  Base classes (e.g. `EventfulBase`) are offered as a convenience
@@ -201,7 +201,7 @@ implementation, and exports.
   Hook payloads must be stable, serializable, and must not expose mutable
   internals.
 
-### 2.6 Error handling
+### Error handling
 
 - Provide a **strict vs. non-strict** behaviour contract where relevant.
 - In **non-strict** flows: isolate listener/callback errors; surface them via
@@ -210,7 +210,7 @@ implementation, and exports.
 - Validate function and object arguments at the entry point; throw
   `TypeError` with a clear message.
 
-### 2.7 Internal state
+### Internal state
 
 - Use `Map` and `Set` for dynamic key/value and membership state.
 - Do not expose internal collections directly; return safe views
@@ -220,21 +220,21 @@ implementation, and exports.
 - Idempotent operations (e.g. unsubscribe closures) must return a consistent
   result (`boolean`) on repeated calls.
 
-### 2.8 Explicit return types
+### Explicit return types
 
 All **declared functions** (function declarations, class methods) must have
 explicit return types.  Inline expressions, typed function expressions,
 higher-order callbacks, and arrow functions with direct `const` assertions are
 exempt (matching the ESLint rule configuration).
 
-### 2.9 Testing
+### Testing
 
 - Use Node's **built-in test runner** (`node:test`).
 - Cover happy paths, error paths, and surface-level API contracts.
 - Prefer small, fast, deterministic test cases.
 - Add tests whenever behaviour changes.
 
-### 2.10 Documentation
+### Documentation
 
 Each package must have a `README.md` with the following sections in order:
 
