@@ -22,21 +22,29 @@ project-specific rule below overrides them.
 
 - All packages use **ESM** (`"type": "module"` in `package.json`).
 - CommonJS (`require`, `module.exports`) is not used.
-- Use named exports in **brace-block style**, one name per line:
+- Use named exports and imports in **brace-block style**: one name per
+  double-indented line, with `}` or `} from` on a single-indented line:
 
   ```ts
   export {
-    foo,
-    bar,
-  } from './module.js';
+      foo,
+      bar,
+    } from './module.js';
   ```
-
-- Separate type-only imports with `import type { … }`.
-- Use multi-line brace-block for imports when importing more than one name:
 
   ```ts
   import {
       alpha,
+      beta,
+    } from './module.js';
+  ```
+
+- For type-only names, use the inline `type` keyword rather than a separate
+  `import type { … }` statement:
+
+  ```ts
+  import {
+      type Alpha,
       beta,
     } from './module.js';
   ```
@@ -48,16 +56,12 @@ project-specific rule below overrides them.
 
 - `strict: true` — all strict checks enabled.
 - `target: ES2020`, `module: NodeNext`, `moduleResolution: NodeNext`.
-- `declaration: true` — emit `.d.ts` files alongside compiled output.
-- `skipLibCheck: true`.
 
 ### Formatting and whitespace
 
 #### Indentation
 
 - **2-space** indentation throughout.
-- Function parameters are **double-indented** (4 spaces); the closing `)` is
-  **single-indented** (2 spaces).
 
 #### Semicolons
 
@@ -72,7 +76,7 @@ project-specific rule below overrides them.
 #### Line length and wrapping
 
 - Prefer **multi-line formatting** over long single lines.  Wrap at logical
-  boundaries (after a comma, before an operator).
+  boundaries (after a comma, before an operator, after `;` in `for` loops).
 
 #### Brace placement — named functions
 
@@ -94,8 +98,9 @@ This applies to **named function declarations** and **class methods**.  It does
 
 #### Function parameter style
 
-Multi-parameter function signatures use one parameter per line, double-indented,
-with the closing `)` on a single-indented line followed by the return type:
+Multi-parameter function signatures use one parameter per double-indented line,
+with the closing `)` on a single-indented line.  The return type follows on the
+same line as `)`, and is always required — even when `void`:
 
 ```ts
 function example(
@@ -149,12 +154,12 @@ Object.prototype
 #### Multi-line boolean expressions
 
 Place `&&` and `||` at the **start** of continuation lines, aligned with the
-opening condition:
+start of the expression:
 
 ```ts
 if (isValid
-  && isEnabled
-  && hasPermission)
+    && isEnabled
+    && hasPermission)
 {
   // …
 }
@@ -169,11 +174,6 @@ const label =
     : 'no';
 ```
 
-#### Trailing commas
-
-Use **trailing commas** in all multi-line import lists, export lists, parameter
-lists, object literals, and array literals.
-
 #### Blank lines
 
 Keep a blank line between logical sections: imports, internal helpers, main
@@ -182,24 +182,12 @@ implementation, and exports.
 ### Naming
 
 - **Files**: lowercase, no separators for single-concept files (`types.ts`,
-  `guards.ts`); camelCase for multi-word names (`observableobject.ts`).
+  `guards.ts`); kebab-case for composite names (`observable-object.ts`).
 - **Functions and variables**: camelCase.
 - **Types, interfaces, and classes**: PascalCase.
 - **Constants and enum-like values**: camelCase (not `SCREAMING_SNAKE_CASE`).
 - Internal/private helpers are unexported; they live in the same file as their
   consumer.
-
-### API design
-
-- Prefer **factory functions** (e.g. `eventful(obj)`) over mandatory
-  subclassing.  Base classes (e.g. `EventfulBase`) are offered as a convenience
-  but are not the primary API.
-- Keep the public API surface **minimal, consistent, and orthogonal**; avoid
-  leaking internal data structures.
-- Options objects should be **explicit, optional, and default-safe**.
-- Hook callbacks (tracing, error) are **opt-in** and invoked conditionally.
-  Hook payloads must be stable, serializable, and must not expose mutable
-  internals.
 
 ### Error handling
 
@@ -230,19 +218,3 @@ exempt (matching the ESLint rule configuration).
 ### Testing
 
 - Use Node's **built-in test runner** (`node:test`).
-- Cover happy paths, error paths, and surface-level API contracts.
-- Prefer small, fast, deterministic test cases.
-- Add tests whenever behaviour changes.
-
-### Documentation
-
-Each package must have a `README.md` with the following sections in order:
-
-1. **Overview** — brief description.
-2. **Installation** — `npm install` command.
-3. **Usage** — runnable examples (JS and TS where both are relevant).
-4. **API Reference** — brief listing with links to type definitions.
-5. **License** — SPDX identifier and/or link to `LICENSE.md`.
-
-Keep README, type declarations, and runtime implementation **in sync** whenever
-public contracts change.
