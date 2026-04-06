@@ -2,10 +2,10 @@
 
 ## Baseline — General TypeScript Best Practices
 
-The following widely-accepted TypeScript practices apply here unless a
-project-specific rule below overrides them.
+The following widely-accepted TypeScript practices apply here unless
+the exception is clearly documented..
 
-- Write type-safe code; avoid `any` unless the exception is clearly documented.
+- Write type-safe code; avoid `any`.
 - Prefer `interface` for public API shapes; use `type` for unions, aliases, and
   computed types.
 - Prefer `const` over `let`; avoid `var`.
@@ -177,13 +177,12 @@ const label =
 #### Object and array literals
 
 For multi-line **object literals**, place the first key on the same line as
-the opening `{`, double-indent the value on the next line, and close with `}`
-on the same line as the last value:
+the opening `{`. If value is multi-line, double-indent the value on the next
+line. Close with `}` on the same line as the last value:
 
 ```ts
 const options =
-  { verbose:
-      true };
+  { verbose: true };
 
 const config =
   { server:
@@ -195,8 +194,7 @@ A more complex example with mixed types:
 
 ```ts
 const settings =
-  { retries:
-      3,
+  { retries: 3,
     backoff:
       { initial: 100,
         max: 5000 },
@@ -219,8 +217,8 @@ const items =
 Short arrays whose elements fit on one line may remain inline:
 
 ```ts
-const flags = [true, false];
-const pair = [a, b];
+const flags = [ true, false ];
+const pair = [ a, b ];
 ```
 
 #### Blank lines
