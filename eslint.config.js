@@ -25,6 +25,17 @@ export default [
     },
     rules: {
       indent: 'off',
+      semi: [
+        'error',
+        'always'
+      ],
+      eqeqeq: [
+        'error',
+        'always'
+      ],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'no-duplicate-imports': 'error',
       'function-call-argument-newline': ['error', 'consistent'],
       'nonblock-statement-body-position': [
         'error',
@@ -55,6 +66,13 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports'
+        }
+      ],
       '@typescript-eslint/explicit-function-return-type': [
         'error',
         {
@@ -78,6 +96,17 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
+      semi: [
+        'error',
+        'always'
+      ],
+      eqeqeq: [
+        'error',
+        'always'
+      ],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'no-duplicate-imports': 'error',
       'function-call-argument-newline': [
         'error',
         'consistent'

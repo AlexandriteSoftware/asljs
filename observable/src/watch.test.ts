@@ -4,7 +4,7 @@ import assert
   from 'node:assert/strict';
 import {
     observable,
-    ObservableObjectBase
+    ObservableObject
   } from '../observable.js';
 
 const CONTEXT_NAME = 'watch.test';
@@ -580,11 +580,11 @@ test(
   });
 
 /**
- * ObservableObjectBase with setAndEmit should deliver deduplicated change
+ * ObservableObject with setAndEmit should deliver deduplicated change
  * notifications for class-based models.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObjectBase watch with setAndEmit`,
+  `${CONTEXT_NAME}: ObservableObject watch with setAndEmit`,
   () => {
     const obj =
       new ObjWithName();
@@ -613,7 +613,7 @@ test(
  * after unsubscribe.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObjectBase watch returns disposer`,
+  `${CONTEXT_NAME}: ObservableObject watch returns disposer`,
   () => {
     const obj =
       new ObjWithName();
@@ -642,11 +642,11 @@ test(
   });
 
 /**
- * ObservableObjectBase watch() should accept a single property key string for
+ * ObservableObject watch() should accept a single property key string for
  * concise subscription code.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObjectBase watch accepts a property name string`,
+  `${CONTEXT_NAME}: ObservableObject watch accepts a property name string`,
   () => {
     const obj =
       new ObjWithName();
@@ -670,7 +670,7 @@ test(
   });
 
 class ObjWithName
-  extends ObservableObjectBase<{ name: string }>
+  extends ObservableObject<{ name: string }>
 {
   #name: string = '';
 

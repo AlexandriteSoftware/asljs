@@ -1,14 +1,13 @@
 import {
-    ObservableWatchFn
+    asEventfulLike
+  } from 'asljs-eventful';
+import {
+    type ObservableWatchFn
   } from './types.js';
 import {
     functionTypeGuard,
-    isFunction,
     isObject,
   } from './guards.js';
-
-type EventfulLike =
-  { on: (event: string, listener: () => void) => () => boolean; };
 
 function splitPath(
     path: string
@@ -131,9 +130,12 @@ export const watchImpl: ObservableWatchFn =
           const segment =
             segments[index];
 
-          if (isFunction((current as { on?: unknown; }).on)) {
+          const eventfulLike =
+            asEventfulLike(current);
+
+          if (eventfulLike) {
             const unwatch =
-              (current as EventfulLike).on(
+              eventfulLike.on(
                 `set:${segment}`,
                 () => {
                   callback(...getValues());

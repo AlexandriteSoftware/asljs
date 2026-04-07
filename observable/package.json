@@ -1,6 +1,6 @@
 {
   "name": "asljs-observable",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
   "files": [
     "dist/**",
@@ -38,16 +38,16 @@
   },
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "tsc -p .",
-    "build:tests": "tsc -p tsconfig.tests.json",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "prepack": "npm run build",
-    "test": "npm run build && npm run build:tests && node --test .tests/*.test.js",
-    "test:watch": "npm run build && npm run build:tests && node --watch --test .tests/*.test.js",
-    "coverage": "npm run build && npm run build:tests && NODE_V8_COVERAGE=.coverage node --test .tests/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
+    "build": "npx tsc -p tsconfig.build.json",
+    "build:test": "npx tsc -p tsconfig.test.json",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix",
+    "prepack": "npm run clean && npm run build",
+    "test": "npm run build:test && node --test dist/*.test.js",
+    "test:watch": "npm run build:test && node --watch --test dist/*.test.js",
+    "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
   },
   "dependencies": {
-    "asljs-eventful": "^0.3.0"
+    "asljs-eventful": "^0.4.3"
   }
 }

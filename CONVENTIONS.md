@@ -265,6 +265,28 @@ const pair = [ a, b ];
 Keep a blank line between logical sections: imports, internal helpers, main
 implementation, and exports.
 
+#### Return statements
+
+When returning a long function call or complex expression, keep return on its
+own line and wrap the expression arguments onto aligned continuation lines.
+
+```ts
+return someComplexExpression(
+         argumentValue1,
+         argumentValue2);
+```
+
+```ts
+return { key1: value1,
+         key2: value2 };
+```
+
+```ts
+return condition
+         ? 'yes'
+         : 'no';
+```
+
 ### Naming
 
 - **Files**: lowercase, no separators for single-concept files (`types.ts`,

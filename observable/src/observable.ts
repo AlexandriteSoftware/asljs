@@ -1,12 +1,12 @@
 import {
-    eventful
+    asEventfulLike,
+    eventful,
+    type EventfulLike,
   } from 'asljs-eventful';
-
 import {
-    ObservableOptions,
-  ObservableFn
+    type ObservableOptions,
+    type ObservableFn
   } from './types.js';
-
 import {
     functionTypeGuard,
     isFunction,
@@ -56,12 +56,15 @@ function isEventfulObject(
     value: any
   ): boolean
 {
-  const candidate =
-    value as { on?: unknown; emit?: unknown; };
+  const eventfulLike =
+    asEventfulLike(value);
 
-  return isObject(value)
-    && isFunction(candidate.on)
-    && isFunction(candidate.emit);
+  if (!eventfulLike) {
+    return false;
+  }
+
+  return isFunction(
+    (value as EventfulLike & { emit?: unknown; }).emit);
 }
 
 /**
@@ -204,7 +207,7 @@ const observableImpl =
                     receiver);
 
                 if (proxy
-                  && ok)
+                    && ok)
                 {
                   const current =
                     Reflect.get(

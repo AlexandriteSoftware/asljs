@@ -41,9 +41,9 @@ export interface ObservableOptions {
 }
 
 /** Arrays: no 'define' events */
-type ArrayIndex = number;
+export type ArrayIndex = number;
 
-type ArraySetPayload<T extends readonly any[]> =
+export type ArraySetPayload<T extends readonly any[]> =
   | { index: ArrayIndex;
       value: ArrayElement<T>;
       previous: ArrayElement<T> | undefined }
@@ -54,13 +54,13 @@ type ArraySetPayload<T extends readonly any[]> =
       value: unknown;
       previous: unknown };
 
-type ArrayDeletePayload<T extends readonly any[]> =
+export type ArrayDeletePayload<T extends readonly any[]> =
   | { index: ArrayIndex;
       previous: ArrayElement<T> | undefined }
   | { property: string;
       previous: unknown };
 
-type KeyedArraySetEvents<T extends readonly any[]> =
+export type KeyedArraySetEvents<T extends readonly any[]> =
   { [K in ArrayIndex as `set:${PropString<K>}`]:
       [{ index: K;
          value: ArrayElement<T>;
@@ -69,65 +69,65 @@ type KeyedArraySetEvents<T extends readonly any[]> =
                        value: number;
                        previous: number }] };
 
-type KeyedArrayDeleteEvents<T extends readonly any[]> =
+export type KeyedArrayDeleteEvents<T extends readonly any[]> =
   { [K in ArrayIndex as `delete:${PropString<K>}`]:
       [{ index: K;
          previous: ArrayElement<T> | undefined }] };
 
-type PropString<K> =
+export type PropString<K> =
   K extends string
   ? K
   : K extends number
     ? `${K}`
     : never;
 
-type KeyableObject<T> =
+export type KeyableObject<T> =
   Extract<keyof T, string | number>;
 
-type ArrayElement<T extends readonly any[]> =
+export type ArrayElement<T extends readonly any[]> =
   T[number];
 
 // Payloads for objects
 
-type SetPayloadFor<T, K extends keyof T> =
+export type SetPayloadFor<T, K extends keyof T> =
   { property: K;
     value: T[K];
     previous: T[K] | undefined; };
 
-type DeletePayloadFor<T, K extends keyof T> =
+export type DeletePayloadFor<T, K extends keyof T> =
   { property: K;
     previous: T[K] | undefined; };
 
-type DefinePayloadFor<T, K extends keyof T> =
+export type DefinePayloadFor<T, K extends keyof T> =
   { property: K;
     descriptor: PropertyDescriptor;
     previous: PropertyDescriptor | null; };
 
 // Unkeyed payload unions (objects)
 
-type SetPayload<T> =
+export type SetPayload<T> =
   { [K in keyof T]:
       SetPayloadFor<T, K> }[keyof T];
 
-type DeletePayload<T> =
+export type DeletePayload<T> =
   { [K in keyof T]:
       DeletePayloadFor<T, K> }[keyof T];
 
-type DefinePayload<T> =
+export type DefinePayload<T> =
   { [K in keyof T]:
       DefinePayloadFor<T, K> }[keyof T];
 
 // Keyed events for objects
 
-type KeyedSetEvents<T> =
+export type KeyedSetEvents<T> =
   { [K in KeyableObject<T> as `set:${PropString<K>}`]:
       [SetPayloadFor<T, Extract<K, keyof T>>]; };
 
-type KeyedDeleteEvents<T> =
+export type KeyedDeleteEvents<T> =
   { [K in KeyableObject<T> as `delete:${PropString<K>}`]:
       [DeletePayloadFor<T, Extract<K, keyof T>>]; };
 
-type KeyedDefineEvents<T> =
+export type KeyedDefineEvents<T> =
   { [K in KeyableObject<T> as `define:${PropString<K>}`]:
       [DefinePayloadFor<T, Extract<K, keyof T>>]; };
 
@@ -185,7 +185,7 @@ export type ObservableWatchFn =
       ): () => boolean;
   };
 
-type WatchMethod<T extends Eventful> =
+export type WatchMethod<T extends Eventful> =
   {
     watch:
       {
@@ -201,17 +201,17 @@ type WatchMethod<T extends Eventful> =
       };
   };
 
-type ObservableArray<T extends readonly any[]> =
+export type ObservableArray<T extends readonly any[]> =
   T
   & Eventful<ObservableEventsArray<T>>
   & WatchMethod<T & Eventful<ObservableEventsArray<T>>>;
 
-type ObservableObject<T extends object> =
+export type ObservableObject<T extends object> =
   T
   & Eventful<ObservableEventsObject<T>>
   & WatchMethod<T & Eventful<ObservableEventsObject<T>>>;
 
-type ObservablePrimitive<T> =
+export type ObservablePrimitive<T> =
   { value: T }
   & Eventful<ObservableEventsPrimitive<T>>;
 

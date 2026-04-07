@@ -1,12 +1,12 @@
 import {
     ListenerError,
-  type ErrorFn,
+    type ErrorFn,
     type EventName,
     type Eventful,
     type EventfulFn,
     type EventfulOptions,
     type ListenerErrorArgs,
-  type TraceFn,
+    type TraceFn,
   } from './types.js';
 
 import {

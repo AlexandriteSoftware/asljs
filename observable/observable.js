@@ -3,5 +3,5 @@ export {
   } from './dist/observable.js';
 
 export {
-    ObservableObjectBase
-  } from './dist/observableobject.js';
+    ObservableObject
+  } from './dist/observable-object.js';
