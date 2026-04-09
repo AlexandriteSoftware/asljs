@@ -5,6 +5,7 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "workspaces": [
+    "data-binding",
     "eventful",
     "kiosk",
     "machine",

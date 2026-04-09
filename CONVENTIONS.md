@@ -287,6 +287,18 @@ return condition
          : 'no';
 ```
 
+### Union types
+
+When defining union types, place each member on a separate line, starting with
+`|`, aligned with the first member:
+
+```ts
+type Status =
+  | 'pending'
+  | 'active'
+  | 'completed';
+```
+
 ### Naming
 
 - **Files**: lowercase, no separators for single-concept files (`types.ts`,
@@ -300,35 +312,8 @@ return condition
 
 ### Error handling
 
-- Provide a **strict vs. non-strict** behaviour contract where relevant.
-- In **non-strict** flows: isolate listener/callback errors; surface them via
-  error hooks or the global `eventful` error event rather than throwing.
-- In **non-strict** assume input parameters are provided in the right format,
-  do not check input parameters invariants.
-- In **strict** flows: fail fast and document the contract explicitly.
 - Validate function and object arguments at the entry point; throw
   `TypeError` with a clear message.
-
-```ts
-// define STRICT: boolean = ...
-function myMethod(
-    key: string
-  ): void
-{
-  if (STRICT) {
-    if (key === null
-        || (typeof key) != 'string'
-        || key === undefined
-        || key !== '')
-    {
-      throw new TypeError(
-        `${CONTEXT_NAME}: key should not be null or empty.`);
-    }
-  }
-
-  // main code, assume that key is non-empty string
-}
-```
 
 ### Internal state
 

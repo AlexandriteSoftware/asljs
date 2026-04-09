@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig.build.json",
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "test",
+    "dist",
+    "**/*.test.ts",
+    "**/*.d.ts"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

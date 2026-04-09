@@ -1,0 +1,37 @@
+import {
+    test
+  } from 'node:test';
+import assert
+  from 'node:assert/strict';
+import {
+    coerceDisplayValue
+  } from './coerce-display-value.js';
+
+const CONTEXT_NAME =
+  'coerce-display-value-test';
+
+test(
+  `${CONTEXT_NAME}: converts nullish values to empty string`,
+  () => {
+    assert.equal(coerceDisplayValue(null), '');
+    assert.equal(coerceDisplayValue(undefined), '');
+  });
+
+test(
+  `${CONTEXT_NAME}: converts Date to ISO string`,
+  () => {
+    const result =
+      coerceDisplayValue(
+        new Date('2026-01-02T03:04:05.000Z'));
+
+    assert.equal(
+      result,
+      '2026-01-02T03:04:05.000Z');
+  });
+
+test(
+  `${CONTEXT_NAME}: converts scalar values to string`,
+  () => {
+    assert.equal(coerceDisplayValue(10), '10');
+    assert.equal(coerceDisplayValue(true), 'true');
+  });

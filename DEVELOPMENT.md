@@ -15,17 +15,3 @@ git reset --soft origin/$env:BRANCH
 git commit -m "... commit message ..."
 git push
 ```
-
-## Versions
-
-| Library    | Released    | Next   |
-|------------|-------------|--------|
-| eventful   | [0.2.0][1]  |   -    |
-| machine    | [0.2.0][2]  |   -    |
-| money      | [0.2.0][3]  |   -    |
-| observable | [0.2.0][4]  |   -    |
-
-[1]: https://www.npmjs.com/package/asljs-eventful
-[2]: https://www.npmjs.com/package/asljs-machine
-[3]: https://www.npmjs.com/package/asljs-money
-[4]: https://www.npmjs.com/package/asljs-observable
