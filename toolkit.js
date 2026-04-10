@@ -1,34 +1,38 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import console from 'node:console';
+import fs
+  from 'node:fs';
+import path
+  from 'node:path';
+import process
+  from 'node:process';
+import console
+  from 'node:console';
 import {
     execSync
   } from 'node:child_process';
 
 function runGit(
-    command
-  )
-{
+  command
+) {
   return execSync(
     command,
-    {
-      cwd: process.cwd(),
-      stdio: [ 'ignore', 'pipe', 'pipe' ],
-      encoding: 'utf8'
-    });
+    { cwd: process.cwd(),
+      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: 'utf8' });
 }
 
-function getReleaseIdFromPackageJson(
-  )
-{
+function getPackageNameAndVersionFromPackageJson(
+) {
   const packageJsonPath =
-    path.join(process.cwd(), 'package.json');
+    path.join(
+      process.cwd(),
+      'package.json');
 
   const packageJsonText =
-    fs.readFileSync(packageJsonPath, 'utf8');
+    fs.readFileSync(
+      packageJsonPath,
+      'utf8');
 
   const packageInfo =
     JSON.parse(packageJsonText);
@@ -39,36 +43,50 @@ function getReleaseIdFromPackageJson(
   const version =
     packageInfo.version;
 
-  if (typeof name !== 'string' || name.trim() === '') {
-    throw new Error('package.json must define a non-empty string "name".');
+  if (typeof name !== 'string'
+      || name.trim() === '')
+  {
+    throw new Error(
+      'package.json must define a non-empty string "name".');
   }
 
-  if (typeof version !== 'string' || version.trim() === '') {
-    throw new Error('package.json must define a non-empty string "version".');
+  if (typeof version !== 'string'
+      || version.trim() === '')
+  {
+    throw new Error(
+      'package.json must define a non-empty string "version".');
   }
 
-  return `${name}@${version}`;
+  return { name,
+           version };
+}
+
+function getReleaseTagId(
+) {
+  const packageInfo =
+    getPackageNameAndVersionFromPackageJson();
+
+  return `${packageInfo.name}:${packageInfo.version}`;
 }
 
 function cleanDist(
-  )
-{
+) {
   const distPath =
-    path.join(process.cwd(), 'dist');
+    path.join(
+      process.cwd(),
+      'dist');
 
   fs.rmSync(
     distPath,
-    {
-      recursive: true,
-      force: true
-    });
+    { recursive: true,
+      force: true });
 
-  console.log(`Removed: ${distPath}`);
+  console.log(
+    `Removed: ${distPath}`);
 }
 
 function ensureCleanWorkingFolder(
-  )
-{
+) {
   const output =
     runGit('git status --porcelain');
 
@@ -77,58 +95,61 @@ function ensureCleanWorkingFolder(
       'Refusing publish: working tree has uncommitted or untracked changes.');
   }
 
-  console.log('Git working folder is clean.');
+  console.log(
+    'Git working folder is clean.');
 }
 
 function tagCommitWithReleaseId(
-  )
-{
+) {
   const releaseId =
-    getReleaseIdFromPackageJson();
+    getReleaseTagId();
 
-  try {
-    runGit(`git rev-parse --verify --quiet "refs/tags/${releaseId}"`);
-    throw new Error(`Tag already exists: ${releaseId}`);
-  } catch (error) {
-    const message =
-      String(error?.message ?? '');
+  const existingTag =
+    runGit(`git tag -l "${releaseId}"`).trim();
 
-    if (!message.includes('Tag already exists')) {
-      // Tag not found: proceed.
-    } else {
-      throw error;
-    }
+  if (existingTag !== '') {
+    throw new Error(
+      `Tag already exists: ${releaseId}`);
   }
 
   runGit(`git tag -a "${releaseId}" -m "${releaseId}"`);
-  runGit(`git push origin "${releaseId}"`);
 
-  console.log(`Created and pushed tag: ${releaseId}`);
+  console.log(
+    `Created tag: ${releaseId}`);
 }
 
 const action =
   process.argv[2] ?? '';
 
+const actions =
+  new Map([
+    [ 'clean-dist',
+      cleanDist ],
+    [ 'ensure-clean-working-folder',
+      ensureCleanWorkingFolder ],
+    [ 'tag-commit-with-release-id',
+      tagCommitWithReleaseId ]
+  ]);
+
 try {
-  switch (action) {
-    case 'clean-dist':
-      cleanDist();
-      break;
+  const selectedAction =
+    actions.get(action);
 
-    case 'ensure-clean-working-folder':
-      ensureCleanWorkingFolder();
-      break;
+  if (!selectedAction) {
+    const supportedActions =
+      [ ...actions.keys() ]
+        .join(', ');
 
-    case 'tag-commit-with-release-id':
-      tagCommitWithReleaseId();
-      break;
+    console.error(
+      `Unknown action. Use one of: ${supportedActions}`);
 
-    default:
-      console.error(
-        'Unknown action. Use one of: clean-dist, ensure-clean-working-folder, tag-commit-with-release-id');
-      process.exit(1);
+    process.exit(1);
   }
+
+  selectedAction();
 } catch (error) {
-  console.error(String(error?.message ?? error));
+  console.error(
+    String(error?.message ?? error));
+
   process.exit(1);
 }

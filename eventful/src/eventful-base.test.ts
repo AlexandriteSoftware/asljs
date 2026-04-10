@@ -7,7 +7,7 @@ import {
   } from './eventful-base.js';
 
 test(
-  'EventfulBase wires eventful methods in constructor',
+  `${__filename}: EventfulBase wires eventful methods in constructor`,
   () => {
     type Events =
       { ping: [value: number] };
@@ -36,7 +36,7 @@ test(
   });
 
 test(
-  'EventfulBase passes options to eventful setup',
+  `${__filename}: EventfulBase passes options to eventful setup`,
   () => {
     type Events =
       { boom: [] };
