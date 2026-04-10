@@ -1,11 +1,9 @@
 {
   "name": "asljs-eventful",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Lightweight event helper adding on/off/emit to any object.",
   "files": [
     "dist/**",
-    "eventful.js",
-    "eventful.d.ts",
     "README.md",
     "LICENSE.md"
   ],
@@ -25,12 +23,12 @@
   "license": "MIT",
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
-  "main": "eventful.js",
-  "types": "eventful.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./eventful.d.ts",
-      "default": "./eventful.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "directories": {
