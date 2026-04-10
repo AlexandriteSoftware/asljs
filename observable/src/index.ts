@@ -1,10 +1,10 @@
 export {
     observable
-  } from './dist/observable.js';
+  } from './observable.js';
 
 export {
     ObservableObject
-  } from './dist/observable-object.js';
+  } from './observable-object.js';
 
 export type {
     Observable,
@@ -16,5 +16,5 @@ export type {
     ObservableOptions,
     ObservableTraceFn,
     ObservableWatchFn,
-    WatchedValues
-  } from './dist/types.js';
+    WatchedValues,
+  } from './types.js';

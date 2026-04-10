@@ -121,11 +121,10 @@ obj.watch(
 ### Observable class (TypeScript)
 
 ```ts
-
-import { ObservableObjectBase } from 'asljs-observable';
+import { ObservableObject } from 'asljs-observable';
 
 class User
-  extends ObservableObjectBase<{ name: string }>
+  extends ObservableObject<{ name: string }>
 {
   #name: string;
 

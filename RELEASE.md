@@ -4,7 +4,7 @@ Each package is released separately, from the repository root.
 
 Release prerequisites:
 
-- Ensure all package tests pass (`npm -w <pkg> test`)
+- Ensure all package tests pass (`npm -w $env:FOLDER test`)
 - Ensure the repository is clean (`git status`)
 
 ## Example: package release
