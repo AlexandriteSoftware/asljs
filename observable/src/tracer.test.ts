@@ -2,13 +2,15 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     createTracer,
   } from './tracer.js';
 
+const TEST_SUITE =
+  'tracer';
+
 test(
-  'tracer: stores and clears traces',
+  `${TEST_SUITE}: stores and clears traces`,
   () => {
     const tracer =
       createTracer();
@@ -29,7 +31,7 @@ test(
   });
 
 test(
-  'tracer: getMinimalTraces strips listeners and define args',
+  `${TEST_SUITE}: getMinimalTraces strips listeners and define args`,
   () => {
     const tracer =
       createTracer();
@@ -75,7 +77,7 @@ test(
   });
 
 test(
-  'tracer: getFirstEventParameters returns first emit arg',
+  `${TEST_SUITE}: getFirstEventParameters returns first emit arg`,
   () => {
     const tracer =
       createTracer();

@@ -3,18 +3,21 @@ import test
 import assert
   from 'node:assert/strict';
 import {
-    observable,
+    observable
+  } from './observable.js';
+import {
     ObservableObject
-  } from '../observable.js';
+  } from './observable-object.js';
 
-const CONTEXT_NAME = 'watch.test';
+const TEST_SUITE =
+  'watch';
 
 /**
  * Plain objects should gain a hidden watch method so consumers can subscribe
  * without polluting enumerable shape.
  */
 test(
-  `${CONTEXT_NAME}: observable adds non-enumerable watch method when missing`,
+  `${TEST_SUITE}: observable adds non-enumerable watch method when missing`,
   async () => {
     const obj =
       observable(
@@ -50,7 +53,7 @@ test(
  * host-specific semantics.
  */
 test(
-  `${CONTEXT_NAME}: observable does not override existing watch method`,
+  `${TEST_SUITE}: observable does not override existing watch method`,
   async () => {
     const originalWatch =
       (): any => { };
@@ -70,7 +73,7 @@ test(
  * behavior is never mistaken for silent success.
  */
 test(
-  `${CONTEXT_NAME}: watching arrays is not supported`,
+  `${TEST_SUITE}: watching arrays is not supported`,
   async () => {
     const arr =
       observable(
@@ -97,7 +100,7 @@ test(
  * paths change.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch tracks selected properties and emits initial callback`,
+  `${TEST_SUITE}: observable.watch tracks selected properties and emits initial callback`,
   async () => {
     const obj =
       observable(
@@ -110,7 +113,7 @@ test(
     observable.watch(
       obj,
       [ 'a', 'b' ] as const,
-      (a, b) => {
+      (a: number, b: number) => {
         calls.push([ a, b ]);
       });
 
@@ -130,7 +133,7 @@ test(
  * array wrapper.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch accepts a single string path`,
+  `${TEST_SUITE}: observable.watch accepts a single string path`,
   async () => {
     const obj =
       observable(
@@ -160,7 +163,7 @@ test(
  * string path.
  */
 test(
-  `${CONTEXT_NAME}: injected watch method accepts a single string path`,
+  `${TEST_SUITE}: injected watch method accepts a single string path`,
   async () => {
     const obj =
       observable(
@@ -171,8 +174,8 @@ test(
 
     obj.watch(
       'a',
-      (a) => {
-        calls.push(a as number);
+      (a: number) => {
+        calls.push(a);
       });
 
     obj.b = 20;
@@ -189,7 +192,7 @@ test(
  * continue to report current values.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch supports nested paths and nested updates`,
+  `${TEST_SUITE}: observable.watch supports nested paths and nested updates`,
   async () => {
     const state =
       observable(
@@ -220,7 +223,7 @@ test(
  * edits are still observed.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch rebinds nested path when ancestor object changes`,
+  `${TEST_SUITE}: observable.watch rebinds nested path when ancestor object changes`,
   async () => {
     const state =
       observable(
@@ -253,7 +256,7 @@ test(
  * repeated calls.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch returns disposer for all attached listeners`,
+  `${TEST_SUITE}: observable.watch returns disposer for all attached listeners`,
   () => {
     const obj =
       observable(
@@ -266,7 +269,7 @@ test(
       observable.watch(
         obj,
         [ 'a', 'b' ] as const,
-        (a, b) => {
+        (a: number, b: number) => {
           calls.push([ a, b ]);
         });
 
@@ -293,14 +296,14 @@ test(
  * subscriptions.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch rejects empty and malformed paths`,
+  `${TEST_SUITE}: observable.watch rejects empty and malformed paths`,
   () => {
     const state =
       observable(
         { user: { name: 'Alice' } });
 
     const callback =
-      () => { };
+      (): void => { };
 
     const invalidPaths =
       [ '',
@@ -326,7 +329,7 @@ test(
  * eventful source, but they cannot react to later updates.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch supports non-eventful root with snapshot only`,
+  `${TEST_SUITE}: observable.watch supports non-eventful root with snapshot only`,
   () => {
     const plainState =
       { user: { name: 'Alice' } };
@@ -353,7 +356,7 @@ test(
  * updates when a listener can be attached at the eventful segment.
      */
     test(
-  `${CONTEXT_NAME}: observable.watch supports non-eventful root with nested eventful segments`,
+  `${TEST_SUITE}: observable.watch supports non-eventful root with nested eventful segments`,
       () => {
     const user =
       observable(
@@ -394,7 +397,7 @@ test(
  * semantics strict and debuggable.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch rejects invalid properties input type`,
+  `${TEST_SUITE}: observable.watch rejects invalid properties input type`,
   () => {
     const state =
       observable(
@@ -414,7 +417,7 @@ test(
  * subscriptions never sneak in.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch rejects non-string items in properties array`,
+  `${TEST_SUITE}: observable.watch rejects non-string items in properties array`,
   () => {
     const state =
       observable(
@@ -434,7 +437,7 @@ test(
  * created later.
  */
 test(
-  `${CONTEXT_NAME}: observable.watch nested path rebinds when ancestor is created later`,
+  `${TEST_SUITE}: observable.watch nested path rebinds when ancestor is created later`,
   () => {
     const state =
       observable(
@@ -467,7 +470,7 @@ test(
  * then resolve to concrete values when missing path segments appear.
  */
 test(
-  `${CONTEXT_NAME}: watching partially initialised model`,
+  `${TEST_SUITE}: watching partially initialised model`,
   () => {
     const state =
       observable(
@@ -501,7 +504,7 @@ test(
  * observable ancestor is replaced.
  */
 test(
-  `${CONTEXT_NAME}: watches path when nested segments are non-eventful`,
+  `${TEST_SUITE}: watches path when nested segments are non-eventful`,
   () => {
     const state =
       observable(
@@ -537,7 +540,7 @@ test(
  * deeper leaf updates.
  */
 test(
-  `${CONTEXT_NAME}: supports mixed observable and non-observable path segments`,
+  `${TEST_SUITE}: supports mixed observable and non-observable path segments`,
   () => {
     const user =
       observable(
@@ -584,7 +587,7 @@ test(
  * notifications for class-based models.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObject watch with setAndEmit`,
+  `${TEST_SUITE}: ObservableObject watch with setAndEmit`,
   () => {
     const obj =
       new ObjWithName();
@@ -613,7 +616,7 @@ test(
  * after unsubscribe.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObject watch returns disposer`,
+  `${TEST_SUITE}: ObservableObject watch returns disposer`,
   () => {
     const obj =
       new ObjWithName();
@@ -646,7 +649,7 @@ test(
  * concise subscription code.
  */
 test(
-  `${CONTEXT_NAME}: ObservableObject watch accepts a property name string`,
+  `${TEST_SUITE}: ObservableObject watch accepts a property name string`,
   () => {
     const obj =
       new ObjWithName();

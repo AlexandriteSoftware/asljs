@@ -2,15 +2,17 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     functionTypeGuard,
     isFunction,
     isObject,
   } from './guards.js';
 
+const TEST_SUITE =
+  'guards';
+
 test(
-  'guards: isFunction detects functions',
+  `${TEST_SUITE}: isFunction detects functions`,
   () => {
     assert.equal(
       isFunction(() => { }),
@@ -22,7 +24,7 @@ test(
   });
 
 test(
-  'guards: isObject detects non-null objects only',
+  `${TEST_SUITE}: isObject detects non-null objects only`,
   () => {
     assert.equal(
       isObject({ a: 1 }),
@@ -38,7 +40,7 @@ test(
   });
 
 test(
-  'guards: functionTypeGuard throws for non-functions',
+  `${TEST_SUITE}: functionTypeGuard throws for non-functions`,
   () => {
     assert.doesNotThrow(
       () => functionTypeGuard(() => { }));

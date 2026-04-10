@@ -2,7 +2,6 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     type Observable,
     type ObservableGlobalOptions,
@@ -12,8 +11,11 @@ import {
   type WatchedValues,
   } from './types.js';
 
+const TEST_SUITE =
+  'types';
+
 test(
-  'types: compile-time shapes can be referenced',
+  `${TEST_SUITE}: compile-time shapes can be referenced`,
   () => {
     const options: ObservableOptions =
       { shallow: true,

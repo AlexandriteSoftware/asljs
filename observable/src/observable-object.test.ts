@@ -2,10 +2,12 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     ObservableObject,
   } from './observable-object.js';
+
+const TEST_SUITE =
+  'observable-object';
 
 type PersonModel =
   { name: string;
@@ -68,7 +70,7 @@ class Person
 }
 
 test(
-  'observable-object: setAndEmit is idempotent for equal values',
+  `${TEST_SUITE}: setAndEmit is idempotent for equal values`,
   () => {
     const person =
       new Person();
@@ -89,7 +91,7 @@ test(
   });
 
 test(
-  'observable-object: emitSet emits keyed and aggregate events',
+  `${TEST_SUITE}: emitSet emits keyed and aggregate events`,
   () => {
     const person =
       new Person();
@@ -120,7 +122,7 @@ test(
   });
 
 test(
-  'observable-object: watch observes selected properties',
+  `${TEST_SUITE}: watch observes selected properties`,
   () => {
     const person =
       new Person();

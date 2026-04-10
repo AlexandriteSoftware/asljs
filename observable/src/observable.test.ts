@@ -1,20 +1,26 @@
-import { eventful } from 'asljs-eventful';
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { observable } from '../observable.js';
-import { createTracer } from './tracer.js';
+import {
+    eventful
+  } from 'asljs-eventful';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import {
+    observable
+  } from './observable.js';
+import {
+    createTracer
+  } from './tracer.js';
 
-const CONTEXT_NAME = 'observable.test';
-const ARRAYS_CONTEXT_NAME = 'arrays.test';
-const INIT_CONTEXT_NAME = 'init.test';
-const PRIMITIVES_CONTEXT_NAME = 'primitives.test';
+const TEST_SUITE =
+  'observable';
 
 /**
  * Nested object fields should be observable by default so deep listeners can
  * subscribe without manual wrapping.
  */
 test(
-  `${CONTEXT_NAME}: observes nested objects by default`,
+  `${TEST_SUITE}: observes nested objects by default`,
   async () => {
     const object =
       { a: { b: 1 } };
@@ -43,7 +49,7 @@ test(
  * conversion rules as normal assignment paths.
  */
 test(
-  `${CONTEXT_NAME}: defineProperty converts nested value in deep mode`,
+  `${TEST_SUITE}: defineProperty converts nested value in deep mode`,
   async () => {
     const proxy =
       observable(
@@ -78,7 +84,7 @@ test(
  * nested observability boundaries.
  */
 test(
-  `${CONTEXT_NAME}: shallow:true keeps nested objects non-observable`,
+  `${TEST_SUITE}: shallow:true keeps nested objects non-observable`,
   async () => {
     const object =
       { a: { b: 1 } };
@@ -98,7 +104,7 @@ test(
  * edits still notify listeners.
  */
 test(
-  `${CONTEXT_NAME}: observes nested objects inside arrays by default`,
+  `${TEST_SUITE}: observes nested objects inside arrays by default`,
   async () => {
     const object =
       { items: [ { name: 'A' } ] };
@@ -127,7 +133,7 @@ test(
  * applied automatically.
  */
 test(
-  `${CONTEXT_NAME}: shallow:true keeps nested objects inside arrays non-observable`,
+  `${TEST_SUITE}: shallow:true keeps nested objects inside arrays non-observable`,
   async () => {
     const object =
       { items: [ { name: 'A' } ] };
@@ -147,7 +153,7 @@ test(
  * specific and aggregate subscribers stay in sync.
  */
 test(
-  `${CONTEXT_NAME}: observable object set and keyed set events`,
+  `${TEST_SUITE}: observable object set and keyed set events`,
   async () => {
     const tracer =
       createTracer();
@@ -181,7 +187,7 @@ test(
  * broad observers.
  */
 test(
-  `${CONTEXT_NAME}: observable object define and keyed define events`,
+  `${TEST_SUITE}: observable object define and keyed define events`,
   async () => {
     const tracer =
       createTracer();
@@ -228,7 +234,7 @@ test(
  * stale state immediately.
  */
 test(
-  `${CONTEXT_NAME}: observable object delete and keyed delete events`,
+  `${TEST_SUITE}: observable object delete and keyed delete events`,
   async () => {
     const tracer =
       createTracer();
@@ -260,7 +266,7 @@ test(
  * update only the affected entry.
  */
 test(
-  `${ARRAYS_CONTEXT_NAME}: observable array index set, property set`,
+  `${TEST_SUITE}: observable array index set, property set`,
   async () => {
     const tracer =
       createTracer();
@@ -299,7 +305,7 @@ test(
  * aggregate consumers such as counters.
  */
 test(
-  `${ARRAYS_CONTEXT_NAME}: observable array length set event`,
+  `${TEST_SUITE}: observable array length set event`,
   async () => {
     const tracer =
       createTracer();
@@ -332,7 +338,7 @@ test(
  * sparse-array length behavior.
  */
 test(
-  `${ARRAYS_CONTEXT_NAME}: observable array keyed delete event`,
+  `${TEST_SUITE}: observable array keyed delete event`,
   async () => {
     const tracer =
       createTracer();
@@ -369,7 +375,7 @@ test(
  * therefore use property-style payloads.
  */
 test(
-  `${ARRAYS_CONTEXT_NAME}: observable array non-canonical numeric-like key uses property payload`,
+  `${TEST_SUITE}: observable array non-canonical numeric-like key uses property payload`,
   async () => {
     const tracer =
       createTracer();
@@ -403,7 +409,7 @@ test(
  * emit the same boxed set contract.
  */
 test(
-  `${INIT_CONTEXT_NAME}: observable <empty>`,
+  `${TEST_SUITE}: observable <empty>`,
   async () => {
     const obj =
       observable<number | undefined>(undefined);
@@ -426,7 +432,7 @@ test(
  * explicit instead of silently degrading events.
  */
 test(
-  `${INIT_CONTEXT_NAME}: throws when eventful option is not a function`,
+  `${TEST_SUITE}: throws when eventful option is not a function`,
   async () => {
     assert.throws(
       () =>
@@ -441,7 +447,7 @@ test(
  * avoid double augmentation.
  */
 test(
-  `${INIT_CONTEXT_NAME}: observable reuses pre-eventful object`,
+  `${TEST_SUITE}: observable reuses pre-eventful object`,
   async () => {
     const source =
       eventful(
@@ -474,7 +480,7 @@ test(
  * for local diagnostics.
  */
 test(
-  `${INIT_CONTEXT_NAME}: per-instance trace hook captures new and set actions`,
+  `${TEST_SUITE}: per-instance trace hook captures new and set actions`,
   async () => {
     const actions: string[] = [];
     const payloads: any[] = [];
@@ -506,7 +512,7 @@ test(
  * not supplied on the call.
  */
 test(
-  `${INIT_CONTEXT_NAME}: global trace option is used when local trace is absent`,
+  `${TEST_SUITE}: global trace option is used when local trace is absent`,
   async () => {
     const actions: string[] = [];
     const previousTrace =
@@ -538,7 +544,7 @@ test(
  * value transitions through the same event pipeline as object state.
  */
 test(
-  `${PRIMITIVES_CONTEXT_NAME}: observable number`,
+  `${TEST_SUITE}: observable number`,
   async () => {
     const obj =
       observable(42);

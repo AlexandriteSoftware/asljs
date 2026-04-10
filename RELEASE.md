@@ -23,7 +23,7 @@ $env:PACKAGE_VERSION = "${env:PACKAGE}@${env:VERSION}"
 
 # 3) Commit version changes
 git add $env:FOLDER/package.json $env:FOLDER/package-lock.json package-lock.json
-git commit -m "release $env:PACKAGE_VERSION"
+git commit -m "releasing $env:PACKAGE_VERSION"
 
 # 4) Push commit first
 git push
