@@ -66,7 +66,7 @@ function getReleaseTagId(
   const packageInfo =
     getPackageNameAndVersionFromPackageJson();
 
-  return `${packageInfo.name}:${packageInfo.version}`;
+  return `${packageInfo.name}@${packageInfo.version}`;
 }
 
 function cleanDist(
