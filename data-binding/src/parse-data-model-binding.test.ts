@@ -71,6 +71,26 @@ test(
   });
 
 test(
+  `${CONTEXT_NAME}: parses multiple quoted pipe args`,
+  () => {
+    const spec =
+      parseValueBindingExpression(
+        { kind: 'html' },
+        "body | wrap:'<span>':'</span>'");
+
+    assert.deepEqual(
+      spec,
+      {
+        kind: 'value',
+        target: { kind: 'html' },
+        path: 'body',
+        pipes: [
+          { name: 'wrap', args: [ '<span>', '</span>' ] }
+        ]
+      });
+  });
+
+test(
   `${CONTEXT_NAME}: ignores empty pipe segments`,
   () => {
     const spec =
@@ -84,7 +104,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: parses event expression without middleware`,
+  `${CONTEXT_NAME}: parses event expression as actionPath only`,
   () => {
     const spec =
       parseEventBindingExpression(
@@ -96,13 +116,12 @@ test(
       {
         kind: 'event',
         eventName: 'click',
-        actionPath: 'activate',
-        middleware: []
+        actionPath: 'activate'
       });
   });
 
 test(
-  `${CONTEXT_NAME}: parses event middleware segments`,
+  `${CONTEXT_NAME}: keeps full event expression as actionPath`,
   () => {
     const spec =
       parseEventBindingExpression(
@@ -114,10 +133,6 @@ test(
       {
         kind: 'event',
         eventName: 'click',
-        actionPath: 'activate',
-        middleware: [
-          { name: 'preventDefault', args: [] },
-          { name: 'stopPropagation', args: [] }
-        ]
+        actionPath: 'activate | preventDefault | stopPropagation'
       });
   });

@@ -2,17 +2,9 @@ import {
     observable
   } from 'asljs-observable';
 import {
-    applyEventMiddleware,
-    type EventMiddlewareWarning
-  } from './apply-event-middleware.js';
-import {
-    mergeEventMiddleware
-  } from './event-middleware.js';
-import {
     readModelPath
   } from './read-model-path.js';
 import {
-    type BindDataModelOptions,
     type DataModel,
     type EventBindingSpec
   } from './types.js';
@@ -27,7 +19,6 @@ export function bindEventModel(
     element: HTMLElement,
     spec: EventBindingSpec,
     model: DataModel,
-    options: BindDataModelOptions,
     warnPrefix: string,
     warnOnce: (
       key: string,
@@ -36,16 +27,13 @@ export function bindEventModel(
     ) => void
   ): () => void
 {
-  const middlewareRegistry =
-    mergeEventMiddleware(options);
-
   let currentAction: unknown =
     readModelPath(
       model,
       spec.actionPath);
 
   const refreshAction =
-    () => {
+    (): void => {
       currentAction =
         readModelPath(
           model,
@@ -53,20 +41,7 @@ export function bindEventModel(
     };
 
   const listener =
-    (event: Event) => {
-      applyEventMiddleware(
-        event,
-        spec.middleware,
-        middlewareRegistry,
-        { model,
-          element },
-        warning => {
-          reportMiddlewareWarning(
-            warning,
-            warnPrefix,
-            warnOnce);
-        });
-
+    (event: Event): void => {
       if (typeof currentAction !== 'function') {
         warnOnce(
           `${warnPrefix}:missing-action:${spec.actionPath}`,
@@ -99,44 +74,17 @@ export function bindEventModel(
       observable.watch(
         model as any,
         spec.actionPath,
-        () => {
-          refreshAction();
-        });
+        () => refreshAction());
 
-    if (typeof maybeUnsubscribe === 'function') {
+    if (typeof maybeUnsubscribe === 'function')
       unsubscribe = maybeUnsubscribe;
-    }
   }
 
-  return () => {
+  return (): void => {
     element.removeEventListener(
       spec.eventName,
       listener);
 
     unsubscribe?.();
   };
-}
-
-function reportMiddlewareWarning(
-    warning: EventMiddlewareWarning,
-    warnPrefix: string,
-    warnOnce: (
-      key: string,
-      message: string,
-      error?: unknown
-    ) => void
-  ): void
-{
-  if (warning.type === 'unknown') {
-    warnOnce(
-      `${warnPrefix}:unknown-middleware:${warning.middlewareName}`,
-      `${warnPrefix}: unknown middleware '${warning.middlewareName}'`);
-
-    return;
-  }
-
-  warnOnce(
-    `${warnPrefix}:middleware-error:${warning.middlewareName}`,
-    `${warnPrefix}: middleware '${warning.middlewareName}' failed`,
-    warning.error);
 }

@@ -1,7 +1,6 @@
 import {
     type BindingTarget,
     type EventBindingSpec,
-    type EventMiddlewareSpec,
     type PipeSpec,
     type ValueBindingSpec
   } from './types.js';
@@ -51,7 +50,7 @@ export function parseValueBindingExpression(
  * ```ts
  * parseEventBindingExpression(
  *   'click',
- *   'activate | preventDefault');
+ *   'activate');
  * ```
  */
 export function parseEventBindingExpression(
@@ -59,26 +58,13 @@ export function parseEventBindingExpression(
     expression: string
   ): EventBindingSpec
 {
-  const segments =
-    expression
-      .split('|')
-      .map(segment => segment.trim())
-      .filter(segment => segment !== '');
-
   const actionPath =
-    segments[0] ?? '';
-
-  const middleware =
-    segments
-      .slice(1)
-      .map(parseEventMiddleware)
-      .filter((item): item is EventMiddlewareSpec => item !== null);
+    expression.trim();
 
   return {
     kind: 'event',
     eventName,
-    actionPath,
-    middleware
+    actionPath
   };
 }
 
@@ -87,12 +73,10 @@ function parsePipe(
   ): PipeSpec | null
 {
   const tokens =
-    text
-      .split(':')
-      .map(token => token.trim());
+    splitPipeTokens(text);
 
   const name =
-    tokens[0] ?? '';
+    (tokens[0] ?? '').trim();
 
   if (name === '') {
     return null;
@@ -100,28 +84,50 @@ function parsePipe(
 
   return {
     name,
-    args: tokens.slice(1)
+    args: tokens
+      .slice(1)
+      .map(token => token.trim())
   };
 }
 
-function parseEventMiddleware(
+function splitPipeTokens(
     text: string
-  ): EventMiddlewareSpec | null
+  ): string[]
 {
-  const tokens =
-    text
-      .split(':')
-      .map(token => token.trim());
+  const tokens: string[] = [];
 
-  const name =
-    tokens[0] ?? '';
+  let current = '';
+  let quote: '\'' | '"' | null = null;
 
-  if (name === '') {
-    return null;
+  for (let index = 0; index < text.length; index++) {
+    const char =
+      text[index];
+
+    if (quote !== null) {
+      if (char === quote) {
+        quote = null;
+        continue;
+      }
+
+      current += char;
+      continue;
+    }
+
+    if (char === '\'' || char === '"') {
+      quote = char;
+      continue;
+    }
+
+    if (char === ':') {
+      tokens.push(current);
+      current = '';
+      continue;
+    }
+
+    current += char;
   }
 
-  return {
-    name,
-    args: tokens.slice(1)
-  };
+  tokens.push(current);
+
+  return tokens;
 }

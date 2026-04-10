@@ -28,11 +28,9 @@ type BoundElement =
  * - `data-bind-text="path | pipe[:arg]"` => textContent
  * - `data-bind-html="path | pipe[:arg]"` => innerHTML
  * - `data-bind-href="path | pipe[:arg]"` => attribute binding
- * - `data-bind-onclick="actionPath | middleware"` => event binding
+ * - `data-bind-onclick="actionPath"` => event binding
  * - `data-bind-class-active="path | pipe[:arg]"` => class toggle
- *
- * Event middleware executes from right to left.
- * Built-ins: `preventDefault`, `stopPropagation`.
+ * - quoted pipe args are supported, e.g. `| wrap:'<span>':'</span>'`
  *
  * @example
  * Value bindings:
@@ -46,18 +44,15 @@ type BoundElement =
  * Event bindings:
  * ```html
  * <button data-bind-onclick="activate"></button>
- * <form data-bind-onsubmit="save | preventDefault"></form>
+ * <form data-bind-onsubmit="save"></form>
  * ```
  *
  * @example
- * Custom pipes and middleware:
+ * Custom pipes:
  * ```ts
  * bindDataModel(root, model, {
  *   pipes: {
  *     yesno: value => value ? 'Yes' : 'No'
- *   },
- *   eventMiddleware: {
- *     log: (event) => console.debug(event.type)
  *   }
  * });
  * ```
@@ -105,16 +100,13 @@ export function bindDataModel(
             binding.element,
             binding.spec,
             model,
-            options,
-            binding.warnPrefix,
-            warnOnce));
+            options));
       } else {
         disposers.push(
           bindEventModel(
             binding.element,
             binding.spec,
             model,
-            options,
             binding.warnPrefix,
             warnOnce));
       }

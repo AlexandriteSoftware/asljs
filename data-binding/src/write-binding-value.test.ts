@@ -73,6 +73,20 @@ test(
     assert.equal(
       element.hasAttribute('href'),
       false);
+
+    writeBindingValue(
+      element,
+      { kind: 'attr', name: 'href' },
+      'https://example.com');
+
+    writeBindingValue(
+      element,
+      { kind: 'attr', name: 'href' },
+      undefined);
+
+    assert.equal(
+      element.hasAttribute('href'),
+      false);
   });
 
 test(

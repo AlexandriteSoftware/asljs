@@ -66,7 +66,8 @@ Example bindings:
 ```html
 <div data-bind-text="user.name"></div>
 <div data-bind-text="user.active | yesno"></div>
-<button data-bind-onclick="save | preventDefault">Save</button>
+<div data-bind-html="body | wrap:'<span>':'</span>'"></div>
+<button data-bind-onclick="save">Save</button>
 ```
 
 Multiple bindings on the same element are supported and preferred when they
@@ -77,7 +78,7 @@ describe different concerns:
   data-bind-href="url"
   data-bind-text="label | upper"
   data-bind-class-active="isActive"
-  data-bind-onclick="openDetails | preventDefault"
+  data-bind-onclick="openDetails"
 ></a>
 ```
 
@@ -89,6 +90,12 @@ General form:
 
 ```text
 data-bind-<target>="path[ | pipe[:arg1[:arg2...]]]*"
+```
+
+Pipe arguments can be quoted when they contain characters like `:`.
+
+```text
+data-bind-html="content | wrap:'<span>':'</span>'"
 ```
 
 Supported targets:
@@ -107,6 +114,7 @@ Examples:
 <div data-bind-text="name | upper"></div>
 <div data-bind-text="createdAt | date:short"></div>
 <div data-bind-text="amount | currency:GBP"></div>
+<div data-bind-html="content | wrap:'<span>':'</span>'"></div>
 <a data-bind-href="url"></a>
 <input data-bind-prop-value="name">
 <button data-bind-class-active="isSelected"></button>
@@ -124,16 +132,15 @@ Reactivity for value bindings:
 General form:
 
 ```text
-data-bind-on<event>="actionPath[ | middleware]*"
+data-bind-on<event>="actionPath"
 ```
 
 Examples:
 
 ```html
 <button data-bind-onclick="activate"></button>
-<a data-bind-onclick="openDetails | preventDefault"></a>
-<form data-bind-onsubmit="save | preventDefault"></form>
-<button data-bind-onclick="activate | preventDefault | stopPropagation"></button>
+<a data-bind-onclick="openDetails"></a>
+<form data-bind-onsubmit="save"></form>
 ```
 
 Runtime behavior:
@@ -166,13 +173,6 @@ Value pipes:
 - `default:value`
 - `safeHtml`
 
-Event middleware:
-
-- `preventDefault`
-- `stopPropagation`
-
-Middleware runs from right to left.
-
 Locale behavior:
 
 - by default, `Intl` pipes use runtime/browser locale settings
@@ -181,11 +181,16 @@ Locale behavior:
 
 ## Error Handling
 
-- unknown pipe: warning, binding continues, value passes through unchanged
-- pipe error: warning, binding continues
-- unknown middleware: warning, binding continues
-- middleware error: warning, binding continues
+- unknown pipe: throws
+- pipe error: exception from pipe propagates
 - missing/non-function action: warning, binding continues
+
+Nullish behavior:
+
+- built-in pipes preserve `null` and `undefined` values
+- `data-bind-text` and `data-bind-html` render `null`/`undefined` as `''`
+- `data-bind-<attr>` removes the attribute when final value is `null` or
+  `undefined`
 
 ## API Reference
 

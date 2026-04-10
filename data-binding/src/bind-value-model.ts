@@ -2,10 +2,6 @@ import {
     observable
   } from 'asljs-observable';
 import {
-    applyPipes,
-    type PipeWarning
-  } from './apply-pipes.js';
-import {
     mergePipes
   } from './pipes.js';
 import {
@@ -14,30 +10,35 @@ import {
 import {
     type BindDataModelOptions,
     type DataModel,
+    type PipeFn,
+    type PipeSpec,
     type ValueBindingSpec
   } from './types.js';
 import {
     writeBindingValue
   } from './write-binding-value.js';
 
+type CompiledPipe =
+  { args: string[];
+    formatter: PipeFn; };
+
 export function bindValueModel(
     element: HTMLElement,
     spec: ValueBindingSpec,
     model: DataModel,
-    options: BindDataModelOptions,
-    warnPrefix: string,
-    warnOnce: (
-      key: string,
-      message: string,
-      error?: unknown
-    ) => void
+    options: BindDataModelOptions
   ): () => void
 {
   const pipeRegistry =
     mergePipes(options);
 
+  const compiledPipes =
+    compilePipes(
+      spec.pipes,
+      pipeRegistry);
+
   const update =
-    () => {
+    (): void => {
       const rawValue =
         readModelPath(
           model,
@@ -46,14 +47,7 @@ export function bindValueModel(
       const formattedValue =
         applyPipes(
           rawValue,
-          spec.pipes,
-          pipeRegistry,
-          warning => {
-            reportPipeWarning(
-              warning,
-              warnPrefix,
-              warnOnce);
-          });
+          compiledPipes);
 
       writeBindingValue(
         element,
@@ -63,47 +57,58 @@ export function bindValueModel(
 
   update();
 
-  if (spec.path === '') {
+  if (spec.path === '')
     return () => {};
-  }
 
   const maybeUnsubscribe =
     observable.watch(
       model as any,
       spec.path,
-      () => {
-        update();
-      });
+      () => update());
 
-  if (typeof maybeUnsubscribe !== 'function') {
+  if (typeof maybeUnsubscribe !== 'function')
     return () => {};
-  }
 
-  return () => {
-    maybeUnsubscribe();
-  };
+  return () => maybeUnsubscribe();
 }
 
-function reportPipeWarning(
-    warning: PipeWarning,
-    warnPrefix: string,
-    warnOnce: (
-      key: string,
-      message: string,
-      error?: unknown
-    ) => void
-  ): void
+function compilePipes(
+    pipes: PipeSpec[],
+    registry: Record<string, PipeFn>
+  ): CompiledPipe[]
 {
-  if (warning.type === 'unknown') {
-    warnOnce(
-      `${warnPrefix}:unknown-pipe:${warning.pipeName}`,
-      `${warnPrefix}: unknown pipe '${warning.pipeName}'`);
+  const compiled: CompiledPipe[] = [];
 
-    return;
+  for (const pipe of pipes) {
+    const formatter =
+      registry[pipe.name];
+
+    if (!formatter) {
+      throw new Error(
+        `Unknown pipe: ${pipe.name}`);
+    }
+
+    compiled.push(
+      { args: [ ...pipe.args ],
+        formatter });
   }
 
-  warnOnce(
-    `${warnPrefix}:pipe-error:${warning.pipeName}`,
-    `${warnPrefix}: pipe '${warning.pipeName}' failed`,
-    warning.error);
+  return compiled;
+}
+
+function applyPipes(
+    value: unknown,
+    pipes: CompiledPipe[]
+  ): unknown
+{
+  let current = value;
+
+  for (const pipe of pipes) {
+    current =
+      pipe.formatter(
+        current,
+        ...pipe.args);
+  }
+
+  return current;
 }

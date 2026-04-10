@@ -42,8 +42,18 @@ export function createBuiltInPipes(
   ): Record<string, PipeFn>
 {
   return {
-    string: value => coerceDisplayValue(value),
+    string: value => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      return coerceDisplayValue(value);
+    },
     number: value => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
       const numeric = Number(value);
 
       if (Number.isFinite(numeric)) {
@@ -57,6 +67,10 @@ export function createBuiltInPipes(
         code = 'USD'
       ) =>
     {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
       const numeric = Number(value);
 
       if (!Number.isFinite(numeric)) {
@@ -75,25 +89,41 @@ export function createBuiltInPipes(
         value,
         format = 'short'
       ) =>
-      formatDateOrIntl(
+    {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      return formatDateOrIntl(
         value,
         format,
         locale,
-        false),
+        false);
+    },
     datetime: (
         value,
         format = 'short'
       ) =>
-      formatDateOrIntl(
+    {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      return formatDateOrIntl(
         value,
         format,
         locale,
-        true),
+        true);
+    },
     fixed: (
         value,
         digitsText = '2'
       ) =>
     {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
       const numeric = Number(value);
       const digits = Number(digitsText);
 
@@ -107,13 +137,29 @@ export function createBuiltInPipes(
 
       return numeric.toFixed(digits);
     },
-    upper: value => coerceDisplayValue(value).toUpperCase(),
-    lower: value => coerceDisplayValue(value).toLowerCase(),
+    upper: value => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      return coerceDisplayValue(value).toUpperCase();
+    },
+    lower: value => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      return coerceDisplayValue(value).toLowerCase();
+    },
     json: (
         value,
         spacesText = '0'
       ) =>
     {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
       const spaces = Number(spacesText);
       const formatted = JSON.stringify(
         value,
@@ -130,8 +176,12 @@ export function createBuiltInPipes(
       ) =>
     {
       if (value === null
-        || value === undefined
-        || value === '')
+        || value === undefined)
+      {
+        return value;
+      }
+
+      if (value === '')
       {
         return fallbackParts.join(':');
       }

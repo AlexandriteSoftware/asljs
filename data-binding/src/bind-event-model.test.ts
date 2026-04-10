@@ -46,15 +46,13 @@ test(
       {
         kind: 'event',
         eventName: 'click',
-        actionPath: 'activate',
-        middleware: []
+        actionPath: 'activate'
       };
 
     bindEventModel(
       button,
       spec,
       model,
-      {},
       'event[0]',
       () => {});
 
@@ -70,61 +68,6 @@ test(
     button.dispatchEvent(new dom.window.Event('click'));
 
     assert.deepEqual(calls, [ 'first', 'second' ]);
-  });
-
-test(
-  `${CONTEXT_NAME}: executes middleware right to left before action`,
-  () => {
-    const dom =
-      new JSDOM('<button></button>');
-
-    const button =
-      dom.window.document.querySelector('button') as HTMLElement;
-
-    const order: string[] = [];
-
-    const model =
-      createReactiveModel(
-        {
-          activate: () => {
-            order.push('action');
-          }
-        });
-
-    const spec: EventBindingSpec =
-      {
-        kind: 'event',
-        eventName: 'click',
-        actionPath: 'activate',
-        middleware: [
-          { name: 'preventDefault', args: [] },
-          { name: 'stopPropagation', args: [] }
-        ]
-      };
-
-    const customMiddleware =
-      {
-        preventDefault: () => {
-          order.push('preventDefault');
-        },
-        stopPropagation: () => {
-          order.push('stopPropagation');
-        }
-      };
-
-    bindEventModel(
-      button,
-      spec,
-      model,
-      { eventMiddleware: customMiddleware },
-      'event[1]',
-      () => {});
-
-    button.dispatchEvent(new dom.window.Event('click'));
-
-    assert.deepEqual(
-      order,
-      [ 'stopPropagation', 'preventDefault', 'action' ]);
   });
 
 test(
@@ -150,8 +93,7 @@ test(
       {
         kind: 'event',
         eventName: 'click',
-        actionPath: 'activate',
-        middleware: []
+        actionPath: 'activate'
       };
 
     const dispose =
@@ -159,7 +101,6 @@ test(
         button,
         spec,
         model,
-        {},
         'event[2]',
         () => {});
 
@@ -201,15 +142,13 @@ test(
       {
         kind: 'event',
         eventName: 'click',
-        actionPath: 'user.activate',
-        middleware: []
+        actionPath: 'user.activate'
       };
 
     bindEventModel(
       button,
       spec,
       model as unknown as Record<string, unknown>,
-      {},
       'event[3]',
       () => {});
 

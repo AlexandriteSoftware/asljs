@@ -3,12 +3,6 @@ export type PipeFn = (
     ...args: string[]
   ) => unknown;
 
-export type EventMiddlewareFn = (
-    event: Event,
-    args: string[],
-    context: { model: DataModel; element: Element; }
-  ) => void;
-
 export type PipeSpec =
   { name: string;
     args: string[]; };
@@ -26,23 +20,17 @@ export type ValueBindingSpec =
     path: string;
     pipes: PipeSpec[]; };
 
-export type EventMiddlewareSpec =
-  { name: string;
-    args: string[]; };
-
 export type EventBindingSpec =
   { kind: 'event';
     eventName: string;
-    actionPath: string;
-    middleware: EventMiddlewareSpec[]; };
+    actionPath: string; };
 
 export type BindingSpec =
   ValueBindingSpec
   | EventBindingSpec;
 
 export type BindDataModelOptions =
-  { pipes?: Record<string, PipeFn>;
-    eventMiddleware?: Record<string, EventMiddlewareFn>; };
+  { pipes?: Record<string, PipeFn>; };
 
 export type DataModel =
   Record<string, unknown>;

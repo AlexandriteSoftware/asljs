@@ -19,6 +19,24 @@ test(
     assert.equal(pipes.upper('abc'), 'ABC');
     assert.equal(pipes.lower('ABC'), 'abc');
     assert.equal(pipes.default('', 'N/A'), 'N/A');
+    assert.equal(pipes.default(null, 'N/A'), null);
+    assert.equal(pipes.default(undefined, 'N/A'), undefined);
+  });
+
+test(
+  `${CONTEXT_NAME}: preserves nullish values in built-in pipes`,
+  () => {
+    const pipes =
+      mergePipes({});
+
+    assert.equal(pipes.string(null), null);
+    assert.equal(pipes.upper(undefined), undefined);
+    assert.equal(pipes.number(null), null);
+    assert.equal(pipes.currency(undefined, 'GBP'), undefined);
+    assert.equal(pipes.fixed(null, '2'), null);
+    assert.equal(pipes.date(undefined, 'yyyy-MM-dd'), undefined);
+    assert.equal(pipes.datetime(null, 'short'), null);
+    assert.equal(pipes.json(undefined, '2'), undefined);
   });
 
 test(
