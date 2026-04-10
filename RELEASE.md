@@ -19,7 +19,7 @@ $env:FOLDER = 'eventful' # 'observable', 'data-binding', 'money'
 npm -w $env:FOLDER version patch --no-git-tag-version
 $env:PACKAGE = (Get-Content "$env:FOLDER/package.json" -Raw | ConvertFrom-Json).name
 $env:VERSION = (Get-Content "$env:FOLDER/package.json" -Raw | ConvertFrom-Json).version
-$env:PACKAGE_VERSION = "$env:PACKAGE:$env:VERSION"
+$env:PACKAGE_VERSION = "${env:PACKAGE}:${env:VERSION}"
 
 # 3) Commit version changes
 git add $env:FOLDER/package.json $env:FOLDER/package-lock.json package-lock.json
