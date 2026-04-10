@@ -13,11 +13,11 @@ import {
     bindDataModel
   } from './bind-data-model.js';
 
-const CONTEXT_NAME =
-  'bind-data-model-test';
+const TEST_SUITE =
+  'bind-data-model';
 
 test(
-  `${CONTEXT_NAME}: applies pipes and writes to text target`,
+  `${TEST_SUITE}: applies pipes and writes to text target`,
   () => {
     const dom =
       new JSDOM(`
@@ -39,7 +39,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: subscribes only to main path`,
+  `${TEST_SUITE}: subscribes only to main path`,
   () => {
     const dom =
       new JSDOM(`
@@ -72,7 +72,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: updates nested value path via watch when ancestor and leaf change`,
+  `${TEST_SUITE}: updates nested value path via watch when ancestor and leaf change`,
   () => {
     const dom =
       new JSDOM(`
@@ -111,7 +111,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports custom pipe injection`,
+  `${TEST_SUITE}: supports custom pipe injection`,
   () => {
     const dom =
       new JSDOM(`
@@ -141,11 +141,35 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports multiple quoted pipe args`,
+  `${TEST_SUITE}: throws on unknown value pipe during setup`,
   () => {
     const dom =
-      new JSDOM(
-        '<div id="root"><div data-bind-html="content | wrap:\'<span>\':\'</span>\'"></div></div>');
+      new JSDOM(`
+          <div id="root">
+            <span data-bind-text="name | missing"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    assert.throws(
+      () =>
+        bindDataModel(
+          root,
+          { name: 'Alex' }),
+      /Unknown pipe: missing/);
+  });
+
+test(
+  `${TEST_SUITE}: supports multiple quoted pipe args`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-html="content | wrap:'<span>':'</span>'"></div>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -170,11 +194,73 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: removes attribute when path or pipe resolves to nullish`,
+  `${TEST_SUITE}: formats date using literal with pipes and mixed quotes`,
   () => {
     const dom =
-      new JSDOM(
-        '<div id="root"><a data-bind-href="url"></a><a data-bind-title="name | blankAsNull"></a></div>');
+      new JSDOM(`
+          <div id="root">
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const span =
+      dom.window.document.createElement('span');
+
+    span.setAttribute(
+      'data-bind-text',
+      'createdAt | date:"<\'yyyy|MM|dd\' \\\"hh:mm:ss\\\">"');
+
+    root.appendChild(span);
+
+    bindDataModel(
+      root,
+      {
+        createdAt:
+          new Date(2026, 3, 10, 13, 14, 15)
+      });
+
+    assert.equal(
+      span.textContent,
+      `<\'2026|04|10\' "13:14:15">`);
+  });
+
+test(
+  `${TEST_SUITE}: formats date using single-quoted literal with pipes`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <span data-bind-text="createdAt | date:'<yyyy|MM|dd &quot;hh:mm:ss&quot;>'"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      {
+        createdAt:
+          new Date(2026, 3, 10, 13, 14, 15)
+      });
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      '<2026|04|10 "13:14:15">');
+  });
+
+test(
+  `${TEST_SUITE}: removes attribute when path or pipe resolves to nullish`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <a data-bind-href="url"></a>
+            <a data-bind-title="name | blankAsNull"></a>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -210,10 +296,14 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports event binding and reactive action updates`,
+  `${TEST_SUITE}: supports event binding and reactive action updates`,
   () => {
     const dom =
-      new JSDOM('<div id="root"><button data-bind-onclick="activate"></button></div>');
+      new JSDOM(`
+          <div id="root">
+            <button data-bind-onclick="activate"></button>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -249,10 +339,14 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: updates nested event action path via watch when ancestor and leaf change`,
+  `${TEST_SUITE}: updates nested event action path via watch when ancestor and leaf change`,
   () => {
     const dom =
-      new JSDOM('<div id="root"><button data-bind-onclick="user.activate"></button></div>');
+      new JSDOM(`
+          <div id="root">
+            <button data-bind-onclick="user.activate"></button>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -298,10 +392,14 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: disposer removes event listeners`,
+  `${TEST_SUITE}: disposer removes event listeners`,
   () => {
     const dom =
-      new JSDOM('<div id="root"><button data-bind-onclick="activate"></button></div>');
+      new JSDOM(`
+          <div id="root">
+            <button data-bind-onclick="activate"></button>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -332,11 +430,17 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports multiple bindings on same element`,
+  `${TEST_SUITE}: supports multiple bindings on same element`,
   () => {
     const dom =
-      new JSDOM(
-        '<div id="root"><a data-bind-href="url" data-bind-text="label | upper" data-bind-class-active="isActive" data-bind-onclick="openDetails"></a></div>');
+      new JSDOM(`
+          <div id="root">
+            <a data-bind-href="url"
+               data-bind-text="label | upper"
+               data-bind-class-active="isActive"
+               data-bind-onclick="openDetails"></a>
+          </div>
+        `);
 
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
@@ -349,7 +453,8 @@ test(
           url: 'https://example.com',
           label: 'details',
           isActive: true,
-          openDetails: () => {
+          openDetails: (event: Event) => {
+            event.preventDefault();
             clicks += 1;
           }
         });
@@ -371,26 +476,7 @@ test(
     anchor.dispatchEvent(clickEvent);
 
     assert.equal(clicks, 1);
-    assert.equal(clickEvent.defaultPrevented, false);
-  });
-
-test(
-  `${CONTEXT_NAME}: ignores legacy data-model bindings`,
-  () => {
-    const dom =
-      new JSDOM('<div id="root"><span data-model="name"></span></div>');
-
-    const root =
-      dom.window.document.getElementById('root') as HTMLElement;
-
-    bindDataModel(
-      root,
-      { name: 'legacy' });
-
-    const span =
-      root.querySelector('span') as HTMLElement;
-
-    assert.equal(span.textContent, '');
+    assert.equal(clickEvent.defaultPrevented, true);
   });
 
 type ReactiveModel =

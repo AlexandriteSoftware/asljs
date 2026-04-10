@@ -5,6 +5,10 @@ import {
     type BindingTarget
   } from './types.js';
 
+
+/**
+ * Last step of value binding: writes the value to the target element.
+ */
 export function writeBindingValue(
     element: HTMLElement,
     target: BindingTarget,
@@ -24,12 +28,16 @@ export function writeBindingValue(
       target.name as keyof HTMLElement;
 
     (element[propertyName] as unknown) = value;
+
     return;
   }
 
   if (target.kind === 'attr') {
-    if (value === null || value === undefined) {
+    if (value === null
+        || value === undefined)
+    {
       element.removeAttribute(target.name);
+
       return;
     }
 
@@ -45,6 +53,7 @@ export function writeBindingValue(
 
   if (target.kind === 'html') {
     element.innerHTML = displayValue;
+
     return;
   }
 

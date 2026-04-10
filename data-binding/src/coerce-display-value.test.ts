@@ -7,18 +7,18 @@ import {
     coerceDisplayValue
   } from './coerce-display-value.js';
 
-const CONTEXT_NAME =
-  'coerce-display-value-test';
+const TEST_SUITE =
+  'coerce-display-value';
 
 test(
-  `${CONTEXT_NAME}: converts nullish values to empty string`,
+  `${TEST_SUITE}: converts nullish values to empty string`,
   () => {
     assert.equal(coerceDisplayValue(null), '');
     assert.equal(coerceDisplayValue(undefined), '');
   });
 
 test(
-  `${CONTEXT_NAME}: converts Date to ISO string`,
+  `${TEST_SUITE}: converts Date to ISO string`,
   () => {
     const result =
       coerceDisplayValue(
@@ -30,7 +30,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: converts scalar values to string`,
+  `${TEST_SUITE}: converts scalar values to string`,
   () => {
     assert.equal(coerceDisplayValue(10), '10');
     assert.equal(coerceDisplayValue(true), 'true');

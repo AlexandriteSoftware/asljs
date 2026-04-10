@@ -8,11 +8,11 @@ import {
   parseValueBindingExpression
   } from './parse-data-model-binding.js';
 
-const CONTEXT_NAME =
-  'parse-data-bind-expression-test';
+const TEST_SUITE =
+  'parse-data-bind-expression';
 
 test(
-  `${CONTEXT_NAME}: parses value expression without pipes`,
+  `${TEST_SUITE}: parses value expression without pipes`,
   () => {
     const spec =
       parseValueBindingExpression(
@@ -30,7 +30,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: parses value pipes with whitespace`,
+  `${TEST_SUITE}: parses value pipes with whitespace`,
   () => {
     const spec =
       parseValueBindingExpression(
@@ -51,7 +51,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: parses value expression for attribute target`,
+  `${TEST_SUITE}: parses value expression for attribute target`,
   () => {
     const spec =
       parseValueBindingExpression(
@@ -71,7 +71,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: parses multiple quoted pipe args`,
+  `${TEST_SUITE}: parses multiple quoted pipe args`,
   () => {
     const spec =
       parseValueBindingExpression(
@@ -91,7 +91,89 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: ignores empty pipe segments`,
+  `${TEST_SUITE}: parses date format with pipes and mixed quotes`,
+  () => {
+    const spec =
+      parseValueBindingExpression(
+        { kind: 'text' },
+        'createdAt | date:"<\'yyyy|MM|dd\' \\\"hh:mm:ss\\\">"');
+
+    assert.deepEqual(
+      spec,
+      {
+        kind: 'value',
+        target: { kind: 'text' },
+        path: 'createdAt',
+        pipes: [
+          { name: 'date',
+            args: [ '<\'yyyy|MM|dd\' "hh:mm:ss">' ] }
+        ]
+      });
+  });
+
+test(
+  `${TEST_SUITE}: parses date format from single-quoted literal`,
+  () => {
+    const spec =
+      parseValueBindingExpression(
+        { kind: 'text' },
+        "createdAt | date:'<\\'yyyy|MM|dd\\' \"hh:mm:ss\">'");
+
+    assert.deepEqual(
+      spec,
+      {
+        kind: 'value',
+        target: { kind: 'text' },
+        path: 'createdAt',
+        pipes: [
+          { name: 'date',
+            args: [ '<\'yyyy|MM|dd\' "hh:mm:ss">' ] }
+        ]
+      });
+  });
+
+test(
+  `${TEST_SUITE}: parses unquoted args until colon or end`,
+  () => {
+    const spec =
+      parseValueBindingExpression(
+        { kind: 'text' },
+        'amount | fixed: 2 : GBP');
+
+    assert.deepEqual(
+      spec,
+      {
+        kind: 'value',
+        target: { kind: 'text' },
+        path: 'amount',
+        pipes: [
+          { name: 'fixed', args: [ '2', 'GBP' ] }
+        ]
+      });
+  });
+
+test(
+  `${TEST_SUITE}: parses quoted arg with delimiters as one literal`,
+  () => {
+    const spec =
+      parseValueBindingExpression(
+        { kind: 'text' },
+        'createdAt | date:"yyyy|MM|dd hh:mm:ss"');
+
+    assert.deepEqual(
+      spec,
+      {
+        kind: 'value',
+        target: { kind: 'text' },
+        path: 'createdAt',
+        pipes: [
+          { name: 'date', args: [ 'yyyy|MM|dd hh:mm:ss' ] }
+        ]
+      });
+  });
+
+test(
+  `${TEST_SUITE}: ignores empty pipe segments`,
   () => {
     const spec =
       parseValueBindingExpression(
@@ -104,7 +186,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: parses event expression as actionPath only`,
+  `${TEST_SUITE}: parses event expression as actionPath only`,
   () => {
     const spec =
       parseEventBindingExpression(
@@ -121,7 +203,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: keeps full event expression as actionPath`,
+  `${TEST_SUITE}: keeps full event expression as actionPath`,
   () => {
     const spec =
       parseEventBindingExpression(

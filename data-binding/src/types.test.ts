@@ -2,11 +2,11 @@ import {
     test
   } from 'node:test';
 
-const CONTEXT_NAME =
-  'types-test';
+const TEST_SUITE =
+  'types';
 
 test(
-  `${CONTEXT_NAME}: template`,
+  `${TEST_SUITE}: template`,
   async () => {
     // empty test is intentional, keep this file to follow the pattern of
     // test file per abstraction, even if the abstraction is interface only

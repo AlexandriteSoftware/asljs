@@ -111,6 +111,10 @@ export function bindDataModel(
             warnOnce));
       }
     } catch (error) {
+      if (binding.spec.kind === 'value') {
+        throw error;
+      }
+
       warnOnce(
         `${binding.warnPrefix}:bind-error`,
         `${binding.warnPrefix}: binding setup failed`,

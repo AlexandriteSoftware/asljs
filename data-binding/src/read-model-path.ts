@@ -7,13 +7,11 @@ export function readModelPath(
     path: string
   ): unknown
 {
-  if (path === '') {
+  if (path === '')
     return null;
-  }
 
-  if (hasGetMethod(model)) {
+  if (hasGetMethod(model))
     return model.get(path);
-  }
 
   return readNestedPath(
     model,

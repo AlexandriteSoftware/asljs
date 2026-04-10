@@ -49,5 +49,5 @@ git push
 npm -w $env:FOLDER publish
 
 # 6) Push that tag to origin
-git push origin "$env:PACKAGE_VERSION"
+    git push origin "$env:PACKAGE_VERSION"
 ```

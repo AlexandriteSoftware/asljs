@@ -43,21 +43,26 @@ export function createBuiltInPipes(
 {
   return {
     string: value => {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
       return coerceDisplayValue(value);
     },
     number: value => {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
       const numeric = Number(value);
 
       if (Number.isFinite(numeric)) {
-        return new Intl.NumberFormat(locale).format(numeric);
+        return new Intl.NumberFormat(locale)
+                 .format(numeric);
       }
 
       return '';
@@ -67,22 +72,22 @@ export function createBuiltInPipes(
         code = 'USD'
       ) =>
     {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
-      const numeric = Number(value);
+      const numeric =
+        Number(value);
 
-      if (!Number.isFinite(numeric)) {
+      if (!Number.isFinite(numeric))
         return '';
-      }
 
       return new Intl.NumberFormat(
-        locale,
-        {
-          style: 'currency',
-          currency: code
-        })
+          locale,
+          { style: 'currency',
+            currency: code })
         .format(numeric);
     },
     date: (
@@ -90,7 +95,9 @@ export function createBuiltInPipes(
         format = 'short'
       ) =>
     {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
@@ -105,7 +112,9 @@ export function createBuiltInPipes(
         format = 'short'
       ) =>
     {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
@@ -120,32 +129,42 @@ export function createBuiltInPipes(
         digitsText = '2'
       ) =>
     {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
-      const numeric = Number(value);
-      const digits = Number(digitsText);
+      const numeric =
+        Number(value);
 
-      if (!Number.isFinite(numeric)) {
+      const digits =
+        Number(digitsText);
+
+      if (!Number.isFinite(numeric))
         return '';
-      }
 
-      if (!Number.isInteger(digits) || digits < 0) {
+      if (!Number.isInteger(digits)
+          || digits < 0)
+      {
         return numeric.toString();
       }
 
       return numeric.toFixed(digits);
     },
     upper: value => {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
       return coerceDisplayValue(value).toUpperCase();
     },
     lower: value => {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
@@ -156,17 +175,22 @@ export function createBuiltInPipes(
         spacesText = '0'
       ) =>
     {
-      if (value === null || value === undefined) {
+      if (value === null
+          || value === undefined)
+      {
         return value;
       }
 
-      const spaces = Number(spacesText);
-      const formatted = JSON.stringify(
-        value,
-        null,
-        Number.isInteger(spaces) && spaces >= 0
-          ? spaces
-          : 0);
+      const spaces =
+        Number(spacesText);
+
+      const formatted =
+        JSON.stringify(
+          value,
+          null,
+          Number.isInteger(spaces) && spaces >= 0
+            ? spaces
+            : 0);
 
       return formatted ?? '';
     },
@@ -176,15 +200,13 @@ export function createBuiltInPipes(
       ) =>
     {
       if (value === null
-        || value === undefined)
+          || value === undefined)
       {
         return value;
       }
 
       if (value === '')
-      {
         return fallbackParts.join(':');
-      }
 
       return value;
     },
@@ -228,9 +250,8 @@ function formatDateOrIntl(
   const dt =
     asDate(value);
 
-  if (dt === null) {
+  if (dt === null)
     return '';
-  }
 
   if (DATE_STYLE_NAMES.has(format)) {
     const style =
@@ -238,17 +259,13 @@ function formatDateOrIntl(
 
     return withTime
       ? new Intl.DateTimeFormat(
-          locale,
-          {
-            dateStyle: style,
-            timeStyle: style
-          })
+            locale,
+            { dateStyle: style,
+              timeStyle: style })
           .format(dt)
       : new Intl.DateTimeFormat(
-          locale,
-          {
-            dateStyle: style
-          })
+            locale,
+            { dateStyle: style })
           .format(dt);
   }
 
@@ -268,7 +285,7 @@ function asDate(
   }
 
   if (typeof value === 'string'
-    || typeof value === 'number')
+      || typeof value === 'number')
   {
     const dt =
       new Date(value);

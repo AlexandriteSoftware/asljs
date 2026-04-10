@@ -10,11 +10,11 @@ import {
     writeBindingValue
   } from './write-binding-value.js';
 
-const CONTEXT_NAME =
-  'write-binding-value-test';
+const TEST_SUITE =
+  'write-binding-value';
 
 test(
-  `${CONTEXT_NAME}: writes text target to textContent`,
+  `${TEST_SUITE}: writes text target to textContent`,
   () => {
     const dom =
       new JSDOM('<div></div>');
@@ -31,7 +31,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: writes html target to innerHTML`,
+  `${TEST_SUITE}: writes html target to innerHTML`,
   () => {
     const dom =
       new JSDOM('<div></div>');
@@ -48,7 +48,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: writes and removes attribute target`,
+  `${TEST_SUITE}: writes and removes attribute target`,
   () => {
     const dom =
       new JSDOM('<a></a>');
@@ -90,7 +90,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: writes property target`,
+  `${TEST_SUITE}: writes property target`,
   () => {
     const dom =
       new JSDOM('<input>');
@@ -107,7 +107,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: toggles class target`,
+  `${TEST_SUITE}: toggles class target`,
   () => {
     const dom =
       new JSDOM('<div></div>');

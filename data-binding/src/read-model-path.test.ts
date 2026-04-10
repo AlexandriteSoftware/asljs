@@ -7,11 +7,11 @@ import {
     readModelPath
   } from './read-model-path.js';
 
-const CONTEXT_NAME =
-  'read-model-path-test';
+const TEST_SUITE =
+  'read-model-path';
 
 test(
-  `${CONTEXT_NAME}: reads nested property path`,
+  `${TEST_SUITE}: reads nested property path`,
   () => {
     const value =
       readModelPath(
@@ -22,7 +22,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: uses get(path) when provided`,
+  `${TEST_SUITE}: uses get(path) when provided`,
   () => {
     const model =
       {
@@ -39,7 +39,7 @@ test(
   });
 
  test(
-  `${CONTEXT_NAME}: returns null for missing path`,
+  `${TEST_SUITE}: returns null for missing path`,
   () => {
     const value =
       readModelPath(

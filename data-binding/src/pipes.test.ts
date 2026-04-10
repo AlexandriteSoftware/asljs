@@ -7,11 +7,11 @@ import {
     mergePipes
   } from './pipes.js';
 
-const CONTEXT_NAME =
-  'pipes-test';
+const TEST_SUITE =
+  'pipes';
 
 test(
-  `${CONTEXT_NAME}: supports upper lower and default`,
+  `${TEST_SUITE}: supports upper lower and default`,
   () => {
     const pipes =
       mergePipes({});
@@ -24,7 +24,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: preserves nullish values in built-in pipes`,
+  `${TEST_SUITE}: preserves nullish values in built-in pipes`,
   () => {
     const pipes =
       mergePipes({});
@@ -40,7 +40,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports fixed and number formatting`,
+  `${TEST_SUITE}: supports fixed and number formatting`,
   () => {
     const pipes =
       mergePipes({});
@@ -50,7 +50,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports currency and date formatting`,
+  `${TEST_SUITE}: supports currency and date formatting`,
   () => {
     const pipes =
       mergePipes({});
@@ -65,7 +65,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: supports custom pipes overriding built-ins`,
+  `${TEST_SUITE}: supports custom pipes overriding built-ins`,
   () => {
     const pipes =
       mergePipes(

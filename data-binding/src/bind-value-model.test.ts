@@ -16,11 +16,11 @@ import {
     type ValueBindingSpec
   } from './types.js';
 
-const CONTEXT_NAME =
-  'bind-value-model-test';
+const TEST_SUITE =
+  'bind-value-model';
 
 test(
-  `${CONTEXT_NAME}: applies configured pipes in order`,
+  `${TEST_SUITE}: applies configured pipes in order`,
   () => {
     const dom =
       new JSDOM('<span></span>');
@@ -59,7 +59,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: throws for unknown pipe during binding setup`,
+  `${TEST_SUITE}: throws for unknown pipe during binding setup`,
   () => {
     const dom =
       new JSDOM('<span></span>');
@@ -91,7 +91,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: pipe error propagates to caller`,
+  `${TEST_SUITE}: pipe error propagates to caller`,
   () => {
     const dom =
       new JSDOM('<span></span>');
@@ -129,10 +129,15 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: renders nullish values as empty string for text and html`,
+  `${TEST_SUITE}: renders nullish values as empty string for text and html`,
   () => {
     const dom =
-      new JSDOM('<div><span></span><div></div></div>');
+      new JSDOM(`
+          <div>
+            <span></span>
+            <div></div>
+          </div>
+        `);
 
     const textElement =
       dom.window.document.querySelector('span') as HTMLElement;
@@ -173,7 +178,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: updates nested path via watch when leaf and ancestor change`,
+  `${TEST_SUITE}: updates nested path via watch when leaf and ancestor change`,
   () => {
     const dom =
       new JSDOM('<span></span>');

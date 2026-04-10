@@ -16,11 +16,11 @@ import {
     type EventBindingSpec
   } from './types.js';
 
-const CONTEXT_NAME =
-  'bind-event-model-test';
+const TEST_SUITE =
+  'bind-event-model';
 
 test(
-  `${CONTEXT_NAME}: invokes resolved handler and updates reactively`,
+  `${TEST_SUITE}: invokes resolved handler and updates reactively`,
   () => {
     const dom =
       new JSDOM('<button></button>');
@@ -71,7 +71,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: disposer removes listener and subscription`,
+  `${TEST_SUITE}: disposer removes listener and subscription`,
   () => {
     const dom =
       new JSDOM('<button></button>');
@@ -117,7 +117,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: refreshes nested action path when leaf and ancestor change`,
+  `${TEST_SUITE}: refreshes nested action path when leaf and ancestor change`,
   () => {
     const dom =
       new JSDOM('<button></button>');

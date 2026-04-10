@@ -21,8 +21,9 @@ export function parseValueBindingExpression(
   ): ValueBindingSpec
 {
   const segments =
-    expression
-      .split('|')
+    splitExpressionTokens(
+      expression,
+      '|')
       .map(segment => segment.trim())
       .filter(segment => segment !== '');
 
@@ -72,40 +73,172 @@ function parsePipe(
     text: string
   ): PipeSpec | null
 {
-  const tokens =
-    splitPipeTokens(text);
+  const trimmed =
+    text.trim();
+
+  const firstColon =
+    trimmed.indexOf(':');
 
   const name =
-    (tokens[0] ?? '').trim();
+    (firstColon < 0
+      ? trimmed
+      : trimmed.slice(0, firstColon))
+      .trim();
 
   if (name === '') {
     return null;
   }
 
+  if (firstColon < 0) {
+    return {
+      name,
+      args: []
+    };
+  }
+
+  const args =
+    parsePipeArgs(
+      trimmed,
+      firstColon + 1);
+
   return {
     name,
-    args: tokens
-      .slice(1)
-      .map(token => token.trim())
+    args
   };
 }
 
-function splitPipeTokens(
-    text: string
+function parsePipeArgs(
+    text: string,
+    index: number
+  ): string[]
+{
+  const args: string[] = [];
+
+  let i = index;
+
+  while (i < text.length) {
+    while (i < text.length
+           && text[i] === ' ')
+    {
+      i++;
+    }
+
+    if (i >= text.length || text[i] === '|') {
+      break;
+    }
+
+    if (text[i] === '\'' || text[i] === '"') {
+      const quote =
+        text[i] as '\'' | '"';
+
+      i++;
+
+      let value = '';
+      let escape = false;
+
+      while (i < text.length) {
+        const char =
+          text[i];
+
+        if (escape) {
+          value += char;
+          escape = false;
+          i++;
+          continue;
+        }
+
+        if (char === '\\') {
+          escape = true;
+          i++;
+          continue;
+        }
+
+        if (char === quote) {
+          i++;
+          break;
+        }
+
+        value += char;
+        i++;
+      }
+
+      args.push(value);
+    } else {
+      let value = '';
+
+      while (i < text.length) {
+        const char =
+          text[i];
+
+        if (char === ':' || char === '|') {
+          break;
+        }
+
+        value += char;
+        i++;
+      }
+
+      args.push(value.trim());
+    }
+
+    while (i < text.length
+           && text[i] === ' ')
+    {
+      i++;
+    }
+
+    if (i < text.length && text[i] === ':') {
+      i++;
+      continue;
+    }
+
+    if (i < text.length && text[i] === '|') {
+      break;
+    }
+  }
+
+  return args;
+}
+
+function splitExpressionTokens(
+    text: string,
+    delimiter: string,
+    stripQuotes: boolean = false
   ): string[]
 {
   const tokens: string[] = [];
 
   let current = '';
   let quote: '\'' | '"' | null = null;
+  let escape = false;
 
   for (let index = 0; index < text.length; index++) {
     const char =
       text[index];
 
+    if (escape) {
+      current += char;
+      escape = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      if (!stripQuotes) {
+        current += char;
+      }
+
+      escape = true;
+      continue;
+    }
+
     if (quote !== null) {
       if (char === quote) {
         quote = null;
+
+        if (!stripQuotes) {
+          current += char;
+        }
+
         continue;
       }
 
@@ -115,10 +248,15 @@ function splitPipeTokens(
 
     if (char === '\'' || char === '"') {
       quote = char;
+
+      if (!stripQuotes) {
+        current += char;
+      }
+
       continue;
     }
 
-    if (char === ':') {
+    if (char === delimiter) {
       tokens.push(current);
       current = '';
       continue;

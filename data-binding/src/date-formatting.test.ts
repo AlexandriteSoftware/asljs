@@ -7,14 +7,14 @@ import {
     formatDate
   } from './date-formatting.js';
 
-const CONTEXT_NAME =
-  'date-formatting-test';
+const TEST_SUITE =
+  'date-formatting';
 
 const date =
   new Date(2026, 0, 5, 8, 9, 4);
 
 test(
-  `${CONTEXT_NAME}: formats yyyy`,
+  `${TEST_SUITE}: formats yyyy`,
   () => {
     assert.equal(
       formatDate(date, 'yyyy'),
@@ -22,7 +22,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: formats yy MM dd`,
+  `${TEST_SUITE}: formats yy MM dd`,
   () => {
     assert.equal(formatDate(date, 'yy'), '26');
     assert.equal(formatDate(date, 'MM'), '01');
@@ -30,7 +30,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: formats hh mm ss`,
+  `${TEST_SUITE}: formats hh mm ss`,
   () => {
     assert.equal(formatDate(date, 'hh'), '08');
     assert.equal(formatDate(date, 'mm'), '09');
@@ -38,7 +38,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: formats mixed tokens`,
+  `${TEST_SUITE}: formats mixed tokens`,
   () => {
     assert.equal(
       formatDate(date, 'yyyy-MM-dd hh:mm:ss'),
@@ -50,14 +50,14 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: escapes literals with backslash`,
+  `${TEST_SUITE}: escapes literals with backslash`,
   () => {
     assert.equal(formatDate(date, 'yyyy\\y'), '2026y');
     assert.equal(formatDate(date, 'dd\\d'), '05d');
   });
 
 test(
-  `${CONTEXT_NAME}: handles unknown tokens as literals`,
+  `${TEST_SUITE}: handles unknown tokens as literals`,
   () => {
     assert.equal(
       formatDate(date, 'yyyy-XX'),
@@ -65,7 +65,7 @@ test(
   });
 
 test(
-  `${CONTEXT_NAME}: returns Date.toString when format is null`,
+  `${TEST_SUITE}: returns Date.toString when format is null`,
   () => {
     assert.equal(
       formatDate(date, null),

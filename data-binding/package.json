@@ -3,18 +3,16 @@
   "version": "0.2.0",
   "description": "Declarative data-bind-* bindings for DOM elements with value pipes and event middleware.",
   "type": "module",
-  "main": "data-binding.js",
-  "types": "data-binding.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./data-binding.d.ts",
-      "default": "./data-binding.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [
     "dist/**",
-    "data-binding.js",
-    "data-binding.d.ts",
     "README.md",
     "LICENSE.md"
   ],
@@ -46,7 +44,7 @@
     "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
   },
   "dependencies": {
-    "asljs-observable": "^0.5.2"
+    "asljs-observable": "^0.5.3"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
