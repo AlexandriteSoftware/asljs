@@ -2,13 +2,15 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     ListenerError,
   } from './types.js';
 
+const TEST_SUITE =
+  'types';
+
 test(
-  'ListenerError extends Error and stores context',
+  `${TEST_SUITE}: ListenerError extends Error and stores context`,
   () => {
     const inner =
       new Error('inner');
@@ -54,3 +56,6 @@ test(
       error.listener,
       listener);
   });
+
+
+

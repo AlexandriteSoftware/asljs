@@ -2,7 +2,6 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-
 import {
     eventNameTypeGuard,
     functionTypeGuard,
@@ -10,8 +9,11 @@ import {
     isObject,
   } from './guards.js';
 
+const TEST_SUITE =
+  'guards';
+
 test(
-  'eventNameTypeGuard accepts string and symbol',
+  `${TEST_SUITE}: eventNameTypeGuard accepts string and symbol`,
   () => {
     assert.doesNotThrow(
       () => eventNameTypeGuard('event'));
@@ -20,8 +22,9 @@ test(
       () => eventNameTypeGuard(Symbol('event')));
   });
 
+
 test(
-  'eventNameTypeGuard throws for invalid values',
+  `${TEST_SUITE}: eventNameTypeGuard throws for invalid values`,
   () => {
     assert.throws(
       () => eventNameTypeGuard(42),
@@ -32,8 +35,9 @@ test(
       TypeError);
   });
 
+
 test(
-  'isFunction returns expected result',
+  `${TEST_SUITE}: isFunction returns expected result`,
   () => {
     assert.equal(
       isFunction(() => { }),
@@ -44,8 +48,9 @@ test(
       false);
   });
 
+
 test(
-  'isObject returns expected result',
+  `${TEST_SUITE}: isObject returns expected result`,
   () => {
     assert.equal(
       isObject({ key: 'value' }),
@@ -60,8 +65,9 @@ test(
       false);
   });
 
+
 test(
-  'functionTypeGuard validates value',
+  `${TEST_SUITE}: functionTypeGuard validates value`,
   () => {
     assert.doesNotThrow(
       () => functionTypeGuard(() => { }));
@@ -70,3 +76,6 @@ test(
       () => functionTypeGuard('nope'),
       TypeError);
   });
+
+
+

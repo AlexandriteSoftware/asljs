@@ -5,15 +5,17 @@ import assert
 import {
     eventful,
   } from './eventful.js';
-
 import {
     asEventfulLike,
     type EventfulLike,
     isEventfulLike
   } from './eventful-like.js';
 
+const TEST_SUITE =
+  'eventful-like';
+
 test(
-  'isEventfulLike returns true for eventful instances',
+  `${TEST_SUITE}: isEventfulLike returns true for eventful instances`,
   () => {
     const value =
       eventful();
@@ -23,8 +25,9 @@ test(
       true);
   });
 
+
 test(
-  'asEventfulLike returns value when compatible',
+  `${TEST_SUITE}: asEventfulLike returns value when compatible`,
   () => {
     const value =
       eventful();
@@ -43,8 +46,9 @@ test(
       typed);
   });
 
+
 test(
-  'asEventfulLike returns undefined when incompatible',
+  `${TEST_SUITE}: asEventfulLike returns undefined when incompatible`,
   () => {
     assert.equal(
       asEventfulLike({ }),
@@ -54,3 +58,6 @@ test(
       asEventfulLike(42),
       undefined);
   });
+
+
+

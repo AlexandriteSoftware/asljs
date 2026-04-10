@@ -5,7 +5,6 @@ import assert
 import {
     eventful,
   } from './eventful.js';
-
 import {
     EventfulBase,
   } from './eventful-base.js';
@@ -13,8 +12,11 @@ import {
     type Eventful,
   } from './types.js';
 
+const TEST_SUITE =
+  'eventful';
+
 test(
-  'eventful extends an object',
+  `${TEST_SUITE}: eventful extends an object`,
   () => {
     const original = { };
 
@@ -29,8 +31,9 @@ test(
       enhanced);
   });
 
+
 test(
-  'eventful extends a function',
+  `${TEST_SUITE}: eventful extends a function`,
   () => {
     const original =
       (): void => { };
@@ -46,8 +49,9 @@ test(
       enhanced);
   });
 
+
 test(
-  'eventful can be called without arguments',
+  `${TEST_SUITE}: eventful can be called without arguments`,
   () => {
     const enhanced =
       eventful();
@@ -59,8 +63,9 @@ test(
       enhanced);
   });
 
+
 test(
-  'eventful can be extended by inheritance',
+  `${TEST_SUITE}: eventful can be extended by inheritance`,
   () => {
     type MyClassEvents = {
       greet: [message: string];
@@ -105,8 +110,9 @@ test(
       'Hello, Alice');
   });
 
+
 test(
-  'eventful can be added during construction',
+  `${TEST_SUITE}: eventful can be added during construction`,
   () => {
     type MyClassEvents = {
       greet: [message: string];
@@ -158,8 +164,9 @@ test(
       'Hello, Alice');
   });
 
+
 test(
-  'trace is called on creation with action "new"',
+  `${TEST_SUITE}: trace is called on creation with action "new"`,
   () => {
     const recorder =
       createRecorder();
@@ -179,8 +186,9 @@ test(
       object);
   });
 
+
 test(
-  'global trace is called on creation with action "new"',
+  `${TEST_SUITE}: global trace is called on creation with action "new"`,
   () => {
     const recorder =
       createRecorder();
@@ -212,8 +220,9 @@ test(
     }
   });
 
+
 test(
-  'eventful throws when an object has one of the event emitter methods',
+  `${TEST_SUITE}: eventful throws when an object has one of the event emitter methods`,
   () => {
     for (const method of [ 'on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
       assert.throws(
@@ -224,8 +233,9 @@ test(
     }
   });
 
+
 test(
-  'exceptions in listeners are suppressed in async emit by default',
+  `${TEST_SUITE}: exceptions in listeners are suppressed in async emit by default`,
   async () => {
     const obj =
       eventful();
@@ -257,8 +267,9 @@ function assertEventfulMethods(
     assert.equal(typeof candidate.has, 'function');
 }
 
+
 test(
-  'exceptions in listeners are suppressed in async emit by default',
+  `${TEST_SUITE}: exceptions in listeners are suppressed in async emit by default`,
   async () => {
     const obj =
       eventful();
@@ -271,8 +282,9 @@ test(
       () => obj.emitAsync('test'));
   });
 
+
 test(
-  'exceptions in listeners are suppressed in emit by default',
+  `${TEST_SUITE}: exceptions in listeners are suppressed in emit by default`,
   () => {
     const obj =
       eventful();
@@ -285,8 +297,9 @@ test(
       () => obj.emit('test'));
   });
 
+
 test(
-  'strict mode propagates exceptions in listeners in async emit',
+  `${TEST_SUITE}: strict mode propagates exceptions in listeners in async emit`,
   async () => {
     const obj =
       eventful(
@@ -301,8 +314,9 @@ test(
     await assert.rejects(() => obj.emitAsync('test'));
   });
 
+
 test(
-  'strict mode propagates exceptions in listeners in emit',
+  `${TEST_SUITE}: strict mode propagates exceptions in listeners in emit`,
   () => {
     const obj =
       eventful(
@@ -319,8 +333,9 @@ test(
       Error);
   });
 
+
 test(
-  'non-strict runs other listeners even if one fails',
+  `${TEST_SUITE}: non-strict runs other listeners even if one fails`,
   async () => {
     const obj =
       eventful(
@@ -347,8 +362,9 @@ test(
     assert.equal(ran, 2);
   });
 
+
 test(
-  'trace receives safe payload and action names',
+  `${TEST_SUITE}: trace receives safe payload and action names`,
   async () => {
     const recorder =
       createRecorder();
@@ -389,8 +405,9 @@ test(
     assert.deepEqual(emitAsyncTrace.payload.args, [3, 4]);
   });
 
+
 test(
-  'error hook runs for async rejection (non-strict)',
+  `${TEST_SUITE}: error hook runs for async rejection (non-strict)`,
   async () => {
     let errors = 0;
 
@@ -409,8 +426,9 @@ test(
     assert.equal(errors, 1);
   });
 
+
 test(
-  'has reflects subscribe and unsubscribe',
+  `${TEST_SUITE}: has reflects subscribe and unsubscribe`,
   () =>  {
     const obj =
       eventful();
@@ -435,8 +453,9 @@ test(
       false);
   });
 
+
 test(
-  'strict mode propagates async rejections',
+  `${TEST_SUITE}: strict mode propagates async rejections`,
   async () => {
     const obj =
       eventful(
@@ -452,8 +471,9 @@ test(
       () => obj.emitAsync('e'));
   });
 
+
 test(
-  'emit ignores errors when no error hook (non-strict)',
+  `${TEST_SUITE}: emit ignores errors when no error hook (non-strict)`,
   () => {
     const obj =
       eventful();
@@ -466,8 +486,9 @@ test(
       () => obj.emit('x'));
   });
 
+
 test(
-  'throw in global error listener does not loop',
+  `${TEST_SUITE}: throw in global error listener does not loop`,
   () => {
     let globalErrorCalls = 0;
 
@@ -503,8 +524,9 @@ test(
     }
   });
 
+
 test(
-  'event must be string or symbol',
+  `${TEST_SUITE}: event must be string or symbol`,
   () => {
     const obj =
       eventful();
@@ -567,3 +589,6 @@ export function createRecorder(
       (): TraceRecord[] => records
   };
 }
+
+
+

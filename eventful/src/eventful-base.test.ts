@@ -6,8 +6,11 @@ import {
     EventfulBase,
   } from './eventful-base.js';
 
+const TEST_SUITE =
+  'eventful-base';
+
 test(
-  `${__filename}: EventfulBase wires eventful methods in constructor`,
+  `${TEST_SUITE}: EventfulBase wires eventful methods in constructor`,
   () => {
     type Events =
       { ping: [value: number] };
@@ -35,8 +38,9 @@ test(
       7);
   });
 
+
 test(
-  `${__filename}: EventfulBase passes options to eventful setup`,
+  `${TEST_SUITE}: EventfulBase passes options to eventful setup`,
   () => {
     type Events =
       { boom: [] };
@@ -61,3 +65,6 @@ test(
       () => demo.emit('boom'),
       Error);
   });
+
+
+
