@@ -22,7 +22,7 @@ $env:VERSION = (Get-Content "$env:FOLDER/package.json" -Raw | ConvertFrom-Json).
 $env:PACKAGE_VERSION = "${env:PACKAGE}@${env:VERSION}"
 
 # 3) Commit version changes
-git add $env:FOLDER/package.json $env:FOLDER/package-lock.json package-lock.json
+git add .
 git commit -m "releasing $env:PACKAGE_VERSION"
 
 # 4) Push commit first

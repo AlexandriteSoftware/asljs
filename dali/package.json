@@ -1,6 +1,6 @@
 {
   "name": "asljs-dali",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "IndexedDB data layer with a typed Table abstraction.",
   "type": "module",
   "main": "dist/index.js",
