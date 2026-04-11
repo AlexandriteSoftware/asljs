@@ -1,4 +1,4 @@
-export * from './table/delete/uuid-soft-delete-strategy.js';import {
+import {
     type DeleteStrategy,
   } from './delete-strategy.js';
 

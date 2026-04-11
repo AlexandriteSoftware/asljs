@@ -3,6 +3,9 @@
   "include": [
     "**/*.ts"
   ],
+  "exclude": [
+    "dist"
+  ],
   "compilerOptions": {
     "lib": [
       "ES2020",
