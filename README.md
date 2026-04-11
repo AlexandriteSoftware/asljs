@@ -5,7 +5,9 @@ utilities and functions to enhance everyday JavaScript development.
 
 Libraries:
 
+- [components](components) - reusable web components.
 - [data-binding](data-binding) - declarative DOM bindings via `data-model`.
+- [dali](dali) - IndexedDB data layer with typed table abstractions.
 - [eventful](eventful) - adds on/off/emit to any object.
 - [machine](machine) - provides a state-machine framework for organizing
   control flow.
