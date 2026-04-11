@@ -43,7 +43,8 @@ const db =
 const notes =
   new Table<Note>(
     'notes',
-    db);
+    db,
+    { /* options */ });
 
 await notes.add(
   { id: '1',
@@ -68,6 +69,11 @@ Versioning:
 - `TableVersionConflictError`
 - `IncrementTableVersionStrategy<T>`
 - `UuidTableVersionStrategy<T>`
+
+Delete strategies:
+
+- `TableDeleteStrategy<T>`
+- `UuidSoftDeleteTableDeleteStrategy<T>`
 
 Transactions:
 

@@ -11,6 +11,9 @@ import {
     keyPathAssert,
   } from './keys.js';
 import {
+    type DeleteStrategy,
+  } from './delete-strategy.js';
+import {
     VersionConflictError
   } from './version-conflict-error.js';
 import {
@@ -44,17 +47,22 @@ export class Table<
 
   public readonly key: KeyPath<T>;
 
-  readonly #strategy: VersionStrategy<T> | undefined;
+  readonly #versionStrategy: VersionStrategy<T> | undefined;
+
+  readonly #deleteStrategy: DeleteStrategy<T> | undefined;
 
   constructor(
       public readonly storeName: string,
       public readonly db: IDBDatabase,
-      strategy?: VersionStrategy<T>
+      options?:
+        { versionStrategy?: VersionStrategy<T>;
+          deleteStrategy?: DeleteStrategy<T>; }
     )
   {
     super();
 
-    this.#strategy = strategy;
+    this.#versionStrategy = options?.versionStrategy;
+    this.#deleteStrategy = options?.deleteStrategy;
 
     const key =
       txRead(this.db, this.storeName)
@@ -99,6 +107,11 @@ export class Table<
               return;
             }
 
+            if (this.#isDeleted(fields)) {
+              resolve(null);
+              return;
+            }
+
             resolve(fields);
           };
 
@@ -118,43 +131,10 @@ export class Table<
       tx: IDBTransaction | null = null
     ): Promise<T[]>
   {
-    const store =
-      txRead(this.db, this.storeName, tx)
-        .objectStore(this.storeName);
+    if (this.#deleteStrategy === undefined)
+      return this.#getByIndex(index, key, tx);
 
-    const idx =
-      store.index(index);
-
-    const keyPath =
-      idx.keyPath as KeyPath<T>;
-
-    keyPathAssert(keyPath as KeyPath<T>);
-    keyAssert(keyPath, key);
-
-    return new Promise<T[]>(
-      (
-          resolve,
-          reject
-        ) =>
-      {
-        const request =
-          idx.getAll(key);
-
-        request.onsuccess =
-          () => {
-            const records: T[] = request.result;
-
-            resolve(records);
-          };
-
-        request.onerror =
-          () => {
-            reject(
-              request.error
-              ?? new Error(
-                   `${this.storeName}: get request failed for index ${index}`));
-          };
-      });
+    return this.#getActiveByIndex(index, key, tx);
   }
 
   notify(
@@ -185,7 +165,7 @@ export class Table<
           .objectStore(this.storeName)
           .getAll());
 
-    return records;
+    return this.#activeRecords(records);
   }
 
   scan(
@@ -221,6 +201,11 @@ export class Table<
             const record =
               cursor.value as T;
 
+            if (this.#isDeleted(record)) {
+              cursor.continue();
+              return;
+            }
+
             try {
               if (predicate(record)) {
                 result.push(record);
@@ -247,8 +232,8 @@ export class Table<
     ): Promise<T>
   {
     const storedRecord =
-      this.#strategy
-        ? this.#strategy.initialise(record)
+      this.#versionStrategy
+        ? this.#versionStrategy.initialise(record)
         : record;
 
     const ltx =
@@ -304,20 +289,20 @@ export class Table<
 
     let storedRecord = record;
 
-    if (this.#strategy) {
+    if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
           `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
       }
 
-      if (!this.#strategy.verify(existing, expectedVersion)) {
+      if (!this.#versionStrategy.verify(existing, expectedVersion)) {
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#strategy.getVersion(existing));
+          this.#versionStrategy.getVersion(existing));
       }
 
-      storedRecord = this.#strategy.update(record);
+      storedRecord = this.#versionStrategy.update(record);
     }
 
     await dbRequestAsync(
@@ -364,33 +349,78 @@ export class Table<
     if (existing === undefined)
       return;
 
-    if (this.#strategy) {
+    if (this.#deleteStrategy === undefined) {
+      if (this.#versionStrategy) {
+        if (expectedVersion === undefined) {
+          throw new Error(
+            `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
+        }
+
+        if (!this.#versionStrategy.verify(existing, expectedVersion)) {
+          throw new VersionConflictError(
+            key,
+            expectedVersion,
+            this.#versionStrategy.getVersion(existing));
+        }
+      }
+
+      await dbRequestAsync(
+        store.delete(key));
+
+      this.#onTransactionCompleted(
+        store.transaction,
+        () => {
+          this.emit(
+            'delete',
+            existing);
+
+          this.#notify(
+            'delete',
+            [ existing ]);
+        });
+
+      if (tx === null)
+        await txDone(ltx);
+
+      return;
+    }
+
+    if (this.#deleteStrategy.isDeleted(existing))
+      return;
+
+    if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
           `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
       }
 
-      if (!this.#strategy.verify(existing, expectedVersion)) {
+      if (!this.#versionStrategy.verify(existing, expectedVersion)) {
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#strategy.getVersion(existing));
+          this.#versionStrategy.getVersion(existing));
       }
     }
 
+    let storedRecord =
+      this.#deleteStrategy.delete(existing);
+
+    if (this.#versionStrategy)
+      storedRecord = this.#versionStrategy.update(storedRecord);
+
     await dbRequestAsync(
-      store.delete(key));
+      store.put(storedRecord));
 
     this.#onTransactionCompleted(
       store.transaction,
       () => {
         this.emit(
           'delete',
-          existing);
+          storedRecord);
 
         this.#notify(
           'delete',
-          [ existing ]);
+          [ storedRecord ]);
       });
 
     if (tx === null)
@@ -428,6 +458,118 @@ export class Table<
 
     if (tx === null)
       await txDone(ltx);
+  }
+
+  #activeRecords(
+      records: T[]
+    ): T[]
+  {
+    const deleteStrategy =
+      this.#deleteStrategy;
+
+    if (deleteStrategy === undefined)
+      return records;
+
+    return records.filter(record => !deleteStrategy.isDeleted(record));
+  }
+
+  async #getActiveByIndex(
+      index: string,
+      key: IDBValidKey,
+      tx: IDBTransaction | null
+    ): Promise<T[]>
+  {
+    const mapped =
+      this.#deleteStrategy?.mapIndexQuery?.(index, key);
+
+    if (mapped) {
+      try {
+        const records =
+          await this.#getByIndex(
+            mapped.index,
+            mapped.key,
+            tx,
+            false);
+
+        return this.#activeRecords(records);
+      } catch (error) {
+        // Degrade to filtering when mapped query cannot be executed.
+        if (!this.#canFallbackMappedQuery(error))
+          throw error;
+      }
+    }
+
+    const records =
+      await this.#getByIndex(index, key, tx);
+
+    return this.#activeRecords(records);
+  }
+
+  #getByIndex(
+      index: string,
+      key: IDBValidKey,
+      tx: IDBTransaction | null,
+      validateKey: boolean = true
+    ): Promise<T[]>
+  {
+    const store =
+      txRead(this.db, this.storeName, tx)
+        .objectStore(this.storeName);
+
+    const idx =
+      store.index(index);
+
+    const keyPath =
+      idx.keyPath as KeyPath<T>;
+
+    if (validateKey) {
+      keyPathAssert(keyPath as KeyPath<T>);
+      keyAssert(keyPath, key);
+    }
+
+    return new Promise<T[]>(
+      (
+          resolve,
+          reject
+        ) =>
+      {
+        const request =
+          idx.getAll(key);
+
+        request.onsuccess =
+          () => {
+            const records: T[] = request.result;
+
+            resolve(records);
+          };
+
+        request.onerror =
+          () => {
+            reject(
+              request.error
+              ?? new Error(
+                   `${this.storeName}: get request failed for index ${index}`));
+          };
+      });
+  }
+
+  #isDeleted(
+      record: T
+    ): boolean
+  {
+    return this.#deleteStrategy?.isDeleted(record)
+      ?? false;
+  }
+
+  #canFallbackMappedQuery(
+      error: unknown
+    ): boolean
+  {
+    if (!(error instanceof DOMException))
+      return false;
+
+    return error.name === 'NotFoundError'
+      || error.name === 'DataError';
   }
 
   #onTransactionCompleted(

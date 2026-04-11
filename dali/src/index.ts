@@ -9,6 +9,10 @@ export {
   } from './version-strategy-increment.js';
 
 export {
+    type DeleteStrategy as TableDeleteStrategy,
+  } from './delete-strategy.js';
+
+export {
     Table,
     type TableEvents,
     type TableEventsReceiver,
@@ -30,6 +34,10 @@ export {
     TxMode,
     txEnsure,
   } from './transactions.js';
+
+export {
+    UuidSoftDeleteStrategy as UuidSoftDeleteTableDeleteStrategy,
+  } from './delete-strategy-uuid-soft-delete-strategy.js';
 
 export {
     UuidVersionStrategy as UuidTableVersionStrategy,

@@ -5,13 +5,16 @@ import assert
   from 'node:assert/strict';
 import 'fake-indexeddb/auto';
 import {
+    dbRequestAsync,
     dbOpen,
     IncrementTableVersionStrategy,
     Table,
+    type TableDeleteStrategy,
     TableVersionConflictError,
     type TableEventsReceiver,
     txDone,
     TxMode,
+    UuidSoftDeleteTableDeleteStrategy,
     UuidTableVersionStrategy,
   } from './index.js';
 
@@ -222,7 +225,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     const result =
       await table.add(
@@ -246,7 +250,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     const result =
       await table.add(
@@ -265,7 +270,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -286,7 +292,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -317,7 +324,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -346,7 +354,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -366,7 +375,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -389,7 +399,8 @@ test(
       new Table<VersionedRecordFields>(
         'items',
         db,
-        new IncrementTableVersionStrategy('version'));
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version') });
 
     await table.add(
       { id: 'a', value: '10', version: 1 });
@@ -412,7 +423,8 @@ test(
       new Table<UuidVersionedRecordFields>(
         'items',
         db,
-        new UuidTableVersionStrategy('version'));
+        { versionStrategy:
+            new UuidTableVersionStrategy('version') });
 
     const result =
       await table.add(
@@ -433,7 +445,8 @@ test(
       new Table<UuidVersionedRecordFields>(
         'items',
         db,
-        new UuidTableVersionStrategy('version'));
+        { versionStrategy:
+            new UuidTableVersionStrategy('version') });
 
     const added =
       await table.add(
@@ -473,4 +486,390 @@ test(
       await table.getOne('a');
 
     assert.equal(stored, null);
+  });
+
+type SoftDeleteRecordFields =
+  { id: string;
+    customerId: string;
+    value: string;
+    deleted: string;
+    version: number; };
+
+async function openSoftDeleteTestDb(
+    includeDeletedAwareIndex: boolean = true
+  ): Promise<IDBDatabase>
+{
+  return dbOpen(
+    `table-test-${crypto.randomUUID()}`,
+    [ db => {
+        const store =
+          db.createObjectStore(
+            'items',
+            { keyPath: 'id' });
+
+        store.createIndex(
+          'by_customer',
+          'customerId',
+          { unique: false });
+
+        if (includeDeletedAwareIndex) {
+          store.createIndex(
+            'deleted:by_customer',
+            [ 'deleted', 'customerId' ],
+            { unique: false });
+        }
+      } ]);
+}
+
+async function getRawRecord(
+    db: IDBDatabase,
+    key: string
+  ): Promise<SoftDeleteRecordFields | undefined>
+{
+  const tx =
+    db.transaction(
+      [ 'items' ],
+      TxMode.read);
+
+  const store =
+    tx.objectStore('items');
+
+  const record =
+    await dbRequestAsync<SoftDeleteRecordFields | undefined>(
+      store.get(key));
+
+  await txDone(tx);
+
+  return record;
+}
+
+test(
+  `${TEST_SUITE}: soft delete getOne/getAll hide deleted records`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb();
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy('deleted') });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.add(
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+
+    await table.delete('b');
+
+    const active =
+      await table.getOne('a');
+
+    const deleted =
+      await table.getOne('b');
+
+    const all =
+      await table.getAll();
+
+    assert.equal(active?.id, 'a');
+    assert.equal(deleted, null);
+    assert.deepEqual(
+      all.map(record => record.id),
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: soft delete scan only evaluates active records`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb();
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy('deleted') });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.add(
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+
+    await table.delete('b');
+
+    const records =
+      await table.scan(
+        record => {
+          assert.notEqual(record.id, 'b');
+          return true;
+        });
+
+    assert.deepEqual(
+      records.map(record => record.id),
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: soft delete get uses rewritten active index when available`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb(true);
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy(
+              'deleted',
+              (
+                  index: string,
+                  key: IDBValidKey
+                ) => {
+                const mappedKey =
+                  Array.isArray(key)
+                    ? [ '', ...key ]
+                    : [ '', key ];
+
+                return {
+                  index: `deleted:${index}`,
+                  key: mappedKey as unknown as IDBValidKey
+                };
+              }) });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.add(
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+
+    await table.delete('b');
+
+    const records =
+      await table.get(
+        'by_customer',
+        'c1');
+
+    assert.deepEqual(
+      records.map(record => record.id),
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: soft delete get falls back when rewritten index is missing`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb(false);
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy(
+              'deleted',
+              (
+                  index: string,
+                  key: IDBValidKey
+                ) => {
+                const mappedKey =
+                  Array.isArray(key)
+                    ? [ '', ...key ]
+                    : [ '', key ];
+
+                return {
+                  index: `deleted:${index}`,
+                  key: mappedKey as unknown as IDBValidKey
+                };
+              }) });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.add(
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+
+    await table.delete('b');
+
+    const records =
+      await table.get(
+        'by_customer',
+        'c1');
+
+    assert.deepEqual(
+      records.map(record => record.id),
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: soft delete get filters when delete strategy has no index mapping`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb(false);
+
+    const strategy: TableDeleteStrategy<SoftDeleteRecordFields> =
+      { isDeleted(record) {
+          return record.deleted.length > 0;
+        },
+        delete(record) {
+          if (record.deleted.length > 0)
+            return record;
+
+          return {
+            ...record,
+            deleted: crypto.randomUUID()
+          };
+        } };
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy: strategy });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.add(
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+
+    await table.delete('b');
+
+    const records =
+      await table.get(
+        'by_customer',
+        'c1');
+
+    assert.deepEqual(
+      records.map(record => record.id),
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: uuid soft delete strategy without mapper returns null mapping`,
+  () => {
+    const strategy =
+      new UuidSoftDeleteTableDeleteStrategy<SoftDeleteRecordFields>('deleted');
+
+    const mapped =
+      strategy.mapIndexQuery(
+        'by_customer',
+        'c1');
+
+    assert.equal(mapped, null);
+  });
+
+test(
+  `${TEST_SUITE}: soft delete with version strategy verifies and bumps version`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb();
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version'),
+          deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy('deleted') });
+
+    const events: SoftDeleteRecordFields[] = [];
+
+    table.notify(
+      { delete(record) {
+          events.push(record);
+        } });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await assert.rejects(
+      () => table.delete('a'),
+      /expectedVersion is required/);
+
+    await table.delete('a', 1);
+
+    const hidden =
+      await table.getOne('a');
+
+    const stored =
+      await getRawRecord(db, 'a');
+
+    assert.equal(hidden, null);
+    assert.equal(stored?.version, 2);
+    assert.equal(typeof stored?.deleted, 'string');
+    assert.equal(events.length, 1);
+    assert.equal(events[0]?.version, 2);
+    assert.equal(typeof events[0]?.deleted, 'string');
+  });
+
+test(
+  `${TEST_SUITE}: soft delete already deleted record is a no-op`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb();
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { versionStrategy:
+            new IncrementTableVersionStrategy('version'),
+          deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy('deleted') });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.delete('a', 1);
+
+    const firstDelete =
+      await getRawRecord(db, 'a');
+
+    await table.delete('a');
+
+    const secondDelete =
+      await getRawRecord(db, 'a');
+
+    assert.equal(firstDelete?.version, 2);
+    assert.equal(secondDelete?.version, 2);
+    assert.equal(firstDelete?.deleted, secondDelete?.deleted);
+  });
+
+test(
+  `${TEST_SUITE}: clear remains a hard clear with soft delete strategy`,
+  async () => {
+    const db =
+      await openSoftDeleteTestDb();
+
+    const table =
+      new Table<SoftDeleteRecordFields>(
+        'items',
+        db,
+        { deleteStrategy:
+            new UuidSoftDeleteTableDeleteStrategy('deleted') });
+
+    await table.add(
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+
+    await table.delete('a');
+    await table.clear();
+
+    const tx =
+      db.transaction(
+        [ 'items' ],
+        TxMode.read);
+
+    const records =
+      await dbRequestAsync<SoftDeleteRecordFields[]>(
+        tx.objectStore('items').getAll());
+
+    await txDone(tx);
+
+    assert.equal(records.length, 0);
   });

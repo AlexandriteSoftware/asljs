@@ -6,6 +6,7 @@ import {
     Table,
     dbOpen,
     IncrementTableVersionStrategy,
+  UuidSoftDeleteTableDeleteStrategy,
   } from './index.js';
 
 test(
@@ -21,5 +22,9 @@ test(
 
     assert.equal(
       typeof IncrementTableVersionStrategy,
+      'function');
+
+    assert.equal(
+      typeof UuidSoftDeleteTableDeleteStrategy,
       'function');
   });
