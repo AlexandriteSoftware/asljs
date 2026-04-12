@@ -8,7 +8,7 @@ import {
 
 type PendingEvent<T> =
   | { type: 'add'; record: T }
-  | { type: 'update'; record: T; previousRecord: T }
+  | { type: 'update'; record: T }
   | { type: 'delete'; record: T }
   | { type: 'clear' };
 
@@ -75,12 +75,11 @@ export class LiveRecordSet<T extends Record<string, any>> {
             this.#notifySubscribers();
         },
 
-        update: (record, previousRecord) => {
+        update: (record, _previousRecord) => {
           if (!this.#loaded) {
             this.#pendingEvents.push(
               { type: 'update',
-                record,
-                previousRecord });
+                record });
             return;
           }
 
@@ -213,6 +212,9 @@ export class LiveRecordSet<T extends Record<string, any>> {
       record: T
     ): boolean
   {
+    // Membership of the previous version is determined by checking whether
+    // the key is already present in #current, rather than using the
+    // previousRecord payload, so no second parameter is needed here.
     const key =
       this.#keyString(record);
 
