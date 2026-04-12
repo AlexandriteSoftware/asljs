@@ -46,6 +46,8 @@ export {
 
 export {
     Table,
+    LiveRecord,
+    LiveRecordSet,
     type TableBroadcastMessage,
     type TableBroadcastService,
     type TableEvents,

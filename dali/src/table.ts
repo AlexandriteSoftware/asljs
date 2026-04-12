@@ -28,10 +28,21 @@ import {
     type TableBroadcastMessage,
     type TableBroadcastService,
   } from './table-broadcast-service.js';
+import {
+    LiveRecord,
+  } from './live-record.js';
+import {
+    LiveRecordSet,
+  } from './live-recordset.js';
 
 export type {
     TableBroadcastMessage,
     TableBroadcastService,
+  };
+
+export {
+    LiveRecord,
+    LiveRecordSet,
   };
 
 export type TableEvents<T extends Record<string, any>> =
@@ -257,6 +268,60 @@ export class Table<
   {
     this.#broadcastUnsubscribe?.();
     this.#broadcastUnsubscribe = undefined;
+  }
+
+  /**
+   * Returns a **live** single-record view for the given primary key.
+   *
+   * - `current()` on the returned `LiveRecord` gives the matching record, or
+   *   `null` when no record exists for that key.
+   * - The view reacts to committed `add`, `update`, `delete`, and `clear`
+   *   events on this table.
+   * - Call `dispose()` on the returned view to stop tracking and release
+   *   resources.
+   *
+   * This API is **live by default** — no `.live()` call is required.
+   * For one-shot snapshot reads, use `getOne(key)` instead.
+   *
+   * Note: `record(key)` is limited to key-only semantics for now.
+   */
+  record(
+      key: IDBValidKey
+    ): LiveRecord<T>
+  {
+    return new LiveRecord<T>(
+      key,
+      this.key,
+      k => this.getOne(k),
+      receiver => this.notify(receiver));
+  }
+
+  /**
+   * Returns a **live** filtered set view over this table.
+   *
+   * - `current()` on the returned `LiveRecordSet` gives a readonly array of
+   *   all records currently matching `predicate`.
+   * - Membership is re-evaluated on every committed `add`, `update`,
+   *   `delete`, and `clear` event.
+   * - Call `dispose()` on the returned view to stop tracking and release
+   *   resources.
+   *
+   * This API is **live by default** — no `.live()` call is required.
+   * For one-shot snapshot reads, use `scan(predicate)` instead.
+   *
+   * Note: `recordset(predicate)` is limited to client-side predicate
+   * semantics for now. Joins, ordering, and DB-level query composition are
+   * not supported here.
+   */
+  recordset(
+      predicate: (record: T) => boolean
+    ): LiveRecordSet<T>
+  {
+    return new LiveRecordSet<T>(
+      this.key,
+      predicate,
+      p => this.scan(p),
+      receiver => this.notify(receiver));
   }
 
   async getAll(

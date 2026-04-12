@@ -126,6 +126,79 @@ notes.dispose();
 - A Table receiving a remote message **does not re-publish** it, preventing
   broadcast loops.
 
+### Live views with `record()` and `recordset()`
+
+`Table` provides **live-first** APIs that return reactive containers tracking
+committed table changes automatically.
+
+#### `Table.record(key)` → `LiveRecord<T>`
+
+Returns a live single-record view for a specific primary key.
+
+```ts
+const live = notes.record('1');
+
+// Read the current value (null if the record does not exist).
+console.log(live.current()); // { id: '1', title: 'Hello' } | null
+
+// Subscribe to changes.
+const unsub = live.subscribe(value => {
+  console.log('record changed', value);
+});
+
+// Stop the subscription.
+unsub();
+
+// Release the live view when no longer needed.
+live.dispose();
+```
+
+Behaviour:
+
+- The view starts tracking as soon as it is created.
+- `current()` returns `null` until the initial database read settles.
+- On `add` / `update` for that key — `current()` reflects the new record.
+- On `delete` or `clear` — `current()` becomes `null`.
+- Unrelated changes on the same table do not affect this view.
+
+> **Snapshot read**: use `table.getOne(key)` instead.
+>
+> **Limitation**: `record(key)` is currently limited to key-only semantics.
+
+#### `Table.recordset(predicate)` → `LiveRecordSet<T>`
+
+Returns a live filtered set view for records matching a client-side predicate.
+
+```ts
+const live = notes.recordset(note => note.title.startsWith('A'));
+
+// Read the current matching records.
+console.log(live.current()); // readonly Note[]
+
+// Subscribe to changes.
+const unsub = live.subscribe(records => {
+  console.log('set changed', records.length);
+});
+
+unsub();
+live.dispose();
+```
+
+Behaviour:
+
+- On initial creation the table is scanned and all matching records are loaded.
+- On `add` — the record is included if the predicate returns `true`.
+- On `update` — membership is re-evaluated; the record is added, updated, or
+  removed from the set accordingly.
+- On `delete` — the record is removed from the set if it was present.
+- On `clear` — the set is emptied.
+
+> **Snapshot read**: use `table.scan(predicate)` instead.
+>
+> **Limitation**: `recordset(predicate)` is currently limited to client-side
+> predicate semantics. Joins, ordering, and DB-level query composition are not
+> supported.
+
 ## API Reference
 
 Core:
@@ -134,6 +207,11 @@ Core:
 - `dbDelete(name)`
 - `dbRequestAsync(request)`
 - `Table<T>`
+
+Live views:
+
+- `LiveRecord<T>` — live single-record container returned by `Table.record(key)`
+- `LiveRecordSet<T>` — live filtered set container returned by `Table.recordset(predicate)`
 
 Versioning:
 
