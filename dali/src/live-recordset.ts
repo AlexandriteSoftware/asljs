@@ -71,7 +71,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#handleAdd(record))
+          if (this.#applyEvent({ type: 'add', record }))
             this.#notifySubscribers();
         },
 
@@ -83,7 +83,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#handleUpdate(record))
+          if (this.#applyEvent({ type: 'update', record }))
             this.#notifySubscribers();
         },
 
@@ -95,7 +95,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#handleDelete(record))
+          if (this.#applyEvent({ type: 'delete', record }))
             this.#notifySubscribers();
         },
 
@@ -106,7 +106,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#handleClear())
+          if (this.#applyEvent({ type: 'clear' }))
             this.#notifySubscribers();
         },
       });
@@ -125,14 +125,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
 
         // Replay events that arrived while the scan was in flight.
         for (const event of this.#pendingEvents) {
-          if (event.type === 'add')
-            this.#handleAdd(event.record);
-          else if (event.type === 'update')
-            this.#handleUpdate(event.record);
-          else if (event.type === 'delete')
-            this.#handleDelete(event.record);
-          else if (event.type === 'clear')
-            this.#handleClear();
+          this.#applyEvent(event);
         }
 
         this.#pendingEvents = [];
@@ -192,6 +185,23 @@ export class LiveRecordSet<T extends Record<string, any>> {
   {
     return JSON.stringify(
       keyGet(this.#keyPath, record));
+  }
+
+  /** Applies a single pending event to `#current`. Returns `true` if the set changed. */
+  #applyEvent(
+      event: PendingEvent<T>
+    ): boolean
+  {
+    if (event.type === 'add')
+      return this.#handleAdd(event.record);
+
+    if (event.type === 'update')
+      return this.#handleUpdate(event.record);
+
+    if (event.type === 'delete')
+      return this.#handleDelete(event.record);
+
+    return this.#handleClear();
   }
 
   #handleAdd(

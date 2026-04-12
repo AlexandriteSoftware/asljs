@@ -155,6 +155,11 @@ export class LiveRecord<T extends Record<string, any>> {
       value: T | null
     ): void
   {
+    // Reference equality is correct here: every committed table change
+    // delivers a freshly deserialised object from IndexedDB, so two
+    // distinct records will never share the same reference.  The only
+    // case where the references are equal is null === null, which
+    // correctly suppresses a redundant notification.
     if (this.#current === value)
       return;
 
