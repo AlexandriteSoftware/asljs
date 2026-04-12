@@ -46,8 +46,12 @@ export {
 
 export {
     Table,
+    type TableBroadcastMessage,
+    type TableBroadcastService,
     type TableEvents,
     type TableEventsReceiver,
+    type TableObservedEvent,
+    type TableObservedReceiver,
   } from './table.js';
 
 export {

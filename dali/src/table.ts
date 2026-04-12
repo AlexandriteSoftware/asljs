@@ -24,6 +24,15 @@ import {
     txRead,
     txWrite,
   } from './transactions.js';
+import {
+    type TableBroadcastMessage,
+    type TableBroadcastService,
+  } from './table-broadcast-service.js';
+
+export type {
+    TableBroadcastMessage,
+    TableBroadcastService,
+  };
 
 export type TableEvents<T extends Record<string, any>> =
   { add: [ record: T ];
@@ -39,11 +48,41 @@ export type TableEventsReceiver<T extends Record<string, any>> =
     }
   >;
 
+/**
+ * An event delivered to observers (see `Table.observe()`).
+ *
+ * The `source` field indicates whether the change originated on this tab
+ * (`'local'`) or was received via the broadcast service from another tab
+ * (`'remote'`).
+ *
+ * Consumers can use `eventType` as a discriminant to narrow the event and
+ * access the typed record fields.
+ */
+export type TableObservedEvent<T extends Record<string, any>> =
+  | { source: 'local' | 'remote'; eventType: 'add'; record: T }
+  | { source: 'local' | 'remote'; eventType: 'update'; record: T; previousRecord: T }
+  | { source: 'local' | 'remote'; eventType: 'delete'; record: T }
+  | { source: 'local' | 'remote'; eventType: 'clear'; records: T[] };
+
+/**
+ * Callback signature for `Table.observe()` subscriptions.
+ * Receives both local and remote observed events.
+ */
+export type TableObservedReceiver<T extends Record<string, any>> =
+  (event: TableObservedEvent<T>) => void;
+
 export class Table<
     T extends Record<string, any>>
   extends EventfulBase<TableEvents<T>>
 {
+  /** Local-only subscribers — receive events from this tab only. */
   readonly #receivers: Array<TableEventsReceiver<T>> = [];
+
+  /**
+   * Observed subscribers — receive both local commits and remote changes
+   * arriving through the broadcast service.
+   */
+  readonly #observedReceivers: Array<TableObservedReceiver<T>> = [];
 
   public readonly key: KeyPath<T>;
 
@@ -51,18 +90,33 @@ export class Table<
 
   readonly #deleteStrategy: DeleteStrategy<T> | undefined;
 
+  /**
+   * Unique ID for this Table instance.
+   * Included in every broadcast message as `originId` so that this instance
+   * can recognise and discard its own echoed messages.
+   */
+  readonly #instanceId: string;
+
+  readonly #broadcastService: TableBroadcastService | undefined;
+
+  /** Disposal function returned by the broadcast service subscription. */
+  #broadcastUnsubscribe: (() => void) | undefined;
+
   constructor(
       public readonly storeName: string,
       public readonly db: IDBDatabase,
       options?:
         { versionStrategy?: VersionStrategy<T>;
-          deleteStrategy?: DeleteStrategy<T>; }
+          deleteStrategy?: DeleteStrategy<T>;
+          broadcastService?: TableBroadcastService; }
     )
   {
     super();
 
     this.#versionStrategy = options?.versionStrategy;
     this.#deleteStrategy = options?.deleteStrategy;
+    this.#broadcastService = options?.broadcastService;
+    this.#instanceId = crypto.randomUUID();
 
     const key =
       txRead(this.db, this.storeName)
@@ -73,6 +127,14 @@ export class Table<
       key as KeyPath<T>);
 
     this.key = key;
+
+    if (this.#broadcastService !== undefined) {
+      this.#broadcastUnsubscribe =
+        this.#broadcastService.subscribe(
+          message => {
+            this.#onBroadcastMessage(message);
+          });
+    }
   }
 
   getOne(
@@ -153,6 +215,48 @@ export class Table<
       this.#receivers.splice(index, 1);
       return true;
     };
+  }
+
+  /**
+   * Subscribe to **all** table changes — both changes committed by this
+   * Table instance (local) and changes received from other tabs via the
+   * broadcast service (remote).
+   *
+   * Each event carries a `source` field (`'local'` or `'remote'`) so
+   * consumers can distinguish its origin.
+   *
+   * Local-only subscribers (registered via `notify()`) are unaffected and
+   * continue to receive only local events.
+   *
+   * Returns an unsubscribe function that removes this observer.
+   * Calling it twice is safe and returns `false` on the second call.
+   */
+  observe(
+      receiver: TableObservedReceiver<T>
+    ): () => boolean
+  {
+    this.#observedReceivers.push(receiver);
+
+    return () : boolean => {
+      const index =
+        this.#observedReceivers.indexOf(receiver);
+
+      if (index < 0)
+        return false;
+
+      this.#observedReceivers.splice(index, 1);
+      return true;
+    };
+  }
+
+  /**
+   * Release the broadcast service subscription created in the constructor.
+   * Call this when the Table instance is no longer needed to prevent leaks.
+   */
+  dispose(): void
+  {
+    this.#broadcastUnsubscribe?.();
+    this.#broadcastUnsubscribe = undefined;
   }
 
   async getAll(
@@ -255,6 +359,15 @@ export class Table<
         this.#notify(
           'add',
           [ storedRecord ]);
+
+        this.#notifyObserved(
+          { source: 'local',
+            eventType: 'add',
+            record: storedRecord });
+
+        this.#publishBroadcast(
+          'add',
+          { record: storedRecord });
       });
 
     if (tx === null)
@@ -320,6 +433,17 @@ export class Table<
           'update',
           [ storedRecord,
             existing ]);
+
+        this.#notifyObserved(
+          { source: 'local',
+            eventType: 'update',
+            record: storedRecord,
+            previousRecord: existing });
+
+        this.#publishBroadcast(
+          'update',
+          { record: storedRecord,
+            previousRecord: existing });
       });
 
     if (tx === null)
@@ -377,6 +501,15 @@ export class Table<
           this.#notify(
             'delete',
             [ existing ]);
+
+          this.#notifyObserved(
+            { source: 'local',
+              eventType: 'delete',
+              record: existing });
+
+          this.#publishBroadcast(
+            'delete',
+            { record: existing });
         });
 
       if (tx === null)
@@ -421,6 +554,15 @@ export class Table<
         this.#notify(
           'delete',
           [ storedRecord ]);
+
+        this.#notifyObserved(
+          { source: 'local',
+            eventType: 'delete',
+            record: storedRecord });
+
+        this.#publishBroadcast(
+          'delete',
+          { record: storedRecord });
       });
 
     if (tx === null)
@@ -454,6 +596,15 @@ export class Table<
         this.#notify(
           'clear',
           [ records ]);
+
+        this.#notifyObserved(
+          { source: 'local',
+            eventType: 'clear',
+            records });
+
+        this.#publishBroadcast(
+          'clear',
+          { records });
       });
 
     if (tx === null)
@@ -614,5 +765,105 @@ export class Table<
           error);
       }
     }
+  }
+
+  #notifyObserved(
+      event: TableObservedEvent<T>
+    ): void
+  {
+    if (this.#observedReceivers.length === 0)
+      return;
+
+    for (const receiver of this.#observedReceivers) {
+      try {
+        receiver(event);
+      } catch (error) {
+        console.error(
+          `${this.storeName}: observe handler failed for event ${event.eventType}`,
+          error);
+      }
+    }
+  }
+
+  #publishBroadcast(
+      eventType: TableBroadcastMessage['eventType'],
+      payload: unknown
+    ): void
+  {
+    if (this.#broadcastService === undefined)
+      return;
+
+    const message: TableBroadcastMessage =
+      { messageId: crypto.randomUUID(),
+        originId: this.#instanceId,
+        storeName: this.storeName,
+        eventType,
+        payload };
+
+    try {
+      this.#broadcastService.publish(message);
+    } catch (error) {
+      console.error(
+        `${this.storeName}: broadcast publish failed`,
+        error);
+    }
+  }
+
+  /**
+   * Handle an incoming broadcast message from another tab.
+   *
+   * Loop prevention rules:
+   *  - Messages with `originId === this.#instanceId` are discarded (own echo).
+   *  - Messages for a different `storeName` are discarded.
+   *  - Remote messages are forwarded to observed subscribers only; local
+   *    subscribers are never called, and the message is never re-published.
+   */
+  #onBroadcastMessage(
+      message: TableBroadcastMessage
+    ): void
+  {
+    // Discard own echoes.
+    if (message.originId === this.#instanceId)
+      return;
+
+    // Discard messages for other stores.
+    if (message.storeName !== this.storeName)
+      return;
+
+    if (this.#observedReceivers.length === 0)
+      return;
+
+    const payload =
+      message.payload as Record<string, unknown>;
+
+    let event: TableObservedEvent<T> | undefined;
+
+    if (message.eventType === 'add') {
+      event =
+        { source: 'remote',
+          eventType: 'add',
+          record: payload['record'] as T };
+    } else if (message.eventType === 'update') {
+      event =
+        { source: 'remote',
+          eventType: 'update',
+          record: payload['record'] as T,
+          previousRecord: payload['previousRecord'] as T };
+    } else if (message.eventType === 'delete') {
+      event =
+        { source: 'remote',
+          eventType: 'delete',
+          record: payload['record'] as T };
+    } else if (message.eventType === 'clear') {
+      event =
+        { source: 'remote',
+          eventType: 'clear',
+          records: payload['records'] as T[] };
+    }
+
+    if (event === undefined)
+      return;
+
+    this.#notifyObserved(event);
   }
 }

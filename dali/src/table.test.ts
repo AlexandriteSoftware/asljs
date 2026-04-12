@@ -9,9 +9,13 @@ import {
     dbOpen,
     IncrementTableVersionStrategy,
     Table,
+    type TableBroadcastMessage,
+    type TableBroadcastService,
     type TableDeleteStrategy,
     TableVersionConflictError,
     type TableEventsReceiver,
+    type TableObservedEvent,
+    type TableObservedReceiver,
     txDone,
     TxMode,
     UuidSoftDeleteTableDeleteStrategy,
@@ -872,4 +876,407 @@ test(
     await txDone(tx);
 
     assert.equal(records.length, 0);
+  });
+
+// ---------------------------------------------------------------------------
+// Broadcast / observe tests
+// ---------------------------------------------------------------------------
+
+/**
+ * A minimal in-process TableBroadcastService for testing.
+ * Subscribers registered on the same instance share the same bus, so one
+ * Table's publish call triggers another Table's handler — simulating two
+ * browser tabs backed by the same channel.
+ */
+function createTestBroadcastService(
+  ): TableBroadcastService
+{
+  const handlers: Array<(m: TableBroadcastMessage) => void> = [];
+
+  return {
+    publish(message) {
+      for (const h of handlers) {
+        try {
+          h(message);
+        } catch { /* swallow */ }
+      }
+    },
+    subscribe(handler) {
+      handlers.push(handler);
+      return () => {
+        const idx = handlers.indexOf(handler);
+        if (idx >= 0)
+          handlers.splice(idx, 1);
+      };
+    },
+  };
+}
+
+test(
+  `${TEST_SUITE}: notify (local) subscribers do not receive remote broadcast messages`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    // "Remote" table — simulates another tab writing a record.
+    const remoteTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    // "Local" table — the one under test.
+    const localTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const localEvents: string[] = [];
+
+    localTable.notify(
+      { add(record) {
+          localEvents.push(`add:${record.id}`);
+        } });
+
+    // Remote tab adds a record; its broadcast reaches localTable.
+    await remoteTable.add(
+      { id: 'r1', value: 'remote' });
+
+    await waitFor(() => localEvents.length > 0, 50)
+      .catch(() => { /* expected timeout */ });
+
+    // The local-only subscriber must NOT have been called.
+    assert.deepEqual(localEvents, []);
+
+    remoteTable.dispose();
+    localTable.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: observe subscribers receive both local and remote events`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    const remoteTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const localTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const observed: Array<{ source: string; id: string; event: string }> = [];
+
+    localTable.observe(
+      event => {
+        if (event.eventType === 'add') {
+          observed.push(
+            { source: event.source,
+              event: 'add',
+              id: event.record.id });
+        }
+      });
+
+    // Local write — observed as 'local'.
+    await localTable.add(
+      { id: 'l1', value: 'local' });
+
+    // Remote write — observed as 'remote'.
+    await remoteTable.add(
+      { id: 'r1', value: 'remote' });
+
+    await waitFor(() => observed.length === 2);
+
+    assert.deepEqual(
+      observed,
+      [ { source: 'local', event: 'add', id: 'l1' },
+        { source: 'remote', event: 'add', id: 'r1' } ]);
+
+    remoteTable.dispose();
+    localTable.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: observe unsubscribe stops delivery`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    const table =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const events: string[] = [];
+
+    const unsubscribe =
+      table.observe(
+        event => {
+          if (event.eventType === 'add')
+            events.push(event.record.id);
+        });
+
+    await table.add(
+      { id: 'a', value: '1' });
+
+    await waitFor(() => events.length === 1);
+
+    assert.equal(unsubscribe(), true);
+    assert.equal(unsubscribe(), false);
+
+    await table.add(
+      { id: 'b', value: '2' });
+
+    await waitFor(() => events.length > 1, 50)
+      .catch(() => { /* expected timeout */ });
+
+    assert.deepEqual(events, [ 'a' ]);
+
+    table.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: remote messages are not re-broadcast`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    const published: TableBroadcastMessage[] = [];
+
+    // Wrap the service to capture publish calls.
+    const spied: TableBroadcastService =
+      { publish(msg) {
+          published.push(msg);
+          broadcast.publish(msg);
+        },
+        subscribe(handler) {
+          return broadcast.subscribe(handler);
+        } };
+
+    const remoteTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: spied });
+
+    const localTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: spied });
+
+    const observed: TableObservedEvent<TestRecordFields>[] = [];
+
+    localTable.observe(event => observed.push(event));
+
+    // Remote publishes one message.
+    await remoteTable.add(
+      { id: 'r1', value: 'x' });
+
+    await waitFor(() => observed.length === 1);
+
+    // Only one publish should have occurred (from remoteTable).
+    // localTable must NOT re-publish on receiving the remote message.
+    assert.equal(published.length, 1);
+    assert.equal(published[0]?.originId !== undefined, true);
+
+    remoteTable.dispose();
+    localTable.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: echo suppression — a table ignores its own broadcast messages`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    const table =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const observed: TableObservedEvent<TestRecordFields>[] = [];
+
+    table.observe(event => observed.push(event));
+
+    await table.add(
+      { id: 'a', value: '1' });
+
+    await waitFor(() => observed.length === 1);
+
+    // Exactly one observed event: the local one.  The table's own broadcast
+    // echo must not produce a second 'remote' event.
+    assert.equal(observed.length, 1);
+    assert.equal(observed[0]?.source, 'local');
+
+    table.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: no broadcast published when broadcastService is absent`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    // Table without a broadcast service.
+    const table =
+      new Table<TestRecordFields>(
+        'items',
+        db);
+
+    const events: string[] = [];
+
+    table.notify(
+      { add(record) {
+          events.push(record.id);
+        } });
+
+    await table.add(
+      { id: 'a', value: '1' });
+
+    await waitFor(() => events.length === 1);
+
+    assert.deepEqual(events, [ 'a' ]);
+    // No errors thrown; no broadcast machinery involved.
+  });
+
+test(
+  `${TEST_SUITE}: observe receives all four event types from a remote table`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const broadcast =
+      createTestBroadcastService();
+
+    const remoteTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const localTable =
+      new Table<TestRecordFields>(
+        'items',
+        db,
+        { broadcastService: broadcast });
+
+    const observed: string[] = [];
+
+    localTable.observe(
+      event => {
+        if (event.eventType === 'add')
+          observed.push(`add:${event.record.id}`);
+        else if (event.eventType === 'update')
+          observed.push(`update:${event.record.id}:${event.record.value}`);
+        else if (event.eventType === 'delete')
+          observed.push(`delete:${event.record.id}`);
+        else if (event.eventType === 'clear')
+          observed.push(`clear:${event.records.length}`);
+      });
+
+    await remoteTable.add(
+      { id: 'a', value: '10' });
+
+    await remoteTable.update(
+      { id: 'a', value: '20' });
+
+    await remoteTable.delete('a');
+
+    await remoteTable.add(
+      { id: 'b', value: '30' });
+
+    await remoteTable.clear();
+
+    await waitFor(() => observed.length === 5);
+
+    assert.deepEqual(
+      observed,
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'clear:1' ]);
+
+    remoteTable.dispose();
+    localTable.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: backward compatibility — existing local notify still works without broadcastService`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    // Plain Table without any new options.
+    const table =
+      new Table<TestRecordFields>(
+        'items',
+        db);
+
+    const events: string[] = [];
+
+    const unsubscribe =
+      table.notify(
+        { add(record) {
+            events.push(`add:${record.id}`);
+          },
+          update(record) {
+            events.push(`update:${record.id}:${record.value}`);
+          },
+          delete(record) {
+            events.push(`delete:${record.id}`);
+          },
+          clear(records) {
+            events.push(`clear:${records.length}`);
+          } });
+
+    await table.add(
+      { id: 'a', value: '10' });
+
+    await table.update(
+      { id: 'a', value: '20' });
+
+    await table.delete('a');
+
+    await table.add(
+      { id: 'b', value: '30' });
+
+    await table.clear();
+
+    await waitFor(() => events.length === 5);
+
+    assert.deepEqual(
+      events,
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'clear:1' ]);
+
+    assert.equal(unsubscribe(), true);
+    assert.equal(unsubscribe(), false);
   });
