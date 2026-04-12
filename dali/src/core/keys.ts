@@ -124,6 +124,23 @@ export function keyAssert(
   }
 }
 
+export function keyEqual(
+    a: IDBValidKey,
+    b: IDBValidKey
+  ): boolean
+{
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length
+           && a.every(
+                (v, i) => keyEqual(v, (b as IDBValidKey[])[i]!));
+  }
+
+  if (a instanceof Date && b instanceof Date)
+    return a.getTime() === b.getTime();
+
+  return a === b;
+}
+
 export function keyGet<R extends KeyRecord>(
     keyPath: KeyPath<R>,
     record: R
