@@ -2,6 +2,28 @@
   "name": "asljs-data-binding",
   "version": "0.2.2",
   "description": "Declarative data-bind-* bindings for DOM elements with value pipes and event middleware.",
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "data-binding",
+    "dom",
+    "observable",
+    "javascript",
+    "js"
+  ],
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "license": "MIT",
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,11 +33,6 @@
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist/**",
-    "README.md",
-    "LICENSE.md"
-  ],
   "scripts": {
     "clean": "node ../toolkit.js clean-dist",
     "build": "npx tsc -p tsconfig.build.json",
@@ -29,22 +46,6 @@
     "test": "npm run build:test && node --test dist/*.test.js",
     "test:watch": "npm run build:test && node --watch --test dist/*.test.js",
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
-  },
-  "keywords": [
-    "data-binding",
-    "dom",
-    "observable",
-    "javascript"
-  ],
-  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
-  "license": "MIT",
-  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
-  "bugs": {
-    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
   },
   "dependencies": {
     "asljs-observable": "^0.5.3"
