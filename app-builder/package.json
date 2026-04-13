@@ -1,0 +1,20 @@
+{
+  "name": "asljs-app-builder",
+  "version": "0.1.0",
+  "description": "Browser-based AI-assisted local-first app builder — GitHub Pages front page and demo for ASLJS.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "asljs-dali": "*",
+    "asljs-eventful": "*",
+    "asljs-observable": "*"
+  },
+  "devDependencies": {
+    "vite": "^6.4.2"
+  }
+}
