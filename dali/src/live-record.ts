@@ -1,4 +1,10 @@
 import {
+    EventfulBase,
+  } from 'asljs-eventful';
+import {
+    observable,
+  } from 'asljs-observable';
+import {
     type KeyPath,
     keyAssert,
     keyEqual,
@@ -9,11 +15,40 @@ import {
   } from './table.js';
 
 /**
+ * Payload emitted on `set:record` and `set` events.
+ * These events follow the ASLJS observable property-change convention and
+ * are consumed by `observable.watch()` to support deep-path watching
+ * (e.g. `r.watch('record.title', cb)`).
+ */
+export type LiveRecordSetPayload<T extends Record<string, any>> =
+  { property: 'record';
+    value: T | null;
+    previous: T | null; };
+
+/**
+ * Event map for `LiveRecord`.
+ *
+ * Domain events (via ASLJS eventful):
+ * - `changed` — the tracked record changed (including appearing from null).
+ * - `deleted` — the tracked record was deleted or the table was cleared.
+ *
+ * Observable property events (via ASLJS observable, used by `watch()`):
+ * - `set:record` / `set` — emitted whenever `record` is reassigned.
+ */
+export type LiveRecordEvents<T extends Record<string, any>> =
+  { 'changed': [ record: T, previous: T | null ];
+    'deleted': [ previous: T ];
+    'set:record': [ LiveRecordSetPayload<T> ];
+    'set': [ LiveRecordSetPayload<T> ]; };
+
+/**
  * A live single-record view for a specific primary key.
  *
- * - `current()` returns the matching record, or `null` if no record exists
- *   for that key.
- * - Subscribe to changes via `subscribe(listener)`.
+ * - `record` — the current matching record, or `null` when none exists.
+ * - Subscribe to domain events via `on('changed', cb)` / `on('deleted', cb)`
+ *   (ASLJS eventful).
+ * - Watch property paths via `watch('record.title', cb)`
+ *   (ASLJS observable — uses the real `observable.watch` implementation).
  * - Call `dispose()` to stop receiving updates and release resources.
  *
  * Obtain via `Table.record(key)` — this API is **live by default**.
@@ -25,11 +60,12 @@ import {
  *
  * Note: `record(key)` is limited to key-only semantics.
  */
-export class LiveRecord<T extends Record<string, any>> {
+export class LiveRecord<T extends Record<string, any>>
+  extends EventfulBase<LiveRecordEvents<T>>
+{
   readonly #key: IDBValidKey;
   readonly #keyPath: KeyPath<T>;
   #current: T | null = null;
-  readonly #subscribers: Array<(value: T | null) => void> = [];
   readonly #unsubscribe: () => boolean;
   #loadVersion = 0;
   #disposed = false;
@@ -42,6 +78,8 @@ export class LiveRecord<T extends Record<string, any>> {
         (receiver: TableEventsReceiver<T>) => (() => boolean)
     )
   {
+    super();
+
     keyAssert(keyPath, key);
 
     this.#key = key;
@@ -56,7 +94,7 @@ export class LiveRecord<T extends Record<string, any>> {
             return;
 
           this.#loadVersion++;
-          this.#setCurrent(record);
+          this.#setRecord(record);
         },
 
         update: record => {
@@ -64,7 +102,7 @@ export class LiveRecord<T extends Record<string, any>> {
             return;
 
           this.#loadVersion++;
-          this.#setCurrent(record);
+          this.#setRecord(record);
         },
 
         delete: record => {
@@ -72,12 +110,12 @@ export class LiveRecord<T extends Record<string, any>> {
             return;
 
           this.#loadVersion++;
-          this.#setCurrent(null);
+          this.#setRecord(null);
         },
 
         clear: () => {
           this.#loadVersion++;
-          this.#setCurrent(null);
+          this.#setRecord(null);
         },
       });
 
@@ -96,7 +134,7 @@ export class LiveRecord<T extends Record<string, any>> {
         if (this.#loadVersion !== capturedVersion)
           return;
 
-        this.#setCurrent(record);
+        this.#setRecord(record);
       })
       .catch(error => {
         console.error(
@@ -105,29 +143,41 @@ export class LiveRecord<T extends Record<string, any>> {
       });
   }
 
-  /** Returns the current record, or `null` if no record exists for the key. */
-  current(): T | null
+  /**
+   * The current record for the tracked key, or `null` when none exists.
+   *
+   * Changes to this property are signalled via `set:record` / `set` events,
+   * enabling `watch('record.someField', cb)` through ASLJS observable.
+   */
+  get record(): T | null
   {
     return this.#current;
   }
 
   /**
-   * Subscribe to changes.
-   * Returns an unsubscribe function — calling it removes the listener.
+   * Watch a property path on this live container using ASLJS observable.
+   *
+   * Example:
+   * ```ts
+   * const r = table.record(key);
+   * r.watch('record.title', title => console.log(title));
+   * ```
+   *
+   * The callback is invoked immediately with the current value and again
+   * whenever the path's value changes.  Returns an unwatch function.
+   *
+   * Watchers are anchored to the stable live container, so replacing the
+   * underlying record object does not break existing subscriptions.
    */
-  subscribe(
-      listener: (value: T | null) => void
-    ): () => void
+  watch(
+      property: string,
+      callback: (value: any) => void
+    ): () => boolean
   {
-    this.#subscribers.push(listener);
-
-    return () => {
-      const index =
-        this.#subscribers.indexOf(listener);
-
-      if (index >= 0)
-        this.#subscribers.splice(index, 1);
-    };
+    return observable.watch(
+      this as any,
+      property,
+      callback);
   }
 
   /**
@@ -138,7 +188,6 @@ export class LiveRecord<T extends Record<string, any>> {
   {
     this.#disposed = true;
     this.#unsubscribe();
-    this.#subscribers.length = 0;
   }
 
   #matchesKey(
@@ -151,7 +200,7 @@ export class LiveRecord<T extends Record<string, any>> {
     return keyEqual(recordKey, this.#key);
   }
 
-  #setCurrent(
+  #setRecord(
       value: T | null
     ): void
   {
@@ -163,16 +212,31 @@ export class LiveRecord<T extends Record<string, any>> {
     if (this.#current === value)
       return;
 
+    const previous =
+      this.#current;
+
     this.#current = value;
 
-    for (const listener of this.#subscribers) {
-      try {
-        listener(value);
-      } catch (error) {
-        console.error(
-          'LiveRecord: subscriber threw',
-          error);
-      }
+    // Emit ASLJS observable-style property-change events so that
+    // observable.watch() path subscriptions work correctly.
+    // `as any` is required because EventfulBase<LiveRecordEvents<T>> does not
+    // expose `set:*` in its typed event map; these events are consumed by the
+    // observable watch system internally and are not part of the public domain
+    // event surface.
+    const payload: LiveRecordSetPayload<T> =
+      { property: 'record',
+        value,
+        previous };
+
+    (this as any).emit('set:record', payload);
+    (this as any).emit('set', payload);
+
+    // Emit ASLJS eventful domain events.
+    if (value === null) {
+      if (previous !== null)
+        this.emit('deleted', previous);
+    } else {
+      this.emit('changed', value, previous);
     }
   }
 }

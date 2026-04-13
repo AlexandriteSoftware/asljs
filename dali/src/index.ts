@@ -57,6 +57,16 @@ export {
   } from './table.js';
 
 export {
+    type LiveRecordEvents,
+    type LiveRecordSetPayload,
+  } from './live-record.js';
+
+export {
+    type LiveRecordSetEvents,
+    type LiveRecordSetSetPayload,
+  } from './live-recordset.js';
+
+export {
     VersionConflictError as TableVersionConflictError,
   } from './version-conflict-error.js';
 

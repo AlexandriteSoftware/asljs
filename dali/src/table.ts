@@ -273,8 +273,12 @@ export class Table<
   /**
    * Returns a **live** single-record view for the given primary key.
    *
-   * - `current()` on the returned `LiveRecord` gives the matching record, or
+   * - `record` on the returned `LiveRecord` gives the matching record, or
    *   `null` when no record exists for that key.
+   * - Subscribe to changes via `on('changed', cb)` / `on('deleted', cb)`
+   *   (ASLJS eventful).
+   * - Watch property paths via `watch('record.someField', cb)`
+   *   (ASLJS observable).
    * - The view reacts to committed `add`, `update`, `delete`, and `clear`
    *   events on this table.
    * - Call `dispose()` on the returned view to stop tracking and release
@@ -299,8 +303,13 @@ export class Table<
   /**
    * Returns a **live** filtered set view over this table.
    *
-   * - `current()` on the returned `LiveRecordSet` gives a readonly array of
+   * - `records` on the returned `LiveRecordSet` gives a readonly array of
    *   all records currently matching `predicate`.
+   * - Subscribe to changes via `on('added', cb)`, `on('removed', cb)`,
+   *   `on('updated', cb)`, `on('cleared', cb)`, `on('changed', cb)`
+   *   (ASLJS eventful).
+   * - Watch property paths via `watch('records.length', cb)`
+   *   (ASLJS observable).
    * - Membership is re-evaluated on every committed `add`, `update`,
    *   `delete`, and `clear` event.
    * - Call `dispose()` on the returned view to stop tracking and release

@@ -1,4 +1,10 @@
 import {
+    EventfulBase,
+  } from 'asljs-eventful';
+import {
+    observable,
+  } from 'asljs-observable';
+import {
     type KeyPath,
     keyGet,
   } from './keys.js';
@@ -13,10 +19,47 @@ type PendingEvent<T> =
   | { type: 'clear' };
 
 /**
+ * Payload emitted on `set:records` and `set` events.
+ * These events follow the ASLJS observable property-change convention and
+ * are consumed by `observable.watch()` to support path watching
+ * (e.g. `rs.watch('records.length', cb)`).
+ */
+export type LiveRecordSetSetPayload<T extends Record<string, any>> =
+  { property: 'records';
+    value: readonly T[];
+    previous: readonly T[]; };
+
+/**
+ * Event map for `LiveRecordSet`.
+ *
+ * Domain events (via ASLJS eventful):
+ * - `added`   — a record entered the set.
+ * - `removed` — a record left the set.
+ * - `updated` — a record already in the set was replaced with a new version.
+ * - `cleared` — the set was emptied due to a table clear.
+ * - `changed` — catch-all emitted after any mutation of `records`.
+ *
+ * Observable property events (via ASLJS observable, used by `watch()`):
+ * - `set:records` / `set` — emitted whenever `records` changes.
+ */
+export type LiveRecordSetEvents<T extends Record<string, any>> =
+  { 'added': [ record: T ];
+    'removed': [ record: T ];
+    'updated': [ record: T, previous: T ];
+    'cleared': [];
+    'changed': [ records: readonly T[] ];
+    'set:records': [ LiveRecordSetSetPayload<T> ];
+    'set': [ LiveRecordSetSetPayload<T> ]; };
+
+/**
  * A live filtered set view for one table, driven by a client-side predicate.
  *
- * - `current()` returns the current array of matching records as a snapshot.
- * - Subscribe to changes via `subscribe(listener)`.
+ * - `records` — the current array of matching records.
+ * - Subscribe to domain events via `on('added', cb)`, `on('removed', cb)`,
+ *   `on('updated', cb)`, `on('cleared', cb)`, `on('changed', cb)`
+ *   (ASLJS eventful).
+ * - Watch property paths via `watch('records.length', cb)`
+ *   (ASLJS observable — uses the real `observable.watch` implementation).
  * - Call `dispose()` to stop receiving updates and release resources.
  *
  * Obtain via `Table.recordset(predicate)` — this API is **live by default**.
@@ -36,11 +79,13 @@ type PendingEvent<T> =
  * Note: `recordset(predicate)` is limited to predicate-only semantics.
  * Joins, ordering, and DB-level query composition are out of scope.
  */
-export class LiveRecordSet<T extends Record<string, any>> {
+export class LiveRecordSet<T extends Record<string, any>>
+  extends EventfulBase<LiveRecordSetEvents<T>>
+{
   readonly #keyPath: KeyPath<T>;
   readonly #predicate: (record: T) => boolean;
   #current: Map<string, T> = new Map();
-  readonly #subscribers: Array<(value: readonly T[]) => void> = [];
+  #lastSnapshot: readonly T[] = [];
   readonly #unsubscribe: () => boolean;
   #pendingEvents: Array<PendingEvent<T>> = [];
   #loaded = false;
@@ -55,6 +100,8 @@ export class LiveRecordSet<T extends Record<string, any>> {
         (receiver: TableEventsReceiver<T>) => (() => boolean)
     )
   {
+    super();
+
     this.#keyPath = keyPath;
     this.#predicate = predicate;
 
@@ -71,8 +118,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#applyEvent({ type: 'add', record }))
-            this.#notifySubscribers();
+          this.#applyAndNotify({ type: 'add', record });
         },
 
         update: (record, _previousRecord) => {
@@ -83,8 +129,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#applyEvent({ type: 'update', record }))
-            this.#notifySubscribers();
+          this.#applyAndNotify({ type: 'update', record });
         },
 
         delete: record => {
@@ -95,8 +140,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#applyEvent({ type: 'delete', record }))
-            this.#notifySubscribers();
+          this.#applyAndNotify({ type: 'delete', record });
         },
 
         clear: () => {
@@ -106,8 +150,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
             return;
           }
 
-          if (this.#applyEvent({ type: 'clear' }))
-            this.#notifySubscribers();
+          this.#applyAndNotify({ type: 'clear' });
         },
       });
 
@@ -124,6 +167,9 @@ export class LiveRecordSet<T extends Record<string, any>> {
                 record ]));
 
         // Replay events that arrived while the scan was in flight.
+        // We do not emit individual domain events for replayed events —
+        // a single `changed` is emitted via #emitRecordsChanged() after all
+        // replays settle.
         for (const event of this.#pendingEvents) {
           this.#applyEvent(event);
         }
@@ -131,7 +177,7 @@ export class LiveRecordSet<T extends Record<string, any>> {
         this.#pendingEvents = [];
         this.#loaded = true;
 
-        this.#notifySubscribers();
+        this.#emitRecordsChanged();
       })
       .catch(error => {
         console.error(
@@ -141,31 +187,37 @@ export class LiveRecordSet<T extends Record<string, any>> {
   }
 
   /**
-   * Returns a snapshot of the current matching records.
-   * The returned array is a copy; mutations do not affect the live set.
+   * The current set of matching records as a readonly array snapshot.
+   *
+   * Changes to this property are signalled via `set:records` / `set` events,
+   * enabling `watch('records.length', cb)` through ASLJS observable.
    */
-  current(): readonly T[]
+  get records(): readonly T[]
   {
     return [ ...this.#current.values() ];
   }
 
   /**
-   * Subscribe to changes.
-   * Returns an unsubscribe function — calling it removes the listener.
+   * Watch a property path on this live container using ASLJS observable.
+   *
+   * Example:
+   * ```ts
+   * const rs = table.recordset(r => r.active);
+   * rs.watch('records.length', count => console.log(count));
+   * ```
+   *
+   * The callback is invoked immediately with the current value and again
+   * whenever the path's value changes.  Returns an unwatch function.
    */
-  subscribe(
-      listener: (value: readonly T[]) => void
-    ): () => void
+  watch(
+      property: string,
+      callback: (value: any) => void
+    ): () => boolean
   {
-    this.#subscribers.push(listener);
-
-    return () => {
-      const index =
-        this.#subscribers.indexOf(listener);
-
-      if (index >= 0)
-        this.#subscribers.splice(index, 1);
-    };
+    return observable.watch(
+      this as any,
+      property,
+      callback);
   }
 
   /**
@@ -176,7 +228,6 @@ export class LiveRecordSet<T extends Record<string, any>> {
   {
     this.#disposed = true;
     this.#unsubscribe();
-    this.#subscribers.length = 0;
   }
 
   #keyString(
@@ -187,10 +238,28 @@ export class LiveRecordSet<T extends Record<string, any>> {
       keyGet(this.#keyPath, record));
   }
 
-  /** Applies a single pending event to `#current`. Returns `true` if the set changed. */
+  /**
+   * Applies a single event, then emits the appropriate domain events and
+   * the `set:records` / `changed` notifications if the set changed.
+   */
+  #applyAndNotify(
+      event: PendingEvent<T>
+    ): void
+  {
+    const result =
+      this.#applyEvent(event);
+
+    if (!result.changed)
+      return;
+
+    this.#emitDomainEvent(result);
+    this.#emitRecordsChanged();
+  }
+
+  /** Applies a single pending event to `#current`. Returns change metadata. */
   #applyEvent(
       event: PendingEvent<T>
-    ): boolean
+    ): ApplyResult<T>
   {
     if (event.type === 'add')
       return this.#handleAdd(event.record);
@@ -206,21 +275,23 @@ export class LiveRecordSet<T extends Record<string, any>> {
 
   #handleAdd(
       record: T
-    ): boolean
+    ): ApplyResult<T>
   {
     if (!this.#predicate(record))
-      return false;
+      return { changed: false };
 
     const key =
       this.#keyString(record);
 
     this.#current.set(key, record);
-    return true;
+    return { changed: true,
+             domainEvent: 'added',
+             record };
   }
 
   #handleUpdate(
       record: T
-    ): boolean
+    ): ApplyResult<T>
   {
     // Membership of the previous version is determined by checking whether
     // the key is already present in #current, rather than using the
@@ -228,59 +299,117 @@ export class LiveRecordSet<T extends Record<string, any>> {
     const key =
       this.#keyString(record);
 
+    const previous =
+      this.#current.get(key);
+
     const wasPresent =
-      this.#current.has(key);
+      previous !== undefined;
 
     const matches =
       this.#predicate(record);
 
     if (!wasPresent && !matches)
-      return false;
+      return { changed: false };
 
-    if (matches)
+    if (matches) {
       this.#current.set(key, record);
-    else
-      this.#current.delete(key);
 
-    return true;
+      return wasPresent
+        ? { changed: true,
+            domainEvent: 'updated',
+            record,
+            previous }
+        : { changed: true,
+            domainEvent: 'added',
+            record };
+    }
+
+    this.#current.delete(key);
+    return { changed: true,
+             domainEvent: 'removed',
+             record: previous! };
   }
 
   #handleDelete(
       record: T
-    ): boolean
+    ): ApplyResult<T>
   {
     const key =
       this.#keyString(record);
 
-    if (!this.#current.has(key))
-      return false;
+    const existing =
+      this.#current.get(key);
+
+    if (existing === undefined)
+      return { changed: false };
 
     this.#current.delete(key);
-    return true;
+    return { changed: true,
+             domainEvent: 'removed',
+             record: existing };
   }
 
-  #handleClear(): boolean
+  #handleClear(): ApplyResult<T>
   {
     if (this.#current.size === 0)
-      return false;
+      return { changed: false };
 
     this.#current.clear();
-    return true;
+    return { changed: true,
+             domainEvent: 'cleared' };
   }
 
-  #notifySubscribers(): void
+  #emitDomainEvent(
+      result: ApplyResult<T> & { changed: true }
+    ): void
   {
-    const snapshot =
-      this.current();
+    if (result.domainEvent === 'added')
+      this.emit('added', result.record);
+    else if (result.domainEvent === 'removed')
+      this.emit('removed', result.record);
+    else if (result.domainEvent === 'updated')
+      this.emit('updated', result.record, result.previous);
+    else
+      this.emit('cleared');
+  }
 
-    for (const listener of this.#subscribers) {
-      try {
-        listener(snapshot);
-      } catch (error) {
-        console.error(
-          'LiveRecordSet: subscriber threw',
-          error);
-      }
-    }
+  #emitRecordsChanged(): void
+  {
+    const previous =
+      this.#lastSnapshot;
+
+    const snapshot =
+      this.records;
+
+    this.#lastSnapshot =
+      snapshot;
+
+    // Emit ASLJS observable-style property-change event so that
+    // observable.watch() path subscriptions work correctly.
+    // `as any` is required because EventfulBase<LiveRecordSetEvents<T>> does
+    // not expose `set:*` in its typed event map; these events are consumed by
+    // the observable watch system internally and are not part of the public
+    // domain event surface.
+    const payload: LiveRecordSetSetPayload<T> =
+      { property: 'records',
+        value: snapshot,
+        previous };
+
+    (this as any).emit('set:records', payload);
+    (this as any).emit('set', payload);
+
+    // Emit the catch-all domain event.
+    this.emit('changed', snapshot);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+type ApplyResult<T> =
+  | { changed: false }
+  | { changed: true; domainEvent: 'added';   record: T }
+  | { changed: true; domainEvent: 'removed'; record: T }
+  | { changed: true; domainEvent: 'updated'; record: T; previous: T }
+  | { changed: true; domainEvent: 'cleared' };

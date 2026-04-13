@@ -60,10 +60,10 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
     assert.deepEqual(
-      live.current(),
+      live.record,
       { id: 'a', value: '10' });
 
     live.dispose();
@@ -81,16 +81,16 @@ test(
     const live =
       table.record('missing');
 
-    // Give the initial load time to settle; current() should remain null.
+    // Give the initial load time to settle; record should remain null.
     await new Promise(resolve => setTimeout(resolve, 20));
 
-    assert.equal(live.current(), null);
+    assert.equal(live.record, null);
 
     live.dispose();
   });
 
 test(
-  `${TEST_SUITE}: updating tracked key updates current value`,
+  `${TEST_SUITE}: updating tracked key updates record property`,
   async () => {
     const db =
       await openTestDb();
@@ -103,21 +103,21 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
     await table.update({ id: 'a', value: '20' });
 
-    await waitFor(() => live.current()?.value === '20');
+    await waitFor(() => live.record?.value === '20');
 
     assert.deepEqual(
-      live.current(),
+      live.record,
       { id: 'a', value: '20' });
 
     live.dispose();
   });
 
 test(
-  `${TEST_SUITE}: deleting tracked key sets value to null`,
+  `${TEST_SUITE}: deleting tracked key sets record to null`,
   async () => {
     const db =
       await openTestDb();
@@ -130,13 +130,13 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
     await table.delete('a');
 
-    await waitFor(() => live.current() === null);
+    await waitFor(() => live.record === null);
 
-    assert.equal(live.current(), null);
+    assert.equal(live.record, null);
 
     live.dispose();
   });
@@ -156,7 +156,7 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
     // Update an unrelated key
     await table.update({ id: 'b', value: '99' });
@@ -165,7 +165,7 @@ test(
     await new Promise(resolve => setTimeout(resolve, 20));
 
     assert.deepEqual(
-      live.current(),
+      live.record,
       { id: 'a', value: '10' });
 
     live.dispose();
@@ -185,19 +185,19 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
     await table.clear();
 
-    await waitFor(() => live.current() === null);
+    await waitFor(() => live.record === null);
 
-    assert.equal(live.current(), null);
+    assert.equal(live.record, null);
 
     live.dispose();
   });
 
 test(
-  `${TEST_SUITE}: subscribe listener is called on changes`,
+  `${TEST_SUITE}: "changed" event fires when record changes`,
   async () => {
     const db =
       await openTestDb();
@@ -208,34 +208,35 @@ test(
     const live =
       table.record('a');
 
-    const received: Array<TestRecord | null> = [];
+    const changedArgs: Array<[ TestRecord, TestRecord | null ]> = [];
 
-    const unsubscribe =
-      live.subscribe(value => {
-        received.push(value);
-      });
+    live.on('changed', (record, previous) => {
+      changedArgs.push([ record, previous ]);
+    });
 
+    // Adding triggers 'changed' (null → record)
     await table.add({ id: 'a', value: '10' });
 
-    await waitFor(() => received.length >= 1);
+    await waitFor(() => changedArgs.length >= 1);
 
-    assert.equal(received.length, 1);
-    assert.deepEqual(received[0], { id: 'a', value: '10' });
+    assert.equal(changedArgs.length, 1);
+    assert.deepEqual(changedArgs[0]![0], { id: 'a', value: '10' });
+    assert.equal(changedArgs[0]![1], null);
 
-    unsubscribe();
-
-    // Changes after unsubscribe must not reach the listener
+    // Updating triggers 'changed' (record → different record)
     await table.update({ id: 'a', value: '20' });
 
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await waitFor(() => changedArgs.length >= 2);
 
-    assert.equal(received.length, 1);
+    assert.equal(changedArgs.length, 2);
+    assert.deepEqual(changedArgs[1]![0], { id: 'a', value: '20' });
+    assert.deepEqual(changedArgs[1]![1], { id: 'a', value: '10' });
 
     live.dispose();
   });
 
 test(
-  `${TEST_SUITE}: disposing stops notifications`,
+  `${TEST_SUITE}: "deleted" event fires when tracked record is deleted`,
   async () => {
     const db =
       await openTestDb();
@@ -248,12 +249,152 @@ test(
     const live =
       table.record('a');
 
-    await waitFor(() => live.current() !== null);
+    await waitFor(() => live.record !== null);
 
-    const received: Array<TestRecord | null> = [];
+    const deletedPrevious: TestRecord[] = [];
 
-    live.subscribe(value => {
-      received.push(value);
+    live.on('deleted', previous => {
+      deletedPrevious.push(previous);
+    });
+
+    await table.delete('a');
+
+    await waitFor(() => deletedPrevious.length >= 1);
+
+    assert.equal(deletedPrevious.length, 1);
+    assert.deepEqual(deletedPrevious[0], { id: 'a', value: '10' });
+    assert.equal(live.record, null);
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: "deleted" event fires on clear`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    await table.add({ id: 'a', value: '10' });
+
+    const live =
+      table.record('a');
+
+    await waitFor(() => live.record !== null);
+
+    const deletedPrevious: TestRecord[] = [];
+
+    live.on('deleted', previous => {
+      deletedPrevious.push(previous);
+    });
+
+    await table.clear();
+
+    await waitFor(() => deletedPrevious.length >= 1);
+
+    assert.equal(deletedPrevious.length, 1);
+    assert.deepEqual(deletedPrevious[0], { id: 'a', value: '10' });
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: watch on "record" path fires when record changes`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    await table.add({ id: 'a', value: '10' });
+
+    const live =
+      table.record('a');
+
+    // record.value starts undefined; collect values after watcher is set
+    const seen: Array<string | undefined> = [];
+
+    // watch is called immediately with current value, then on each change
+    live.watch('record.value', v => {
+      seen.push(v as string | undefined);
+    });
+
+    // Initial call (record is null at watch-time; value is undefined)
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0], undefined);
+
+    // Wait for load to settle
+    await waitFor(() => live.record !== null);
+
+    // Should have fired again with '10'
+    await waitFor(() => seen.length >= 2);
+    assert.equal(seen[seen.length - 1], '10');
+
+    await table.update({ id: 'a', value: '20' });
+
+    await waitFor(() => seen[seen.length - 1] === '20');
+    assert.equal(seen[seen.length - 1], '20');
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: watch on "record" path fires when whole record changes`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    await table.add({ id: 'a', value: '10' });
+
+    const live =
+      table.record('a');
+
+    await waitFor(() => live.record !== null);
+
+    const seen: Array<TestRecord | null> = [];
+
+    live.watch('record', r => {
+      seen.push(r as TestRecord | null);
+    });
+
+    // Immediately called with current value
+    assert.equal(seen.length, 1);
+    assert.deepEqual(seen[0], { id: 'a', value: '10' });
+
+    await table.update({ id: 'a', value: '20' });
+
+    await waitFor(() => (seen[seen.length - 1] as TestRecord | null)?.value === '20');
+    assert.deepEqual(seen[seen.length - 1], { id: 'a', value: '20' });
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: disposing stops further "changed" events`,
+  async () => {
+    const db =
+      await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    await table.add({ id: 'a', value: '10' });
+
+    const live =
+      table.record('a');
+
+    await waitFor(() => live.record !== null);
+
+    const fired: TestRecord[] = [];
+
+    live.on('changed', record => {
+      fired.push(record);
     });
 
     live.dispose();
@@ -262,7 +403,7 @@ test(
 
     await new Promise(resolve => setTimeout(resolve, 20));
 
-    assert.equal(received.length, 0);
+    assert.equal(fired.length, 0);
   });
 
 test(
