@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASLJS App Builder</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Sidebar: app list + settings -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <a href="../" class="logo-link" title="Back to home">
+        <strong>ASLJS</strong> <span class="logo-sub">App Builder</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">My Apps</div>
+      <div id="app-list" class="app-list">
+        <!-- populated by JS -->
+      </div>
+      <button id="btn-new-app" class="btn btn-primary btn-full">+ New App</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <button id="btn-settings" class="btn btn-ghost btn-full">⚙ Settings</button>
+    </div>
+  </aside>
+
+  <!-- Main workspace -->
+  <main id="workspace">
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state">
+      <div class="empty-icon">🛠️</div>
+      <h2>No app selected</h2>
+      <p>Create a new app or open an existing one from the sidebar.</p>
+      <button id="btn-new-app-2" class="btn btn-primary">+ New App</button>
+    </div>
+
+    <!-- Active app workspace -->
+    <div id="app-workspace" class="app-workspace hidden">
+      <!-- Top bar -->
+      <div id="top-bar" class="top-bar">
+        <div class="top-bar-left">
+          <span id="app-name-display" class="app-name"></span>
+          <button id="btn-rename" class="btn btn-ghost btn-sm" title="Rename">✎</button>
+          <button id="btn-export" class="btn btn-ghost btn-sm" title="Export JSON">↓ Export</button>
+          <button id="btn-delete-app" class="btn btn-danger btn-sm" title="Delete app">✕</button>
+        </div>
+        <div class="top-bar-right">
+          <button id="btn-run" class="btn btn-success btn-sm">▶ Run</button>
+        </div>
+      </div>
+
+      <!-- Panels -->
+      <div id="panels" class="panels">
+        <!-- Chat / Generate panel -->
+        <section id="panel-chat" class="panel">
+          <div class="panel-header">
+            <span>Generate</span>
+          </div>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-area">
+            <textarea
+              id="chat-input"
+              class="chat-input"
+              placeholder="Describe the app you want to build…"
+              rows="3"
+            ></textarea>
+            <button id="btn-generate" class="btn btn-primary">Generate</button>
+          </div>
+        </section>
+
+        <!-- File editor panel -->
+        <section id="panel-editor" class="panel">
+          <div class="panel-header">
+            <span>Files</span>
+          </div>
+          <div class="editor-layout">
+            <div id="file-tabs" class="file-tabs"></div>
+            <textarea
+              id="file-content"
+              class="file-editor"
+              spellcheck="false"
+              placeholder="Select a file to edit…"
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- Preview panel -->
+        <section id="panel-preview" class="panel">
+          <div class="panel-header">
+            <span>Preview</span>
+            <button id="btn-refresh-preview" class="btn btn-ghost btn-sm">↺</button>
+          </div>
+          <iframe
+            id="preview-frame"
+            class="preview-frame"
+            sandbox="allow-scripts"
+            title="App preview"
+          ></iframe>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Settings</h3>
+        <button id="btn-close-settings" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="api-key-input">OpenAI API Key</label>
+        <input
+          id="api-key-input"
+          type="password"
+          class="form-input"
+          placeholder="sk-…  (optional, stored locally)"
+        />
+        <p class="form-hint">
+          Your key is stored only in this browser (localStorage). It is sent
+          directly to OpenAI — no server proxy is involved. Leave blank to skip
+          AI generation.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn btn-primary">Save</button>
+        <button id="btn-cancel-settings" class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New app / rename dialog -->
+  <div id="name-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="name-modal-title">New App</h3>
+        <button id="btn-close-name-modal" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="app-name-input">App name</label>
+        <input id="app-name-input" type="text" class="form-input" placeholder="My App" />
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirm-name" class="btn btn-primary">OK</button>
+        <button id="btn-cancel-name" class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import file input (hidden) -->
+  <input id="import-file" type="file" accept=".json" style="display:none" />
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
