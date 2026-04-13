@@ -98,7 +98,7 @@ export function bindDataModel(
 
       warned.add(key);
 
-      if (error == null) {
+      if (error === null) {
         console.warn(message);
       } else {
         console.warn(
