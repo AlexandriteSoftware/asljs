@@ -6,7 +6,7 @@ export default defineConfig({
   base: '/asljs/',
   publicDir: '../public',
   build: {
-    outDir: '../../docs',
+    outDir: '../../pages',
     emptyOutDir: true,
     rollupOptions: {
       input: {
