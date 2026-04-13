@@ -85,6 +85,7 @@ export class LiveRecordSet<T extends Record<string, any>>
   readonly #keyPath: KeyPath<T>;
   readonly #predicate: (record: T) => boolean;
   #current: Map<string, T> = new Map();
+  #lastSnapshot: readonly T[] = [];
   readonly #unsubscribe: () => boolean;
   #pendingEvents: Array<PendingEvent<T>> = [];
   #loaded = false;
@@ -167,7 +168,8 @@ export class LiveRecordSet<T extends Record<string, any>>
 
         // Replay events that arrived while the scan was in flight.
         // We do not emit individual domain events for replayed events —
-        // a single `changed` is emitted below after all replays settle.
+        // a single `changed` is emitted via #emitRecordsChanged() after all
+        // replays settle.
         for (const event of this.#pendingEvents) {
           this.#applyEvent(event);
         }
@@ -373,15 +375,25 @@ export class LiveRecordSet<T extends Record<string, any>>
 
   #emitRecordsChanged(): void
   {
+    const previous =
+      this.#lastSnapshot;
+
     const snapshot =
       this.records;
 
+    this.#lastSnapshot =
+      snapshot;
+
     // Emit ASLJS observable-style property-change event so that
     // observable.watch() path subscriptions work correctly.
+    // `as any` is required because EventfulBase<LiveRecordSetEvents<T>> does
+    // not expose `set:*` in its typed event map; these events are consumed by
+    // the observable watch system internally and are not part of the public
+    // domain event surface.
     const payload: LiveRecordSetSetPayload<T> =
       { property: 'records',
         value: snapshot,
-        previous: snapshot };
+        previous };
 
     (this as any).emit('set:records', payload);
     (this as any).emit('set', payload);

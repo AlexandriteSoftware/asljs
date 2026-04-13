@@ -219,6 +219,10 @@ export class LiveRecord<T extends Record<string, any>>
 
     // Emit ASLJS observable-style property-change events so that
     // observable.watch() path subscriptions work correctly.
+    // `as any` is required because EventfulBase<LiveRecordEvents<T>> does not
+    // expose `set:*` in its typed event map; these events are consumed by the
+    // observable watch system internally and are not part of the public domain
+    // event surface.
     const payload: LiveRecordSetPayload<T> =
       { property: 'record',
         value,
