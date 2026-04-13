@@ -129,7 +129,9 @@ notes.dispose();
 ### Live views with `record()` and `recordset()`
 
 `Table` provides **live-first** APIs that return reactive containers tracking
-committed table changes automatically.
+committed table changes automatically.  Both containers are built on
+**ASLJS eventful** (for domain events) and **ASLJS observable** (for
+property-path watching).
 
 #### `Table.record(key)` → `LiveRecord<T>`
 
@@ -138,16 +140,22 @@ Returns a live single-record view for a specific primary key.
 ```ts
 const live = notes.record('1');
 
-// Read the current value (null if the record does not exist).
-console.log(live.current()); // { id: '1', title: 'Hello' } | null
+// Stable property — null until the initial load settles.
+console.log(live.record); // { id: '1', title: 'Hello' } | null
 
-// Subscribe to changes.
-const unsub = live.subscribe(value => {
-  console.log('record changed', value);
+// Domain events via ASLJS eventful.
+live.on('changed', (record, previous) => {
+  console.log('record changed to', record, 'was', previous);
 });
 
-// Stop the subscription.
-unsub();
+live.on('deleted', previous => {
+  console.log('record deleted, was', previous);
+});
+
+// Property-path watching via ASLJS observable.
+live.watch('record.title', title => {
+  console.log('title is now', title);
+});
 
 // Release the live view when no longer needed.
 live.dispose();
@@ -155,15 +163,17 @@ live.dispose();
 
 Behaviour:
 
-- The view starts tracking as soon as it is created.
-- `current()` returns `null` until the initial database read settles.
-- On `add` / `update` for that key — `current()` reflects the new record.
-- On `delete` or `clear` — `current()` becomes `null`.
+- `record` is `null` until the initial database read settles.
+- On `add` / `update` for the tracked key — `record` is updated and `changed`
+  fires.
+- On `delete` or `clear` — `record` becomes `null` and `deleted` fires.
 - Unrelated changes on the same table do not affect this view.
+- `watch(path, cb)` is called immediately with the current value and again
+  whenever the path changes.  Watchers are anchored to the stable container.
 
 > **Snapshot read**: use `table.getOne(key)` instead.
 >
-> **Limitation**: `record(key)` is currently limited to key-only semantics.
+> **Limitation**: `record(key)` is limited to key-only semantics.
 
 #### `Table.recordset(predicate)` → `LiveRecordSet<T>`
 
@@ -172,32 +182,39 @@ Returns a live filtered set view for records matching a client-side predicate.
 ```ts
 const live = notes.recordset(note => note.title.startsWith('A'));
 
-// Read the current matching records.
-console.log(live.current()); // readonly Note[]
+// Stable property — a readonly array snapshot.
+console.log(live.records); // readonly Note[]
 
-// Subscribe to changes.
-const unsub = live.subscribe(records => {
-  console.log('set changed', records.length);
+// Domain events via ASLJS eventful.
+live.on('added',   record          => console.log('added',   record));
+live.on('removed', record          => console.log('removed', record));
+live.on('updated', (record, prev)  => console.log('updated', record, prev));
+live.on('cleared', ()              => console.log('cleared'));
+live.on('changed', records         => console.log('set now has', records.length));
+
+// Property-path watching via ASLJS observable.
+live.watch('records', records => {
+  console.log('count:', (records as readonly Note[]).length);
 });
 
-unsub();
 live.dispose();
 ```
 
 Behaviour:
 
 - On initial creation the table is scanned and all matching records are loaded.
-- On `add` — the record is included if the predicate returns `true`.
-- On `update` — membership is re-evaluated; the record is added, updated, or
-  removed from the set accordingly.
-- On `delete` — the record is removed from the set if it was present.
-- On `clear` — the set is emptied.
+- On `add` — the record is included if the predicate returns `true`; `added`
+  fires.
+- On `update` — membership is re-evaluated; `added`, `updated`, or `removed`
+  fires accordingly.
+- On `delete` — the record is removed if it was present; `removed` fires.
+- On `clear` — the set is emptied and `cleared` fires.
+- `changed` fires after every mutation.
 
 > **Snapshot read**: use `table.scan(predicate)` instead.
 >
-> **Limitation**: `recordset(predicate)` is currently limited to client-side
-> predicate semantics. Joins, ordering, and DB-level query composition are not
-> supported.
+> **Limitation**: `recordset(predicate)` is limited to client-side predicate
+> semantics. Joins, ordering, and DB-level query composition are not supported.
 
 ## API Reference
 
@@ -211,7 +228,15 @@ Core:
 Live views:
 
 - `LiveRecord<T>` — live single-record container returned by `Table.record(key)`
+  - Events (ASLJS eventful): `changed`, `deleted`
+  - Watch (ASLJS observable): `record.someField`
 - `LiveRecordSet<T>` — live filtered set container returned by `Table.recordset(predicate)`
+  - Events (ASLJS eventful): `added`, `removed`, `updated`, `cleared`, `changed`
+  - Watch (ASLJS observable): `records`, `records.length`
+- `LiveRecordEvents<T>` — event map type for `LiveRecord`
+- `LiveRecordSetPayload<T>` — `set:record` / `set` event payload for `LiveRecord`
+- `LiveRecordSetEvents<T>` — event map type for `LiveRecordSet`
+- `LiveRecordSetSetPayload<T>` — `set:records` / `set` event payload for `LiveRecordSet`
 
 Versioning:
 

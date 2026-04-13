@@ -47,7 +47,8 @@
     "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
   },
   "dependencies": {
-    "asljs-eventful": "^0.4.8"
+    "asljs-eventful": "^0.4.8",
+    "asljs-observable": "^0.5.3"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.4"
