@@ -479,6 +479,387 @@ test(
     assert.equal(clickEvent.defaultPrevented, true);
   });
 
+test(
+  `${TEST_SUITE}: data-bind-context switches model context for text binding`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { user: { name: 'Alice' } });
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Alice');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context switches model context for attribute binding`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="link">
+              <a data-bind-href="url" data-bind-text="label"></a>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { link: { url: 'https://example.com', label: 'Example' } });
+
+    const anchor =
+      root.querySelector('a') as HTMLAnchorElement;
+
+    assert.equal(anchor.getAttribute('href'), 'https://example.com');
+    assert.equal(anchor.textContent, 'Example');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context switches model context for prop and class bindings`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="item">
+              <button data-bind-class-active="selected" data-bind-prop-disabled="locked"></button>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { item: { selected: true, locked: false } });
+
+    const button =
+      root.querySelector('button') as HTMLButtonElement;
+
+    assert.equal(button.classList.contains('active'), true);
+    assert.equal((button as HTMLButtonElement & Record<string, unknown>)['disabled'], false);
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context switches model context for event binding`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="item">
+              <button data-bind-onclick="save"></button>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const calls: string[] = [];
+
+    bindDataModel(
+      root,
+      { item: { save: () => calls.push('saved') } });
+
+    const button =
+      root.querySelector('button') as HTMLButtonElement;
+
+    button.dispatchEvent(new dom.window.Event('click'));
+
+    assert.deepEqual(calls, [ 'saved' ]);
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context supports nested contexts`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="item">
+              <div data-bind-context="author">
+                <span data-bind-text="name"></span>
+              </div>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { item: { author: { name: 'Bob' } } });
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Bob');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context rebinds descendants when context object changes`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { user: { name: 'Alice' } });
+
+    bindDataModel(
+      root,
+      model as unknown as Record<string, unknown>);
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Alice');
+
+    model.user =
+      { name: 'Carol' };
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Carol');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context rebinds correctly when nested context value changes`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { user: { name: 'Alice' } });
+
+    bindDataModel(
+      root,
+      model as unknown as Record<string, unknown>);
+
+    model.user.name = 'Bob';
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Bob');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context handles null context without throwing`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="item">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    assert.doesNotThrow(
+      () =>
+        bindDataModel(
+          root,
+          { item: null as unknown as Record<string, unknown> }));
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      '');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context handles undefined context without throwing`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="item">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    assert.doesNotThrow(
+      () =>
+        bindDataModel(
+          root,
+          { item: undefined as unknown as Record<string, unknown> }));
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      '');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context cleans up old watchers on context replacement`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { user: { name: 'Alice' } });
+
+    bindDataModel(
+      root,
+      model as unknown as Record<string, unknown>);
+
+    const oldUser =
+      model.user;
+
+    model.user =
+      { name: 'Carol' };
+
+    // mutating the old user object should no longer update the span
+    oldUser.name = 'Stale';
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Carol');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context disposer cleans up subtree bindings`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { user: { name: 'Alice' } });
+
+    const dispose =
+      bindDataModel(
+        root,
+        model as unknown as Record<string, unknown>);
+
+    dispose();
+
+    model.user =
+      { name: 'Carol' };
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Alice');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context null context becomes active when path becomes object`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { user: null as unknown });
+
+    bindDataModel(
+      root,
+      model as unknown as Record<string, unknown>);
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      '');
+
+    model.user =
+      { name: 'Dave' };
+
+    assert.equal(
+      root.querySelector('span')?.textContent,
+      'Dave');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context does not affect bindings outside the subtree`,
+  () => {
+    const dom =
+      new JSDOM(`
+          <div id="root">
+            <span data-bind-text="title"></span>
+            <div data-bind-context="user">
+              <span data-bind-text="name"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { title: 'Hello', user: { name: 'Alice' } });
+
+    const spans =
+      root.querySelectorAll('span');
+
+    assert.equal(spans[0].textContent, 'Hello');
+    assert.equal(spans[1].textContent, 'Alice');
+  });
+
 type ReactiveModel =
   Record<string, unknown> &
   { on: (

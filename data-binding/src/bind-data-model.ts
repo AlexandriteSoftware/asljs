@@ -1,4 +1,7 @@
 import {
+    observable
+  } from 'asljs-observable';
+import {
     bindEventModel
   } from './bind-event-model.js';
 import {
@@ -9,16 +12,23 @@ import {
     parseValueBindingExpression
   } from './parse-data-model-binding.js';
 import {
+    readModelPath
+  } from './read-model-path.js';
+import {
     type BindDataModelOptions,
     type BindingSpec,
     type BindingTarget,
     type DataModel
   } from './types.js';
 
-type BoundElement =
-  { element: HTMLElement;
-    spec: BindingSpec;
-    warnPrefix: string; };
+const CONTEXT_ATTR = 'data-bind-context';
+const BIND_PREFIX = 'data-bind-';
+
+type WarnOnce = (
+    key: string,
+    message: string,
+    error?: unknown
+  ) => void;
 
 /**
  * Applies `data-bind-*` bindings under a root element and wires optional
@@ -30,6 +40,7 @@ type BoundElement =
  * - `data-bind-href="path | pipe[:arg]"` => attribute binding
  * - `data-bind-onclick="actionPath"` => event binding
  * - `data-bind-class-active="path | pipe[:arg]"` => class toggle
+ * - `data-bind-context="path"` => subtree context switch
  * - quoted pipe args are supported, e.g. `| wrap:'<span>':'</span>'`
  *
  * @example
@@ -38,6 +49,14 @@ type BoundElement =
  * <div data-bind-text="name"></div>
  * <div data-bind-text="createdAt | date:short"></div>
  * <a data-bind-href="url"></a>
+ * ```
+ *
+ * @example
+ * Context switch:
+ * ```html
+ * <div data-bind-context="user">
+ *   <span data-bind-text="name"></span>
+ * </div>
  * ```
  *
  * @example
@@ -63,25 +82,23 @@ export function bindDataModel(
     options: BindDataModelOptions = {}
   ): () => void
 {
-  const bindings =
-    collectBindings(root);
-
   const warned =
     new Set<string>();
 
-  const warnOnce =
+  const warnOnce: WarnOnce =
     (
       key: string,
       message: string,
       error: unknown = null
-    ): void => {
+    ): void =>
+    {
       if (warned.has(key)) {
         return;
       }
 
       warned.add(key);
 
-      if (error === null) {
+      if (error == null) {
         console.warn(message);
       } else {
         console.warn(
@@ -90,81 +107,204 @@ export function bindDataModel(
       }
     };
 
+  let counter = 0;
+
+  const nextPrefix =
+    (): string =>
+      `data-bind[${counter++}]`;
+
+  return bindSubtree(
+    root,
+    model,
+    options,
+    warnOnce,
+    nextPrefix);
+}
+
+function bindSubtree(
+    root: ParentNode,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string
+  ): () => void
+{
   const disposers: Array<() => void> = [];
 
-  for (const binding of bindings) {
-    try {
-      if (binding.spec.kind === 'value') {
-        disposers.push(
-          bindValueModel(
-            binding.element,
-            binding.spec,
-            model,
-            options));
-      } else {
-        disposers.push(
-          bindEventModel(
-            binding.element,
-            binding.spec,
-            model,
-            binding.warnPrefix,
-            warnOnce));
-      }
-    } catch (error) {
-      if (binding.spec.kind === 'value') {
-        throw error;
-      }
+  for (const child of [ ...root.children ] as HTMLElement[]) {
+    const contextPath =
+      child.getAttribute(CONTEXT_ATTR);
 
-      warnOnce(
-        `${binding.warnPrefix}:bind-error`,
-        `${binding.warnPrefix}: binding setup failed`,
-        error);
+    if (contextPath !== null) {
+      disposers.push(
+        bindContextElement(
+          child,
+          contextPath,
+          model,
+          options,
+          warnOnce,
+          nextPrefix));
+    } else {
+      bindElementAttributes(
+        child,
+        model,
+        options,
+        warnOnce,
+        nextPrefix,
+        disposers);
+
+      disposers.push(
+        bindSubtree(
+          child,
+          model,
+          options,
+          warnOnce,
+          nextPrefix));
     }
   }
 
-  return () => {
+  return (): void => {
     for (const dispose of disposers) {
       dispose();
     }
   };
 }
 
-function collectBindings(
-    root: ParentNode
-  ): BoundElement[]
+function bindContextElement(
+    element: HTMLElement,
+    contextPath: string,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string
+  ): () => void
 {
-  const elements =
-    root.querySelectorAll<HTMLElement>('*');
+  const ownDisposers: Array<() => void> = [];
 
-  const bindings: BoundElement[] = [];
+  bindElementAttributes(
+    element,
+    model,
+    options,
+    warnOnce,
+    nextPrefix,
+    ownDisposers,
+    CONTEXT_ATTR);
 
-  for (const element of elements) {
-    for (const attribute of [ ...element.attributes ]) {
-      if (!attribute.name.startsWith('data-bind-')) {
-        continue;
-      }
+  let childDisposer: (() => void) | null = null;
 
-      const suffix =
-        attribute.name.slice('data-bind-'.length);
+  const bindChildren =
+    (): void =>
+    {
+      childDisposer?.();
 
-      const expression =
-        attribute.value ?? '';
+      const contextValue =
+        readModelPath(model, contextPath);
 
-      const spec =
-        createBindingSpec(
-          suffix,
-          expression);
+      const childModel =
+        (contextValue !== null
+          && contextValue !== undefined
+          && typeof contextValue === 'object')
+          ? contextValue as DataModel
+          : {} as DataModel;
 
-      bindings.push(
-        {
+      childDisposer =
+        bindSubtree(
           element,
-          spec,
-          warnPrefix: `data-bind[${bindings.length}]`
-        });
+          childModel,
+          options,
+          warnOnce,
+          nextPrefix);
+    };
+
+  bindChildren();
+
+  let unsubscribe: (() => boolean) | null = null;
+
+  if (contextPath !== '') {
+    const maybeUnsubscribe =
+      observable.watch(
+        model as any,
+        contextPath,
+        () => bindChildren());
+
+    if (typeof maybeUnsubscribe === 'function') {
+      unsubscribe = maybeUnsubscribe;
     }
   }
 
-  return bindings;
+  return (): void => {
+    for (const dispose of ownDisposers) {
+      dispose();
+    }
+
+    childDisposer?.();
+    unsubscribe?.();
+  };
+}
+
+function bindElementAttributes(
+    element: HTMLElement,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string,
+    disposers: Array<() => void>,
+    skipAttr?: string
+  ): void
+{
+  for (const attribute of [ ...element.attributes ]) {
+    if (!attribute.name.startsWith(BIND_PREFIX)) {
+      continue;
+    }
+
+    if (skipAttr !== undefined
+        && attribute.name === skipAttr)
+    {
+      continue;
+    }
+
+    const suffix =
+      attribute.name.slice(BIND_PREFIX.length);
+
+    const expression =
+      attribute.value ?? '';
+
+    const spec =
+      createBindingSpec(
+        suffix,
+        expression);
+
+    const prefix =
+      nextPrefix();
+
+    try {
+      if (spec.kind === 'value') {
+        disposers.push(
+          bindValueModel(
+            element,
+            spec,
+            model,
+            options));
+      } else {
+        disposers.push(
+          bindEventModel(
+            element,
+            spec,
+            model,
+            prefix,
+            warnOnce));
+      }
+    } catch (error) {
+      if (spec.kind === 'value') {
+        throw error;
+      }
+
+      warnOnce(
+        `${prefix}:bind-error`,
+        `${prefix}: binding setup failed`,
+        error);
+    }
+  }
 }
 
 function createBindingSpec(

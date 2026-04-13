@@ -9,11 +9,12 @@ performant JavaScript libraries for everyday use.
 `data-bind-*` attributes. Bindings are applied with
 `bindDataModel(root, model, options?)`.
 
-There are two binding families:
+There are three binding families:
 
 - Value bindings: write model values to `textContent`, `innerHTML`, or an
   attribute.
 - Event bindings: wire DOM events to model actions.
+- Context bindings: switch the model context for a descendant subtree.
 
 Both families support lightweight reactivity through `observable.watch(...)`
 on the configured model path.
@@ -70,6 +71,15 @@ Example bindings:
 <button data-bind-onclick="save">Save</button>
 ```
 
+Use `data-bind-context` to switch the model context for a subtree:
+
+```html
+<div data-bind-context="user">
+  <h1 data-bind-text="name"></h1>
+  <button data-bind-onclick="save">Save</button>
+</div>
+```
+
 Multiple bindings on the same element are supported and preferred when they
 describe different concerns:
 
@@ -83,6 +93,59 @@ describe different concerns:
 ```
 
 ## Binding Syntax
+
+### Context binding
+
+`data-bind-context` switches the model context for the entire descendant
+subtree.
+
+General form:
+
+```text
+data-bind-context="path"
+```
+
+The `path` is resolved against the current model. The resulting object becomes
+the model context for all descendant bindings.
+
+Example — binding to a nested object:
+
+```html
+<div data-bind-context="user">
+  <h1 data-bind-text="name"></h1>
+  <span data-bind-text="email"></span>
+</div>
+```
+
+This is equivalent to writing `user.name` and `user.email` on the descendants
+without the context switch.
+
+Nested `data-bind-context` attributes stack naturally:
+
+```html
+<div data-bind-context="item">
+  <div data-bind-context="author">
+    <span data-bind-text="name"></span>
+  </div>
+</div>
+```
+
+Here `name` resolves relative to `item.author`.
+
+Reactivity:
+
+- `data-bind-context` watches its path on the parent context
+- when the context object is replaced, all descendant bindings are rebound
+  against the new context
+- stale watchers from the old context are removed
+
+Null/undefined context:
+
+- if the path resolves to `null` or `undefined`, descendant bindings degrade
+  gracefully following the existing nullish conventions (empty text, removed
+  attributes, action warnings)
+- if the context later becomes a non-null object, descendants become active
+  again
 
 ### Value bindings
 
