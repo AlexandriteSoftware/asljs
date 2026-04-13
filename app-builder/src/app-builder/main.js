@@ -64,6 +64,10 @@ const elBtnCloseNameModal = /** @type {HTMLButtonElement} */ (document.getElemen
 const elImportFile = /** @type {HTMLInputElement} */ (document.getElementById('import-file'));
 
 // ── Settings (localStorage) ────────────────────────────────
+//
+// The OpenAI API key is intentionally stored in browser localStorage.
+// This is a local-first app with no backend — storing the key client-side
+// is by design. The UI clearly informs users that their key stays local.
 
 const SETTINGS_KEY = 'asljs-app-builder-settings';
 
