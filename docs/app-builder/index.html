@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASLJS App Builder</title>
-  <script type="module" crossorigin src="/asljs/assets/app-C971wy4b.js"></script>
-  <link rel="stylesheet" crossorigin href="/asljs/assets/app-BAyfs4SD.css">
+  <title>ASLJS App Builder</title>
+  <script type="module" crossorigin src="/asljs/assets/app-BkDejOpY.js"></script>
+  <link rel="stylesheet" crossorigin href="/asljs/assets/app-t_-8k-AY.css">
 </head>
 <body>
   <!-- Sidebar: app list + settings -->
@@ -17,11 +17,16 @@
     </div>
 
     <div class="sidebar-section">
-      <div class="section-label">My Apps</div>
-      <div id="app-list" class="app-list">
-        <!-- populated by JS -->
+      <div class="section-header">
+        <button id="btn-toggle-apps" class="section-toggle" type="button" aria-expanded="true" title="Collapse My Apps">▾</button>
+        <div class="section-label">My Apps</div>
       </div>
-      <button id="btn-new-app" class="btn btn-primary btn-full">+ New App</button>
+      <div id="apps-content" class="section-content">
+        <div id="app-list" class="app-list">
+          <!-- populated by JS -->
+        </div>
+        <button id="btn-new-app" class="btn btn-primary btn-full">+ New App</button>
+      </div>
     </div>
 
     <div class="sidebar-footer">
@@ -63,6 +68,7 @@
             <button id="btn-agent-instructions" class="btn btn-ghost btn-sm">Instructions</button>
           </div>
           <div id="chat-messages" class="chat-messages"></div>
+          <div id="chat-progress" class="chat-progress hidden" aria-live="polite"></div>
           <div class="chat-input-area">
             <textarea
               id="chat-input"
@@ -77,10 +83,13 @@
         <!-- File editor panel -->
         <section id="panel-editor" class="panel">
           <div class="panel-header">
-            <span>Files</span>
+            <div class="panel-header-left">
+              <button id="btn-toggle-files" class="section-toggle" type="button" aria-expanded="true" title="Collapse Files">▾</button>
+              <span>Files</span>
+            </div>
+            <select id="file-select" class="file-select" title="Select file"></select>
           </div>
-          <div class="editor-layout">
-            <div id="file-tabs" class="file-tabs"></div>
+          <div id="editor-layout" class="editor-layout">
             <textarea
               id="file-content"
               class="file-editor"
@@ -195,6 +204,6 @@
 
   <!-- Import file input (hidden) -->
   <input id="import-file" type="file" accept=".json" style="display:none" />
-
+
 </body>
 </html>

@@ -47,9 +47,11 @@ const elAppList = mustElement<HTMLElement>('app-list');
 const elEmptyState = mustElement<HTMLElement>('empty-state');
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
 const elAppNameDisplay = mustElement<HTMLElement>('app-name-display');
-const elFileTabs = mustElement<HTMLElement>('file-tabs');
+const elFileSelect = mustElement<HTMLSelectElement>('file-select');
+const elEditorLayout = mustElement<HTMLElement>('editor-layout');
 const elFileContent = mustElement<HTMLTextAreaElement>('file-content');
 const elChatMessages = mustElement<HTMLElement>('chat-messages');
+const elChatProgress = mustElement<HTMLElement>('chat-progress');
 const elChatInput = mustElement<HTMLTextAreaElement>('chat-input');
 const elBtnGenerate = mustElement<HTMLButtonElement>('btn-generate');
 const elBtnRun = mustElement<HTMLButtonElement>('btn-run');
@@ -64,6 +66,9 @@ const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
 const elBtnAgentInstructions =
   mustElement<HTMLButtonElement>('btn-agent-instructions');
+const elBtnToggleApps = mustElement<HTMLButtonElement>('btn-toggle-apps');
+const elAppsContent = mustElement<HTMLElement>('apps-content');
+const elBtnToggleFiles = mustElement<HTMLButtonElement>('btn-toggle-files');
 
 const elSettingsModal = mustElement<HTMLElement>('settings-modal');
 const elBtnCloseSettings =
@@ -331,28 +336,33 @@ function renderWorkspace(): void {
   elAppWorkspace.classList.remove('hidden');
   elAppNameDisplay.textContent = app.name;
 
-  renderFileTabs();
+  renderFileSelect();
   renderFileContent();
 }
 
-function renderFileTabs(): void {
-  elFileTabs.replaceChildren();
+function renderFileSelect(): void {
+  elFileSelect.replaceChildren();
+
+  if (state.files.length === 0) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No files';
+    elFileSelect.appendChild(option);
+    elFileSelect.value = '';
+    elFileSelect.disabled = true;
+    return;
+  }
 
   for (const file of state.files) {
-    const tab = document.createElement('div');
-    tab.className =
-      'file-tab' + (file.name === state.activeFileName
-? ' active'
-: '');
-    tab.textContent = file.name;
-
-    tab.addEventListener('click', () => {
-      void persistCurrentFile();
-      state.activeFileName = file.name;
-    });
-
-    elFileTabs.appendChild(tab);
+    const option = document.createElement('option');
+    option.value = file.name;
+    option.textContent = file.name;
+    elFileSelect.appendChild(option);
   }
+
+  const active = state.activeFileName ?? state.files[0].name;
+  elFileSelect.value = active;
+  elFileSelect.disabled = false;
 }
 
 function renderFileContent(): void {
@@ -367,6 +377,11 @@ function setGenerating(value: boolean): void {
   elBtnGenerate.innerHTML = value
     ? '<span class="spinner"></span> Generating…'
     : 'Generate';
+}
+
+function setChatProgress(message: string, visible: boolean): void {
+  elChatProgress.textContent = message;
+  elChatProgress.classList.toggle('hidden', !visible);
 }
 
 function appendChatMessage(role: 'user' | 'assistant', text: string): void {
@@ -533,6 +548,7 @@ async function handleGenerate(): Promise<void> {
   elChatInput.value = '';
   appendChatMessage('user', prompt);
   setGenerating(true);
+  setChatProgress('Starting generation...', true);
 
   try {
     const model = getModel();
@@ -550,6 +566,9 @@ async function handleGenerate(): Promise<void> {
       onToolStepLimit: async ({ stepsCompleted }) => confirm(
         `AI reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`,
       ),
+      onProgress: (message) => {
+        setChatProgress(message, true);
+      },
     });
 
     const app = state.apps.find(item => item.id === state.currentAppId);
@@ -578,6 +597,7 @@ async function handleGenerate(): Promise<void> {
 : String(error);
     appendChatMessage('assistant', `Error: ${message}`);
   } finally {
+    setChatProgress('', false);
     setGenerating(false);
   }
 }
@@ -716,6 +736,31 @@ function closeAgentInstructions(): void {
   elAgentInstructionsModal.classList.add('hidden');
 }
 
+function setCollapsed(
+  button: HTMLButtonElement,
+  target: HTMLElement,
+  collapsed: boolean,
+): void {
+  button.textContent = collapsed
+    ? '▸'
+    : '▾';
+  button.setAttribute('aria-expanded', collapsed
+    ? 'false'
+    : 'true');
+
+  target.classList.toggle('collapsed', collapsed);
+}
+
+function toggleAppsCollapsed(): void {
+  const collapsed = !elAppsContent.classList.contains('collapsed');
+  setCollapsed(elBtnToggleApps, elAppsContent, collapsed);
+}
+
+function toggleFilesCollapsed(): void {
+  const collapsed = !elEditorLayout.classList.contains('collapsed');
+  setCollapsed(elBtnToggleFiles, elEditorLayout, collapsed);
+}
+
 async function copyAgentInstructions(): Promise<void> {
   const text = elAgentInstructionsText.value;
 
@@ -736,11 +781,11 @@ state.on('set:currentAppId', () => {
   renderWorkspace();
 });
 state.on('set:files', () => {
-  renderFileTabs();
+  renderFileSelect();
   renderFileContent();
 });
 state.on('set:activeFileName', () => {
-  renderFileTabs();
+  renderFileSelect();
   renderFileContent();
 });
 
@@ -760,6 +805,8 @@ elBtnRun.addEventListener('click', handleRun);
 elBtnRefreshPreview.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', openSettings);
 elBtnAgentInstructions.addEventListener('click', openAgentInstructions);
+elBtnToggleApps.addEventListener('click', toggleAppsCollapsed);
+elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
 
 elBtnCloseSettings.addEventListener('click', closeSettings);
 elBtnSaveSettings.addEventListener('click', saveSettingsFromModal);
@@ -801,6 +848,17 @@ elChatInput.addEventListener('keydown', (event: KeyboardEvent) => {
     event.preventDefault();
     void handleGenerate();
   }
+});
+
+elFileSelect.addEventListener('change', () => {
+  const next = elFileSelect.value;
+
+  if (next === '' || next === state.activeFileName) {
+    return;
+  }
+
+  void persistCurrentFile();
+  state.activeFileName = next;
 });
 
 elFileContent.addEventListener('blur', () => {

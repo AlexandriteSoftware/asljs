@@ -88,6 +88,7 @@ type ToolStepLimitInfo = {
 type GenerateAppOptions = {
   initialToolStepLimit?: number;
   onToolStepLimit?: (info: ToolStepLimitInfo) => Promise<boolean>;
+  onProgress?: (message: string) => void | Promise<void>;
 };
 
 type ResponseFunctionCall = {
@@ -134,6 +135,11 @@ export async function generateApp(
   let step = 0;
 
   while (true) {
+    await reportProgress(
+      options,
+      `Step ${step + 1}: requesting assistant response...`,
+    );
+
     if (step >= stepLimit) {
       const shouldContinue =
         await options?.onToolStepLimit?.({
@@ -147,6 +153,10 @@ export async function generateApp(
       }
 
       stepLimit += TOOL_STEP_EXTENSION;
+      await reportProgress(
+        options,
+        `Extended step limit to ${stepLimit}. Continuing...`,
+      );
     }
 
     const response = await fetch(OPENAI_RESPONSES_URL, {
@@ -185,6 +195,11 @@ export async function generateApp(
     const toolCalls = data.output.filter(isResponseFunctionCall);
 
     if (toolCalls.length === 0) {
+      await reportProgress(
+        options,
+        `Completed in ${step + 1} step(s). Finalizing summary...`,
+      );
+
       const summary = extractResponsesSummary(data);
 
       return {
@@ -196,6 +211,11 @@ export async function generateApp(
 
     const toolOutputs: ResponseFunctionCallOutput[] = [];
     for (const toolCall of toolCalls) {
+      await reportProgress(
+        options,
+        `Step ${step + 1}: running ${readFunctionName(toolCall)}...`,
+      );
+
       const output = await executeToolCall(toolCall, tools);
       toolOutputs.push({
         type: 'function_call_output',
@@ -203,6 +223,11 @@ export async function generateApp(
         output,
       });
     }
+
+    await reportProgress(
+      options,
+      `Step ${step + 1}: submitted ${toolOutputs.length} tool result(s).`,
+    );
 
     previousResponseId =
       typeof data.id === 'string'
@@ -223,6 +248,17 @@ function normalizeInitialStepLimit(value: number | undefined): number {
   return candidate >= 1
     ? candidate
     : DEFAULT_MAX_TOOL_STEPS;
+}
+
+async function reportProgress(
+  options: GenerateAppOptions | undefined,
+  message: string,
+): Promise<void> {
+  if (options?.onProgress === undefined) {
+    return;
+  }
+
+  await Promise.resolve(options.onProgress(message));
 }
 
 function buildSystemPrompt(
