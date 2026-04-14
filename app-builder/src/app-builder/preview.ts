@@ -2,8 +2,6 @@ import {
     type GeneratedFile,
   } from './types.js';
 
-let currentBlobUrl: string | null = null;
-
 const EVAL_REQUEST_TYPE =
   'asljs-app-builder:eval-request';
 const EVAL_RESPONSE_TYPE =
@@ -61,12 +59,8 @@ export function renderPreview(
     files: GeneratedFile[]
   ): void
 {
-  if (currentBlobUrl !== null) {
-    URL.revokeObjectURL(currentBlobUrl);
-    currentBlobUrl = null;
-  }
-
   if (files.length === 0) {
+    frame.removeAttribute('srcdoc');
     frame.src = 'about:blank';
     return;
   }
@@ -77,6 +71,7 @@ export function renderPreview(
     ?? null;
 
   if (htmlFile === null) {
+    frame.removeAttribute('srcdoc');
     frame.src = 'about:blank';
     return;
   }
@@ -131,15 +126,10 @@ export function renderPreview(
         });
   }
 
+        html = injectAsljsImportMap(html, files);
+
   html = injectEvalBridge(html);
-
-  const blob =
-    new Blob(
-      [ html ],
-      { type: 'text/html' });
-
-  currentBlobUrl = URL.createObjectURL(blob);
-  frame.src = currentBlobUrl;
+        frame.srcdoc = html;
 }
 
 export async function evaluateInPreview(
@@ -218,4 +208,94 @@ function injectEvalBridge(html: string): string {
   }
 
   return `${html}\n${EVAL_BRIDGE_SCRIPT}`;
+}
+
+function injectAsljsImportMap(html: string, files: GeneratedFile[]): string {
+  if (/type=["']importmap["']/i.test(html)) {
+    return html;
+  }
+
+  const packageFile =
+    files.find(file => file.name === 'package.json')
+    ?? null;
+
+  const versions =
+    readAsljsPackageVersions(packageFile?.content);
+
+  const imports = Object.fromEntries(
+    versions.map(([name, version]) => [
+      name,
+      `https://esm.sh/${name}@${version}?bundle`,
+    ]),
+  );
+
+  if (Object.keys(imports).length === 0) {
+    return html;
+  }
+
+  const importMap = `<script type="importmap">${JSON.stringify({ imports })}</script>`;
+
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/<head[^>]*>/i, match => `${match}\n${importMap}`);
+  }
+
+  return `${importMap}\n${html}`;
+}
+
+function readAsljsPackageVersions(
+  packageJsonContent: string | undefined,
+): Array<[string, string]> {
+  if (packageJsonContent === undefined) {
+    return defaultAsljsVersions();
+  }
+
+  try {
+    const parsed = JSON.parse(packageJsonContent) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+
+    const source = {
+      ...(parsed.dependencies ?? {}),
+      ...(parsed.devDependencies ?? {}),
+    };
+
+    const names = [
+      'asljs-eventful',
+      'asljs-observable',
+      'asljs-data-binding',
+      'asljs-components',
+      'asljs-dali',
+    ];
+
+    const versions = names.map((name): [string, string] => [
+      name,
+      normalizeNpmVersion(source[name]),
+    ]);
+
+    return versions;
+  } catch {
+    return defaultAsljsVersions();
+  }
+}
+
+function normalizeNpmVersion(value: string | undefined): string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return 'latest';
+  }
+
+  const cleaned = value.trim().replace(/^[~^<>=\s]+/, '');
+  return cleaned === ''
+    ? 'latest'
+    : cleaned;
+}
+
+function defaultAsljsVersions(): Array<[string, string]> {
+  return [
+    ['asljs-eventful', 'latest'],
+    ['asljs-observable', 'latest'],
+    ['asljs-data-binding', 'latest'],
+    ['asljs-components', 'latest'],
+    ['asljs-dali', 'latest'],
+  ];
 }
