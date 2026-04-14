@@ -11,7 +11,10 @@ export type FileRecord =
     content: string; };
 
 export type Settings =
-  { apiKey?: string; };
+  {
+    apiKey?: string;
+    model?: 'gpt-5.3-codex' | 'gpt-5.4';
+  };
 
 export type GeneratedFile =
   { name: string;
