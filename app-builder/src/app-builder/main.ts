@@ -43,12 +43,15 @@ function mustElement<T extends HTMLElement>(id: string): T {
   return element as T;
 }
 
-const elAppList = mustElement<HTMLElement>('app-list');
-const elEmptyState = mustElement<HTMLElement>('empty-state');
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
-const elAppNameDisplay = mustElement<HTMLElement>('app-name-display');
+const elFirstAppSetup = mustElement<HTMLElement>('first-app-setup');
+const elFirstApiKeyInput = mustElement<HTMLInputElement>('first-api-key-input');
+const elFirstAppNameInput = mustElement<HTMLInputElement>('first-app-name-input');
+const elBtnCreateFirstApp = mustElement<HTMLButtonElement>('btn-create-first-app');
 const elPanels = mustElement<HTMLElement>('panels');
+const elPanelChat = mustElement<HTMLElement>('panel-chat');
 const elPanelEditor = mustElement<HTMLElement>('panel-editor');
+const elAppSelect = mustElement<HTMLSelectElement>('app-select');
 const elFileSelect = mustElement<HTMLSelectElement>('file-select');
 const elFileContent = mustElement<HTMLTextAreaElement>('file-content');
 const elChatMessages = mustElement<HTMLElement>('chat-messages');
@@ -60,15 +63,13 @@ const elBtnRefreshPreview =
   mustElement<HTMLButtonElement>('btn-refresh-preview');
 const elPreviewFrame = mustElement<HTMLIFrameElement>('preview-frame');
 const elBtnNewApp = mustElement<HTMLButtonElement>('btn-new-app');
-const elBtnNewApp2 = mustElement<HTMLButtonElement>('btn-new-app-2');
+const elBtnImport = mustElement<HTMLButtonElement>('btn-import');
 const elBtnRename = mustElement<HTMLButtonElement>('btn-rename');
-const elBtnDeleteApp = mustElement<HTMLButtonElement>('btn-delete-app');
 const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
 const elBtnAgentInstructions =
   mustElement<HTMLButtonElement>('btn-agent-instructions');
-const elSidebar = mustElement<HTMLElement>('sidebar');
-const elBtnToggleApps = mustElement<HTMLButtonElement>('btn-toggle-apps');
+const elBtnToggleChat = mustElement<HTMLButtonElement>('btn-toggle-chat');
 const elBtnToggleFiles = mustElement<HTMLButtonElement>('btn-toggle-files');
 
 const elSettingsModal = mustElement<HTMLElement>('settings-modal');
@@ -108,6 +109,8 @@ const elBtnCopyAgentInstructions =
 const SETTINGS_KEY = 'asljs-app-builder-settings';
 const DEFAULT_THEME = 'light';
 const DEFAULT_FONT_SIZE = 14;
+const APP_ACTION_NEW = '__new__';
+const APP_ACTION_IMPORT = '__import__';
 
 function loadSettings(): Settings {
   try {
@@ -330,48 +333,88 @@ declare global {
 }
 
 function renderAppList(): void {
-  elAppList.replaceChildren();
+  elAppSelect.replaceChildren();
 
   const apps = [...state.apps].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt),
   );
 
   for (const app of apps) {
-    const item = document.createElement('div');
-    item.className =
-      'app-item' + (app.id === state.currentAppId
-? ' active'
-: '');
-    item.dataset.id = app.id;
+    const option = document.createElement('option');
+    option.value = app.id;
+    option.textContent = app.name;
+    elAppSelect.appendChild(option);
+  }
 
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'app-item-name';
-    nameSpan.textContent = app.name;
+  if (apps.length > 0) {
+    const separator = document.createElement('option');
+    separator.value = '__separator__';
+    separator.textContent = '────────';
+    separator.disabled = true;
+    elAppSelect.appendChild(separator);
+  }
 
-    item.appendChild(nameSpan);
-    item.addEventListener('click', () => {
-      void openApp(app.id);
-    });
+  const newOption = document.createElement('option');
+  newOption.value = APP_ACTION_NEW;
+  newOption.textContent = 'New...';
+  elAppSelect.appendChild(newOption);
 
-    elAppList.appendChild(item);
+  const importOption = document.createElement('option');
+  importOption.value = APP_ACTION_IMPORT;
+  importOption.textContent = 'Import...';
+  elAppSelect.appendChild(importOption);
+
+  if (state.currentAppId !== null) {
+    elAppSelect.value = state.currentAppId;
   }
 }
 
 function renderWorkspace(): void {
-  const app = state.apps.find(item => item.id === state.currentAppId);
+  elAppWorkspace.classList.remove('hidden');
 
-  if (app === undefined) {
-    elEmptyState.classList.remove('hidden');
-    elAppWorkspace.classList.add('hidden');
+  const hasApp =
+    state.currentAppId !== null
+    && state.apps.some(item => item.id === state.currentAppId);
+
+  elFirstAppSetup.classList.toggle('hidden', hasApp);
+  elPanels.classList.toggle('hidden', !hasApp);
+
+  if (!hasApp) {
+    elFirstApiKeyInput.value = getApiKey();
+    elFirstAppNameInput.value = '';
     return;
   }
 
-  elEmptyState.classList.add('hidden');
-  elAppWorkspace.classList.remove('hidden');
-  elAppNameDisplay.textContent = app.name;
-
   renderFileSelect();
   renderFileContent();
+}
+
+async function createFirstAppFromForm(): Promise<void> {
+  const name = elFirstAppNameInput.value.trim();
+
+  if (name === '') {
+    elFirstAppNameInput.focus();
+    return;
+  }
+
+  const apiKey = elFirstApiKeyInput.value.trim();
+
+  if (apiKey !== '') {
+    const settings = loadSettings();
+    settings.apiKey = apiKey;
+    saveSettings(settings);
+  }
+
+  const app: AppRecord = {
+    id: randomId(),
+    name,
+    createdAt: now(),
+    updatedAt: now(),
+  };
+
+  await saveApp(app);
+  state.apps = [...state.apps, app];
+  await openApp(app.id);
 }
 
 function renderFileSelect(): void {
@@ -785,19 +828,17 @@ function closeAgentInstructions(): void {
 }
 
 function toggleAppsCollapsed(): void {
-  const collapsed = !elSidebar.classList.contains('collapsed');
+  const collapsed = !elPanelChat.classList.contains('collapsed');
 
-  elBtnToggleApps.textContent = collapsed
-    ? '▸'
-    : '▾';
-  elBtnToggleApps.setAttribute('aria-expanded', collapsed
+  elBtnToggleChat.textContent = collapsed
+    ? 'Chat ▸'
+    : 'Chat ▾';
+  elBtnToggleChat.setAttribute('aria-expanded', collapsed
     ? 'false'
     : 'true');
-  elBtnToggleApps.title = collapsed
-    ? 'Expand sidebar'
-    : 'Collapse sidebar';
 
-  elSidebar.classList.toggle('collapsed', collapsed);
+  elPanelChat.classList.toggle('collapsed', collapsed);
+  elPanels.classList.toggle('chat-collapsed', collapsed);
 }
 
 function toggleFilesCollapsed(): void {
@@ -843,11 +884,8 @@ state.on('set:activeFileName', () => {
 });
 
 elBtnNewApp.addEventListener('click', promptNewApp);
-elBtnNewApp2.addEventListener('click', promptNewApp);
+elBtnImport.addEventListener('click', handleImportClick);
 elBtnRename.addEventListener('click', promptRenameApp);
-elBtnDeleteApp.addEventListener('click', () => {
-  void confirmDeleteApp();
-});
 elBtnExport.addEventListener('click', () => {
   void handleExport();
 });
@@ -858,7 +896,7 @@ elBtnRun.addEventListener('click', handleRun);
 elBtnRefreshPreview.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', openSettings);
 elBtnAgentInstructions.addEventListener('click', openAgentInstructions);
-elBtnToggleApps.addEventListener('click', toggleAppsCollapsed);
+elBtnToggleChat.addEventListener('click', toggleAppsCollapsed);
 elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
 
 elBtnCloseSettings.addEventListener('click', closeSettings);
@@ -896,10 +934,41 @@ elAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
   }
 });
 
+elBtnCreateFirstApp.addEventListener('click', () => {
+  void createFirstAppFromForm();
+});
+
+elFirstAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    void createFirstAppFromForm();
+  }
+});
+
 elChatInput.addEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
     void handleGenerate();
+  }
+});
+
+elAppSelect.addEventListener('change', () => {
+  const value = elAppSelect.value;
+
+  if (value === APP_ACTION_NEW) {
+    promptNewApp();
+    renderAppList();
+    return;
+  }
+
+  if (value === APP_ACTION_IMPORT) {
+    handleImportClick();
+    renderAppList();
+    return;
+  }
+
+  if (value !== '' && value !== state.currentAppId) {
+    void openApp(value);
   }
 });
 
@@ -922,17 +991,6 @@ elImportFile.addEventListener('change', () => {
   void handleImportFile();
 });
 
-const btnImport = document.createElement('button');
-btnImport.className = 'btn btn-ghost btn-full';
-btnImport.textContent = '↑ Import';
-btnImport.addEventListener('click', handleImportClick);
-
-const sidebarFooter = document.querySelector('.sidebar-footer');
-
-if (sidebarFooter !== null) {
-  sidebarFooter.appendChild(btnImport);
-}
-
 window.listFileset = listFilesetTool;
 window.readFile = readFileTool;
 window.setFileContent = setFileContentTool;
@@ -953,7 +1011,11 @@ async function init(): Promise<void> {
 
     await openApp(sorted[0].id);
   } else {
+    state.currentAppId = null;
+    state.files = [];
+    state.activeFileName = null;
     renderWorkspace();
+    elFirstAppNameInput.focus();
   }
 }
 

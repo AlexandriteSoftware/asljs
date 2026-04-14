@@ -3,61 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASLJS App Builder</title>
-  <script type="module" crossorigin src="/asljs/assets/app-BMoyJCv9.js"></script>
-  <link rel="stylesheet" crossorigin href="/asljs/assets/app-DraBdVf_.css">
+  <title>ASLJS App Builder</title>
+  <script type="module" crossorigin src="/asljs/assets/app-BvPVb75K.js"></script>
+  <link rel="stylesheet" crossorigin href="/asljs/assets/app-BgECCJJc.css">
 </head>
 <body>
-  <!-- Sidebar: app list + settings -->
-  <aside id="sidebar">
-    <div class="sidebar-header">
-      <a href="../" class="logo-link" title="Back to home">
-        <strong>ASLJS</strong> <span class="logo-sub">App Builder</span>
-      </a>
-      <div class="brand-actions">
-        <button id="btn-settings" class="btn btn-ghost btn-sm" title="Settings">⚙</button>
-        <button id="btn-toggle-apps" class="section-toggle" type="button" aria-expanded="true" title="Collapse sidebar">▾</button>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <div class="section-label">My Apps</div>
-      <div id="apps-content" class="section-content">
-        <div id="app-list" class="app-list">
-          <!-- populated by JS -->
-        </div>
-        <button id="btn-new-app" class="btn btn-primary btn-full">+ New App</button>
-      </div>
-    </div>
-
-    <div class="sidebar-footer"></div>
-  </aside>
-
   <!-- Main workspace -->
   <main id="workspace">
-    <!-- Empty state -->
-    <div id="empty-state" class="empty-state">
-      <div class="empty-icon">🛠️</div>
-      <h2>No app selected</h2>
-      <p>Create a new app or open an existing one from the sidebar.</p>
-      <button id="btn-new-app-2" class="btn btn-primary">+ New App</button>
-    </div>
-
-    <!-- Active app workspace -->
-    <div id="app-workspace" class="app-workspace hidden">
+    <div id="app-workspace" class="app-workspace">
       <!-- Top bar -->
       <div id="top-bar" class="top-bar">
         <div class="top-bar-left">
-          <span id="app-name-display" class="app-name"></span>
-          <button id="btn-rename" class="btn btn-ghost btn-sm" title="Rename">✎</button>
-          <button id="btn-export" class="btn btn-ghost btn-sm" title="Export JSON">↓ Export</button>
-          <button id="btn-delete-app" class="btn btn-danger btn-sm" title="Delete app">✕</button>
+          <a href="../" class="logo-link topbar-brand" title="Back to home">
+            <strong>ASLJS</strong>
+          </a>
+          <button id="btn-settings" class="btn btn-ghost btn-sm" title="Settings">⚙</button>
+          <span class="topbar-sep" aria-hidden="true"></span>
+          <button id="btn-new-app" class="btn btn-ghost btn-sm" title="New application">＋</button>
+          <button id="btn-import" class="btn btn-ghost btn-sm" title="Import application">Import</button>
+          <select id="app-select" class="app-select" title="Select application"></select>
+          <button id="btn-rename" class="btn btn-ghost btn-sm" title="Rename">Rename</button>
+          <span class="topbar-sep" aria-hidden="true"></span>
+          <button id="btn-toggle-chat" class="btn btn-ghost btn-sm" title="Show or hide chat">Chat ▾</button>
+          <button id="btn-toggle-files" class="btn btn-ghost btn-sm" title="Show or hide files editor">Files ▾</button>
         </div>
         <div class="top-bar-right">
-            <button id="btn-toggle-files" class="btn btn-ghost btn-sm" title="Show or hide files editor">Files ▾</button>
           <button id="btn-run" class="btn btn-success btn-sm">▶ Run</button>
+          <button id="btn-export" class="btn btn-ghost btn-sm" title="Export JSON">↓ Export</button>
         </div>
       </div>
+
+      <section id="first-app-setup" class="first-app-setup hidden">
+        <div class="first-app-card">
+          <h2>Create Your First Application</h2>
+          <p>
+            This is a local-only application builder. App data is stored in your
+            browser and is not submitted to any server. If you provide an OpenAI
+            key, requests are sent directly to OpenAI only.
+          </p>
+          <label class="form-label" for="first-api-key-input">OpenAI API Key</label>
+          <input
+            id="first-api-key-input"
+            type="password"
+            class="form-input"
+            placeholder="sk-..."
+          />
+          <label class="form-label" for="first-app-name-input">Application Name</label>
+          <input
+            id="first-app-name-input"
+            type="text"
+            class="form-input"
+            placeholder="My App"
+          />
+          <button id="btn-create-first-app" class="btn btn-primary">
+            Create Application
+          </button>
+        </div>
+      </section>
 
       <!-- Panels -->
       <div id="panels" class="panels">
@@ -216,6 +218,6 @@
 
   <!-- Import file input (hidden) -->
   <input id="import-file" type="file" accept=".json" style="display:none" />
-
+
 </body>
 </html>
