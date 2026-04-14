@@ -1,4 +1,4 @@
-(function(){const n=document.createElement("link").relList;if(n&&n.supports&&n.supports("modulepreload"))return;for(const s of document.querySelectorAll('link[rel="modulepreload"]'))t(s);new MutationObserver(s=>{for(const l of s)if(l.type==="childList")for(const a of l.addedNodes)a.tagName==="LINK"&&a.rel==="modulepreload"&&t(a)}).observe(document,{childList:!0,subtree:!0});function r(s){const l={};return s.integrity&&(l.integrity=s.integrity),s.referrerPolicy&&(l.referrerPolicy=s.referrerPolicy),s.crossOrigin==="use-credentials"?l.credentials="include":s.crossOrigin==="anonymous"?l.credentials="omit":l.credentials="same-origin",l}function t(s){if(s.ep)return;s.ep=!0;const l=r(s);fetch(s.href,l)}})();class Fe extends Error{constructor(n,r,t,s,l){super(n),this.name="ListenerError",this.error=r,this.object=t,this.event=s,this.listener=l}}function P(e){if(typeof e!="string"&&typeof e!="symbol")throw new TypeError("Expect event to be a string or symbol.")}function q(e){return typeof e=="function"}function ue(e){if(q(e))return e}function xe(e){return typeof e=="object"&&e!==null}function ee(e){if(!q(e))throw new TypeError("Expect a function.")}const $e=(e=Object.create(null),n={})=>{if(!xe(e)&&!q(e))throw new TypeError("Expect an object or a function.");for(const o of["on","once","off","emit","emitAsync","has"])if(o in e)throw new Error(`Method "${o}" already exists.`);const{strict:r=!1,trace:t=null,error:s=null}=n,l=ue(t)??null,a=ue(s)??null,m=e!==N,w=(o,d)=>{l==null||l(o,d),m&&N.emit(o,d)};w("new",{object:e});const x=new Set,h=new Map,y={enumerable:!1,configurable:!0,writable:!0};return Object.defineProperties(e,{on:Object.assign({value:T},y),once:Object.assign({value:j},y),off:Object.assign({value:v},y),emit:Object.assign({value:S},y),emitAsync:Object.assign({value:L},y),has:Object.assign({value:E},y)}),e;function c(o,d){let p=h.get(o);p||h.set(o,p=new Set),p.add(d)}function f(o,d){const p=h.get(o);if(!p)return!1;const g=p.delete(d);return p.size===0&&h.delete(o),g}function b(o,d,p){const g={error:p,object:e,event:o,listener:d};if(a==null||a(g),e===N&&o==="error")throw new Fe("Error in a global error listener.",p,e,o,d);N.emit("error",g)}function T(o,d){P(o),ee(d),w("on",{object:e,event:o,listener:d}),c(o,d);let p=!0;return()=>p?(p=!1,f(o,d)):!1}function j(o,d){P(o),ee(d);const p=T(o,(...g)=>{p(),d(...g)});return p}function v(o,d){return P(o),ee(d),w("off",{object:e,event:o,listener:d}),f(o,d)}function E(o){var d;return P(o),(((d=h.get(o))==null?void 0:d.size)??0)>0}function S(o,...d){P(o);const p=h.get(o)||x;if(w("emit",{object:e,listeners:[...p],event:o,args:d}),p.size!==0)for(const g of p)try{g(...d)}catch(O){if(b(o,g,O),r)throw O}}async function L(o,...d){P(o);const p=h.get(o)||x;if(w("emitAsync",{object:e,listeners:[...p],event:o,args:d}),p.size===0)return;const g=[...p].map(async O=>{try{await O(...d)}catch(pe){if(b(o,O,pe),r)throw pe}});await(r?Promise.all(g):Promise.allSettled(g))}},N=$e;N(N);function Je(e){return!xe(e)&&!q(e)?!1:typeof e.on=="function"}function Ee(e){if(Je(e))return e}function A(e){return typeof e=="function"}function oe(e){return typeof e=="object"&&e!==null}function Se(e){if(!A(e))throw new TypeError("Expect a function.")}function re(e){if(e.trim()==="")throw new TypeError("Expect watch path to be a non-empty string.");const n=e.split(".");for(const r of n)if(r.trim()==="")throw new TypeError("Expect watch path segments to be non-empty.");return e.split(".").map(r=>r.trim()).filter(r=>r!=="")}function Ue(e,n){const r=re(n);if(r.length===0)return;let t=e;for(const s of r){if(!oe(t)||!(s in t))return;t=t[s]}return t}const Ae=(e,n,r)=>{if(Array.isArray(e))throw new TypeError("Watching arrays is not supported.");Se(r);const t=typeof n=="string"?[n]:n;if(!Array.isArray(t))throw new TypeError("Expect properties to be a string or an array of strings.");for(const a of t){if(typeof a!="string")throw new TypeError("Expect properties to be a string or an array of strings.");re(a)}const s=()=>t.map(a=>Ue(e,a)),l=[];for(const a of t){const m=re(a);let w=null;const x=()=>{const h=[],y=(c,f)=>{if(!oe(c)||f>=m.length)return;const b=m[f],T=Ee(c);if(T){const j=T.on(`set:${b}`,()=>{r(...s()),f<m.length-1&&w&&(w(),w=x())});h.push(j)}f<m.length-1&&y(c[b],f+1)};return y(e,0),()=>h.reduce((c,f)=>f()||c,!1)};w=x(),l.push(()=>w?w():!1)}return r(...s()),()=>l.reduce((a,m)=>m()||a,!1)};function Ve(e,n){"watch"in e||Object.defineProperty(e,"watch",{configurable:!0,writable:!0,enumerable:!1,value(r,t){return n(typeof r=="string"?this:this,r,t)}})}function me(e,n){return Object.prototype.hasOwnProperty.call(e,n)}function ne(e){if(typeof e=="symbol")return!1;const n=typeof e=="number"?e:Number(e);return!Number.isInteger(n)||n<0||n>=4294967295?!1:typeof e=="number"||e===String(n)}function Ge(e){return Ee(e)?A(e.emit):!1}const ke=(e,n={})=>{const{eventful:r=N,trace:t=null,shallow:s=!1}=n;Se(r);const l=K.options,a=new WeakMap,m=c=>{if(s||!oe(c)||Ge(c))return c;if(a.has(c))return a.get(c);const f=ke(c,{eventful:r,trace:t,shallow:s});return a.set(c,f),f},w=c=>{if(!s){if(Array.isArray(c)){for(let f=0;f<c.length;f++)c[f]=m(c[f]);return}for(const f of Reflect.ownKeys(c))me(c,f)&&(c[f]=m(c[f]))}},x=c=>{const f=Array.isArray(c);w(c),Ve(c,Ae);let b;const T=new Proxy(c,{set(j,v,E,S){const L=f&&ne(v),o=Reflect.get(j,v,S),d=Reflect.set(j,v,m(E),S);if(b&&d){const p=Reflect.get(j,v,S);if(!Object.is(o,p)){const g=L?{index:Number(v),value:p,previous:o}:{property:v,value:p,previous:o},O=t||l.trace;b.emit(`set:${String(v)}`,g),A(O)&&O(b,"set",g),b.emit("set",g)}}return d},deleteProperty(j,v){const E=f&&ne(v),S=me(j,v),L=S?j[v]:void 0,o=Reflect.deleteProperty(j,v);if(b&&o&&S){const d=E?{index:Number(v),previous:L}:{property:v,previous:L},p=t||l.trace;b.emit(`delete:${String(v)}`,d),A(p)&&p(b,"delete",d),b.emit("delete",d)}return o},defineProperty(j,v,E){const S=Object.getOwnPropertyDescriptor(j,v)??null,L=Object.prototype.hasOwnProperty.call(E,"value")?{...E,value:m(E.value)}:E,o=Reflect.defineProperty(j,v,L),d=f&&(v==="length"||ne(v));if(b&&!d&&o){const p={property:v,descriptor:L,previous:S},g=t||l.trace;b.emit(`define:${String(v)}`,p),A(g)&&g(b,"define",p),b.emit("define",p)}return o}});return b=A(c==null?void 0:c.emit)?T:r(T),b},h=t||l.trace;if(Array.isArray(e)){const c=x(e);return A(h)&&h(c,"new"),c}if(e!==null&&typeof e=="object"){const c=x(e);return A(h)&&h(c,"new",{object:c}),c}const y=r({get value(){return e},set value(c){if(Object.is(c,e))return;const f=e;e=c;const b={property:"value",value:e,previous:f};y.emit("set:value",b),A(h)&&h(y,"set",b),y.emit("set",b)}});return A(h)&&h(y,"new",{object:y}),y},K=ke;K.options={trace:null};K.watch=Ae;const i=K({apps:[],currentAppId:null,files:[],activeFileName:null,generating:!1,error:null});function k(e){return new Promise((n,r)=>{e.addEventListener("success",()=>{n(e.result)}),e.addEventListener("error",()=>{r(e.error??new Error("IndexedDB request failed"))})})}function _e(e,n){return new Promise((r,t)=>{const s=indexedDB.open(e,n.length);s.addEventListener("upgradeneeded",l=>{const a=n.slice(l.oldVersion-1,l.newVersion??n.length-1);for(const m of a)m(s.result)}),s.addEventListener("success",()=>{r(s.result)}),s.addEventListener("blocked",()=>{t(new Error("Database opening is blocked"))}),s.addEventListener("error",()=>{t(s.error??new Error("Failed to open database"))})})}const We="asljs-app-builder";let V=null;async function M(){return V!==null||(V=await _e(We,[e=>{e.createObjectStore("apps",{keyPath:"id"}),e.createObjectStore("files",{keyPath:"id"}).createIndex("byAppId","appId",{unique:!1})}])),V}async function He(){const n=(await M()).transaction("apps","readonly");return k(n.objectStore("apps").getAll())}async function z(e){const r=(await M()).transaction("apps","readwrite");await k(r.objectStore("apps").put(e))}async function qe(e){const r=(await M()).transaction(["apps","files"],"readwrite");await k(r.objectStore("apps").delete(e));const t=r.objectStore("files"),s=await k(t.index("byAppId").getAllKeys(e));for(const l of s)await k(t.delete(l))}async function Ke(e){const r=(await M()).transaction("files","readonly");return k(r.objectStore("files").index("byAppId").getAll(e))}async function ze(e){const r=(await M()).transaction("files","readwrite");await k(r.objectStore("files").put(e))}async function Le(e,n){const s=(await M()).transaction("files","readwrite").objectStore("files"),l=await k(s.index("byAppId").getAllKeys(e));for(const a of l)await k(s.delete(a));for(const a of n)await k(s.put(a))}const Ye=`# observable\r
+(function(){const n=document.createElement("link").relList;if(n&&n.supports&&n.supports("modulepreload"))return;for(const s of document.querySelectorAll('link[rel="modulepreload"]'))t(s);new MutationObserver(s=>{for(const o of s)if(o.type==="childList")for(const i of o.addedNodes)i.tagName==="LINK"&&i.rel==="modulepreload"&&t(i)}).observe(document,{childList:!0,subtree:!0});function r(s){const o={};return s.integrity&&(o.integrity=s.integrity),s.referrerPolicy&&(o.referrerPolicy=s.referrerPolicy),s.crossOrigin==="use-credentials"?o.credentials="include":s.crossOrigin==="anonymous"?o.credentials="omit":o.credentials="same-origin",o}function t(s){if(s.ep)return;s.ep=!0;const o=r(s);fetch(s.href,o)}})();class _e extends Error{constructor(n,r,t,s,o){super(n),this.name="ListenerError",this.error=r,this.object=t,this.event=s,this.listener=o}}function M(e){if(typeof e!="string"&&typeof e!="symbol")throw new TypeError("Expect event to be a string or symbol.")}function Y(e){return typeof e=="function"}function ve(e){if(Y(e))return e}function Le(e){return typeof e=="object"&&e!==null}function re(e){if(!Y(e))throw new TypeError("Expect a function.")}const Ge=(e=Object.create(null),n={})=>{if(!Le(e)&&!Y(e))throw new TypeError("Expect an object or a function.");for(const l of["on","once","off","emit","emitAsync","has"])if(l in e)throw new Error(`Method "${l}" already exists.`);const{strict:r=!1,trace:t=null,error:s=null}=n,o=ve(t)??null,i=ve(s)??null,u=e!==N,y=(l,d)=>{o==null||o(l,d),u&&N.emit(l,d)};y("new",{object:e});const E=new Set,v=new Map,w={enumerable:!1,configurable:!0,writable:!0};return Object.defineProperties(e,{on:Object.assign({value:T},w),once:Object.assign({value:j},w),off:Object.assign({value:h},w),emit:Object.assign({value:A},w),emitAsync:Object.assign({value:L},w),has:Object.assign({value:S},w)}),e;function c(l,d){let p=v.get(l);p||v.set(l,p=new Set),p.add(d)}function m(l,d){const p=v.get(l);if(!p)return!1;const g=p.delete(d);return p.size===0&&v.delete(l),g}function b(l,d,p){const g={error:p,object:e,event:l,listener:d};if(i==null||i(g),e===N&&l==="error")throw new _e("Error in a global error listener.",p,e,l,d);N.emit("error",g)}function T(l,d){M(l),re(d),y("on",{object:e,event:l,listener:d}),c(l,d);let p=!0;return()=>p?(p=!1,m(l,d)):!1}function j(l,d){M(l),re(d);const p=T(l,(...g)=>{p(),d(...g)});return p}function h(l,d){return M(l),re(d),y("off",{object:e,event:l,listener:d}),m(l,d)}function S(l){var d;return M(l),(((d=v.get(l))==null?void 0:d.size)??0)>0}function A(l,...d){M(l);const p=v.get(l)||E;if(y("emit",{object:e,listeners:[...p],event:l,args:d}),p.size!==0)for(const g of p)try{g(...d)}catch(O){if(b(l,g,O),r)throw O}}async function L(l,...d){M(l);const p=v.get(l)||E;if(y("emitAsync",{object:e,listeners:[...p],event:l,args:d}),p.size===0)return;const g=[...p].map(async O=>{try{await O(...d)}catch(me){if(b(l,O,me),r)throw me}});await(r?Promise.all(g):Promise.allSettled(g))}},N=Ge;N(N);function We(e){return!Le(e)&&!Y(e)?!1:typeof e.on=="function"}function Te(e){if(We(e))return e}function k(e){return typeof e=="function"}function ce(e){return typeof e=="object"&&e!==null}function Oe(e){if(!k(e))throw new TypeError("Expect a function.")}function se(e){if(e.trim()==="")throw new TypeError("Expect watch path to be a non-empty string.");const n=e.split(".");for(const r of n)if(r.trim()==="")throw new TypeError("Expect watch path segments to be non-empty.");return e.split(".").map(r=>r.trim()).filter(r=>r!=="")}function qe(e,n){const r=se(n);if(r.length===0)return;let t=e;for(const s of r){if(!ce(t)||!(s in t))return;t=t[s]}return t}const Ie=(e,n,r)=>{if(Array.isArray(e))throw new TypeError("Watching arrays is not supported.");Oe(r);const t=typeof n=="string"?[n]:n;if(!Array.isArray(t))throw new TypeError("Expect properties to be a string or an array of strings.");for(const i of t){if(typeof i!="string")throw new TypeError("Expect properties to be a string or an array of strings.");se(i)}const s=()=>t.map(i=>qe(e,i)),o=[];for(const i of t){const u=se(i);let y=null;const E=()=>{const v=[],w=(c,m)=>{if(!ce(c)||m>=u.length)return;const b=u[m],T=Te(c);if(T){const j=T.on(`set:${b}`,()=>{r(...s()),m<u.length-1&&y&&(y(),y=E())});v.push(j)}m<u.length-1&&w(c[b],m+1)};return w(e,0),()=>v.reduce((c,m)=>m()||c,!1)};y=E(),o.push(()=>y?y():!1)}return r(...s()),()=>o.reduce((i,u)=>u()||i,!1)};function He(e,n){"watch"in e||Object.defineProperty(e,"watch",{configurable:!0,writable:!0,enumerable:!1,value(r,t){return n(typeof r=="string"?this:this,r,t)}})}function be(e,n){return Object.prototype.hasOwnProperty.call(e,n)}function te(e){if(typeof e=="symbol")return!1;const n=typeof e=="number"?e:Number(e);return!Number.isInteger(n)||n<0||n>=4294967295?!1:typeof e=="number"||e===String(n)}function Ke(e){return Te(e)?k(e.emit):!1}const Ne=(e,n={})=>{const{eventful:r=N,trace:t=null,shallow:s=!1}=n;Oe(r);const o=z.options,i=new WeakMap,u=c=>{if(s||!ce(c)||Ke(c))return c;if(i.has(c))return i.get(c);const m=Ne(c,{eventful:r,trace:t,shallow:s});return i.set(c,m),m},y=c=>{if(!s){if(Array.isArray(c)){for(let m=0;m<c.length;m++)c[m]=u(c[m]);return}for(const m of Reflect.ownKeys(c))be(c,m)&&(c[m]=u(c[m]))}},E=c=>{const m=Array.isArray(c);y(c),He(c,Ie);let b;const T=new Proxy(c,{set(j,h,S,A){const L=m&&te(h),l=Reflect.get(j,h,A),d=Reflect.set(j,h,u(S),A);if(b&&d){const p=Reflect.get(j,h,A);if(!Object.is(l,p)){const g=L?{index:Number(h),value:p,previous:l}:{property:h,value:p,previous:l},O=t||o.trace;b.emit(`set:${String(h)}`,g),k(O)&&O(b,"set",g),b.emit("set",g)}}return d},deleteProperty(j,h){const S=m&&te(h),A=be(j,h),L=A?j[h]:void 0,l=Reflect.deleteProperty(j,h);if(b&&l&&A){const d=S?{index:Number(h),previous:L}:{property:h,previous:L},p=t||o.trace;b.emit(`delete:${String(h)}`,d),k(p)&&p(b,"delete",d),b.emit("delete",d)}return l},defineProperty(j,h,S){const A=Object.getOwnPropertyDescriptor(j,h)??null,L=Object.prototype.hasOwnProperty.call(S,"value")?{...S,value:u(S.value)}:S,l=Reflect.defineProperty(j,h,L),d=m&&(h==="length"||te(h));if(b&&!d&&l){const p={property:h,descriptor:L,previous:A},g=t||o.trace;b.emit(`define:${String(h)}`,p),k(g)&&g(b,"define",p),b.emit("define",p)}return l}});return b=k(c==null?void 0:c.emit)?T:r(T),b},v=t||o.trace;if(Array.isArray(e)){const c=E(e);return k(v)&&v(c,"new"),c}if(e!==null&&typeof e=="object"){const c=E(e);return k(v)&&v(c,"new",{object:c}),c}const w=r({get value(){return e},set value(c){if(Object.is(c,e))return;const m=e;e=c;const b={property:"value",value:e,previous:m};w.emit("set:value",b),k(v)&&v(w,"set",b),w.emit("set",b)}});return k(v)&&v(w,"new",{object:w}),w},z=Ne;z.options={trace:null};z.watch=Ie;const a=z({apps:[],currentAppId:null,files:[],activeFileName:null,generating:!1,error:null});function x(e){return new Promise((n,r)=>{e.addEventListener("success",()=>{n(e.result)}),e.addEventListener("error",()=>{r(e.error??new Error("IndexedDB request failed"))})})}function Ye(e,n){return new Promise((r,t)=>{const s=indexedDB.open(e,n.length);s.addEventListener("upgradeneeded",o=>{const i=n.slice(o.oldVersion-1,o.newVersion??n.length-1);for(const u of i)u(s.result)}),s.addEventListener("success",()=>{r(s.result)}),s.addEventListener("blocked",()=>{t(new Error("Database opening is blocked"))}),s.addEventListener("error",()=>{t(s.error??new Error("Failed to open database"))})})}const ze="asljs-app-builder";let G=null;async function P(){return G!==null||(G=await Ye(ze,[e=>{e.createObjectStore("apps",{keyPath:"id"}),e.createObjectStore("files",{keyPath:"id"}).createIndex("byAppId","appId",{unique:!1})}])),G}async function Qe(){const n=(await P()).transaction("apps","readonly");return x(n.objectStore("apps").getAll())}async function Q(e){const r=(await P()).transaction("apps","readwrite");await x(r.objectStore("apps").put(e))}async function Xe(e){const r=(await P()).transaction(["apps","files"],"readwrite");await x(r.objectStore("apps").delete(e));const t=r.objectStore("files"),s=await x(t.index("byAppId").getAllKeys(e));for(const o of s)await x(t.delete(o))}async function Ze(e){const r=(await P()).transaction("files","readonly");return x(r.objectStore("files").index("byAppId").getAll(e))}async function ae(e){const r=(await P()).transaction("files","readwrite");await x(r.objectStore("files").put(e))}async function en(e){const r=(await P()).transaction("files","readwrite");await x(r.objectStore("files").delete(e))}async function Re(e,n){const s=(await P()).transaction("files","readwrite").objectStore("files"),o=await x(s.index("byAppId").getAllKeys(e));for(const i of o)await x(s.delete(i));for(const i of n)await x(s.put(i))}const nn=`# observable\r
 \r
 > Part of [Alexandrite Software Library][#1] – a set of high‑quality,\r
 performant JavaScript libraries for everyday use.\r
@@ -214,7 +214,7 @@ Primitives (boxed as \`{ value }\`) emit:\r
 MIT License. See [LICENSE](LICENSE.md) for details.\r
 \r
 [#1]: https://github.com/AlexandriteSoftware/asljs\r
-`,Qe=`# eventful\r
+`,rn=`# eventful\r
 \r
 > Part of [Alexandrite Software Library][#1] – a set of high‑quality,\r
 performant JavaScript libraries for everyday use.\r
@@ -537,7 +537,7 @@ console.log(obj.has('e')); // false\r
 MIT License. See [LICENSE](LICENSE.md) for details.\r
 \r
 [#1]: https://github.com/AlexandriteSoftware/asljs\r
-`,Xe=`# data-binding\r
+`,tn=`# data-binding\r
 \r
 > Part of [Alexandrite Software Library][#1] - a set of high-quality,\r
 performant JavaScript libraries for everyday use.\r
@@ -810,7 +810,7 @@ Types are exported from:\r
 MIT License. See [LICENSE](LICENSE.md) for details.\r
 \r
 [#1]: https://github.com/AlexandriteSoftware/asljs\r
-`,Ze=`# components\r
+`,sn=`# components\r
 \r
 > Part of [Alexandrite Software Library][#1] - a set of high-quality,\r
 performant JavaScript libraries for everyday use.\r
@@ -888,7 +888,7 @@ Exports:\r
 MIT License. See [LICENSE](LICENSE.md) for details.\r
 \r
 [#1]: https://github.com/AlexandriteSoftware/asljs\r
-`,en=`# dali\r
+`,an=`# dali\r
 \r
 > Part of [Alexandrite Software Library][#1] - a set of high-quality,\r
 performant JavaScript libraries for everyday use.\r
@@ -1161,7 +1161,7 @@ Broadcast / cross-tab:\r
 MIT License. See [LICENSE](LICENSE.md) for details.\r
 \r
 [#1]: https://github.com/AlexandriteSoftware/asljs\r
-`,nn=`export {\r
+`,on=`export {\r
     observable\r
   } from './observable.js';\r
 \r
@@ -1181,7 +1181,7 @@ export type {\r
     ObservableWatchFn,\r
     WatchedValues,\r
   } from './types.js';\r
-`,rn=`export {\r
+`,ln=`export {\r
     eventful\r
   } from './eventful.js';\r
 \r
@@ -1205,7 +1205,7 @@ export {\r
     ListenerError,\r
     type TraceFn\r
   } from './types.js';\r
-`,tn=`export {\r
+`,cn=`export {\r
     bindDataModel\r
   } from './bind-data-model.js';\r
 \r
@@ -1217,13 +1217,13 @@ export type {\r
     BindDataModelOptions,\r
     DataModel,\r
   } from './types.js';\r
-`,sn=`export {\r
+`,dn=`export {\r
     List,\r
     type ListItem,\r
     type ListItemsSource,\r
     type ListRowContext,\r
   } from './list.js';\r
-`,an=`export {\r
+`,pn=`export {\r
     dbDelete,\r
     dbOpen,\r
     dbRequestAsync,\r
@@ -1315,7 +1315,7 @@ export {\r
 export {\r
     UuidVersionStrategy as UuidTableVersionStrategy,\r
   } from './version-strategy-uuid.js';\r
-`,on=`{
+`,un=`{
   "name": "asljs-observable",
   "version": "0.5.3",
   "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
@@ -1366,7 +1366,7 @@ export {\r
     "asljs-eventful": "^0.4.8"
   }
 }
-`,ln=`{\r
+`,fn=`{\r
   "name": "asljs-eventful",\r
   "version": "0.4.8",\r
   "description": "Lightweight event helper adding on/off/emit to any object.",\r
@@ -1417,7 +1417,7 @@ export {\r
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \\"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\\""\r
   }\r
 }\r
-`,cn=`{\r
+`,mn=`{\r
   "name": "asljs-data-binding",\r
   "version": "0.2.3",\r
   "description": "Declarative data-bind-* bindings for DOM elements with value pipes and event middleware.",\r
@@ -1474,7 +1474,7 @@ export {\r
     "jsdom": "^26.1.0"\r
   }\r
 }\r
-`,dn=`{\r
+`,vn=`{\r
   "name": "asljs-components",\r
   "version": "0.1.1",\r
   "description": "Web components for ASLJS applications.",\r
@@ -1527,7 +1527,7 @@ export {\r
     "lit": "^3.3.1"\r
   }\r
 }\r
-`,pn=`{\r
+`,bn=`{\r
   "name": "asljs-dali",\r
   "version": "0.1.2",\r
   "description": "IndexedDB data layer with a typed Table abstraction.",\r
@@ -1583,14 +1583,14 @@ export {\r
     "fake-indexeddb": "^6.2.4"\r
   }\r
 }\r
-`,un="https://api.openai.com/v1/chat/completions",mn=J(on,"asljs-observable"),fn=J(ln,"asljs-eventful"),bn=J(cn,"asljs-data-binding"),vn=J(dn,"asljs-components"),hn=J(pn,"asljs-dali"),gn=wn();async function yn(e,n){const r=await fetch(un,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${n}`},body:JSON.stringify({model:"gpt-4o-mini",temperature:.2,messages:[{role:"system",content:gn},{role:"user",content:e}]})});if(!r.ok){const a=await r.json().catch(()=>({})),m=jn(a)??`OpenAI API error: ${r.status}`;throw new Error(m)}const t=await r.json(),s=xn(t),l=En(s);if(l.files.length===0)throw new Error("AI returned no files.");return l}function wn(){const e=`
+`,hn="https://api.openai.com/v1/chat/completions",gn=V(un,"asljs-observable"),yn=V(fn,"asljs-eventful"),wn=V(mn,"asljs-data-binding"),jn=V(vn,"asljs-components"),En=V(bn,"asljs-dali"),xn=An();async function Sn(e,n){const r=await fetch(hn,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${n}`},body:JSON.stringify({model:"gpt-4o-mini",temperature:.2,messages:[{role:"system",content:xn},{role:"user",content:e}]})});if(!r.ok){const i=await r.json().catch(()=>({})),u=kn(i)??`OpenAI API error: ${r.status}`;throw new Error(u)}const t=await r.json(),s=Ln(t),o=Tn(s);if(o.files.length===0)throw new Error("AI returned no files.");return o}function An(){const e=`
       Latest ASLJS package versions to use:
-      - asljs-eventful@${fn}
-      - asljs-observable@${mn}
-      - asljs-data-binding@${bn}
-      - asljs-components@${vn}
-      - asljs-dali@${hn}
-    `,n=[B("eventful",Qe,rn),B("observable",Ye,nn),B("data-binding",Xe,tn),B("components",Ze,sn),B("dali",en,an)].join(`
+      - asljs-eventful@${yn}
+      - asljs-observable@${gn}
+      - asljs-data-binding@${wn}
+      - asljs-components@${jn}
+      - asljs-dali@${En}
+    `,n=[B("eventful",rn,ln),B("observable",nn,on),B("data-binding",tn,cn),B("components",sn,dn),B("dali",an,pn)].join(`
 
 `);return`
 You are an expert ASLJS app generator.
@@ -1621,17 +1621,80 @@ Generation rules:
 - Always include at least: index.html, style.css, app.js, package.json, README.md.
 - package.json must include latest versions listed above.
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
+- app.js is the app entry point.
 - index.html must load app.js using <script type="module">.
 - Prefer real app behavior over toy snippets (state, events, bindings, local persistence, and at least one ASLJS component).
 - Keep code concise, runnable in modern browser, and readable.
+
+Agent tool contract (virtual filesystem and runtime):
+- Assume the generated app includes an agent that can use these tools:
+  - listFileset(): returns all file paths in the virtual filesystem.
+  - readFile(path): returns full text content for a file.
+  - setFileContent(path, content): creates or replaces a file's content.
+  - deleteFile(path): deletes a file from the virtual filesystem.
+  - evalInApp(code): evaluates JavaScript in the context of the running app document.
+- Generate app code and README so these tool names and behaviors are clear and usable.
+- Keep the tool usage model deterministic and safe (no hidden magic paths).
+
+Run/repair loop requirements for the generated agent behavior:
+- The agent must treat app.js as the starting point for the app runtime.
+- The agent must verify the app is running (for example by using evalInApp checks against the loaded document).
+- If the app is not running, the agent must iteratively adjust files via setFileContent/deleteFile,
+  then re-check until the app runs.
+- The final generated code should reflect this workflow explicitly in app.js and/or README.
 
 Use this package knowledge as source material when choosing APIs and patterns:
 ${n}
 `.trim()}function B(e,n,r){return`
 [${e}] README excerpt:
-${fe(n,9e3)}
+${he(n,9e3)}
 
 [${e}] exported API/types excerpt:
-${fe(r,6e3)}
-`.trim()}function fe(e,n){return e.length<=n?e:`${e.slice(0,n)}
-... [truncated]`}function J(e,n){try{return JSON.parse(e).version??"latest"}catch{return console.warn(`Failed to parse package metadata for ${n}.`),"latest"}}function jn(e){const n=e.error;return typeof(n==null?void 0:n.message)=="string"?n.message:null}function xn(e){const n=e.choices,r=n==null?void 0:n[0],t=r==null?void 0:r.message,s=t==null?void 0:t.content;if(typeof s!="string")throw new Error("AI returned an unexpected response format.");return s}function En(e){let n;try{n=JSON.parse(e)}catch{throw new Error("AI returned invalid JSON.")}if(!Sn(n))throw new Error("AI returned an unexpected response shape.");return n}function Sn(e){if(typeof e!="object"||e===null)return!1;const n=e;return typeof n.description!="string"||!Array.isArray(n.files)?!1:n.files.every(An)}function An(e){if(typeof e!="object"||e===null)return!1;const n=e;return typeof n.name=="string"&&typeof n.content=="string"}let D=null;function Te(e,n){if(D!==null&&(URL.revokeObjectURL(D),D=null),n.length===0){e.src="about:blank";return}const r=n.find(a=>a.name==="index.html")??n.find(a=>a.name.endsWith(".html"))??null;if(r===null){e.src="about:blank";return}let t=r.content;const s=n.find(a=>a.name==="style.css")??n.find(a=>a.name.endsWith(".css"))??null;s!==null&&(t=t.replace(/<link[^>]+href=["']style\.css["'][^>]*>/gi,`<style>${s.content}</style>`),t=t.replace(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,`<style>${s.content}</style>`));for(const a of n){if(!a.name.endsWith(".js"))continue;const m=a.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");t=t.replace(new RegExp(`(<script[^>]*?)\\s+src=["']${m}["']([^>]*)><\\/script>`,"gi"),(w,x,h)=>{const y=`${String(x)} ${String(h)}`;return/type=["']module["']/i.test(y)?`<script type="module">${a.content}<\/script>`:`<script>${a.content}<\/script>`})}const l=new Blob([t],{type:"text/html"});D=URL.createObjectURL(l),e.src=D}function G(){return crypto.randomUUID()}function R(){return new Date().toISOString()}function u(e){const n=document.getElementById(e);if(n===null)throw new Error(`Missing element #${e}`);return n}const be=u("app-list"),ve=u("empty-state"),he=u("app-workspace"),kn=u("app-name-display"),ge=u("file-tabs"),_=u("file-content"),$=u("chat-messages"),te=u("chat-input"),se=u("btn-generate"),Ln=u("btn-run"),Tn=u("btn-refresh-preview"),ie=u("preview-frame"),On=u("btn-new-app"),In=u("btn-new-app-2"),Nn=u("btn-rename"),Rn=u("btn-delete-app"),Cn=u("btn-export"),Pn=u("btn-settings"),W=u("settings-modal"),Mn=u("btn-close-settings"),Bn=u("btn-save-settings"),Dn=u("btn-cancel-settings"),ae=u("api-key-input"),C=u("name-modal"),Oe=u("name-modal-title"),I=u("app-name-input"),U=u("btn-confirm-name"),Fn=u("btn-cancel-name"),$n=u("btn-close-name-modal"),H=u("import-file"),Ie="asljs-app-builder-settings";function Ne(){try{const e=localStorage.getItem(Ie)??"{}";return JSON.parse(e)}catch{return{}}}function Jn(e){localStorage.setItem(Ie,JSON.stringify(e))}function Re(){return Ne().apiKey??""}function Ce(){be.replaceChildren();const e=[...i.apps].sort((n,r)=>r.updatedAt.localeCompare(n.updatedAt));for(const n of e){const r=document.createElement("div");r.className="app-item"+(n.id===i.currentAppId?" active":""),r.dataset.id=n.id;const t=document.createElement("span");t.className="app-item-name",t.textContent=n.name,r.appendChild(t),r.addEventListener("click",()=>{Q(n.id)}),be.appendChild(r)}}function Pe(){const e=i.apps.find(n=>n.id===i.currentAppId);if(e===void 0){ve.classList.remove("hidden"),he.classList.add("hidden");return}ve.classList.add("hidden"),he.classList.remove("hidden"),kn.textContent=e.name,le(),ce()}function le(){ge.replaceChildren();for(const e of i.files){const n=document.createElement("div");n.className="file-tab"+(e.name===i.activeFileName?" active":""),n.textContent=e.name,n.addEventListener("click",()=>{Y(),i.activeFileName=e.name}),ge.appendChild(n)}}function ce(){const e=i.files.find(n=>n.name===i.activeFileName);_.value=(e==null?void 0:e.content)??"",_.disabled=e===void 0}function ye(e){i.generating=e,se.disabled=e,se.innerHTML=e?'<span class="spinner"></span> Generating…':"Generate"}function F(e,n){const r=document.createElement("div");r.className=`chat-msg ${e}`;const t=document.createElement("div");t.className="chat-msg-role",t.textContent=e==="user"?"You":"Assistant";const s=document.createElement("div");s.className="chat-bubble",s.textContent=n,r.appendChild(t),r.appendChild(s),$.appendChild(r),$.scrollTop=$.scrollHeight}async function Y(){if(i.activeFileName===null||i.currentAppId===null)return;const e=i.files.find(r=>r.name===i.activeFileName);if(e===void 0)return;const n=_.value;e.content!==n&&(e.content=n,await ze(e))}async function Q(e){var r;i.currentAppId=e;const n=await Ke(e);i.files=n,i.activeFileName=((r=n[0])==null?void 0:r.name)??null,$.replaceChildren()}function Me(){Oe.textContent="New App",I.value="",C.classList.remove("hidden"),I.focus(),U.onclick=async()=>{const e=I.value.trim();if(e==="")return;C.classList.add("hidden");const n={id:G(),name:e,createdAt:R(),updatedAt:R()};await z(n),i.apps=[...i.apps,n],await Q(n.id)}}function de(){C.classList.add("hidden"),U.onclick=null}function Un(){const e=i.apps.find(n=>n.id===i.currentAppId);e!==void 0&&(Oe.textContent="Rename App",I.value=e.name,C.classList.remove("hidden"),I.focus(),I.select(),U.onclick=async()=>{const n=I.value.trim();if(n==="")return;C.classList.add("hidden");const r={...e,name:n,updatedAt:R()};await z(r),i.apps=i.apps.map(t=>t.id===e.id?r:t)})}async function Vn(){const e=i.apps.find(n=>n.id===i.currentAppId);e!==void 0&&confirm(`Delete "${e.name}"? This cannot be undone.`)&&(await qe(e.id),i.apps=i.apps.filter(n=>n.id!==e.id),i.currentAppId=null,i.files=[],i.activeFileName=null,$.replaceChildren(),ie.src="about:blank")}async function Be(){var r;const e=te.value.trim();if(e==="")return;const n=Re();if(n===""){F("assistant","No OpenAI API key set. Open Settings (⚙) to add your key. Generation is optional — you can also create files manually.");return}if(i.currentAppId===null){F("assistant","Please create or open an app first.");return}te.value="",F("user",e),ye(!0);try{const t=await yn(e,n),s=t.files.map(a=>({id:G(),appId:i.currentAppId,name:a.name,content:a.content}));await Le(i.currentAppId,s),i.files=s,i.activeFileName=((r=s[0])==null?void 0:r.name)??null;const l=i.apps.find(a=>a.id===i.currentAppId);if(l!==void 0){const a={...l,updatedAt:R()};await z(a),i.apps=i.apps.map(m=>m.id===l.id?a:m)}F("assistant",`Generated ${s.length} file(s). ${t.description}`.trim()),Te(ie,s)}catch(t){const s=t instanceof Error?t.message:String(t);F("assistant",`Error: ${s}`)}finally{ye(!1)}}function De(){Y().then(()=>{Te(ie,i.files)})}async function Gn(){const e=i.apps.find(l=>l.id===i.currentAppId);if(e===void 0)return;await Y();const n={app:e,files:i.files,exportedAt:R()},r=new Blob([JSON.stringify(n,null,2)],{type:"application/json"}),t=URL.createObjectURL(r),s=document.createElement("a");s.href=t,s.download=`${e.name.replace(/\s+/g,"-")}.json`,s.click(),URL.revokeObjectURL(t)}function _n(){H.value="",H.click()}async function Wn(){var n;const e=(n=H.files)==null?void 0:n[0];if(e!==void 0)try{const r=await e.text(),t=JSON.parse(r);if(t.app===void 0||typeof t.app.name!="string"||!Array.isArray(t.files))throw new Error("Invalid app JSON format.");const s=G(),l={id:s,name:`${t.app.name} (imported)`,createdAt:t.app.createdAt??R(),updatedAt:R()},a=t.files.filter(m=>typeof m.name=="string"&&typeof m.content=="string").map(m=>({id:G(),appId:s,name:m.name,content:m.content}));await z(l),await Le(s,a),i.apps=[...i.apps,l],await Q(s)}catch(r){const t=r instanceof Error?r.message:String(r);alert(`Import failed: ${t}`)}}function Hn(){ae.value=Re(),W.classList.remove("hidden"),ae.focus()}function X(){W.classList.add("hidden")}function qn(){const e=Ne();e.apiKey=ae.value.trim(),Jn(e),X()}i.on("set:apps",()=>Ce());i.on("set:currentAppId",()=>{Ce(),Pe()});i.on("set:files",()=>{le(),ce()});i.on("set:activeFileName",()=>{le(),ce()});On.addEventListener("click",Me);In.addEventListener("click",Me);Nn.addEventListener("click",Un);Rn.addEventListener("click",()=>{Vn()});Cn.addEventListener("click",()=>{Gn()});se.addEventListener("click",()=>{Be()});Ln.addEventListener("click",De);Tn.addEventListener("click",De);Pn.addEventListener("click",Hn);Mn.addEventListener("click",X);Bn.addEventListener("click",qn);Dn.addEventListener("click",X);W.addEventListener("click",e=>{e.target===W&&X()});U.addEventListener("click",()=>{});Fn.addEventListener("click",de);$n.addEventListener("click",de);C.addEventListener("click",e=>{e.target===C&&de()});I.addEventListener("keydown",e=>{e.key==="Enter"&&U.click()});te.addEventListener("keydown",e=>{e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),Be())});_.addEventListener("blur",()=>{Y()});H.addEventListener("change",()=>{Wn()});const Z=document.createElement("button");Z.className="btn btn-ghost btn-full";Z.textContent="↑ Import";Z.addEventListener("click",_n);const we=document.querySelector(".sidebar-footer"),je=document.getElementById("btn-settings");we!==null&&je!==null&&we.insertBefore(Z,je);async function Kn(){const e=await He();if(i.apps=e,e.length>0){const n=[...e].sort((r,t)=>t.updatedAt.localeCompare(r.updatedAt));await Q(n[0].id)}else Pe()}Kn().catch(e=>{console.error("App Builder init failed:",e)});
+${he(r,6e3)}
+`.trim()}function he(e,n){return e.length<=n?e:`${e.slice(0,n)}
+... [truncated]`}function V(e,n){try{return JSON.parse(e).version??"latest"}catch{return console.warn(`Failed to parse package metadata for ${n}.`),"latest"}}function kn(e){const n=e.error;return typeof(n==null?void 0:n.message)=="string"?n.message:null}function Ln(e){const n=e.choices,r=n==null?void 0:n[0],t=r==null?void 0:r.message,s=t==null?void 0:t.content;if(typeof s!="string")throw new Error("AI returned an unexpected response format.");return s}function Tn(e){let n;try{n=JSON.parse(e)}catch{throw new Error("AI returned invalid JSON.")}if(!On(n))throw new Error("AI returned an unexpected response shape.");return n}function On(e){if(typeof e!="object"||e===null)return!1;const n=e;return typeof n.description!="string"||!Array.isArray(n.files)?!1:n.files.every(In)}function In(e){if(typeof e!="object"||e===null)return!1;const n=e;return typeof n.name=="string"&&typeof n.content=="string"}let D=null;const de="asljs-app-builder:eval-request",Ce="asljs-app-builder:eval-response",ge=`<script>
+(() => {
+  const REQUEST = '${de}';
+  const RESPONSE = '${Ce}';
+
+  window.addEventListener('message', async event => {
+    const data = event.data;
+
+    if (!data || data.type !== REQUEST) {
+      return;
+    }
+
+    if (typeof data.id !== 'string' || typeof data.code !== 'string') {
+      return;
+    }
+
+    try {
+      const result = (0, eval)(data.code);
+      const value = await Promise.resolve(result);
+
+      event.source?.postMessage(
+        {
+          type: RESPONSE,
+          id: data.id,
+          ok: true,
+          value,
+        },
+        '*',
+      );
+    } catch (error) {
+      event.source?.postMessage(
+        {
+          type: RESPONSE,
+          id: data.id,
+          ok: false,
+          error: error instanceof Error
+            ? error.message
+            : String(error),
+        },
+        '*',
+      );
+    }
+  });
+})();
+<\/script>`;function Pe(e,n){if(D!==null&&(URL.revokeObjectURL(D),D=null),n.length===0){e.src="about:blank";return}const r=n.find(i=>i.name==="index.html")??n.find(i=>i.name.endsWith(".html"))??null;if(r===null){e.src="about:blank";return}let t=r.content;const s=n.find(i=>i.name==="style.css")??n.find(i=>i.name.endsWith(".css"))??null;s!==null&&(t=t.replace(/<link[^>]+href=["']style\.css["'][^>]*>/gi,`<style>${s.content}</style>`),t=t.replace(/<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,`<style>${s.content}</style>`));for(const i of n){if(!i.name.endsWith(".js"))continue;const u=i.name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");t=t.replace(new RegExp(`(<script[^>]*?)\\s+src=["']${u}["']([^>]*)><\\/script>`,"gi"),(y,E,v)=>{const w=`${String(E)} ${String(v)}`;return/type=["']module["']/i.test(w)?`<script type="module">${i.content}<\/script>`:`<script>${i.content}<\/script>`})}t=Nn(t);const o=new Blob([t],{type:"text/html"});D=URL.createObjectURL(o),e.src=D}async function ye(e,n){const r=e.contentWindow;if(r===null)throw new Error("Preview frame is not available.");const t=crypto.randomUUID();return new Promise((s,o)=>{const i=window.setTimeout(()=>{y(),o(new Error("Timed out waiting for app evaluation result."))},5e3),u=E=>{if(E.source!==r)return;const v=E.data;if(!(v.type!==Ce||v.id!==t)){if(y(),v.ok===!0){s(v.value);return}o(new Error(v.error??"Unknown preview evaluation error."))}};function y(){window.clearTimeout(i),window.removeEventListener("message",u)}window.addEventListener("message",u),r.postMessage({type:de,id:t,code:n},"*")})}function Nn(e){return e.includes(de)?e:e.includes("</body>")?e.replace("</body>",`${ge}</body>`):`${e}
+${ge}`}function U(){return crypto.randomUUID()}function R(){return new Date().toISOString()}function f(e){const n=document.getElementById(e);if(n===null)throw new Error(`Missing element #${e}`);return n}const we=f("app-list"),je=f("empty-state"),Ee=f("app-workspace"),Rn=f("app-name-display"),xe=f("file-tabs"),W=f("file-content"),$=f("chat-messages"),oe=f("chat-input"),ie=f("btn-generate"),Cn=f("btn-run"),Pn=f("btn-refresh-preview"),J=f("preview-frame"),Mn=f("btn-new-app"),Bn=f("btn-new-app-2"),Dn=f("btn-rename"),Fn=f("btn-delete-app"),$n=f("btn-export"),Un=f("btn-settings"),q=f("settings-modal"),Jn=f("btn-close-settings"),Vn=f("btn-save-settings"),_n=f("btn-cancel-settings"),le=f("api-key-input"),C=f("name-modal"),Me=f("name-modal-title"),I=f("app-name-input"),_=f("btn-confirm-name"),Gn=f("btn-cancel-name"),Wn=f("btn-close-name-modal"),H=f("import-file"),Be="asljs-app-builder-settings";function De(){try{const e=localStorage.getItem(Be)??"{}";return JSON.parse(e)}catch{return{}}}function qn(e){localStorage.setItem(Be,JSON.stringify(e))}function Fe(){return De().apiKey??""}function Hn(){if(a.currentAppId===null)throw new Error("No active app. Create or open an app first.");return a.currentAppId}async function Kn(){return[...a.files].map(e=>e.name).sort((e,n)=>e.localeCompare(n))}async function Yn(e){const n=a.files.find(r=>r.name===e);if(n===void 0)throw new Error(`File not found: ${e}`);return n.content}async function zn(e,n){const r=Hn(),t=a.files.find(o=>o.name===e);if(t!==void 0){const o={...t,content:n};await ae(o),a.files=a.files.map(i=>i.id===o.id?o:i),a.activeFileName=o.name;return}const s={id:U(),appId:r,name:e,content:n};await ae(s),a.files=[...a.files,s],a.activeFileName=s.name}async function Qn(e){var t;const n=a.files.find(s=>s.name===e);if(n===void 0)return;await en(n.id);const r=a.files.filter(s=>s.id!==n.id);a.files=r,a.activeFileName===e&&(a.activeFileName=((t=r[0])==null?void 0:t.name)??null)}async function Xn(e){if(a.files.length===0)throw new Error("No files available to run.");K();try{return await ye(J,e)}catch{return K(),ye(J,e)}}function $e(){we.replaceChildren();const e=[...a.apps].sort((n,r)=>r.updatedAt.localeCompare(n.updatedAt));for(const n of e){const r=document.createElement("div");r.className="app-item"+(n.id===a.currentAppId?" active":""),r.dataset.id=n.id;const t=document.createElement("span");t.className="app-item-name",t.textContent=n.name,r.appendChild(t),r.addEventListener("click",()=>{Z(n.id)}),we.appendChild(r)}}function Ue(){const e=a.apps.find(n=>n.id===a.currentAppId);if(e===void 0){je.classList.remove("hidden"),Ee.classList.add("hidden");return}je.classList.add("hidden"),Ee.classList.remove("hidden"),Rn.textContent=e.name,pe(),ue()}function pe(){xe.replaceChildren();for(const e of a.files){const n=document.createElement("div");n.className="file-tab"+(e.name===a.activeFileName?" active":""),n.textContent=e.name,n.addEventListener("click",()=>{X(),a.activeFileName=e.name}),xe.appendChild(n)}}function ue(){const e=a.files.find(n=>n.name===a.activeFileName);W.value=(e==null?void 0:e.content)??"",W.disabled=e===void 0}function Se(e){a.generating=e,ie.disabled=e,ie.innerHTML=e?'<span class="spinner"></span> Generating…':"Generate"}function F(e,n){const r=document.createElement("div");r.className=`chat-msg ${e}`;const t=document.createElement("div");t.className="chat-msg-role",t.textContent=e==="user"?"You":"Assistant";const s=document.createElement("div");s.className="chat-bubble",s.textContent=n,r.appendChild(t),r.appendChild(s),$.appendChild(r),$.scrollTop=$.scrollHeight}async function X(){if(a.activeFileName===null||a.currentAppId===null)return;const e=a.files.find(r=>r.name===a.activeFileName);if(e===void 0)return;const n=W.value;e.content!==n&&(e.content=n,await ae(e))}async function Z(e){var r;a.currentAppId=e;const n=await Ze(e);a.files=n,a.activeFileName=((r=n[0])==null?void 0:r.name)??null,$.replaceChildren()}function Je(){Me.textContent="New App",I.value="",C.classList.remove("hidden"),I.focus(),_.onclick=async()=>{const e=I.value.trim();if(e==="")return;C.classList.add("hidden");const n={id:U(),name:e,createdAt:R(),updatedAt:R()};await Q(n),a.apps=[...a.apps,n],await Z(n.id)}}function fe(){C.classList.add("hidden"),_.onclick=null}function Zn(){const e=a.apps.find(n=>n.id===a.currentAppId);e!==void 0&&(Me.textContent="Rename App",I.value=e.name,C.classList.remove("hidden"),I.focus(),I.select(),_.onclick=async()=>{const n=I.value.trim();if(n==="")return;C.classList.add("hidden");const r={...e,name:n,updatedAt:R()};await Q(r),a.apps=a.apps.map(t=>t.id===e.id?r:t)})}async function er(){const e=a.apps.find(n=>n.id===a.currentAppId);e!==void 0&&confirm(`Delete "${e.name}"? This cannot be undone.`)&&(await Xe(e.id),a.apps=a.apps.filter(n=>n.id!==e.id),a.currentAppId=null,a.files=[],a.activeFileName=null,$.replaceChildren(),J.src="about:blank")}async function Ve(){var r;const e=oe.value.trim();if(e==="")return;const n=Fe();if(n===""){F("assistant","No OpenAI API key set. Open Settings (⚙) to add your key. Generation is optional — you can also create files manually.");return}if(a.currentAppId===null){F("assistant","Please create or open an app first.");return}oe.value="",F("user",e),Se(!0);try{const t=await Sn(e,n),s=t.files.map(i=>({id:U(),appId:a.currentAppId,name:i.name,content:i.content}));await Re(a.currentAppId,s),a.files=s,a.activeFileName=((r=s[0])==null?void 0:r.name)??null;const o=a.apps.find(i=>i.id===a.currentAppId);if(o!==void 0){const i={...o,updatedAt:R()};await Q(i),a.apps=a.apps.map(u=>u.id===o.id?i:u)}F("assistant",`Generated ${s.length} file(s). ${t.description}`.trim()),Pe(J,s)}catch(t){const s=t instanceof Error?t.message:String(t);F("assistant",`Error: ${s}`)}finally{Se(!1)}}function K(){X().then(()=>{Pe(J,a.files)})}async function nr(){const e=a.apps.find(o=>o.id===a.currentAppId);if(e===void 0)return;await X();const n={app:e,files:a.files,exportedAt:R()},r=new Blob([JSON.stringify(n,null,2)],{type:"application/json"}),t=URL.createObjectURL(r),s=document.createElement("a");s.href=t,s.download=`${e.name.replace(/\s+/g,"-")}.json`,s.click(),URL.revokeObjectURL(t)}function rr(){H.value="",H.click()}async function tr(){var n;const e=(n=H.files)==null?void 0:n[0];if(e!==void 0)try{const r=await e.text(),t=JSON.parse(r);if(t.app===void 0||typeof t.app.name!="string"||!Array.isArray(t.files))throw new Error("Invalid app JSON format.");const s=U(),o={id:s,name:`${t.app.name} (imported)`,createdAt:t.app.createdAt??R(),updatedAt:R()},i=t.files.filter(u=>typeof u.name=="string"&&typeof u.content=="string").map(u=>({id:U(),appId:s,name:u.name,content:u.content}));await Q(o),await Re(s,i),a.apps=[...a.apps,o],await Z(s)}catch(r){const t=r instanceof Error?r.message:String(r);alert(`Import failed: ${t}`)}}function sr(){le.value=Fe(),q.classList.remove("hidden"),le.focus()}function ee(){q.classList.add("hidden")}function ar(){const e=De();e.apiKey=le.value.trim(),qn(e),ee()}a.on("set:apps",()=>$e());a.on("set:currentAppId",()=>{$e(),Ue()});a.on("set:files",()=>{pe(),ue()});a.on("set:activeFileName",()=>{pe(),ue()});Mn.addEventListener("click",Je);Bn.addEventListener("click",Je);Dn.addEventListener("click",Zn);Fn.addEventListener("click",()=>{er()});$n.addEventListener("click",()=>{nr()});ie.addEventListener("click",()=>{Ve()});Cn.addEventListener("click",K);Pn.addEventListener("click",K);Un.addEventListener("click",sr);Jn.addEventListener("click",ee);Vn.addEventListener("click",ar);_n.addEventListener("click",ee);q.addEventListener("click",e=>{e.target===q&&ee()});_.addEventListener("click",()=>{});Gn.addEventListener("click",fe);Wn.addEventListener("click",fe);C.addEventListener("click",e=>{e.target===C&&fe()});I.addEventListener("keydown",e=>{e.key==="Enter"&&_.click()});oe.addEventListener("keydown",e=>{e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),Ve())});W.addEventListener("blur",()=>{X()});H.addEventListener("change",()=>{tr()});const ne=document.createElement("button");ne.className="btn btn-ghost btn-full";ne.textContent="↑ Import";ne.addEventListener("click",rr);const Ae=document.querySelector(".sidebar-footer"),ke=document.getElementById("btn-settings");Ae!==null&&ke!==null&&Ae.insertBefore(ne,ke);window.listFileset=Kn;window.readFile=Yn;window.setFileContent=zn;window.deleteFile=Qn;window.evalInApp=Xn;async function or(){const e=await Qe();if(a.apps=e,e.length>0){const n=[...e].sort((r,t)=>t.updatedAt.localeCompare(r.updatedAt));await Z(n[0].id)}else Ue()}or().catch(e=>{console.error("App Builder init failed:",e)});

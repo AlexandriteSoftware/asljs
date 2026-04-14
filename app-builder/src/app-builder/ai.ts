@@ -134,7 +134,7 @@ The generated app is a showcase of ASLJS libraries. Use ALL of these packages in
 
 ${packageVersions}
 
-Output requirements:
+Generator output requirements:
 - Return JSON only (no markdown, no prose), with this exact shape:
   {
     "description": "one-sentence description",
@@ -151,9 +151,34 @@ Generation rules:
 - Always include at least: index.html, style.css, app.js, package.json, README.md.
 - package.json must include latest versions listed above.
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
+- app.js is the app entry point.
 - index.html must load app.js using <script type="module">.
 - Prefer real app behavior over toy snippets (state, events, bindings, local persistence, and at least one ASLJS component).
 - Keep code concise, runnable in modern browser, and readable.
+
+Agent tool contract (virtual filesystem and runtime):
+- Assume the generated app includes an agent that can use these tools:
+  - listFileset(): returns all file paths in the virtual filesystem.
+  - readFile(path): returns full text content for a file.
+  - setFileContent(path, content): creates or replaces a file's content.
+  - deleteFile(path): deletes a file from the virtual filesystem.
+  - evalInApp(code): evaluates JavaScript in the context of the running app document.
+- Generate app code and README so these tool names and behaviors are clear and usable.
+- Keep the tool usage model deterministic and safe (no hidden magic paths).
+
+In-app agent update protocol:
+- For normal edits, the in-app agent must update files through tools:
+  - inspect with listFileset/readFile
+  - modify/create with setFileContent
+  - remove with deleteFile when appropriate
+- JSON should be used only for explicit export/import workflows.
+
+Run/repair loop requirements for the generated agent behavior:
+- The agent must treat app.js as the starting point for the app runtime.
+- The agent must verify the app is running (for example by using evalInApp checks against the loaded document).
+- If the app is not running, the agent must iteratively adjust files via setFileContent/deleteFile,
+  then re-check until the app runs.
+- The final generated code should reflect this workflow explicitly in app.js and/or README.
 
 Use this package knowledge as source material when choosing APIs and patterns:
 ${docsBundle}

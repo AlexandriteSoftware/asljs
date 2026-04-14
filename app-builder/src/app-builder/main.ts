@@ -5,10 +5,14 @@ import {
   deleteApp,
   listFiles,
   saveFile,
+  deleteFile,
   replaceFiles,
 } from './storage.js';
 import { generateApp } from './ai.js';
-import { renderPreview } from './preview.js';
+import {
+  renderPreview,
+  evaluateInPreview,
+} from './preview.js';
 import {
   type AppRecord,
   type FileRecord,
@@ -88,6 +92,109 @@ function saveSettings(settings: Settings): void {
 
 function getApiKey(): string {
   return loadSettings().apiKey ?? '';
+}
+
+function requireCurrentAppId(): string {
+  if (state.currentAppId === null) {
+    throw new Error('No active app. Create or open an app first.');
+  }
+
+  return state.currentAppId;
+}
+
+async function listFilesetTool(): Promise<string[]> {
+  return [...state.files]
+    .map(file => file.name)
+    .sort((left, right) => left.localeCompare(right));
+}
+
+async function readFileTool(path: string): Promise<string> {
+  const file = state.files.find(item => item.name === path);
+
+  if (file === undefined) {
+    throw new Error(`File not found: ${path}`);
+  }
+
+  return file.content;
+}
+
+async function setFileContentTool(
+  path: string,
+  content: string,
+): Promise<void> {
+  const appId = requireCurrentAppId();
+
+  const existing = state.files.find(item => item.name === path);
+
+  if (existing !== undefined) {
+    const updated: FileRecord = {
+      ...existing,
+      content,
+    };
+
+    await saveFile(updated);
+    state.files = state.files.map(item =>
+      item.id === updated.id
+? updated
+: item,
+    );
+    state.activeFileName = updated.name;
+    return;
+  }
+
+  const created: FileRecord = {
+    id: randomId(),
+    appId,
+    name: path,
+    content,
+  };
+
+  await saveFile(created);
+  state.files = [...state.files, created];
+  state.activeFileName = created.name;
+}
+
+async function deleteFileTool(path: string): Promise<void> {
+  const file = state.files.find(item => item.name === path);
+
+  if (file === undefined) {
+    return;
+  }
+
+  await deleteFile(file.id);
+
+  const remaining = state.files.filter(item => item.id !== file.id);
+  state.files = remaining;
+
+  if (state.activeFileName === path) {
+    state.activeFileName = remaining[0]?.name ?? null;
+  }
+}
+
+async function evalInAppTool(code: string): Promise<unknown> {
+  if (state.files.length === 0) {
+    throw new Error('No files available to run.');
+  }
+
+  handleRun();
+
+  try {
+    return await evaluateInPreview(elPreviewFrame, code);
+  } catch {
+    // Retry once after a second run to handle initial iframe startup timing.
+    handleRun();
+    return evaluateInPreview(elPreviewFrame, code);
+  }
+}
+
+declare global {
+  interface Window {
+    listFileset: () => Promise<string[]>;
+    readFile: (path: string) => Promise<string>;
+    setFileContent: (path: string, content: string) => Promise<void>;
+    deleteFile: (path: string) => Promise<void>;
+    evalInApp: (code: string) => Promise<unknown>;
+  }
 }
 
 function renderAppList(): void {
@@ -571,6 +678,12 @@ const settingsButton = document.getElementById('btn-settings');
 if (sidebarFooter !== null && settingsButton !== null) {
   sidebarFooter.insertBefore(btnImport, settingsButton);
 }
+
+window.listFileset = listFilesetTool;
+window.readFile = readFileTool;
+window.setFileContent = setFileContentTool;
+window.deleteFile = deleteFileTool;
+window.evalInApp = evalInAppTool;
 
 async function init(): Promise<void> {
   const apps = await listApps();
