@@ -65,7 +65,7 @@ const elBtnRefreshPreview =
 const elPreviewFrame = mustElement<HTMLIFrameElement>('preview-frame');
 const elBtnNewApp = mustElement<HTMLButtonElement>('btn-new-app');
 const elBtnImport = mustElement<HTMLButtonElement>('btn-import');
-const elBtnRename = mustElement<HTMLButtonElement>('btn-rename');
+const elBtnProjectSettings = mustElement<HTMLButtonElement>('btn-project-settings');
 const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
 const elBtnAgentInstructions =
@@ -93,6 +93,16 @@ const elBtnConfirmName = mustElement<HTMLButtonElement>('btn-confirm-name');
 const elBtnCancelName = mustElement<HTMLButtonElement>('btn-cancel-name');
 const elBtnCloseNameModal =
   mustElement<HTMLButtonElement>('btn-close-name-modal');
+
+const elProjectSettingsModal = mustElement<HTMLElement>('project-settings-modal');
+const elProjectNameInput = mustElement<HTMLInputElement>('project-name-input');
+const elBtnSaveProjectSettings =
+  mustElement<HTMLButtonElement>('btn-save-project-settings');
+const elBtnDeleteProject = mustElement<HTMLButtonElement>('btn-delete-project');
+const elBtnCloseProjectSettings =
+  mustElement<HTMLButtonElement>('btn-close-project-settings');
+const elBtnCloseProjectSettingsX =
+  mustElement<HTMLButtonElement>('btn-close-project-settings-x');
 
 const elImportFile = mustElement<HTMLInputElement>('import-file');
 
@@ -193,6 +203,34 @@ function requireCurrentAppId(): string {
   return state.currentAppId;
 }
 
+function normalizeToolPath(path: string): string {
+  const normalized = path
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/^\/+/, '');
+
+  if (normalized === '') {
+    throw new Error('Path cannot be empty.');
+  }
+
+  if (normalized.includes('..')) {
+    throw new Error('Parent path segments are not allowed.');
+  }
+
+  return normalized;
+}
+
+function resolveExistingPath(path: string): string | null {
+  const normalizedPath = normalizeToolPath(path);
+
+  const found = state.files.find(item =>
+    normalizeToolPath(item.name).toLowerCase() === normalizedPath.toLowerCase(),
+  );
+
+  return found?.name ?? null;
+}
+
 async function listFilesetTool(): Promise<string[]> {
   return [...state.files]
     .map(file => file.name)
@@ -200,7 +238,11 @@ async function listFilesetTool(): Promise<string[]> {
 }
 
 async function readFileTool(path: string): Promise<string> {
-  const file = state.files.find(item => item.name === path);
+  const resolvedPath = resolveExistingPath(path);
+
+  const file = resolvedPath === null
+    ? undefined
+    : state.files.find(item => item.name === resolvedPath);
 
   if (file === undefined) {
     throw new Error(`File not found: ${path}`);
@@ -214,8 +256,10 @@ async function setFileContentTool(
   content: string,
 ): Promise<void> {
   const appId = requireCurrentAppId();
+  const normalizedPath = normalizeToolPath(path);
+  const resolvedPath = resolveExistingPath(normalizedPath);
 
-  const existing = state.files.find(item => item.name === path);
+  const existing = state.files.find(item => item.name === (resolvedPath ?? normalizedPath));
 
   if (existing !== undefined) {
     const updated: FileRecord = {
@@ -236,7 +280,7 @@ async function setFileContentTool(
   const created: FileRecord = {
     id: randomId(),
     appId,
-    name: path,
+    name: normalizedPath,
     content,
   };
 
@@ -246,7 +290,10 @@ async function setFileContentTool(
 }
 
 async function deleteFileTool(path: string): Promise<void> {
-  const file = state.files.find(item => item.name === path);
+  const resolvedPath = resolveExistingPath(path);
+  const file = resolvedPath === null
+    ? undefined
+    : state.files.find(item => item.name === resolvedPath);
 
   if (file === undefined) {
     return;
@@ -272,10 +319,16 @@ async function replaceFilePartTool(
     throw new Error('Search text cannot be empty.');
   }
 
-  const original = await readFileTool(path);
+  const resolvedPath = resolveExistingPath(path);
+
+  if (resolvedPath === null) {
+    throw new Error(`File not found: ${path}`);
+  }
+
+  const original = await readFileTool(resolvedPath);
 
   if (!original.includes(search)) {
-    throw new Error(`Search text not found in ${path}.`);
+    throw new Error(`Search text not found in ${resolvedPath}.`);
   }
 
   let next = original;
@@ -298,7 +351,7 @@ async function replaceFilePartTool(
       + original.slice(firstIndex + search.length);
   }
 
-  await setFileContentTool(path, next);
+  await setFileContentTool(resolvedPath, next);
 }
 
 async function evalInAppTool(code: string): Promise<unknown> {
@@ -597,6 +650,56 @@ function promptRenameApp(): void {
 ? updated
 : item));
   };
+}
+
+function openProjectSettings(): void {
+  const app = state.apps.find(item => item.id === state.currentAppId);
+
+  if (app === undefined) {
+    return;
+  }
+
+  elProjectNameInput.value = app.name;
+  elProjectSettingsModal.classList.remove('hidden');
+  elProjectNameInput.focus();
+  elProjectNameInput.select();
+}
+
+function closeProjectSettings(): void {
+  elProjectSettingsModal.classList.add('hidden');
+}
+
+async function saveProjectSettings(): Promise<void> {
+  const app = state.apps.find(item => item.id === state.currentAppId);
+
+  if (app === undefined) {
+    return;
+  }
+
+  const name = elProjectNameInput.value.trim();
+
+  if (name === '') {
+    elProjectNameInput.focus();
+    return;
+  }
+
+  const updated: AppRecord = {
+    ...app,
+    name,
+    updatedAt: now(),
+  };
+
+  await saveApp(updated);
+  state.apps = state.apps.map(item => (item.id === app.id
+? updated
+: item));
+
+  closeProjectSettings();
+}
+
+async function deleteProjectFromSettings(): Promise<void> {
+  closeProjectSettings();
+  await confirmDeleteApp();
 }
 
 async function confirmDeleteApp(): Promise<void> {
@@ -906,7 +1009,7 @@ state.on('set:activeFileName', () => {
 
 elBtnNewApp.addEventListener('click', promptNewApp);
 elBtnImport.addEventListener('click', handleImportClick);
-elBtnRename.addEventListener('click', promptRenameApp);
+elBtnProjectSettings.addEventListener('click', openProjectSettings);
 elBtnExport.addEventListener('click', () => {
   void handleExport();
 });
@@ -949,9 +1052,30 @@ elNameModal.addEventListener('click', (event: MouseEvent) => {
   }
 });
 
+elBtnSaveProjectSettings.addEventListener('click', () => {
+  void saveProjectSettings();
+});
+elBtnDeleteProject.addEventListener('click', () => {
+  void deleteProjectFromSettings();
+});
+elBtnCloseProjectSettings.addEventListener('click', closeProjectSettings);
+elBtnCloseProjectSettingsX.addEventListener('click', closeProjectSettings);
+elProjectSettingsModal.addEventListener('click', (event: MouseEvent) => {
+  if (event.target === elProjectSettingsModal) {
+    closeProjectSettings();
+  }
+});
+
 elAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     elBtnConfirmName.click();
+  }
+});
+
+elProjectNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    void saveProjectSettings();
   }
 });
 

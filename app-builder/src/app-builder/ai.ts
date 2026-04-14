@@ -301,6 +301,13 @@ Response requirements:
 - Do not return a full files JSON snapshot.
 - Return a short plain-text summary only after updates are complete.
 
+Input interpretation rules:
+- Treat user input as an app modification request by default.
+- If user input looks command-like (for example: "add", "change", "replace", "remove", "rename", "fix", "update", "move", "create"), interpret it as instructions to modify the existing project files.
+- If user input looks like project artifacts or descriptive specs (feature bullets, acceptance criteria, user stories, TODO lists, changelog-style notes, issue-like descriptions, README snippets, architecture notes), treat it as actionable requirements to implement in the current app.
+- Do not just echo or summarize artifact-like input; apply it as code/file changes unless the user explicitly asks only for explanation.
+- Prefer incremental edits to existing files over full rewrites when handling these requests.
+
 Tool-first generation protocol (stability-first):
 - Always work in small, incremental steps:
   1) inspect current files/state,
