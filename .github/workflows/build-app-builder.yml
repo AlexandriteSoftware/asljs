@@ -1,0 +1,40 @@
+name: Build App Builder
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app-builder/**'
+      - 'components/src/**'
+      - 'dali/src/**'
+      - 'data-binding/src/**'
+      - 'eventful/src/**'
+      - 'observable/src/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app builder
+        run: cd app-builder && npm run build
+
+      - name: Commit and push docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || (git commit -m "chore: update docs [skip ci]" && git push)
