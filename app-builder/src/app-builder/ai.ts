@@ -74,6 +74,8 @@ type AiTools = {
     replaceAll?: boolean,
   ) => Promise<void>;
   evalInApp: (code: string) => Promise<unknown>;
+  getAppDiagnostics: () => Promise<unknown>;
+  runAppAndCollectDiagnostics: () => Promise<unknown>;
 };
 
 type AgentRunResult = {
@@ -361,6 +363,8 @@ Agent tool contract (virtual filesystem and runtime):
   - replaceFilePart(path, search, replacement, replaceAll?): replaces exact text in a file.
   - deleteFile(path): deletes a file from the virtual filesystem.
   - evalInApp(code): evaluates JavaScript in the context of the running app document.
+  - getAppDiagnostics(): returns runtime logs and errors from the running app.
+  - runAppAndCollectDiagnostics(): runs app and returns startup/runtime logs and errors.
 - Generate app code and README so these tool names and behaviors are clear and usable.
 - Keep the tool usage model deterministic and safe (no hidden magic paths).
 
@@ -373,10 +377,9 @@ In-app agent update protocol:
 
 Run/repair loop requirements for the generated agent behavior:
 - The agent must treat app.js as the starting point for the app runtime.
-- The agent must verify the app is running (for example by using evalInApp checks against the loaded document).
-- If the app is not running, the agent must iteratively adjust files via setFileContent/deleteFile,
-- If the app is not running, the agent must iteratively adjust files via replaceFilePart/setFileContent/deleteFile,
-  then re-check until the app runs.
+- After each generation pass, the agent must run the app and collect diagnostics using runAppAndCollectDiagnostics().
+- If diagnostics report runtime errors, the agent must iteratively fix files and re-run diagnostics until errors are resolved.
+- The agent should use getAppDiagnostics() and evalInApp(...) for targeted debugging checks between edits.
 - The final generated code should reflect this workflow explicitly in app.js and/or README.
 
 Use this package knowledge as source material when choosing APIs and patterns:
@@ -483,6 +486,16 @@ async function executeToolCall(
 
       case 'evalInApp': {
         const result = await tools.evalInApp(readStringArg(args, 'code'));
+        return toolSuccess(result);
+      }
+
+      case 'getAppDiagnostics': {
+        const result = await tools.getAppDiagnostics();
+        return toolSuccess(result);
+      }
+
+      case 'runAppAndCollectDiagnostics': {
+        const result = await tools.runAppAndCollectDiagnostics();
         return toolSuccess(result);
       }
 

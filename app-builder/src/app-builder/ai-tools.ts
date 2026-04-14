@@ -103,4 +103,28 @@ export const OPENAI_TOOLS: OpenAiToolDefinition[] = [
     },
     strict: true,
   },
+  {
+    type: 'function',
+    name: 'getAppDiagnostics',
+    description: 'Get current runtime logs and errors from the running app.',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
+  {
+    type: 'function',
+    name: 'runAppAndCollectDiagnostics',
+    description: 'Run the app and collect runtime logs and errors after startup.',
+    parameters: {
+      type: 'object',
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    },
+    strict: true,
+  },
 ];

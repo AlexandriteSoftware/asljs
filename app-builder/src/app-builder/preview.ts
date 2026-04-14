@@ -6,17 +6,139 @@ const EVAL_REQUEST_TYPE =
   'asljs-app-builder:eval-request';
 const EVAL_RESPONSE_TYPE =
   'asljs-app-builder:eval-response';
+const DIAGNOSTICS_REQUEST_TYPE =
+  'asljs-app-builder:diagnostics-request';
+const DIAGNOSTICS_RESPONSE_TYPE =
+  'asljs-app-builder:diagnostics-response';
+
+export type RuntimeDiagnostics = {
+  logs: Array<
+    {
+      timestamp: number;
+      level: string;
+      message: string;
+    }
+  >;
+  errors: Array<
+    {
+      timestamp: number;
+      message: string;
+    }
+  >;
+};
 
 const EVAL_BRIDGE_SCRIPT =
   `<script>
 (() => {
   const REQUEST = '${EVAL_REQUEST_TYPE}';
   const RESPONSE = '${EVAL_RESPONSE_TYPE}';
+  const DIAG_REQUEST = '${DIAGNOSTICS_REQUEST_TYPE}';
+  const DIAG_RESPONSE = '${DIAGNOSTICS_RESPONSE_TYPE}';
+  const DIAG_KEY = '__asljs_app_builder_diagnostics';
+  const MAX_ENTRIES = 250;
+
+  const diagnostics =
+    window[DIAG_KEY]
+    ?? { logs: [], errors: [] };
+
+  window[DIAG_KEY] = diagnostics;
+
+  const toText = (value) => {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  };
+
+  const append = (list, entry) => {
+    list.push(entry);
+
+    if (list.length > MAX_ENTRIES) {
+      list.splice(0, list.length - MAX_ENTRIES);
+    }
+  };
+
+  const addLog = (level, args) => {
+    append(
+      diagnostics.logs,
+      {
+        timestamp: Date.now(),
+        level,
+        message: args.map(toText).join(' '),
+      },
+    );
+  };
+
+  const addError = (message) => {
+    append(
+      diagnostics.errors,
+      {
+        timestamp: Date.now(),
+        message,
+      },
+    );
+  };
+
+  if (!window.__asljs_app_builder_console_hooked__) {
+    window.__asljs_app_builder_console_hooked__ = true;
+
+    const methods = ['log', 'info', 'warn', 'error', 'debug'];
+
+    for (const method of methods) {
+      const original = console[method].bind(console);
+
+      console[method] = (...args) => {
+        addLog(method, args);
+
+        if (method === 'error') {
+          addError(args.map(toText).join(' '));
+        }
+
+        original(...args);
+      };
+    }
+
+    window.addEventListener('error', event => {
+      addError(event.message || 'Unknown runtime error');
+    });
+
+    window.addEventListener('unhandledrejection', event => {
+      addError(event.reason instanceof Error
+        ? event.reason.message
+        : toText(event.reason));
+    });
+  }
 
   window.addEventListener('message', async event => {
     const data = event.data;
 
-    if (!data || data.type !== REQUEST) {
+    if (!data || typeof data.type !== 'string') {
+      return;
+    }
+
+    if (data.type === DIAG_REQUEST) {
+      if (typeof data.id !== 'string') {
+        return;
+      }
+
+      event.source?.postMessage(
+        {
+          type: DIAG_RESPONSE,
+          id: data.id,
+          ok: true,
+          diagnostics,
+        },
+        '*',
+      );
+      return;
+    }
+
+    if (data.type !== REQUEST) {
       return;
     }
 
@@ -136,6 +258,56 @@ export async function evaluateInPreview(
   frame: HTMLIFrameElement,
   code: string,
 ): Promise<unknown> {
+  const payload = await requestPreviewPayload(
+    frame,
+    EVAL_REQUEST_TYPE,
+    {
+      code,
+    },
+    EVAL_RESPONSE_TYPE,
+  );
+
+  if (payload.ok === true) {
+    return payload.value;
+  }
+
+  throw new Error(
+    typeof payload.error === 'string'
+      ? payload.error
+      : 'Unknown preview evaluation error.',
+  );
+}
+
+export async function getPreviewDiagnostics(
+  frame: HTMLIFrameElement,
+): Promise<RuntimeDiagnostics> {
+  const payload = await requestPreviewPayload(
+    frame,
+    DIAGNOSTICS_REQUEST_TYPE,
+    {},
+    DIAGNOSTICS_RESPONSE_TYPE,
+  );
+
+  if (payload.ok !== true) {
+    throw new Error(
+      typeof payload.error === 'string'
+        ? payload.error
+        : 'Failed to read preview diagnostics.',
+    );
+  }
+
+  const diagnostics = payload.diagnostics as RuntimeDiagnostics | undefined;
+
+  return diagnostics
+    ?? { logs: [], errors: [] };
+}
+
+async function requestPreviewPayload(
+  frame: HTMLIFrameElement,
+  requestType: string,
+  requestBody: Record<string, unknown>,
+  responseType: string,
+): Promise<Record<string, unknown>> {
   const frameWindow = frame.contentWindow;
 
   if (frameWindow === null) {
@@ -144,7 +316,7 @@ export async function evaluateInPreview(
 
   const requestId = crypto.randomUUID();
 
-  return new Promise<unknown>((resolve, reject) => {
+  return new Promise<Record<string, unknown>>((resolve, reject) => {
     const timeoutId = window.setTimeout(() => {
       cleanup();
       reject(new Error('Timed out waiting for app evaluation result.'));
@@ -155,29 +327,17 @@ export async function evaluateInPreview(
         return;
       }
 
-      const payload = event.data as {
-        type?: string;
-        id?: string;
-        ok?: boolean;
-        value?: unknown;
-        error?: string;
-      };
+      const payload = event.data as Record<string, unknown>;
 
       if (
-        payload.type !== EVAL_RESPONSE_TYPE
+        payload.type !== responseType
         || payload.id !== requestId
       ) {
         return;
       }
 
       cleanup();
-
-      if (payload.ok === true) {
-        resolve(payload.value);
-        return;
-      }
-
-      reject(new Error(payload.error ?? 'Unknown preview evaluation error.'));
+      resolve(payload);
     };
 
     function cleanup(): void {
@@ -189,9 +349,9 @@ export async function evaluateInPreview(
 
     frameWindow.postMessage(
       {
-        type: EVAL_REQUEST_TYPE,
+        type: requestType,
         id: requestId,
-        code,
+        ...requestBody,
       },
       '*',
     );

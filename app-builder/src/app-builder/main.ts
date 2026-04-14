@@ -18,6 +18,7 @@ import {
 import {
   renderPreview,
   evaluateInPreview,
+  getPreviewDiagnostics,
 } from './preview.js';
 import {
   type AppRecord,
@@ -316,6 +317,22 @@ async function evalInAppTool(code: string): Promise<unknown> {
   }
 }
 
+async function getAppDiagnosticsTool(): Promise<unknown> {
+  return getPreviewDiagnostics(elPreviewFrame);
+}
+
+async function runAppAndCollectDiagnosticsTool(): Promise<unknown> {
+  handleRun();
+  await wait(350);
+  return getPreviewDiagnostics(elPreviewFrame);
+}
+
+function wait(milliseconds: number): Promise<void> {
+  return new Promise(resolve => {
+    window.setTimeout(resolve, milliseconds);
+  });
+}
+
 declare global {
   interface Window {
     listFileset: () => Promise<string[]>;
@@ -329,6 +346,8 @@ declare global {
     ) => Promise<void>;
     deleteFile: (path: string) => Promise<void>;
     evalInApp: (code: string) => Promise<unknown>;
+    getAppDiagnostics: () => Promise<unknown>;
+    runAppAndCollectDiagnostics: () => Promise<unknown>;
   }
 }
 
@@ -452,8 +471,8 @@ function setGenerating(value: boolean): void {
   state.generating = value;
   elBtnGenerate.disabled = value;
   elBtnGenerate.innerHTML = value
-    ? '<span class="spinner"></span> Generating…'
-    : 'Generate';
+    ? '<span class="spinner"></span> Sending…'
+    : 'Send';
 }
 
 function setChatProgress(message: string, visible: boolean): void {
@@ -638,6 +657,8 @@ async function handleGenerate(): Promise<void> {
       replaceFilePart: replaceFilePartTool,
       deleteFile: deleteFileTool,
       evalInApp: evalInAppTool,
+      getAppDiagnostics: getAppDiagnosticsTool,
+      runAppAndCollectDiagnostics: runAppAndCollectDiagnosticsTool,
     }, {
       initialToolStepLimit: maxToolSteps,
       onToolStepLimit: async ({ stepsCompleted }) => confirm(
@@ -997,6 +1018,8 @@ window.setFileContent = setFileContentTool;
 window.replaceFilePart = replaceFilePartTool;
 window.deleteFile = deleteFileTool;
 window.evalInApp = evalInAppTool;
+window.getAppDiagnostics = getAppDiagnosticsTool;
+window.runAppAndCollectDiagnostics = runAppAndCollectDiagnosticsTool;
 
 async function init(): Promise<void> {
   applyAppearanceSettings();
