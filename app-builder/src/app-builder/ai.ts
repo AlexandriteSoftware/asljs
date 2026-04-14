@@ -34,8 +34,8 @@ import {
   OPENAI_TOOLS,
 } from './ai-tools.js';
 
-const OPENAI_CHAT_URL =
-  'https://api.openai.com/v1/chat/completions';
+const OPENAI_RESPONSES_URL =
+  'https://api.openai.com/v1/responses';
 
 const OBSERVABLE_VERSION =
   readPackageVersion(observablePackageRaw, 'asljs-observable');
@@ -54,12 +54,13 @@ const SYSTEM_PROMPT =
 export type AiModel = 'gpt-5.3-codex' | 'gpt-5.4';
 
 export const DEFAULT_MODEL: AiModel = 'gpt-5.3-codex';
+export const DEFAULT_MAX_TOOL_STEPS = 20;
 
 export function getSystemPrompt(): string {
   return SYSTEM_PROMPT;
 }
 
-const MAX_TOOL_STEPS = 24;
+const TOOL_STEP_EXTENSION = 12;
 
 type AiTools = {
   listFileset: () => Promise<string[]>;
@@ -79,20 +80,44 @@ type AgentRunResult = {
   summary: string;
 };
 
-type ChatToolCall = {
-  id: string;
-  type: 'function';
-  function: {
-    name: string;
-    arguments: string;
-  };
+type ToolStepLimitInfo = {
+  stepsCompleted: number;
+  stepLimit: number;
 };
 
-type ChatMessage = {
-  role: 'system' | 'user' | 'assistant' | 'tool';
-  content: string;
-  tool_call_id?: string;
-  tool_calls?: ChatToolCall[];
+type GenerateAppOptions = {
+  initialToolStepLimit?: number;
+  onToolStepLimit?: (info: ToolStepLimitInfo) => Promise<boolean>;
+};
+
+type ResponseFunctionCall = {
+  type: 'function_call';
+  name?: string;
+  arguments?: string | Record<string, unknown>;
+  call_id?: string;
+};
+
+type ResponseFunctionCallOutput = {
+  type: 'function_call_output';
+  call_id: string;
+  output: string;
+};
+
+type ResponsesOutputMessage = {
+  type: 'message';
+  role?: 'assistant';
+  content?: Array<
+    {
+      type?: 'output_text';
+      text?: string;
+    }
+  >;
+};
+
+type ResponsesResult = {
+  id?: string;
+  output_text?: string;
+  output?: Array<ResponseFunctionCall | ResponsesOutputMessage | Record<string, unknown>>;
 };
 
 export async function generateApp(
@@ -100,21 +125,31 @@ export async function generateApp(
   apiKey: string,
   model: AiModel,
   tools: AiTools,
+  options?: GenerateAppOptions,
 ): Promise<AgentRunResult>
 {
-  const messages: ChatMessage[] = [
-    {
-      role: 'system',
-      content: SYSTEM_PROMPT,
-    },
-    {
-      role: 'user',
-      content: prompt,
-    },
-  ];
+  let previousResponseId: string | undefined;
+  let input: string | ResponseFunctionCallOutput[] = prompt;
+  let stepLimit = normalizeInitialStepLimit(options?.initialToolStepLimit);
+  let step = 0;
 
-  for (let step = 0; step < MAX_TOOL_STEPS; step += 1) {
-    const response = await fetch(OPENAI_CHAT_URL, {
+  while (true) {
+    if (step >= stepLimit) {
+      const shouldContinue =
+        await options?.onToolStepLimit?.({
+          stepsCompleted: step,
+          stepLimit,
+        })
+        ?? false;
+
+      if (!shouldContinue) {
+        throw new Error('AI exceeded maximum tool steps without completing.');
+      }
+
+      stepLimit += TOOL_STEP_EXTENSION;
+    }
+
+    const response = await fetch(OPENAI_RESPONSES_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -122,10 +157,11 @@ export async function generateApp(
       },
       body: JSON.stringify({
         model,
+        instructions: SYSTEM_PROMPT,
         temperature: 0.1,
-        messages,
+        previous_response_id: previousResponseId,
+        input,
         tools: OPENAI_TOOLS,
-        tool_choice: 'auto',
       }),
     });
 
@@ -140,20 +176,16 @@ export async function generateApp(
       throw new Error(message);
     }
 
-    const data = await response.json() as {
-      choices?: Array<{ message?: ChatMessage }>;
-    };
+    const data = await response.json() as ResponsesResult;
 
-    const message = data.choices?.[0]?.message;
-
-    if (message === undefined) {
+    if (!Array.isArray(data.output)) {
       throw new Error('AI returned an unexpected response format.');
     }
 
-    const toolCalls = message.tool_calls ?? [];
+    const toolCalls = data.output.filter(isResponseFunctionCall);
 
     if (toolCalls.length === 0) {
-      const summary = message.content.trim();
+      const summary = extractResponsesSummary(data);
 
       return {
         summary: summary === ''
@@ -162,24 +194,35 @@ export async function generateApp(
       };
     }
 
-    messages.push({
-      role: 'assistant',
-      content: message.content,
-      tool_calls: toolCalls,
-    });
-
+    const toolOutputs: ResponseFunctionCallOutput[] = [];
     for (const toolCall of toolCalls) {
-      const toolOutput = await executeToolCall(toolCall, tools);
-
-      messages.push({
-        role: 'tool',
-        tool_call_id: toolCall.id,
-        content: toolOutput,
+      const output = await executeToolCall(toolCall, tools);
+      toolOutputs.push({
+        type: 'function_call_output',
+        call_id: readCallId(toolCall),
+        output,
       });
     }
+
+    previousResponseId =
+      typeof data.id === 'string'
+        ? data.id
+        : previousResponseId;
+
+    input = toolOutputs;
+    step += 1;
+  }
+}
+
+function normalizeInitialStepLimit(value: number | undefined): number {
+  if (!Number.isFinite(value)) {
+    return DEFAULT_MAX_TOOL_STEPS;
   }
 
-  throw new Error('AI exceeded maximum tool steps without completing.');
+  const candidate = Math.floor(value as number);
+  return candidate >= 1
+    ? candidate
+    : DEFAULT_MAX_TOOL_STEPS;
 }
 
 function buildSystemPrompt(
@@ -361,11 +404,11 @@ function getOpenAiErrorMessage(
 }
 
 async function executeToolCall(
-  toolCall: ChatToolCall,
+  toolCall: ResponseFunctionCall,
   tools: AiTools,
 ): Promise<string> {
-  const name = toolCall.function.name;
-  const args = parseToolArguments(toolCall.function.arguments);
+  const name = readFunctionName(toolCall);
+  const args = parseToolArguments(toolCall.arguments);
 
   try {
     switch (name) {
@@ -417,7 +460,21 @@ async function executeToolCall(
   }
 }
 
-function parseToolArguments(raw: string): Record<string, unknown> {
+function parseToolArguments(
+  raw: string | Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  if (raw === undefined) {
+    return {};
+  }
+
+  if (typeof raw === 'object' && raw !== null) {
+    return raw;
+  }
+
+  if (typeof raw !== 'string') {
+    throw new Error('Invalid tool arguments value.');
+  }
+
   try {
     const parsed = JSON.parse(raw) as unknown;
 
@@ -429,6 +486,47 @@ function parseToolArguments(raw: string): Record<string, unknown> {
   } catch {
     throw new Error('Invalid tool arguments JSON.');
   }
+}
+
+function isResponseFunctionCall(
+  value: ResponseFunctionCall | ResponsesOutputMessage | Record<string, unknown>,
+): value is ResponseFunctionCall {
+  return value.type === 'function_call';
+}
+
+function readFunctionName(toolCall: ResponseFunctionCall): string {
+  if (typeof toolCall.name !== 'string' || toolCall.name.trim() === '') {
+    throw new Error('Tool call missing function name.');
+  }
+
+  return toolCall.name;
+}
+
+function readCallId(toolCall: ResponseFunctionCall): string {
+  if (typeof toolCall.call_id !== 'string' || toolCall.call_id.trim() === '') {
+    throw new Error('Tool call missing call_id.');
+  }
+
+  return toolCall.call_id;
+}
+
+function extractResponsesSummary(data: ResponsesResult): string {
+  if (typeof data.output_text === 'string' && data.output_text.trim() !== '') {
+    return data.output_text.trim();
+  }
+
+  if (!Array.isArray(data.output)) {
+    return '';
+  }
+
+  const parts = data.output
+    .filter((item): item is ResponsesOutputMessage => item.type === 'message')
+    .flatMap(item => item.content ?? [])
+    .map(item => item.text ?? '')
+    .map(text => text.trim())
+    .filter(text => text !== '');
+
+  return parts.join('\n');
 }
 
 function readStringArg(

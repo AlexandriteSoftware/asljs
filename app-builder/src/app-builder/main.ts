@@ -12,6 +12,7 @@ import {
   generateApp,
   getSystemPrompt,
   DEFAULT_MODEL,
+  DEFAULT_MAX_TOOL_STEPS,
   type AiModel,
 } from './ai.js';
 import {
@@ -72,6 +73,8 @@ const elBtnCancelSettings =
   mustElement<HTMLButtonElement>('btn-cancel-settings');
 const elApiKeyInput = mustElement<HTMLInputElement>('api-key-input');
 const elModelSelect = mustElement<HTMLSelectElement>('model-select');
+const elMaxToolStepsInput =
+  mustElement<HTMLInputElement>('max-tool-steps-input');
 
 const elNameModal = mustElement<HTMLElement>('name-modal');
 const elNameModalTitle = mustElement<HTMLElement>('name-modal-title');
@@ -121,6 +124,22 @@ function getModel(): AiModel {
   }
 
   return DEFAULT_MODEL;
+}
+
+function getMaxToolSteps(): number {
+  const candidate = loadSettings().maxToolSteps;
+
+  if (!Number.isFinite(candidate)) {
+    return DEFAULT_MAX_TOOL_STEPS;
+  }
+
+  const normalized = Math.floor(candidate as number);
+
+  if (normalized < 1) {
+    return DEFAULT_MAX_TOOL_STEPS;
+  }
+
+  return normalized;
 }
 
 function requireCurrentAppId(): string {
@@ -517,6 +536,7 @@ async function handleGenerate(): Promise<void> {
 
   try {
     const model = getModel();
+    const maxToolSteps = getMaxToolSteps();
 
     const result = await generateApp(prompt, apiKey, model, {
       listFileset: listFilesetTool,
@@ -525,6 +545,11 @@ async function handleGenerate(): Promise<void> {
       replaceFilePart: replaceFilePartTool,
       deleteFile: deleteFileTool,
       evalInApp: evalInAppTool,
+    }, {
+      initialToolStepLimit: maxToolSteps,
+      onToolStepLimit: async ({ stepsCompleted }) => confirm(
+        `AI reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`,
+      ),
     });
 
     const app = state.apps.find(item => item.id === state.currentAppId);
@@ -655,6 +680,7 @@ async function handleImportFile(): Promise<void> {
 function openSettings(): void {
   elApiKeyInput.value = getApiKey();
   elModelSelect.value = getModel();
+  elMaxToolStepsInput.value = String(getMaxToolSteps());
   elSettingsModal.classList.remove('hidden');
   elApiKeyInput.focus();
 }
@@ -670,6 +696,12 @@ function saveSettingsFromModal(): void {
     elModelSelect.value === 'gpt-5.4'
       ? 'gpt-5.4'
       : 'gpt-5.3-codex';
+
+  const parsed = Number.parseInt(elMaxToolStepsInput.value, 10);
+  settings.maxToolSteps = Number.isFinite(parsed) && parsed >= 1
+    ? parsed
+    : DEFAULT_MAX_TOOL_STEPS;
+
   saveSettings(settings);
   closeSettings();
 }

@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASLJS App Builder</title>
-
-  <script type="module" crossorigin src="/asljs/assets/app-CYp5MWqT.js"></script>
+  <title>ASLJS App Builder</title>
+  <script type="module" crossorigin src="/asljs/assets/app-0YDWOjVY.js"></script>
   <link rel="stylesheet" crossorigin href="/asljs/assets/app-BAyfs4SD.css">
 </head>
 <body>
@@ -128,6 +127,16 @@
           <option value="gpt-5.3-codex">GPT-5.3-Codex</option>
           <option value="gpt-5.4">GPT-5.4</option>
         </select>
+        <label class="form-label" for="max-tool-steps-input">Max tool steps (initial)</label>
+        <input
+          id="max-tool-steps-input"
+          type="number"
+          class="form-input"
+          min="1"
+          max="200"
+          step="1"
+          placeholder="20"
+        />
         <p class="form-hint">
           Your key is stored only in this browser (localStorage). It is sent
           directly to OpenAI — no server proxy is involved. Leave blank to skip
@@ -186,7 +195,6 @@
 
   <!-- Import file input (hidden) -->
   <input id="import-file" type="file" accept=".json" style="display:none" />
-
-
+
 </body>
 </html>

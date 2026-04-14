@@ -7,30 +7,30 @@ import {
 test('all tool schemas use strict + additionalProperties=false', () => {
   for (const tool of OPENAI_TOOLS) {
     assert.equal(tool.type, 'function');
-    assert.equal(tool.function.strict, true);
-    assert.equal(tool.function.parameters.type, 'object');
-    assert.equal(tool.function.parameters.additionalProperties, false);
+    assert.equal(tool.strict, true);
+    assert.equal(tool.parameters.type, 'object');
+    assert.equal(tool.parameters.additionalProperties, false);
   }
 });
 
 test('required includes every property key for each tool schema', () => {
   for (const tool of OPENAI_TOOLS) {
     const propertyKeys =
-      Object.keys(tool.function.parameters.properties).sort();
+      Object.keys(tool.parameters.properties).sort();
 
     const requiredKeys =
-      [...tool.function.parameters.required].sort();
+      [...tool.parameters.required].sort();
 
     assert.deepEqual(
       requiredKeys,
       propertyKeys,
-      `${tool.function.name}: required must exactly match properties keys`,
+      `${tool.name}: required must exactly match properties keys`,
     );
   }
 });
 
 test('replaceFilePart schema requires replaceAll', () => {
-  const tool = OPENAI_TOOLS.find(item => item.function.name === 'replaceFilePart');
+  const tool = OPENAI_TOOLS.find(item => item.name === 'replaceFilePart');
 
   assert.notEqual(tool, undefined);
 
@@ -39,7 +39,7 @@ test('replaceFilePart schema requires replaceAll', () => {
   }
 
   assert.deepEqual(
-    [...tool.function.parameters.required].sort(),
+    [...tool.parameters.required].sort(),
     [
       'path',
       'replaceAll',
