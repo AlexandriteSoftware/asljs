@@ -3,7 +3,7 @@
 ## Overview
 
 `asljs-app-builder` is the GitHub Pages front page and interactive demo for the
-[ASLJS][#1] (Alexandrtite Software Libraries for JavaScript). It is a fully
+[ASLJS][#1] (Alexandrite Software Libraries for JavaScript). It is a fully
 static, browser-based, AI-assisted, local-first app builder — no server
 required.
 
