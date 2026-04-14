@@ -30,6 +30,9 @@ import componentsPackageRaw
   from '../../../components/package.json?raw';
 import daliPackageRaw
   from '../../../dali/package.json?raw';
+import {
+  OPENAI_TOOLS,
+} from './ai-tools.js';
 
 const OPENAI_CHAT_URL =
   'https://api.openai.com/v1/chat/completions';
@@ -87,106 +90,6 @@ type ChatMessage = {
   tool_call_id?: string;
   tool_calls?: ChatToolCall[];
 };
-
-const OPENAI_TOOLS = [
-  {
-    type: 'function',
-    function: {
-      name: 'listFileset',
-      description: 'List all file paths in the virtual filesystem.',
-      parameters: {
-        type: 'object',
-        properties: {},
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'readFile',
-      description: 'Read the full text content of a file.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: { type: 'string' },
-        },
-        required: ['path'],
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'setFileContent',
-      description: 'Create or fully replace file content.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: { type: 'string' },
-          content: { type: 'string' },
-        },
-        required: ['path', 'content'],
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'replaceFilePart',
-      description: 'Replace part of a file by exact search string.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: { type: 'string' },
-          search: { type: 'string' },
-          replacement: { type: 'string' },
-          replaceAll: { type: 'boolean' },
-        },
-        required: ['path', 'search', 'replacement'],
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'deleteFile',
-      description: 'Delete a file from the virtual filesystem.',
-      parameters: {
-        type: 'object',
-        properties: {
-          path: { type: 'string' },
-        },
-        required: ['path'],
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'evalInApp',
-      description: 'Evaluate JavaScript in the running app document context.',
-      parameters: {
-        type: 'object',
-        properties: {
-          code: { type: 'string' },
-        },
-        required: ['code'],
-        additionalProperties: false,
-      },
-      strict: true,
-    },
-  },
-] as const;
 
 export async function generateApp(
   prompt: string,
