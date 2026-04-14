@@ -14,6 +14,7 @@
   --btn-primary-hover: #2ea043;
   --sidebar-width: 220px;
   --top-bar-height: 44px;
+  --chat-collapsed-width: 420px;
   --radius: 6px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
@@ -39,8 +40,12 @@ body {
 }
 
 .sidebar-header {
-  padding: 0.75rem 1rem;
+  height: var(--top-bar-height);
+  padding: 0 0.75rem;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .logo-link {
@@ -51,6 +56,12 @@ body {
 .logo-link strong { color: var(--accent); }
 .logo-sub { color: var(--muted); font-size: 0.8rem; }
 
+.brand-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .sidebar-section {
   flex: 1;
   overflow-y: auto;
@@ -58,12 +69,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
 }
 
 .section-content {
@@ -190,6 +195,18 @@ body {
 }
 
 .panel:last-child { border-right: none; }
+
+.panel.collapsed {
+  display: none;
+}
+
+.panels.files-collapsed #panel-chat {
+  flex: 0 0 var(--chat-collapsed-width);
+}
+
+.panels.files-collapsed #panel-preview {
+  flex: 1 1 auto;
+}
 
 .panel-header {
   height: 36px;

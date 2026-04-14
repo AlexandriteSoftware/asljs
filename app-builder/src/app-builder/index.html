@@ -13,13 +13,14 @@
       <a href="../" class="logo-link" title="Back to home">
         <strong>ASLJS</strong> <span class="logo-sub">App Builder</span>
       </a>
+      <div class="brand-actions">
+        <button id="btn-settings" class="btn btn-ghost btn-sm" title="Settings">⚙</button>
+        <button id="btn-toggle-apps" class="section-toggle" type="button" aria-expanded="true" title="Collapse My Apps">▾</button>
+      </div>
     </div>
 
     <div class="sidebar-section">
-      <div class="section-header">
-        <button id="btn-toggle-apps" class="section-toggle" type="button" aria-expanded="true" title="Collapse My Apps">▾</button>
-        <div class="section-label">My Apps</div>
-      </div>
+      <div class="section-label">My Apps</div>
       <div id="apps-content" class="section-content">
         <div id="app-list" class="app-list">
           <!-- populated by JS -->
@@ -28,9 +29,7 @@
       </div>
     </div>
 
-    <div class="sidebar-footer">
-      <button id="btn-settings" class="btn btn-ghost btn-full">⚙ Settings</button>
-    </div>
+    <div class="sidebar-footer"></div>
   </aside>
 
   <!-- Main workspace -->
@@ -54,6 +53,7 @@
           <button id="btn-delete-app" class="btn btn-danger btn-sm" title="Delete app">✕</button>
         </div>
         <div class="top-bar-right">
+            <button id="btn-toggle-files" class="btn btn-ghost btn-sm" title="Show or hide files editor">Files ▾</button>
           <button id="btn-run" class="btn btn-success btn-sm">▶ Run</button>
         </div>
       </div>
@@ -82,10 +82,7 @@
         <!-- File editor panel -->
         <section id="panel-editor" class="panel">
           <div class="panel-header">
-            <div class="panel-header-left">
-              <button id="btn-toggle-files" class="section-toggle" type="button" aria-expanded="true" title="Collapse Files">▾</button>
-              <span>Files</span>
-            </div>
+            <span>Files</span>
             <select id="file-select" class="file-select" title="Select file"></select>
           </div>
           <div id="editor-layout" class="editor-layout">

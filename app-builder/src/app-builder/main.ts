@@ -47,8 +47,9 @@ const elAppList = mustElement<HTMLElement>('app-list');
 const elEmptyState = mustElement<HTMLElement>('empty-state');
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
 const elAppNameDisplay = mustElement<HTMLElement>('app-name-display');
+const elPanels = mustElement<HTMLElement>('panels');
+const elPanelEditor = mustElement<HTMLElement>('panel-editor');
 const elFileSelect = mustElement<HTMLSelectElement>('file-select');
-const elEditorLayout = mustElement<HTMLElement>('editor-layout');
 const elFileContent = mustElement<HTMLTextAreaElement>('file-content');
 const elChatMessages = mustElement<HTMLElement>('chat-messages');
 const elChatProgress = mustElement<HTMLElement>('chat-progress');
@@ -736,29 +737,30 @@ function closeAgentInstructions(): void {
   elAgentInstructionsModal.classList.add('hidden');
 }
 
-function setCollapsed(
-  button: HTMLButtonElement,
-  target: HTMLElement,
-  collapsed: boolean,
-): void {
-  button.textContent = collapsed
-    ? '▸'
-    : '▾';
-  button.setAttribute('aria-expanded', collapsed
-    ? 'false'
-    : 'true');
-
-  target.classList.toggle('collapsed', collapsed);
-}
-
 function toggleAppsCollapsed(): void {
   const collapsed = !elAppsContent.classList.contains('collapsed');
-  setCollapsed(elBtnToggleApps, elAppsContent, collapsed);
+
+  elBtnToggleApps.textContent = collapsed
+    ? '▸'
+    : '▾';
+  elBtnToggleApps.setAttribute('aria-expanded', collapsed
+    ? 'false'
+    : 'true');
+  elAppsContent.classList.toggle('collapsed', collapsed);
 }
 
 function toggleFilesCollapsed(): void {
-  const collapsed = !elEditorLayout.classList.contains('collapsed');
-  setCollapsed(elBtnToggleFiles, elEditorLayout, collapsed);
+  const collapsed = !elPanelEditor.classList.contains('collapsed');
+
+  elBtnToggleFiles.textContent = collapsed
+    ? 'Files ▸'
+    : 'Files ▾';
+  elBtnToggleFiles.setAttribute('aria-expanded', collapsed
+    ? 'false'
+    : 'true');
+
+  elPanelEditor.classList.toggle('collapsed', collapsed);
+  elPanels.classList.toggle('files-collapsed', collapsed);
 }
 
 async function copyAgentInstructions(): Promise<void> {
@@ -875,10 +877,9 @@ btnImport.textContent = '↑ Import';
 btnImport.addEventListener('click', handleImportClick);
 
 const sidebarFooter = document.querySelector('.sidebar-footer');
-const settingsButton = document.getElementById('btn-settings');
 
-if (sidebarFooter !== null && settingsButton !== null) {
-  sidebarFooter.insertBefore(btnImport, settingsButton);
+if (sidebarFooter !== null) {
+  sidebarFooter.appendChild(btnImport);
 }
 
 window.listFileset = listFilesetTool;
