@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "asljs-data-binding": "^0.2.0",
+    "asljs-eventful": "^0.4.8",
     "lit": "^3.3.1"
   }
 }

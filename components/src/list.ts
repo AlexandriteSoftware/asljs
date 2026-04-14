@@ -10,12 +10,10 @@ import {
 import {
     bindDataModel
   } from 'asljs-data-binding';
-
-type ObservableEventSource =
-  { on: (
-      event: string,
-      listener: (...args: unknown[]) => void
-    ) => (() => boolean) | void; };
+import {
+    asEventfulLike,
+    type EventfulLike,
+  } from 'asljs-eventful';
 
 export type ListRowContext =
   { item: ListItem;
@@ -70,7 +68,7 @@ export class List
   }
 
   render(
-    )
+    ): ReturnType<LitElement['render']>
   {
     if (this.items.length === 0) {
       if (this.#emptyTemplate) {
@@ -284,7 +282,7 @@ export class List
     this.#disposeItemsObserver();
 
     const eventSource =
-      toObservableEventSource(this.items);
+      toEventfulLike(this.items);
 
     if (!eventSource) {
       return;
@@ -298,16 +296,14 @@ export class List
       };
 
     for (const eventName of [ 'set', 'delete', 'define' ]) {
-      const maybeUnsubscribe =
+      const unsubscribe =
         eventSource.on(
           eventName,
           onCollectionChanged);
 
-      if (typeof maybeUnsubscribe === 'function') {
-        unsubscribers.push(() => {
-          maybeUnsubscribe();
-        });
-      }
+      unsubscribers.push(() => {
+        unsubscribe();
+      });
     }
 
     this.#itemsObserverDispose =
@@ -354,20 +350,10 @@ export class List
   }
 }
 
-function toObservableEventSource(
+function toEventfulLike(
     value: unknown
-  ): ObservableEventSource | null
+  ): EventfulLike | null
 {
-  if (typeof value !== 'object' || value === null) {
-    return null;
-  }
-
-  const candidate =
-    value as { on?: unknown; };
-
-  if (typeof candidate.on !== 'function') {
-    return null;
-  }
-
-  return candidate as ObservableEventSource;
+  return asEventfulLike(value)
+    ?? null;
 }

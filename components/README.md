@@ -5,12 +5,11 @@ performant JavaScript libraries for everyday use.
 
 ## Overview
 
-`asljs-components` contains reusable UI components for web applications in the
-ASLJS monorepo.
+`asljs-components` is a catalog of reusable UI components for web applications
+in the ASLJS monorepo.
 
-Initial release includes:
-
-- `List` (`<asljs-list>`) component.
+This package is component-oriented: each component has a custom element name,
+purpose, and usage pattern.
 
 ## Installation
 
@@ -20,7 +19,20 @@ npm install asljs-components
 
 NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 
-## Usage
+## Components
+
+### List
+
+- Name: `List`
+- Custom element: `asljs-list`
+- Purpose: render collections from templates with row context binding.
+
+Notes:
+
+- Uses `template[data-slot="item"]` for row rendering.
+- Supports optional `template[data-slot="empty"]` for empty state.
+- Supports optional `template[data-slot="container"]` with required
+  `data-role="items"` insertion point.
 
 ```ts
 import 'asljs-components';
@@ -29,17 +41,28 @@ const list =
   document.createElement('asljs-list');
 
 list.innerHTML = `
+  <template data-slot="container">
+    <section class="rows" data-role="items"></section>
+  </template>
+
+  <template data-slot="empty">
+    <div>No items</div>
+  </template>
+
   <template data-slot="item">
-    <div data-bind-text="item.title"></div>
+    <div>
+      <a data-bind-href="item.url"
+         data-bind-text="item.title"></a>
+    </div>
   </template>
 `;
 
 list.items =
-  [ { title: 'First' },
-    { title: 'Second' } ];
+  [ { title: 'First', url: '/first' },
+    { title: 'Second', url: '/second' } ];
 ```
 
-## API Reference
+### List API Reference
 
 Exports:
 
