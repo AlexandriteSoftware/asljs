@@ -805,7 +805,9 @@ async function handleGenerate(): Promise<void> {
 
 function handleRun(): void {
   void persistCurrentFile().then(() => {
-    renderPreview(elPreviewFrame, state.files);
+    renderPreview(elPreviewFrame, state.files, {
+      hostOpenAiApiKey: getApiKey(),
+    });
   });
 }
 

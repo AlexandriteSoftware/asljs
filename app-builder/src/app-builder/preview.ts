@@ -27,6 +27,10 @@ export type RuntimeDiagnostics = {
   >;
 };
 
+type PreviewRenderOptions = {
+  hostOpenAiApiKey?: string;
+};
+
 const EVAL_BRIDGE_SCRIPT =
   `<script>
 (() => {
@@ -178,7 +182,8 @@ const EVAL_BRIDGE_SCRIPT =
 
 export function renderPreview(
     frame: HTMLIFrameElement,
-    files: GeneratedFile[]
+    files: GeneratedFile[],
+    options?: PreviewRenderOptions,
   ): void
 {
   if (files.length === 0) {
@@ -248,7 +253,9 @@ export function renderPreview(
         });
   }
 
-        html = injectAsljsImportMap(html, files);
+        html = injectPackageImportMap(html, files);
+
+        html = injectHostContext(html, options);
 
   html = injectEvalBridge(html);
         frame.srcdoc = html;
@@ -370,7 +377,7 @@ function injectEvalBridge(html: string): string {
   return `${html}\n${EVAL_BRIDGE_SCRIPT}`;
 }
 
-function injectAsljsImportMap(html: string, files: GeneratedFile[]): string {
+function injectPackageImportMap(html: string, files: GeneratedFile[]): string {
   if (/type=["']importmap["']/i.test(html)) {
     return html;
   }
@@ -380,7 +387,7 @@ function injectAsljsImportMap(html: string, files: GeneratedFile[]): string {
     ?? null;
 
   const versions =
-    readAsljsPackageVersions(packageFile?.content);
+    readImportMapVersions(packageFile?.content);
 
   const imports = Object.fromEntries(
     versions.map(([name, version]) => [
@@ -402,11 +409,11 @@ function injectAsljsImportMap(html: string, files: GeneratedFile[]): string {
   return `${importMap}\n${html}`;
 }
 
-function readAsljsPackageVersions(
+function readImportMapVersions(
   packageJsonContent: string | undefined,
 ): Array<[string, string]> {
   if (packageJsonContent === undefined) {
-    return defaultAsljsVersions();
+    return defaultImportMapPackages();
   }
 
   try {
@@ -426,6 +433,7 @@ function readAsljsPackageVersions(
       'asljs-data-binding',
       'asljs-components',
       'asljs-dali',
+      'openai',
     ];
 
     const versions = names.map((name): [string, string] => [
@@ -435,7 +443,7 @@ function readAsljsPackageVersions(
 
     return versions;
   } catch {
-    return defaultAsljsVersions();
+    return defaultImportMapPackages();
   }
 }
 
@@ -450,12 +458,40 @@ function normalizeNpmVersion(value: string | undefined): string {
     : cleaned;
 }
 
-function defaultAsljsVersions(): Array<[string, string]> {
+function defaultImportMapPackages(): Array<[string, string]> {
   return [
     ['asljs-eventful', 'latest'],
     ['asljs-observable', 'latest'],
     ['asljs-data-binding', 'latest'],
     ['asljs-components', 'latest'],
     ['asljs-dali', 'latest'],
+    ['openai', 'latest'],
   ];
+}
+
+function injectHostContext(
+  html: string,
+  options: PreviewRenderOptions | undefined,
+): string {
+  if (html.includes('__ASLJS_APP_BUILDER_HOST__')) {
+    return html;
+  }
+
+  const script = `<script>window.__ASLJS_APP_BUILDER_HOST__ = ${JSON.stringify({
+    openAiApiKey:
+      options?.hostOpenAiApiKey === undefined
+      || options.hostOpenAiApiKey.trim() === ''
+        ? null
+        : options.hostOpenAiApiKey,
+  })};</script>`;
+
+  if (html.includes('</head>')) {
+    return html.replace('</head>', `${script}</head>`);
+  }
+
+  if (html.includes('<body')) {
+    return html.replace(/<body[^>]*>/i, match => `${match}\n${script}`);
+  }
+
+  return `${script}\n${html}`;
 }

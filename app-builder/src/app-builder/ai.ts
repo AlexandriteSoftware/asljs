@@ -326,6 +326,10 @@ Generation rules:
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
 - app.js is the app entry point.
 - index.html must load app.js using <script type="module">.
+- OpenAI libraries are allowed when required by user features.
+- If OpenAI is used in the generated app, read key from host context: 
+  window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey.
+- Never hardcode API keys in generated files.
 - UI code must be data-binding-first: prefer declarative \`data-bind-*\` attributes with \`bindDataModel\`.
 - For UI updates, prefer model changes that automatically re-render through bindings.
 - Avoid imperative DOM mutation patterns for normal UI state changes (manual \`innerHTML\` rebuild loops, ad-hoc query-and-set chains).
@@ -361,6 +365,7 @@ Pre-flight self-check before final response:
 - Verify at least one concrete usage of each required ASLJS package.
 - Verify UI behavior is primarily implemented with \`asljs-data-binding\` (not imperative DOM patching).
 - Verify generated README explains how to run and what the agent tools do.
+- Verify README.md includes an "Update Log" section and append an entry for each applied user modification request.
 
 Agent tool contract (virtual filesystem and runtime):
 - Assume the generated app includes an agent that can use these tools:
@@ -374,6 +379,9 @@ Agent tool contract (virtual filesystem and runtime):
   - runAppAndCollectDiagnostics(): runs app and returns startup/runtime logs and errors.
 - Generate app code and README so these tool names and behaviors are clear and usable.
 - Keep the tool usage model deterministic and safe (no hidden magic paths).
+- Runtime host context available to generated app:
+  - window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey
+  - Value is provided by host app settings; it may be null.
 
 In-app agent update protocol:
 - For normal edits, the in-app agent must update files through tools:
