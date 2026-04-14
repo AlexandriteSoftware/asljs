@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "asljs-components": "*",
     "asljs-dali": "*",
+    "asljs-data-binding": "*",
     "asljs-eventful": "*",
     "asljs-observable": "*"
   },
   "devDependencies": {
+    "typescript": "^5.9.3",
     "vite": "^6.4.2"
   }
 }
