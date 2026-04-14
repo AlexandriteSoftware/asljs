@@ -48,8 +48,43 @@ const EVAL_BRIDGE_SCRIPT =
   window[DIAG_KEY] = diagnostics;
 
   const toText = (value) => {
+    if (value instanceof Error) {
+      const stack = typeof value.stack === 'string' && value.stack !== ''
+        ? '\n' + value.stack
+        : '';
+      return value.name + ': ' + value.message + stack;
+    }
+
     if (typeof value === 'string') {
       return value;
+    }
+
+    if (typeof value === 'number' || typeof value === 'boolean' || value === null || value === undefined) {
+      return String(value);
+    }
+
+    if (typeof value === 'object') {
+      const maybeMessage = typeof value.message === 'string'
+        ? value.message
+        : null;
+
+      const maybeName = typeof value.name === 'string'
+        ? value.name
+        : null;
+
+      const maybeStack = typeof value.stack === 'string'
+        ? value.stack
+        : null;
+
+      if (maybeMessage !== null) {
+        const prefix = maybeName !== null
+          ? maybeName + ': '
+          : '';
+
+        return maybeStack !== null && maybeStack !== ''
+          ? prefix + maybeMessage + '\n' + maybeStack
+          : prefix + maybeMessage;
+      }
     }
 
     try {
@@ -108,13 +143,23 @@ const EVAL_BRIDGE_SCRIPT =
     }
 
     window.addEventListener('error', event => {
-      addError(event.message || 'Unknown runtime error');
+      const source = event.filename
+        ? ' (' + event.filename + ':' + event.lineno + ':' + event.colno + ')'
+        : '';
+
+      const detail = event.error !== undefined
+        ? toText(event.error)
+        : event.message;
+
+      addError(
+        detail && detail !== ''
+          ? detail + source
+          : 'Unknown runtime error' + source,
+      );
     });
 
     window.addEventListener('unhandledrejection', event => {
-      addError(event.reason instanceof Error
-        ? event.reason.message
-        : toText(event.reason));
+      addError('Unhandled rejection: ' + toText(event.reason));
     });
   }
 
