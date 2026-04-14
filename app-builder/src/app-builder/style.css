@@ -435,6 +435,106 @@ body {
   border-color: var(--accent);
 }
 
+/* ── Mobile layout (≤768px) ──────────────────────────────── */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  /* Sidebar becomes a compact horizontal top strip */
+  #sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* App list scrolls horizontally */
+  .sidebar-section {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.4rem 0.5rem;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .section-label { display: none; }
+
+  .app-list {
+    flex-direction: row;
+    flex: unset;
+    flex-shrink: 0;
+  }
+
+  .app-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  #btn-new-app {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Settings button on the right */
+  .sidebar-footer {
+    border-top: none;
+    border-left: 1px solid var(--border);
+    padding: 0.4rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  #btn-settings { width: auto; }
+
+  /* Panels stack vertically */
+  .panels {
+    flex-direction: column;
+  }
+
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex: unset;
+  }
+
+  .panel:last-child { border-bottom: none; }
+
+  /* Reorder: Preview (main app) first, Editor second, Chat/AI last */
+  #panel-preview {
+    order: 1;
+    flex: 2;
+    min-height: 180px;
+  }
+
+  #panel-editor {
+    order: 2;
+    flex: 1;
+    min-height: 140px;
+  }
+
+  #panel-chat {
+    order: 3;
+    flex: 1;
+    min-height: 140px;
+  }
+}
+
 /* ── Utilities ───────────────────────────────────────────── */
 .hidden { display: none !important; }
 
