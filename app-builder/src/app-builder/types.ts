@@ -15,6 +15,8 @@ export type Settings =
     apiKey?: string;
     model?: 'gpt-5.3-codex' | 'gpt-5.4';
     maxToolSteps?: number;
+    theme?: 'dark' | 'light';
+    fontSize?: number;
   };
 
 export type GeneratedFile =

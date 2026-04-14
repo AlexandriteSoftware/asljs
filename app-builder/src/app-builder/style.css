@@ -20,6 +20,20 @@
   font-size: 14px;
 }
 
+body[data-theme='light'] {
+  --bg: #f7f9fc;
+  --surface: #ffffff;
+  --surface2: #eef3f9;
+  --border: #d2d9e4;
+  --text: #18202b;
+  --muted: #5b6778;
+  --accent: #1f6feb;
+  --success: #1e9f47;
+  --danger: #cf222e;
+  --btn-primary-bg: #1f6feb;
+  --btn-primary-hover: #2f7cf3;
+}
+
 body {
   background: var(--bg);
   color: var(--text);

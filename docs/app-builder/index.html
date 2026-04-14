@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASLJS App Builder</title>
-  <script type="module" crossorigin src="/asljs/assets/app-B_J4xHhK.js"></script>
-  <link rel="stylesheet" crossorigin href="/asljs/assets/app-y5DLUSJI.css">
+  <title>ASLJS App Builder</title>
+  <script type="module" crossorigin src="/asljs/assets/app-DVrooHQ9.js"></script>
+  <link rel="stylesheet" crossorigin href="/asljs/assets/app-hwam8Yu4.css">
 </head>
 <body>
   <!-- Sidebar: app list + settings -->
@@ -133,6 +133,21 @@
           <option value="gpt-5.3-codex">GPT-5.3-Codex</option>
           <option value="gpt-5.4">GPT-5.4</option>
         </select>
+        <label class="form-label" for="theme-select">Theme</label>
+        <select id="theme-select" class="form-input">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+        <label class="form-label" for="font-size-input">Font size (px)</label>
+        <input
+          id="font-size-input"
+          type="number"
+          class="form-input"
+          min="12"
+          max="20"
+          step="1"
+          placeholder="14"
+        />
         <label class="form-label" for="max-tool-steps-input">Max tool steps (initial)</label>
         <input
           id="max-tool-steps-input"
@@ -201,6 +216,6 @@
 
   <!-- Import file input (hidden) -->
   <input id="import-file" type="file" accept=".json" style="display:none" />
-
+
 </body>
 </html>

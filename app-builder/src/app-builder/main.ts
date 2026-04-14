@@ -79,6 +79,8 @@ const elBtnCancelSettings =
   mustElement<HTMLButtonElement>('btn-cancel-settings');
 const elApiKeyInput = mustElement<HTMLInputElement>('api-key-input');
 const elModelSelect = mustElement<HTMLSelectElement>('model-select');
+const elThemeSelect = mustElement<HTMLSelectElement>('theme-select');
+const elFontSizeInput = mustElement<HTMLInputElement>('font-size-input');
 const elMaxToolStepsInput =
   mustElement<HTMLInputElement>('max-tool-steps-input');
 
@@ -104,6 +106,8 @@ const elBtnCopyAgentInstructions =
   mustElement<HTMLButtonElement>('btn-copy-agent-instructions');
 
 const SETTINGS_KEY = 'asljs-app-builder-settings';
+const DEFAULT_THEME = 'dark';
+const DEFAULT_FONT_SIZE = 14;
 
 function loadSettings(): Settings {
   try {
@@ -146,6 +150,35 @@ function getMaxToolSteps(): number {
   }
 
   return normalized;
+}
+
+function getTheme(): 'dark' | 'light' {
+  const candidate = loadSettings().theme;
+
+  return candidate === 'light'
+    ? 'light'
+    : 'dark';
+}
+
+function getFontSize(): number {
+  const candidate = loadSettings().fontSize;
+
+  if (!Number.isFinite(candidate)) {
+    return DEFAULT_FONT_SIZE;
+  }
+
+  const normalized = Math.floor(candidate as number);
+
+  if (normalized < 12 || normalized > 20) {
+    return DEFAULT_FONT_SIZE;
+  }
+
+  return normalized;
+}
+
+function applyAppearanceSettings(): void {
+  document.body.dataset.theme = getTheme();
+  document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
 
 function requireCurrentAppId(): string {
@@ -701,6 +734,8 @@ async function handleImportFile(): Promise<void> {
 function openSettings(): void {
   elApiKeyInput.value = getApiKey();
   elModelSelect.value = getModel();
+  elThemeSelect.value = getTheme();
+  elFontSizeInput.value = String(getFontSize());
   elMaxToolStepsInput.value = String(getMaxToolSteps());
   elSettingsModal.classList.remove('hidden');
   elApiKeyInput.focus();
@@ -717,6 +752,17 @@ function saveSettingsFromModal(): void {
     elModelSelect.value === 'gpt-5.4'
       ? 'gpt-5.4'
       : 'gpt-5.3-codex';
+  settings.theme =
+    elThemeSelect.value === 'light'
+      ? 'light'
+      : DEFAULT_THEME;
+
+  const parsedFontSize = Number.parseInt(elFontSizeInput.value, 10);
+  settings.fontSize = Number.isFinite(parsedFontSize)
+                     && parsedFontSize >= 12
+                     && parsedFontSize <= 20
+    ? parsedFontSize
+    : DEFAULT_FONT_SIZE;
 
   const parsed = Number.parseInt(elMaxToolStepsInput.value, 10);
   settings.maxToolSteps = Number.isFinite(parsed) && parsed >= 1
@@ -724,6 +770,7 @@ function saveSettingsFromModal(): void {
     : DEFAULT_MAX_TOOL_STEPS;
 
   saveSettings(settings);
+  applyAppearanceSettings();
   closeSettings();
 }
 
@@ -890,6 +937,8 @@ window.deleteFile = deleteFileTool;
 window.evalInApp = evalInAppTool;
 
 async function init(): Promise<void> {
+  applyAppearanceSettings();
+
   const apps = await listApps();
   state.apps = apps;
 
