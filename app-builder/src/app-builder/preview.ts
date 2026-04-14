@@ -50,7 +50,7 @@ const EVAL_BRIDGE_SCRIPT =
   const toText = (value) => {
     if (value instanceof Error) {
       const stack = typeof value.stack === 'string' && value.stack !== ''
-        ? '\n' + value.stack
+        ? '\\n' + value.stack
         : '';
       return value.name + ': ' + value.message + stack;
     }
@@ -82,7 +82,7 @@ const EVAL_BRIDGE_SCRIPT =
           : '';
 
         return maybeStack !== null && maybeStack !== ''
-          ? prefix + maybeMessage + '\n' + maybeStack
+          ? prefix + maybeMessage + '\\n' + maybeStack
           : prefix + maybeMessage;
       }
     }
