@@ -51,6 +51,10 @@ const DALI_VERSION =
 const SYSTEM_PROMPT =
   buildSystemPrompt();
 
+export type AiModel = 'gpt-5.3-codex' | 'gpt-5.4';
+
+export const DEFAULT_MODEL: AiModel = 'gpt-5.3-codex';
+
 export function getSystemPrompt(): string {
   return SYSTEM_PROMPT;
 }
@@ -94,6 +98,7 @@ type ChatMessage = {
 export async function generateApp(
   prompt: string,
   apiKey: string,
+  model: AiModel,
   tools: AiTools,
 ): Promise<AgentRunResult>
 {
@@ -116,7 +121,7 @@ export async function generateApp(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model,
         temperature: 0.1,
         messages,
         tools: OPENAI_TOOLS,

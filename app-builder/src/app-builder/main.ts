@@ -11,6 +11,8 @@ import {
 import {
   generateApp,
   getSystemPrompt,
+  DEFAULT_MODEL,
+  type AiModel,
 } from './ai.js';
 import {
   renderPreview,
@@ -69,6 +71,7 @@ const elBtnSaveSettings = mustElement<HTMLButtonElement>('btn-save-settings');
 const elBtnCancelSettings =
   mustElement<HTMLButtonElement>('btn-cancel-settings');
 const elApiKeyInput = mustElement<HTMLInputElement>('api-key-input');
+const elModelSelect = mustElement<HTMLSelectElement>('model-select');
 
 const elNameModal = mustElement<HTMLElement>('name-modal');
 const elNameModalTitle = mustElement<HTMLElement>('name-modal-title');
@@ -108,6 +111,16 @@ function saveSettings(settings: Settings): void {
 
 function getApiKey(): string {
   return loadSettings().apiKey ?? '';
+}
+
+function getModel(): AiModel {
+  const candidate = loadSettings().model;
+
+  if (candidate === 'gpt-5.3-codex' || candidate === 'gpt-5.4') {
+    return candidate;
+  }
+
+  return DEFAULT_MODEL;
 }
 
 function requireCurrentAppId(): string {
@@ -503,7 +516,9 @@ async function handleGenerate(): Promise<void> {
   setGenerating(true);
 
   try {
-    const result = await generateApp(prompt, apiKey, {
+    const model = getModel();
+
+    const result = await generateApp(prompt, apiKey, model, {
       listFileset: listFilesetTool,
       readFile: readFileTool,
       setFileContent: setFileContentTool,
@@ -639,6 +654,7 @@ async function handleImportFile(): Promise<void> {
 
 function openSettings(): void {
   elApiKeyInput.value = getApiKey();
+  elModelSelect.value = getModel();
   elSettingsModal.classList.remove('hidden');
   elApiKeyInput.focus();
 }
@@ -650,6 +666,10 @@ function closeSettings(): void {
 function saveSettingsFromModal(): void {
   const settings = loadSettings();
   settings.apiKey = elApiKeyInput.value.trim();
+  settings.model =
+    elModelSelect.value === 'gpt-5.4'
+      ? 'gpt-5.4'
+      : 'gpt-5.3-codex';
   saveSettings(settings);
   closeSettings();
 }
