@@ -1745,8 +1745,7 @@ ${Je(t,6e3)}
   const toText = (value) => {
     if (value instanceof Error) {
       const stack = typeof value.stack === 'string' && value.stack !== ''
-        ? '
-' + value.stack
+        ? '\\n' + value.stack
         : '';
       return value.name + ': ' + value.message + stack;
     }
@@ -1778,8 +1777,7 @@ ${Je(t,6e3)}
           : '';
 
         return maybeStack !== null && maybeStack !== ''
-          ? prefix + maybeMessage + '
-' + maybeStack
+          ? prefix + maybeMessage + '\\n' + maybeStack
           : prefix + maybeMessage;
       }
     }
