@@ -8,7 +8,10 @@ import {
   deleteFile,
   replaceFiles,
 } from './storage.js';
-import { generateApp } from './ai.js';
+import {
+  generateApp,
+  getSystemPrompt,
+} from './ai.js';
 import {
   renderPreview,
   evaluateInPreview,
@@ -56,6 +59,8 @@ const elBtnRename = mustElement<HTMLButtonElement>('btn-rename');
 const elBtnDeleteApp = mustElement<HTMLButtonElement>('btn-delete-app');
 const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
+const elBtnAgentInstructions =
+  mustElement<HTMLButtonElement>('btn-agent-instructions');
 
 const elSettingsModal = mustElement<HTMLElement>('settings-modal');
 const elBtnCloseSettings =
@@ -74,6 +79,17 @@ const elBtnCloseNameModal =
   mustElement<HTMLButtonElement>('btn-close-name-modal');
 
 const elImportFile = mustElement<HTMLInputElement>('import-file');
+
+const elAgentInstructionsModal =
+  mustElement<HTMLElement>('agent-instructions-modal');
+const elAgentInstructionsText =
+  mustElement<HTMLTextAreaElement>('agent-instructions-text');
+const elBtnCloseAgentInstructions =
+  mustElement<HTMLButtonElement>('btn-close-agent-instructions');
+const elBtnCloseAgentInstructions2 =
+  mustElement<HTMLButtonElement>('btn-close-agent-instructions-2');
+const elBtnCopyAgentInstructions =
+  mustElement<HTMLButtonElement>('btn-copy-agent-instructions');
 
 const SETTINGS_KEY = 'asljs-app-builder-settings';
 
@@ -171,6 +187,45 @@ async function deleteFileTool(path: string): Promise<void> {
   }
 }
 
+async function replaceFilePartTool(
+  path: string,
+  search: string,
+  replacement: string,
+  replaceAll = false,
+): Promise<void> {
+  if (search === '') {
+    throw new Error('Search text cannot be empty.');
+  }
+
+  const original = await readFileTool(path);
+
+  if (!original.includes(search)) {
+    throw new Error(`Search text not found in ${path}.`);
+  }
+
+  let next = original;
+
+  if (replaceAll) {
+    next = original.split(search).join(replacement);
+  } else {
+    const firstIndex = original.indexOf(search);
+    const secondIndex = original.indexOf(search, firstIndex + search.length);
+
+    if (secondIndex !== -1) {
+      throw new Error(
+        'Search text is ambiguous. Use replaceAll=true or provide a more specific search block.',
+      );
+    }
+
+    next =
+      original.slice(0, firstIndex)
+      + replacement
+      + original.slice(firstIndex + search.length);
+  }
+
+  await setFileContentTool(path, next);
+}
+
 async function evalInAppTool(code: string): Promise<unknown> {
   if (state.files.length === 0) {
     throw new Error('No files available to run.');
@@ -192,6 +247,12 @@ declare global {
     listFileset: () => Promise<string[]>;
     readFile: (path: string) => Promise<string>;
     setFileContent: (path: string, content: string) => Promise<void>;
+    replaceFilePart: (
+      path: string,
+      search: string,
+      replacement: string,
+      replaceAll?: boolean,
+    ) => Promise<void>;
     deleteFile: (path: string) => Promise<void>;
     evalInApp: (code: string) => Promise<unknown>;
   }
@@ -442,19 +503,14 @@ async function handleGenerate(): Promise<void> {
   setGenerating(true);
 
   try {
-    const result = await generateApp(prompt, apiKey);
-
-    const files: FileRecord[] = result.files.map(file => ({
-      id: randomId(),
-      appId: state.currentAppId as string,
-      name: file.name,
-      content: file.content,
-    }));
-
-    await replaceFiles(state.currentAppId, files);
-
-    state.files = files;
-    state.activeFileName = files[0]?.name ?? null;
+    const result = await generateApp(prompt, apiKey, {
+      listFileset: listFilesetTool,
+      readFile: readFileTool,
+      setFileContent: setFileContentTool,
+      replaceFilePart: replaceFilePartTool,
+      deleteFile: deleteFileTool,
+      evalInApp: evalInAppTool,
+    });
 
     const app = state.apps.find(item => item.id === state.currentAppId);
 
@@ -472,10 +528,10 @@ async function handleGenerate(): Promise<void> {
 
     appendChatMessage(
       'assistant',
-      `Generated ${files.length} file(s). ${result.description}`.trim(),
+      result.summary,
     );
 
-    renderPreview(elPreviewFrame, files);
+    handleRun();
   } catch (error) {
     const message = error instanceof Error
 ? error.message
@@ -598,6 +654,30 @@ function saveSettingsFromModal(): void {
   closeSettings();
 }
 
+function openAgentInstructions(): void {
+  elAgentInstructionsText.value = getSystemPrompt();
+  elAgentInstructionsModal.classList.remove('hidden');
+  elAgentInstructionsText.scrollTop = 0;
+}
+
+function closeAgentInstructions(): void {
+  elAgentInstructionsModal.classList.add('hidden');
+}
+
+async function copyAgentInstructions(): Promise<void> {
+  const text = elAgentInstructionsText.value;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    appendChatMessage('assistant', 'Agent instructions copied to clipboard.');
+  } catch {
+    appendChatMessage(
+      'assistant',
+      'Could not copy to clipboard automatically. You can still select and copy from the instructions modal.',
+    );
+  }
+}
+
 state.on('set:apps', () => renderAppList());
 state.on('set:currentAppId', () => {
   renderAppList();
@@ -627,6 +707,7 @@ elBtnGenerate.addEventListener('click', () => {
 elBtnRun.addEventListener('click', handleRun);
 elBtnRefreshPreview.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', openSettings);
+elBtnAgentInstructions.addEventListener('click', openAgentInstructions);
 
 elBtnCloseSettings.addEventListener('click', closeSettings);
 elBtnSaveSettings.addEventListener('click', saveSettingsFromModal);
@@ -634,6 +715,17 @@ elBtnCancelSettings.addEventListener('click', closeSettings);
 elSettingsModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elSettingsModal) {
     closeSettings();
+  }
+});
+
+elBtnCloseAgentInstructions.addEventListener('click', closeAgentInstructions);
+elBtnCloseAgentInstructions2.addEventListener('click', closeAgentInstructions);
+elBtnCopyAgentInstructions.addEventListener('click', () => {
+  void copyAgentInstructions();
+});
+elAgentInstructionsModal.addEventListener('click', (event: MouseEvent) => {
+  if (event.target === elAgentInstructionsModal) {
+    closeAgentInstructions();
   }
 });
 
@@ -682,6 +774,7 @@ if (sidebarFooter !== null && settingsButton !== null) {
 window.listFileset = listFilesetTool;
 window.readFile = readFileTool;
 window.setFileContent = setFileContentTool;
+window.replaceFilePart = replaceFilePartTool;
 window.deleteFile = deleteFileTool;
 window.evalInApp = evalInAppTool;
 

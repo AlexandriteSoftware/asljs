@@ -1,8 +1,3 @@
-import {
-    type GenerateAppResult,
-    type GeneratedFile,
-  } from './types.js';
-
 import observableReadme
   from '../../../observable/README.md?raw';
 import eventfulReadme
@@ -53,52 +48,230 @@ const DALI_VERSION =
 const SYSTEM_PROMPT =
   buildSystemPrompt();
 
+export function getSystemPrompt(): string {
+  return SYSTEM_PROMPT;
+}
+
+const MAX_TOOL_STEPS = 24;
+
+type AiTools = {
+  listFileset: () => Promise<string[]>;
+  readFile: (path: string) => Promise<string>;
+  setFileContent: (path: string, content: string) => Promise<void>;
+  deleteFile: (path: string) => Promise<void>;
+  replaceFilePart: (
+    path: string,
+    search: string,
+    replacement: string,
+    replaceAll?: boolean,
+  ) => Promise<void>;
+  evalInApp: (code: string) => Promise<unknown>;
+};
+
+type AgentRunResult = {
+  summary: string;
+};
+
+type ChatToolCall = {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+};
+
+type ChatMessage = {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string;
+  tool_call_id?: string;
+  tool_calls?: ChatToolCall[];
+};
+
+const OPENAI_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'listFileset',
+      description: 'List all file paths in the virtual filesystem.',
+      parameters: {
+        type: 'object',
+        properties: {},
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'readFile',
+      description: 'Read the full text content of a file.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string' },
+        },
+        required: ['path'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'setFileContent',
+      description: 'Create or fully replace file content.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string' },
+          content: { type: 'string' },
+        },
+        required: ['path', 'content'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'replaceFilePart',
+      description: 'Replace part of a file by exact search string.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string' },
+          search: { type: 'string' },
+          replacement: { type: 'string' },
+          replaceAll: { type: 'boolean' },
+        },
+        required: ['path', 'search', 'replacement'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'deleteFile',
+      description: 'Delete a file from the virtual filesystem.',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: { type: 'string' },
+        },
+        required: ['path'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'evalInApp',
+      description: 'Evaluate JavaScript in the running app document context.',
+      parameters: {
+        type: 'object',
+        properties: {
+          code: { type: 'string' },
+        },
+        required: ['code'],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+] as const;
+
 export async function generateApp(
-    prompt: string,
-    apiKey: string
-  ): Promise<GenerateAppResult>
+  prompt: string,
+  apiKey: string,
+  tools: AiTools,
+): Promise<AgentRunResult>
 {
-  const response =
-    await fetch(
-      OPENAI_CHAT_URL,
-      { method: 'POST',
-        headers:
-          { 'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify(
-          { model: 'gpt-4o-mini',
-            temperature: 0.2,
-            messages:
-              [ { role: 'system',
-                  content: SYSTEM_PROMPT },
-                { role: 'user',
-                  content: prompt } ] }) });
+  const messages: ChatMessage[] = [
+    {
+      role: 'system',
+      content: SYSTEM_PROMPT,
+    },
+    {
+      role: 'user',
+      content: prompt,
+    },
+  ];
 
-  if (!response.ok) {
-    const errorPayload =
-      await response.json().catch(() => ({} as Record<string, unknown>));
+  for (let step = 0; step < MAX_TOOL_STEPS; step += 1) {
+    const response = await fetch(OPENAI_CHAT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.1,
+        messages,
+        tools: OPENAI_TOOLS,
+        tool_choice: 'auto',
+      }),
+    });
 
-    const message =
-      getOpenAiErrorMessage(errorPayload)
-      ?? `OpenAI API error: ${response.status}`;
+    if (!response.ok) {
+      const errorPayload =
+        await response.json().catch(() => ({} as Record<string, unknown>));
 
-    throw new Error(message);
+      const message =
+        getOpenAiErrorMessage(errorPayload)
+        ?? `OpenAI API error: ${response.status}`;
+
+      throw new Error(message);
+    }
+
+    const data = await response.json() as {
+      choices?: Array<{ message?: ChatMessage }>;
+    };
+
+    const message = data.choices?.[0]?.message;
+
+    if (message === undefined) {
+      throw new Error('AI returned an unexpected response format.');
+    }
+
+    const toolCalls = message.tool_calls ?? [];
+
+    if (toolCalls.length === 0) {
+      const summary = message.content.trim();
+
+      return {
+        summary: summary === ''
+          ? 'Completed tool-based update.'
+          : summary,
+      };
+    }
+
+    messages.push({
+      role: 'assistant',
+      content: message.content,
+      tool_calls: toolCalls,
+    });
+
+    for (const toolCall of toolCalls) {
+      const toolOutput = await executeToolCall(toolCall, tools);
+
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCall.id,
+        content: toolOutput,
+      });
+    }
   }
 
-  const data =
-    await response.json() as Record<string, unknown>;
-
-  const raw =
-    getContentFromChatResponse(data);
-
-  const parsed =
-    parseGenerationResult(raw);
-
-  if (parsed.files.length === 0) {
-    throw new Error('AI returned no files.');
-  }
-
-  return parsed;
+  throw new Error('AI exceeded maximum tool steps without completing.');
 }
 
 function buildSystemPrompt(
@@ -134,18 +307,22 @@ The generated app is a showcase of ASLJS libraries. Use ALL of these packages in
 
 ${packageVersions}
 
-Generator output requirements:
-- Return JSON only (no markdown, no prose), with this exact shape:
-  {
-    "description": "one-sentence description",
-    "files": [
-      { "name": "index.html", "content": "..." },
-      { "name": "style.css", "content": "..." },
-      { "name": "app.js", "content": "..." },
-      { "name": "package.json", "content": "..." },
-      { "name": "README.md", "content": "..." }
-    ]
-  }
+Response requirements:
+- Use tool calls for file and runtime operations.
+- Do not return a full files JSON snapshot.
+- Return a short plain-text summary only after updates are complete.
+
+Tool-first generation protocol (stability-first):
+- Always work in small, incremental steps:
+  1) inspect current files/state,
+  2) edit one focused thing,
+  3) verify app behavior,
+  4) fix issues,
+  5) repeat until stable.
+- Prefer targeted updates (replace specific file parts) over full rewrites.
+- Use setFileContent only when replaceFilePart is not suitable.
+- Verify each major change using evalInApp.
+- Use JSON only for explicit import/export content handled by the app itself.
 
 Generation rules:
 - Always include at least: index.html, style.css, app.js, package.json, README.md.
@@ -153,14 +330,48 @@ Generation rules:
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
 - app.js is the app entry point.
 - index.html must load app.js using <script type="module">.
+- UI code must be data-binding-first: prefer declarative \`data-bind-*\` attributes with \`bindDataModel\`.
+- For UI updates, prefer model changes that automatically re-render through bindings.
+- Avoid imperative DOM mutation patterns for normal UI state changes (manual \`innerHTML\` rebuild loops, ad-hoc query-and-set chains).
+- Use imperative DOM code only for unavoidable integration points, and keep it minimal.
 - Prefer real app behavior over toy snippets (state, events, bindings, local persistence, and at least one ASLJS component).
 - Keep code concise, runnable in modern browser, and readable.
+
+Stability contract (minimize generation failures):
+- Prefer a small, deterministic architecture over clever patterns.
+- Keep all runtime logic in app.js unless splitting is necessary.
+- Do not reference files that do not exist in the current virtual filesystem.
+- Do not use placeholders, TODOs, pseudo-code, or omitted sections.
+- Avoid dynamic imports and avoid network/runtime external dependencies.
+- Guard all DOM queries and event wiring against missing elements.
+- Wrap startup in a safe boot path with clear error handling.
+- Ensure app initialization is idempotent (safe to run more than once).
+- Keep CSS simple and resilient; avoid assumptions about unavailable fonts/assets.
+
+Implementation reliability rules:
+- index.html must contain the actual mount/root element used by app.js.
+- app.js must only use APIs available in modern browsers and must not require build-time transforms.
+- package.json scripts must be coherent and runnable (at least a valid start/dev flow).
+- All referenced ASLJS APIs must match the provided package docs/types excerpts.
+- Prefer \`asljs-data-binding\` for form fields, labels, visibility flags, and action wiring.
+- When using \`asljs-components\`, bind row/content templates through data-binding context instead of manual DOM writes.
+- For data persistence, handle empty/first-run states and corrupted data gracefully.
+- For asynchronous flows, handle rejection paths and surface readable errors.
+
+Pre-flight self-check before final response:
+- Verify file graph consistency: every referenced local file exists.
+- Verify boot consistency: index.html loads app.js and app.js mounts to an existing element.
+- Verify no syntax-fragment artifacts (unclosed tags, truncated strings, unfinished blocks).
+- Verify at least one concrete usage of each required ASLJS package.
+- Verify UI behavior is primarily implemented with \`asljs-data-binding\` (not imperative DOM patching).
+- Verify generated README explains how to run and what the agent tools do.
 
 Agent tool contract (virtual filesystem and runtime):
 - Assume the generated app includes an agent that can use these tools:
   - listFileset(): returns all file paths in the virtual filesystem.
   - readFile(path): returns full text content for a file.
   - setFileContent(path, content): creates or replaces a file's content.
+  - replaceFilePart(path, search, replacement, replaceAll?): replaces exact text in a file.
   - deleteFile(path): deletes a file from the virtual filesystem.
   - evalInApp(code): evaluates JavaScript in the context of the running app document.
 - Generate app code and README so these tool names and behaviors are clear and usable.
@@ -169,7 +380,7 @@ Agent tool contract (virtual filesystem and runtime):
 In-app agent update protocol:
 - For normal edits, the in-app agent must update files through tools:
   - inspect with listFileset/readFile
-  - modify/create with setFileContent
+  - modify with replaceFilePart first; use setFileContent for create/full replace
   - remove with deleteFile when appropriate
 - JSON should be used only for explicit export/import workflows.
 
@@ -177,6 +388,7 @@ Run/repair loop requirements for the generated agent behavior:
 - The agent must treat app.js as the starting point for the app runtime.
 - The agent must verify the app is running (for example by using evalInApp checks against the loaded document).
 - If the app is not running, the agent must iteratively adjust files via setFileContent/deleteFile,
+- If the app is not running, the agent must iteratively adjust files via replaceFilePart/setFileContent/deleteFile,
   then re-check until the app runs.
 - The final generated code should reflect this workflow explicitly in app.js and/or README.
 
@@ -240,81 +452,126 @@ function getOpenAiErrorMessage(
     : null;
 }
 
-function getContentFromChatResponse(
-    data: Record<string, unknown>
-  ): string
-{
-  const choices =
-    data.choices as Array<Record<string, unknown>> | undefined;
-
-  const firstChoice =
-    choices?.[0];
-
-  const message =
-    firstChoice?.message as Record<string, unknown> | undefined;
-
-  const content =
-    message?.content;
-
-  if (typeof content !== 'string') {
-    throw new Error('AI returned an unexpected response format.');
-  }
-
-  return content;
-}
-
-function parseGenerationResult(
-    raw: string
-  ): GenerateAppResult
-{
-  let parsed: unknown;
+async function executeToolCall(
+  toolCall: ChatToolCall,
+  tools: AiTools,
+): Promise<string> {
+  const name = toolCall.function.name;
+  const args = parseToolArguments(toolCall.function.arguments);
 
   try {
-    parsed = JSON.parse(raw);
+    switch (name) {
+      case 'listFileset': {
+        const result = await tools.listFileset();
+        return toolSuccess(result);
+      }
+
+      case 'readFile': {
+        const result = await tools.readFile(readStringArg(args, 'path'));
+        return toolSuccess(result);
+      }
+
+      case 'setFileContent': {
+        await tools.setFileContent(
+          readStringArg(args, 'path'),
+          readStringArg(args, 'content'),
+        );
+        return toolSuccess('ok');
+      }
+
+      case 'replaceFilePart': {
+        await tools.replaceFilePart(
+          readStringArg(args, 'path'),
+          readStringArg(args, 'search'),
+          readStringArg(args, 'replacement'),
+          readBooleanArg(args, 'replaceAll', false),
+        );
+        return toolSuccess('ok');
+      }
+
+      case 'deleteFile': {
+        await tools.deleteFile(readStringArg(args, 'path'));
+        return toolSuccess('ok');
+      }
+
+      case 'evalInApp': {
+        const result = await tools.evalInApp(readStringArg(args, 'code'));
+        return toolSuccess(result);
+      }
+
+      default:
+        return toolFailure(`Unknown tool: ${name}`);
+    }
+  } catch (error) {
+    return toolFailure(error instanceof Error
+? error.message
+: String(error));
+  }
+}
+
+function parseToolArguments(raw: string): Record<string, unknown> {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw new Error('Tool arguments must be a JSON object.');
+    }
+
+    return parsed as Record<string, unknown>;
   } catch {
-    throw new Error('AI returned invalid JSON.');
+    throw new Error('Invalid tool arguments JSON.');
   }
-
-  if (!isGenerateAppResult(parsed)) {
-    throw new Error('AI returned an unexpected response shape.');
-  }
-
-  return parsed;
 }
 
-function isGenerateAppResult(
-    value: unknown
-  ): value is GenerateAppResult
-{
-  if (typeof value !== 'object' || value === null) {
-    return false;
+function readStringArg(
+  args: Record<string, unknown>,
+  key: string,
+): string {
+  const value = args[key];
+
+  if (typeof value !== 'string') {
+    throw new Error(`Tool argument "${key}" must be a string.`);
   }
 
-  const candidate =
-    value as { description?: unknown; files?: unknown; };
-
-  if (typeof candidate.description !== 'string') {
-    return false;
-  }
-
-  if (!Array.isArray(candidate.files)) {
-    return false;
-  }
-
-  return candidate.files.every(isGeneratedFile);
+  return value;
 }
 
-function isGeneratedFile(
-    value: unknown
-  ): value is GeneratedFile
-{
-  if (typeof value !== 'object' || value === null) {
-    return false;
+function readBooleanArg(
+  args: Record<string, unknown>,
+  key: string,
+  defaultValue: boolean,
+): boolean {
+  const value = args[key];
+
+  if (value === undefined) {
+    return defaultValue;
   }
 
-  const candidate =
-    value as { name?: unknown; content?: unknown; };
+  if (typeof value !== 'boolean') {
+    throw new Error(`Tool argument "${key}" must be a boolean.`);
+  }
 
-  return typeof candidate.name === 'string'
-      && typeof candidate.content === 'string';
+  return value;
+}
+
+function toolSuccess(value: unknown): string {
+  return stringifyToolPayload({
+    ok: true,
+    value,
+  });
+}
+
+function toolFailure(error: string): string {
+  return stringifyToolPayload({
+    ok: false,
+    error,
+  });
+}
+
+function stringifyToolPayload(payload: Record<string, unknown>): string {
+  try {
+    return JSON.stringify(payload);
+  } catch {
+    return '{"ok":false,"error":"Failed to serialize tool result."}';
+  }
 }

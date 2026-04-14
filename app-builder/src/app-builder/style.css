@@ -370,6 +370,10 @@ body {
   gap: 0;
 }
 
+.modal-lg {
+  width: min(1000px, 92vw);
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -411,6 +415,25 @@ body {
 .form-input:focus { outline: none; border-color: var(--accent); }
 
 .form-hint { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+.prompt-view {
+  width: 100%;
+  min-height: min(65vh, 620px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0.75rem;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.prompt-view:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 
 /* ── Utilities ───────────────────────────────────────────── */
 .hidden { display: none !important; }

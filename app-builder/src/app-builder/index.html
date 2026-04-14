@@ -59,6 +59,7 @@
         <section id="panel-chat" class="panel">
           <div class="panel-header">
             <span>Generate</span>
+            <button id="btn-agent-instructions" class="btn btn-ghost btn-sm">Instructions</button>
           </div>
           <div id="chat-messages" class="chat-messages"></div>
           <div class="chat-input-area">
@@ -147,6 +148,31 @@
       <div class="modal-footer">
         <button id="btn-confirm-name" class="btn btn-primary">OK</button>
         <button id="btn-cancel-name" class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent instructions modal -->
+  <div id="agent-instructions-modal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Agent Instructions</h3>
+        <button id="btn-close-agent-instructions" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="form-hint" style="margin-bottom: 0.5rem;">
+          This is the full instruction text sent to the AI (including generated sections from package docs and API exports).
+        </p>
+        <textarea
+          id="agent-instructions-text"
+          class="prompt-view"
+          spellcheck="false"
+          readonly
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-copy-agent-instructions" class="btn btn-ghost">Copy</button>
+        <button id="btn-close-agent-instructions-2" class="btn btn-primary">Close</button>
       </div>
     </div>
   </div>

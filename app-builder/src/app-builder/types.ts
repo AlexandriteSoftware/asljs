@@ -16,7 +16,3 @@ export type Settings =
 export type GeneratedFile =
   { name: string;
     content: string; };
-
-export type GenerateAppResult =
-  { description: string;
-    files: GeneratedFile[]; };
