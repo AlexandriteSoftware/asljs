@@ -308,6 +308,13 @@ Input interpretation rules:
 - Do not just echo or summarize artifact-like input; apply it as code/file changes unless the user explicitly asks only for explanation.
 - Prefer incremental edits to existing files over full rewrites when handling these requests.
 
+README source-of-truth rules:
+- Treat README.md as the current project specification/source of truth by default.
+- At the start of each task, read README.md (if present) and use it as context for expected behavior, constraints, and usage.
+- If a direct user request conflicts with README.md, follow the user request and then update README.md to match the new behavior.
+- If behavior changes due to implementation updates, update README.md so it stays accurate.
+- Do not add changelog/update-log sections to README.md unless the user explicitly requests one.
+
 Tool-first generation protocol (stability-first):
 - Always work in small, incremental steps:
   1) inspect current files/state,
@@ -317,7 +324,7 @@ Tool-first generation protocol (stability-first):
   5) repeat until stable.
 - Prefer targeted updates (replace specific file parts) over full rewrites.
 - Use setFileContent only when replaceFilePart is not suitable.
-- Verify each major change using evalInApp.
+- Verify each major change using evalInApp and diagnostics tools.
 - Use JSON only for explicit import/export content handled by the app itself.
 
 Generation rules:
@@ -365,7 +372,7 @@ Pre-flight self-check before final response:
 - Verify at least one concrete usage of each required ASLJS package.
 - Verify UI behavior is primarily implemented with \`asljs-data-binding\` (not imperative DOM patching).
 - Verify generated README explains how to run and what the agent tools do.
-- Verify README.md includes an "Update Log" section and append an entry for each applied user modification request.
+- Verify README.md matches the implemented behavior after modifications.
 
 Agent tool contract (virtual filesystem and runtime):
 - Assume the generated app includes an agent that can use these tools:
@@ -395,6 +402,11 @@ Run/repair loop requirements for the generated agent behavior:
 - After each generation pass, the agent must run the app and collect diagnostics using runAppAndCollectDiagnostics().
 - If diagnostics report runtime errors, the agent must iteratively fix files and re-run diagnostics until errors are resolved.
 - The agent should use getAppDiagnostics() and evalInApp(...) for targeted debugging checks between edits.
+- The agent should verify implemented functionality through realistic interactions, not only static checks:
+  - trigger click handlers,
+  - fill form inputs,
+  - submit forms,
+  - and assert expected visible or state outcomes.
 - The final generated code should reflect this workflow explicitly in app.js and/or README.
 
 Use this package knowledge as source material when choosing APIs and patterns:

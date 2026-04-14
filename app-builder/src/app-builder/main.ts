@@ -49,6 +49,8 @@ const elFirstAppSetup = mustElement<HTMLElement>('first-app-setup');
 const elFirstApiKeyInput = mustElement<HTMLInputElement>('first-api-key-input');
 const elFirstAppNameInput = mustElement<HTMLInputElement>('first-app-name-input');
 const elBtnCreateFirstApp = mustElement<HTMLButtonElement>('btn-create-first-app');
+const elBtnCreateTodoSample =
+  mustElement<HTMLButtonElement>('btn-create-todo-sample');
 const elPanels = mustElement<HTMLElement>('panels');
 const elPanelChat = mustElement<HTMLElement>('panel-chat');
 const elPanelEditor = mustElement<HTMLElement>('panel-editor');
@@ -487,6 +489,198 @@ async function createFirstAppFromForm(): Promise<void> {
   await saveApp(app);
   state.apps = [...state.apps, app];
   await openApp(app.id);
+}
+
+async function createTodoSampleAppFromForm(): Promise<void> {
+  const rawName = elFirstAppNameInput.value.trim();
+  const name = rawName === ''
+    ? 'TODO Sample'
+    : rawName;
+
+  const apiKey = elFirstApiKeyInput.value.trim();
+
+  if (apiKey !== '') {
+    const settings = loadSettings();
+    settings.apiKey = apiKey;
+    saveSettings(settings);
+  }
+
+  const appId = randomId();
+
+  const app: AppRecord = {
+    id: appId,
+    name,
+    createdAt: now(),
+    updatedAt: now(),
+  };
+
+  const files = buildTodoSampleFiles(appId);
+
+  await saveApp(app);
+  await replaceFiles(appId, files);
+
+  state.apps = [...state.apps, app];
+  await openApp(appId);
+}
+
+function buildTodoSampleFiles(appId: string): FileRecord[] {
+  const indexHtml = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TODO Sample</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>TODO Sample</h1>
+    <form id="todo-form">
+      <input id="todo-input" type="text" placeholder="What needs doing?" required />
+      <button type="submit">Add</button>
+    </form>
+    <ul id="todo-list"></ul>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>`;
+
+  const styleCss = `:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0b1220;
+  color: #e7edf7;
+}
+
+.app {
+  max-width: 560px;
+  margin: 2rem auto;
+  padding: 1rem;
+  border: 1px solid #2b3954;
+  border-radius: 8px;
+  background: #121b2d;
+}
+
+#todo-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#todo-input {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+#todo-list {
+  margin-top: 1rem;
+  padding-left: 1.1rem;
+}
+
+li {
+  margin: 0.25rem 0;
+}`;
+
+  const appJs = `const form = document.getElementById('todo-form');
+const input = document.getElementById('todo-input');
+const list = document.getElementById('todo-list');
+
+if (!(form instanceof HTMLFormElement)
+    || !(input instanceof HTMLInputElement)
+    || !(list instanceof HTMLUListElement))
+{
+  throw new Error('Missing TODO app elements.');
+}
+
+const state = {
+  todos: [],
+};
+
+function render() {
+  list.replaceChildren();
+
+  for (const todo of state.todos) {
+    const item = document.createElement('li');
+    item.textContent = todo;
+    list.appendChild(item);
+  }
+}
+
+form.addEventListener('submit', event => {
+  event.preventDefault();
+
+  const text = input.value.trim();
+
+  if (text === '') {
+    return;
+  }
+
+  state.todos.push(text);
+  input.value = '';
+  render();
+});
+
+render();`;
+
+  const packageJson = `{
+  "name": "todo-sample",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "echo \"Open index.html in a browser\""
+  }
+}`;
+
+  const readme = `# TODO Sample
+
+Simple TODO sample application.
+
+## Usage
+
+Open index.html and add items using the input.
+
+## Behavior
+
+- Add TODO item on submit.
+- Render TODO list in page.
+`;
+
+  return [
+    {
+      id: randomId(),
+      appId,
+      name: 'index.html',
+      content: indexHtml,
+    },
+    {
+      id: randomId(),
+      appId,
+      name: 'style.css',
+      content: styleCss,
+    },
+    {
+      id: randomId(),
+      appId,
+      name: 'app.js',
+      content: appJs,
+    },
+    {
+      id: randomId(),
+      appId,
+      name: 'package.json',
+      content: packageJson,
+    },
+    {
+      id: randomId(),
+      appId,
+      name: 'README.md',
+      content: readme,
+    },
+  ];
 }
 
 function renderFileSelect(): void {
@@ -1083,6 +1277,10 @@ elProjectNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
 
 elBtnCreateFirstApp.addEventListener('click', () => {
   void createFirstAppFromForm();
+});
+
+elBtnCreateTodoSample.addEventListener('click', () => {
+  void createTodoSampleAppFromForm();
 });
 
 elFirstAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {

@@ -147,6 +147,12 @@ body {
   line-height: 1.45;
 }
 
+.first-app-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .app-name { font-weight: 600; font-size: 0.95rem; }
 
 /* ── Panels ─────────────────────────────────────────────── */
