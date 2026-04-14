@@ -13,6 +13,7 @@
   --btn-primary-bg: #238636;
   --btn-primary-hover: #2ea043;
   --sidebar-width: 220px;
+  --sidebar-collapsed-width: 64px;
   --top-bar-height: 44px;
   --chat-collapsed-width: 420px;
   --radius: 6px;
@@ -51,6 +52,27 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 0.16s ease, min-width 0.16s ease;
+}
+
+#sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+  min-width: var(--sidebar-collapsed-width);
+}
+
+#sidebar.collapsed .logo-link {
+  display: none;
+}
+
+#sidebar.collapsed .sidebar-section,
+#sidebar.collapsed .sidebar-footer,
+#sidebar.collapsed #btn-settings {
+  display: none;
+}
+
+#sidebar.collapsed .sidebar-header {
+  justify-content: flex-end;
+  padding: 0 0.45rem;
 }
 
 .sidebar-header {

@@ -67,8 +67,8 @@ const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
 const elBtnAgentInstructions =
   mustElement<HTMLButtonElement>('btn-agent-instructions');
+const elSidebar = mustElement<HTMLElement>('sidebar');
 const elBtnToggleApps = mustElement<HTMLButtonElement>('btn-toggle-apps');
-const elAppsContent = mustElement<HTMLElement>('apps-content');
 const elBtnToggleFiles = mustElement<HTMLButtonElement>('btn-toggle-files');
 
 const elSettingsModal = mustElement<HTMLElement>('settings-modal');
@@ -106,7 +106,7 @@ const elBtnCopyAgentInstructions =
   mustElement<HTMLButtonElement>('btn-copy-agent-instructions');
 
 const SETTINGS_KEY = 'asljs-app-builder-settings';
-const DEFAULT_THEME = 'dark';
+const DEFAULT_THEME = 'light';
 const DEFAULT_FONT_SIZE = 14;
 
 function loadSettings(): Settings {
@@ -157,7 +157,7 @@ function getTheme(): 'dark' | 'light' {
 
   return candidate === 'light'
     ? 'light'
-    : 'dark';
+    : DEFAULT_THEME;
 }
 
 function getFontSize(): number {
@@ -785,7 +785,7 @@ function closeAgentInstructions(): void {
 }
 
 function toggleAppsCollapsed(): void {
-  const collapsed = !elAppsContent.classList.contains('collapsed');
+  const collapsed = !elSidebar.classList.contains('collapsed');
 
   elBtnToggleApps.textContent = collapsed
     ? '▸'
@@ -793,7 +793,11 @@ function toggleAppsCollapsed(): void {
   elBtnToggleApps.setAttribute('aria-expanded', collapsed
     ? 'false'
     : 'true');
-  elAppsContent.classList.toggle('collapsed', collapsed);
+  elBtnToggleApps.title = collapsed
+    ? 'Expand sidebar'
+    : 'Collapse sidebar';
+
+  elSidebar.classList.toggle('collapsed', collapsed);
 }
 
 function toggleFilesCollapsed(): void {
