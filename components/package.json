@@ -1,6 +1,6 @@
 {
   "name": "asljs-components",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Web components for ASLJS applications.",
   "type": "module",
   "main": "dist/index.js",
