@@ -168,6 +168,107 @@ test(
   });
 
 test(
+  `${CONTEXT_NAME}: supports context.select with row-local this.item`,
+  async () => {
+    await ensureDomAndListLoaded();
+
+    resetDomBody();
+
+    const selectedIds: string[] = [];
+
+    const list =
+      document.createElement('asljs-list') as HTMLElement & {
+        items: Array<{ id: string; title: string }>;
+        context: unknown;
+        updateComplete: Promise<boolean>;
+      };
+
+    list.innerHTML =
+      `
+        <template data-slot="item">
+          <button data-bind-text="item.title"
+                  data-bind-onclick="context.select"></button>
+        </template>
+      `;
+
+    list.context = {
+      select(this: { item: { id: string } }) {
+        selectedIds.push(this.item.id);
+      }
+    };
+
+    list.items = [
+      { id: 'a', title: 'First' },
+      { id: 'b', title: 'Second' },
+    ];
+
+    document.body.appendChild(list);
+
+    await settle(list);
+
+    const buttons =
+      list.querySelectorAll('button');
+
+    buttons[0]?.dispatchEvent(new window.Event('click'));
+    buttons[1]?.dispatchEvent(new window.Event('click'));
+
+    assert.deepEqual(selectedIds, [ 'a', 'b' ]);
+  });
+
+test(
+  `${CONTEXT_NAME}: context.select without context warns and does not invoke handler`,
+  async () => {
+    await ensureDomAndListLoaded();
+
+    resetDomBody();
+
+    const warnings: string[] = [];
+    const previousWarn =
+      console.warn;
+
+    console.warn =
+      (...args: unknown[]) => {
+        warnings.push(String(args[0] ?? ''));
+      };
+
+    try {
+      const list =
+        document.createElement('asljs-list') as HTMLElement & {
+          items: Array<{ id: string; title: string }>;
+          updateComplete: Promise<boolean>;
+        };
+
+      list.innerHTML =
+        `
+          <template data-slot="item">
+            <button data-bind-onclick="context.select"
+                    data-bind-text="item.title"></button>
+          </template>
+        `;
+
+      list.items = [
+        { id: 'a', title: 'First' },
+      ];
+
+      document.body.appendChild(list);
+
+      await settle(list);
+
+      const button =
+        list.querySelector('button') as HTMLButtonElement;
+
+      button.dispatchEvent(new window.Event('click'));
+
+      assert.equal(
+        warnings.some(message =>
+          message.includes("action 'context.select' is not a function")),
+        true);
+    } finally {
+      console.warn = previousWarn;
+    }
+  });
+
+test(
   `${CONTEXT_NAME}: warns for missing item slot`,
   async () => {
     await ensureDomAndListLoaded();

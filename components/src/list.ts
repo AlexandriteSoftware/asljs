@@ -18,6 +18,7 @@ import {
 export type ListRowContext =
   { item: ListItem;
     index: number;
+    context: unknown;
     first: boolean;
     last: boolean;
     odd: boolean;
@@ -44,6 +45,9 @@ export class List
 
   @property({ attribute: false })
     accessor items: ListItemsSource = [];
+
+  @property({ attribute: false })
+    accessor context: unknown = undefined;
 
   createRenderRoot(
     ): this
@@ -201,6 +205,7 @@ export class List
       const rowContext: ListRowContext =
         { item,
           index,
+          context: this.#createRowScopeContext(item, index),
           first: index === 0,
           last: index === count - 1,
           odd: index % 2 === 1,
@@ -264,6 +269,38 @@ export class List
         model);
 
     this.#itemBindingDisposers.push(dispose);
+  }
+
+  #createRowScopeContext(
+      item: ListItem,
+      index: number
+    ): unknown
+  {
+    if (this.context === null
+        || this.context === undefined
+        || typeof this.context !== 'object')
+    {
+      return this.context;
+    }
+
+    const baseContext =
+      this.context as Record<string, unknown>;
+
+    const rowContext =
+      Object.create(baseContext) as Record<string, unknown>;
+
+    rowContext.item = item;
+    rowContext.index = index;
+
+    for (const key of Object.keys(baseContext)) {
+      const value = baseContext[key];
+
+      if (typeof value === 'function') {
+        rowContext[key] = value.bind(rowContext);
+      }
+    }
+
+    return rowContext;
   }
 
   #disposeItemBindings(

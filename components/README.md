@@ -33,12 +33,20 @@ Notes:
 - Supports optional `template[data-slot="empty"]` for empty state.
 - Supports optional `template[data-slot="container"]` with required
   `data-role="items"` insertion point.
+- Supports optional `context` object for shared row actions and state.
 
 ```ts
 import 'asljs-components';
 
 const list =
   document.createElement('asljs-list');
+
+list.context = {
+  select(this: { item: { id: string; title: string } }, event: Event) {
+    event.preventDefault();
+    console.log('selected', this.item.id, this.item.title);
+  }
+};
 
 list.innerHTML = `
   <template data-slot="container">
@@ -52,7 +60,9 @@ list.innerHTML = `
   <template data-slot="item">
     <div>
       <a data-bind-href="item.url"
-         data-bind-text="item.title"></a>
+         data-bind-text="item.title"
+         data-bind-onclick="context.select"></a>
+      <small data-bind-text="index"></small>
     </div>
   </template>
 `;
@@ -70,6 +80,17 @@ Exports:
 - `ListItem` type
 - `ListItemsSource` type
 - `ListRowContext` type
+
+List row binding context fields:
+
+- `item`
+- `index`
+- `first`
+- `last`
+- `odd`
+- `even`
+- `count`
+- `context`
 
 ## License
 

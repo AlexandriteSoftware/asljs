@@ -15,19 +15,15 @@ the repository as the **single source of truth**.
 ### Source of Truth
 
 * Always ground answers in the **actual repository structure, files, and code**.
-* Do NOT invent:
-  * modules
-  * APIs
-  * file structures
-  * architectural patterns
+* Do NOT invent modules, APIs, file structures, or architectural patterns.
 * If something is unclear or missing:
   * infer conservatively from existing code
   * explicitly state assumptions
 
 **Assumption format:**
 
-* `Assumption:` …
-* `Impact:` …
+* `Assumption:` ...
+* `Impact:` ...
 
 ### Priorities (in order)
 
@@ -43,8 +39,6 @@ the repository as the **single source of truth**.
 * Avoid overengineering
 * Match **existing project style and patterns**
 * Deviate only when justified, and explain why
-* While modifying code, align all changes with `CONVENTIONS.md`.
-
 
 ## 2. Repository Awareness
 
@@ -72,24 +66,10 @@ the repository as the **single source of truth**.
 
 When explaining code, always cover:
 
-### What
-
 * What the code does (functional behavior)
-
-### How
-
 * How it works (control flow, data flow, important logic)
-
-### Where
-
 * Where it fits in the project (module relationships, usage)
-
-### Dependencies
-
 * Internal and external dependencies
-
-### Risks
-
 * Edge cases
 * Failure modes
 * Side effects
@@ -98,20 +78,14 @@ When explaining code, always cover:
 
 When writing code:
 
-### Requirements
-
 * Produce **complete, runnable code** unless told otherwise
-* Follow:
-
-  * naming conventions
-  * file organization
-  * patterns already used in the repo
+* Follow `CONVENTIONS.md`.
 
 ### Guidelines
 
 * Avoid unnecessary abstractions
 * Avoid introducing new dependencies unless clearly justified
-* Preserve backward compatibility unless explicitly changing behavior
+* Explain changes in backward compatibility when changing behavior
 
 ### Comments
 
@@ -131,45 +105,22 @@ When debugging:
 
 ### Additional
 
-* List alternative causes (if uncertainty exists), ordered by probability
-* Suggest preventive improvements:
-
-  * validation
-  * tests
-  * refactors
+* List alternative causes (if uncertainty exists), ordered by probability.
+* Suggest preventive improvements in validation, tests, promising refactors.
 
 ## 6. Code Review Tasks
 
-Evaluate code across:
-
-### Criteria
-
-* Correctness
-* Readability
-* Maintainability
-* Performance
-* Consistency with repository conventions
+Evaluate code across: correctness, readability, maintainability, performance,
+and consistency.
 
 ### Output Format
 
 * List **specific issues**
-* Include:
-
-  * impact
-  * concrete recommendation
+* Include: impact and concrete recommendation
 
 ## 7. Architecture & Design
 
-### Approach
-
-* Prefer:
-
-  * modular
-  * explicit
-  * easy-to-maintain designs
-
-### Rules
-
+* Prefer modular, explicit, and easy-to-maintain designs.
 * Align with existing architecture
 * Avoid introducing new patterns unless justified
 
@@ -198,48 +149,45 @@ Write documentation that is:
 
 When suggesting or writing tests:
 
-### Requirements
-
-* Cover:
-
-  * normal behavior
-  * edge cases
-  * failure cases
-
-### Guidelines
-
-* Keep tests deterministic
-* Tie directly to the feature/change
+* Cover normal behavior, edge cases, and failure cases.
+* Keep tests deterministic.
+* Tie directly to the feature/change.
 
 ## 10. TypeScript & JavaScript Usage
 
-* Use modern JavaScript/TypeScript **only if consistent with the repo**
-* Do NOT assume:
-
-  * frameworks
-  * tooling
-  * language features
-    unless they are already present or strongly implied
+* Use modern JavaScript/TypeScript
+* Do NOT assume frameworks, tooling, or language features, unless they are
+  already present or strongly implied.
 
 ## 11. Communication Style
 
-### Be
-
-* precise
-* practical
-* implementation-focused
-
-### Avoid
-
-* vague explanations
-* generic best practices not tied to this repo
-* unnecessary theory
+* Be precise, practical, and implementation-focused.
+* Avoid vague explanations, generic best practices not tied to this repo,
+  unnecessary theory.
 
 ## 12. Constraints
 
-* Do NOT reference removed or irrelevant components (e.g., kiosk, server)
-* Always use **real repository paths and links** when possible
-* Do NOT hallucinate missing parts of the system
+* Do NOT reference removed or irrelevant components.
+* Always use **real repository paths and links** when possible.
+* Do NOT hallucinate missing parts of the system.
+
+## 13. Repository Tasks
+
+### Task: Update package's AI.md
+
+Use this task when asked to create or revise AI-facing package guidance.
+
+Target:
+
+* `<package folder>/AI.md`, example: `components/AI.md`
+
+Task requirements:
+
+* Ground content in current package code and exports.
+* Document practical usage patterns AI should follow.
+* Preserve and document behavioral constraints (especially binding contracts).
+* Keep examples runnable and aligned with current implementation.
+* Update README as well when user-facing behavior or usage guidance changes.
 
 ## Summary
 

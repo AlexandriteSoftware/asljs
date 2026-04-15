@@ -10,11 +10,13 @@ import {
 } from './storage.js';
 import {
   generateApp,
-  getSystemPrompt,
   DEFAULT_MODEL,
   DEFAULT_MAX_TOOL_STEPS,
   type AiModel,
-} from './ai.js';
+} from './ai/ai-repl.js';
+import {
+  SYSTEM_PROMPT,
+} from './ai/ai-instruction.js';
 import {
   renderPreview,
   evaluateInPreview,
@@ -25,6 +27,27 @@ import {
   type FileRecord,
   type Settings,
 } from './types.js';
+import {
+  createAppRuntimeTools,
+} from './ai/ai-tools.js';
+import {
+  renderAppListUi,
+} from './ui/app-list-ui.js';
+import {
+  renderFileSelectUi,
+  renderFileContentUi,
+} from './ui/file-editor-ui.js';
+import {
+  renderGeneratingButtonUi,
+  setChatProgressUi,
+  appendChatMessageUi,
+} from './ui/chat-ui.js';
+import {
+  togglePanelUi,
+} from './ui/panel-collapse-ui.js';
+import {
+  buildTodoSampleFiles,
+} from './examples/todo-sample.js';
 
 function randomId(): string {
   return crypto.randomUUID();
@@ -197,197 +220,6 @@ function applyAppearanceSettings(): void {
   document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
 
-function requireCurrentAppId(): string {
-  if (state.currentAppId === null) {
-    throw new Error('No active app. Create or open an app first.');
-  }
-
-  return state.currentAppId;
-}
-
-function normalizeToolPath(path: string): string {
-  const normalized = path
-    .trim()
-    .replace(/\\/g, '/')
-    .replace(/^\.\//, '')
-    .replace(/^\/+/, '');
-
-  if (normalized === '') {
-    throw new Error('Path cannot be empty.');
-  }
-
-  if (normalized.includes('..')) {
-    throw new Error('Parent path segments are not allowed.');
-  }
-
-  return normalized;
-}
-
-function resolveExistingPath(path: string): string | null {
-  const normalizedPath = normalizeToolPath(path);
-
-  const found = state.files.find(item =>
-    normalizeToolPath(item.name).toLowerCase() === normalizedPath.toLowerCase(),
-  );
-
-  return found?.name ?? null;
-}
-
-async function listFilesetTool(): Promise<string[]> {
-  return [...state.files]
-    .map(file => file.name)
-    .sort((left, right) => left.localeCompare(right));
-}
-
-async function readFileTool(path: string): Promise<string> {
-  const resolvedPath = resolveExistingPath(path);
-
-  const file = resolvedPath === null
-    ? undefined
-    : state.files.find(item => item.name === resolvedPath);
-
-  if (file === undefined) {
-    throw new Error(`File not found: ${path}`);
-  }
-
-  return file.content;
-}
-
-async function setFileContentTool(
-  path: string,
-  content: string,
-): Promise<void> {
-  const appId = requireCurrentAppId();
-  const normalizedPath = normalizeToolPath(path);
-  const resolvedPath = resolveExistingPath(normalizedPath);
-
-  const existing = state.files.find(item => item.name === (resolvedPath ?? normalizedPath));
-
-  if (existing !== undefined) {
-    const updated: FileRecord = {
-      ...existing,
-      content,
-    };
-
-    await saveFile(updated);
-    state.files = state.files.map(item =>
-      item.id === updated.id
-? updated
-: item,
-    );
-    state.activeFileName = updated.name;
-    return;
-  }
-
-  const created: FileRecord = {
-    id: randomId(),
-    appId,
-    name: normalizedPath,
-    content,
-  };
-
-  await saveFile(created);
-  state.files = [...state.files, created];
-  state.activeFileName = created.name;
-}
-
-async function deleteFileTool(path: string): Promise<void> {
-  const resolvedPath = resolveExistingPath(path);
-  const file = resolvedPath === null
-    ? undefined
-    : state.files.find(item => item.name === resolvedPath);
-
-  if (file === undefined) {
-    return;
-  }
-
-  await deleteFile(file.id);
-
-  const remaining = state.files.filter(item => item.id !== file.id);
-  state.files = remaining;
-
-  if (state.activeFileName === path) {
-    state.activeFileName = remaining[0]?.name ?? null;
-  }
-}
-
-async function replaceFilePartTool(
-  path: string,
-  search: string,
-  replacement: string,
-  replaceAll = false,
-): Promise<void> {
-  if (search === '') {
-    throw new Error('Search text cannot be empty.');
-  }
-
-  const resolvedPath = resolveExistingPath(path);
-
-  if (resolvedPath === null) {
-    throw new Error(`File not found: ${path}`);
-  }
-
-  const original = await readFileTool(resolvedPath);
-
-  if (!original.includes(search)) {
-    throw new Error(`Search text not found in ${resolvedPath}.`);
-  }
-
-  let next = original;
-
-  if (replaceAll) {
-    next = original.split(search).join(replacement);
-  } else {
-    const firstIndex = original.indexOf(search);
-    const secondIndex = original.indexOf(search, firstIndex + search.length);
-
-    if (secondIndex !== -1) {
-      throw new Error(
-        'Search text is ambiguous. Use replaceAll=true or provide a more specific search block.',
-      );
-    }
-
-    next =
-      original.slice(0, firstIndex)
-      + replacement
-      + original.slice(firstIndex + search.length);
-  }
-
-  await setFileContentTool(resolvedPath, next);
-}
-
-async function evalInAppTool(code: string): Promise<unknown> {
-  if (state.files.length === 0) {
-    throw new Error('No files available to run.');
-  }
-
-  handleRun();
-
-  try {
-    return await evaluateInPreview(elPreviewFrame, code);
-  } catch {
-    // Retry once after a second run to handle initial iframe startup timing.
-    handleRun();
-    return evaluateInPreview(elPreviewFrame, code);
-  }
-}
-
-async function getAppDiagnosticsTool(): Promise<unknown> {
-  return getPreviewDiagnostics(elPreviewFrame);
-}
-
-async function runAppAndCollectDiagnosticsTool(): Promise<unknown> {
-  handleRun();
-  await wait(350);
-  return getPreviewDiagnostics(elPreviewFrame);
-}
-
-function wait(milliseconds: number): Promise<void> {
-  return new Promise(resolve => {
-    window.setTimeout(resolve, milliseconds);
-  });
-}
-
 declare global {
   interface Window {
     listFileset: () => Promise<string[]>;
@@ -406,41 +238,39 @@ declare global {
   }
 }
 
+const appRuntimeTools =
+  createAppRuntimeTools({
+    getCurrentAppId: () => state.currentAppId,
+    getFiles: () => state.files,
+    setFiles: files => {
+      state.files = files;
+    },
+    getActiveFileName: () => state.activeFileName,
+    setActiveFileName: fileName => {
+      state.activeFileName = fileName;
+    },
+    createFileId: randomId,
+    saveFile,
+    deleteFileById: async id => {
+      await deleteFile(id);
+    },
+    runApp: handleRun,
+    evaluateInApp: code => evaluateInPreview(elPreviewFrame, code),
+    getAppDiagnostics: () => getPreviewDiagnostics(elPreviewFrame),
+    wait: milliseconds =>
+      new Promise(resolve => {
+        window.setTimeout(resolve, milliseconds);
+      }),
+  });
+
 function renderAppList(): void {
-  elAppSelect.replaceChildren();
-
-  const apps = [...state.apps].sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt),
-  );
-
-  for (const app of apps) {
-    const option = document.createElement('option');
-    option.value = app.id;
-    option.textContent = app.name;
-    elAppSelect.appendChild(option);
-  }
-
-  if (apps.length > 0) {
-    const separator = document.createElement('option');
-    separator.value = '__separator__';
-    separator.textContent = '────────';
-    separator.disabled = true;
-    elAppSelect.appendChild(separator);
-  }
-
-  const newOption = document.createElement('option');
-  newOption.value = APP_ACTION_NEW;
-  newOption.textContent = 'New...';
-  elAppSelect.appendChild(newOption);
-
-  const importOption = document.createElement('option');
-  importOption.value = APP_ACTION_IMPORT;
-  importOption.textContent = 'Import...';
-  elAppSelect.appendChild(importOption);
-
-  if (state.currentAppId !== null) {
-    elAppSelect.value = state.currentAppId;
-  }
+  renderAppListUi({
+    selectElement: elAppSelect,
+    apps: state.apps,
+    currentAppId: state.currentAppId,
+    newActionValue: APP_ACTION_NEW,
+    importActionValue: APP_ACTION_IMPORT,
+  });
 }
 
 function renderWorkspace(): void {
@@ -514,7 +344,7 @@ async function createTodoSampleAppFromForm(): Promise<void> {
     updatedAt: now(),
   };
 
-  const files = buildTodoSampleFiles(appId);
+  const files = buildTodoSampleFiles(appId, randomId);
 
   await saveApp(app);
   await replaceFiles(appId, files);
@@ -523,395 +353,33 @@ async function createTodoSampleAppFromForm(): Promise<void> {
   await openApp(appId);
 }
 
-function buildTodoSampleFiles(appId: string): FileRecord[] {
-  const indexHtml = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TODO Sample</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <main class="app">
-    <h1>TODO Sample</h1>
-    <form id="todo-form">
-      <input id="todo-input" type="text" placeholder="What needs doing?" required />
-      <button type="submit">Add</button>
-    </form>
-    <section class="list-section">
-      <h2>Todo</h2>
-      <ul id="todo-list" class="todo-list"></ul>
-    </section>
-    <section class="list-section">
-      <h2>Done</h2>
-      <ul id="done-list" class="todo-list"></ul>
-    </section>
-  </main>
-  <script type="module" src="app.js"></script>
-</body>
-</html>`;
-
-  const styleCss = `:root {
-  color-scheme: light dark;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #0b1220;
-  color: #e7edf7;
-}
-
-.app {
-  max-width: 560px;
-  margin: 2rem auto;
-  padding: 1rem;
-  border: 1px solid #2b3954;
-  border-radius: 8px;
-  background: #121b2d;
-}
-
-#todo-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-#todo-input {
-  flex: 1;
-  padding: 0.5rem;
-}
-
-.list-section {
-  margin-top: 1rem;
-}
-
-.list-section h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-}
-
-.todo-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid #2b3954;
-  border-radius: 6px;
-  background: #0f1a2f;
-}
-
-.todo-main {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.todo-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.done .todo-text {
-  text-decoration: line-through;
-  opacity: 0.75;
-}
-
-.bin-btn {
-  border: 1px solid #3b4e7a;
-  background: transparent;
-  color: #e7edf7;
-  border-radius: 6px;
-  padding: 0.35rem 0.5rem;
-  cursor: pointer;
-}
-
-.check-btn {
-  border: 1px solid #3b4e7a;
-  background: #1b2b4b;
-  color: #e7edf7;
-  border-radius: 6px;
-  padding: 0.35rem 0.55rem;
-  cursor: pointer;
-}
-
-.todo-empty {
-  color: #9fb2d8;
-  font-size: 0.9rem;
-  padding: 0.25rem 0;
-}`;
-
-  const appJs = `const form = document.getElementById('todo-form');
-const input = document.getElementById('todo-input');
-const list = document.getElementById('todo-list');
-const doneList = document.getElementById('done-list');
-
-if (!(form instanceof HTMLFormElement)
-    || !(input instanceof HTMLInputElement)
-    || !(list instanceof HTMLUListElement)
-    || !(doneList instanceof HTMLUListElement))
-{
-  throw new Error('Missing TODO app elements.');
-}
-
-const state = {
-  todos: [],
-  done: [],
-};
-
-function uid() {
-  return crypto.randomUUID();
-}
-
-function render() {
-  list.replaceChildren();
-  doneList.replaceChildren();
-
-  for (const todo of state.todos) {
-    const item = document.createElement('li');
-    item.className = 'todo-item';
-
-    const main = document.createElement('div');
-    main.className = 'todo-main';
-
-    const text = document.createElement('span');
-    text.className = 'todo-text';
-    text.textContent = todo.text;
-
-    const actions = document.createElement('div');
-
-    const checkButton = document.createElement('button');
-    checkButton.type = 'button';
-    checkButton.className = 'check-btn';
-    checkButton.textContent = '✓';
-    checkButton.title = 'Mark done';
-    checkButton.addEventListener('click', () => {
-      state.todos = state.todos.filter(entry => entry.id !== todo.id);
-      state.done.unshift(todo);
-      render();
-    });
-
-    main.appendChild(checkButton);
-    main.appendChild(text);
-
-    const bin = document.createElement('button');
-    bin.type = 'button';
-    bin.className = 'bin-btn';
-    bin.textContent = '🗑';
-    bin.title = 'Delete todo';
-    bin.addEventListener('click', () => {
-      state.todos = state.todos.filter(entry => entry.id !== todo.id);
-      render();
-    });
-
-    actions.appendChild(checkButton);
-    actions.appendChild(bin);
-
-    item.appendChild(main);
-    item.appendChild(actions);
-    list.appendChild(item);
-  }
-
-  for (const todo of state.done) {
-    const item = document.createElement('li');
-    item.className = 'todo-item done';
-
-    const main = document.createElement('div');
-    main.className = 'todo-main';
-
-    const text = document.createElement('span');
-    text.className = 'todo-text';
-    text.textContent = todo.text;
-
-    main.appendChild(text);
-
-    const actions = document.createElement('div');
-
-    const bin = document.createElement('button');
-    bin.type = 'button';
-    bin.className = 'bin-btn';
-    bin.textContent = '🗑';
-    bin.title = 'Delete todo';
-    bin.addEventListener('click', () => {
-      state.done = state.done.filter(entry => entry.id !== todo.id);
-      render();
-    });
-
-    actions.appendChild(bin);
-
-    item.appendChild(main);
-    item.appendChild(actions);
-    doneList.appendChild(item);
-  }
-
-  if (state.todos.length === 0) {
-    const empty = document.createElement('li');
-    empty.className = 'todo-empty';
-    empty.textContent = 'No active TODO items.';
-    list.appendChild(empty);
-  }
-
-  if (state.done.length === 0) {
-    const emptyDone = document.createElement('li');
-    emptyDone.className = 'todo-empty';
-    emptyDone.textContent = 'No completed TODO items yet.';
-    doneList.appendChild(emptyDone);
-  }
-}
-
-form.addEventListener('submit', event => {
-  event.preventDefault();
-
-  const text = input.value.trim();
-
-  if (text === '') {
-    return;
-  }
-
-  state.todos.unshift({
-    id: uid(),
-    text,
-  });
-  input.value = '';
-  input.focus();
-  render();
-});
-
-render();`;
-
-  const packageJson = `{
-  "name": "todo-sample",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "start": "echo \"Open index.html in a browser\""
-  }
-}`;
-
-  const readme = `# TODO Sample
-
-Simple TODO sample application.
-
-## Usage
-
-Open index.html and add items using the input.
-
-## Behavior
-
-- Add TODO item on submit.
-- Active TODO items show Check and Bin actions.
-- Clicking Check moves an item immediately to Done.
-- Each item has a bin icon to delete it.
-`;
-
-  return [
-    {
-      id: randomId(),
-      appId,
-      name: 'index.html',
-      content: indexHtml,
-    },
-    {
-      id: randomId(),
-      appId,
-      name: 'style.css',
-      content: styleCss,
-    },
-    {
-      id: randomId(),
-      appId,
-      name: 'app.js',
-      content: appJs,
-    },
-    {
-      id: randomId(),
-      appId,
-      name: 'package.json',
-      content: packageJson,
-    },
-    {
-      id: randomId(),
-      appId,
-      name: 'README.md',
-      content: readme,
-    },
-  ];
-}
-
 function renderFileSelect(): void {
-  elFileSelect.replaceChildren();
-
-  if (state.files.length === 0) {
-    const option = document.createElement('option');
-    option.value = '';
-    option.textContent = 'No files';
-    elFileSelect.appendChild(option);
-    elFileSelect.value = '';
-    elFileSelect.disabled = true;
-    return;
-  }
-
-  for (const file of state.files) {
-    const option = document.createElement('option');
-    option.value = file.name;
-    option.textContent = file.name;
-    elFileSelect.appendChild(option);
-  }
-
-  const active = state.activeFileName ?? state.files[0].name;
-  elFileSelect.value = active;
-  elFileSelect.disabled = false;
+  renderFileSelectUi({
+    selectElement: elFileSelect,
+    files: state.files,
+    activeFileName: state.activeFileName,
+  });
 }
 
 function renderFileContent(): void {
-  const file = state.files.find(item => item.name === state.activeFileName);
-  elFileContent.value = file?.content ?? '';
-  elFileContent.disabled = file === undefined;
+  renderFileContentUi({
+    textAreaElement: elFileContent,
+    files: state.files,
+    activeFileName: state.activeFileName,
+  });
 }
 
 function setGenerating(value: boolean): void {
   state.generating = value;
-  elBtnGenerate.disabled = value;
-  elBtnGenerate.innerHTML = value
-    ? '<span class="spinner"></span> Sending…'
-    : 'Send';
+  renderGeneratingButtonUi(elBtnGenerate, value);
 }
 
 function setChatProgress(message: string, visible: boolean): void {
-  elChatProgress.textContent = message;
-  elChatProgress.classList.toggle('hidden', !visible);
+  setChatProgressUi(elChatProgress, message, visible);
 }
 
 function appendChatMessage(role: 'user' | 'assistant', text: string): void {
-  const msg = document.createElement('div');
-  msg.className = `chat-msg ${role}`;
-
-  const roleLabel = document.createElement('div');
-  roleLabel.className = 'chat-msg-role';
-  roleLabel.textContent = role === 'user'
-? 'You'
-: 'Assistant';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble';
-  bubble.textContent = text;
-
-  msg.appendChild(roleLabel);
-  msg.appendChild(bubble);
-  elChatMessages.appendChild(msg);
-  elChatMessages.scrollTop = elChatMessages.scrollHeight;
+  appendChatMessageUi(elChatMessages, role, text);
 }
 
 async function persistCurrentFile(): Promise<void> {
@@ -1114,17 +582,9 @@ async function handleGenerate(): Promise<void> {
     const model = getModel();
     const maxToolSteps = getMaxToolSteps();
 
-    const result = await generateApp(prompt, apiKey, model, {
-      listFileset: listFilesetTool,
-      readFile: readFileTool,
-      setFileContent: setFileContentTool,
-      replaceFilePart: replaceFilePartTool,
-      deleteFile: deleteFileTool,
-      evalInApp: evalInAppTool,
-      getAppDiagnostics: getAppDiagnosticsTool,
-      runAppAndCollectDiagnostics: runAppAndCollectDiagnosticsTool,
-    }, {
+    const result = await generateApp(prompt, apiKey, model, appRuntimeTools, {
       initialToolStepLimit: maxToolSteps,
+      systemPrompt: SYSTEM_PROMPT,
       onToolStepLimit: async ({ stepsCompleted }) => confirm(
         `AI reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`,
       ),
@@ -1305,7 +765,7 @@ function saveSettingsFromModal(): void {
 }
 
 function openAgentInstructions(): void {
-  elAgentInstructionsText.value = getSystemPrompt();
+  elAgentInstructionsText.value = SYSTEM_PROMPT;
   elAgentInstructionsModal.classList.remove('hidden');
   elAgentInstructionsText.scrollTop = 0;
 }
@@ -1315,31 +775,25 @@ function closeAgentInstructions(): void {
 }
 
 function toggleAppsCollapsed(): void {
-  const collapsed = !elPanelChat.classList.contains('collapsed');
-
-  elBtnToggleChat.textContent = collapsed
-    ? 'Chat ▸'
-    : 'Chat ▾';
-  elBtnToggleChat.setAttribute('aria-expanded', collapsed
-    ? 'false'
-    : 'true');
-
-  elPanelChat.classList.toggle('collapsed', collapsed);
-  elPanels.classList.toggle('chat-collapsed', collapsed);
+  togglePanelUi({
+    panelElement: elPanelChat,
+    toggleButtonElement: elBtnToggleChat,
+    panelsElement: elPanels,
+    collapsedPanelsClass: 'chat-collapsed',
+    expandedLabel: 'Chat ▾',
+    collapsedLabel: 'Chat ▸',
+  });
 }
 
 function toggleFilesCollapsed(): void {
-  const collapsed = !elPanelEditor.classList.contains('collapsed');
-
-  elBtnToggleFiles.textContent = collapsed
-    ? 'Files ▸'
-    : 'Files ▾';
-  elBtnToggleFiles.setAttribute('aria-expanded', collapsed
-    ? 'false'
-    : 'true');
-
-  elPanelEditor.classList.toggle('collapsed', collapsed);
-  elPanels.classList.toggle('files-collapsed', collapsed);
+  togglePanelUi({
+    panelElement: elPanelEditor,
+    toggleButtonElement: elBtnToggleFiles,
+    panelsElement: elPanels,
+    collapsedPanelsClass: 'files-collapsed',
+    expandedLabel: 'Files ▾',
+    collapsedLabel: 'Files ▸',
+  });
 }
 
 async function copyAgentInstructions(): Promise<void> {
@@ -1503,14 +957,14 @@ elImportFile.addEventListener('change', () => {
   void handleImportFile();
 });
 
-window.listFileset = listFilesetTool;
-window.readFile = readFileTool;
-window.setFileContent = setFileContentTool;
-window.replaceFilePart = replaceFilePartTool;
-window.deleteFile = deleteFileTool;
-window.evalInApp = evalInAppTool;
-window.getAppDiagnostics = getAppDiagnosticsTool;
-window.runAppAndCollectDiagnostics = runAppAndCollectDiagnosticsTool;
+window.listFileset = appRuntimeTools.listFileset;
+window.readFile = appRuntimeTools.readFile;
+window.setFileContent = appRuntimeTools.setFileContent;
+window.replaceFilePart = appRuntimeTools.replaceFilePart;
+window.deleteFile = appRuntimeTools.deleteFile;
+window.evalInApp = appRuntimeTools.evalInApp;
+window.getAppDiagnostics = appRuntimeTools.getAppDiagnostics;
+window.runAppAndCollectDiagnostics = appRuntimeTools.runAppAndCollectDiagnostics;
 
 async function init(): Promise<void> {
   applyAppearanceSettings();

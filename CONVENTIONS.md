@@ -260,6 +260,12 @@ const flags = [ true, false ];
 const pair = [ a, b ];
 ```
 
+Spaces in object and array literals:
+
+- One space inside empty literals: `{ }` and `[ ]`.
+- Add spaces after `[` and before `]` in non-empty arrays: `[ a, b, c ]`.
+- Add spaces after `{` and before `}` in non-empty objects: `{ key: value }`.
+
 #### Blank lines
 
 Keep a blank line between logical sections: imports, internal helpers, main

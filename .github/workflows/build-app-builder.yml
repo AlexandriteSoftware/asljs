@@ -7,11 +7,6 @@ on:
       - main
     paths:
       - 'app-builder/**'
-      - 'components/src/**'
-      - 'dali/src/**'
-      - 'data-binding/src/**'
-      - 'eventful/src/**'
-      - 'observable/src/**'
 
 concurrency:
   group: build-app-builder
