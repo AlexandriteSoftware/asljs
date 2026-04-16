@@ -175,10 +175,13 @@ const APP_ACTION_NEW = '__new__';
 const APP_ACTION_IMPORT = '__import__';
 const IMPORT_HASH_PREFIX = '#I!';
 const SHARE_MAX_URL_LENGTH = 2000;
+const SHARE_PREPARE_TIMEOUT_MS = 10000;
 const SHARE_BASE_URL =
   'https://alexandritesoftware.github.io/asljs/app-builder';
 
 let linkSharingService: LinkSharingService | null = null;
+let importFromHashInProgress = false;
+let sharePreparationId = 0;
 
 function getLinkSharingService(): LinkSharingService {
   linkSharingService =
@@ -858,15 +861,15 @@ function setWorkspaceMode(mode: 'edit' | 'run'): void {
 }
 
 function askPostLinkImportMode(): 'edit' | 'run' {
-  const edit = confirm(
-    'Import link opened.\n\n'
-    + 'Press OK to edit the app (chat/files open, app not auto-run).\n'
-    + 'Press Cancel to run the app (chat/files hidden).',
+  const run = confirm(
+    'You followed the application link.\n\n'
+    + 'Click OK to start the application.\n'
+    + 'Click Cancel to edit it.',
   );
 
-  return edit
-    ? 'edit'
-    : 'run';
+  return run
+    ? 'run'
+    : 'edit';
 }
 
 function handleImportClick(): void {
@@ -950,12 +953,11 @@ function getImportHashToken(): string | null {
 }
 
 function clearImportHashFromUrl(): void {
-  if (window.location.origin === 'https://alexandritesoftware.github.io') {
-    window.location.replace(SHARE_BASE_URL);
-    return;
-  }
-
-  window.history.replaceState(null, '', window.location.pathname);
+  window.history.pushState(
+    null,
+    '',
+    `${window.location.pathname}${window.location.search}`,
+  );
 }
 
 async function handleImportFromHashOnStartup(): Promise<boolean> {
@@ -965,89 +967,111 @@ async function handleImportFromHashOnStartup(): Promise<boolean> {
     return false;
   }
 
-  const decodedToken = (() => {
-    try {
-      return decodeURIComponent(token);
-    } catch {
-      return token;
-    }
-  })();
-
-  const sample =
-    getSampleById(token)
-    ?? getSampleById(decodedToken);
-
-  if (sample !== null) {
-    const importedAppId = await importPayload(
-      sample,
-      {
-        navigateToExistingById: true,
-        showDuplicateAlert: false,
-      });
-
-    if (importedAppId !== null) {
-      const mode = askPostLinkImportMode();
-
-      if (mode === 'run') {
-        setWorkspaceMode('run');
-        handleRun();
-      } else {
-        setWorkspaceMode('edit');
-      }
-    }
-
-    clearImportHashFromUrl();
+  if (importFromHashInProgress) {
     return true;
   }
 
-  try {
-    const payload =
-      await getLinkSharingService()
-        .parsePayloadFromToken<ImportedPayload>(token);
+  importFromHashInProgress = true;
 
-    if (!confirmImportSafetyNotice(payload)) {
+  try {
+    const decodedToken = (() => {
+      try {
+        return decodeURIComponent(token);
+      } catch {
+        return token;
+      }
+    })();
+
+    const sample =
+      getSampleById(token)
+      ?? getSampleById(decodedToken);
+
+    if (sample !== null) {
+      const importedAppId = await importPayload(
+        sample,
+        {
+          navigateToExistingById: true,
+          showDuplicateAlert: false,
+        });
+
+      if (importedAppId !== null) {
+        const mode = askPostLinkImportMode();
+
+        if (mode === 'run') {
+          setWorkspaceMode('run');
+          handleRun();
+        } else {
+          setWorkspaceMode('edit');
+        }
+      }
+
       clearImportHashFromUrl();
       return true;
     }
 
-    const importedAppId = await importPayload(
-      payload,
-      {
-        navigateToExistingById: true,
-        showDuplicateAlert: false,
-      });
+    try {
+      const payload =
+        await getLinkSharingService()
+          .parsePayloadFromToken<ImportedPayload>(token);
 
-    if (importedAppId !== null) {
-      const mode = askPostLinkImportMode();
-
-      if (mode === 'run') {
-        setWorkspaceMode('run');
-        handleRun();
-      } else {
-        setWorkspaceMode('edit');
+      if (!confirmImportSafetyNotice(payload)) {
+        clearImportHashFromUrl();
+        return true;
       }
+
+      const importedAppId = await importPayload(
+        payload,
+        {
+          navigateToExistingById: true,
+          showDuplicateAlert: false,
+        });
+
+      if (importedAppId !== null) {
+        const mode = askPostLinkImportMode();
+
+        if (mode === 'run') {
+          setWorkspaceMode('run');
+          handleRun();
+        } else {
+          setWorkspaceMode('edit');
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : String(error);
+
+      alert(`Could not import from share link: ${message}`);
     }
-  } catch (error) {
-    const message = error instanceof Error
-      ? error.message
-      : String(error);
 
-    alert(`Could not import from share link: ${message}`);
+    clearImportHashFromUrl();
+    return true;
+  } finally {
+    importFromHashInProgress = false;
   }
-
-  clearImportHashFromUrl();
-  return true;
 }
 
 async function prepareShareLinkUi(): Promise<void> {
+  const requestId = ++sharePreparationId;
+
   elShareLinkOutput.value = '';
   elBtnShareLink.disabled = true;
   elShareLinkStatus.textContent = 'Preparing share link...';
 
   try {
-    const payload = await buildExportPayload();
     const linkResult =
-      await getLinkSharingService().createShareUrl(payload);
+      await withTimeout(
+        (async () => {
+          const payload = await buildExportPayload();
+          return getLinkSharingService().createShareUrl(payload);
+        })(),
+        SHARE_PREPARE_TIMEOUT_MS,
+        'Preparing share link timed out. Use Download export instead.',
+      );
+
+    if (requestId !== sharePreparationId) {
+      return;
+    }
 
     if (linkResult.exceedsMaxUrlLength) {
       elShareLinkStatus.textContent =
@@ -1064,7 +1088,9 @@ async function prepareShareLinkUi(): Promise<void> {
       ? error.message
       : String(error);
 
-    elShareLinkStatus.textContent = message;
+    if (requestId === sharePreparationId) {
+      elShareLinkStatus.textContent = message;
+    }
   }
 }
 
@@ -1078,7 +1104,33 @@ function openShareModal(): void {
 }
 
 function closeShareModal(): void {
+  sharePreparationId += 1;
   elShareModal.classList.add('hidden');
+}
+
+async function withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string,
+  ): Promise<T>
+{
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise =
+    new Promise<T>((_, reject) => {
+      timeoutId = globalThis.setTimeout(
+        () => reject(new Error(timeoutMessage)),
+        timeoutMs,
+      );
+    });
+
+  try {
+    return await Promise.race([ promise, timeoutPromise ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      globalThis.clearTimeout(timeoutId);
+    }
+  }
 }
 
 async function shareWithLink(): Promise<void> {
@@ -1360,6 +1412,10 @@ window.deleteFile = appRuntimeTools.deleteFile;
 window.evalInApp = appRuntimeTools.evalInApp;
 window.getAppDiagnostics = appRuntimeTools.getAppDiagnostics;
 window.runAppAndCollectDiagnostics = appRuntimeTools.runAppAndCollectDiagnostics;
+
+window.addEventListener('hashchange', () => {
+  void handleImportFromHashOnStartup();
+});
 
 async function init(): Promise<void> {
   applyAppearanceSettings();
