@@ -1,7 +1,12 @@
+export type AppAuthor =
+  { name?: string;
+    email?: string; };
+
 export type AppRecord =
   { id: string;
     uuid: string;
     name: string;
+    author?: AppAuthor;
     createdAt: string;
     updatedAt: string; };
 

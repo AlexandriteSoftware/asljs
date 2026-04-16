@@ -24,7 +24,7 @@ import {
 } from './preview.js';
 import {
   type AppRecord,
-  type FileRecord,
+  type AppAuthor,
   type Settings,
 } from './types.js';
 import {
@@ -46,8 +46,22 @@ import {
   togglePanelUi,
 } from './ui/panel-collapse-ui.js';
 import {
-  buildTodoSampleFiles,
-} from './examples/todo-sample.js';
+  buildSampleFiles,
+  getSampleById,
+  getSampleByName,
+} from './examples/samples.js';
+import {
+  createLinkSharingService,
+  createBrowserTextCompressionCodec,
+  type LinkSharingService,
+} from './services/link-sharing.js';
+import {
+  buildExportPayload as buildExportPayloadModel,
+  parseImportedPayloadText,
+  createImportPlan,
+  type ExportPayload,
+  type ImportedPayload,
+} from './services/export-import.js';
 
 function randomId(): string {
   return crypto.randomUUID();
@@ -121,6 +135,10 @@ const elBtnCloseNameModal =
 
 const elProjectSettingsModal = mustElement<HTMLElement>('project-settings-modal');
 const elProjectNameInput = mustElement<HTMLInputElement>('project-name-input');
+const elProjectAuthorNameInput =
+  mustElement<HTMLInputElement>('project-author-name-input');
+const elProjectAuthorEmailInput =
+  mustElement<HTMLInputElement>('project-author-email-input');
 const elBtnSaveProjectSettings =
   mustElement<HTMLButtonElement>('btn-save-project-settings');
 const elBtnDeleteProject = mustElement<HTMLButtonElement>('btn-delete-project');
@@ -159,6 +177,22 @@ const IMPORT_HASH_PREFIX = '#I!';
 const SHARE_MAX_URL_LENGTH = 2000;
 const SHARE_BASE_URL =
   'https://alexandritesoftware.github.io/asljs/app-builder';
+
+let linkSharingService: LinkSharingService | null = null;
+
+function getLinkSharingService(): LinkSharingService {
+  linkSharingService =
+    linkSharingService
+    ?? createLinkSharingService(
+      {
+        codec: createBrowserTextCompressionCodec(),
+        baseUrl: SHARE_BASE_URL,
+        hashPrefix: IMPORT_HASH_PREFIX,
+        maxUrlLength: SHARE_MAX_URL_LENGTH,
+      });
+
+  return linkSharingService;
+}
 
 function loadSettings(): Settings {
   try {
@@ -416,9 +450,16 @@ async function createFirstAppFromForm(): Promise<void> {
 }
 
 async function createTodoSampleAppFromForm(): Promise<void> {
+  const sample = getSampleByName('TODO Sample');
+
+  if (sample === null) {
+    alert('TODO sample is not available.');
+    return;
+  }
+
   const rawName = elFirstAppNameInput.value.trim();
   const name = rawName === ''
-    ? 'TODO Sample'
+    ? sample.name
     : rawName;
 
   const apiKey = elFirstApiKeyInput.value.trim();
@@ -429,23 +470,22 @@ async function createTodoSampleAppFromForm(): Promise<void> {
     saveSettings(settings);
   }
 
-  const appId = randomId();
-
   const app: AppRecord = {
-    id: appId,
+    id: randomId(),
     uuid: createAppUuid(),
     name,
+    author: sample.author,
     createdAt: now(),
     updatedAt: now(),
   };
 
-  const files = buildTodoSampleFiles(appId, randomId);
+  const files = buildSampleFiles(sample, app.id, randomId);
 
   await saveApp(app);
-  await replaceFiles(appId, files);
+  await replaceFiles(app.id, files);
 
   state.apps = [...state.apps, app];
-  await openApp(appId);
+  await openApp(app.id);
 }
 
 function renderFileSelect(): void {
@@ -586,6 +626,8 @@ function openProjectSettings(): void {
   }
 
   elProjectNameInput.value = app.name;
+  elProjectAuthorNameInput.value = app.author?.name ?? '';
+  elProjectAuthorEmailInput.value = app.author?.email ?? '';
   elProjectSettingsModal.classList.remove('hidden');
   elProjectNameInput.focus();
   elProjectNameInput.select();
@@ -609,9 +651,24 @@ async function saveProjectSettings(): Promise<void> {
     return;
   }
 
+  const authorName = elProjectAuthorNameInput.value.trim();
+  const authorEmail = elProjectAuthorEmailInput.value.trim();
+  const author: AppAuthor | undefined =
+    authorName !== '' || authorEmail !== ''
+      ? {
+        ...(authorName !== ''
+          ? { name: authorName }
+          : {}),
+        ...(authorEmail !== ''
+          ? { email: authorEmail }
+          : {}),
+      }
+      : undefined;
+
   const updated: AppRecord = {
     ...app,
     name,
+    author,
     updatedAt: now(),
   };
 
@@ -729,16 +786,6 @@ function handleRun(): void {
   });
 }
 
-type ExportPayload =
-  { app: AppRecord;
-    files: FileRecord[];
-    exportedAt: string; };
-
-type ImportedPayload = {
-  app: Partial<AppRecord> & { name: string };
-  files: Array<Partial<FileRecord> & { name: string; content: string }>;
-};
-
 async function buildExportPayload(): Promise<ExportPayload> {
   await persistCurrentFile();
 
@@ -748,11 +795,11 @@ async function buildExportPayload(): Promise<ExportPayload> {
     throw new Error('No app selected.');
   }
 
-  return {
-    app,
-    files: [ ...state.files ],
-    exportedAt: now(),
-  };
+  return buildExportPayloadModel(
+    {
+      app,
+      files: state.files,
+    });
 }
 
 function downloadExportPayload(payload: ExportPayload): void {
@@ -763,14 +810,29 @@ function downloadExportPayload(payload: ExportPayload): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${payload.app.name.replace(/\s+/g, '-')}.json`;
+  link.download = `${payload.name.replace(/\s+/g, '-')}.json`;
   link.click();
   URL.revokeObjectURL(url);
 }
 
-function confirmImportSafetyNotice(): boolean {
+function formatImportAuthor(author: ImportedPayload['author']): string {
+  const name = author?.name?.trim() ?? '';
+  const email = author?.email?.trim() ?? '';
+
+  const displayName = name === ''
+    ? 'Not provided'
+    : name;
+  const displayEmail = email === ''
+    ? 'Not provided'
+    : email;
+
+  return `Author: ${displayName}\nEmail: ${displayEmail}`;
+}
+
+function confirmImportSafetyNotice(payload: ImportedPayload): boolean {
   return confirm(
     'Security warning: You are about to import an application.\n\n'
+    + `${formatImportAuthor(payload.author)}\n\n`
     + 'Although apps run in an isolated browser context, imported code can still be harmful. '
     + 'Be vigilant and only open apps from sources you trust.\n\n'
     + 'Do you want to continue?',
@@ -808,26 +870,12 @@ function askPostLinkImportMode(): 'edit' | 'run' {
 }
 
 function handleImportClick(): void {
-  if (!confirmImportSafetyNotice()) {
-    return;
-  }
-
   elImportFile.value = '';
   elImportFile.click();
 }
 
-function validateImportedPayload(payload: ImportedPayload): void {
-  if (
-    payload.app === undefined
-    || typeof payload.app.name !== 'string'
-    || !Array.isArray(payload.files)
-  ) {
-    throw new Error('Invalid app JSON format.');
-  }
-}
-
 type ImportPayloadOptions =
-  { navigateToExistingByUuid: boolean;
+  { navigateToExistingById: boolean;
     showDuplicateAlert: boolean; };
 
 async function importPayload(
@@ -835,55 +883,37 @@ async function importPayload(
     options: ImportPayloadOptions,
   ): Promise<string | null>
 {
-  validateImportedPayload(payload);
+  const plan =
+    createImportPlan(
+      {
+        payload,
+        existingApps: state.apps,
+        navigateToExistingById: options.navigateToExistingById,
+        now: now(),
+        createId: randomId,
+        createUuid: createAppUuid,
+      });
 
-  const importedUuid =
-    normalizeExistingUuid(payload.app.uuid) ?? createAppUuid();
-
-  const existingByUuid =
-    state.apps.find(item => item.uuid === importedUuid);
-
-  if (existingByUuid !== undefined) {
-    if (options.navigateToExistingByUuid) {
-      await openApp(existingByUuid.id);
-      return existingByUuid.id;
-    }
-
+  if (plan.kind === 'duplicate') {
     if (options.showDuplicateAlert) {
-      alert('Import stopped: an app with the same UUID already exists.');
+      alert('Import stopped: an app with the same ID already exists.');
     }
 
     return null;
   }
 
-  const newId = randomId();
-  const app: AppRecord = {
-    id: newId,
-    uuid: importedUuid,
-    name: payload.app.name,
-    createdAt: payload.app.createdAt ?? now(),
-    updatedAt: payload.app.updatedAt ?? now(),
-  };
+  if (plan.kind === 'existing') {
+    await openApp(plan.appId);
+    return plan.appId;
+  }
 
-  const files: FileRecord[] = payload.files
-    .filter(
-      item =>
-        typeof item.name === 'string' && typeof item.content === 'string',
-    )
-    .map(item => ({
-      id: randomId(),
-      appId: newId,
-      name: item.name,
-      content: item.content,
-    }));
+  await saveApp(plan.app);
+  await replaceFiles(plan.app.id, plan.files);
 
-  await saveApp(app);
-  await replaceFiles(newId, files);
+  state.apps = [ ...state.apps, plan.app ];
+  await openApp(plan.app.id);
 
-  state.apps = [ ...state.apps, app ];
-  await openApp(newId);
-
-  return newId;
+  return plan.app.id;
 }
 
 async function handleImportFile(): Promise<void> {
@@ -895,12 +925,16 @@ async function handleImportFile(): Promise<void> {
 
   try {
     const text = await file.text();
-    const payload = JSON.parse(text) as ImportedPayload;
+    const payload = parseImportedPayloadText(text);
+
+    if (!confirmImportSafetyNotice(payload)) {
+      return;
+    }
 
     await importPayload(
       payload,
       {
-        navigateToExistingByUuid: false,
+        navigateToExistingById: false,
         showDuplicateAlert: true,
       });
   } catch (error) {
@@ -911,97 +945,8 @@ async function handleImportFile(): Promise<void> {
   }
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const chunkSize = 0x8000;
-
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    const chunk = bytes.subarray(index, index + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-
-  return btoa(binary);
-}
-
-function base64ToBytes(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index++) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-
-  return bytes;
-}
-
-async function compressText(text: string): Promise<Uint8Array> {
-  const CompressionCtor =
-    (window as { CompressionStream?: new (format: string) => {
-      writable: WritableStream<Uint8Array>;
-      readable: ReadableStream<Uint8Array>;
-    } }).CompressionStream;
-
-  if (CompressionCtor === undefined) {
-    throw new Error(
-      'Link sharing is not supported in this browser. Use Download export instead.');
-  }
-
-  const stream = new CompressionCtor('gzip');
-  const writer = stream.writable.getWriter();
-  const encoded = new TextEncoder().encode(text);
-
-  await writer.write(encoded);
-  await writer.close();
-
-  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
-}
-
-async function decompressText(bytes: Uint8Array): Promise<string> {
-  const DecompressionCtor =
-    (window as { DecompressionStream?: new (format: string) => {
-      writable: WritableStream<Uint8Array>;
-      readable: ReadableStream<Uint8Array>;
-    } }).DecompressionStream;
-
-  if (DecompressionCtor === undefined) {
-    throw new Error('Cannot import from shared link in this browser.');
-  }
-
-  const stream = new DecompressionCtor('gzip');
-  const writer = stream.writable.getWriter();
-
-  await writer.write(bytes);
-  await writer.close();
-
-  return new TextDecoder().decode(
-    await new Response(stream.readable).arrayBuffer());
-}
-
-async function createShareLink(payload: ExportPayload): Promise<string> {
-  const serialized = JSON.stringify(payload);
-  const compressed = await compressText(serialized);
-  const token = encodeURIComponent(bytesToBase64(compressed));
-
-  return `${SHARE_BASE_URL}${IMPORT_HASH_PREFIX}${token}`;
-}
-
-async function parseImportPayloadFromHash(
-    token: string
-  ): Promise<ImportedPayload>
-{
-  const base64 = decodeURIComponent(token);
-  const compressedBytes = base64ToBytes(base64);
-  const decompressedText = await decompressText(compressedBytes);
-
-  return JSON.parse(decompressedText) as ImportedPayload;
-}
-
 function getImportHashToken(): string | null {
-  if (!window.location.hash.startsWith(IMPORT_HASH_PREFIX)) {
-    return null;
-  }
-
-  return window.location.hash.slice(IMPORT_HASH_PREFIX.length);
+  return getLinkSharingService().readTokenFromHash(window.location.hash);
 }
 
 function clearImportHashFromUrl(): void {
@@ -1020,18 +965,55 @@ async function handleImportFromHashOnStartup(): Promise<boolean> {
     return false;
   }
 
-  if (!confirmImportSafetyNotice()) {
+  const decodedToken = (() => {
+    try {
+      return decodeURIComponent(token);
+    } catch {
+      return token;
+    }
+  })();
+
+  const sample =
+    getSampleById(token)
+    ?? getSampleById(decodedToken);
+
+  if (sample !== null) {
+    const importedAppId = await importPayload(
+      sample,
+      {
+        navigateToExistingById: true,
+        showDuplicateAlert: false,
+      });
+
+    if (importedAppId !== null) {
+      const mode = askPostLinkImportMode();
+
+      if (mode === 'run') {
+        setWorkspaceMode('run');
+        handleRun();
+      } else {
+        setWorkspaceMode('edit');
+      }
+    }
+
     clearImportHashFromUrl();
     return true;
   }
 
   try {
-    const payload = await parseImportPayloadFromHash(token);
+    const payload =
+      await getLinkSharingService()
+        .parsePayloadFromToken<ImportedPayload>(token);
+
+    if (!confirmImportSafetyNotice(payload)) {
+      clearImportHashFromUrl();
+      return true;
+    }
 
     const importedAppId = await importPayload(
       payload,
       {
-        navigateToExistingByUuid: true,
+        navigateToExistingById: true,
         showDuplicateAlert: false,
       });
 
@@ -1064,15 +1046,16 @@ async function prepareShareLinkUi(): Promise<void> {
 
   try {
     const payload = await buildExportPayload();
-    const link = await createShareLink(payload);
+    const linkResult =
+      await getLinkSharingService().createShareUrl(payload);
 
-    if (link.length > SHARE_MAX_URL_LENGTH) {
+    if (linkResult.exceedsMaxUrlLength) {
       elShareLinkStatus.textContent =
         'Link sharing is unavailable because URL length exceeds 2000 characters. Use Download export and import the file instead.';
       return;
     }
 
-    elShareLinkOutput.value = link;
+    elShareLinkOutput.value = linkResult.url;
     elShareLinkStatus.textContent =
       'Link is ready. Use Share with link to copy it.';
     elBtnShareLink.disabled = false;
