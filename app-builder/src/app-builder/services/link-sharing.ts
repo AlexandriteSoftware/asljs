@@ -34,8 +34,15 @@ export function createLinkSharingService(
       payload: unknown
     ): Promise<ShareLinkResult>
   {
+    const startedAt = performance.now();
+    console.info('[share-service] create-url-start');
+
     const serialized =
       JSON.stringify(payload);
+
+    console.info('[share-service] create-url-serialized', {
+      serializedLength: serialized.length,
+    });
 
     const compressed =
       await withTimeout(
@@ -43,11 +50,20 @@ export function createLinkSharingService(
         timeoutMs,
         'Link compression timed out. Use Download export instead.');
 
+    console.info('[share-service] create-url-compressed', {
+      compressedLength: compressed.length,
+    });
+
     const token =
       encodeURIComponent(bytesToBase64(compressed));
 
     const url =
       `${options.baseUrl}${options.hashPrefix}${token}`;
+
+    console.info('[share-service] create-url-done', {
+      elapsedMs: Math.round(performance.now() - startedAt),
+      urlLength: url.length,
+    });
 
     return {
       url,
@@ -97,6 +113,11 @@ export function createBrowserTextCompressionCodec(): TextCompressionCodec {
 }
 
 async function compressTextInBrowser(text: string): Promise<Uint8Array> {
+  const startedAt = performance.now();
+  console.info('[share-service] browser-compress-start', {
+    textLength: text.length,
+  });
+
   const CompressionCtor =
     (window as { CompressionStream?: new (format: string) => {
       writable: WritableStream<Uint8Array>;
@@ -114,11 +135,23 @@ async function compressTextInBrowser(text: string): Promise<Uint8Array> {
   const writer =
     stream.writable.getWriter();
 
+  console.info('[share-service] browser-compress-write-start');
   await writer.write(new TextEncoder().encode(text));
-  await writer.close();
+  console.info('[share-service] browser-compress-write-done');
 
-  return new Uint8Array(
+  console.info('[share-service] browser-compress-close-start');
+  await writer.close();
+  console.info('[share-service] browser-compress-close-done');
+
+  const output = new Uint8Array(
     await new Response(stream.readable).arrayBuffer());
+
+  console.info('[share-service] browser-compress-done', {
+    elapsedMs: Math.round(performance.now() - startedAt),
+    outputLength: output.length,
+  });
+
+  return output;
 }
 
 async function decompressTextInBrowser(bytes: Uint8Array): Promise<string> {
@@ -175,11 +208,19 @@ async function withTimeout<T>(
   ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const startedAt = performance.now();
 
   const timeoutPromise =
     new Promise<T>((_, reject) => {
       timeoutId = globalThis.setTimeout(
-        () => reject(new Error(timeoutMessage)),
+        () => {
+          console.warn('[share-service] timeout', {
+            timeoutMs,
+            elapsedMs: Math.round(performance.now() - startedAt),
+            timeoutMessage,
+          });
+          reject(new Error(timeoutMessage));
+        },
         timeoutMs);
     });
 

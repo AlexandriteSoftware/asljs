@@ -1053,6 +1053,9 @@ async function handleImportFromHashOnStartup(): Promise<boolean> {
 
 async function prepareShareLinkUi(): Promise<void> {
   const requestId = ++sharePreparationId;
+  const startAt = performance.now();
+
+  console.info('[share-ui] prepare-start', { requestId });
 
   elShareLinkOutput.value = '';
   elBtnShareLink.disabled = true;
@@ -1062,7 +1065,15 @@ async function prepareShareLinkUi(): Promise<void> {
     const linkResult =
       await withTimeout(
         (async () => {
+          console.info('[share-ui] build-payload-start', { requestId });
           const payload = await buildExportPayload();
+          console.info('[share-ui] build-payload-done', {
+            requestId,
+            appId: payload.id,
+            fileCount: Object.keys(payload.files).length,
+          });
+
+          console.info('[share-ui] create-share-url-start', { requestId });
           return getLinkSharingService().createShareUrl(payload);
         })(),
         SHARE_PREPARE_TIMEOUT_MS,
@@ -1070,14 +1081,25 @@ async function prepareShareLinkUi(): Promise<void> {
       );
 
     if (requestId !== sharePreparationId) {
+      console.info('[share-ui] prepare-stale-result', { requestId });
       return;
     }
 
     if (linkResult.exceedsMaxUrlLength) {
+      console.warn('[share-ui] prepare-too-long', {
+        requestId,
+        urlLength: linkResult.url.length,
+      });
       elShareLinkStatus.textContent =
         'Link sharing is unavailable because URL length exceeds 2000 characters. Use Download export and import the file instead.';
       return;
     }
+
+    console.info('[share-ui] prepare-success', {
+      requestId,
+      elapsedMs: Math.round(performance.now() - startAt),
+      urlLength: linkResult.url.length,
+    });
 
     elShareLinkOutput.value = linkResult.url;
     elShareLinkStatus.textContent =
@@ -1087,6 +1109,12 @@ async function prepareShareLinkUi(): Promise<void> {
     const message = error instanceof Error
       ? error.message
       : String(error);
+
+    console.error('[share-ui] prepare-error', {
+      requestId,
+      elapsedMs: Math.round(performance.now() - startAt),
+      message,
+    });
 
     if (requestId === sharePreparationId) {
       elShareLinkStatus.textContent = message;
@@ -1104,6 +1132,9 @@ function openShareModal(): void {
 }
 
 function closeShareModal(): void {
+  console.info('[share-ui] close-modal', {
+    nextPreparationId: sharePreparationId + 1,
+  });
   sharePreparationId += 1;
   elShareModal.classList.add('hidden');
 }
@@ -1115,11 +1146,19 @@ async function withTimeout<T>(
   ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const startedAt = performance.now();
 
   const timeoutPromise =
     new Promise<T>((_, reject) => {
       timeoutId = globalThis.setTimeout(
-        () => reject(new Error(timeoutMessage)),
+        () => {
+          console.warn('[share-ui] timeout', {
+            timeoutMs,
+            elapsedMs: Math.round(performance.now() - startedAt),
+            timeoutMessage,
+          });
+          reject(new Error(timeoutMessage));
+        },
         timeoutMs,
       );
     });
