@@ -16,7 +16,13 @@ const SAMPLE_JSON_SOURCES = [
 ] as const;
 
 function getSamples(): ImportedPayload[] {
-  return SAMPLE_JSON_SOURCES.map(parseImportedPayloadText);
+  return SAMPLE_JSON_SOURCES
+    .map(normalizeSampleSource)
+    .map(parseImportedPayloadText);
+}
+
+export function listSamples(): ImportedPayload[] {
+  return getSamples();
 }
 
 export function getSampleByName(name: string): ImportedPayload | null {
@@ -41,4 +47,16 @@ export function buildSampleFiles(
     name: fileName,
     content,
   }));
+}
+
+function normalizeSampleSource(source: unknown): string {
+  if (typeof source === 'string') {
+    return source;
+  }
+
+  if (source !== null && typeof source === 'object') {
+    return JSON.stringify(source);
+  }
+
+  throw new Error('Invalid sample source format.');
 }

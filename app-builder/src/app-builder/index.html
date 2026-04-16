@@ -265,6 +265,10 @@
           <button id="btn-share-link" class="btn btn-primary">Share with link</button>
           <button id="btn-share-download" class="btn btn-ghost">Download export</button>
         </div>
+        <label class="form-hint" style="display:block; margin-top:0.6rem;">
+          <input id="share-minified-input" type="checkbox" />
+          Share minified (esbuild JS/CSS + compact HTML/CSS)
+        </label>
         <p id="share-link-status" class="form-hint"></p>
         <textarea
           id="share-link-output"
@@ -273,6 +277,14 @@
           readonly
           placeholder="Share link will appear here..."
         ></textarea>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.6rem;">
+          <button id="btn-share-copy-text" class="btn btn-ghost" type="button">
+            Copy as text link
+          </button>
+          <button id="btn-share-copy-html" class="btn btn-ghost" type="button">
+            Copy as HTML link
+          </button>
+        </div>
       </div>
       <div class="modal-footer">
         <button id="btn-close-share-2" class="btn btn-ghost">Close</button>

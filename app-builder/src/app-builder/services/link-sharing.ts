@@ -1,6 +1,3 @@
-import LZString
-  from 'lz-string';
-
 export type TextCompressionCodec =
   { compress: (text: string) => Promise<string>;
     decompress: (value: string) => Promise<string>; };
@@ -37,15 +34,8 @@ export function createLinkSharingService(
       payload: unknown
     ): Promise<ShareLinkResult>
   {
-    const startedAt = performance.now();
-    console.info('[share-service] create-url-start');
-
     const serialized =
       JSON.stringify(payload);
-
-    console.info('[share-service] create-url-serialized', {
-      serializedLength: serialized.length,
-    });
 
     const compressed =
       await withTimeout(
@@ -53,17 +43,8 @@ export function createLinkSharingService(
         timeoutMs,
         'Link compression timed out. Use Download export instead.');
 
-    console.info('[share-service] create-url-compressed', {
-      compressedLength: compressed.length,
-    });
-
     const url =
       `${options.baseUrl}${options.hashPrefix}${compressed}`;
-
-    console.info('[share-service] create-url-done', {
-      elapsedMs: Math.round(performance.now() - startedAt),
-      urlLength: url.length,
-    });
 
     return {
       url,
@@ -107,31 +88,136 @@ export function createBrowserTextCompressionCodec(): TextCompressionCodec {
 }
 
 async function compressTextInBrowser(text: string): Promise<string> {
-  const startedAt = performance.now();
-  console.info('[share-service] browser-compress-start', {
-    textLength: text.length,
-  });
+  const inputBytes =
+    new TextEncoder().encode(text);
+
+  const gzipBytes =
+    await compressBytesInBrowser(inputBytes, 'gzip');
 
   const output =
-    LZString.compressToEncodedURIComponent(text);
-
-  console.info('[share-service] browser-compress-done', {
-    elapsedMs: Math.round(performance.now() - startedAt),
-    outputLength: output.length,
-  });
+    encodeBase64Url(gzipBytes);
 
   return output;
 }
 
 async function decompressTextInBrowser(value: string): Promise<string> {
-  const decompressed =
-    LZString.decompressFromEncodedURIComponent(value);
+  const compressedBytes =
+    decodeBase64Url(value);
 
-  if (decompressed === null) {
+  const outputBytes =
+    await decompressBytesInBrowser(compressedBytes, 'gzip');
+
+  return new TextDecoder().decode(outputBytes);
+}
+
+async function compressBytesInBrowser(
+    input: Uint8Array,
+    format: CompressionFormat
+  ): Promise<Uint8Array>
+{
+  const stream =
+    new Blob([ input ])
+      .stream()
+      .pipeThrough(new CompressionStream(format));
+
+  return readAllBytes(stream);
+}
+
+async function decompressBytesInBrowser(
+    input: Uint8Array,
+    format: CompressionFormat
+  ): Promise<Uint8Array>
+{
+  const stream =
+    new Blob([ input ])
+      .stream()
+      .pipeThrough(new DecompressionStream(format));
+
+  return readAllBytes(stream);
+}
+
+async function readAllBytes(
+    stream: ReadableStream<Uint8Array>
+  ): Promise<Uint8Array>
+{
+  const reader =
+    stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+
+  while (true) {
+    const { value, done } =
+      await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    if (value === undefined) {
+      continue;
+    }
+
+    chunks.push(value);
+    totalLength += value.length;
+  }
+
+  const merged =
+    new Uint8Array(totalLength);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return merged;
+}
+
+function encodeBase64Url(bytes: Uint8Array): string {
+  const segmentLength =
+    0x8000;
+  let binary = '';
+
+  for (let index = 0; index < bytes.length; index += segmentLength) {
+    const segment =
+      bytes.subarray(index, index + segmentLength);
+    binary += String.fromCharCode(...segment);
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function decodeBase64Url(value: string): Uint8Array {
+  const normalized =
+    value
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+  const padLength =
+    normalized.length % 4;
+  const padded =
+    padLength === 0
+      ? normalized
+      : `${normalized}${'='.repeat(4 - padLength)}`;
+
+  let binary = '';
+
+  try {
+    binary = atob(padded);
+  } catch {
     throw new Error('Invalid compressed share token.');
   }
 
-  return decompressed;
+  const bytes =
+    new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
 }
 
 async function withTimeout<T>(
@@ -141,17 +227,11 @@ async function withTimeout<T>(
   ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const startedAt = performance.now();
 
   const timeoutPromise =
     new Promise<T>((_, reject) => {
       timeoutId = globalThis.setTimeout(
         () => {
-          console.warn('[share-service] timeout', {
-            timeoutMs,
-            elapsedMs: Math.round(performance.now() - startedAt),
-            timeoutMessage,
-          });
           reject(new Error(timeoutMessage));
         },
         timeoutMs);

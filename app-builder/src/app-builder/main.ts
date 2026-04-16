@@ -62,6 +62,14 @@ import {
   type ExportPayload,
   type ImportedPayload,
 } from './services/export-import.js';
+import {
+  minifySharePayload,
+  type SharePayloadMinifyLoader,
+} from './services/share-payload-minify.js';
+import * as esbuildWasm
+  from 'esbuild-wasm';
+import esbuildWasmUrl
+  from 'esbuild-wasm/esbuild.wasm?url';
 
 function randomId(): string {
   return crypto.randomUUID();
@@ -152,6 +160,12 @@ const elBtnCloseShare = mustElement<HTMLButtonElement>('btn-close-share');
 const elBtnCloseShare2 = mustElement<HTMLButtonElement>('btn-close-share-2');
 const elBtnShareLink = mustElement<HTMLButtonElement>('btn-share-link');
 const elBtnShareDownload = mustElement<HTMLButtonElement>('btn-share-download');
+const elBtnShareCopyText =
+  mustElement<HTMLButtonElement>('btn-share-copy-text');
+const elBtnShareCopyHtml =
+  mustElement<HTMLButtonElement>('btn-share-copy-html');
+const elShareMinifiedInput =
+  mustElement<HTMLInputElement>('share-minified-input');
 const elShareLinkStatus = mustElement<HTMLElement>('share-link-status');
 const elShareLinkOutput = mustElement<HTMLTextAreaElement>('share-link-output');
 
@@ -182,6 +196,16 @@ const SHARE_BASE_URL =
 let linkSharingService: LinkSharingService | null = null;
 let importFromHashInProgress = false;
 let sharePreparationId = 0;
+let browserEsbuildApiPromise: Promise<BrowserEsbuildApi> | null = null;
+
+type BrowserEsbuildApi =
+  { transform: (
+      source: string,
+      options:
+        { loader: SharePayloadMinifyLoader;
+          minify: boolean;
+          target: string; }
+    ) => Promise<{ code: string; }>; };
 
 function getLinkSharingService(): LinkSharingService {
   linkSharingService =
@@ -806,7 +830,7 @@ async function buildExportPayload(): Promise<ExportPayload> {
 }
 
 function downloadExportPayload(payload: ExportPayload): void {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+  const blob = new Blob([JSON.stringify(payload)], {
     type: 'application/json',
   });
 
@@ -816,6 +840,53 @@ function downloadExportPayload(payload: ExportPayload): void {
   link.download = `${payload.name.replace(/\s+/g, '-')}.json`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+async function buildSharePayload(): Promise<ExportPayload> {
+  const payload =
+    await buildExportPayload();
+
+  if (!elShareMinifiedInput.checked) {
+    return payload;
+  }
+
+  return minifySharePayload(payload, transformWithBrowserEsbuild);
+}
+
+async function transformWithBrowserEsbuild(
+    source: string,
+    loader: SharePayloadMinifyLoader,
+  ): Promise<string>
+{
+  const esbuildApi =
+    await getBrowserEsbuildApi();
+  const result =
+    await esbuildApi.transform(
+      source,
+      {
+        loader,
+        minify: true,
+        target: 'es2020',
+      });
+
+  return result.code.trim();
+}
+
+async function getBrowserEsbuildApi(): Promise<BrowserEsbuildApi> {
+  if (browserEsbuildApiPromise !== null) {
+    return browserEsbuildApiPromise;
+  }
+
+  browserEsbuildApiPromise =
+    (async () => {
+      await esbuildWasm.initialize({ wasmURL: esbuildWasmUrl, worker: true });
+
+      return {
+        transform: esbuildWasm.transform,
+      };
+    })();
+
+  return browserEsbuildApiPromise;
 }
 
 function formatImportAuthor(author: ImportedPayload['author']): string {
@@ -1053,27 +1124,18 @@ async function handleImportFromHashOnStartup(): Promise<boolean> {
 
 async function prepareShareLinkUi(): Promise<void> {
   const requestId = ++sharePreparationId;
-  const startAt = performance.now();
-
-  console.info('[share-ui] prepare-start', { requestId });
 
   elShareLinkOutput.value = '';
   elBtnShareLink.disabled = true;
+  elBtnShareCopyText.disabled = true;
+  elBtnShareCopyHtml.disabled = true;
   elShareLinkStatus.textContent = 'Preparing share link...';
 
   try {
     const linkResult =
       await withTimeout(
         (async () => {
-          console.info('[share-ui] build-payload-start', { requestId });
-          const payload = await buildExportPayload();
-          console.info('[share-ui] build-payload-done', {
-            requestId,
-            appId: payload.id,
-            fileCount: Object.keys(payload.files).length,
-          });
-
-          console.info('[share-ui] create-share-url-start', { requestId });
+          const payload = await buildSharePayload();
           return getLinkSharingService().createShareUrl(payload);
         })(),
         SHARE_PREPARE_TIMEOUT_MS,
@@ -1081,40 +1143,29 @@ async function prepareShareLinkUi(): Promise<void> {
       );
 
     if (requestId !== sharePreparationId) {
-      console.info('[share-ui] prepare-stale-result', { requestId });
       return;
     }
 
     if (linkResult.exceedsMaxUrlLength) {
-      console.warn('[share-ui] prepare-too-long', {
-        requestId,
-        urlLength: linkResult.url.length,
-      });
+      elShareLinkOutput.value = linkResult.url;
       elShareLinkStatus.textContent =
-        'Link sharing is unavailable because URL length exceeds 5000 characters. Use Download export and import the file instead.';
+        'Warning: link length exceeds 5000 characters and may not work in all apps, but you can still copy and share it.';
+      elBtnShareLink.disabled = false;
+      elBtnShareCopyText.disabled = false;
+      elBtnShareCopyHtml.disabled = false;
       return;
     }
 
-    console.info('[share-ui] prepare-success', {
-      requestId,
-      elapsedMs: Math.round(performance.now() - startAt),
-      urlLength: linkResult.url.length,
-    });
-
     elShareLinkOutput.value = linkResult.url;
     elShareLinkStatus.textContent =
-      'Link is ready. Use Share with link to copy it.';
+      'Link is ready. Use copy buttons to share as text or HTML.';
     elBtnShareLink.disabled = false;
+    elBtnShareCopyText.disabled = false;
+    elBtnShareCopyHtml.disabled = false;
   } catch (error) {
     const message = error instanceof Error
       ? error.message
       : String(error);
-
-    console.error('[share-ui] prepare-error', {
-      requestId,
-      elapsedMs: Math.round(performance.now() - startAt),
-      message,
-    });
 
     if (requestId === sharePreparationId) {
       elShareLinkStatus.textContent = message;
@@ -1132,9 +1183,6 @@ function openShareModal(): void {
 }
 
 function closeShareModal(): void {
-  console.info('[share-ui] close-modal', {
-    nextPreparationId: sharePreparationId + 1,
-  });
   sharePreparationId += 1;
   elShareModal.classList.add('hidden');
 }
@@ -1146,17 +1194,11 @@ async function withTimeout<T>(
   ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const startedAt = performance.now();
 
   const timeoutPromise =
     new Promise<T>((_, reject) => {
       timeoutId = globalThis.setTimeout(
         () => {
-          console.warn('[share-ui] timeout', {
-            timeoutMs,
-            elapsedMs: Math.round(performance.now() - startedAt),
-            timeoutMessage,
-          });
           reject(new Error(timeoutMessage));
         },
         timeoutMs,
@@ -1173,6 +1215,10 @@ async function withTimeout<T>(
 }
 
 async function shareWithLink(): Promise<void> {
+  await copyShareUrlAsText();
+}
+
+async function copyShareUrlAsText(): Promise<void> {
   if (elShareLinkOutput.value.trim() === '') {
     return;
   }
@@ -1188,8 +1234,61 @@ async function shareWithLink(): Promise<void> {
   }
 }
 
+async function copyShareUrlAsHtml(): Promise<void> {
+  const url =
+    elShareLinkOutput.value.trim();
+
+  if (url === '') {
+    return;
+  }
+
+  const appName =
+    getCurrentApp()?.name.trim() || 'Shared app';
+  const html =
+    `<a href="${escapeHtml(url)}">${escapeHtml(appName)}</a>`;
+
+  try {
+    if (typeof ClipboardItem !== 'undefined'
+        && navigator.clipboard.write !== undefined)
+    {
+      await navigator.clipboard.write(
+        [
+          new ClipboardItem(
+            {
+              'text/html': new Blob([ html ], { type: 'text/html' }),
+              'text/plain': new Blob([ url ], { type: 'text/plain' }),
+            },
+          ),
+        ],
+      );
+
+      elShareLinkStatus.textContent =
+        'HTML link copied to clipboard.';
+      return;
+    }
+
+    await navigator.clipboard.writeText(url);
+    elShareLinkStatus.textContent =
+      'HTML clipboard is unavailable here. URL copied as text.';
+  } catch {
+    elShareLinkOutput.focus();
+    elShareLinkOutput.select();
+    elShareLinkStatus.textContent =
+      'Could not copy automatically. Link is selected, copy it manually.';
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function shareWithDownload(): Promise<void> {
-  const payload = await buildExportPayload();
+  const payload = await buildSharePayload();
   downloadExportPayload(payload);
 }
 
@@ -1339,6 +1438,15 @@ elBtnShareLink.addEventListener('click', () => {
 });
 elBtnShareDownload.addEventListener('click', () => {
   void shareWithDownload();
+});
+elBtnShareCopyText.addEventListener('click', () => {
+  void copyShareUrlAsText();
+});
+elBtnShareCopyHtml.addEventListener('click', () => {
+  void copyShareUrlAsHtml();
+});
+elShareMinifiedInput.addEventListener('change', () => {
+  void prepareShareLinkUi();
 });
 elShareModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elShareModal) {
