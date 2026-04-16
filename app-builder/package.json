@@ -15,7 +15,8 @@
     "asljs-dali": "^0.1.2",
     "asljs-data-binding": "^0.2.3",
     "asljs-eventful": "^0.4.8",
-    "asljs-observable": "^0.5.3"
+    "asljs-observable": "^0.5.3",
+    "lz-string": "^1.5.0"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

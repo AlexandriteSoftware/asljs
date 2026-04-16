@@ -6,23 +6,13 @@ import {
   createLinkSharingService,
 } from './link-sharing.js';
 
-if (typeof globalThis.btoa !== 'function') {
-  (globalThis as { btoa?: (value: string) => string }).btoa =
-    (value: string) => Buffer.from(value, 'binary').toString('base64');
-}
-
-if (typeof globalThis.atob !== 'function') {
-  (globalThis as { atob?: (value: string) => string }).atob =
-    (value: string) => Buffer.from(value, 'base64').toString('binary');
-}
-
 test(
   'createLinkSharingService roundtrips payload via token',
   async () => {
     const codec =
       {
-        compress: async (text: string) => new TextEncoder().encode(text),
-        decompress: async (bytes: Uint8Array) => new TextDecoder().decode(bytes),
+        compress: async (text: string) => encodeURIComponent(text),
+        decompress: async (value: string) => decodeURIComponent(value),
       };
 
     const service =
@@ -62,8 +52,8 @@ test(
   async () => {
     const codec =
       {
-        compress: async (text: string) => new TextEncoder().encode(text),
-        decompress: async (bytes: Uint8Array) => new TextDecoder().decode(bytes),
+        compress: async (text: string) => encodeURIComponent(text),
+        decompress: async (value: string) => decodeURIComponent(value),
       };
 
     const service =
@@ -90,12 +80,12 @@ test(
         {
           codec:
             {
-              compress: async (text: string) => new TextEncoder().encode(text),
-              decompress: async (bytes: Uint8Array) => new TextDecoder().decode(bytes),
+              compress: async (text: string) => encodeURIComponent(text),
+              decompress: async (value: string) => decodeURIComponent(value),
             },
           baseUrl: 'https://example.test/app-builder',
           hashPrefix: '#I!',
-          maxUrlLength: 2000,
+          maxUrlLength: 5000,
           timeoutMs: 100,
         });
 
@@ -109,8 +99,8 @@ test(
     const codec =
       {
         compress: async (_text: string) =>
-          await new Promise<Uint8Array>(() => {}),
-        decompress: async (_bytes: Uint8Array) => '',
+          await new Promise<string>(() => {}),
+        decompress: async (_value: string) => '',
       };
 
     const service =
@@ -119,7 +109,7 @@ test(
           codec,
           baseUrl: 'https://example.test/app-builder',
           hashPrefix: '#I!',
-          maxUrlLength: 2000,
+          maxUrlLength: 5000,
           timeoutMs: 20,
         });
 

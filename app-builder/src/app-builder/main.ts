@@ -174,7 +174,7 @@ const DEFAULT_FONT_SIZE = 14;
 const APP_ACTION_NEW = '__new__';
 const APP_ACTION_IMPORT = '__import__';
 const IMPORT_HASH_PREFIX = '#I!';
-const SHARE_MAX_URL_LENGTH = 2000;
+const SHARE_MAX_URL_LENGTH = 5000;
 const SHARE_PREPARE_TIMEOUT_MS = 10000;
 const SHARE_BASE_URL =
   'https://alexandritesoftware.github.io/asljs/app-builder';
@@ -1091,7 +1091,7 @@ async function prepareShareLinkUi(): Promise<void> {
         urlLength: linkResult.url.length,
       });
       elShareLinkStatus.textContent =
-        'Link sharing is unavailable because URL length exceeds 2000 characters. Use Download export and import the file instead.';
+        'Link sharing is unavailable because URL length exceeds 5000 characters. Use Download export and import the file instead.';
       return;
     }
 

@@ -1,6 +1,9 @@
+import LZString
+  from 'lz-string';
+
 export type TextCompressionCodec =
-  { compress: (text: string) => Promise<Uint8Array>;
-    decompress: (bytes: Uint8Array) => Promise<string>; };
+  { compress: (text: string) => Promise<string>;
+    decompress: (value: string) => Promise<string>; };
 
 export type LinkSharingServiceOptions =
   { codec: TextCompressionCodec;
@@ -54,11 +57,8 @@ export function createLinkSharingService(
       compressedLength: compressed.length,
     });
 
-    const token =
-      encodeURIComponent(bytesToBase64(compressed));
-
     const url =
-      `${options.baseUrl}${options.hashPrefix}${token}`;
+      `${options.baseUrl}${options.hashPrefix}${compressed}`;
 
     console.info('[share-service] create-url-done', {
       elapsedMs: Math.round(performance.now() - startedAt),
@@ -75,15 +75,9 @@ export function createLinkSharingService(
       token: string
     ): Promise<TPayload>
   {
-    const base64 =
-      decodeURIComponent(token);
-
-    const compressed =
-      base64ToBytes(base64);
-
     const decompressed =
       await withTimeout(
-        options.codec.decompress(compressed),
+        options.codec.decompress(token),
         timeoutMs,
         'Link decompression timed out.');
 
@@ -112,34 +106,14 @@ export function createBrowserTextCompressionCodec(): TextCompressionCodec {
   };
 }
 
-async function compressTextInBrowser(text: string): Promise<Uint8Array> {
+async function compressTextInBrowser(text: string): Promise<string> {
   const startedAt = performance.now();
   console.info('[share-service] browser-compress-start', {
     textLength: text.length,
   });
 
-  const CompressionCtor =
-    (window as { CompressionStream?: new (format: string) => {
-      writable: WritableStream<Uint8Array>;
-      readable: ReadableStream<Uint8Array>;
-    } }).CompressionStream;
-
-  if (CompressionCtor === undefined) {
-    throw new Error(
-      'Link sharing is not supported in this browser. Use Download export instead.');
-  }
-
-  // Pipe source bytes through CompressionStream to avoid writable deadlocks
-  // observed on some browsers with manual writer.write()/close().
-  const compressedStream =
-    new Blob([ text ])
-      .stream()
-      .pipeThrough(new CompressionCtor('gzip'));
-
-  console.info('[share-service] browser-compress-pipe-start');
-  const output = new Uint8Array(
-    await new Response(compressedStream).arrayBuffer());
-  console.info('[share-service] browser-compress-pipe-done');
+  const output =
+    LZString.compressToEncodedURIComponent(text);
 
   console.info('[share-service] browser-compress-done', {
     elapsedMs: Math.round(performance.now() - startedAt),
@@ -149,54 +123,15 @@ async function compressTextInBrowser(text: string): Promise<Uint8Array> {
   return output;
 }
 
-async function decompressTextInBrowser(bytes: Uint8Array): Promise<string> {
-  const DecompressionCtor =
-    (window as { DecompressionStream?: new (format: string) => {
-      writable: WritableStream<Uint8Array>;
-      readable: ReadableStream<Uint8Array>;
-    } }).DecompressionStream;
+async function decompressTextInBrowser(value: string): Promise<string> {
+  const decompressed =
+    LZString.decompressFromEncodedURIComponent(value);
 
-  if (DecompressionCtor === undefined) {
-    throw new Error('Cannot import from shared link in this browser.');
+  if (decompressed === null) {
+    throw new Error('Invalid compressed share token.');
   }
 
-  const arrayBuffer =
-    bytes.buffer instanceof ArrayBuffer
-      ? bytes.buffer.slice(
-        bytes.byteOffset,
-        bytes.byteOffset + bytes.byteLength,
-      )
-      : new Uint8Array(bytes).buffer;
-
-  const decompressedStream =
-    new Blob([ arrayBuffer ])
-      .stream()
-      .pipeThrough(new DecompressionCtor('gzip'));
-
-  return await new Response(decompressedStream).text();
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  const chunkSize = 0x8000;
-
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    const chunk = bytes.subarray(index, index + chunkSize);
-    binary += String.fromCharCode(...chunk);
-  }
-
-  return btoa(binary);
-}
-
-function base64ToBytes(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let index = 0; index < binary.length; index++) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-
-  return bytes;
+  return decompressed;
 }
 
 async function withTimeout<T>(
