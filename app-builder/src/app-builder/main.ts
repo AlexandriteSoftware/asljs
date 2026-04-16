@@ -91,7 +91,7 @@ const elPreviewFrame = mustElement<HTMLIFrameElement>('preview-frame');
 const elBtnNewApp = mustElement<HTMLButtonElement>('btn-new-app');
 const elBtnImport = mustElement<HTMLButtonElement>('btn-import');
 const elBtnProjectSettings = mustElement<HTMLButtonElement>('btn-project-settings');
-const elBtnExport = mustElement<HTMLButtonElement>('btn-export');
+const elBtnShare = mustElement<HTMLButtonElement>('btn-share');
 const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
 const elBtnAgentInstructions =
   mustElement<HTMLButtonElement>('btn-agent-instructions');
@@ -129,6 +129,14 @@ const elBtnCloseProjectSettings =
 const elBtnCloseProjectSettingsX =
   mustElement<HTMLButtonElement>('btn-close-project-settings-x');
 
+const elShareModal = mustElement<HTMLElement>('share-modal');
+const elBtnCloseShare = mustElement<HTMLButtonElement>('btn-close-share');
+const elBtnCloseShare2 = mustElement<HTMLButtonElement>('btn-close-share-2');
+const elBtnShareLink = mustElement<HTMLButtonElement>('btn-share-link');
+const elBtnShareDownload = mustElement<HTMLButtonElement>('btn-share-download');
+const elShareLinkStatus = mustElement<HTMLElement>('share-link-status');
+const elShareLinkOutput = mustElement<HTMLTextAreaElement>('share-link-output');
+
 const elImportFile = mustElement<HTMLInputElement>('import-file');
 
 const elAgentInstructionsModal =
@@ -147,6 +155,10 @@ const DEFAULT_THEME = 'light';
 const DEFAULT_FONT_SIZE = 14;
 const APP_ACTION_NEW = '__new__';
 const APP_ACTION_IMPORT = '__import__';
+const IMPORT_HASH_PREFIX = '#I!';
+const SHARE_MAX_URL_LENGTH = 2000;
+const SHARE_BASE_URL =
+  'https://alexandritesoftware.github.io/asljs/app-builder';
 
 function loadSettings(): Settings {
   try {
@@ -220,6 +232,83 @@ function applyAppearanceSettings(): void {
   document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
 
+function normalizeExistingUuid(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.trim();
+
+  return normalized === ''
+    ? null
+    : normalized;
+}
+
+function createAppUuid(): string {
+  return crypto.randomUUID();
+}
+
+async function ensureAppsHaveUniqueUuids(
+    apps: AppRecord[]
+  ): Promise<AppRecord[]>
+{
+  const used = new Set<string>();
+  const normalized: AppRecord[] = [];
+
+  for (const app of apps) {
+    let uuid = normalizeExistingUuid((app as { uuid?: unknown }).uuid);
+
+    if (uuid === null || used.has(uuid)) {
+      uuid = createAppUuid();
+    }
+
+    used.add(uuid);
+
+    if ((app as { uuid?: unknown }).uuid === uuid) {
+      normalized.push(app);
+      continue;
+    }
+
+    const updated: AppRecord = {
+      ...app,
+      uuid,
+      updatedAt: app.updatedAt ?? now(),
+    };
+
+    await saveApp(updated);
+    normalized.push(updated);
+  }
+
+  return normalized;
+}
+
+function getCurrentApp(): AppRecord | undefined {
+  return state.apps.find(item => item.id === state.currentAppId);
+}
+
+async function saveAppAndReplaceInState(app: AppRecord): Promise<void> {
+  await saveApp(app);
+  state.apps = state.apps.map(item => (item.id === app.id
+? app
+: item));
+}
+
+async function regenerateCurrentAppUuidForFileChange(): Promise<void> {
+  const app = getCurrentApp();
+
+  if (app === undefined) {
+    return;
+  }
+
+  const updated: AppRecord = {
+    ...app,
+    uuid: createAppUuid(),
+    updatedAt: now(),
+  };
+
+  await saveAppAndReplaceInState(updated);
+}
+
 declare global {
   interface Window {
     listFileset: () => Promise<string[]>;
@@ -250,9 +339,13 @@ const appRuntimeTools =
       state.activeFileName = fileName;
     },
     createFileId: randomId,
-    saveFile,
+    saveFile: async file => {
+      await saveFile(file);
+      await regenerateCurrentAppUuidForFileChange();
+    },
     deleteFileById: async id => {
       await deleteFile(id);
+      await regenerateCurrentAppUuidForFileChange();
     },
     runApp: handleRun,
     evaluateInApp: code => evaluateInPreview(elPreviewFrame, code),
@@ -311,6 +404,7 @@ async function createFirstAppFromForm(): Promise<void> {
 
   const app: AppRecord = {
     id: randomId(),
+    uuid: createAppUuid(),
     name,
     createdAt: now(),
     updatedAt: now(),
@@ -339,6 +433,7 @@ async function createTodoSampleAppFromForm(): Promise<void> {
 
   const app: AppRecord = {
     id: appId,
+    uuid: createAppUuid(),
     name,
     createdAt: now(),
     updatedAt: now(),
@@ -401,6 +496,7 @@ async function persistCurrentFile(): Promise<void> {
 
   file.content = newContent;
   await saveFile(file);
+  await regenerateCurrentAppUuidForFileChange();
 }
 
 async function openApp(id: string): Promise<void> {
@@ -430,6 +526,7 @@ function promptNewApp(): void {
 
     const app: AppRecord = {
       id: randomId(),
+      uuid: createAppUuid(),
       name,
       createdAt: now(),
       updatedAt: now(),
@@ -632,21 +729,33 @@ function handleRun(): void {
   });
 }
 
-async function handleExport(): Promise<void> {
-  const app = state.apps.find(item => item.id === state.currentAppId);
+type ExportPayload =
+  { app: AppRecord;
+    files: FileRecord[];
+    exportedAt: string; };
 
-  if (app === undefined) {
-    return;
-  }
+type ImportedPayload = {
+  app: Partial<AppRecord> & { name: string };
+  files: Array<Partial<FileRecord> & { name: string; content: string }>;
+};
 
+async function buildExportPayload(): Promise<ExportPayload> {
   await persistCurrentFile();
 
-  const payload = {
+  const app = getCurrentApp();
+
+  if (app === undefined) {
+    throw new Error('No app selected.');
+  }
+
+  return {
     app,
-    files: state.files,
+    files: [ ...state.files ],
     exportedAt: now(),
   };
+}
 
+function downloadExportPayload(payload: ExportPayload): void {
   const blob = new Blob([JSON.stringify(payload, null, 2)], {
     type: 'application/json',
   });
@@ -654,20 +763,128 @@ async function handleExport(): Promise<void> {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${app.name.replace(/\s+/g, '-')}.json`;
+  link.download = `${payload.app.name.replace(/\s+/g, '-')}.json`;
   link.click();
   URL.revokeObjectURL(url);
 }
 
+function confirmImportSafetyNotice(): boolean {
+  return confirm(
+    'Security warning: You are about to import an application.\n\n'
+    + 'Although apps run in an isolated browser context, imported code can still be harmful. '
+    + 'Be vigilant and only open apps from sources you trust.\n\n'
+    + 'Do you want to continue?',
+  );
+}
+
+function setWorkspaceMode(mode: 'edit' | 'run'): void {
+  const collapsed = mode === 'run';
+
+  elPanels.classList.toggle('chat-collapsed', collapsed);
+  elPanels.classList.toggle('files-collapsed', collapsed);
+
+  elBtnToggleChat.textContent = collapsed
+    ? 'Chat ▸'
+    : 'Chat ▾';
+
+  elBtnToggleFiles.textContent = collapsed
+    ? 'Files ▸'
+    : 'Files ▾';
+
+  elBtnToggleChat.setAttribute('aria-expanded', String(!collapsed));
+  elBtnToggleFiles.setAttribute('aria-expanded', String(!collapsed));
+}
+
+function askPostLinkImportMode(): 'edit' | 'run' {
+  const edit = confirm(
+    'Import link opened.\n\n'
+    + 'Press OK to edit the app (chat/files open, app not auto-run).\n'
+    + 'Press Cancel to run the app (chat/files hidden).',
+  );
+
+  return edit
+    ? 'edit'
+    : 'run';
+}
+
 function handleImportClick(): void {
+  if (!confirmImportSafetyNotice()) {
+    return;
+  }
+
   elImportFile.value = '';
   elImportFile.click();
 }
 
-type ImportedPayload = {
-  app: Partial<AppRecord> & { name: string };
-  files: Array<Partial<FileRecord> & { name: string; content: string }>;
-};
+function validateImportedPayload(payload: ImportedPayload): void {
+  if (
+    payload.app === undefined
+    || typeof payload.app.name !== 'string'
+    || !Array.isArray(payload.files)
+  ) {
+    throw new Error('Invalid app JSON format.');
+  }
+}
+
+type ImportPayloadOptions =
+  { navigateToExistingByUuid: boolean;
+    showDuplicateAlert: boolean; };
+
+async function importPayload(
+    payload: ImportedPayload,
+    options: ImportPayloadOptions,
+  ): Promise<string | null>
+{
+  validateImportedPayload(payload);
+
+  const importedUuid =
+    normalizeExistingUuid(payload.app.uuid) ?? createAppUuid();
+
+  const existingByUuid =
+    state.apps.find(item => item.uuid === importedUuid);
+
+  if (existingByUuid !== undefined) {
+    if (options.navigateToExistingByUuid) {
+      await openApp(existingByUuid.id);
+      return existingByUuid.id;
+    }
+
+    if (options.showDuplicateAlert) {
+      alert('Import stopped: an app with the same UUID already exists.');
+    }
+
+    return null;
+  }
+
+  const newId = randomId();
+  const app: AppRecord = {
+    id: newId,
+    uuid: importedUuid,
+    name: payload.app.name,
+    createdAt: payload.app.createdAt ?? now(),
+    updatedAt: payload.app.updatedAt ?? now(),
+  };
+
+  const files: FileRecord[] = payload.files
+    .filter(
+      item =>
+        typeof item.name === 'string' && typeof item.content === 'string',
+    )
+    .map(item => ({
+      id: randomId(),
+      appId: newId,
+      name: item.name,
+      content: item.content,
+    }));
+
+  await saveApp(app);
+  await replaceFiles(newId, files);
+
+  state.apps = [ ...state.apps, app ];
+  await openApp(newId);
+
+  return newId;
+}
 
 async function handleImportFile(): Promise<void> {
   const file = elImportFile.files?.[0];
@@ -680,45 +897,226 @@ async function handleImportFile(): Promise<void> {
     const text = await file.text();
     const payload = JSON.parse(text) as ImportedPayload;
 
-    if (
-      payload.app === undefined
-      || typeof payload.app.name !== 'string'
-      || !Array.isArray(payload.files)
-    ) {
-      throw new Error('Invalid app JSON format.');
-    }
-
-    const newId = randomId();
-    const app: AppRecord = {
-      id: newId,
-      name: `${payload.app.name} (imported)`,
-      createdAt: payload.app.createdAt ?? now(),
-      updatedAt: now(),
-    };
-
-    const files: FileRecord[] = payload.files
-      .filter(
-        item =>
-          typeof item.name === 'string' && typeof item.content === 'string',
-      )
-      .map(item => ({
-        id: randomId(),
-        appId: newId,
-        name: item.name,
-        content: item.content,
-      }));
-
-    await saveApp(app);
-    await replaceFiles(newId, files);
-
-    state.apps = [...state.apps, app];
-    await openApp(newId);
+    await importPayload(
+      payload,
+      {
+        navigateToExistingByUuid: false,
+        showDuplicateAlert: true,
+      });
   } catch (error) {
     const message = error instanceof Error
 ? error.message
 : String(error);
     alert(`Import failed: ${message}`);
   }
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
+}
+
+async function compressText(text: string): Promise<Uint8Array> {
+  const CompressionCtor =
+    (window as { CompressionStream?: new (format: string) => {
+      writable: WritableStream<Uint8Array>;
+      readable: ReadableStream<Uint8Array>;
+    } }).CompressionStream;
+
+  if (CompressionCtor === undefined) {
+    throw new Error(
+      'Link sharing is not supported in this browser. Use Download export instead.');
+  }
+
+  const stream = new CompressionCtor('gzip');
+  const writer = stream.writable.getWriter();
+  const encoded = new TextEncoder().encode(text);
+
+  await writer.write(encoded);
+  await writer.close();
+
+  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
+}
+
+async function decompressText(bytes: Uint8Array): Promise<string> {
+  const DecompressionCtor =
+    (window as { DecompressionStream?: new (format: string) => {
+      writable: WritableStream<Uint8Array>;
+      readable: ReadableStream<Uint8Array>;
+    } }).DecompressionStream;
+
+  if (DecompressionCtor === undefined) {
+    throw new Error('Cannot import from shared link in this browser.');
+  }
+
+  const stream = new DecompressionCtor('gzip');
+  const writer = stream.writable.getWriter();
+
+  await writer.write(bytes);
+  await writer.close();
+
+  return new TextDecoder().decode(
+    await new Response(stream.readable).arrayBuffer());
+}
+
+async function createShareLink(payload: ExportPayload): Promise<string> {
+  const serialized = JSON.stringify(payload);
+  const compressed = await compressText(serialized);
+  const token = encodeURIComponent(bytesToBase64(compressed));
+
+  return `${SHARE_BASE_URL}${IMPORT_HASH_PREFIX}${token}`;
+}
+
+async function parseImportPayloadFromHash(
+    token: string
+  ): Promise<ImportedPayload>
+{
+  const base64 = decodeURIComponent(token);
+  const compressedBytes = base64ToBytes(base64);
+  const decompressedText = await decompressText(compressedBytes);
+
+  return JSON.parse(decompressedText) as ImportedPayload;
+}
+
+function getImportHashToken(): string | null {
+  if (!window.location.hash.startsWith(IMPORT_HASH_PREFIX)) {
+    return null;
+  }
+
+  return window.location.hash.slice(IMPORT_HASH_PREFIX.length);
+}
+
+function clearImportHashFromUrl(): void {
+  if (window.location.origin === 'https://alexandritesoftware.github.io') {
+    window.location.replace(SHARE_BASE_URL);
+    return;
+  }
+
+  window.history.replaceState(null, '', window.location.pathname);
+}
+
+async function handleImportFromHashOnStartup(): Promise<boolean> {
+  const token = getImportHashToken();
+
+  if (token === null || token.trim() === '') {
+    return false;
+  }
+
+  if (!confirmImportSafetyNotice()) {
+    clearImportHashFromUrl();
+    return true;
+  }
+
+  try {
+    const payload = await parseImportPayloadFromHash(token);
+
+    const importedAppId = await importPayload(
+      payload,
+      {
+        navigateToExistingByUuid: true,
+        showDuplicateAlert: false,
+      });
+
+    if (importedAppId !== null) {
+      const mode = askPostLinkImportMode();
+
+      if (mode === 'run') {
+        setWorkspaceMode('run');
+        handleRun();
+      } else {
+        setWorkspaceMode('edit');
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error
+      ? error.message
+      : String(error);
+
+    alert(`Could not import from share link: ${message}`);
+  }
+
+  clearImportHashFromUrl();
+  return true;
+}
+
+async function prepareShareLinkUi(): Promise<void> {
+  elShareLinkOutput.value = '';
+  elBtnShareLink.disabled = true;
+  elShareLinkStatus.textContent = 'Preparing share link...';
+
+  try {
+    const payload = await buildExportPayload();
+    const link = await createShareLink(payload);
+
+    if (link.length > SHARE_MAX_URL_LENGTH) {
+      elShareLinkStatus.textContent =
+        'Link sharing is unavailable because URL length exceeds 2000 characters. Use Download export and import the file instead.';
+      return;
+    }
+
+    elShareLinkOutput.value = link;
+    elShareLinkStatus.textContent =
+      'Link is ready. Use Share with link to copy it.';
+    elBtnShareLink.disabled = false;
+  } catch (error) {
+    const message = error instanceof Error
+      ? error.message
+      : String(error);
+
+    elShareLinkStatus.textContent = message;
+  }
+}
+
+function openShareModal(): void {
+  if (getCurrentApp() === undefined) {
+    return;
+  }
+
+  elShareModal.classList.remove('hidden');
+  void prepareShareLinkUi();
+}
+
+function closeShareModal(): void {
+  elShareModal.classList.add('hidden');
+}
+
+async function shareWithLink(): Promise<void> {
+  if (elShareLinkOutput.value.trim() === '') {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(elShareLinkOutput.value);
+    elShareLinkStatus.textContent = 'Share link copied to clipboard.';
+  } catch {
+    elShareLinkOutput.focus();
+    elShareLinkOutput.select();
+    elShareLinkStatus.textContent =
+      'Could not copy automatically. Link is selected, copy it manually.';
+  }
+}
+
+async function shareWithDownload(): Promise<void> {
+  const payload = await buildExportPayload();
+  downloadExportPayload(payload);
 }
 
 function openSettings(): void {
@@ -827,8 +1225,8 @@ state.on('set:activeFileName', () => {
 elBtnNewApp.addEventListener('click', promptNewApp);
 elBtnImport.addEventListener('click', handleImportClick);
 elBtnProjectSettings.addEventListener('click', openProjectSettings);
-elBtnExport.addEventListener('click', () => {
-  void handleExport();
+elBtnShare.addEventListener('click', () => {
+  openShareModal();
 });
 elBtnGenerate.addEventListener('click', () => {
   void handleGenerate();
@@ -857,6 +1255,20 @@ elBtnCopyAgentInstructions.addEventListener('click', () => {
 elAgentInstructionsModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elAgentInstructionsModal) {
     closeAgentInstructions();
+  }
+});
+
+elBtnCloseShare.addEventListener('click', closeShareModal);
+elBtnCloseShare2.addEventListener('click', closeShareModal);
+elBtnShareLink.addEventListener('click', () => {
+  void shareWithLink();
+});
+elBtnShareDownload.addEventListener('click', () => {
+  void shareWithDownload();
+});
+elShareModal.addEventListener('click', (event: MouseEvent) => {
+  if (event.target === elShareModal) {
+    closeShareModal();
   }
 });
 
@@ -969,8 +1381,18 @@ window.runAppAndCollectDiagnostics = appRuntimeTools.runAppAndCollectDiagnostics
 async function init(): Promise<void> {
   applyAppearanceSettings();
 
-  const apps = await listApps();
+  const apps =
+    await ensureAppsHaveUniqueUuids(
+      await listApps());
+
   state.apps = apps;
+
+  const importedFromHash =
+    await handleImportFromHashOnStartup();
+
+  if (importedFromHash) {
+    return;
+  }
 
   if (apps.length > 0) {
     const sorted = [...apps].sort((a, b) =>

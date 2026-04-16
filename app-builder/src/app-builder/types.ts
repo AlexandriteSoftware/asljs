@@ -1,5 +1,6 @@
 export type AppRecord =
   { id: string;
+    uuid: string;
     name: string;
     createdAt: string;
     updatedAt: string; };
