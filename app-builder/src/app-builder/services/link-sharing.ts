@@ -129,22 +129,17 @@ async function compressTextInBrowser(text: string): Promise<Uint8Array> {
       'Link sharing is not supported in this browser. Use Download export instead.');
   }
 
-  const stream =
-    new CompressionCtor('gzip');
+  // Pipe source bytes through CompressionStream to avoid writable deadlocks
+  // observed on some browsers with manual writer.write()/close().
+  const compressedStream =
+    new Blob([ text ])
+      .stream()
+      .pipeThrough(new CompressionCtor('gzip'));
 
-  const writer =
-    stream.writable.getWriter();
-
-  console.info('[share-service] browser-compress-write-start');
-  await writer.write(new TextEncoder().encode(text));
-  console.info('[share-service] browser-compress-write-done');
-
-  console.info('[share-service] browser-compress-close-start');
-  await writer.close();
-  console.info('[share-service] browser-compress-close-done');
-
+  console.info('[share-service] browser-compress-pipe-start');
   const output = new Uint8Array(
-    await new Response(stream.readable).arrayBuffer());
+    await new Response(compressedStream).arrayBuffer());
+  console.info('[share-service] browser-compress-pipe-done');
 
   console.info('[share-service] browser-compress-done', {
     elapsedMs: Math.round(performance.now() - startedAt),
@@ -165,17 +160,20 @@ async function decompressTextInBrowser(bytes: Uint8Array): Promise<string> {
     throw new Error('Cannot import from shared link in this browser.');
   }
 
-  const stream =
-    new DecompressionCtor('gzip');
+  const arrayBuffer =
+    bytes.buffer instanceof ArrayBuffer
+      ? bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      )
+      : new Uint8Array(bytes).buffer;
 
-  const writer =
-    stream.writable.getWriter();
+  const decompressedStream =
+    new Blob([ arrayBuffer ])
+      .stream()
+      .pipeThrough(new DecompressionCtor('gzip'));
 
-  await writer.write(bytes);
-  await writer.close();
-
-  return new TextDecoder().decode(
-    await new Response(stream.readable).arrayBuffer());
+  return await new Response(decompressedStream).text();
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
