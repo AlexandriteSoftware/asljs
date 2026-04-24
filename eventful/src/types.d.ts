@@ -1,0 +1,98 @@
+export type EventName = string | symbol;
+export type EventMap = Record<EventName, unknown[]>;
+export type Listener<Args extends unknown[] = unknown[]> = (...args: Args) => unknown;
+export interface ListenerErrorArgs {
+    error: unknown;
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+}
+export declare class ListenerError extends Error implements ListenerErrorArgs {
+    error: unknown;
+    object: object | Function;
+    event: EventName;
+    listener: Function;
+    constructor(message: string, error: unknown, object: object | Function, event: EventName, listener: Function);
+}
+type TraceAction = 'new' | 'on' | 'off' | 'emit' | 'emitAsync';
+type TracePayloadByAction = {
+    new: {
+        object: object | Function;
+    };
+    on: {
+        object: object | Function;
+        event: EventName;
+        listener: Function;
+    };
+    off: {
+        object: object | Function;
+        event: EventName;
+        listener: Function;
+    };
+    emit: {
+        object: object | Function;
+        listeners: Function[];
+        event: EventName;
+        args: unknown[];
+    };
+    emitAsync: {
+        object: object | Function;
+        listeners: Function[];
+        event: EventName;
+        args: unknown[];
+    };
+};
+export type TraceFn = <A extends TraceAction>(action: A, args: TracePayloadByAction[A]) => void;
+export type ErrorFn = (error: ListenerErrorArgs) => void;
+export type EventfulFn = EventfulFactory & Eventful;
+export interface EventfulFactory {
+    <T extends object | Function | undefined, E extends EventMap = EventMap>(object?: T, options?: EventfulOptions): (T extends undefined ? {} : T) & Eventful<E>;
+}
+export interface EventfulOptions {
+    /**
+     * If true, exceptions from listeners are propagated (fail fast).
+     * When false, errors are isolated (ignored) after calling `error` hook.
+     */
+    strict?: boolean;
+    /**
+     * Optional tracing hook. Receives action name and a safe payload.
+     * Actions include: 'new', 'on', 'off', 'emit', 'emitAsync'.
+     * Use to integrate with your logger without exposing internals.
+     */
+    trace?: TraceFn;
+    /**
+     * Optional error hook. Receives structured context of listener failures
+     * (error, object, event, listener). Called for sync and async errors.
+     */
+    error?: ErrorFn;
+}
+export interface Eventful<E extends EventMap = EventMap> {
+    /**
+     * Subscribe to an event. Returns an unsubscribe function.
+     */
+    on<K extends keyof E & EventName>(event: K, listener: Listener<E[K]>): () => boolean;
+    /**
+     * Subscribe once to an event. Returns an unsubscribe function
+     * (called automatically).
+     */
+    once<K extends keyof E & EventName>(event: K, listener: Listener<E[K]>): () => boolean;
+    /**
+     * Unsubscribe a previously registered listener. Returns true if removed.
+     */
+    off<K extends keyof E & EventName>(event: K, listener: Listener<E[K]>): boolean;
+    /**
+     * Emit an event synchronously. All listeners run in order.
+     * Errors are isolated (ignored) unless `strict` is true.
+     */
+    emit<K extends keyof E & EventName>(event: K, ...args: E[K]): void;
+    /**
+     * Emit an event and wait for all listeners (run in parallel).
+     * Errors are isolated (ignored) unless `strict` is true.
+     */
+    emitAsync<K extends keyof E & EventName>(event: K, ...args: E[K]): Promise<void>;
+    /**
+     * Returns true if there is at least one listener for the event.
+     */
+    has<K extends keyof E & EventName>(event: K): boolean;
+}
+export {};

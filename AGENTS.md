@@ -165,6 +165,14 @@ Boundary rules:
 * `app-builder` is not a public library surface.
 * Prefer the lowest-level package that can own a feature without adding
   browser-only or demo-specific coupling.
+* Treat publishable packages as independently validated and independently
+  releasable units.
+* Do not introduce or rely on monorepo-wide build, lint, test, typecheck, or
+  release-gate scripts as the primary validation path for publishable
+  packages.
+* Do not add a single repository-wide quality gate that blocks unrelated
+  package releases. Prefer package-local validation and package-local release
+  checks.
 
 ## Repository Tasks
 

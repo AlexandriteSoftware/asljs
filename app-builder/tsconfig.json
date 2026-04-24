@@ -1,35 +1,10 @@
 {
   "compilerOptions": {
-    "baseUrl": "..",
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
     "noEmit": true,
-    "ignoreDeprecations": "6.0",
-    "paths": {
-      "asljs-components": [
-        "components/src/index.ts"
-      ],
-      "asljs-dali": [
-        "dali/src/index.ts"
-      ],
-      "asljs-data-binding": [
-        "data-binding/src/index.ts"
-      ],
-      "asljs-eventful": [
-        "eventful/src/index.ts"
-      ],
-      "asljs-machine": [
-        "machine/src/index.ts"
-      ],
-      "asljs-money": [
-        "money/src/index.ts"
-      ],
-      "asljs-observable": [
-        "observable/src/index.ts"
-      ]
-    },
     "lib": [
       "ES2020",
       "DOM",

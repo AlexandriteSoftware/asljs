@@ -4,7 +4,9 @@ Each package is released separately, from the repository root.
 
 Release prerequisites:
 
-- Ensure all package tests pass (`npm -w $env:FOLDER test`)
+- Ensure package typecheck passes (`npm -w $env:FOLDER run typecheck`)
+- Ensure package lint passes (`npm -w $env:FOLDER run lint`)
+- Ensure package tests pass (`npm -w $env:FOLDER test`)
 - Ensure the repository is clean (`git status`)
 
 ## Example: package release
@@ -14,6 +16,11 @@ Make sure that **release prerequisites** are met (see above).
 ```pwsh
 # 1) Set release variables
 $env:FOLDER = 'eventful' # 'observable', 'data-binding', 'money'
+
+# 1.1) Validate the selected package before versioning/publish
+npm -w $env:FOLDER run typecheck
+npm -w $env:FOLDER run lint
+npm -w $env:FOLDER test
 
 # 2) Bump and get package version (replace 'patch' with 'minor' or 'major')
 npm -w $env:FOLDER version patch --no-git-tag-version

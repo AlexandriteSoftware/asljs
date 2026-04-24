@@ -21,7 +21,10 @@ test(
     currentMachine.on(
       'set:state',
       event => {
-        events.push(`state:${event.value.name}`);
+        const stateEvent =
+          event as { value: { name: string | undefined; }; };
+
+        events.push(`state:${stateEvent.value.name}`);
       });
 
     select.on(
