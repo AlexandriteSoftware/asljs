@@ -26,6 +26,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Tool versions
+        run: |
+          node --version
+          npm --version
+          npm exec -- tsc --version
+          npm -w asljs-app-builder exec -- tsc --version
+          npm ls typescript --depth=1
+
       - name: Typecheck
         run: npm run typecheck
 
