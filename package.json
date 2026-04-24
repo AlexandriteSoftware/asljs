@@ -10,18 +10,16 @@
     "dali",
     "data-binding",
     "eventful",
-    "kiosk",
     "machine",
     "money",
-    "observable",
-    "server"
+    "observable"
   ],
   "scripts": {
     "build": "npm --workspaces run build --if-present",
     "lint": "npm --workspaces run lint --if-present",
     "lint:fix": "npm --workspaces run lint:fix --if-present",
     "test": "npm --workspaces run test --if-present",
-    "test:watch": "npm --workspaces run test:watch --if-present"
+    "typecheck": "npm --workspaces run typecheck --if-present"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -116,7 +116,7 @@ async function compressBytesInBrowser(
   ): Promise<Uint8Array>
 {
   const stream =
-    new Blob([ input ])
+    new Blob([ toBlobPart(input) ])
       .stream()
       .pipeThrough(new CompressionStream(format));
 
@@ -129,11 +129,20 @@ async function decompressBytesInBrowser(
   ): Promise<Uint8Array>
 {
   const stream =
-    new Blob([ input ])
+    new Blob([ toBlobPart(input) ])
       .stream()
       .pipeThrough(new DecompressionStream(format));
 
   return readAllBytes(stream);
+}
+
+function toBlobPart(input: Uint8Array): BlobPart {
+  const copy =
+    new Uint8Array(input.byteLength);
+
+  copy.set(input);
+
+  return copy;
 }
 
 async function readAllBytes(

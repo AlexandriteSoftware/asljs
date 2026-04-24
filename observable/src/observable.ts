@@ -176,7 +176,7 @@ const observableImpl =
           target,
           watchImpl);
 
-        let proxy: any;
+        let proxy: any = null;
 
         const proxiedTarget =
           new Proxy(

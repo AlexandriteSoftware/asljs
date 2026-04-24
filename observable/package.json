@@ -35,6 +35,7 @@
     "clean": "node ../toolkit.js clean-dist",
     "build": "npx tsc -p tsconfig.build.json",
     "build:test": "npx tsc -p tsconfig.test.json",
+    "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",

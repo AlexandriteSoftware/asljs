@@ -6,8 +6,8 @@ import tsPlugin from '@typescript-eslint/eslint-plugin';
 export default [
   {
     ignores: [
-      'dist/**',
-      '.tests/**',
+      '**/dist/**',
+      '**/.tests/**',
       'node_modules/**'
     ]
   },

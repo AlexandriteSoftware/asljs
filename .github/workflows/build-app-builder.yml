@@ -34,12 +34,17 @@ jobs:
       - name: Build app builder
         run: cd app-builder && npm run build
 
-      - name: Commit and push docs
+      - name: Publish pages branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update docs [skip ci]"
-            git push
-          fi
+          publish_dir="$(mktemp -d)"
+          cp -R docs/. "$publish_dir"
+          cd "$publish_dir"
+          touch .nojekyll
+          git init
+          git checkout -B pages
+          git add --all
+          git commit -m "chore: publish app-builder [skip ci]"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push --force origin pages

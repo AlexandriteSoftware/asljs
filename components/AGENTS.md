@@ -1,18 +1,12 @@
-# AI
+# ASLJS Components AI Guidance
 
 ## Purpose
 
-Use this file as the AI-facing equivalent of README:
+Use this file as AI-facing guidance for `asljs-components`.
 
-- what this package provides,
-- what patterns are preferred,
-- what constraints must be preserved when applying changes.
+This package currently exports the `List` web component and its related types.
 
 ## Package Scope
-
-Current exported component(s):
-
-- `List` custom element (`asljs-list`)
 
 Exports from `src/index.ts`:
 
@@ -21,32 +15,35 @@ Exports from `src/index.ts`:
 - `ListItemsSource`
 - `ListRowContext`
 
+Current custom element:
+
+- `asljs-list`
+
 ## Preferred Usage Patterns
 
-### 1. Register components once
+### Register components once
 
 ```ts
 import 'asljs-components';
 ```
 
-Create and configure elements through standard DOM APIs.
+Create and configure elements through normal DOM APIs.
 
-### 2. Provide templates through data slots
+### Use slot templates for rendering
 
-Use `template[data-slot]` children inside `asljs-list`:
+Inside `asljs-list`, use:
 
-- required for non-empty rendering:
-  - `template[data-slot="item"]`
-- optional:
-  - `template[data-slot="empty"]`
-  - `template[data-slot="container"]` (must include `[data-role="items"]`)
+- required: `template[data-slot="item"]`
+- optional: `template[data-slot="empty"]`
+- optional: `template[data-slot="container"]` with required
+  `[data-role="items"]`
 
-If `items` is non-empty and `item` slot is missing, component warns and renders
-nothing.
+If `items` is non-empty and no item template is provided, the component warns
+and renders nothing.
 
-### 3. Use row bindings via `asljs-data-binding`
+### Use row bindings through `asljs-data-binding`
 
-Supported row binding context fields:
+Row binding context fields are:
 
 - `item`
 - `index`
@@ -57,89 +54,37 @@ Supported row binding context fields:
 - `count`
 - `context`
 
-Prefer path-based binding expressions:
+Prefer path-based binding expressions such as:
 
-- values: `item.title`, `index`, `context.label`
-- events: `context.select`, `item.onClick`
+- `item.title`
+- `index`
+- `context.select`
 
-### 4. Use `list.context` for shared row actions/state
+### Use `list.context` for shared row actions and state
 
-`List.context` is a shared base context value. During row rendering, the list
-creates a row-local derived context and exposes it at `context` in bindings.
+`List.context` is the shared base context. Row rendering derives a row-local
+context that includes row-specific `item` and `index` values and binds base
+context methods to that derived object.
 
-For object contexts:
+If a handler needs row data, prefer the `context` plus `this` pattern.
 
-- derived row context carries row-specific `item` and `index`,
-- own function members from base context are bound to the derived row context,
-- methods like `context.select` can use `this.item` safely.
+## Constraints To Preserve
 
-Example:
+- Keep row rendering template-driven.
+- Keep event bindings path-based; do not add parameter-expression syntax.
+- Do not introduce custom invocation protocols such as `*-args` or inline call
+  expressions for bindings.
+- `template[data-slot="container"]` must keep `[data-role="items"]` as the
+  insertion point.
+- `List.items` can be a plain array or an eventful-like collection; when the
+  source emits `set`, `delete`, or `define`, list rerender behavior is part of
+  the current design.
 
-```ts
-import 'asljs-components';
+## Validation
 
-const list = document.createElement('asljs-list');
+- `npm -w asljs-components run test`
+- `npm -w asljs-components run typecheck`
+- `npm -w asljs-components run lint`
 
-list.context = {
-  select(this: { item: { id: string; title: string } }, event: Event) {
-    event.preventDefault();
-    console.log(this.item.id, this.item.title);
-  }
-};
-
-list.innerHTML = `
-  <template data-slot="item">
-    <button data-bind-text="item.title"
-            data-bind-onclick="context.select"></button>
-  </template>
-`;
-
-list.items = [
-  { id: 'a', title: 'First' },
-  { id: 'b', title: 'Second' }
-];
-```
-
-## Event Binding Constraints
-
-When producing AI-generated code that uses `asljs-data-binding` event bindings,
-preserve this contract:
-
-- `data-bind-on*` resolves a function from a path and registers it as listener.
-- Do not add parameter-expression syntax.
-- Do not introduce `*-args`, `*-param`, or function-call binding expressions.
-
-If row-specific data is required by handlers, use `context` + `this` pattern.
-
-## Observable Items Pattern
-
-`List.items` can be plain array or observable/eventful-like collection.
-When an eventful-like source emits `set`, `delete`, or `define`, list requests
-rerender.
-
-AI should:
-
-- keep collection updates deterministic,
-- avoid mutating template structure at runtime,
-- prefer updating `items`/collection state over imperative DOM rewrites.
-
-## Do And Do-Not Checklist
-
-Do:
-
-- keep templates declarative,
-- keep event bindings path-based,
-- keep container slot compliant with `[data-role="items"]`.
-
-Do not:
-
-- bypass `template[data-slot="item"]` for row rendering,
-- rely on implicit global handlers,
-- add custom invocation protocol for bindings.
-
-## Maintenance Task Reference
-
-When implementation changes in `components/src/` affect usage, update:
-
-- README for developer-facing docs,
-- this file (`components/AI.md`) for AI-facing usage guidance.
+When implementation changes affect usage, update `README.md` and this file
+together.

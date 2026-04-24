@@ -17,12 +17,12 @@ import {
     type EventSourceManager,
   } from '../event-source.js';
 import {
-    SagaEntryRecord,
-    SagaForwardOperation,
+    type SagaEntryRecord,
+    type SagaForwardOperation,
     SAGA_ENTRIES_STORE_NAME,
     SAGA_STORE_NAME,
-    SagaTransactionRecord,
-    SagaUndoOperation,
+    type SagaTransactionRecord,
+    type SagaUndoOperation,
   } from './types.js';
 
 function nowIso(

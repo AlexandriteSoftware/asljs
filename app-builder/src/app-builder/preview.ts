@@ -374,23 +374,24 @@ async function requestPreviewPayload(
       reject(new Error('Timed out waiting for app evaluation result.'));
     }, 5000);
 
-    const onMessage = (event: MessageEvent) => {
-      if (event.source !== frameWindow) {
-        return;
-      }
+    const onMessage =
+      (event: MessageEvent): void => {
+        if (event.source !== frameWindow) {
+          return;
+        }
 
-      const payload = event.data as Record<string, unknown>;
+        const payload = event.data as Record<string, unknown>;
 
-      if (
-        payload.type !== responseType
-        || payload.id !== requestId
-      ) {
-        return;
-      }
+        if (
+          payload.type !== responseType
+          || payload.id !== requestId
+        ) {
+          return;
+        }
 
-      cleanup();
-      resolve(payload);
-    };
+        cleanup();
+        resolve(payload);
+      };
 
     function cleanup(): void {
       window.clearTimeout(timeoutId);

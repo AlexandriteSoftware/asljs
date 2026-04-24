@@ -1,8 +1,8 @@
 import {
-    EventSourceAdapter,
     EventSourceConflictError,
-    EventSourceEvent,
-    EventSourceTransaction,
+    type EventSourceAdapter,
+    type EventSourceEvent,
+    type EventSourceTransaction,
   } from './types.js';
 
 export class EventSourceManager

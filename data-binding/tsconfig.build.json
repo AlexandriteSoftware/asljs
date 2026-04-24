@@ -5,6 +5,7 @@
   ],
   "exclude": [
     "test",
+    "dist",
     "**/*.test.ts"
   ],
   "compilerOptions": {

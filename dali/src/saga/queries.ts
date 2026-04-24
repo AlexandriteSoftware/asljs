@@ -7,10 +7,10 @@ import {
     TxMode,
   } from '../transactions.js';
 import {
-    SagaEntryRecord,
+    type SagaEntryRecord,
     SAGA_ENTRIES_STORE_NAME,
     SAGA_STORE_NAME,
-    SagaTransactionRecord,
+    type SagaTransactionRecord,
   } from './types.js';
 
 export async function sagaGetAll(

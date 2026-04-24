@@ -44,8 +44,8 @@ The dev server starts at `http://localhost:5173/asljs/`.
 npm -w asljs-app-builder run build
 ```
 
-Built static assets are written to **`/docs`** at the repository root. This
-folder should be committed and is what GitHub Pages serves.
+Built static assets are written to **`/docs`** at the repository root as the
+local staging output.
 
 ### Preview the build locally
 
@@ -57,28 +57,30 @@ Serves the contents of `/docs` locally at `http://localhost:4173/asljs/`.
 
 ## GitHub Pages setup
 
-GitHub Pages is configured to publish from the **`/docs` folder on the `main`
+GitHub Pages is configured to publish from the **root of the `pages`
 branch**:
 
 1. Go to **Settings → Pages** in the repository.
 2. Under **Build and deployment**, set source to **Deploy from a branch**.
-3. Choose branch `main` and folder `/docs`.
+3. Choose branch `pages` and folder `/ (root)`.
 4. Save. GitHub Pages will serve the site at
    `https://alexandritesoftware.github.io/asljs/`.
 
-After any change to the app:
+The workflow in `.github/workflows/build-app-builder.yml` builds the app,
+copies the generated `docs/` contents to a temporary repository, and force
+pushes that repository to the `pages` branch. The branch history is replaced on
+each publish.
+
+For a local rebuild before pushing source changes:
 
 ```bash
 npm -w asljs-app-builder run build
-git add docs/
-git commit -m "build: update app-builder static output"
-git push
 ```
 
 ## Where the built assets live
 
 | Path | Description |
-|------|-------------|
+| ---- | ----------- |
 | `docs/index.html` | Landing page (GitHub Pages front page) |
 | `docs/app-builder/index.html` | App builder shell |
 | `docs/assets/` | Bundled JS and CSS |

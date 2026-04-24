@@ -3,28 +3,30 @@
   "version": "0.2.0",
   "description": "Lightweight fixed-point Money type and helpers for financial calculations.",
   "type": "module",
-  "main": "money.js",
-  "types": "money.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./money.d.ts",
-      "default": "./money.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [
     "dist/**",
-    "money.js",
-    "money.d.ts",
     "README.md",
     "LICENSE.md"
   ],
   "scripts": {
-    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "clean": "node ../toolkit.js clean-dist",
     "build": "npx tsc -p tsconfig.build.json",
     "build:test": "npx tsc -p tsconfig.test.json",
+    "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
+    "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
     "prepack": "npm run clean && npm run build",
+    "prepublishOnly": "npm run guard:clean-git && npm run prepack",
+    "postpublish": "node ../toolkit.js tag-commit-with-release-id",
     "test": "npm run build:test && node --test dist/*.test.js",
     "test:watch": "npm run build:test && node --watch --test dist/*.test.js",
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\""
@@ -33,7 +35,7 @@
     "money",
     "finance"
   ],
-  "author": "Alex Netkachov <alex.netkachov@gmail.com>",
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
   "bugs": {

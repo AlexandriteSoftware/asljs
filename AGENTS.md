@@ -1,6 +1,6 @@
 # ASLJS Engineering Assistant Instructions
 
-## 1. Core Principles
+## Core Principles
 
 ### Source of Truth
 
@@ -30,29 +30,7 @@
 * Match **existing project style and patterns**
 * Deviate only when justified, and explain why
 
-## 2. Repository Awareness
-
-### Primary Entry Point
-
-#### In GitHub repository
-
-* Root README: [https://github.com/AlexandriteSoftware/asljs/blob/main/README.md](https://github.com/AlexandriteSoftware/asljs/blob/main/README.md)
-* Source directory: [https://github.com/AlexandriteSoftware/asljs/tree/main/src](https://github.com/AlexandriteSoftware/asljs/tree/main/src)
-* Configuration files: [https://github.com/AlexandriteSoftware/asljs/tree/main](https://github.com/AlexandriteSoftware/asljs/tree/main)
-
-#### Locally
-
-* Root README: `README.md`
-* Source directory: `src/`
-* Configuration files: root directory
-
-### Expectations
-
-* Navigate using real paths from the repository
-* Refer to **actual files and modules** when explaining behavior
-* Avoid vague references like “some module” or “a component”
-
-## 3. Code Understanding Tasks
+## Code Understanding Tasks
 
 When explaining code, always cover:
 
@@ -64,7 +42,7 @@ When explaining code, always cover:
 * Failure modes
 * Side effects
 
-## 4. Code Generation Tasks
+## Code Generation Tasks
 
 When writing code:
 
@@ -82,7 +60,7 @@ When writing code:
 * Only add comments for **non-obvious logic**
 * Keep them concise and technical
 
-## 5. Debugging Tasks
+## Debugging Tasks
 
 When debugging:
 
@@ -98,7 +76,7 @@ When debugging:
 * List alternative causes (if uncertainty exists), ordered by probability.
 * Suggest preventive improvements in validation, tests, promising refactors.
 
-## 6. Code Review Tasks
+## Code Review Tasks
 
 Evaluate code across: correctness, readability, maintainability, performance,
 and consistency.
@@ -108,7 +86,7 @@ and consistency.
 * List **specific issues**
 * Include: impact and concrete recommendation
 
-## 7. Architecture & Design
+## Architecture & Design
 
 * Prefer modular, explicit, and easy-to-maintain designs.
 * Align with existing architecture
@@ -119,7 +97,7 @@ and consistency.
 * Explain tradeoffs
 * Show how it integrates with current structure
 
-## 8. Documentation Tasks
+## Documentation Tasks
 
 Write documentation that is:
 
@@ -135,7 +113,7 @@ Write documentation that is:
 * Examples
 * Edge cases
 
-## 9. Testing
+## Testing
 
 When suggesting or writing tests:
 
@@ -143,33 +121,60 @@ When suggesting or writing tests:
 * Keep tests deterministic.
 * Tie directly to the feature/change.
 
-## 10. TypeScript & JavaScript Usage
+## TypeScript & JavaScript Usage
 
 * Use modern JavaScript/TypeScript
 * Do NOT assume frameworks, tooling, or language features, unless they are
   already present or strongly implied.
 
-## 11. Communication Style
+## Communication Style
 
 * Be precise, practical, and implementation-focused.
 * Avoid vague explanations, generic best practices not tied to this repo,
   unnecessary theory.
 
-## 12. Constraints
+## Constraints
 
 * Do NOT reference removed or irrelevant components.
 * Always use **real repository paths and links** when possible.
 * Do NOT hallucinate missing parts of the system.
 
-## 13. Repository Tasks
+## Repository Architecture Snapshot
 
-### Task: Update package's AI.md
+Use this package map before deciding where a change belongs.
+
+* Core foundations:
+  * `eventful` -> event API primitives
+  * `observable` -> builds on `eventful`
+  * `machine` -> state-machine utility built on `eventful` and `observable`
+  * `money` -> standalone monetary value utility
+* Browser-facing libraries:
+  * `data-binding` -> browser DOM binding, builds on `observable`
+  * `components` -> web components, builds on `data-binding` and `eventful`
+  * `dali` -> IndexedDB data layer, builds on `eventful` and `observable`
+* App/demo package:
+  * `app-builder` -> private browser app that demonstrates packages together;
+    depends on `components`, `dali`, `data-binding`, `eventful`, and
+    `observable`
+
+Boundary rules:
+
+* Published libraries expose package-root APIs through `package.json#exports`.
+* Internal `src/*` files are not public API unless the package README says
+  otherwise.
+* `app-builder` is not a public library surface.
+* Prefer the lowest-level package that can own a feature without adding
+  browser-only or demo-specific coupling.
+
+## Repository Tasks
+
+### Task: Update package's AGENTS.md
 
 Use this task when asked to create or revise AI-facing package guidance.
 
 Target:
 
-* `<package folder>/AI.md`, example: `components/AI.md`
+* `<package folder>/AGENTS.md`, example: `components/AGENTS.md`
 
 Task requirements:
 

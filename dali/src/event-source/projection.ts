@@ -7,13 +7,13 @@ import {
     TxMode,
   } from '../transactions.js';
 import {
-    EventSourceProjection,
+    type EventSourceProjection,
     EVENT_SOURCE_PROJECTION_STORE_NAME,
-    EventSourceTransaction,
+    type EventSourceTransaction,
     EVENT_SOURCE_STORE_NAME,
   } from './types.js';
 import {
-    EventSourceManager,
+    type EventSourceManager,
   } from './manager.js';
 
 export async function eventSourceGetAll(
