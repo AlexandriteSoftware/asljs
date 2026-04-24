@@ -37,15 +37,29 @@ type MachineDuringSetup =
   Omit<Machine, 'state'>
   & { state: MachineState | null; };
 
+type MachineBacking<TBase extends object> =
+  TBase
+  & { state: MachineState | null;
+      states: MachineState[];
+      createState(name?: string): MachineState;
+      getState(name: string): MachineState | null; };
+
 export function machine<TBase extends object = {}>(
     base: TBase = {} as TBase,
     initial: string
   ): TBase & Machine
 {
+  const initialMachine: MachineBacking<TBase> =
+    { ...base,
+      state: null,
+      states: [],
+      createState: (): MachineState => {
+        throw new Error('Machine is not initialized yet.');
+      },
+      getState: (): MachineState | null => null };
+
   const currentMachine =
-    observable(
-      { ...base,
-        state: null as MachineState | null }) as TBase & MachineDuringSetup;
+    observable(initialMachine) as TBase & MachineDuringSetup;
 
   const states: MachineState[] =
     currentMachine.states = [];
