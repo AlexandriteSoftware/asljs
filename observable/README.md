@@ -191,23 +191,24 @@ Watches one or more properties/paths and invokes callback with current values.
 More concrete events are emitted first, followed by more generic ones.
 E.g., setting `obj.a` emits `set:a` first, then `set`.
 
-Objects emit:
+| Target kind | Event form | Payload |
+| --- | --- | --- |
+| object | `set` / `set:<property>` | `{ property, value, previous }` |
+| object | `delete` / `delete:<property>` | `{ property, previous }` |
+| object | `define` / `define:<property>` | `{ property, descriptor, previous }` |
+| array index change | `set` / `set:<index>` | `{ index, value, previous }` |
+| array index delete | `delete` / `delete:<index>` | `{ index, previous }` |
+| array property change | `set` / `set:<property>` | `{ property, value, previous }` |
+| array property delete | `delete` / `delete:<property>` | `{ property, previous }` |
+| array property define | `define` / `define:<property>` | `{ property, descriptor, previous }` |
+| primitive box | `set` / `set:value` | `{ property: 'value', value, previous }` |
 
-- `set` and `set:<property>`: `{ property, value, previous }`
-- `delete` and `delete:<property>`: `{ property, previous }`
-- `define` and `define:<property>`: `{ property, descriptor, previous }`
+Notes:
 
-For arrays:
-
-- index changes (`arr[0] = x`, `delete arr[1]`) emit payloads with numeric
-  `index`.
-- non-index properties (including `'length'` and custom properties) emit
-  payloads with string `property`.
-- `define` / `define:<property>` are emitted only for non-index properties.
-
-Primitives (boxed as `{ value }`) emit:
-
-- `set` and `set:value`: `{ property: 'value', value, previous }`
+- Array index changes use numeric `index` payloads.
+- Array non-index properties, including `'length'`, use string `property`
+  payloads.
+- `define` events are emitted only for non-index array properties.
 
 ## License
 

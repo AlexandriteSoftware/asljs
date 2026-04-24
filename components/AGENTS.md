@@ -86,5 +86,6 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 - `npm -w asljs-components run typecheck`
 - `npm -w asljs-components run lint`
 
-When implementation changes affect usage, update `README.md` and this file
-together.
+Update this file when AI-facing constraints, exported surface expectations, or
+validation commands change. Update `README.md` separately only when
+user-facing usage or behavior changes.

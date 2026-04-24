@@ -16,7 +16,7 @@ published library API.
 - Persistence: IndexedDB via `asljs-dali`
 - Reactive state: `asljs-observable`
 
-Key internal modules documented by the README:
+Key internal modules:
 
 - `src/app-builder/state.ts`
 - `src/app-builder/storage.ts`
@@ -54,3 +54,6 @@ Use the package scripts when validating changes:
 
 If a change affects published demo output, rebuild `docs/` locally and verify
 the deployment workflow contract still matches the `pages` branch publish flow.
+Update this file when AI-facing app constraints, module boundaries, or
+validation commands change. Update `README.md` separately only when
+user-facing app behavior or usage changes.

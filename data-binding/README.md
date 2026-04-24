@@ -28,6 +28,55 @@ npm install asljs-data-binding
 NPM Package:
 [asljs-data-binding](https://www.npmjs.com/package/asljs-data-binding)
 
+## Public Exports
+
+Runtime exports:
+
+- `bindDataModel`
+- `createBuiltInPipes`
+
+Type exports:
+
+- `BindDataModelOptions`
+- `DataModel`
+
+## Binding Contract At A Glance
+
+- Value bindings are path-based.
+- Event bindings are path-based.
+- Context bindings switch subtree model roots.
+- Pipe args are static strings.
+- Event actions are invoked as `(event, model, element)`.
+- Missing or non-function actions warn instead of crashing the binding system.
+
+## Unsupported Syntax
+
+- No inline function-call expressions like `save(item.id)`.
+- No computed expressions like `price * qty`.
+- No reactive pipe arguments.
+- No template-language control structures inside attributes.
+- No implicit two-way binding syntax.
+
+## Choosing The Right Binding Family
+
+- If you need to write text, then use `data-bind-text`.
+- If you need to write HTML, then use `data-bind-html`.
+- If you need to write an attribute, then use `data-bind-<attr>`.
+- If you need to write a DOM property, then use `data-bind-prop-<name>`.
+- If you need to toggle a class, then use `data-bind-class-<name>`.
+- If you need to handle an event, then use `data-bind-on<event>`.
+- If you need to switch the descendant model root, then use
+  `data-bind-context`.
+
+## Safe Authoring Rules
+
+- Keep each binding attribute focused on one concern.
+- Prefer multiple binding attributes over overloaded single expressions.
+- Use `data-bind-context` instead of repeating long nested paths.
+- Keep event handler names on the model.
+- Keep pipe arguments literal unless a custom pipe is intentionally designed
+  for string arguments.
+
 ## Usage
 
 ```ts
@@ -90,6 +139,18 @@ describe different concerns:
   data-bind-class-active="isActive"
   data-bind-onclick="openDetails"
 ></a>
+```
+
+End-to-end example using context, value bindings, an event binding, and a
+custom pipe:
+
+```html
+<section data-bind-context="user">
+  <h1 data-bind-text="name"></h1>
+  <p data-bind-text="active | yesno"></p>
+  <a data-bind-href="profileUrl" data-bind-text="name | upper"></a>
+  <button data-bind-onclick="save">Save</button>
+</section>
 ```
 
 ## Binding Syntax
@@ -248,6 +309,15 @@ Locale behavior:
 - pipe error: exception from pipe propagates
 - missing/non-function action: warning, binding continues
 
+Behavior at a glance:
+
+- `data-bind-text` with `null` or `undefined` renders `''`.
+- `data-bind-html` with `null` or `undefined` renders `''`.
+- `data-bind-<attr>` with `null` or `undefined` removes the attribute.
+- Unknown pipes throw.
+- Pipe exceptions propagate.
+- Missing or non-function event handlers warn and keep bindings alive.
+
 Nullish behavior:
 
 - built-in pipes preserve `null` and `undefined` values
@@ -265,6 +335,12 @@ Types are exported from:
 
 - `BindDataModelOptions`
 - `DataModel`
+
+## Related Packages
+
+- For model reactivity itself, see `asljs-observable`.
+- For event primitives, see `asljs-eventful`.
+- For reusable UI elements, see `asljs-components`.
 
 ## License
 

@@ -6,6 +6,59 @@ performant JavaScript libraries for everyday use.
 Provides a lightweight fixed-point type and helpers for financial calculations
 in JavaScript, now with optional currency tracking.
 
+## Public API At A Glance
+
+- The package-root export you use at runtime is `money`.
+- `money` is a factory that creates `Money` instances.
+- Factory constants live on `money`: `money.zero`, `money.minor`, and
+  `money.major`.
+- Factory helpers also live on `money`: `parse`, `fromString`, `fromMinor`,
+  `fromMajor`, `fromNumber`, and `isMoney`.
+- Arithmetic and formatting methods live on `Money` instances, not as separate
+  named exports.
+
+## Safe Usage Rules
+
+- Construct `Money` values first.
+- Do arithmetic on `Money` instances.
+- Convert to numbers or strings only at presentation or interop boundaries.
+- Do not use raw JavaScript numbers for money arithmetic and wrap later.
+
+## Choosing A Creation Method
+
+- If you already have minor units such as cents or pence, then use
+  `money.fromMinor(...)`.
+- If you already have major units as a whole-unit integer amount, then use
+  `money.fromMajor(...)`.
+- If you have a human-readable amount string, then use `money.parse(...)` or
+  `money.fromString(...)`.
+- If you have a JavaScript number input, then use `money.fromNumber(...)`.
+- If you already have a `Money` instance or minor-unit integer and want the
+  main factory entrypoint, then use `money(value, currency?)`.
+
+## Conversion And Truncation Contract
+
+- `convert(rate, currency)` requires a positive finite exchange rate.
+- Conversion is explicit; other operations do not convert currencies for you.
+- Conversion truncates beyond 1/100 instead of using a general rounding rule.
+- Do not describe undocumented round-half-up or banker’s rounding behavior.
+
+## Currency Compatibility Rules
+
+- `add(...)` requires compatible currencies.
+- `subtract(...)` requires compatible currencies.
+- Different currencies are not silently reconciled.
+- Convert explicitly before combining values from different currencies.
+
+## Common Wrong Assumptions
+
+- Do not use raw JS numbers for money arithmetic.
+- Do not assume different currencies can be combined directly.
+- Do not assume conversion uses a rounding policy other than the documented
+  truncation rule.
+- Do not assume many standalone helper exports exist.
+- Do not treat `toNumber()` as the preferred arithmetic path.
+
 `Money`, a type that the library provides, represents a fixed-point decimal
 number. This type is designed to be used in financial calculations, where
 rounding errors are not acceptable.
@@ -87,5 +140,9 @@ const eur = usd.convert(0.9, 'EUR');
 console.log(usd.toString()); // "100.00 USD"
 console.log(eur.toString()); // "90.00 EUR"
 ```
+
+If you need generic number utilities or presentation-layer formatting beyond
+the package string output, keep those concerns outside `asljs-money` and keep
+domain arithmetic on `Money` values.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

@@ -13,7 +13,47 @@ npm install asljs-eventful
 
 NPM Package: [asljs-eventful](https://www.npmjs.com/package/asljs-eventful)
 
+## Public Exports
+
+The package-root export surface includes:
+
+- `eventful`
+- `EventfulBase`
+- `isEventfulLike`
+- `asEventfulLike`
+- `ListenerError`
+- TypeScript types including `EventfulLike`, `EventName`, `EventMap`,
+  `Eventful`, `EventfulFactory`, `EventfulOptions`, `Listener`, and `TraceFn`
+
 ## Usage
+
+### Special Behavior
+
+`eventful` is not only an object enhancer. The package-level `eventful`
+function also acts as a global emitter for lifecycle and error events.
+
+If you change lifecycle, tracing, or listener-error behavior, then preserve
+that package-level emitter contract.
+
+### Stable Behavior
+
+These behaviors are part of the supported contract, not just current examples:
+
+- `eventful` adds `on`, `once`, `off`, `emit`, `emitAsync`, and `has`
+- `eventful` also acts as a package-level global emitter
+- strict mode propagates listener errors
+- non-strict mode isolates listener failures through the configured error path
+- `ListenerError` protects against recursive failures in global error handling
+
+### Preferred Patterns
+
+- If you are enhancing a plain object, then use `eventful(target)`.
+- If you are enhancing an existing class instance and cannot change
+  inheritance, then call `eventful(this)` in the constructor.
+- If you control a new class hierarchy and event support is part of the type
+  design, then extend `EventfulBase`.
+- If you are writing TypeScript and want typed listener signatures, then
+  declare an event map and use the exported `Eventful<...>` types.
 
 ### Basic (JavaScript)
 
@@ -319,5 +359,11 @@ console.log(obj.has('e')); // false
 ## License
 
 MIT License. See [LICENSE](LICENSE.md) for details.
+
+## Related Packages
+
+- If you need property change tracking, see `asljs-observable`.
+- If you need DOM binding built on observable state, see
+  `asljs-data-binding`.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

@@ -7,6 +7,14 @@ import {
   } from './index.js';
 
 test(
+  'index: exports machine factory',
+  () => {
+    assert.equal(
+      typeof machine,
+      'function');
+  });
+
+test(
   'state transitions',
   () => {
     const currentMachine =

@@ -16,6 +16,16 @@ the exception is clearly documented.
 
 ## Conventions
 
+### Documentation style
+
+- Prefer lists and short prose over tables in repository documentation.
+- When documentation explains a choice, routing rule, or selection logic,
+  prefer an explicit decision tree or `if ... then ...` list over a matrix.
+- Use tables only when the information is inherently tabular and would become
+  less clear as prose or lists, for example dense payload reference data.
+- When a table is necessary, keep it compact and use it for reference rather
+  than for primary decision-making guidance.
+
 ### Module and export style
 
 - All packages use **ESM** (`"type": "module"` in `package.json`).

@@ -27,8 +27,8 @@ Exports from `src/index.ts`:
 
 ## Constraints To Preserve
 
-- Objects, arrays, and primitive boxes have different payload shapes documented
-  by the README; do not merge them into a vague generic payload.
+- Objects, arrays, and primitive boxes have different payload shapes; do not
+  merge them into a vague generic payload.
 - More specific events fire before the generic event, for example `set:a`
   before `set`.
 - `watch(...)` runs immediately with current values and returns an unsubscribe
@@ -45,4 +45,6 @@ Exports from `src/index.ts`:
 - `npm -w asljs-observable run typecheck`
 - `npm -w asljs-observable run lint`
 
-When event payloads or watch behavior change, update `README.md` and this file.
+Update this file when AI-facing constraints, preserved payload semantics, or
+validation commands change. Update `README.md` separately only when
+user-facing behavior changes.

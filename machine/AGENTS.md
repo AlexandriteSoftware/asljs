@@ -56,6 +56,38 @@ Do not change that sequence silently.
 - Preserve the combination of `asljs-eventful` and `asljs-observable` unless a
   requested change explicitly replaces it.
 
+## What Not To Assume
+
+- hierarchical statecharts are available
+- parallel states are available
+- transitions can target arbitrary foreign states
+- self-transitions activate successfully
+- undocumented guard or action systems exist
+
+## Safe Usage Rules
+
+- create states first, then connect transitions
+- use named states when discoverability matters
+- check activation results when later logic depends on success
+- use `machine` for transition-driven control flow, not as a general app state
+  store
+
+## Change Safety Checklist
+
+- If touching transition activation, then re-check all documented failure
+  cases.
+- If touching machine state updates, then re-check the activation event order.
+- If touching state names or registration, then re-check uniqueness behavior
+  and `getState(name)`.
+- If touching the machine object shape, then re-check eventful and observable
+  integration.
+
+## Related Packages
+
+- If the task is really about generic events, move to `asljs-eventful`.
+- If the task is really about observable property watching, move to
+  `asljs-observable`.
+
 ## Validation
 
 - `npm -w asljs-machine run build`
@@ -63,5 +95,6 @@ Do not change that sequence silently.
 - `npm -w asljs-machine run typecheck`
 - `npm -w asljs-machine run lint`
 
-If public behavior expands, update `README.md` with examples and this file with
-the preserved contract.
+Update this file when AI-facing constraints, preserved transition semantics, or
+validation commands change. Update `README.md` separately only when
+user-facing behavior or examples change.

@@ -19,6 +19,91 @@ npm install asljs-dali
 
 NPM Package: [asljs-dali](https://www.npmjs.com/package/asljs-dali)
 
+## Package Concept Map
+
+- `dbOpen(...)`, `dbDelete(...)`, and `dbRequestAsync(...)` manage database
+  setup and low-level request handling.
+- `Table<T>` is the main high-level abstraction for typed IndexedDB work.
+- `notify(...)` and `observe(...)` handle committed change notifications.
+- `record(...)` and `recordset(...)` provide live-first containers.
+- Transaction helpers support lower-level control when `Table<T>` is not the
+  right layer.
+- Version and delete strategies customize concurrency and deletion behavior.
+
+## Choose This API When
+
+- If you need a one-time single-row read, then use `getOne(key)`.
+- If you need a one-time filtered scan, then use `scan(predicate)`.
+- If you need live single-row tracking, then use `record(key)`.
+- If you need live filtered tracking, then use `recordset(predicate)`.
+- If you need local-only mutation notifications, then use `notify(...)`.
+- If you need local-plus-remote committed notifications, then use
+  `observe(...)`.
+
+## Public Contracts
+
+- `notify(...)` is local-only.
+- `observe(...)` includes local and remote committed changes.
+- Broadcasts happen only after a successful commit.
+- Remote messages are not re-published.
+- `record(key)` is key-based only.
+- `recordset(predicate)` is client-side predicate filtering only.
+
+## What This Package Does Not Provide
+
+- No joins.
+- No server-style query planners.
+- No DB-level query composition through `recordset(...)`.
+- No automatic ordering semantics for live sets.
+- No re-publishing of remote messages.
+
+## Public Surface Summary
+
+DB helpers:
+
+- `dbOpen`
+- `dbDelete`
+- `dbRequestAsync`
+
+Tables and live views:
+
+- `Table`
+- `LiveRecord`
+- `LiveRecordSet`
+
+Version and delete strategies:
+
+- `IncrementTableVersionStrategy`
+- `UuidTableVersionStrategy`
+- `TableVersionStrategy`
+- `TableVersionConflictError`
+- `TableDeleteStrategy`
+- `UuidSoftDeleteTableDeleteStrategy`
+
+Transaction helpers:
+
+- `txRead`
+- `txWrite`
+- `txDone`
+- `txEnsure`
+- `txReuseOrCreate`
+- `TxMode`
+
+Broadcast and observe types:
+
+- `TableBroadcastService`
+- `TableBroadcastMessage`
+- `TableObservedEvent`
+- `TableObservedReceiver`
+
+Event-source and saga helpers:
+
+- `EventSourceManager`
+- `IndexedDbEventSourceAdapter`
+- `EventSourceProjectionManager`
+- `SagaManager`
+- setup and store helper exports from event-source and saga modules
+
 ## Usage
 
 ```ts
@@ -58,10 +143,10 @@ const row =
 
 `Table` supports two notification paths:
 
-| Method | Who calls the callback |
-|---|---|
-| `notify(receiver)` | Local writes committed by **this** Table instance only |
-| `observe(receiver)` | Local writes **and** remote writes from other tabs |
+- If you want callbacks only for writes committed by this `Table` instance,
+  then use `notify(receiver)`.
+- If you want callbacks for local writes and remote writes from other tabs,
+  then use `observe(receiver)`.
 
 Pass a `broadcastService` to the Table constructor to enable cross-tab delivery.
 The service is an abstraction — you can implement it with `BroadcastChannel` or
@@ -265,6 +350,29 @@ Broadcast / cross-tab:
 - `TableBroadcastMessage` — message shape published on every committed change
 - `TableObservedEvent<T>` — event delivered to `observe()` subscribers
 - `TableObservedReceiver<T>` — callback type for `observe()`
+
+## Common Wrong Assumptions
+
+- `recordset(predicate)` is a database query planner.
+- `notify(...)` includes remote tab changes.
+- `observe(...)` re-broadcasts remote changes.
+- live views imply joins or rich query composition.
+- broadcast delivery happens during tentative mutations instead of after
+  commit.
+
+## Related Packages
+
+- For event primitives, see `asljs-eventful`.
+- For path watching and reactive property access, see `asljs-observable`.
+- For DOM binding on top of observable models, see `asljs-data-binding`.
+
+## Safe Usage Rules
+
+- Use `Table<T>` before dropping to raw transaction helpers.
+- Prefer snapshot reads unless reactivity is actually needed.
+- Use `observe(...)` only when remote-origin changes matter.
+- Dispose live views when they are no longer needed.
+- Do not describe `recordset(predicate)` as a full query engine.
 
 ## License
 
