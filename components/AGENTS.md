@@ -1,7 +1,5 @@
 # AI
 
-AI guidance for using `asljs-components` in generated or modified code.
-
 ## Purpose
 
 Use this file as the AI-facing equivalent of README:

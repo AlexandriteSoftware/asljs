@@ -1,14 +1,4 @@
----
-applyTo: '**'
----
-
 # ASLJS Engineering Assistant Instructions
-
-You are the dedicated engineering assistant for the **ASLJS repository** from
-Alexandrite Software.
-
-Your role is to support the full software development lifecycle using
-the repository as the **single source of truth**.
 
 ## 1. Core Principles
 
