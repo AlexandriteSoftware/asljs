@@ -15,7 +15,25 @@ import {
 
 type AppTestCase =
   { name: string;
-    code: string; };
+    run: (helpers: AppTestHelpers) => Promise<void>; };
+
+type AppTestHelpers =
+  { evalInApp: (
+        code: string
+      ) => Promise<unknown>;
+    assertInApp: (
+        code: string,
+        message?: string
+      ) => Promise<unknown>;
+    getAppDiagnostics: (
+      ) => Promise<unknown>;
+    wait: (
+        milliseconds: number
+      ) => Promise<void>; };
+
+type AppTestModuleCase =
+  { name?: unknown;
+    run?: unknown; };
 
 type AppTestResult =
   { name: string;
@@ -100,6 +118,8 @@ export type AiTools =
           passed: number;
           failed: number;
           results: AppTestResult[]; }>;
+    startGeneration: (
+      ) => Promise<string>;
     getAppDiagnostics: (
       ) => Promise<unknown>;
     runAppAndCollectDiagnostics: (
@@ -143,6 +163,8 @@ export type AiToolsRuntimeContext =
         question: string,
         options: string[]
       ) => void;
+    startGeneration?: (
+      ) => Promise<string>;
     wait: (
         milliseconds: number
       ) => Promise<void>;
@@ -286,9 +308,12 @@ export const OPENAI_TOOLS: OpenAiToolDefinition[] =
       [ 'code', 'message' ]),
     openAiToolDefinition(
       'runAppTests',
-      'Run the JSON test suite stored in app.tests.json or another specified file. The app restarts before each test.',
+      'Run the JavaScript test module stored in app.tests.js or another specified file. The app restarts before each test.',
       { path: { type: 'string' } },
       [ 'path' ]),
+    openAiToolDefinition(
+      'startGeneration',
+      'Queue the generation lane to start after the current chat turn finishes.'),
     openAiToolDefinition(
       'getAppDiagnostics',
       'Get current runtime logs and errors from the running app.'),
@@ -398,9 +423,7 @@ export function createAppRuntimeTools(
               ? updated
               : item));
 
-      if (!isHiddenToolPath(updated.name)) {
-        context.setActiveFileName(updated.name);
-      }
+      context.setActiveFileName(updated.name);
 
       return;
     }
@@ -415,9 +438,7 @@ export function createAppRuntimeTools(
     await context.saveFile(created);
     context.setFiles([ ...context.getFiles(), created ]);
 
-    if (!isHiddenToolPath(created.name)) {
-      context.setActiveFileName(created.name);
-    }
+    context.setActiveFileName(created.name);
   }
 
   async function setFileDataTool(
@@ -600,7 +621,7 @@ export function createAppRuntimeTools(
   }
 
   async function runAppTestsTool(
-      path = 'app.tests.json',
+      path = 'app.tests.js',
     ): Promise<
       { path: string;
         total: number;
@@ -614,18 +635,29 @@ export function createAppRuntimeTools(
       throw new Error(`Test file not found: ${path}`);
     }
 
-    const tests = parseAppTests(await readFileTool(resolvedPath));
+    const tests = await loadAppTests(
+      resolvedPath,
+      await readFileTool(resolvedPath));
     const results: AppTestResult[] = [];
-
     for (const testCase of tests) {
       try {
         context.runApp();
         await context.wait(context.diagnosticsDelayMs ?? DEFAULT_DIAGNOSTICS_DELAY_MS);
-        const result = await context.evaluateInApp(testCase.code);
+        const helpers: AppTestHelpers = {
+          evalInApp: code => context.evaluateInApp(code),
+          assertInApp: async (code, message) => {
+            const result = await context.evaluateInApp(code);
 
-        if (result === false) {
-          throw new Error('Test returned false.');
-        }
+            if (result === false) {
+              throw new Error(message?.trim() || 'App assertion returned false.');
+            }
+
+            return result;
+          },
+          getAppDiagnostics: getAppDiagnosticsTool,
+          wait: context.wait,
+        };
+        await testCase.run(helpers);
 
         results.push({
           name: testCase.name,
@@ -662,6 +694,14 @@ export function createAppRuntimeTools(
     return context.getAppDiagnostics();
   }
 
+  async function startGenerationTool(): Promise<string> {
+    if (context.startGeneration === undefined) {
+      throw new Error('Generation control is not available in this lane.');
+    }
+
+    return context.startGeneration();
+  }
+
   return {
     listFileset: listFilesetTool,
     listFilesByMask: listFilesByMaskTool,
@@ -679,6 +719,7 @@ export function createAppRuntimeTools(
     evalInApp: evalInAppTool,
     assertInApp: assertInAppTool,
     runAppTests: runAppTestsTool,
+    startGeneration: startGenerationTool,
     getAppDiagnostics: getAppDiagnosticsTool,
     runAppAndCollectDiagnostics: runAppAndCollectDiagnosticsTool,
   };
@@ -801,7 +842,61 @@ function normalizePositiveInteger(value: number, fallback: number): number {
   return Math.floor(value);
 }
 
-function parseAppTests(content: string): AppTestCase[] {
+async function loadAppTests(
+    path: string,
+    content: string,
+  ): Promise<AppTestCase[]>
+{
+  return path.toLowerCase().endsWith('.json')
+    ? parseLegacyJsonAppTests(content)
+    : parseJavaScriptAppTests(content);
+}
+
+async function parseJavaScriptAppTests(content: string): Promise<AppTestCase[]> {
+  const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(content)}`;
+  const imported = await import(moduleUrl);
+  const rawTests =
+    Array.isArray(imported.default)
+      ? imported.default
+      : imported.default?.tests;
+
+  if (!Array.isArray(rawTests)) {
+    throw new Error('Test module must export an array or an object with a tests array as the default export.');
+  }
+
+  return rawTests.map((value, index) => normalizeModuleTestCase(value, index));
+}
+
+function normalizeModuleTestCase(
+    value: unknown,
+    index: number,
+  ): AppTestCase
+{
+  if (value === null || typeof value !== 'object') {
+    throw new Error(`Invalid test case at index ${index}.`);
+  }
+
+  const testCase = value as AppTestModuleCase;
+
+  if (typeof testCase.name !== 'string' || testCase.name.trim() === '') {
+    throw new Error(`Test case ${index + 1} is missing a name.`);
+  }
+
+  if (typeof testCase.run !== 'function') {
+    throw new Error(`Test case ${testCase.name} is missing run().`);
+  }
+
+  const run = testCase.run;
+
+  return {
+    name: testCase.name,
+    run: async helpers => {
+      await run(helpers);
+    },
+  };
+}
+
+function parseLegacyJsonAppTests(content: string): AppTestCase[] {
   let parsed: unknown;
 
   try {
@@ -836,13 +931,19 @@ function parseAppTests(content: string): AppTestCase[] {
 
     return {
       name: testCase.name,
-      code: testCase.code,
+      run: async helpers => {
+        const result = await helpers.evalInApp(testCase.code as string);
+
+        if (result === false) {
+          throw new Error('Test returned false.');
+        }
+      },
     };
   });
 }
 
 function pickVisibleFileName(files: AiToolFileRecord[]): string | null {
-  return files.find(item => !isHiddenToolPath(item.name))?.name ?? null;
+  return files[0]?.name ?? null;
 }
 
 function resolveExistingPath(
@@ -1000,7 +1101,12 @@ export async function executeToolCall(
       }
 
       case 'runAppTests': {
-        const result = await tools.runAppTests(readStringArg(args, 'path', 'app.tests.json'));
+        const result = await tools.runAppTests(readStringArg(args, 'path', 'app.tests.js'));
+        return toolSuccess(result);
+      }
+
+      case 'startGeneration': {
+        const result = await tools.startGeneration();
         return toolSuccess(result);
       }
 

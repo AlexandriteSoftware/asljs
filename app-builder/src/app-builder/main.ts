@@ -10,13 +10,18 @@ import {
 } from './storage.js';
 import {
   generateApp,
+  listAvailableModels,
   DEFAULT_MODEL,
   DEFAULT_MAX_TOOL_STEPS,
+  ToolStepLimitExceededError,
   type AiModel,
 } from './ai/ai-repl.js';
 import {
-  SYSTEM_PROMPT,
+  GENERATION_SYSTEM_PROMPT,
 } from './ai/ai-instruction.js';
+import {
+  CHAT_SYSTEM_PROMPT,
+} from './ai/chat-instruction.js';
 import {
   buildConversationPrompt,
   getConversationKickoffMessage,
@@ -34,6 +39,15 @@ import {
 import {
   createAppRuntimeTools,
 } from './ai/ai-tools.js';
+import {
+  DEFAULT_CHAT_MODEL,
+  DEFAULT_CODE_MODEL,
+  dedupeModels,
+  type AvailableAiModel,
+} from './ai/model-selection.js';
+import {
+  GenerationStoppedError,
+} from './ai/ai-repl.js';
 import {
   renderAppListUi,
 } from './ui/app-list-ui.js';
@@ -57,6 +71,16 @@ import {
   getSampleByName,
 } from './examples/samples.js';
 import {
+  createDefaultWorkflowFiles,
+  DEVELOP_FILE,
+  CHANGE_FILE,
+  ensureWorkflowFiles,
+} from './workflow-files.js';
+import {
+  buildChangeListFromDevelop,
+  hasPendingDevelopChanges,
+} from './generation-workflow.js';
+import {
   createLinkSharingService,
   createBrowserTextCompressionCodec,
   type LinkSharingService,
@@ -74,7 +98,7 @@ import {
 } from './services/share-payload-minify.js';
 import {
   buildShareStatusMessage,
-  shouldExcludeTestFileFromShare,
+  shouldExcludeNonApplicationFileFromShare,
 } from './services/share-ui.js';
 import * as esbuildWasm
   from 'esbuild-wasm';
@@ -119,11 +143,16 @@ const elChatMessages = mustElement<HTMLElement>('chat-messages');
 const elChatProgress = mustElement<HTMLElement>('chat-progress');
 const elChatChoices = mustElement<HTMLElement>('chat-choices');
 const elChatInput = mustElement<HTMLTextAreaElement>('chat-input');
+const elChatModelSelect = mustElement<HTMLSelectElement>('chat-model-select');
 const elBtnGenerate = mustElement<HTMLButtonElement>('btn-generate');
 const elBtnRun = mustElement<HTMLButtonElement>('btn-run');
 const elBtnRefreshPreview =
   mustElement<HTMLButtonElement>('btn-refresh-preview');
 const elPreviewFrame = mustElement<HTMLIFrameElement>('preview-frame');
+const elGenerationModelSelect = mustElement<HTMLSelectElement>('generation-model-select');
+const elBtnStartGeneration = mustElement<HTMLButtonElement>('btn-start-generation');
+const elBtnStopGeneration = mustElement<HTMLButtonElement>('btn-stop-generation');
+const elGenerationStatus = mustElement<HTMLElement>('generation-status');
 const elBtnNewApp = mustElement<HTMLButtonElement>('btn-new-app');
 const elBtnImport = mustElement<HTMLButtonElement>('btn-import');
 const elBtnProjectSettings = mustElement<HTMLButtonElement>('btn-project-settings');
@@ -141,7 +170,6 @@ const elBtnSaveSettings = mustElement<HTMLButtonElement>('btn-save-settings');
 const elBtnCancelSettings =
   mustElement<HTMLButtonElement>('btn-cancel-settings');
 const elApiKeyInput = mustElement<HTMLInputElement>('api-key-input');
-const elModelSelect = mustElement<HTMLSelectElement>('model-select');
 const elThemeSelect = mustElement<HTMLSelectElement>('theme-select');
 const elFontSizeInput = mustElement<HTMLInputElement>('font-size-input');
 const elMaxToolStepsInput =
@@ -214,6 +242,12 @@ let linkSharingService: LinkSharingService | null = null;
 let importFromHashInProgress = false;
 let sharePreparationId = 0;
 let browserEsbuildApiPromise: Promise<BrowserEsbuildApi> | null = null;
+let availableModels: AvailableAiModel[] = [
+  { id: DEFAULT_CHAT_MODEL },
+  { id: DEFAULT_CODE_MODEL },
+  { id: DEFAULT_MODEL },
+];
+let generationStopRequested = false;
 
 type BrowserEsbuildApi =
   { transform: (
@@ -255,14 +289,18 @@ function getApiKey(): string {
   return loadSettings().apiKey ?? '';
 }
 
-function getModel(): AiModel {
-  const candidate = loadSettings().model;
+function getChatModel(): AiModel {
+  return pickSavedOrDefaultModel(
+    loadSettings().chatModel,
+    DEFAULT_CHAT_MODEL,
+  );
+}
 
-  if (candidate === 'gpt-5.3-codex' || candidate === 'gpt-5.4') {
-    return candidate;
-  }
-
-  return DEFAULT_MODEL;
+function getCodeGenerationModel(): AiModel {
+  return pickSavedOrDefaultModel(
+    loadSettings().generationModel,
+    DEFAULT_CODE_MODEL,
+  );
 }
 
 function getMaxToolSteps(): number {
@@ -507,6 +545,7 @@ async function createFirstAppFromForm(): Promise<void> {
     const settings = loadSettings();
     settings.apiKey = apiKey;
     saveSettings(settings);
+    void refreshAvailableModels(apiKey);
   }
 
   const app: AppRecord = {
@@ -518,6 +557,7 @@ async function createFirstAppFromForm(): Promise<void> {
   };
 
   await saveApp(app);
+  await replaceFiles(app.id, createDefaultWorkflowFiles(app.id, app.name, randomId));
   state.apps = [...state.apps, app];
   await openApp(app.id);
 }
@@ -541,6 +581,7 @@ async function createTodoSampleAppFromForm(): Promise<void> {
     const settings = loadSettings();
     settings.apiKey = apiKey;
     saveSettings(settings);
+    void refreshAvailableModels(apiKey);
   }
 
   const app: AppRecord = {
@@ -587,6 +628,18 @@ function renderFileContent(): void {
 function setGenerating(value: boolean): void {
   state.generating = value;
   renderGeneratingButtonUi(elBtnGenerate, value);
+  elBtnStartGeneration.disabled = value || state.generationBusy;
+}
+
+function setGenerationBusy(value: boolean): void {
+  state.generationBusy = value;
+  elBtnStartGeneration.disabled = value || state.generating;
+  elBtnStopGeneration.disabled = !value;
+}
+
+function setGenerationStatus(message: string): void {
+  state.generationStatus = message;
+  elGenerationStatus.textContent = message;
 }
 
 function setChatProgress(message: string, visible: boolean): void {
@@ -650,18 +703,30 @@ async function openApp(id: string): Promise<void> {
   state.currentAppId = id;
 
   const files = await listFiles(id);
-  state.files = files;
-  state.activeFileName = pickFirstVisibleFileName(files);
+  const app = state.apps.find(item => item.id === id);
+  const ensured = ensureWorkflowFiles({
+    files,
+    appId: id,
+    appName: app?.name ?? 'Untitled App',
+    createId: randomId,
+  });
+
+  if (ensured.changed) {
+    await replaceFiles(id, ensured.files);
+  }
+
+  state.files = ensured.files;
+  state.activeFileName = pickFirstFileName(ensured.files);
 
   resetChatConversation();
-  appendConversationKickoff(files.map(file => file.name));
+  appendConversationKickoff(ensured.files.map(file => file.name));
 }
 
-function pickFirstVisibleFileName(
+function pickFirstFileName(
     files: Array<{ name: string }>
   ): string | null
 {
-  return files.find(file => !file.name.startsWith('.'))?.name ?? null;
+  return files[0]?.name ?? null;
 }
 
 function promptNewApp(): void {
@@ -688,6 +753,7 @@ function promptNewApp(): void {
     };
 
     await saveApp(app);
+    await replaceFiles(app.id, createDefaultWorkflowFiles(app.id, app.name, randomId));
     state.apps = [...state.apps, app];
     await openApp(app.id);
   };
@@ -849,14 +915,14 @@ async function handleGenerate(): Promise<void> {
   setChatProgress('Starting generation...', true);
 
   try {
-    const model = getModel();
+    const model = getChatModel();
     const maxToolSteps = getMaxToolSteps();
     const conversationPrompt =
       buildConversationPrompt(state.chatMessages);
 
     const result = await generateApp(conversationPrompt, apiKey, model, appRuntimeTools, {
       initialToolStepLimit: maxToolSteps,
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt: CHAT_SYSTEM_PROMPT,
       onToolStepLimit: async ({ stepsCompleted }) => confirm(
         `AI reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`,
       ),
@@ -886,6 +952,14 @@ async function handleGenerate(): Promise<void> {
 
     handleRun();
   } catch (error) {
+    if (error instanceof ToolStepLimitExceededError) {
+      appendChatMessage(
+        'assistant',
+        'Generation stopped at the tool step limit.',
+      );
+      return;
+    }
+
     const message = error instanceof Error
 ? error.message
 : String(error);
@@ -894,6 +968,98 @@ async function handleGenerate(): Promise<void> {
     setChatProgress('', false);
     setGenerating(false);
   }
+}
+
+async function handleStartGeneration(): Promise<void> {
+  if (state.generating) {
+    setGenerationStatus('Wait for the chat response before starting generation.');
+    return;
+  }
+
+  if (state.generationBusy) {
+    return;
+  }
+
+  if (state.currentAppId === null) {
+    setGenerationStatus('Open or create an app first.');
+    return;
+  }
+
+  const apiKey = getApiKey();
+
+  if (apiKey === '') {
+    setGenerationStatus('Add an OpenAI API key in Settings first.');
+    return;
+  }
+
+  await persistCurrentFile();
+
+  const developContent = readCurrentFileContent(DEVELOP_FILE);
+
+  if (!hasPendingDevelopChanges(developContent)) {
+    setGenerationStatus('No pending changes in DEVELOP.md.');
+    return;
+  }
+
+  const changeContent = buildChangeListFromDevelop(developContent);
+  await writeCurrentFileContent(CHANGE_FILE, changeContent);
+
+  generationStopRequested = false;
+  setGenerationBusy(true);
+  setGenerationStatus('Starting generation cycle...');
+
+  try {
+    const result = await generateApp(
+      [
+        'Implement the pending changes listed in CHANGE.md.',
+        'Use README.md as the current implemented app state.',
+        'Work through CHANGE.md, update app files, update README.md, and clear CHANGE.md when the cycle is complete.',
+        'Do not consume new changes that may later appear in DEVELOP.md during this cycle.',
+      ].join('\n'),
+      apiKey,
+      getCodeGenerationModel(),
+      appRuntimeTools,
+      {
+        initialToolStepLimit: getMaxToolSteps(),
+        systemPrompt: GENERATION_SYSTEM_PROMPT,
+        shouldStop: () => generationStopRequested,
+        onToolStepLimit: async ({ stepsCompleted }) => confirm(
+          `Generation reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`,
+        ),
+        onProgress: message => {
+          setGenerationStatus(message);
+        },
+      },
+    );
+
+    await writeCurrentFileContent(CHANGE_FILE, '# CHANGE\n');
+    setGenerationStatus(result.summary);
+    appendChatMessage('assistant', result.summary);
+    handleRun();
+  } catch (error) {
+    if (error instanceof GenerationStoppedError) {
+      setGenerationStatus('Generation stopped.');
+      return;
+    }
+
+    const message = error instanceof Error
+      ? error.message
+      : String(error);
+    setGenerationStatus(`Generation error: ${message}`);
+    appendChatMessage('assistant', `Generation error: ${message}`);
+  } finally {
+    generationStopRequested = false;
+    setGenerationBusy(false);
+  }
+}
+
+function handleStopGeneration(): void {
+  if (!state.generationBusy) {
+    return;
+  }
+
+  generationStopRequested = true;
+  setGenerationStatus('Stopping generation after the current step...');
 }
 
 function handleRun(): void {
@@ -942,7 +1108,7 @@ async function buildSharePayload(): Promise<ExportPayload> {
       ...payload,
       files: Object.fromEntries(
         Object.entries(payload.files)
-          .filter(([fileName]) => !shouldExcludeTestFileFromShare(fileName)),
+          .filter(([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName)),
       ),
     };
   }
@@ -1403,7 +1569,6 @@ async function shareWithDownload(): Promise<void> {
 
 function openSettings(): void {
   elApiKeyInput.value = getApiKey();
-  elModelSelect.value = getModel();
   elThemeSelect.value = getTheme();
   elFontSizeInput.value = String(getFontSize());
   elMaxToolStepsInput.value = String(getMaxToolSteps());
@@ -1418,10 +1583,6 @@ function closeSettings(): void {
 function saveSettingsFromModal(): void {
   const settings = loadSettings();
   settings.apiKey = elApiKeyInput.value.trim();
-  settings.model =
-    elModelSelect.value === 'gpt-5.4'
-      ? 'gpt-5.4'
-      : 'gpt-5.3-codex';
   settings.theme =
     elThemeSelect.value === 'light'
       ? 'light'
@@ -1440,12 +1601,159 @@ function saveSettingsFromModal(): void {
     : DEFAULT_MAX_TOOL_STEPS;
 
   saveSettings(settings);
+  void refreshAvailableModels(settings.apiKey ?? '');
   applyAppearanceSettings();
   closeSettings();
 }
 
+function syncModelSelectOptions(
+    selectElement: HTMLSelectElement,
+    modelIds: string[],
+    selectedValue: string,
+  ): void
+{
+  const currentValue = selectElement.value;
+  selectElement.innerHTML = '';
+
+  for (const modelId of modelIds) {
+    const option = document.createElement('option');
+    option.value = modelId;
+    option.textContent = modelId;
+    selectElement.append(option);
+  }
+
+  if (modelIds.includes(currentValue)) {
+    selectElement.value = currentValue;
+    return;
+  }
+
+  selectElement.value = modelIds.includes(selectedValue)
+    ? selectedValue
+    : modelIds[0] ?? selectedValue;
+}
+
+function refreshLaneModelSelectOptions(): void {
+  const modelIds = dedupeModels([
+    ...availableModels,
+    { id: getChatModel() },
+    { id: getCodeGenerationModel() },
+  ]).map(model => model.id);
+
+  syncModelSelectOptions(elChatModelSelect, modelIds, getChatModel());
+  syncModelSelectOptions(
+    elGenerationModelSelect,
+    modelIds,
+    getCodeGenerationModel(),
+  );
+}
+
+function pickSavedOrDefaultModel(
+    savedValue: string | undefined,
+    defaultValue: string,
+  ): string
+{
+  const modelIds = dedupeModels(availableModels).map(model => model.id);
+
+  if (typeof savedValue === 'string' && modelIds.includes(savedValue)) {
+    return savedValue;
+  }
+
+  if (modelIds.includes(defaultValue)) {
+    return defaultValue;
+  }
+
+  return modelIds[0] ?? defaultValue;
+}
+
+function saveChatModelSelection(): void {
+  const settings = loadSettings();
+  settings.chatModel = elChatModelSelect.value;
+  saveSettings(settings);
+}
+
+function saveGenerationModelSelection(): void {
+  const settings = loadSettings();
+  settings.generationModel = elGenerationModelSelect.value;
+  saveSettings(settings);
+}
+
+function readCurrentFileContent(fileName: string): string {
+  return state.files.find(file => file.name === fileName)?.content ?? '';
+}
+
+async function writeCurrentFileContent(fileName: string, content: string): Promise<void> {
+  if (state.currentAppId === null) {
+    return;
+  }
+
+  const existing = state.files.find(file => file.name === fileName);
+
+  if (existing !== undefined) {
+    if (existing.content === content) {
+      return;
+    }
+
+    existing.content = content;
+    await saveFile(existing);
+    await regenerateCurrentAppUuidForFileChange();
+    state.files = [ ...state.files ];
+    return;
+  }
+
+  const created = {
+    id: randomId(),
+    appId: state.currentAppId,
+    name: fileName,
+    content,
+  };
+
+  await saveFile(created);
+  await regenerateCurrentAppUuidForFileChange();
+  state.files = [ ...state.files, created ];
+}
+
+async function refreshAvailableModels(apiKey = getApiKey()): Promise<void> {
+  const trimmedApiKey = apiKey.trim();
+
+  if (trimmedApiKey === '') {
+    availableModels = dedupeModels([
+      { id: DEFAULT_CHAT_MODEL },
+      { id: DEFAULT_CODE_MODEL },
+      { id: DEFAULT_MODEL },
+    ]);
+    refreshLaneModelSelectOptions();
+    return;
+  }
+
+  try {
+    const models = await listAvailableModels(trimmedApiKey);
+    availableModels = dedupeModels([
+      ...models,
+      { id: DEFAULT_CHAT_MODEL },
+      { id: DEFAULT_CODE_MODEL },
+      { id: DEFAULT_MODEL },
+    ]);
+  } catch (error) {
+    console.warn('Could not load OpenAI models:', error);
+    availableModels = dedupeModels([
+      ...availableModels,
+      { id: DEFAULT_CHAT_MODEL },
+      { id: DEFAULT_CODE_MODEL },
+      { id: DEFAULT_MODEL },
+    ]);
+  }
+
+  refreshLaneModelSelectOptions();
+}
+
 function openAgentInstructions(): void {
-  elAgentInstructionsText.value = SYSTEM_PROMPT;
+  elAgentInstructionsText.value = [
+    '=== Chat lane prompt ===',
+    CHAT_SYSTEM_PROMPT,
+    '',
+    '=== Generation lane prompt ===',
+    GENERATION_SYSTEM_PROMPT,
+  ].join('\n');
   elAgentInstructionsModal.classList.remove('hidden');
   elAgentInstructionsText.scrollTop = 0;
 }
@@ -1513,6 +1821,10 @@ elBtnShare.addEventListener('click', () => {
 elBtnGenerate.addEventListener('click', () => {
   void handleGenerate();
 });
+elBtnStartGeneration.addEventListener('click', () => {
+  void handleStartGeneration();
+});
+elBtnStopGeneration.addEventListener('click', handleStopGeneration);
 elBtnRun.addEventListener('click', handleRun);
 elBtnRefreshPreview.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', openSettings);
@@ -1523,6 +1835,8 @@ elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
 elBtnCloseSettings.addEventListener('click', closeSettings);
 elBtnSaveSettings.addEventListener('click', saveSettingsFromModal);
 elBtnCancelSettings.addEventListener('click', closeSettings);
+elChatModelSelect.addEventListener('change', saveChatModelSelection);
+elGenerationModelSelect.addEventListener('change', saveGenerationModelSelection);
 elSettingsModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elSettingsModal) {
     closeSettings();
@@ -1688,6 +2002,9 @@ window.addEventListener('hashchange', () => {
 
 async function init(): Promise<void> {
   applyAppearanceSettings();
+  await refreshAvailableModels();
+  setGenerationBusy(false);
+  setGenerationStatus('Idle.');
 
   const apps =
     await ensureAppsHaveUniqueUuids(

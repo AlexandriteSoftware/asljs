@@ -12,13 +12,39 @@ import {
 const OPENAI_RESPONSES_URL =
   'https://api.openai.com/v1/responses';
 
-export type AiModel = 'gpt-5.3-codex' | 'gpt-5.4';
+export type AiModel = string;
+export type AvailableModelResult =
+  { id: string;
+    created?: number; };
 
 export const DEFAULT_MODEL: AiModel = 'gpt-5.3-codex';
 export const DEFAULT_MAX_TOOL_STEPS = 20;
 export const DEFAULT_SYSTEM_PROMPT = 'You are an expert ASLJS app generator.';
+export const TOOL_STEP_LIMIT_EXCEEDED_MESSAGE =
+  'AI exceeded maximum tool steps without completing.';
+export const GENERATION_STOPPED_MESSAGE =
+  'Generation stopped by the user.';
 
 const TOOL_STEP_EXTENSION = 12;
+
+export class ToolStepLimitExceededError extends Error {
+  readonly stepsCompleted: number;
+  readonly stepLimit: number;
+
+  constructor(info: ToolStepLimitInfo) {
+    super(TOOL_STEP_LIMIT_EXCEEDED_MESSAGE);
+    this.name = 'ToolStepLimitExceededError';
+    this.stepsCompleted = info.stepsCompleted;
+    this.stepLimit = info.stepLimit;
+  }
+}
+
+export class GenerationStoppedError extends Error {
+  constructor() {
+    super(GENERATION_STOPPED_MESSAGE);
+    this.name = 'GenerationStoppedError';
+  }
+}
 
 type AgentRunResult =
   { summary: string; };
@@ -31,6 +57,7 @@ type GenerateAppOptions =
   { initialToolStepLimit?: number;
     onToolStepLimit?: (info: ToolStepLimitInfo) => Promise<boolean>;
     onProgress?: (message: string) => void | Promise<void>;
+    shouldStop?: () => boolean;
     systemPrompt?: string;
     transport?: AiResponsesTransport; };
 
@@ -62,6 +89,11 @@ export type AiResponsesTransport =
   { createResponse: (
         request: TransportRequest,
       ) => Promise<ResponsesResult>; };
+
+export type AiModelsTransport =
+  { listModels: (
+        apiKey: string,
+      ) => Promise<AvailableModelResult[]>; };
 
 const DEFAULT_TRANSPORT: AiResponsesTransport =
   { createResponse: async request => {
@@ -96,6 +128,62 @@ const DEFAULT_TRANSPORT: AiResponsesTransport =
       return response.json() as Promise<ResponsesResult>;
     } };
 
+const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
+  { listModels: async apiKey => {
+      const response = await fetch(
+        OPENAI_RESPONSES_URL.replace('/responses', '/models'),
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        });
+
+      if (!response.ok) {
+        const errorPayload =
+          await response.json()
+            .catch(() => ({} as Record<string, unknown>));
+
+        const message =
+          getOpenAiErrorMessage(errorPayload)
+          ?? `OpenAI API error: ${response.status}`;
+
+        throw new Error(message);
+      }
+
+      const payload =
+        await response.json() as { data?: unknown; };
+
+      if (!Array.isArray(payload.data)) {
+        throw new Error('OpenAI returned an unexpected model list format.');
+      }
+
+      return payload.data
+        .filter((value): value is { id?: unknown; created?: unknown; } =>
+          typeof value === 'object' && value !== null)
+        .map(value => ({
+          id: typeof value.id === 'string'
+            ? value.id
+            : '',
+          created: typeof value.created === 'number'
+            ? value.created
+            : 0,
+        }))
+        .filter(value => value.id !== '');
+    } };
+
+export async function listAvailableModels(
+    apiKey: string,
+    transport: AiModelsTransport = DEFAULT_MODELS_TRANSPORT,
+  ): Promise<AvailableModelResult[]>
+{
+  if (apiKey.trim() === '') {
+    return [];
+  }
+
+  return transport.listModels(apiKey);
+}
+
 export async function generateApp(
     prompt: string,
     apiKey: string,
@@ -112,6 +200,10 @@ export async function generateApp(
   let step = 0;
 
   while (true) {
+    if (options?.shouldStop?.() === true) {
+      throw new GenerationStoppedError();
+    }
+
     await reportProgress(
       options,
       `Step ${step + 1}: requesting assistant response...`);
@@ -124,8 +216,10 @@ export async function generateApp(
         ?? false;
 
       if (!shouldContinue) {
-        throw new Error(
-          'AI exceeded maximum tool steps without completing.');
+        throw new ToolStepLimitExceededError({
+          stepsCompleted: step,
+          stepLimit,
+        });
       }
 
       stepLimit += TOOL_STEP_EXTENSION;
@@ -169,6 +263,10 @@ export async function generateApp(
 
     const toolOutputs: ResponseFunctionCallOutput[] = [];
     for (const toolCall of toolCalls) {
+      if (options?.shouldStop?.() === true) {
+        throw new GenerationStoppedError();
+      }
+
       await reportProgress(
         options,
         `Step ${step + 1}: running ${readFunctionName(toolCall)}...`);

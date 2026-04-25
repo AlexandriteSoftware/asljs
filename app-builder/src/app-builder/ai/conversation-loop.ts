@@ -1,16 +1,19 @@
 import {
   type ChatMessage,
 } from '../types.js';
+import {
+  hasOnlyWorkflowFiles,
+} from '../workflow-files.js';
 
 export const README_SNAPSHOT_FILE = '.README.md';
 const MAX_TRANSCRIPT_MESSAGES = 10;
 
 export function getConversationKickoffMessage(fileNames: string[]): string {
-  if (fileNames.length === 0) {
+  if (hasOnlyWorkflowFiles(fileNames)) {
     return 'What would you like to create? You can describe it in simple words, and I will help shape the plan first.';
   }
 
-  return 'What would you like to add or change? You can also edit README.md directly, and I will use it as the plan.';
+  return 'What would you like to add or change? I will keep README.md as the current app state and put new ideas into DEVELOP.md.';
 }
 
 export function buildConversationPrompt(messages: ChatMessage[]): string {

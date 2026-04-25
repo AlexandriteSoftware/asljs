@@ -14,6 +14,8 @@ export type AppBuilderState =
     activeFileName: string | null;
     chatMessages: ChatMessage[];
     generating: boolean;
+    generationBusy: boolean;
+    generationStatus: string;
     error: string | null; };
 
 export const state =
@@ -24,4 +26,6 @@ export const state =
       activeFileName: null,
       chatMessages: [],
       generating: false,
+      generationBusy: false,
+      generationStatus: '',
       error: null });

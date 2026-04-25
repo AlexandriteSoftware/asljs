@@ -21,8 +21,17 @@ test(
   'getConversationKickoffMessage asks to add or change when files exist',
   () => {
     assert.equal(
-      getConversationKickoffMessage([ 'README.md' ]),
-      'What would you like to add or change? You can also edit README.md directly, and I will use it as the plan.',
+      getConversationKickoffMessage([ 'README.md', 'app.js' ]),
+      'What would you like to add or change? I will keep README.md as the current app state and put new ideas into DEVELOP.md.',
+    );
+  });
+
+test(
+  'getConversationKickoffMessage still asks to create for workflow-only files',
+  () => {
+    assert.equal(
+      getConversationKickoffMessage([ 'README.md', 'DEVELOP.md', 'CHANGE.md' ]),
+      'What would you like to create? You can describe it in simple words, and I will help shape the plan first.',
     );
   });
 

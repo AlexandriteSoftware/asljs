@@ -46,12 +46,13 @@ function makeToolsStub(
     evalInApp: async () => null,
     assertInApp: async () => true,
     runAppTests: async () => ({
-      path: 'app.tests.json',
+      path: 'app.tests.js',
       total: 0,
       passed: 0,
       failed: 0,
       results: [],
     }),
+    startGeneration: async () => 'queued',
     getAppDiagnostics: async () => null,
     runAppAndCollectDiagnostics: async () => null,
     ...overrides,
@@ -128,6 +129,31 @@ test(
         'replaceAll',
         'replacement',
         'search' ]);
+  });
+
+test(
+  'executeToolCall handles startGeneration',
+  async () => {
+    let called = false;
+
+    const output =
+      await executeToolCall(
+        {
+          type: 'function_call',
+          name: 'startGeneration',
+          arguments: '{}',
+          call_id: 'c_1',
+        },
+        makeToolsStub({
+          startGeneration: async () => {
+            called = true;
+            return 'queued';
+          },
+        }),
+      );
+
+    assert.equal(called, true);
+    assert.equal(output, '{"ok":true,"value":"queued"}');
   });
 
 test(
@@ -426,21 +452,33 @@ test(
   });
 
 test(
-  'createAppRuntimeTools runAppTests restarts app before each test and reports failures',
+  'createAppRuntimeTools runAppTests executes JavaScript test modules and reports failures',
   async () => {
     const calls: string[] = [];
-    let currentTest = '';
 
     const tools =
       createAppRuntimeTools({
         getCurrentAppId: () => 'app-1',
         getFiles: () => [
           makeFile({
-            name: 'app.tests.json',
-            content: JSON.stringify([
-              { name: 'first', code: 'window.__testName = "first"; true;' },
-              { name: 'second', code: 'window.__testName = "second"; false;' },
-            ]),
+            name: 'app.tests.js',
+            content: `export default [
+              {
+                name: 'first',
+                async run({ evalInApp }) {
+                  const ok = await evalInApp('window.__testName = "first"; true;');
+                  if (!ok) {
+                    throw new Error('first should pass');
+                  }
+                },
+              },
+              {
+                name: 'second',
+                async run({ assertInApp }) {
+                  await assertInApp('window.__testName = "second"; false;', 'second should pass');
+                },
+              },
+            ];`,
           }),
         ],
         setFiles: () => undefined,
@@ -453,7 +491,7 @@ test(
           calls.push('run');
         },
         evaluateInApp: async code => {
-          currentTest = code.includes('"second"') ? 'second' : 'first';
+          const currentTest = code.includes('"second"') ? 'second' : 'first';
           calls.push(`eval:${currentTest}`);
           return currentTest === 'first';
         },
@@ -472,8 +510,42 @@ test(
     assert.equal(result.failed, 1);
     assert.deepEqual(result.results, [
       { name: 'first', ok: true },
-      { name: 'second', ok: false, error: 'Test returned false.' },
+      { name: 'second', ok: false, error: 'second should pass' },
     ]);
+  });
+
+test(
+  'createAppRuntimeTools runAppTests still supports legacy JSON suites',
+  async () => {
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => [
+          makeFile({
+            name: 'app.tests.json',
+            content: JSON.stringify([
+              { name: 'legacy', code: 'true;' },
+            ]),
+          }),
+        ],
+        setFiles: () => undefined,
+        getActiveFileName: () => null,
+        setActiveFileName: () => undefined,
+        createFileId: () => 'unused',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => undefined,
+        evaluateInApp: async () => true,
+        getAppDiagnostics: async () => null,
+        showChoicePrompt: () => undefined,
+        wait: async () => undefined,
+      });
+
+    const result = await tools.runAppTests('app.tests.json');
+
+    assert.equal(result.path, 'app.tests.json');
+    assert.equal(result.passed, 1);
+    assert.equal(result.failed, 0);
   });
 
 test(
@@ -587,7 +659,7 @@ test(
   });
 
 test(
-  'createAppRuntimeTools setFileContent does not activate hidden file names',
+  'createAppRuntimeTools setFileContent activates dotfiles like any other file',
   async () => {
     let files: AiToolFileRecord[] = [];
     let activeFileName: string | null = 'README.md';
@@ -617,7 +689,7 @@ test(
 
     assert.equal(files.length, 1);
     assert.equal(files[0].name, '.README.md');
-    assert.equal(activeFileName, 'README.md');
+    assert.equal(activeFileName, '.README.md');
   });
 
 test(

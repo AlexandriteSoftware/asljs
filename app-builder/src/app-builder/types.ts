@@ -19,7 +19,8 @@ export type FileRecord =
 export type Settings =
   {
     apiKey?: string;
-    model?: 'gpt-5.3-codex' | 'gpt-5.4';
+    chatModel?: string;
+    generationModel?: string;
     maxToolSteps?: number;
     theme?: 'dark' | 'light';
     fontSize?: number;

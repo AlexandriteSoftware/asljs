@@ -1,0 +1,70 @@
+import {
+  type AiTools,
+} from './ai-tools.js';
+
+type ChatLaneOptions =
+  { developFileName: string;
+    startGeneration: () => Promise<string>; };
+
+export function createChatLaneTools(
+    baseTools: AiTools,
+    options: ChatLaneOptions,
+  ): AiTools
+{
+  const normalizedDevelopFileName =
+    normalizePath(options.developFileName);
+
+  function assertDevelopOnly(path: string): void {
+    if (normalizePath(path) !== normalizedDevelopFileName) {
+      throw new Error(
+        'The chat lane may only edit DEVELOP.md. Ask the generation lane to implement runtime files.',
+      );
+    }
+  }
+
+  return {
+    ...baseTools,
+    setFilesContent: async files => {
+      for (const file of files) {
+        assertDevelopOnly(file.path);
+      }
+
+      await baseTools.setFilesContent(files);
+    },
+    setFileData: async () => {
+      throw new Error('The chat lane cannot create binary assets. Use a direct file command or the generation lane.');
+    },
+    setFileContent: async (path, content) => {
+      assertDevelopOnly(path);
+      await baseTools.setFileContent(path, content);
+    },
+    deleteFile: async path => {
+      assertDevelopOnly(path);
+      await baseTools.deleteFile(path);
+    },
+    replaceFilePart: async (path, search, replacement, replaceAll) => {
+      assertDevelopOnly(path);
+      await baseTools.replaceFilePart(path, search, replacement, replaceAll);
+    },
+    evalInApp: async () => {
+      throw new Error('The chat lane cannot run the app. Start generation first.');
+    },
+    assertInApp: async () => {
+      throw new Error('The chat lane cannot assert runtime behavior. Start generation first.');
+    },
+    runAppTests: async () => {
+      throw new Error('The chat lane cannot run app tests. Start generation first.');
+    },
+    getAppDiagnostics: async () => {
+      throw new Error('The chat lane cannot inspect runtime diagnostics. Start generation first.');
+    },
+    runAppAndCollectDiagnostics: async () => {
+      throw new Error('The chat lane cannot run the app. Start generation first.');
+    },
+    startGeneration: options.startGeneration,
+  };
+}
+
+function normalizePath(path: string): string {
+  return path.trim().replace(/\\/g, '/').toLowerCase();
+}

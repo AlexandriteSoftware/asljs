@@ -53,7 +53,7 @@ test(
   });
 
 test(
-  'renderFileSelectUi hides dotfiles and falls back to first visible file',
+  'renderFileSelectUi includes dotfiles and keeps the active file when selected',
   () => {
     const dom = new JSDOM('<select id="files"></select>');
     const previousDocument = globalThis.document;
@@ -78,9 +78,9 @@ test(
       assert.equal(select.disabled, false);
       assert.deepEqual(
         Array.from(select.options).map(option => option.value),
-        [ 'README.md', 'app.js' ],
+        [ '.README.md', 'README.md', 'app.js' ],
       );
-      assert.equal(select.value, 'README.md');
+      assert.equal(select.value, '.README.md');
     } finally {
       globalThis.document = previousDocument;
     }

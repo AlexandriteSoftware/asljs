@@ -276,6 +276,17 @@ body {
   gap: 0.5rem;
 }
 
+.lane-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.lane-model-select {
+  flex: 1;
+  min-width: 0;
+}
+
 .chat-input {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -327,6 +338,18 @@ body {
 .chat-choice-option:focus {
   border-color: var(--accent);
   outline: none;
+}
+
+.generation-controls {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.generation-status {
+  min-height: 1.25rem;
 }
 
 /* ── Editor panel ───────────────────────────────────────── */

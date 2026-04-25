@@ -1,8 +1,11 @@
 const DEFAULT_SHARE_LIMIT_LABEL =
   'Use copy buttons to share as text or HTML.';
 
-export function shouldExcludeTestFileFromShare(fileName: string): boolean {
-  return /(?:^|\/)[^/]+\.test\.js$/i.test(fileName.trim());
+export function shouldExcludeNonApplicationFileFromShare(fileName: string): boolean {
+  const normalized = fileName.trim();
+
+  return /(?:^|\/)[^/]+\.test\.js$/i.test(normalized)
+    || /(?:^|\/)(DEVELOP|CHANGE|PLAN)\.md$/i.test(normalized);
 }
 
 export function buildShareStatusMessage(

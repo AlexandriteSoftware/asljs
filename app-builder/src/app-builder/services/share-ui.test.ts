@@ -4,15 +4,19 @@ import assert
   from 'node:assert/strict';
 import {
   buildShareStatusMessage,
-  shouldExcludeTestFileFromShare,
+  shouldExcludeNonApplicationFileFromShare,
 } from './share-ui.js';
 
 test(
-  'shouldExcludeTestFileFromShare matches js test files',
+  'shouldExcludeNonApplicationFileFromShare excludes tests and workflow artifacts',
   () => {
-    assert.equal(shouldExcludeTestFileFromShare('app.test.js'), true);
-    assert.equal(shouldExcludeTestFileFromShare('src/app.test.js'), true);
-    assert.equal(shouldExcludeTestFileFromShare('src/app.spec.js'), false);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('app.test.js'), true);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('src/app.test.js'), true);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('DEVELOP.md'), true);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('CHANGE.md'), true);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('PLAN.md'), true);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('README.md'), false);
+    assert.equal(shouldExcludeNonApplicationFileFromShare('src/app.spec.js'), false);
   });
 
 test(

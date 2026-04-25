@@ -108,7 +108,10 @@
               placeholder="Describe the app you want to build…"
               rows="3"
             ></textarea>
-            <button id="btn-generate" class="btn btn-primary btn-sm">Send</button>
+            <div class="lane-controls">
+              <select id="chat-model-select" class="form-input lane-model-select" title="Chat model"></select>
+              <button id="btn-generate" class="btn btn-primary btn-sm">Send</button>
+            </div>
           </div>
         </section>
 
@@ -144,6 +147,14 @@
             sandbox="allow-scripts allow-same-origin allow-forms"
             title="App preview"
           ></iframe>
+          <div class="generation-controls">
+            <div class="lane-controls">
+              <select id="generation-model-select" class="form-input lane-model-select" title="Generation model"></select>
+              <button id="btn-start-generation" class="btn btn-primary btn-sm">Generate</button>
+              <button id="btn-stop-generation" class="btn btn-ghost btn-sm">Stop</button>
+            </div>
+            <div id="generation-status" class="form-hint generation-status">Idle.</div>
+          </div>
         </section>
       </div>
     </div>
@@ -164,11 +175,11 @@
           class="form-input"
           placeholder="sk-…  (optional, stored locally)"
         />
-        <label class="form-label" for="model-select">Model</label>
-        <select id="model-select" class="form-input">
-          <option value="gpt-5.3-codex">GPT-5.3-Codex</option>
-          <option value="gpt-5.4">GPT-5.4</option>
-        </select>
+        <p class="form-hint">
+          Available models are loaded from OpenAI when the app starts. Choose
+          the chat model below the chat box and the generation model below the
+          preview panel.
+        </p>
         <label class="form-label" for="theme-select">Theme</label>
         <select id="theme-select" class="form-input">
           <option value="dark">Dark</option>
@@ -276,7 +287,7 @@
         </label>
         <label class="form-hint" style="display:block; margin-top:0.35rem;">
           <input id="share-exclude-tests-input" type="checkbox" />
-          Exclude test files (`*.test.js`) from the shared package
+          Only application files
         </label>
         <p id="share-link-status" class="form-hint"></p>
         <textarea
@@ -313,7 +324,7 @@
           This is the full instruction text sent to the AI (including generated sections from package docs and API exports).
         </p>
         <p class="form-hint" style="margin-bottom: 0.75rem;">
-          Tool hint: multi-file writes use <code>setFilesContent([{ path, content }])</code>. Implementation turns should also update <code>app.tests.json</code> when <code>README.md</code> requirements change.
+          Tool hint: multi-file writes use <code>setFilesContent([{ path, content }])</code>. Implementation turns should also update <code>app.tests.js</code> when <code>README.md</code> requirements change.
         </p>
         <textarea
           id="agent-instructions-text"

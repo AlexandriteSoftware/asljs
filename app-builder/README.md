@@ -73,10 +73,11 @@ straight to code on the first sentence.
 9. After a fix or implementation pass, the agent should ask whether it worked
    and either continue repairing or return to the add/change loop.
 
-The generated-app workflow also supports a maintained `app.tests.json` test
-suite so the agent can keep executable checks aligned with the README. When
-README requirements change intentionally, the implementation pass should update
-that test suite in the same loop before finishing.
+The generated-app workflow also supports a maintained `app.tests.js` test
+module so the agent can keep executable checks aligned with the README. Tests
+are normal JavaScript code, not JSON-encoded checks. When README requirements
+change intentionally, the implementation pass should update that test module in
+the same loop before finishing.
 
 Direct editing of `README.md` is part of this workflow. User edits to the
 README are treated as intentional design changes, not incidental text edits.

@@ -8,8 +8,11 @@ import {
 } from './ai-tools.js';
 import {
   generateApp,
+  listAvailableModels,
   type AiResponsesTransport,
+  type AiModelsTransport,
   DEFAULT_MODEL,
+  ToolStepLimitExceededError,
 } from './ai-repl.js';
 
 const TEST_TOOLS: AiTools =
@@ -29,12 +32,13 @@ const TEST_TOOLS: AiTools =
     evalInApp: async () => null,
     assertInApp: async () => true,
     runAppTests: async () => ({
-      path: 'app.tests.json',
+      path: 'app.tests.js',
       total: 0,
       passed: 0,
       failed: 0,
       results: [],
     }),
+    startGeneration: async () => 'queued',
     getAppDiagnostics: async () => null,
     runAppAndCollectDiagnostics: async () => null };
 
@@ -150,6 +154,37 @@ test(
   });
 
 test(
+  'generateApp throws a typed error when tool step continuation is declined',
+  async () => {
+    const transport: AiResponsesTransport =
+      { createResponse: async () => ({
+          id: 'resp-1',
+          output: [
+            {
+              type: 'function_call',
+              name: 'listFileset',
+              call_id: 'call-1',
+              arguments: '{}',
+            },
+          ],
+        }) };
+
+    await assert.rejects(
+      () => generateApp(
+        'Do work',
+        'test-key',
+        DEFAULT_MODEL,
+        TEST_TOOLS,
+        {
+          initialToolStepLimit: 0,
+          onToolStepLimit: async () => false,
+          transport,
+        }),
+      error => error instanceof ToolStepLimitExceededError,
+    );
+  });
+
+test(
   'generateApp extends tool step limit when approved',
   async () => {
     let onToolStepLimitCalls = 0;
@@ -196,4 +231,39 @@ test(
 
     assert.equal(result.summary, 'done');
     assert.equal(onToolStepLimitCalls, 1);
+  });
+
+test(
+  'listAvailableModels returns model ids from transport',
+  async () => {
+    const transport: AiModelsTransport = {
+      listModels: async apiKey => {
+        assert.equal(apiKey, 'test-key');
+        return [
+          { id: 'gpt-5-mini', created: 1 },
+          { id: 'gpt-5.4-codex', created: 2 },
+        ];
+      },
+    };
+
+    assert.deepEqual(
+      await listAvailableModels('test-key', transport),
+      [
+        { id: 'gpt-5-mini', created: 1 },
+        { id: 'gpt-5.4-codex', created: 2 },
+      ]);
+  });
+
+test(
+  'listAvailableModels returns empty list without api key',
+  async () => {
+    const transport: AiModelsTransport = {
+      listModels: async () => {
+        throw new Error('should not be called');
+      },
+    };
+
+    assert.deepEqual(
+      await listAvailableModels('', transport),
+      []);
   });

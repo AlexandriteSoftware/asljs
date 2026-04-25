@@ -24,8 +24,7 @@ export function renderFileSelectUi(
   ): void
 {
   const selectElement = options.selectElement;
-  const visibleFiles =
-    options.files.filter(file => !isHiddenFileName(file.name));
+  const visibleFiles = options.files;
 
   selectElement.replaceChildren();
 
@@ -89,8 +88,4 @@ export function renderFileContentUi(
     options.imagePreviewElement.removeAttribute('src');
     options.imagePreviewElement.alt = '';
   }
-}
-
-function isHiddenFileName(name: string): boolean {
-  return name.startsWith('.');
 }
