@@ -1,3 +1,8 @@
+import {
+  isImageMimeType,
+  readFileDataInfo,
+} from '../file-data.js';
+
 export type FileListItem =
   { name: string;
     content: string; };
@@ -9,6 +14,8 @@ export type RenderFileSelectUiOptions =
 
 export type RenderFileContentUiOptions =
   { textAreaElement: HTMLTextAreaElement;
+    imagePreviewElement: HTMLImageElement;
+    previewFallbackElement: HTMLElement;
     files: FileListItem[];
     activeFileName: string | null; };
 
@@ -55,8 +62,33 @@ export function renderFileContentUi(
   const file = options.files.find(
     item => item.name === options.activeFileName);
 
+  const fileData =
+    file === undefined
+      ? null
+      : readFileDataInfo(file.content);
+
+  const showImagePreview =
+    fileData !== null
+    && isImageMimeType(fileData.mimeType);
+
   options.textAreaElement.value = file?.content ?? '';
-  options.textAreaElement.disabled = file === undefined;
+  options.textAreaElement.disabled = file === undefined || showImagePreview;
+  options.textAreaElement.classList.toggle('hidden', showImagePreview);
+
+  options.imagePreviewElement.classList.toggle('hidden', !showImagePreview);
+  options.previewFallbackElement.classList.toggle('hidden', !showImagePreview);
+  options.previewFallbackElement.textContent =
+    showImagePreview
+      ? `${fileData?.mimeType ?? ''} preview`
+      : '';
+
+  if (showImagePreview) {
+    options.imagePreviewElement.src = fileData.dataUrl;
+    options.imagePreviewElement.alt = file?.name ?? 'Image preview';
+  } else {
+    options.imagePreviewElement.removeAttribute('src');
+    options.imagePreviewElement.alt = '';
+  }
 }
 
 function isHiddenFileName(name: string): boolean {

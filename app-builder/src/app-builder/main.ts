@@ -45,6 +45,8 @@ import {
   renderGeneratingButtonUi,
   setChatProgressUi,
   appendChatMessageUi,
+  renderChatChoicesUi,
+  clearChatChoicesUi,
 } from './ui/chat-ui.js';
 import {
   togglePanelUi,
@@ -70,6 +72,10 @@ import {
   minifySharePayload,
   type SharePayloadMinifyLoader,
 } from './services/share-payload-minify.js';
+import {
+  buildShareStatusMessage,
+  shouldExcludeTestFileFromShare,
+} from './services/share-ui.js';
 import * as esbuildWasm
   from 'esbuild-wasm';
 import esbuildWasmUrl
@@ -106,8 +112,12 @@ const elPanelEditor = mustElement<HTMLElement>('panel-editor');
 const elAppSelect = mustElement<HTMLSelectElement>('app-select');
 const elFileSelect = mustElement<HTMLSelectElement>('file-select');
 const elFileContent = mustElement<HTMLTextAreaElement>('file-content');
+const elFilePreviewPanel = mustElement<HTMLElement>('file-preview-panel');
+const elFilePreviewMeta = mustElement<HTMLElement>('file-preview-meta');
+const elFileImagePreview = mustElement<HTMLImageElement>('file-image-preview');
 const elChatMessages = mustElement<HTMLElement>('chat-messages');
 const elChatProgress = mustElement<HTMLElement>('chat-progress');
+const elChatChoices = mustElement<HTMLElement>('chat-choices');
 const elChatInput = mustElement<HTMLTextAreaElement>('chat-input');
 const elBtnGenerate = mustElement<HTMLButtonElement>('btn-generate');
 const elBtnRun = mustElement<HTMLButtonElement>('btn-run');
@@ -170,6 +180,8 @@ const elBtnShareCopyHtml =
   mustElement<HTMLButtonElement>('btn-share-copy-html');
 const elShareMinifiedInput =
   mustElement<HTMLInputElement>('share-minified-input');
+const elShareExcludeTestsInput =
+  mustElement<HTMLInputElement>('share-exclude-tests-input');
 const elShareLinkStatus = mustElement<HTMLElement>('share-link-status');
 const elShareLinkOutput = mustElement<HTMLTextAreaElement>('share-link-output');
 
@@ -193,6 +205,7 @@ const APP_ACTION_NEW = '__new__';
 const APP_ACTION_IMPORT = '__import__';
 const IMPORT_HASH_PREFIX = '#I!';
 const SHARE_MAX_URL_LENGTH = 5000;
+const SHARE_PRACTICAL_URL_LENGTH = 4000;
 const SHARE_PREPARE_TIMEOUT_MS = 10000;
 const SHARE_BASE_URL =
   'https://alexandritesoftware.github.io/asljs/app-builder';
@@ -377,7 +390,24 @@ async function regenerateCurrentAppUuidForFileChange(): Promise<void> {
 declare global {
   interface Window {
     listFileset: () => Promise<string[]>;
+    listFilesByMask: (mask: string, maxFiles?: number) => Promise<string[]>;
     readFile: (path: string) => Promise<string>;
+    readFiles: (paths: string[], maxCharsPerFile?: number) => Promise<Record<string, string>>;
+    readFilesByMask: (
+      mask: string,
+      maxFiles?: number,
+      maxCharsPerFile?: number,
+    ) => Promise<Record<string, string>>;
+    readFileData: (path: string) => Promise<
+      { mimeType: string;
+        base64: string;
+        dataUrl: string; } | null>;
+    setFilesContent: (filesByPath: Record<string, string>) => Promise<void>;
+    setFileData: (
+      path: string,
+      mimeType: string,
+      base64: string,
+    ) => Promise<void>;
     setFileContent: (path: string, content: string) => Promise<void>;
     replaceFilePart: (
       path: string,
@@ -386,7 +416,16 @@ declare global {
       replaceAll?: boolean,
     ) => Promise<void>;
     deleteFile: (path: string) => Promise<void>;
+    grep: (
+      mask: string,
+      pattern: string,
+      flags?: string,
+      maxMatches?: number,
+    ) => Promise<Array<{ path: string; line: number; text: string }>>;
+    choose: (question: string, options: string[]) => Promise<void>;
     evalInApp: (code: string) => Promise<unknown>;
+    assertInApp: (code: string, message?: string) => Promise<unknown>;
+    runAppTests: (path?: string) => Promise<unknown>;
     getAppDiagnostics: () => Promise<unknown>;
     runAppAndCollectDiagnostics: () => Promise<unknown>;
   }
@@ -415,6 +454,7 @@ const appRuntimeTools =
     runApp: handleRun,
     evaluateInApp: code => evaluateInPreview(elPreviewFrame, code),
     getAppDiagnostics: () => getPreviewDiagnostics(elPreviewFrame),
+    showChoicePrompt: showChoicePrompt,
     wait: milliseconds =>
       new Promise(resolve => {
         window.setTimeout(resolve, milliseconds);
@@ -530,9 +570,16 @@ function renderFileSelect(): void {
 function renderFileContent(): void {
   renderFileContentUi({
     textAreaElement: elFileContent,
+    imagePreviewElement: elFileImagePreview,
+    previewFallbackElement: elFilePreviewMeta,
     files: state.files,
     activeFileName: state.activeFileName,
   });
+
+  elFilePreviewPanel.classList.toggle(
+    'hidden',
+    elFileImagePreview.classList.contains('hidden'),
+  );
 }
 
 function setGenerating(value: boolean): void {
@@ -549,9 +596,26 @@ function appendChatMessage(role: 'user' | 'assistant', text: string): void {
   appendChatMessageUi(elChatMessages, role, text);
 }
 
+function clearChoicePrompt(): void {
+  clearChatChoicesUi(elChatChoices);
+}
+
+function showChoicePrompt(question: string, options: string[]): void {
+  renderChatChoicesUi(
+    elChatChoices,
+    question,
+    options,
+    value => {
+      elChatInput.value = value;
+      void handleGenerate();
+    },
+  );
+}
+
 function resetChatConversation(): void {
   state.chatMessages = [];
   elChatMessages.replaceChildren();
+  clearChoicePrompt();
 }
 
 function appendConversationKickoff(fileNames: string[]): void {
@@ -776,6 +840,7 @@ async function handleGenerate(): Promise<void> {
     return;
   }
 
+  clearChoicePrompt();
   elChatInput.value = '';
   appendChatMessage('user', prompt);
   setGenerating(true);
@@ -867,8 +932,18 @@ function downloadExportPayload(payload: ExportPayload): void {
 }
 
 async function buildSharePayload(): Promise<ExportPayload> {
-  const payload =
+  let payload =
     await buildExportPayload();
+
+  if (elShareExcludeTestsInput.checked) {
+    payload = {
+      ...payload,
+      files: Object.fromEntries(
+        Object.entries(payload.files)
+          .filter(([fileName]) => !shouldExcludeTestFileFromShare(fileName)),
+      ),
+    };
+  }
 
   if (!elShareMinifiedInput.checked) {
     return payload;
@@ -1173,7 +1248,11 @@ async function prepareShareLinkUi(): Promise<void> {
     if (linkResult.exceedsMaxUrlLength) {
       elShareLinkOutput.value = linkResult.url;
       elShareLinkStatus.textContent =
-        'Warning: link length exceeds 5000 characters and may not work in all apps, but you can still copy and share it.';
+        buildShareStatusMessage(
+          linkResult.url.length,
+          SHARE_PRACTICAL_URL_LENGTH,
+          SHARE_MAX_URL_LENGTH,
+        );
       elBtnShareLink.disabled = false;
       elBtnShareCopyText.disabled = false;
       elBtnShareCopyHtml.disabled = false;
@@ -1182,7 +1261,11 @@ async function prepareShareLinkUi(): Promise<void> {
 
     elShareLinkOutput.value = linkResult.url;
     elShareLinkStatus.textContent =
-      'Link is ready. Use copy buttons to share as text or HTML.';
+      buildShareStatusMessage(
+        linkResult.url.length,
+        SHARE_PRACTICAL_URL_LENGTH,
+        SHARE_MAX_URL_LENGTH,
+      );
     elBtnShareLink.disabled = false;
     elBtnShareCopyText.disabled = false;
     elBtnShareCopyHtml.disabled = false;
@@ -1472,6 +1555,9 @@ elBtnShareCopyHtml.addEventListener('click', () => {
 elShareMinifiedInput.addEventListener('change', () => {
   void prepareShareLinkUi();
 });
+elShareExcludeTestsInput.addEventListener('change', () => {
+  void prepareShareLinkUi();
+});
 elShareModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elShareModal) {
     closeShareModal();
@@ -1576,11 +1662,21 @@ elImportFile.addEventListener('change', () => {
 });
 
 window.listFileset = appRuntimeTools.listFileset;
+window.listFilesByMask = appRuntimeTools.listFilesByMask;
 window.readFile = appRuntimeTools.readFile;
+window.readFiles = appRuntimeTools.readFiles;
+window.readFilesByMask = appRuntimeTools.readFilesByMask;
+window.readFileData = appRuntimeTools.readFileData;
+window.setFilesContent = appRuntimeTools.setFilesContent;
+window.setFileData = appRuntimeTools.setFileData;
 window.setFileContent = appRuntimeTools.setFileContent;
 window.replaceFilePart = appRuntimeTools.replaceFilePart;
 window.deleteFile = appRuntimeTools.deleteFile;
+window.grep = appRuntimeTools.grep;
+window.choose = appRuntimeTools.choose;
 window.evalInApp = appRuntimeTools.evalInApp;
+window.assertInApp = appRuntimeTools.assertInApp;
+window.runAppTests = appRuntimeTools.runAppTests;
 window.getAppDiagnostics = appRuntimeTools.getAppDiagnostics;
 window.runAppAndCollectDiagnostics = appRuntimeTools.runAppAndCollectDiagnostics;
 

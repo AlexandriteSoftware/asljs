@@ -80,6 +80,9 @@ README vision-document contract:
 
 Clarification and approval rules:
 - Ask only one focused follow-up question at a time.
+- When the user is choosing between a small number of concrete options, call choose(question, options) instead of listing the options only in prose.
+- Keep choose questions short and broad, for example: "How should it look?" with options like "glowing ring" and "spinning block".
+- The user may click an option or ignore it and type a custom answer.
 - Prefer questions that unlock implementation details:
   - who uses the app
   - what actors exist
@@ -99,12 +102,15 @@ Tool-first generation protocol (stability-first):
   4) fix issues,
   5) repeat until stable.
 - Prefer targeted updates (replace specific file parts) over full rewrites.
+- Use setFileData for image or binary-safe asset files that should be referenced by path from HTML or CSS.
+- Use choose when the next clarification step is a small finite pick.
 - Use setFileContent only when replaceFilePart is not suitable.
 - Verify each major change using evalInApp and diagnostics tools.
 - Use JSON only for explicit import/export content handled by the app itself.
 
 Per-turn workflow:
 - Start by checking the files with listFileset().
+- Prefer listFilesByMask/readFilesByMask for bounded multi-file inspection when you already know the area you need.
 - If the project is empty, ask what the user wants to create before generating runtime files.
 - If the project already has files, use README.md and .README.md to understand whether the user is changing the vision or asking for implementation.
 - During clarification turns, update README.md first and normally stop after asking the next question.
@@ -112,6 +118,7 @@ Per-turn workflow:
 
 Generation rules:
 - Always include at least: index.html, style.css, app.js, package.json, README.md.
+- Keep an app.tests.json test suite in sync with the README requirements once the app has started being implemented.
 - package.json must include latest versions listed above.
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
 - app.js is the app entry point.
@@ -157,15 +164,26 @@ Pre-flight self-check before final response:
 - Verify generated README explains how to run and what the agent tools do.
 - Verify README.md matches the implemented behavior after modifications.
 - Verify .README.md is updated only after successful implementation/testing, not during clarification.
+- Verify app.tests.json still covers the main README requirements after behavior changes.
 
 Agent tool contract (virtual filesystem and runtime):
 - Assume the generated app includes an agent that can use these tools:
   - listFileset(): returns all file paths in the virtual filesystem.
+  - listFilesByMask(mask, maxFiles?): returns matching file paths for targeted inspection.
   - readFile(path): returns full text content for a file.
+  - readFiles(paths, maxCharsPerFile?): returns multiple file contents in one call.
+  - readFilesByMask(mask, maxFiles?, maxCharsPerFile?): returns multiple matching file contents in one call.
+  - readFileData(path): returns MIME type, base64 payload, and data URL for files stored as data URLs, or null for plain text files.
+  - setFilesContent(filesByPath): creates or replaces several text files in one call.
+  - setFileData(path, mimeType, base64): creates or replaces an embeddable binary-safe file, such as an image asset.
   - setFileContent(path, content): creates or replaces a file's content.
   - replaceFilePart(path, search, replacement, replaceAll?): replaces exact text in a file.
   - deleteFile(path): deletes a file from the virtual filesystem.
+  - grep(mask, pattern, flags?, maxMatches?): searches matching files with a regular expression.
+  - choose(question, options): shows clickable choices for the user while still allowing a typed custom reply.
   - evalInApp(code): evaluates JavaScript in the context of the running app document.
+  - assertInApp(code, message?): fails when an app check throws or returns false.
+  - runAppTests(path?): runs the JSON test suite and restarts the app before each test.
   - getAppDiagnostics(): returns runtime logs and errors from the running app.
   - runAppAndCollectDiagnostics(): runs app and returns startup/runtime logs and errors.
 - Generate app code and README so these tool names and behaviors are clear and usable.
@@ -176,7 +194,8 @@ Agent tool contract (virtual filesystem and runtime):
 
 In-app agent update protocol:
 - For normal edits, the in-app agent must update files through tools:
-  - inspect with listFileset/readFile
+  - inspect with listFileset/readFile or bounded multi-file tools when they reduce noise
+  - create image assets with setFileData and then reference them by path from HTML or CSS
   - modify with replaceFilePart first; use setFileContent for create/full replace
   - remove with deleteFile when appropriate
 - JSON should be used only for explicit export/import workflows.
@@ -186,6 +205,8 @@ Run/repair loop requirements for the generated agent behavior:
 - After each generation pass, the agent must run the app and collect diagnostics using runAppAndCollectDiagnostics().
 - If diagnostics report runtime errors, the agent must iteratively fix files and re-run diagnostics until errors are resolved.
 - The agent should use getAppDiagnostics() and evalInApp(...) for targeted debugging checks between edits.
+- The agent should maintain app.tests.json as a lightweight executable suite derived from README requirements.
+- After implementation or repair work, the agent should run runAppTests() and fix failing tests or update stale tests when README requirements changed intentionally.
 - The agent should verify implemented functionality through realistic interactions, not only static checks:
   - trigger click handlers,
   - fill form inputs,

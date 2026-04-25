@@ -8,6 +8,8 @@ import {
   renderGeneratingButtonUi,
   setChatProgressUi,
   appendChatMessageUi,
+  renderChatChoicesUi,
+  clearChatChoicesUi,
 } from './chat-ui.js';
 
 test(
@@ -35,6 +37,44 @@ test(
       assert.equal(messages.children.length, 1);
       assert.match(messages.textContent ?? '', /Assistant/);
       assert.match(messages.textContent ?? '', /Done\./);
+    } finally {
+      globalThis.document = previousDocument;
+    }
+  });
+
+test(
+  'chat choice UI renders options and clears',
+  () => {
+    const dom = new JSDOM('<div id="choices" class="hidden"></div>');
+    const previousDocument = globalThis.document;
+    globalThis.document = dom.window.document;
+
+    const document = dom.window.document;
+    const choices = document.getElementById('choices') as HTMLElement;
+    const seen: string[] = [];
+
+    try {
+      renderChatChoicesUi(
+        choices,
+        'How should it look?',
+        [ 'glowing ring', 'spinning block' ],
+        value => {
+          seen.push(value);
+        },
+      );
+
+      const buttons = Array.from(choices.querySelectorAll('button'));
+
+      assert.equal(choices.classList.contains('hidden'), false);
+      assert.match(choices.textContent ?? '', /How should it look\?/);
+      assert.equal(buttons.length, 2);
+
+      (buttons[0] as HTMLButtonElement).click();
+      assert.deepEqual(seen, [ 'glowing ring' ]);
+
+      clearChatChoicesUi(choices);
+      assert.equal(choices.classList.contains('hidden'), true);
+      assert.equal(choices.children.length, 0);
     } finally {
       globalThis.document = previousDocument;
     }

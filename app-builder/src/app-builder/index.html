@@ -109,6 +109,7 @@
             ></textarea>
             <button id="btn-generate" class="btn btn-primary btn-sm">Send</button>
           </div>
+          <div id="chat-choices" class="chat-choices hidden"></div>
         </section>
 
         <!-- File editor panel -->
@@ -118,6 +119,10 @@
             <select id="file-select" class="file-select" title="Select file"></select>
           </div>
           <div id="editor-layout" class="editor-layout">
+            <div id="file-preview-panel" class="file-preview-panel hidden">
+              <p id="file-preview-meta" class="form-hint"></p>
+              <img id="file-image-preview" class="file-image-preview" alt="" />
+            </div>
             <textarea
               id="file-content"
               class="file-editor"
@@ -268,6 +273,10 @@
         <label class="form-hint" style="display:block; margin-top:0.6rem;">
           <input id="share-minified-input" type="checkbox" />
           Share minified (esbuild JS/CSS + compact HTML/CSS)
+        </label>
+        <label class="form-hint" style="display:block; margin-top:0.35rem;">
+          <input id="share-exclude-tests-input" type="checkbox" />
+          Exclude test files (`*.test.js`) from the shared package
         </label>
         <p id="share-link-status" class="form-hint"></p>
         <textarea

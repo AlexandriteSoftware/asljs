@@ -64,11 +64,17 @@ straight to code on the first sentence.
    implemented.
 6. Once the idea is clear enough, the agent should ask whether it should run
    the implementation changes.
-7. After approval, the agent should update the app code from `README.md`, test
+7. When the user is choosing between a few concrete options, the host can show
+   clickable choice chips under the chat input while still allowing a typed
+   custom reply.
+8. After approval, the agent should update the app code from `README.md`, test
    the result through runtime interaction, then refresh `.README.md`
    only after the implementation is complete.
-8. After a fix or implementation pass, the agent should ask whether it worked
+9. After a fix or implementation pass, the agent should ask whether it worked
    and either continue repairing or return to the add/change loop.
+
+The generated-app workflow also supports a maintained `app.tests.json` test
+suite so the agent can keep executable checks aligned with the README.
 
 Direct editing of `README.md` is part of this workflow. User edits to the
 README are treated as intentional design changes, not incidental text edits.

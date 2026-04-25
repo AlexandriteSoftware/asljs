@@ -14,11 +14,27 @@ import {
 
 const TEST_TOOLS: AiTools =
   { listFileset: async () => [ 'index.html' ],
+    listFilesByMask: async () => [ 'index.html' ],
     readFile: async () => 'content',
+    readFiles: async () => ({ 'index.html': 'content' }),
+    readFilesByMask: async () => ({ 'index.html': 'content' }),
+    readFileData: async () => null,
+    setFilesContent: async () => undefined,
+    setFileData: async () => undefined,
     setFileContent: async () => undefined,
     deleteFile: async () => undefined,
     replaceFilePart: async () => undefined,
+    grep: async () => [],
+    choose: async () => undefined,
     evalInApp: async () => null,
+    assertInApp: async () => true,
+    runAppTests: async () => ({
+      path: 'app.tests.json',
+      total: 0,
+      passed: 0,
+      failed: 0,
+      results: [],
+    }),
     getAppDiagnostics: async () => null,
     runAppAndCollectDiagnostics: async () => null };
 

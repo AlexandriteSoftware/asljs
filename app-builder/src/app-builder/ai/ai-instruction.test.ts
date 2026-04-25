@@ -34,6 +34,10 @@ test(
 
     assert.match(source, /listFileset\(\)/);
     assert.match(source, /readFile\(path\)/);
+    assert.match(source, /choose\(question, options\)/);
+    assert.match(source, /readFileData\(path\)/);
+    assert.match(source, /setFileData\(path, mimeType, base64\)/);
+    assert.match(source, /runAppTests\(path\?\)/);
     assert.match(source, /setFileContent\(path, content\)/);
     assert.match(source, /replaceFilePart\(path, search, replacement, replaceAll\?\)/);
     assert.match(source, /deleteFile\(path\)/);

@@ -251,21 +251,33 @@ export function renderPreview(
   let html =
     htmlFile.content;
 
+  const assetUrls =
+    createVirtualAssetUrlMap(files);
+
   const cssFile =
     files.find(file => file.name === 'style.css')
     ?? files.find(file => file.name.endsWith('.css'))
     ?? null;
 
+  const resolvedCssContent =
+    cssFile === null
+      ? null
+      : replaceCssAssetUrls(
+          cssFile.content,
+          cssFile.name,
+          assetUrls,
+        );
+
   if (cssFile !== null) {
     html =
       html.replace(
         /<link[^>]+href=["']style\.css["'][^>]*>/gi,
-        `<style>${cssFile.content}</style>`);
+        `<style>${resolvedCssContent}</style>`);
 
     html =
       html.replace(
         /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
-        `<style>${cssFile.content}</style>`);
+        `<style>${resolvedCssContent}</style>`);
   }
 
   for (const file of files) {
@@ -298,12 +310,14 @@ export function renderPreview(
         });
   }
 
-        html = injectPackageImportMap(html, files);
+          html = replaceHtmlAssetReferences(html, htmlFile.name, assetUrls);
 
-        html = injectHostContext(html, options);
+          html = injectPackageImportMap(html, files);
+
+          html = injectHostContext(html, options);
 
   html = injectEvalBridge(html);
-        frame.srcdoc = html;
+          frame.srcdoc = html;
 }
 
 export async function evaluateInPreview(
@@ -540,4 +554,142 @@ function injectHostContext(
   }
 
   return `${script}\n${html}`;
+}
+
+function createVirtualAssetUrlMap(
+  files: GeneratedFile[],
+): Map<string, string> {
+  const assetUrls = new Map<string, string>();
+
+  for (const file of files) {
+    const assetUrl = readEmbeddableAssetUrl(file.content);
+
+    if (assetUrl === null) {
+      continue;
+    }
+
+    assetUrls.set(normalizeVirtualPath(file.name), assetUrl);
+  }
+
+  return assetUrls;
+}
+
+function readEmbeddableAssetUrl(content: string): string | null {
+  const trimmed = content.trim();
+
+  return /^data:[^,]+,.+/i.test(trimmed)
+    ? trimmed
+    : null;
+}
+
+function replaceHtmlAssetReferences(
+  html: string,
+  htmlPath: string,
+  assetUrls: Map<string, string>,
+): string {
+  return html.replace(
+    /\b(src|href|poster)=(["'])([^"']+)\2/gi,
+    (match, attributeName, quote, originalPath) => {
+      const resolved =
+        resolveVirtualAssetReference(
+          htmlPath,
+          String(originalPath),
+          assetUrls,
+        );
+
+      return resolved === null
+        ? match
+        : `${String(attributeName)}=${String(quote)}${resolved}${String(quote)}`;
+    },
+  );
+}
+
+function replaceCssAssetUrls(
+  css: string,
+  cssPath: string,
+  assetUrls: Map<string, string>,
+): string {
+  return css.replace(
+    /url\(\s*(["']?)([^"')]+)\1\s*\)/gi,
+    (match, quote, originalPath) => {
+      const resolved =
+        resolveVirtualAssetReference(
+          cssPath,
+          String(originalPath),
+          assetUrls,
+        );
+
+      return resolved === null
+        ? match
+        : `url(${String(quote)}${resolved}${String(quote)})`;
+    },
+  );
+}
+
+function resolveVirtualAssetReference(
+  sourcePath: string,
+  referencePath: string,
+  assetUrls: Map<string, string>,
+): string | null {
+  const trimmed = referencePath.trim();
+
+  if (
+    trimmed === ''
+    || trimmed.startsWith('#')
+    || /^[a-z]+:/i.test(trimmed)
+    || trimmed.startsWith('//')
+  ) {
+    return null;
+  }
+
+  const withoutHash = trimmed.split('#', 1)[0] ?? trimmed;
+  const withoutQuery = withoutHash.split('?', 1)[0] ?? withoutHash;
+  const resolvedPath =
+    normalizeVirtualPath(
+      joinVirtualPath(
+        parentVirtualDirectory(sourcePath),
+        withoutQuery,
+      ),
+    );
+
+  return assetUrls.get(resolvedPath) ?? null;
+}
+
+function parentVirtualDirectory(path: string): string {
+  const segments = normalizeVirtualPath(path).split('/');
+  segments.pop();
+  return segments.join('/');
+}
+
+function joinVirtualPath(basePath: string, nextPath: string): string {
+  if (nextPath.startsWith('/')) {
+    return nextPath;
+  }
+
+  return basePath === ''
+    ? nextPath
+    : `${basePath}/${nextPath}`;
+}
+
+function normalizeVirtualPath(path: string): string {
+  const parts =
+    path
+      .replace(/\\/g, '/')
+      .split('/');
+  const normalized: string[] = [];
+
+  for (const part of parts) {
+    if (part === '' || part === '.') {
+      continue;
+    }
+
+    if (part === '..') {
+      normalized.pop();
+      continue;
+    }
+
+    normalized.push(part);
+  }
+
+  return normalized.join('/');
 }
