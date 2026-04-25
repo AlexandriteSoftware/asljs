@@ -92,7 +92,7 @@ Clarification and approval rules:
   - what the main scenes or screens are
   - what success or failure should look like
 - When the project already has actors or scenes in README.md, ask how the new request connects to them.
-- After a few clarification turns, or once the README is clear enough, suggest implementation in simple language, for example: "I think I understand it now. Shall I build these changes?"
+- After a few clarification turns, or once the README is clear enough, ask for implementation approval in simple language and call choose("Shall I build these changes?", ["yes", "continue asking"]) in the same turn.
 - Do not modify app runtime files until the user explicitly approves implementation, unless the user clearly asked only for a README/vision update.
 
 Tool-first generation protocol (stability-first):

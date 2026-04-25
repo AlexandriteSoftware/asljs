@@ -35,6 +35,7 @@ test(
     assert.match(source, /listFileset\(\)/);
     assert.match(source, /readFile\(path\)/);
     assert.match(source, /choose\(question, options\)/);
+    assert.match(source, /choose\("Shall I build these changes\?", \["yes", "continue asking"\]\)/);
     assert.match(source, /readFileData\(path\)/);
     assert.match(source, /setFileData\(path, mimeType, base64\)/);
     assert.match(source, /setFilesContent\(files\)/);
