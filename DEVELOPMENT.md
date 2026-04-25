@@ -179,13 +179,13 @@ Treat generated output as generated output. Edit source, not built artifacts.
 Important generated or published surfaces:
 
 - package `dist/` folders are build output
-- repository `docs/` is staged app-builder publish output
+- `app-builder/dist/` is staged app-builder publish output
 
 Library packages build into their own `dist/` folders via package-local build
 scripts.
 
-`app-builder` builds into the repository `docs/` folder. The deployment
-workflow then force-pushes the contents of `docs/` to the `pages` branch root.
+`app-builder` builds into `app-builder/dist/`. The deployment workflow then
+force-pushes the contents of that folder to the `pages` branch root.
 
 Useful commands:
 
@@ -195,8 +195,9 @@ npm -w asljs-components run build
 npm -w asljs-app-builder run build
 ```
 
-Do not hand-edit files under `dist/` or published assets under `docs/` unless
-the task is explicitly about generated output verification.
+Do not hand-edit files under `dist/` or published assets under
+`app-builder/dist/` unless the task is explicitly about generated output
+verification.
 
 ## Release Workflow
 

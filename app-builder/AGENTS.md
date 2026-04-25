@@ -74,7 +74,7 @@ semantics when the package-local guide exists.
 - generated app behavior is the same thing as host app behavior
 - prompt edits only matter when host runtime code also changes
 - imported package guides are part of the host app public API
-- built `docs/` output is the primary editing surface
+- built `app-builder/dist/` output is the primary editing surface
 - the AI call is naturally stateful across turns without host-side transcript
   support
 - `.README.md` can be overwritten early during clarification
@@ -84,8 +84,8 @@ semantics when the package-local guide exists.
 - Do not turn this package into a public library or add package exports unless
   explicitly requested.
 - Do not introduce server-side assumptions into storage, preview, or AI flows.
-- Build output is staged into the repository-level `docs/` folder, then the
-  deployment workflow force-pushes that output to the `pages` branch root.
+- Build output is staged into `app-builder/dist/`, then the deployment
+  workflow force-pushes that output to the `pages` branch root.
 - Keep imports and code compatible with the repo ESM conventions.
 
 ## Safe Prompt Maintenance Guide
@@ -126,8 +126,9 @@ Use the package scripts when validating changes:
 - `npm -w asljs-app-builder run test`
 - `npm -w asljs-app-builder run typecheck`
 
-If a change affects published demo output, rebuild `docs/` locally and verify
-the deployment workflow contract still matches the `pages` branch publish flow.
+If a change affects published demo output, rebuild `app-builder/dist/`
+locally and verify the deployment workflow contract still matches the `pages`
+branch publish flow.
 Update this file when AI-facing app constraints, module boundaries, or
 validation commands change. Update `README.md` separately only when
 user-facing app behavior or usage changes.

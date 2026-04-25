@@ -154,8 +154,8 @@ The dev server starts at `http://localhost:5173/asljs/`.
 npm -w asljs-app-builder run build
 ```
 
-Built static assets are written to **`/docs`** at the repository root as the
-local staging output.
+Built static assets are written to **`app-builder/dist/`** as the local staging
+output.
 
 ### Preview the build locally
 
@@ -163,7 +163,8 @@ local staging output.
 npm -w asljs-app-builder run preview
 ```
 
-Serves the contents of `/docs` locally at `http://localhost:4173/asljs/`.
+Serves the contents of `app-builder/dist/` locally at
+`http://localhost:4173/asljs/`.
 
 ## GitHub Pages setup
 
@@ -177,9 +178,9 @@ branch**:
    `https://alexandritesoftware.github.io/asljs/`.
 
 The workflow in `.github/workflows/build-app-builder.yml` builds the app,
-copies the generated `docs/` contents to a temporary repository, and force
-pushes that repository to the `pages` branch. The branch history is replaced on
-each publish.
+copies the generated `app-builder/dist/` contents to a temporary repository,
+and force pushes that repository to the `pages` branch. The branch history is
+replaced on each publish.
 
 For a local rebuild before pushing source changes:
 
@@ -189,14 +190,14 @@ npm -w asljs-app-builder run build
 
 ## Where the built assets live
 
-- `docs/index.html`: landing page
-- `docs/app-builder/index.html`: app-builder shell
-- `docs/assets/`: bundled JS and CSS
+- `app-builder/dist/index.html`: landing page
+- `app-builder/dist/app-builder/index.html`: app-builder shell
+- `app-builder/dist/assets/`: bundled JS and CSS
 
 Generated-output boundary:
 
 - source lives in `app-builder/src/**`
-- build output is written to repository-level `docs/`
+- build output is written to `app-builder/dist/`
 - generated build output is not the main editing surface
 
 ## API Reference

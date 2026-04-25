@@ -37,7 +37,7 @@ jobs:
       - name: Publish pages branch
         run: |
           publish_dir="$(mktemp -d)"
-          cp -R docs/. "$publish_dir"
+          cp -R app-builder/dist/. "$publish_dir"
           cd "$publish_dir"
           touch .nojekyll
           git init
