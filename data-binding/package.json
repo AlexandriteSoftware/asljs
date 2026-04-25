@@ -1,6 +1,6 @@
 {
   "name": "asljs-data-binding",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Declarative data-bind-* bindings for DOM elements with value pipes and event middleware.",
   "files": [
     "dist/**",
