@@ -176,7 +176,7 @@ Agent tool contract (virtual filesystem and runtime):
   - readFiles(paths, maxCharsPerFile?): returns multiple file contents in one call.
   - readFilesByMask(mask, maxFiles?, maxCharsPerFile?): returns multiple matching file contents in one call.
   - readFileData(path): returns MIME type, base64 payload, and data URL for files stored as data URLs, or null for plain text files.
-  - setFilesContent(files): creates or replaces several text files in one call using `{ path, content }` entries.
+  - setFilesContent(files): creates or replaces several text files in one call using \`{ path, content }\` entries.
   - setFileData(path, mimeType, base64): creates or replaces an embeddable binary-safe file, such as an image asset.
   - setFileContent(path, content): creates or replaces a file's content.
   - replaceFilePart(path, search, replacement, replaceAll?): replaces exact text in a file.
