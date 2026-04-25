@@ -17,10 +17,12 @@ export function renderFileSelectUi(
   ): void
 {
   const selectElement = options.selectElement;
+  const visibleFiles =
+    options.files.filter(file => !isHiddenFileName(file.name));
 
   selectElement.replaceChildren();
 
-  if (options.files.length === 0) {
+  if (visibleFiles.length === 0) {
     const option = document.createElement('option');
     option.value = '';
     option.textContent = 'No files';
@@ -30,14 +32,18 @@ export function renderFileSelectUi(
     return;
   }
 
-  for (const file of options.files) {
+  for (const file of visibleFiles) {
     const option = document.createElement('option');
     option.value = file.name;
     option.textContent = file.name;
     selectElement.appendChild(option);
   }
 
-  const active = options.activeFileName ?? options.files[0].name;
+  const active =
+    options.activeFileName !== null
+    && visibleFiles.some(file => file.name === options.activeFileName)
+      ? options.activeFileName
+      : visibleFiles[0].name;
   selectElement.value = active;
   selectElement.disabled = false;
 }
@@ -51,4 +57,8 @@ export function renderFileContentUi(
 
   options.textAreaElement.value = file?.content ?? '';
   options.textAreaElement.disabled = file === undefined;
+}
+
+function isHiddenFileName(name: string): boolean {
+  return name.startsWith('.');
 }

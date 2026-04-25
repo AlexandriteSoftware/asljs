@@ -46,3 +46,37 @@ test(
       globalThis.document = previousDocument;
     }
   });
+
+test(
+  'renderFileSelectUi hides dotfiles and falls back to first visible file',
+  () => {
+    const dom = new JSDOM('<select id="files"></select>');
+    const previousDocument = globalThis.document;
+    globalThis.document = dom.window.document;
+
+    const document = dom.window.document;
+    const select = document.getElementById('files') as HTMLSelectElement;
+
+    const files = [
+      { name: '.README.md', content: '# previous' },
+      { name: 'README.md', content: '# current' },
+      { name: 'app.js', content: 'console.log(1);' },
+    ];
+
+    try {
+      renderFileSelectUi({
+        selectElement: select,
+        files,
+        activeFileName: '.README.md',
+      });
+
+      assert.equal(select.disabled, false);
+      assert.deepEqual(
+        Array.from(select.options).map(option => option.value),
+        [ 'README.md', 'app.js' ],
+      );
+      assert.equal(select.value, 'README.md');
+    } finally {
+      globalThis.document = previousDocument;
+    }
+  });

@@ -24,6 +24,31 @@ Key internal modules:
 - `src/app-builder/preview.ts`
 - `src/app-builder/main.ts`
 
+## AI System Layers
+
+Keep these layers distinct when editing the package:
+
+- host app behavior in `app-builder/src/**`
+- generator system prompt in `src/app-builder/ai/ai-instruction.ts`
+- host-side conversation state and kickoff behavior in `src/app-builder/main.ts`
+- conversation transcript and README snapshot helpers in
+  `src/app-builder/ai/conversation-loop.ts`
+- imported package AI guides used as generator context
+- generated-app tool protocol and runtime validation rules
+
+## Source Of Truth Map
+
+- `README.md` owns human-facing package behavior and workflow
+- `AGENTS.md` owns AI editing rules for the app-builder package itself
+- `src/app-builder/ai/ai-instruction.ts` owns generated app behavior rules
+- `src/app-builder/ai/AGENTS.md` owns AI-subsystem architectural notes that
+  are specific to the prompt loop and transcript contract
+- imported package `AGENTS.md` files own library semantics for generator
+  context
+
+Do not treat app-builder docs as the canonical source for library package
+semantics when the package-local guide exists.
+
 ## Preferred Change Patterns
 
 - Keep the app fully static and browser-based.
@@ -33,6 +58,26 @@ Key internal modules:
 - Prefer changes in the existing module boundaries instead of adding new app
   layers.
 - Keep preview execution sandboxed in the iframe flow.
+- Preserve the README-first conversation loop: clarify, update README, ask the
+  next question, ask permission to implement, then code and test.
+- Preserve short-term conversation context across turns so follow-up replies
+  like "yes" or "2 players" still make sense.
+- Preserve the `.README.md` contract as the last completed README
+  snapshot.
+- Treat direct user edits to `README.md` as real product-definition input.
+- Keep assistant wording simple unless the user clearly wants more technical
+  detail.
+
+## Common Wrong Assumptions
+
+- `app-builder` is a public library API
+- generated app behavior is the same thing as host app behavior
+- prompt edits only matter when host runtime code also changes
+- imported package guides are part of the host app public API
+- built `docs/` output is the primary editing surface
+- the AI call is naturally stateful across turns without host-side transcript
+  support
+- `.README.md` can be overwritten early during clarification
 
 ## Constraints To Preserve
 
@@ -42,6 +87,35 @@ Key internal modules:
 - Build output is staged into the repository-level `docs/` folder, then the
   deployment workflow force-pushes that output to the `pages` branch root.
 - Keep imports and code compatible with the repo ESM conventions.
+
+## Safe Prompt Maintenance Guide
+
+- keep prompt rules grouped by purpose
+- avoid mixing host-app rules with generated-app rules
+- prefer package-local AI references over ad hoc special-case doc paths
+- update nearby docs when generator behavior expectations change
+
+## Change Safety Checklist
+
+- If prompt changes package usage rules, then re-check imported package
+  guidance.
+- If prompt changes the staged chat loop, then re-check `main.ts` and
+  `conversation-loop.ts` together.
+- If prompt changes generated file expectations, then re-check README and
+  tests.
+- If prompt changes tool protocol, then re-check the generated app contract.
+- If prompt changes validation rules, then re-check diagnostics and repair-loop
+  docs.
+- If you change the README snapshot file name or workflow, then update the
+  prompt, host helper, and docs in the same slice.
+
+## Related Package Routing
+
+- library semantics for `eventful` belong to `eventful/AGENTS.md`
+- library semantics for `observable` belong to `observable/AGENTS.md`
+- binding syntax belongs to `data-binding/AGENTS.md`
+- component usage belongs to `components/AGENTS.md`
+- IndexedDB live-data behavior belongs to `dali/AGENTS.md`
 
 ## Validation
 

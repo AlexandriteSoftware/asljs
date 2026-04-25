@@ -19,6 +19,107 @@ Apps are persisted locally in **IndexedDB** (via `asljs-dali`). Reactive state
 is managed with **`asljs-observable`**. No data ever leaves the browser except
 the OpenAI request.
 
+## AI Architecture
+
+`asljs-app-builder` has two distinct responsibilities:
+
+- the host app, which runs in the browser and manages projects, storage,
+   preview, and settings
+- the generator system, which uses a system prompt to produce and repair the
+   generated app files
+
+The main AI prompt lives in
+`src/app-builder/ai/ai-instruction.ts`.
+
+Runtime app state lives under `src/app-builder/state.ts` and related UI wiring
+modules.
+
+Persistent project storage lives under `src/app-builder/storage.ts` and uses
+IndexedDB via `asljs-dali`.
+
+Generated apps are validated through the generated app tool contract and the
+run/repair loop encoded in the system prompt.
+
+Host app behavior and generated app behavior are different layers:
+
+- host app behavior belongs to the `app-builder` source code
+- generated app behavior belongs to the generator prompt and its tool contract
+
+## Conversation Loop
+
+The app-builder chat is designed to work as a staged loop instead of jumping
+straight to code on the first sentence.
+
+1. When an app has no files yet, the chat should begin by asking what the user
+   wants to create.
+2. When an app already has files, the chat should begin by asking what the user
+   wants to add or change.
+3. Early turns should reshape `README.md` into a vision document before editing
+   runtime files.
+4. The vision document should describe the app in simple structured terms such
+   as the app purpose, key actors, scenes, data models, behaviors, and
+   constraints.
+5. The previous completed README should be preserved in
+   `.README.md` while the current loop is still being clarified or
+   implemented.
+6. Once the idea is clear enough, the agent should ask whether it should run
+   the implementation changes.
+7. After approval, the agent should update the app code from `README.md`, test
+   the result through runtime interaction, then refresh `.README.md`
+   only after the implementation is complete.
+8. After a fix or implementation pass, the agent should ask whether it worked
+   and either continue repairing or return to the add/change loop.
+
+Direct editing of `README.md` is part of this workflow. User edits to the
+README are treated as intentional design changes, not incidental text edits.
+
+## User Profiling
+
+The chat should default to language that is easy for non-developers to follow.
+
+- Start with simple wording, short questions, and concrete examples.
+- Assume a child-level reader unless the user clearly writes in a more
+  technical style.
+- If the user uses software-engineering terms comfortably, the assistant may
+  become more technical, but it should not start there by default.
+- Clarifying questions should be about the product idea first, for example who
+  the actors are, what happens on each screen, and what the user should be able
+  to do.
+
+## AI System Layers
+
+Read the package in this order when working on AI behavior:
+
+1. host app package behavior
+2. generator system prompt
+3. imported ASLJS package knowledge
+4. generated-app tool protocol
+5. generated-app validation and repair loop
+
+## Source Of Truth Map
+
+- `README.md`: human-facing app-builder behavior, workflow, and deployment
+- `AGENTS.md`: AI rules for editing the app-builder package itself
+- `src/app-builder/ai/ai-instruction.ts`: system prompt for generated app
+   behavior
+- `src/app-builder/ai/AGENTS.md`: AI-subsystem maintenance notes for the
+   conversation loop, transcript handling, and README snapshot contract
+- imported package `AGENTS.md` files: package capability context used by the
+   generator
+
+If you are changing host runtime behavior, update the host source and nearby
+docs.
+
+If you are changing generated app behavior, update the system prompt and the
+docs that describe its contract.
+
+## What This Package Is Not
+
+- not a published library
+- not a server-backed app platform
+- not a generic code-assistant shell
+- not the source of truth for library semantics beyond imported package guides
+
 ## Installation
 
 This package is private and part of the ASLJS monorepo. It is not published to
@@ -79,11 +180,15 @@ npm -w asljs-app-builder run build
 
 ## Where the built assets live
 
-| Path | Description |
-| ---- | ----------- |
-| `docs/index.html` | Landing page (GitHub Pages front page) |
-| `docs/app-builder/index.html` | App builder shell |
-| `docs/assets/` | Bundled JS and CSS |
+- `docs/index.html`: landing page
+- `docs/app-builder/index.html`: app-builder shell
+- `docs/assets/`: bundled JS and CSS
+
+Generated-output boundary:
+
+- source lives in `app-builder/src/**`
+- build output is written to repository-level `docs/`
+- generated build output is not the main editing surface
 
 ## API Reference
 
@@ -94,6 +199,14 @@ Internal modules (not exported as a library):
 - `src/app-builder/ai.js` — OpenAI chat completion (browser-direct)
 - `src/app-builder/preview.js` — sandboxed iframe renderer
 - `src/app-builder/main.js` — UI wiring and event handling
+
+Prompt input inventory:
+
+- imported package AI guides from ASLJS package folders
+- host context values such as
+   `window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey`
+- generated app tool contract definitions
+- generated app validation and repair workflow rules
 
 ## License
 

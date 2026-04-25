@@ -2,59 +2,54 @@
 
 Each package is released separately, from the repository root.
 
+Use the package-local release command for publishable packages:
+
+```pwsh
+npm -w eventful run release:patch
+```
+
+Do not add or use a root-level release script. `app-builder` is private and is
+not released with this flow.
+
 Release prerequisites:
 
-- Ensure package typecheck passes (`npm -w $env:FOLDER run typecheck`)
-- Ensure package lint passes (`npm -w $env:FOLDER run lint`)
-- Ensure package tests pass (`npm -w $env:FOLDER test`)
-- Ensure the repository is clean (`git status`)
+- typecheck passes (`npm -w $env:FOLDER run typecheck`)
+- lint passes (`npm -w $env:FOLDER run lint`)
+- tests pass (`npm -w $env:FOLDER test`)
+- repository working folder is clean (`git status`)
+
+The `release:patch` command runs those prerequisites automatically before it
+publishes.
+
+## What `release:patch` does
+
+For the selected publishable package, `release:patch`:
+
+1. verifies the repository working folder is clean
+2. runs `typecheck`, `lint`, and `test`
+3. runs `clean` and `build`
+4. bumps the package patch version without creating a git tag yet
+5. updates dependency ranges in every sibling workspace package that depends on
+   the released package
+6. updates `app-builder/package.json` when `app-builder` depends on the
+   released package
+7. refreshes `package-lock.json`
+8. publishes the package
+9. commits the version and dependency updates
+10. creates the release tag from the committed package version
+11. pushes the commit
+12. pushes the created release tag
 
 ## Example: package release
 
-Make sure that **release prerequisites** are met (see above).
+Run the package-local release script from the repository root.
 
 ```pwsh
-# 1) Set release variables
-$env:FOLDER = 'eventful' # 'observable', 'data-binding', 'money'
-
-# 1.1) Validate the selected package before versioning/publish
-npm -w $env:FOLDER run typecheck
-npm -w $env:FOLDER run lint
-npm -w $env:FOLDER test
-
-# 2) Bump and get package version (replace 'patch' with 'minor' or 'major')
-npm -w $env:FOLDER version patch --no-git-tag-version
-$env:PACKAGE = (Get-Content "$env:FOLDER/package.json" -Raw | ConvertFrom-Json).name
-$env:VERSION = (Get-Content "$env:FOLDER/package.json" -Raw | ConvertFrom-Json).version
-$env:PACKAGE_VERSION = "${env:PACKAGE}@${env:VERSION}"
-
-# 3) Commit version changes
-git add .
-git commit -m "releasing $env:PACKAGE_VERSION"
-
-# 4) Push commit first
-git push
-
-# 5) Publish package
-#
-# npm publish hooks and actions:
-#
-# 1. prepublishOnly (hook)
-#      node ../toolkit.js ensure-clean-working-folder
-# 2. prepack (hook)
-#      node ../toolkit.js clean-dist
-#      npx tsc -p tsconfig.build.json
-# 3. prepare (hook)
-# 4. pack (action)
-# 5. postpack (hook)
-# 6. publish (action)
-# 7. postpublish (hook)
-#      node ../toolkit.js tag-commit-with-release-id
-#
-# Reference: https://docs.npmjs.com/cli/v11/using-npm/scripts
-#
-npm -w $env:FOLDER publish
-
-# 6) Push that tag to origin
-    git push origin "$env:PACKAGE_VERSION"
+npm -w eventful run release:patch
+npm -w observable run release:patch
+npm -w machine run release:patch
+npm -w money run release:patch
+npm -w data-binding run release:patch
+npm -w dali run release:patch
+npm -w components run release:patch
 ```

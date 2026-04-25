@@ -3,6 +3,7 @@ import {
   } from 'asljs-observable';
 import {
     type AppRecord,
+    type ChatMessage,
     type FileRecord,
   } from './types.js';
 
@@ -11,6 +12,7 @@ export type AppBuilderState =
     currentAppId: string | null;
     files: FileRecord[];
     activeFileName: string | null;
+    chatMessages: ChatMessage[];
     generating: boolean;
     error: string | null; };
 
@@ -20,5 +22,6 @@ export const state =
       currentAppId: null,
       files: [],
       activeFileName: null,
+      chatMessages: [],
       generating: false,
       error: null });

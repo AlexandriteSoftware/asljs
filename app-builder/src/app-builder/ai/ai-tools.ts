@@ -198,7 +198,11 @@ export function createAppRuntimeTools(
             item.id === updated.id
               ? updated
               : item));
-      context.setActiveFileName(updated.name);
+
+      if (!isHiddenToolPath(updated.name)) {
+        context.setActiveFileName(updated.name);
+      }
+
       return;
     }
 
@@ -211,7 +215,10 @@ export function createAppRuntimeTools(
 
     await context.saveFile(created);
     context.setFiles([ ...context.getFiles(), created ]);
-    context.setActiveFileName(created.name);
+
+    if (!isHiddenToolPath(created.name)) {
+      context.setActiveFileName(created.name);
+    }
   }
 
   async function deleteFileTool(path: string): Promise<void> {
@@ -232,7 +239,7 @@ export function createAppRuntimeTools(
     context.setFiles(remaining);
 
     if (context.getActiveFileName() === path) {
-      context.setActiveFileName(remaining[0]?.name ?? null);
+      context.setActiveFileName(pickVisibleFileName(remaining));
     }
   }
 
@@ -345,6 +352,14 @@ function normalizeToolPath(path: string): string {
   }
 
   return normalized;
+}
+
+function isHiddenToolPath(path: string): boolean {
+  return normalizeToolPath(path).startsWith('.');
+}
+
+function pickVisibleFileName(files: AiToolFileRecord[]): string | null {
+  return files.find(item => !isHiddenToolPath(item.name))?.name ?? null;
 }
 
 function resolveExistingPath(

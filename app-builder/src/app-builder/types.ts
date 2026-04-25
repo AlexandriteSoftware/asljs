@@ -28,3 +28,10 @@ export type Settings =
 export type GeneratedFile =
   { name: string;
     content: string; };
+
+export type ChatMessageRole =
+  'user' | 'assistant';
+
+export type ChatMessage =
+  { role: ChatMessageRole;
+    text: string; };

@@ -18,6 +18,10 @@ import {
   SYSTEM_PROMPT,
 } from './ai/ai-instruction.js';
 import {
+  buildConversationPrompt,
+  getConversationKickoffMessage,
+} from './ai/conversation-loop.js';
+import {
   renderPreview,
   evaluateInPreview,
   getPreviewDiagnostics,
@@ -541,7 +545,17 @@ function setChatProgress(message: string, visible: boolean): void {
 }
 
 function appendChatMessage(role: 'user' | 'assistant', text: string): void {
+  state.chatMessages = [ ...state.chatMessages, { role, text } ];
   appendChatMessageUi(elChatMessages, role, text);
+}
+
+function resetChatConversation(): void {
+  state.chatMessages = [];
+  elChatMessages.replaceChildren();
+}
+
+function appendConversationKickoff(fileNames: string[]): void {
+  appendChatMessage('assistant', getConversationKickoffMessage(fileNames));
 }
 
 async function persistCurrentFile(): Promise<void> {
@@ -571,9 +585,17 @@ async function openApp(id: string): Promise<void> {
 
   const files = await listFiles(id);
   state.files = files;
-  state.activeFileName = files[0]?.name ?? null;
+  state.activeFileName = pickFirstVisibleFileName(files);
 
-  elChatMessages.replaceChildren();
+  resetChatConversation();
+  appendConversationKickoff(files.map(file => file.name));
+}
+
+function pickFirstVisibleFileName(
+    files: Array<{ name: string }>
+  ): string | null
+{
+  return files.find(file => !file.name.startsWith('.'))?.name ?? null;
 }
 
 function promptNewApp(): void {
@@ -728,7 +750,7 @@ async function confirmDeleteApp(): Promise<void> {
   state.currentAppId = null;
   state.files = [];
   state.activeFileName = null;
-  elChatMessages.replaceChildren();
+  resetChatConversation();
   elPreviewFrame.src = 'about:blank';
 }
 
@@ -762,8 +784,10 @@ async function handleGenerate(): Promise<void> {
   try {
     const model = getModel();
     const maxToolSteps = getMaxToolSteps();
+    const conversationPrompt =
+      buildConversationPrompt(state.chatMessages);
 
-    const result = await generateApp(prompt, apiKey, model, appRuntimeTools, {
+    const result = await generateApp(conversationPrompt, apiKey, model, appRuntimeTools, {
       initialToolStepLimit: maxToolSteps,
       systemPrompt: SYSTEM_PROMPT,
       onToolStepLimit: async ({ stepsCompleted }) => confirm(
@@ -1590,6 +1614,7 @@ async function init(): Promise<void> {
     state.currentAppId = null;
     state.files = [];
     state.activeFileName = null;
+    state.chatMessages = [];
     renderWorkspace();
     elFirstAppNameInput.focus();
   }

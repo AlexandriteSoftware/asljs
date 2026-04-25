@@ -40,4 +40,8 @@ test(
     assert.match(source, /evalInApp\(code\)/);
     assert.match(source, /getAppDiagnostics\(\)/);
     assert.match(source, /runAppAndCollectDiagnostics\(\)/);
+    assert.match(source, /\.README\.md/);
+    assert.match(source, /conversation loop/i);
+    assert.match(source, /Assume the user is about 8 years old/i);
+    assert.match(source, /Do not modify app runtime files until the user explicitly approves implementation/i);
   });

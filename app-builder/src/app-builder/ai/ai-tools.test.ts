@@ -241,6 +241,39 @@ test(
   });
 
 test(
+  'createAppRuntimeTools setFileContent does not activate hidden file names',
+  async () => {
+    let files: AiToolFileRecord[] = [];
+    let activeFileName: string | null = 'README.md';
+
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => files,
+        setFiles: next => {
+          files = next;
+        },
+        getActiveFileName: () => activeFileName,
+        setActiveFileName: next => {
+          activeFileName = next;
+        },
+        createFileId: () => 'new-hidden-file-id',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => undefined,
+        evaluateInApp: async () => null,
+        getAppDiagnostics: async () => null,
+        wait: async () => undefined,
+      });
+
+    await tools.setFileContent('.README.md', '# previous');
+
+    assert.equal(files.length, 1);
+    assert.equal(files[0].name, '.README.md');
+    assert.equal(activeFileName, 'README.md');
+  });
+
+test(
   'createAppRuntimeTools replaceFilePart throws when search is ambiguous',
   async () => {
     let files: AiToolFileRecord[] = [
