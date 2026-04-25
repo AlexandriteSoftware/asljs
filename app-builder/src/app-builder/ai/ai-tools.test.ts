@@ -88,6 +88,25 @@ test(
   });
 
 test(
+  'setFilesContent schema uses array entries instead of free-form object maps',
+  () => {
+    const tool =
+      OPENAI_TOOLS.find(item => item.name === 'setFilesContent');
+
+    assert.notEqual(tool, undefined);
+
+    if (tool === undefined) {
+      throw new Error('setFilesContent tool is missing');
+    }
+
+    const filesProperty = tool.parameters.properties.files;
+
+    assert.equal(filesProperty?.type, 'array');
+    assert.equal(filesProperty?.items?.type, 'object');
+    assert.equal(filesProperty?.items?.additionalProperties, false);
+  });
+
+test(
   'replaceFilePart schema requires replaceAll',
   () => {
     const tool =
@@ -215,6 +234,39 @@ test(
   });
 
 test(
+  'executeToolCall handles setFilesContent',
+  async () => {
+    const seen: Array<{ path: string; content: string }> = [];
+
+    const tools = makeToolsStub({
+      setFilesContent: async files => {
+        seen.push(...files);
+      },
+    });
+
+    const output =
+      await executeToolCall(
+        { type: 'function_call',
+          name: 'setFilesContent',
+          arguments: {
+            files: [
+              { path: 'README.md', content: '# demo' },
+              { path: 'app.js', content: 'console.log(1);' },
+            ],
+          } },
+        tools);
+
+    assert.deepEqual(
+      seen,
+      [
+        { path: 'README.md', content: '# demo' },
+        { path: 'app.js', content: 'console.log(1);' },
+      ],
+    );
+    assert.equal(output, '{"ok":true,"value":"ok"}');
+  });
+
+test(
   'executeToolCall handles readFileData',
   async () => {
     const tools = makeToolsStub({
@@ -269,6 +321,159 @@ test(
         },
       ]);
     assert.equal(output, '{"ok":true,"value":"ok"}');
+  });
+
+test(
+  'createAppRuntimeTools readFilesByMask returns bounded matching files',
+  async () => {
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => [
+          makeFile({ name: 'src/app.js', content: 'alpha beta gamma' }),
+          makeFile({ id: 'f2', name: 'src/util.js', content: 'delta epsilon' }),
+          makeFile({ id: 'f3', name: 'README.md', content: '# readme' }),
+        ],
+        setFiles: () => undefined,
+        getActiveFileName: () => null,
+        setActiveFileName: () => undefined,
+        createFileId: () => 'unused',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => undefined,
+        evaluateInApp: async () => null,
+        getAppDiagnostics: async () => null,
+        showChoicePrompt: () => undefined,
+        wait: async () => undefined,
+      });
+
+    assert.deepEqual(
+      await tools.readFilesByMask('src/*.js', 10, 5),
+      {
+        'src/app.js': 'alpha\n...[truncated]',
+        'src/util.js': 'delta\n...[truncated]',
+      },
+    );
+  });
+
+test(
+  'createAppRuntimeTools grep returns matching lines with file and line numbers',
+  async () => {
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => [
+          makeFile({ name: 'src/app.js', content: 'alpha\nbeta\ngamma' }),
+          makeFile({ id: 'f2', name: 'src/util.js', content: 'delta\nbeta util' }),
+        ],
+        setFiles: () => undefined,
+        getActiveFileName: () => null,
+        setActiveFileName: () => undefined,
+        createFileId: () => 'unused',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => undefined,
+        evaluateInApp: async () => null,
+        getAppDiagnostics: async () => null,
+        showChoicePrompt: () => undefined,
+        wait: async () => undefined,
+      });
+
+    assert.deepEqual(
+      await tools.grep('src/*.js', 'beta', '', 10),
+      [
+        { path: 'src/app.js', line: 2, text: 'beta' },
+        { path: 'src/util.js', line: 2, text: 'beta util' },
+      ],
+    );
+  });
+
+test(
+  'createAppRuntimeTools choose forwards question and options to host UI',
+  async () => {
+    const seen: Array<{ question: string; options: string[] }> = [];
+
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => [],
+        setFiles: () => undefined,
+        getActiveFileName: () => null,
+        setActiveFileName: () => undefined,
+        createFileId: () => 'unused',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => undefined,
+        evaluateInApp: async () => null,
+        getAppDiagnostics: async () => null,
+        showChoicePrompt: (question, options) => {
+          seen.push({ question, options });
+        },
+        wait: async () => undefined,
+      });
+
+    await tools.choose('How should it look?', [ 'glowing ring', 'spinning block' ]);
+
+    assert.deepEqual(
+      seen,
+      [
+        {
+          question: 'How should it look?',
+          options: [ 'glowing ring', 'spinning block' ],
+        },
+      ],
+    );
+  });
+
+test(
+  'createAppRuntimeTools runAppTests restarts app before each test and reports failures',
+  async () => {
+    const calls: string[] = [];
+    let currentTest = '';
+
+    const tools =
+      createAppRuntimeTools({
+        getCurrentAppId: () => 'app-1',
+        getFiles: () => [
+          makeFile({
+            name: 'app.tests.json',
+            content: JSON.stringify([
+              { name: 'first', code: 'window.__testName = "first"; true;' },
+              { name: 'second', code: 'window.__testName = "second"; false;' },
+            ]),
+          }),
+        ],
+        setFiles: () => undefined,
+        getActiveFileName: () => null,
+        setActiveFileName: () => undefined,
+        createFileId: () => 'unused',
+        saveFile: async () => undefined,
+        deleteFileById: async () => undefined,
+        runApp: () => {
+          calls.push('run');
+        },
+        evaluateInApp: async code => {
+          currentTest = code.includes('"second"') ? 'second' : 'first';
+          calls.push(`eval:${currentTest}`);
+          return currentTest === 'first';
+        },
+        getAppDiagnostics: async () => null,
+        showChoicePrompt: () => undefined,
+        wait: async () => {
+          calls.push('wait');
+        },
+      });
+
+    const result = await tools.runAppTests();
+
+    assert.deepEqual(calls, [ 'run', 'wait', 'eval:first', 'run', 'wait', 'eval:second' ]);
+    assert.equal(result.total, 2);
+    assert.equal(result.passed, 1);
+    assert.equal(result.failed, 1);
+    assert.deepEqual(result.results, [
+      { name: 'first', ok: true },
+      { name: 'second', ok: false, error: 'Test returned false.' },
+    ]);
   });
 
 test(

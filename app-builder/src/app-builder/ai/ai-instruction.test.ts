@@ -37,7 +37,11 @@ test(
     assert.match(source, /choose\(question, options\)/);
     assert.match(source, /readFileData\(path\)/);
     assert.match(source, /setFileData\(path, mimeType, base64\)/);
+    assert.match(source, /setFilesContent\(files\)/);
     assert.match(source, /runAppTests\(path\?\)/);
+    assert.match(source, /app\.tests\.json/);
+    assert.match(source, /README\.md requirements changed intentionally, treat that as a required app\.tests\.json update/i);
+    assert.match(source, /update app\.tests\.json for any README requirement changes, run the app, interact with it, repair issues, run the tests/i);
     assert.match(source, /setFileContent\(path, content\)/);
     assert.match(source, /replaceFilePart\(path, search, replacement, replaceAll\?\)/);
     assert.match(source, /deleteFile\(path\)/);

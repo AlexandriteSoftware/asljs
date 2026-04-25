@@ -22,6 +22,10 @@ type AppTestResult =
     ok: boolean;
     error?: string; };
 
+type FileContentEntry =
+  { path: string;
+    content: string; };
+
 export type AiTools =
   { listFileset: (
       ) => Promise<string[]>;
@@ -48,7 +52,7 @@ export type AiTools =
           base64: string;
           dataUrl: string; } | null>;
     setFilesContent: (
-        filesByPath: Record<string, string>
+        files: FileContentEntry[]
       ) => Promise<void>;
     setFileData: (
         path: string,
@@ -216,11 +220,19 @@ export const OPENAI_TOOLS: OpenAiToolDefinition[] =
     openAiToolDefinition(
       'setFilesContent',
       'Create or fully replace several text files in one step.',
-      { filesByPath: {
-          type: 'object',
-          additionalProperties: true,
+      { files: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              path: { type: 'string' },
+              content: { type: 'string' },
+            },
+            required: [ 'path', 'content' ],
+            additionalProperties: false,
+          },
         } },
-      [ 'filesByPath' ]),
+      [ 'files' ]),
     openAiToolDefinition(
       'setFileData',
       'Create or replace a binary-safe file from base64 data. Use this for image assets that should be referenced by path from HTML or CSS.',
@@ -420,11 +432,11 @@ export function createAppRuntimeTools(
   }
 
   async function setFilesContentTool(
-      filesByPath: Record<string, string>,
+      files: FileContentEntry[],
     ): Promise<void>
   {
-    for (const [path, content] of Object.entries(filesByPath)) {
-      await setFileContentTool(path, content);
+    for (const file of files) {
+      await setFileContentTool(file.path, file.content);
     }
   }
 
@@ -926,7 +938,7 @@ export async function executeToolCall(
       }
 
       case 'setFilesContent': {
-        await tools.setFilesContent(readStringRecordArg(args, 'filesByPath'));
+        await tools.setFilesContent(readFileContentEntriesArg(args, 'files'));
         return toolSuccess('ok');
       }
 
@@ -1075,26 +1087,33 @@ function readStringArrayArg(
   return value as string[];
 }
 
-function readStringRecordArg(
+function readFileContentEntriesArg(
     args: Record<string, unknown>,
     key: string,
-  ): Record<string, string>
+  ): FileContentEntry[]
 {
   const value = args[key];
 
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error(`Tool argument "${key}" must be an object.`);
+  if (!Array.isArray(value)) {
+    throw new Error(`Tool argument "${key}" must be an array.`);
   }
 
-  const record = value as Record<string, unknown>;
-
-  for (const [recordKey, recordValue] of Object.entries(record)) {
-    if (typeof recordValue !== 'string') {
-      throw new Error(`Tool argument "${key}" entry "${recordKey}" must be a string.`);
+  return value.map((entry, index) => {
+    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      throw new Error(`Tool argument "${key}" entry ${index + 1} must be an object.`);
     }
-  }
 
-  return record as Record<string, string>;
+    const file = entry as Record<string, unknown>;
+
+    if (typeof file.path !== 'string' || typeof file.content !== 'string') {
+      throw new Error(`Tool argument "${key}" entry ${index + 1} must include string path and content fields.`);
+    }
+
+    return {
+      path: file.path,
+      content: file.content,
+    };
+  });
 }
 
 function readNumberArg(

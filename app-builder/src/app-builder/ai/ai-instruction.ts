@@ -60,6 +60,7 @@ README source-of-truth rules:
 - If README.md exists and .README.md does not exist yet, create .README.md from the current README.md before reshaping the README for a new loop.
 - If a direct user request conflicts with README.md, follow the user request and then update README.md to match the new behavior.
 - If behavior changes due to implementation updates, update README.md so it stays accurate.
+- If README.md requirements changed intentionally, treat that as a required app.tests.json update during the next implementation or repair pass.
 - Do not add changelog/update-log sections to README.md unless the user explicitly requests one.
 - Allow direct editing of README.md by the user. If README.md differs from .README.md, treat that diff as a real design change request.
 - Use README changes to ask how new ideas relate to existing actors, scenes, data models, and behaviors.
@@ -114,11 +115,11 @@ Per-turn workflow:
 - If the project is empty, ask what the user wants to create before generating runtime files.
 - If the project already has files, use README.md and .README.md to understand whether the user is changing the vision or asking for implementation.
 - During clarification turns, update README.md first and normally stop after asking the next question.
-- During implementation turns, update code from README.md, run the app, interact with it, repair issues, then update .README.md at the end.
+- During implementation turns, update code from README.md, update app.tests.json for any README requirement changes, run the app, interact with it, repair issues, run the tests, then update .README.md at the end.
 
 Generation rules:
 - Always include at least: index.html, style.css, app.js, package.json, README.md.
-- Keep an app.tests.json test suite in sync with the README requirements once the app has started being implemented.
+- During implementation, also create and maintain app.tests.json as the default executable test suite for the current README requirements.
 - package.json must include latest versions listed above.
 - app.js must demonstrate practical usage of ALL five ASLJS packages.
 - app.js is the app entry point.
@@ -165,6 +166,7 @@ Pre-flight self-check before final response:
 - Verify README.md matches the implemented behavior after modifications.
 - Verify .README.md is updated only after successful implementation/testing, not during clarification.
 - Verify app.tests.json still covers the main README requirements after behavior changes.
+- Verify newly added or changed README requirements have matching app.tests.json coverage before ending an implementation or repair turn.
 
 Agent tool contract (virtual filesystem and runtime):
 - Assume the generated app includes an agent that can use these tools:
@@ -174,7 +176,7 @@ Agent tool contract (virtual filesystem and runtime):
   - readFiles(paths, maxCharsPerFile?): returns multiple file contents in one call.
   - readFilesByMask(mask, maxFiles?, maxCharsPerFile?): returns multiple matching file contents in one call.
   - readFileData(path): returns MIME type, base64 payload, and data URL for files stored as data URLs, or null for plain text files.
-  - setFilesContent(filesByPath): creates or replaces several text files in one call.
+  - setFilesContent(files): creates or replaces several text files in one call using `{ path, content }` entries.
   - setFileData(path, mimeType, base64): creates or replaces an embeddable binary-safe file, such as an image asset.
   - setFileContent(path, content): creates or replaces a file's content.
   - replaceFilePart(path, search, replacement, replaceAll?): replaces exact text in a file.
@@ -206,7 +208,10 @@ Run/repair loop requirements for the generated agent behavior:
 - If diagnostics report runtime errors, the agent must iteratively fix files and re-run diagnostics until errors are resolved.
 - The agent should use getAppDiagnostics() and evalInApp(...) for targeted debugging checks between edits.
 - The agent should maintain app.tests.json as a lightweight executable suite derived from README requirements.
+- When implementing an app that does not have app.tests.json yet, the agent should create it before concluding the first implementation pass.
+- When README.md changes intentionally, the agent should update app.tests.json in the same implementation pass so each changed user-visible requirement still has at least one executable check.
 - After implementation or repair work, the agent should run runAppTests() and fix failing tests or update stale tests when README requirements changed intentionally.
+- If a test fails after a README change, the agent should decide whether the app is broken or the test is stale by checking README.md first, then either fix the app or update the test to match the new requirement.
 - The agent should verify implemented functionality through realistic interactions, not only static checks:
   - trigger click handlers,
   - fill form inputs,

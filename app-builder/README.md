@@ -74,7 +74,9 @@ straight to code on the first sentence.
    and either continue repairing or return to the add/change loop.
 
 The generated-app workflow also supports a maintained `app.tests.json` test
-suite so the agent can keep executable checks aligned with the README.
+suite so the agent can keep executable checks aligned with the README. When
+README requirements change intentionally, the implementation pass should update
+that test suite in the same loop before finishing.
 
 Direct editing of `README.md` is part of this workflow. User edits to the
 README are treated as intentional design changes, not incidental text edits.

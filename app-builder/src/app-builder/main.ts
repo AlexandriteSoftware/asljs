@@ -402,7 +402,9 @@ declare global {
       { mimeType: string;
         base64: string;
         dataUrl: string; } | null>;
-    setFilesContent: (filesByPath: Record<string, string>) => Promise<void>;
+    setFilesContent: (
+      files: Array<{ path: string; content: string }>,
+    ) => Promise<void>;
     setFileData: (
       path: string,
       mimeType: string,

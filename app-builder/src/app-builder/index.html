@@ -312,6 +312,9 @@
         <p class="form-hint" style="margin-bottom: 0.5rem;">
           This is the full instruction text sent to the AI (including generated sections from package docs and API exports).
         </p>
+        <p class="form-hint" style="margin-bottom: 0.75rem;">
+          Tool hint: multi-file writes use <code>setFilesContent([{ path, content }])</code>. Implementation turns should also update <code>app.tests.json</code> when <code>README.md</code> requirements change.
+        </p>
         <textarea
           id="agent-instructions-text"
           class="prompt-view"
