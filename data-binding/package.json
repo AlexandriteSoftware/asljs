@@ -50,7 +50,7 @@
     "release:patch": "node ../toolkit.js release-patch"
   },
   "dependencies": {
-    "asljs-observable": "^0.5.3"
+    "asljs-observable": "^0.5.4"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

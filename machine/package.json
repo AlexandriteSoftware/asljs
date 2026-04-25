@@ -53,6 +53,6 @@
   },
   "dependencies": {
     "asljs-eventful": "^0.4.9",
-    "asljs-observable": "^0.5.3"
+    "asljs-observable": "^0.5.4"
   }
 }
