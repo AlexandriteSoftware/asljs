@@ -1,6 +1,6 @@
 {
   "name": "asljs-machine",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Compact and powerful library for structuring control flow with state machines.",
   "files": [
     "dist/**",
