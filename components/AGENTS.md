@@ -4,13 +4,20 @@
 
 Use this file as AI-facing guidance for `asljs-components`.
 
-This package currently exports the `List` web component and its related types.
+This package currently exports the `List` web component, package theming
+helpers, a theme provider custom element, and related types.
 
 ## Package Scope
 
 Exports from `src/index.ts`:
 
 - `List`
+- `ThemeProvider`
+- `ComponentsTheme`
+- `ListThemeDefinition`
+- `ThemeTemplateValue`
+- `getDefaultTheme`
+- `setDefaultTheme`
 - `ListItem`
 - `ListItemsSource`
 - `ListRowContext`
@@ -18,6 +25,7 @@ Exports from `src/index.ts`:
 Current custom element:
 
 - `asljs-list`
+- `asljs-theme-provider`
 
 ## AI Quick Reference
 
@@ -25,9 +33,12 @@ Component contract at a glance:
 
 - import with `import 'asljs-components';`
 - current custom element: `asljs-list`
+- theme provider element: `asljs-theme-provider`
 - required row template: `template[data-slot="item"]`
 - optional templates: `template[data-slot="empty"]` and
   `template[data-slot="container"]`
+- theme fallback order: local slot template -> `list.theme` -> nearest
+  `asljs-theme-provider` -> package default theme
 - container templates must include `[data-role="items"]`
 - row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
   `count`, and `context`
@@ -64,6 +75,19 @@ Inside `asljs-list`, use:
 
 If `items` is non-empty and no item template is provided, the component warns
 and renders nothing.
+
+### Use themes as template defaults
+
+Themes provide fallback templates. They do not replace slot-template authoring.
+
+Preferred resolution order:
+
+- local `template[data-slot]`
+- `list.theme`
+- nearest `asljs-theme-provider`
+- `setDefaultTheme(...)`
+
+If a local slot template exists, it must continue to win over the active theme.
 
 ### Use row bindings through `asljs-data-binding`
 
@@ -110,6 +134,7 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 ## Constraints To Preserve
 
 - Keep row rendering template-driven.
+- Keep theme behavior template-driven and slot-compatible.
 - Keep event bindings path-based; do not add parameter-expression syntax.
 - Do not introduce custom invocation protocols such as `*-args` or inline call
   expressions for bindings.
@@ -122,6 +147,7 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 ## Safe Authoring Rules
 
 - keep row templates declarative
+- use themes only as fallback template sources
 - use `context` methods for shared row actions
 - avoid custom attribute protocols
 - do not mutate slot templates at runtime
@@ -130,6 +156,8 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 ## Change Safety Checklist
 
 - If touching row rendering, then preserve template-driven rendering.
+- If touching theming, then preserve fallback precedence and local-template
+  override behavior.
 - If touching container handling, then preserve `[data-role="items"]` as the
   insertion point.
 - If touching row context, then preserve the documented field names.

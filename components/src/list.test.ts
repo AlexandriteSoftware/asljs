@@ -11,7 +11,7 @@ import {
   } from 'asljs-observable';
 
 let domRestore: (() => void) | null = null;
-let isListLoaded = false;
+let isComponentsLoaded = false;
 
 const CONTEXT_NAME =
   'list-test';
@@ -216,6 +216,130 @@ test(
   });
 
 test(
+  `${CONTEXT_NAME}: renders item template from package default theme`,
+  async () => {
+    await ensureDomAndListLoaded();
+    resetDomBody();
+
+    const { setDefaultTheme } =
+      await import('./theme.js');
+
+    setDefaultTheme(
+      { list:
+          { item:
+              '<div class="theme-row" data-bind-text="item.title"></div>' } });
+
+    try {
+      const list =
+        document.createElement('asljs-list') as HTMLElement & {
+          items: Record<string, unknown>[];
+          updateComplete: Promise<boolean>;
+        };
+
+      list.items = [ { title: 'From default theme' } ];
+
+      document.body.appendChild(list);
+
+      await settle(list);
+
+      const themedRow =
+        list.querySelector('.theme-row') as HTMLDivElement;
+
+      assert.equal(themedRow.textContent, 'From default theme');
+    } finally {
+      setDefaultTheme(null);
+    }
+  });
+
+test(
+  `${CONTEXT_NAME}: renders templates from nearest theme provider`,
+  async () => {
+    await ensureDomAndListLoaded();
+    resetDomBody();
+
+    const provider =
+      document.createElement('asljs-theme-provider') as HTMLElement & {
+        theme: unknown;
+      };
+
+    provider.theme =
+      { list:
+          { container:
+              '<section class="theme-container" data-role="items"></section>',
+            item:
+              '<article class="theme-card" data-bind-text="item.title"></article>' } };
+
+    const list =
+      document.createElement('asljs-list') as HTMLElement & {
+        items: Record<string, unknown>[];
+        updateComplete: Promise<boolean>;
+      };
+
+    list.items = [ { title: 'From provider theme' } ];
+
+    provider.appendChild(list);
+    document.body.appendChild(provider);
+
+    await settle(list);
+
+    const container =
+      list.querySelector('.theme-container') as HTMLElement;
+
+    const card =
+      list.querySelector('.theme-card') as HTMLElement;
+
+    assert.equal(container !== null, true);
+    assert.equal(card.textContent, 'From provider theme');
+  });
+
+test(
+  `${CONTEXT_NAME}: local slot template overrides themed item template`,
+  async () => {
+    await ensureDomAndListLoaded();
+    resetDomBody();
+
+    const { setDefaultTheme } =
+      await import('./theme.js');
+
+    setDefaultTheme(
+      { list:
+          { item:
+              '<div class="theme-row" data-bind-text="item.title"></div>' } });
+
+    try {
+      const list =
+        document.createElement('asljs-list') as HTMLElement & {
+          items: Record<string, unknown>[];
+          updateComplete: Promise<boolean>;
+        };
+
+      list.innerHTML =
+        `
+          <template data-slot="item">
+            <div class="local-row" data-bind-text="item.title"></div>
+          </template>
+        `;
+
+      list.items = [ { title: 'Local wins' } ];
+
+      document.body.appendChild(list);
+
+      await settle(list);
+
+      assert.equal(
+        list.querySelector('.theme-row'),
+        null);
+
+      const localRow =
+        list.querySelector('.local-row') as HTMLElement;
+
+      assert.equal(localRow.textContent, 'Local wins');
+    } finally {
+      setDefaultTheme(null);
+    }
+  });
+
+test(
   `${CONTEXT_NAME}: context.select without context warns and does not invoke handler`,
   async () => {
     await ensureDomAndListLoaded();
@@ -365,9 +489,9 @@ async function ensureDomAndListLoaded(
     domRestore = installDom();
   }
 
-  if (!isListLoaded) {
-    await import('./list.js');
-    isListLoaded = true;
+  if (!isComponentsLoaded) {
+    await import('./index.js');
+    isComponentsLoaded = true;
   }
 }
 

@@ -14,6 +14,19 @@ import {
     asEventfulLike,
     type EventfulLike,
   } from 'asljs-eventful';
+import {
+    findThemeProvider,
+    getDefaultTheme,
+    resolveThemeTemplate,
+    THEME_CHANGED_EVENT_NAME,
+    type ComponentsTheme,
+    type ThemeProviderLike,
+  } from './theme.js';
+
+type ListSlotName =
+  'container'
+  | 'empty'
+  | 'item';
 
 export type ListRowContext =
   { item: ListItem;
@@ -40,14 +53,23 @@ export class List
   #itemTemplate: HTMLTemplateElement | null = null;
   #itemBindingDisposers: Array<() => void> = [];
   #itemsObserverDispose: (() => void) | null = null;
+  #themeProvider: ThemeProviderLike | null = null;
   #warnedMissingItemTemplate = false;
   #warnedInvalidContainer = false;
+
+  #handleThemeChanged =
+    (): void => {
+      this.requestUpdate();
+    };
 
   @property({ attribute: false })
     accessor items: ListItemsSource = [];
 
   @property({ attribute: false })
     accessor context: unknown = undefined;
+
+  @property({ attribute: false })
+    accessor theme: ComponentsTheme | null = null;
 
   createRenderRoot(
     ): this
@@ -61,6 +83,7 @@ export class List
     super.connectedCallback();
     this.#captureTemplates();
     this.#syncItemsObserver();
+    this.#syncThemeProvider();
   }
 
   disconnectedCallback(
@@ -68,14 +91,24 @@ export class List
   {
     this.#disposeItemsObserver();
     this.#disposeItemBindings();
+    this.#disposeThemeProvider();
     super.disconnectedCallback();
   }
 
   render(
     ): ReturnType<LitElement['render']>
   {
+    const emptyTemplate =
+      this.#resolveTemplate('empty');
+
+    const itemTemplate =
+      this.#resolveTemplate('item');
+
+    const containerTemplate =
+      this.#resolveTemplate('container');
+
     if (this.items.length === 0) {
-      if (this.#emptyTemplate) {
+      if (emptyTemplate) {
         return html`
           <div data-role="empty-template-host"></div>
         `;
@@ -84,11 +117,11 @@ export class List
       return nothing;
     }
 
-    if (!this.#itemTemplate) {
+    if (!itemTemplate) {
       return nothing;
     }
 
-    if (this.#containerTemplate) {
+    if (containerTemplate) {
       return html`
         <div data-role="container-template-host"></div>
       `;
@@ -108,6 +141,10 @@ export class List
   {
     if (changedProperties.has('items')) {
       this.#syncItemsObserver();
+    }
+
+    if (changedProperties.has('theme')) {
+      this.#syncThemeProvider();
     }
 
     this.#renderTemplateContent();
@@ -159,7 +196,10 @@ export class List
   #renderEmptyTemplate(
     ): void
   {
-    if (!this.#emptyTemplate || this.items.length > 0) {
+    const emptyTemplate =
+      this.#resolveTemplate('empty');
+
+    if (!emptyTemplate || this.items.length > 0) {
       return;
     }
 
@@ -171,7 +211,7 @@ export class List
     }
 
     host.replaceChildren(
-      this.#emptyTemplate.content.cloneNode(true));
+      emptyTemplate.content.cloneNode(true));
   }
 
   #renderItemTemplates(
@@ -179,8 +219,11 @@ export class List
   {
     this.#disposeItemBindings();
 
-    if (!this.#itemTemplate || this.items.length === 0) {
-      if (!this.#itemTemplate && this.items.length > 0) {
+    const itemTemplate =
+      this.#resolveTemplate('item');
+
+    if (!itemTemplate || this.items.length === 0) {
+      if (!itemTemplate && this.items.length > 0) {
         this.#warnMissingItemTemplate();
       }
 
@@ -213,7 +256,7 @@ export class List
           count };
 
       const fragment =
-        this.#itemTemplate.content.cloneNode(true) as DocumentFragment;
+        itemTemplate.content.cloneNode(true) as DocumentFragment;
 
       this.#bindFragmentModel(
         fragment,
@@ -228,7 +271,10 @@ export class List
   #resolveItemsHost(
     ): ParentNode | null
   {
-    if (this.#containerTemplate) {
+    const containerTemplate =
+      this.#resolveTemplate('container');
+
+    if (containerTemplate) {
       const containerHost =
         this.querySelector('[data-role="container-template-host"]');
 
@@ -237,7 +283,7 @@ export class List
       }
 
       const fragment =
-        this.#containerTemplate.content.cloneNode(true) as DocumentFragment;
+        containerTemplate.content.cloneNode(true) as DocumentFragment;
 
       const templatedItemsHost =
         fragment.querySelector('[data-role="items"]');
@@ -256,6 +302,43 @@ export class List
       this.querySelector('[data-role="default-container-host"]');
 
     return defaultContainerHost;
+  }
+
+  #resolveTemplate(
+      slotName: ListSlotName
+    ): HTMLTemplateElement | null
+  {
+    return this.#getLocalTemplate(slotName)
+      ?? this.#getThemeTemplate(slotName);
+  }
+
+  #getLocalTemplate(
+      slotName: ListSlotName
+    ): HTMLTemplateElement | null
+  {
+    if (slotName === 'container') {
+      return this.#containerTemplate;
+    }
+
+    if (slotName === 'empty') {
+      return this.#emptyTemplate;
+    }
+
+    return this.#itemTemplate;
+  }
+
+  #getThemeTemplate(
+      slotName: ListSlotName
+    ): HTMLTemplateElement | null
+  {
+    const activeTheme =
+      this.theme
+      ?? this.#themeProvider?.theme
+      ?? getDefaultTheme();
+
+    return resolveThemeTemplate(
+      activeTheme.list?.[slotName],
+      this);
   }
 
   #bindFragmentModel(
@@ -358,6 +441,35 @@ export class List
       this.#itemsObserverDispose();
       this.#itemsObserverDispose = null;
     }
+  }
+
+  #syncThemeProvider(
+    ): void
+  {
+    const nextProvider =
+      this.theme
+        ? null
+        : findThemeProvider(this);
+
+    if (this.#themeProvider === nextProvider) {
+      return;
+    }
+
+    this.#disposeThemeProvider();
+
+    this.#themeProvider = nextProvider;
+    this.#themeProvider?.addEventListener(
+      THEME_CHANGED_EVENT_NAME,
+      this.#handleThemeChanged);
+  }
+
+  #disposeThemeProvider(
+    ): void
+  {
+    this.#themeProvider?.removeEventListener(
+      THEME_CHANGED_EVENT_NAME,
+      this.#handleThemeChanged);
+    this.#themeProvider = null;
   }
 
   #warnMissingItemTemplate(
