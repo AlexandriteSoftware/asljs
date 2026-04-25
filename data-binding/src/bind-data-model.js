@@ -1,3 +1,5 @@
+/* global console */
+
 import { observable } from 'asljs-observable';
 import { bindEventModel } from './bind-event-model.js';
 import { bindValueModel } from './bind-value-model.js';
