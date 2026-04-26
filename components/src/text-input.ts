@@ -336,7 +336,7 @@ export class TextInput
   {
     return this.#getLocalTemplate(slotName)
       ?? this.#getThemeTemplate(slotName)
-      ?? createBootstrapTextInputTemplate();
+      ?? createDefaultTextInputTemplate();
   }
 
   #getLocalTemplate(
@@ -455,8 +455,15 @@ export class TextInput
     control.id = this.#model.inputId;
     control.placeholder = normalizeOptionalText(this.placeholder) ?? '';
     control.disabled = this.disabled;
-    control.className = 'form-control';
-    control.classList.toggle('is-invalid', !this.status.isValid);
+    control.className = resolveControlClassName(this);
+    const invalidClassName =
+      resolveControlInvalidClassName(this);
+
+    if (invalidClassName !== null && !this.status.isValid) {
+      control.classList.add(invalidClassName);
+    }
+
+    control.toggleAttribute('aria-invalid', !this.status.isValid);
     control.setAttribute(
       'aria-describedby',
       resolveAriaDescribedBy(this.#model));
@@ -600,25 +607,43 @@ function resolveMaxHeight(
     + borderBottom;
 }
 
-function createBootstrapTextInputTemplate(): HTMLTemplateElement {
+function resolveControlClassName(
+    component: TextInput
+  ): string
+{
+  return component
+    .querySelector('[data-role="control-host"]')
+    ?.getAttribute('data-control-class')
+    ?? '';
+}
+
+function resolveControlInvalidClassName(
+    component: TextInput
+  ): string | null
+{
+  return component
+    .querySelector('[data-role="control-host"]')
+    ?.getAttribute('data-control-invalid-class')
+    ?? null;
+}
+
+function createDefaultTextInputTemplate(): HTMLTemplateElement {
   const template =
     document.createElement('template');
 
   template.innerHTML =
     `
-      <div class="mb-3"
-           data-bind-class-asljs-text-input-empty="isEmpty"
-           data-bind-class-asljs-text-input-invalid="hasError">
-        <label class="form-label"
+      <div>
+        <label
                data-bind-text="label"
                data-bind-prop-hidden="hideLabel"
                data-bind-prop-for="inputId"></label>
         <div data-role="control-host"></div>
-        <div class="form-text"
+        <div
              data-bind-text="description"
              data-bind-prop-hidden="hideDescription"
              data-bind-prop-id="descriptionId"></div>
-        <div class="invalid-feedback"
+        <div
              data-bind-text="errorMessage"
              data-bind-prop-hidden="hideError"
              data-bind-prop-id="errorId"></div>

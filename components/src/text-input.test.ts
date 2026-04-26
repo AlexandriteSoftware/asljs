@@ -14,7 +14,7 @@ let domRestore: (() => void) | null = null;
 let isTextInputModuleLoaded = false;
 
 test(
-  'text-input: renders bootstrap label description and control',
+  'text-input: renders plain default label description and control',
   async () => {
     const element =
       await createElement();
@@ -28,22 +28,24 @@ test(
     await settle(element);
 
     const label =
-      element.querySelector('label.form-label') as HTMLLabelElement;
+      element.querySelector('label') as HTMLLabelElement;
     const textarea =
       element.querySelector('textarea') as HTMLTextAreaElement | null;
     const input =
-      element.querySelector('input.form-control') as HTMLInputElement;
+      element.querySelector('input') as HTMLInputElement;
     const description =
-      element.querySelector('.form-text') as HTMLElement;
+      element.querySelector('[data-bind-prop-id="descriptionId"]') as HTMLElement;
 
     assert.equal(label.textContent, 'Title');
     assert.equal(textarea, null);
     assert.equal(input.value, 'Hello');
     assert.equal(description.textContent, 'Shown below');
+    assert.equal(label.className, '');
+    assert.equal(input.className, '');
   });
 
 test(
-  'text-input: validator adds bootstrap invalid state and error message',
+  'text-input: validator sets aria-invalid and shows error message',
   async () => {
     const element =
       await createElement();
@@ -59,14 +61,52 @@ test(
     await settle(element);
 
     const input =
-      element.querySelector('input.form-control') as HTMLInputElement;
+      element.querySelector('input') as HTMLInputElement;
     const error =
-      element.querySelector('.invalid-feedback') as HTMLElement;
+      element.querySelector('[data-bind-prop-id="errorId"]') as HTMLElement;
 
-    assert.equal(input.classList.contains('is-invalid'), true);
+    assert.equal(input.hasAttribute('aria-invalid'), true);
     assert.equal(error.hidden, false);
     assert.equal(error.textContent, 'Value is invalid');
     assert.equal(element.isValid, false);
+  });
+
+test(
+  'text-input: bootstrap theme supplies bootstrap template and classes',
+  async () => {
+    const element =
+      await createElement();
+
+    const bootstrapThemeModule =
+      await import('./themes/bootstrap-theme.js');
+
+    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.label = 'Title';
+    element.description = 'Shown below';
+    element.value = 'Hello';
+    element.validator =
+      value => value === 'ok'
+        ? null
+        : 'Value is invalid';
+
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const label =
+      element.querySelector('label.form-label') as HTMLLabelElement;
+    const input =
+      element.querySelector('input.form-control') as HTMLInputElement;
+    const description =
+      element.querySelector('.form-text') as HTMLElement;
+    const error =
+      element.querySelector('.invalid-feedback') as HTMLElement;
+
+    assert.equal(label.textContent, 'Title');
+    assert.equal(input.value, 'Hello');
+    assert.equal(description.textContent, 'Shown below');
+    assert.equal(input.classList.contains('is-invalid'), true);
+    assert.equal(error.textContent, 'Value is invalid');
   });
 
 test(
@@ -91,7 +131,7 @@ test(
       });
 
     const input =
-      element.querySelector('input.form-control') as HTMLInputElement;
+      element.querySelector('input') as HTMLInputElement;
 
     input.value = 'Changed';
     input.dispatchEvent(
@@ -134,7 +174,7 @@ test(
       });
 
     const textarea =
-      element.querySelector('textarea.form-control') as HTMLTextAreaElement;
+      element.querySelector('textarea') as HTMLTextAreaElement;
 
     textarea.dispatchEvent(
       new window.KeyboardEvent(
@@ -170,7 +210,7 @@ test(
     await settle(element);
 
     const textarea =
-      element.querySelector('textarea.form-control') as HTMLTextAreaElement;
+      element.querySelector('textarea') as HTMLTextAreaElement;
 
     assert.notEqual(textarea.style.height, '');
   });

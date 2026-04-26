@@ -128,9 +128,7 @@ export class List
     }
 
     return html`
-      <div class="list-group
-                  ${this.classList}"
-           data-role="default-container-host">
+      <div data-role="default-container-host">
       </div>
     `;
   }

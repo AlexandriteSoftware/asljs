@@ -38,6 +38,7 @@ export interface TextInputThemeDefinition {
 }
 
 export interface ButtonThemeDefinition {
+  className?: ThemeTextValue;
   addIcon?: ThemeTextValue;
   deleteIcon?: ThemeTextValue;
 }

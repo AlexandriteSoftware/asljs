@@ -36,13 +36,14 @@ test(
     await settle(element);
 
     const button =
-      element.shadowRoot?.querySelector('button');
+      element.querySelector('button');
     const icon =
-      element.shadowRoot?.querySelector('.icon i');
+      element.querySelector('.icon i');
     const text =
-      element.shadowRoot?.querySelector('.text');
+      element.querySelector('.text');
 
     assert.equal(button?.getAttribute('type'), 'button');
+    assert.equal(button?.className, '');
     assert.equal(icon?.className, 'bi bi-star');
     assert.equal(text?.textContent, 'Save');
   });
@@ -62,9 +63,9 @@ test(
     await settle(element);
 
     const icon =
-      element.shadowRoot?.querySelector('.icon');
+      element.querySelector('.icon');
     const text =
-      element.shadowRoot?.querySelector('.text');
+      element.querySelector('.text');
 
     assert.equal(icon?.textContent, '\uF26E');
     assert.equal(text?.textContent, 'Add');
@@ -85,9 +86,9 @@ test(
     await settle(element);
 
     const icon =
-      element.shadowRoot?.querySelector('.icon');
+      element.querySelector('.icon');
     const text =
-      element.shadowRoot?.querySelector('.text');
+      element.querySelector('.text');
 
     assert.equal(icon?.textContent, '\uF5DE');
     assert.equal(text?.textContent, 'Delete');
@@ -115,9 +116,36 @@ test(
     await settle(element);
 
     const icon =
-      element.shadowRoot?.querySelector('.icon i');
+      element.querySelector('.icon i');
 
     assert.equal(icon?.className, 'bi bi-plus');
+  });
+
+test(
+  'button-add: resolves bootstrap button class from theme provider',
+  async () => {
+    await ensureDom();
+    await import('../themes/theme-provider.js');
+    await import('./button.js');
+    await import('./button-add.js');
+
+    const provider =
+      document.createElement('asljs-theme-provider') as ThemeProvider;
+    const element =
+      document.createElement('asljs-button-add') as ButtonAdd;
+
+    provider.theme =
+      { button:
+          { className: 'btn btn-primary' } };
+    provider.appendChild(element);
+    document.body.appendChild(provider);
+
+    await settle(element);
+
+    const button =
+      element.querySelector('button');
+
+    assert.equal(button?.className, 'btn btn-primary');
   });
 
 async function ensureDom(): Promise<void> {

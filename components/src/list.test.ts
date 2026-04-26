@@ -168,6 +168,38 @@ test(
   });
 
 test(
+  `${CONTEXT_NAME}: default fallback container is plain HTML`,
+  async () => {
+    await ensureDomAndListLoaded();
+
+    resetDomBody();
+
+    const list =
+      document.createElement('asljs-list') as HTMLElement & {
+        items: Record<string, unknown>[];
+        updateComplete: Promise<boolean>;
+      };
+
+    list.innerHTML =
+      `
+        <template data-slot="item">
+          <div data-bind-text="item.title"></div>
+        </template>
+      `;
+
+    list.items = [ { title: 'Plain' } ];
+
+    document.body.appendChild(list);
+
+    await settle(list);
+
+    const container =
+      list.querySelector('[data-role="default-container-host"]') as HTMLElement;
+
+    assert.equal(container.className, '');
+  });
+
+test(
   `${CONTEXT_NAME}: supports context.select with row-local this.item`,
   async () => {
     await ensureDomAndListLoaded();
@@ -290,6 +322,43 @@ test(
 
     assert.equal(container !== null, true);
     assert.equal(card.textContent, 'From provider theme');
+  });
+
+test(
+  `${CONTEXT_NAME}: bootstrap theme provides list-group container`,
+  async () => {
+    await ensureDomAndListLoaded();
+    resetDomBody();
+
+    const bootstrapThemeModule =
+      await import('./themes/bootstrap-theme.js');
+
+    const list =
+      document.createElement('asljs-list') as HTMLElement & {
+        items: Record<string, unknown>[];
+        theme: unknown;
+        updateComplete: Promise<boolean>;
+      };
+
+    list.innerHTML =
+      `
+        <template data-slot="item">
+          <div data-bind-text="item.title"></div>
+        </template>
+      `;
+
+    list.theme = bootstrapThemeModule.createBootstrapTheme();
+    list.items = [ { title: 'Bootstrap' } ];
+
+    document.body.appendChild(list);
+
+    await settle(list);
+
+    const container =
+      list.querySelector('.list-group') as HTMLElement;
+
+    assert.equal(container !== null, true);
+    assert.equal(container.getAttribute('data-role'), 'items');
   });
 
 test(

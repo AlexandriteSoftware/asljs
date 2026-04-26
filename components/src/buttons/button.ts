@@ -26,24 +26,6 @@ export class Button
 {
   #themeProvider: ThemeProviderLike | null = null;
 
-  static override styles =
-    css`
-      :host {
-        display: inline-block;
-      }
-
-      button {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .icon:empty,
-      .text:empty {
-        display: none;
-      }
-    `;
-
   @property({ attribute: false })
     accessor icon = '';
 
@@ -58,6 +40,10 @@ export class Button
 
   @property({ reflect: true })
     accessor type: 'button' | 'submit' | 'reset' = 'button';
+
+  override createRenderRoot(): this {
+    return this;
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -101,6 +87,15 @@ export class Button
     return this.defaultIcon;
   }
 
+  protected get resolvedButtonClassName(): string {
+    return resolveThemeText(
+      this.theme?.button?.className
+      ?? this.#themeProvider?.theme?.button?.className
+      ?? getDefaultTheme().button?.className,
+      this)
+      ?? '';
+  }
+
   protected override updated(
       changedProperties: Map<PropertyKey, unknown>
     ): void
@@ -113,11 +108,15 @@ export class Button
   override render(): ReturnType<LitElement['render']> {
     return html`
       <button
+          class=${this.resolvedButtonClassName}
           ?disabled=${this.disabled}
-          type=${this.type}>
+          type=${this.type}
+          style="display:inline-flex;align-items:center;gap:0.5rem;">
         <span class="icon"
+              ?hidden=${this.resolvedIcon === ''}
               aria-hidden="true">${unsafeHTML(this.resolvedIcon)}</span>
-        <span class="text">${this.text}</span>
+        <span class="text"
+              ?hidden=${this.text === ''}>${this.text}</span>
       </button>
     `;
   }

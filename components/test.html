@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+					content="width=device-width, initial-scale=1">
+		<title>ASLJS Components Test</title>
+		<link rel="stylesheet"
+				href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+		<link rel="stylesheet"
+				href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+		<style>
+			body {
+				margin: 16px;
+				font: 14px/1.4 sans-serif;
+			}
+
+			.page {
+				display: grid;
+				grid-template-columns: 220px 1fr;
+				gap: 16px;
+			}
+
+			.component-list,
+			.theme-select,
+			.view-area,
+			.event-log,
+			.demo-input,
+			.demo-card {
+				border: 1px solid #bbb;
+			}
+
+			.component-list {
+				width: 100%;
+				height: 320px;
+			}
+
+			.theme-select {
+				width: 100%;
+			}
+
+			.content {
+				display: grid;
+				gap: 12px;
+			}
+
+			.header h2,
+			.preview h3,
+			.events h3,
+			.sidebar h1 {
+				margin: 0 0 8px;
+			}
+
+			.sidebar p,
+			.header p {
+				margin: 0 0 8px;
+			}
+
+			.view-area {
+				min-height: 320px;
+				padding: 12px;
+				overflow: auto;
+			}
+
+			.event-log {
+				margin: 0;
+				min-height: 96px;
+				padding: 8px;
+				white-space: pre-wrap;
+			}
+
+			.demo-stack,
+			.demo-grid {
+				display: grid;
+				gap: 12px;
+			}
+
+			.demo-row {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+
+			.demo-input,
+			.demo-card {
+				padding: 8px;
+			}
+
+			.assisted-box {
+				max-width: 32rem;
+			}
+
+			.file-box {
+				min-height: 24rem;
+			}
+
+			@media (max-width: 800px) {
+				.page {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+		<script type="importmap">
+			{
+				"imports": {
+					"@lit/reactive-element": "../node_modules/@lit/reactive-element/reactive-element.js",
+					"@lit/reactive-element/": "../node_modules/@lit/reactive-element/",
+					"lit": "../node_modules/lit/index.js",
+					"lit/": "../node_modules/lit/",
+					"lit-element": "../node_modules/lit-element/index.js",
+					"lit-element/": "../node_modules/lit-element/",
+					"lit-html": "../node_modules/lit-html/lit-html.js",
+					"lit-html/": "../node_modules/lit-html/",
+					"asljs-data-binding": "../node_modules/asljs-data-binding/dist/index.js",
+					"asljs-eventful": "../node_modules/asljs-eventful/dist/index.js",
+					"asljs-observable": "../node_modules/asljs-observable/dist/index.js"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div class="page">
+			<aside class="sidebar">
+				<h1>ASLJS Components</h1>
+				<p>Select a component to clear the preview area and recreate a live demo.</p>
+				<label for="theme-select">Theme</label>
+				<select id="theme-select"
+							class="theme-select"
+							aria-label="Theme selector">
+					<option value="none">None</option>
+					<option value="bootstrap" selected>Bootstrap</option>
+				</select>
+				<label for="component-list">Component list</label>
+				<select id="component-list"
+								class="component-list"
+								size="12"
+								aria-label="Component listbox"></select>
+			</aside>
+
+			<main class="content">
+				<div class="panel">
+					<section class="header">
+						<h2 id="component-title">Component preview</h2>
+						<p id="component-description">Select a component from the list to render it.</p>
+					</section>
+
+					<section class="preview">
+						<h3>View</h3>
+						<div id="view-area"
+								 class="view-area"></div>
+					</section>
+
+					<section class="events">
+						<h3>Event log</h3>
+						<pre id="event-log"
+								 class="event-log">Ready.</pre>
+					</section>
+				</div>
+			</main>
+		</div>
+
+		<script type="module">
+			import {
+					createBootstrapTheme,
+					createImageFileHandler,
+					createPdfFileHandler,
+					createTextEditorFileHandler,
+					createTextFileHandler,
+					setDefaultTheme,
+				} from './dist/index.js';
+			import './dist/index.js';
+
+			const componentList = document.querySelector('#component-list');
+			const themeSelect = document.querySelector('#theme-select');
+			const componentTitle = document.querySelector('#component-title');
+			const componentDescription = document.querySelector('#component-description');
+			const viewArea = document.querySelector('#view-area');
+			const eventLog = document.querySelector('#event-log');
+
+			const componentEntries = [
+				{
+					name: 'Button',
+					description: 'Base icon-plus-text button.',
+					create: () => {
+						const button = document.createElement('asljs-button');
+						button.icon = '<i class="bi bi-lightning-charge"></i>';
+						button.text = 'Run';
+						return button;
+					},
+				},
+				{
+					name: 'ButtonAdd',
+					description: 'Add button using the active theme icon fallback.',
+					create: () => document.createElement('asljs-button-add'),
+				},
+				{
+					name: 'ButtonDelete',
+					description: 'Delete button using the active theme icon fallback.',
+					create: () => document.createElement('asljs-button-delete'),
+				},
+				{
+					name: 'List',
+					description: 'Template-driven list rendering with row bindings.',
+					create: () => {
+						const list = document.createElement('asljs-list');
+						const template = document.createElement('template');
+						template.dataset.slot = 'item';
+						template.innerHTML = `
+							<div class="demo-card"
+									 data-bind-text="item.title">
+							</div>
+						`;
+						list.appendChild(template);
+						list.items = [
+							{ title: 'Alpha row' },
+							{ title: 'Beta row' },
+							{ title: 'Gamma row' },
+						];
+						return list;
+					},
+				},
+				{
+					name: 'TextInput',
+					description: 'Text input with validation, status, and Bootstrap default template.',
+					create: () => {
+						const input = document.createElement('asljs-text-input');
+						input.label = 'Project name';
+						input.description = 'At least 4 characters.';
+						input.placeholder = 'Enter a name';
+						input.value = 'ASLJS';
+						input.validator = value =>
+							value.trim().length < 4
+								? 'Value must be at least 4 characters.'
+								: null;
+						return input;
+					},
+				},
+				{
+					name: 'Numpad',
+					description: 'Numeric assisted input with filtered key events.',
+					create: () => createAssistedInputDemo('asljs-numpad', '0123456789.', '123'),
+				},
+				{
+					name: 'Keyboard',
+					description: 'Full on-screen keyboard with filtered key and submit events.',
+					create: () => createAssistedInputDemo('asljs-keyboard', "abcdefghijklmnopqrstuvwxyz0123456789 .,'-", 'alex'),
+				},
+				{
+					name: 'Letterpad',
+					description: 'Alphabetic assisted input with collapse toggle.',
+					create: () => createAssistedInputDemo('asljs-letterpad', 'abcdefghijklmnopqrstuvwxyz', 'trace'),
+				},
+				{
+					name: 'FileView',
+					description: 'Provider- and handler-driven file preview surface.',
+					create: () => {
+						const shell = document.createElement('div');
+						shell.className = 'demo-grid';
+
+						const fileView = document.createElement('asljs-file');
+						fileView.className = 'demo-card file-box';
+						fileView.provider = {
+							loadFile: async fileName => ({
+								name: fileName,
+								mimeType: 'text/plain',
+								text: 'ASLJS file preview demo\n\nThis text comes from an in-memory provider.',
+							}),
+							saveText: async (_fileName, text) => {
+								appendLog(`saveText -> ${JSON.stringify(text)}`);
+							},
+						};
+						fileView.handlers = [
+							createPdfFileHandler(),
+							createImageFileHandler(),
+							createTextEditorFileHandler(),
+							createTextFileHandler(),
+						];
+						fileView.fileName = 'demo.txt';
+
+						shell.appendChild(fileView);
+						return shell;
+					},
+				},
+			];
+
+			componentEntries.forEach((entry, index) => {
+				const option = document.createElement('option');
+				option.value = String(index);
+				option.textContent = entry.name;
+				componentList.appendChild(option);
+			});
+
+			componentList.addEventListener('change', () => {
+				const selectedIndex = Number(componentList.value);
+				renderComponent(componentEntries[selectedIndex]);
+			});
+
+			themeSelect.addEventListener('change', () => {
+				applySelectedTheme();
+				const selectedIndex = Number(componentList.value || 0);
+				renderComponent(componentEntries[selectedIndex]);
+			});
+
+			applySelectedTheme();
+			renderComponent(componentEntries[0]);
+			componentList.value = '0';
+
+			function renderComponent(entry) {
+				componentTitle.textContent = entry.name;
+				componentDescription.textContent = entry.description;
+				eventLog.textContent = `Selected ${entry.name}. Theme: ${themeSelect.value}.`;
+				viewArea.replaceChildren();
+				const content = entry.create();
+				viewArea.appendChild(content);
+			}
+
+			function applySelectedTheme() {
+				setDefaultTheme(getSelectedTheme());
+			}
+
+			function getSelectedTheme() {
+				return themeSelect.value === 'bootstrap'
+					? createBootstrapTheme()
+					: null;
+			}
+
+			function createAssistedInputDemo(tagName, characters, initialValue) {
+				const shell = document.createElement('div');
+				shell.className = 'demo-stack';
+
+				const input = document.createElement('input');
+				input.className = 'demo-input';
+				input.value = initialValue;
+				input.placeholder = 'Selected keys appear here';
+
+				const hint = document.createElement('div');
+				hint.className = 'demo-card';
+				hint.textContent = `Allowed characters: ${JSON.stringify(characters)}`;
+
+				const assistedInput = document.createElement(tagName);
+				assistedInput.className = 'assisted-box';
+				assistedInput.characters = characters;
+
+				assistedInput.addEventListener('key', event => {
+					const { key } = event.detail;
+
+					if (key === 'Backspace') {
+						input.value = input.value.slice(0, -1);
+					} else {
+						input.value += key;
+					}
+
+					appendLog(`${tagName} key -> ${JSON.stringify(key)}`);
+				});
+
+				assistedInput.addEventListener('submit', () => {
+					appendLog(`${tagName} submit -> ${JSON.stringify(input.value)}`);
+				});
+
+				shell.append(input, hint, assistedInput);
+				return shell;
+			}
+
+			function appendLog(line) {
+				const current = eventLog.textContent.trim();
+				eventLog.textContent =
+					current === '' || current === 'Ready.'
+						? line
+						: `${current}\n${line}`;
+			}
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+	</body>
+</html>
