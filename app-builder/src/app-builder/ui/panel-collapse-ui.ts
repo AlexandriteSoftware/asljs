@@ -1,6 +1,12 @@
+type ToggleButtonElement =
+  HTMLElement
+  & {
+    text?: string;
+  };
+
 export type TogglePanelUiOptions =
   { panelElement: HTMLElement;
-    toggleButtonElement: HTMLButtonElement;
+    toggleButtonElement: ToggleButtonElement;
     panelsElement: HTMLElement;
     collapsedPanelsClass: string;
     expandedLabel: string;
@@ -12,9 +18,16 @@ export function togglePanelUi(
 {
   const collapsed = !options.panelElement.classList.contains('collapsed');
 
-  options.toggleButtonElement.textContent = collapsed
-    ? options.collapsedLabel
-    : options.expandedLabel;
+  const nextLabel =
+    collapsed
+      ? options.collapsedLabel
+      : options.expandedLabel;
+
+  if ('text' in options.toggleButtonElement) {
+    options.toggleButtonElement.text = nextLabel;
+  } else {
+    options.toggleButtonElement.textContent = nextLabel;
+  }
 
   options.toggleButtonElement.setAttribute(
     'aria-expanded',

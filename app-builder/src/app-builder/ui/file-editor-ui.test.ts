@@ -21,10 +21,15 @@ type TestFileElement =
     handlers: unknown[];
     fileName: string | null; };
 
+type TestSelectElement =
+  { items: Array<{ value: string; label: string; disabled?: boolean; }>;
+    value: string | null;
+    disabled: boolean; };
+
 test(
   'renderFileSelectUi and renderFileContentUi set active file state',
   async () => {
-    const dom = new JSDOM('<select id="files"></select>');
+    const dom = new JSDOM('<div id="files"></div>');
     const previousDocument = globalThis.document;
     const previousWindow = globalThis.window;
     const previousCustomElements = globalThis.customElements;
@@ -35,7 +40,8 @@ test(
     globalThis.HTMLElement = dom.window.HTMLElement;
 
     const document = dom.window.document;
-    const select = document.getElementById('files') as HTMLSelectElement;
+    const select =
+      document.getElementById('files') as unknown as TestSelectElement;
     const ui = await importFileEditorUi();
     const fileElement: TestFileElement =
       { provider: null,
@@ -63,7 +69,7 @@ test(
       assert.equal(select.disabled, false);
       assert.equal(select.value, 'app.js');
       assert.equal(fileElement.fileName, 'app.js');
-      assert.equal(fileElement.handlers.length, 2);
+      assert.equal(fileElement.handlers.length, 3);
 
       const loaded =
         await fileElement.provider?.loadFile('app.js');
@@ -83,12 +89,13 @@ test(
 test(
   'renderFileSelectUi includes dotfiles and keeps the active file when selected',
   async () => {
-    const dom = new JSDOM('<select id="files"></select>');
+    const dom = new JSDOM('<div id="files"></div>');
     const previousDocument = globalThis.document;
     globalThis.document = dom.window.document;
 
     const document = dom.window.document;
-    const select = document.getElementById('files') as HTMLSelectElement;
+    const select =
+      document.getElementById('files') as unknown as TestSelectElement;
 
     const files = [
       { name: '.README.md', content: '# previous' },
@@ -107,7 +114,7 @@ test(
 
       assert.equal(select.disabled, false);
       assert.deepEqual(
-        Array.from(select.options).map(option => option.value),
+        select.items.map(option => option.value),
         [ '.README.md', 'README.md', 'app.js' ],
       );
       assert.equal(select.value, '.README.md');

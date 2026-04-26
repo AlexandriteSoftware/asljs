@@ -15,28 +15,29 @@ import {
   } from 'lit/decorators.js';
 import {
     findThemeProvider,
-  getDefaultTheme,
+    getDefaultTheme,
     resolveThemeTemplate,
     THEME_CHANGED_EVENT_NAME,
     type ComponentsTheme,
     type ThemeProviderLike,
   } from './themes/theme.js';
 
-type TextInputSlotName =
+type SelectSlotName =
   'template'
-  | 'input'
-  | 'textarea';
+  | 'select';
 
-export type TextInputEnterKeyBehavior =
-  'finish'
-  | 'newline';
+export interface SelectItem {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
 
-export type TextInputValidator =
+export type SelectValidator =
   (
       value: string
     ) => string | null;
 
-export interface TextInputChangeDetail {
+export interface SelectChangeDetail {
   value: string;
   isEmpty: boolean;
   isValid: boolean;
@@ -44,7 +45,7 @@ export interface TextInputChangeDetail {
   dirty: boolean;
 }
 
-export type TextInputStatus =
+export type SelectStatus =
   Observable<{
     draftValue: string;
     isEmpty: boolean;
@@ -53,7 +54,7 @@ export type TextInputStatus =
     dirty: boolean;
   }>;
 
-type TextInputTemplateModel =
+type SelectTemplateModel =
   Observable<{
     label: string;
     description: string;
@@ -63,31 +64,26 @@ type TextInputTemplateModel =
     hideError: boolean;
     hasError: boolean;
     isEmpty: boolean;
-    multiline: boolean;
     inputId: string;
     descriptionId: string;
     errorId: string;
   }>;
 
-@customElement('asljs-text-input')
-export class TextInput
+@customElement('asljs-select')
+export class Select
   extends LitElement
 {
   #templateElement: HTMLTemplateElement | null = null;
-  #inputTemplateElement: HTMLTemplateElement | null = null;
-  #textareaTemplateElement: HTMLTemplateElement | null = null;
+  #selectTemplateElement: HTMLTemplateElement | null = null;
   #templateDispose: (() => void) | null = null;
   #controlTemplateDispose: (() => void) | null = null;
   #themeProvider: ThemeProviderLike | null = null;
-  #control: HTMLInputElement | HTMLTextAreaElement | null = null;
+  #control: HTMLSelectElement | null = null;
   #controlBaseClassName = '';
   #controlInvalidClassName: string | null = null;
-  #controlInputListener: (() => void) | null = null;
-  #controlBlurListener: (() => void) | null = null;
-  #controlKeydownListener: (() => void) | null = null;
-  #skipNextBlur = false;
-  #idBase = `asljs-text-input-${nextTextInputId++}`;
-  #model: TextInputTemplateModel =
+  #controlChangeListener: (() => void) | null = null;
+  #idBase = `asljs-select-${nextSelectId++}`;
+  #model: SelectTemplateModel =
     observable(
       { label: '',
         description: '',
@@ -97,12 +93,11 @@ export class TextInput
         hideError: true,
         hasError: false,
         isEmpty: true,
-        multiline: false,
         inputId: `${this.#idBase}-control`,
         descriptionId: `${this.#idBase}-description`,
         errorId: `${this.#idBase}-error` });
 
-  readonly status: TextInputStatus =
+  readonly status: SelectStatus =
     observable(
       { draftValue: '',
         isEmpty: true,
@@ -117,7 +112,7 @@ export class TextInput
     accessor description: string | null = null;
 
   @property({ attribute: false })
-    accessor validator: TextInputValidator | null = null;
+    accessor validator: SelectValidator | null = null;
 
   @property({ attribute: false })
     accessor theme: ComponentsTheme | null = null;
@@ -129,28 +124,13 @@ export class TextInput
     accessor placeholder: string | null = null;
 
   @property({ attribute: false })
-    accessor inputType = 'text';
-
-  @property({ attribute: false })
-    accessor controlClassName = '';
-
-  @property({ attribute: false })
-    accessor multiline = false;
-
-  @property({ attribute: false })
-    accessor autoExtend = false;
-
-  @property({ attribute: false })
-    accessor autoExtendMaxRows: number | null = null;
-
-  @property({ attribute: false })
-    accessor enterKeyBehavior: TextInputEnterKeyBehavior = 'finish';
+    accessor items: SelectItem[] = [];
 
   @property({ attribute: false })
     accessor disabled = false;
 
   @property({ attribute: false })
-    accessor rows = 3;
+    accessor controlClassName = '';
 
   get draftValue(): string {
     return this.status.draftValue;
@@ -209,7 +189,6 @@ export class TextInput
 
     if (changedProperties.has('label')
         || changedProperties.has('description')
-        || changedProperties.has('multiline')
         || changedProperties.has('theme'))
     {
       this.#renderTemplate();
@@ -217,13 +196,9 @@ export class TextInput
     }
 
     if (changedProperties.has('placeholder')
-      || changedProperties.has('inputType')
-      || changedProperties.has('controlClassName')
         || changedProperties.has('disabled')
-        || changedProperties.has('rows')
-        || changedProperties.has('autoExtend')
-        || changedProperties.has('autoExtendMaxRows')
-        || changedProperties.has('enterKeyBehavior'))
+        || changedProperties.has('items')
+        || changedProperties.has('controlClassName'))
     {
       this.#syncControlState();
     }
@@ -232,22 +207,14 @@ export class TextInput
   }
 
   #captureTemplates(): void {
-    this.#templateElement = null;
-    this.#inputTemplateElement = null;
-    this.#textareaTemplateElement = null;
-
     this.#templateElement =
       cloneNamedTemplate(
         this,
         'template');
-    this.#inputTemplateElement =
+    this.#selectTemplateElement =
       cloneNamedTemplate(
         this,
-        'input');
-    this.#textareaTemplateElement =
-      cloneNamedTemplate(
-        this,
-        'textarea');
+        'select');
   }
 
   #syncThemeProvider(): void {
@@ -276,10 +243,7 @@ export class TextInput
   };
 
   #applyExternalValue(): void {
-    const nextValue =
-      normalizeText(this.value);
-
-    this.status.draftValue = nextValue;
+    this.status.draftValue = normalizeText(this.value);
     this.#syncModelState();
     this.#syncControlState();
   }
@@ -309,7 +273,6 @@ export class TextInput
     this.#model.hideError = errorMessage === null;
     this.#model.hasError = errorMessage !== null;
     this.#model.isEmpty = isEmpty;
-    this.#model.multiline = this.multiline;
 
     this.#syncControlState();
   }
@@ -345,36 +308,30 @@ export class TextInput
         this.#model as unknown as Record<string, unknown>);
 
     templateHost.replaceChildren(fragment);
-
     this.#mountControl();
     this.#syncModelState();
   }
 
   #resolveTemplate(
-      slotName: TextInputSlotName
+      slotName: SelectSlotName
     ): HTMLTemplateElement | null
   {
     return this.#getLocalTemplate(slotName)
       ?? this.#getThemeTemplate(slotName)
-      ?? createDefaultTextInputTemplate();
+      ?? createDefaultSelectTemplate(slotName);
   }
 
   #getLocalTemplate(
-      slotName: TextInputSlotName
+      slotName: SelectSlotName
     ): HTMLTemplateElement | null
   {
-    switch (slotName) {
-      case 'template':
-        return this.#templateElement;
-      case 'input':
-        return this.#inputTemplateElement;
-      case 'textarea':
-        return this.#textareaTemplateElement;
-    }
+    return slotName === 'template'
+      ? this.#templateElement
+      : this.#selectTemplateElement;
   }
 
   #getThemeTemplate(
-      slotName: TextInputSlotName
+      slotName: SelectSlotName
     ): HTMLTemplateElement | null
   {
     const theme =
@@ -384,10 +341,8 @@ export class TextInput
 
     return resolveThemeTemplate(
       slotName === 'template'
-        ? theme.textInput?.template
-        : slotName === 'input'
-          ? theme.textInput?.input
-          : theme.textInput?.textarea,
+        ? theme.select?.template
+        : theme.select?.select,
       this);
   }
 
@@ -401,8 +356,6 @@ export class TextInput
 
     const mountedControl =
       this.#createMountedControl(controlHost);
-    const control =
-      mountedControl.control;
 
     this.#controlTemplateDispose =
       bindDataModel(
@@ -410,65 +363,27 @@ export class TextInput
         this.#model as unknown as Record<string, unknown>);
 
     controlHost.replaceChildren(mountedControl.fragment);
-    this.#control = control;
+    this.#control = mountedControl.control;
     this.#controlBaseClassName = mountedControl.className;
     this.#controlInvalidClassName = mountedControl.invalidClassName;
 
-    const inputListener =
+    const changeListener =
       (): void => {
-        this.status.draftValue = control.value;
+        if (this.#control === null) {
+          return;
+        }
+
+        this.status.draftValue = this.#control.value;
         this.#syncModelState();
         this.#dispatchValueEvent('input');
-      };
-
-    const blurListener =
-      (): void => {
-        if (this.#skipNextBlur) {
-          this.#skipNextBlur = false;
-          return;
-        }
-
         this.#dispatchValueEvent('change');
       };
 
-    const keydownListener =
-      (event: Event): void => {
-        const keyboardEvent =
-          event as KeyboardEvent;
+    this.#control.addEventListener('change', changeListener);
 
-        if (keyboardEvent.key !== 'Enter') {
-          return;
-        }
-
-        if (this.multiline
-            && !keyboardEvent.ctrlKey
-            && !keyboardEvent.metaKey
-            && this.enterKeyBehavior === 'newline')
-        {
-          return;
-        }
-
-        keyboardEvent.preventDefault();
-        this.#skipNextBlur = true;
-        this.#dispatchValueEvent('change');
-        control.blur();
-      };
-
-    control.addEventListener('input', inputListener);
-    control.addEventListener('blur', blurListener);
-    control.addEventListener('keydown', keydownListener);
-
-    this.#controlInputListener =
+    this.#controlChangeListener =
       () => {
-        control.removeEventListener('input', inputListener);
-      };
-    this.#controlBlurListener =
-      () => {
-        control.removeEventListener('blur', blurListener);
-      };
-    this.#controlKeydownListener =
-      () => {
-        control.removeEventListener('keydown', keydownListener);
+        this.#control?.removeEventListener('change', changeListener);
       };
 
     this.#syncControlState();
@@ -482,70 +397,79 @@ export class TextInput
       return;
     }
 
-    if (control.value !== this.status.draftValue) {
-      control.value = this.status.draftValue;
+    control.replaceChildren();
+
+    const placeholder =
+      normalizeOptionalText(this.placeholder);
+
+    if (placeholder !== null) {
+      const option =
+        document.createElement('option');
+
+      option.value = '';
+      option.textContent = placeholder;
+      control.appendChild(option);
     }
 
+    for (const item of normalizeItems(this.items)) {
+      const option =
+        document.createElement('option');
+
+      option.value = item.value;
+      option.textContent = item.label;
+      option.disabled = item.disabled ?? false;
+      control.appendChild(option);
+    }
+
+    const candidateValues =
+      Array.from(control.options).map(option => option.value);
+    const nextValue =
+      candidateValues.includes(this.status.draftValue)
+        ? this.status.draftValue
+        : placeholder !== null
+          ? ''
+          : candidateValues[0] ?? '';
+
+    if (this.status.draftValue !== nextValue) {
+      this.status.draftValue = nextValue;
+      this.#syncModelState();
+    }
+
+    control.value = nextValue;
     control.id = this.#model.inputId;
-    control.placeholder = normalizeOptionalText(this.placeholder) ?? '';
     control.disabled = this.disabled;
     control.className = joinClassNames(
       this.#controlBaseClassName,
       this.controlClassName);
-    const invalidClassName =
-      this.#controlInvalidClassName;
 
-    if (control instanceof HTMLInputElement) {
-      control.type = this.inputType;
-    }
-
-    if (invalidClassName !== null && !this.status.isValid) {
-      control.classList.add(invalidClassName);
+    if (this.#controlInvalidClassName !== null && !this.status.isValid) {
+      control.classList.add(this.#controlInvalidClassName);
     }
 
     control.toggleAttribute('aria-invalid', !this.status.isValid);
     control.setAttribute(
       'aria-describedby',
       resolveAriaDescribedBy(this.#model));
-
-    if (this.multiline && control instanceof HTMLTextAreaElement) {
-      control.rows = Math.max(1, this.rows);
-      this.#syncAutoExtend(control);
-      return;
-    }
-
-    control.style.height = '';
-    control.style.overflowY = '';
   }
 
   #createMountedControl(
       controlHost: HTMLElement
-    ): MountedTextInputControl
+    ): MountedSelectControl
   {
-    const slotName: TextInputSlotName =
-      this.multiline
-        ? 'textarea'
-        : 'input';
     const template =
-      this.#resolveTemplate(slotName);
+      this.#resolveTemplate('select');
 
     if (template === null) {
-      return createFallbackMountedControl(
-        this.multiline,
-        controlHost);
+      return createFallbackMountedControl(controlHost);
     }
 
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
     const control =
-      this.multiline
-        ? fragment.querySelector('textarea')
-        : fragment.querySelector('input');
+      fragment.querySelector('select');
 
     if (control === null) {
-      return createFallbackMountedControl(
-        this.multiline,
-        controlHost);
+      return createFallbackMountedControl(controlHost);
     }
 
     return {
@@ -556,39 +480,11 @@ export class TextInput
     };
   }
 
-  #syncAutoExtend(
-      control: HTMLTextAreaElement
-    ): void
-  {
-    if (!this.autoExtend) {
-      control.style.height = '';
-      control.style.overflowY = '';
-      return;
-    }
-
-    control.style.height = 'auto';
-
-    const maxHeight =
-      resolveMaxHeight(
-        control,
-        this.autoExtendMaxRows);
-    const nextHeight =
-      maxHeight === null
-        ? control.scrollHeight
-        : Math.min(control.scrollHeight, maxHeight);
-
-    control.style.height = `${nextHeight}px`;
-    control.style.overflowY =
-      maxHeight !== null && control.scrollHeight > maxHeight
-        ? 'auto'
-        : 'hidden';
-  }
-
   #dispatchValueEvent(
       name: 'input' | 'change'
     ): void
   {
-    const detail: TextInputChangeDetail =
+    const detail: SelectChangeDetail =
       { value: this.status.draftValue,
         isEmpty: this.status.isEmpty,
         isValid: this.status.isValid,
@@ -604,12 +500,8 @@ export class TextInput
   }
 
   #disposeControlBindings(): void {
-    this.#controlInputListener?.();
-    this.#controlBlurListener?.();
-    this.#controlKeydownListener?.();
-    this.#controlInputListener = null;
-    this.#controlBlurListener = null;
-    this.#controlKeydownListener = null;
+    this.#controlChangeListener?.();
+    this.#controlChangeListener = null;
     this.#control = null;
     this.#controlBaseClassName = '';
     this.#controlInvalidClassName = null;
@@ -618,13 +510,13 @@ export class TextInput
   }
 }
 
-let nextTextInputId = 1;
+let nextSelectId = 1;
 
-type MountedTextInputControl =
-  { fragment: DocumentFragment,
-    control: HTMLInputElement | HTMLTextAreaElement,
-    className: string,
-    invalidClassName: string | null };
+type MountedSelectControl =
+  { fragment: DocumentFragment;
+    control: HTMLSelectElement;
+    className: string;
+    invalidClassName: string | null; };
 
 function normalizeText(
     value: string | null | undefined
@@ -644,8 +536,21 @@ function normalizeOptionalText(
   return value;
 }
 
+function normalizeItems(
+    items: SelectItem[]
+  ): SelectItem[]
+{
+  return items
+    .map(item => ({
+      value: item.value,
+      label: item.label,
+      disabled: item.disabled ?? false,
+    }))
+    .filter(item => item.label.trim() !== '');
+}
+
 function resolveAriaDescribedBy(
-    model: TextInputTemplateModel
+    model: SelectTemplateModel
   ): string
 {
   const ids: string[] = [];
@@ -661,43 +566,9 @@ function resolveAriaDescribedBy(
   return ids.join(' ');
 }
 
-function resolveMaxHeight(
-    control: HTMLTextAreaElement,
-    maxRows: number | null
-  ): number | null
-{
-  if (maxRows === null || maxRows <= 0) {
-    return null;
-  }
-
-  const computed =
-    getComputedStyle(control);
-  const lineHeight =
-    parseFloat(computed.lineHeight);
-
-  if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
-    return null;
-  }
-
-  const borderTop =
-    parseFloat(computed.borderTopWidth) || 0;
-  const borderBottom =
-    parseFloat(computed.borderBottomWidth) || 0;
-  const paddingTop =
-    parseFloat(computed.paddingTop) || 0;
-  const paddingBottom =
-    parseFloat(computed.paddingBottom) || 0;
-
-  return lineHeight * maxRows
-    + paddingTop
-    + paddingBottom
-    + borderTop
-    + borderBottom;
-}
-
 function cloneNamedTemplate(
     host: Element,
-    slotName: TextInputSlotName
+    slotName: SelectSlotName
   ): HTMLTemplateElement | null
 {
   const templateElement =
@@ -717,7 +588,7 @@ function cloneNamedTemplate(
 }
 
 function resolveInitialControlClassName(
-    control: HTMLInputElement | HTMLTextAreaElement,
+    control: HTMLSelectElement,
     controlHost: HTMLElement
   ): string
 {
@@ -727,7 +598,7 @@ function resolveInitialControlClassName(
 }
 
 function resolveInitialControlInvalidClassName(
-    control: HTMLInputElement | HTMLTextAreaElement,
+    control: HTMLSelectElement,
     controlHost: HTMLElement
   ): string | null
 {
@@ -736,96 +607,47 @@ function resolveInitialControlInvalidClassName(
     ?? null;
 }
 
-function createDefaultTextInputTemplate(): HTMLTemplateElement {
+function createDefaultSelectTemplate(
+    slotName: SelectSlotName
+  ): HTMLTemplateElement
+{
   const template =
     document.createElement('template');
 
   template.innerHTML =
-    `
-      <div>
-        <label
-               data-bind-text="label"
-               data-bind-prop-hidden="hideLabel"
-               data-bind-prop-for="inputId"></label>
-        <div data-role="control-host"></div>
-        <div
-             data-bind-text="description"
-             data-bind-prop-hidden="hideDescription"
-             data-bind-prop-id="descriptionId"></div>
-        <div
-             data-bind-text="errorMessage"
-             data-bind-prop-hidden="hideError"
-             data-bind-prop-id="errorId"></div>
-      </div>
-    `;
-
-  return template;
-}
-
-function createSingleLineInput(): HTMLInputElement {
-  const input =
-    document.createElement('input');
-
-  input.type = 'text';
-
-  return input;
-}
-
-function createDefaultInputTemplate(): HTMLTemplateElement {
-  const template =
-    document.createElement('template');
-
-  template.innerHTML =
-    '<input type="text">';
-
-  return template;
-}
-
-function createDefaultTextareaTemplate(): HTMLTemplateElement {
-  const template =
-    document.createElement('template');
-
-  template.innerHTML =
-    '<textarea></textarea>';
+    slotName === 'template'
+      ? `
+          <div>
+            <label
+                   data-bind-text="label"
+                   data-bind-prop-hidden="hideLabel"
+                   data-bind-prop-for="inputId"></label>
+            <div data-role="control-host"></div>
+            <div
+                 data-bind-text="description"
+                 data-bind-prop-hidden="hideDescription"
+                 data-bind-prop-id="descriptionId"></div>
+            <div
+                 data-bind-text="errorMessage"
+                 data-bind-prop-hidden="hideError"
+                 data-bind-prop-id="errorId"></div>
+          </div>
+        `
+      : '<select></select>';
 
   return template;
 }
 
 function createFallbackMountedControl(
-    multiline: boolean,
     controlHost: HTMLElement
-  ): MountedTextInputControl
+  ): MountedSelectControl
 {
   const fragment =
     document.createDocumentFragment();
-  const template =
-    multiline
-      ? createDefaultTextareaTemplate()
-      : createDefaultInputTemplate();
-  const templateFragment =
-    template.content.cloneNode(true) as DocumentFragment;
   const control =
-    multiline
-      ? templateFragment.querySelector('textarea')
-      : templateFragment.querySelector('input');
+    document.createElement('select');
 
-  if (control === null) {
-    const fallbackControl =
-      multiline
-        ? document.createElement('textarea') as HTMLTextAreaElement | HTMLInputElement
-        : createSingleLineInput();
-
-    fragment.append(fallbackControl);
-
-    return {
-      fragment,
-      control: fallbackControl,
-      className: resolveInitialControlClassName(fallbackControl, controlHost),
-      invalidClassName: resolveInitialControlInvalidClassName(fallbackControl, controlHost),
-    };
-  }
-
-  fragment.append(templateFragment);
+  fragment.append(control);
 
   return {
     fragment,

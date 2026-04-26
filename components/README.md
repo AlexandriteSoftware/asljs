@@ -19,10 +19,10 @@ The current package includes:
 - custom elements such as `asljs-numpad`
 - custom elements such as `asljs-list`
 - custom elements such as `asljs-file`
+- custom elements such as `asljs-ai-chat`
 - custom elements such as `asljs-text-input`
 - provider elements such as `asljs-theme-provider`
-- explicit model and factory helpers such as `createAiChatModel()` and
-  `createAiChatComponent(...)`
+- explicit model helpers such as `createAiChatModel()`
 
 ## Installation
 
@@ -36,12 +36,13 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 
 - Import the package with `import 'asljs-components';` when you need the
   package custom elements registered.
-- The current custom elements are `asljs-button`, `asljs-button-add`,
+- The current custom elements are `asljs-ai-chat`, `asljs-button`,
+  `asljs-button-add`,
   `asljs-button-delete`, `asljs-file`, `asljs-keyboard`,
   `asljs-letterpad`, `asljs-list`, `asljs-numpad`, `asljs-text-input`, and
   `asljs-theme-provider`.
-- AI chat is exposed as `createAiChatModel()` and
-  `createAiChatComponent(...)`, not as a custom element.
+- AI chat is exposed as the `asljs-ai-chat` custom element plus
+  `createAiChatModel()` for explicit state ownership.
 - `AssistedInput` is the shared Lit base for the assisted on-screen input
   components.
 - Button rendering is driven by explicit `icon` and `text` properties.
@@ -73,8 +74,7 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 - Use `asljs-components` when you want reusable web components already shaped
   around ASLJS binding patterns.
 - Use `asljs-components` when you want a packaged UI surface plus its state or
-  theming contract, even when that surface is factory-built rather than a
-  custom element.
+  theming contract through a documented custom element API.
 - Use `asljs-data-binding` directly when you only need declarative DOM binding
   without a packaged component.
 
@@ -633,8 +633,8 @@ list.items =
 
 ### AI Chat
 
-- API: `createAiChatModel()`, `createAiChatComponent(...)`
-- Form: explicit model plus async DOM factory
+- API: `createAiChatModel()`, `AiChat`
+- Custom element: `asljs-ai-chat`
 - Purpose: build a chat UI around an observable, eventful model with optional
   persistence and tool execution hooks.
 
@@ -642,10 +642,8 @@ Notes:
 
 - The model owns chat state, progress state, choice prompts, and message
   history.
-- The rendering surface is created asynchronously because initialization may
-  restore persisted state.
-- This component follows the same explicit model/view split as the custom
-  elements, but it does not use a custom element tag.
+- The custom element accepts explicit `model` and `options` properties.
+- Persisted state can still be restored through `options.stateStore`.
 
 ### File
 

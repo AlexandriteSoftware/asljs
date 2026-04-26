@@ -1,10 +1,20 @@
+import type {
+  SelectItem,
+} from 'asljs-components';
+
+type AppListSelectElement = {
+  items: SelectItem[];
+  value: string | null;
+  disabled: boolean;
+};
+
 export type AppListItem =
   { id: string;
     name: string;
     updatedAt: string; };
 
 export type RenderAppListUiOptions =
-  { selectElement: HTMLSelectElement;
+  { selectElement: AppListSelectElement;
     apps: AppListItem[];
     currentAppId: string | null;
     newActionValue: string;
@@ -16,38 +26,36 @@ export function renderAppListUi(
 {
   const selectElement = options.selectElement;
 
-  selectElement.replaceChildren();
-
   const apps = [ ...options.apps ]
     .sort((left, right) =>
       right.updatedAt.localeCompare(left.updatedAt));
 
-  for (const app of apps) {
-    const option = document.createElement('option');
-    option.value = app.id;
-    option.textContent = app.name;
-    selectElement.appendChild(option);
-  }
+  const items: SelectItem[] =
+    apps.map(app => ({
+      value: app.id,
+      label: app.name,
+    }));
 
   if (apps.length > 0) {
-    const separator = document.createElement('option');
-    separator.value = '__separator__';
-    separator.textContent = '────────';
-    separator.disabled = true;
-    selectElement.appendChild(separator);
+    items.push({
+      value: '__separator__',
+      label: '────────',
+      disabled: true,
+    });
   }
 
-  const newOption = document.createElement('option');
-  newOption.value = options.newActionValue;
-  newOption.textContent = 'New...';
-  selectElement.appendChild(newOption);
+  items.push(
+    { value: options.newActionValue, label: 'New...' },
+    { value: options.importActionValue, label: 'Import...' },
+  );
 
-  const importOption = document.createElement('option');
-  importOption.value = options.importActionValue;
-  importOption.textContent = 'Import...';
-  selectElement.appendChild(importOption);
+  selectElement.items = items;
+  selectElement.disabled = items.length === 0;
 
   if (options.currentAppId !== null) {
     selectElement.value = options.currentAppId;
+    return;
   }
+
+  selectElement.value = items[0]?.value ?? '';
 }

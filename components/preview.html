@@ -219,6 +219,7 @@
 
 		<script type="module">
 			import {
+					createAiChatModel,
 					createBootstrapTheme,
 					createImageFileHandler,
 					createPdfFileHandler,
@@ -237,6 +238,51 @@
 			const eventLog = document.querySelector('#event-log');
 
 			const componentEntries = [
+				{
+					name: 'AiChat',
+					description: 'Custom element chat surface backed by an explicit AI chat model.',
+					create: () => {
+						const shell = document.createElement('div');
+						shell.className = 'demo-grid';
+
+						const hint = document.createElement('div');
+						hint.className = 'demo-card';
+						hint.textContent = 'This preview uses a local model and no API key. Sending shows the missing-key path.';
+
+						const chat = document.createElement('asljs-ai-chat');
+						chat.className = 'demo-card';
+						chat.style.minHeight = '28rem';
+
+						const model = createAiChatModel();
+
+						model.on('initialize', () => {
+							if (model.messages.length === 0) {
+								model.appendMessage(
+									'assistant',
+									'Preview mode is ready. Type a message and send to see the component state flow.');
+							}
+						});
+
+						chat.model = model;
+						chat.options = {
+							provider: {
+								getOpenAiApiKey: async () => '',
+								getChatModel: async () => 'gpt-4.1-mini',
+							},
+							getRequestContext: () => ({
+								preview: true,
+							}),
+							buildRequestInput: ({ prompt }) => [
+								{ role: 'user',
+									content: prompt },
+							],
+							missingKeyMessage: 'Preview mode has no API key configured.',
+						};
+
+						shell.append(hint, chat);
+						return shell;
+					},
+				},
 				{
 					name: 'Button',
 					description: 'Base icon-plus-text button.',

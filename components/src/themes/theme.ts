@@ -39,16 +39,23 @@ export interface TextInputThemeDefinition {
   textarea?: ThemeTemplateValue;
 }
 
+export interface SelectThemeDefinition {
+  template?: ThemeTemplateValue;
+  select?: ThemeTemplateValue;
+}
+
 export interface ButtonThemeDefinition {
   className?: ThemeTextValue;
   addIcon?: ThemeTextValue;
   deleteIcon?: ThemeTextValue;
+  settingsIcon?: ThemeTextValue;
 }
 
 export interface ComponentsTheme {
   button?: ButtonThemeDefinition;
   list?: ListThemeDefinition;
   textInput?: TextInputThemeDefinition;
+  select?: SelectThemeDefinition;
 }
 
 export interface ThemeProviderLike extends Element {

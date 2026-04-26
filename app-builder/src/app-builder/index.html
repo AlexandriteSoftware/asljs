@@ -16,19 +16,19 @@
           <a href="../" class="logo-link topbar-brand" title="Back to home">
             <strong>ASLJS</strong>
           </a>
-          <button id="btn-settings" class="btn btn-ghost btn-sm" title="Settings">⚙</button>
+          <asljs-button-settings id="btn-settings" title="Settings"></asljs-button-settings>
           <span class="topbar-sep" aria-hidden="true"></span>
-          <button id="btn-new-app" class="btn btn-ghost btn-sm" title="New application">＋</button>
-          <button id="btn-import" class="btn btn-ghost btn-sm" title="Import application">Import</button>
-          <select id="app-select" class="app-select" title="Select application"></select>
-          <button id="btn-project-settings" class="btn btn-ghost btn-sm" title="Project settings">⚙</button>
+          <asljs-button id="btn-new-app" title="New application"></asljs-button>
+          <asljs-button id="btn-import" title="Import application"></asljs-button>
+          <asljs-select id="app-select" title="Select application"></asljs-select>
+          <asljs-button-settings id="btn-project-settings" title="Project settings"></asljs-button-settings>
           <span class="topbar-sep" aria-hidden="true"></span>
-          <button id="btn-toggle-chat" class="btn btn-ghost btn-sm" title="Show or hide chat">Chat ▾</button>
-          <button id="btn-toggle-files" class="btn btn-ghost btn-sm" title="Show or hide files editor">Files ▾</button>
+          <asljs-button id="btn-toggle-chat" title="Show or hide chat"></asljs-button>
+          <asljs-button id="btn-toggle-files" title="Show or hide files editor"></asljs-button>
         </div>
         <div class="top-bar-right">
-          <button id="btn-run" class="btn btn-success btn-sm">▶ Run</button>
-          <button id="btn-share" class="btn btn-ghost btn-sm" title="Share app">Share</button>
+          <asljs-button id="btn-run"></asljs-button>
+          <asljs-button id="btn-share" title="Share app"></asljs-button>
           <a
             href="https://github.com/AlexandriteSoftware/asljs"
             class="btn btn-ghost btn-sm"
@@ -62,53 +62,46 @@
             browser and is not submitted to any server. If you provide an OpenAI
             key, requests are sent directly to OpenAI only.
           </p>
-          <label class="form-label" for="first-api-key-input">OpenAI API Key</label>
-          <input
-            id="first-api-key-input"
-            type="password"
-            class="form-input"
-            placeholder="sk-..."
-          />
-          <label class="form-label" for="first-app-name-input">Application Name</label>
-          <input
-            id="first-app-name-input"
-            type="text"
-            class="form-input"
-            placeholder="My App"
-          />
+          <label class="form-label">OpenAI API Key</label>
+          <asljs-text-input id="first-api-key-input"></asljs-text-input>
+          <label class="form-label">Application Name</label>
+          <asljs-text-input id="first-app-name-input"></asljs-text-input>
           <p class="form-hint">
             Want a quick start? Create a TODO sample app and modify it.
           </p>
           <div class="first-app-actions">
-            <button id="btn-create-first-app" class="btn btn-primary">
-              Create Application
-            </button>
-            <button id="btn-create-todo-sample" class="btn btn-ghost">
-              Create TODO Sample App
-            </button>
+            <asljs-button id="btn-create-first-app"></asljs-button>
+            <asljs-button id="btn-create-todo-sample"></asljs-button>
           </div>
         </div>
       </section>
 
       <!-- Panels -->
       <div id="panels" class="panels">
-        <!-- Chat / Generate panel -->
+        <!-- Chat / generator panel -->
         <section id="panel-chat" class="panel">
           <div class="panel-header">
             <div class="panel-header-left">
-              <span>Generate</span>
-              <button id="btn-agent-instructions" class="btn btn-ghost btn-sm">Instructions</button>
+              <span>Chat</span>
             </div>
-            <select id="chat-model-select" class="form-input lane-model-select" title="Chat model"></select>
+            <asljs-select id="chat-model-select" title="Chat model"></asljs-select>
           </div>
           <div id="chat-root" class="chat-root"></div>
+          <div class="generation-controls">
+            <div class="lane-controls">
+              <asljs-select id="generation-model-select" title="Generation model"></asljs-select>
+              <asljs-button id="btn-start-generation"></asljs-button>
+              <asljs-button id="btn-stop-generation"></asljs-button>
+            </div>
+            <div id="generation-status" class="form-hint generation-status">Idle.</div>
+          </div>
         </section>
 
         <!-- File editor panel -->
         <section id="panel-editor" class="panel">
           <div class="panel-header">
             <span>Files</span>
-            <select id="file-select" class="file-select" title="Select file"></select>
+            <asljs-select id="file-select" title="Select file"></asljs-select>
           </div>
           <div id="editor-layout" class="editor-layout">
             <asljs-file
@@ -121,8 +114,7 @@
         <!-- Preview panel -->
         <section id="panel-preview" class="panel">
           <div class="panel-header">
-            <span>Preview</span>
-            <button id="btn-refresh-preview" class="btn btn-ghost btn-sm">↺</button>
+            <span id="panel-preview-title">Preview</span>
           </div>
           <iframe
             id="preview-frame"
@@ -130,14 +122,6 @@
             sandbox="allow-scripts allow-same-origin allow-forms"
             title="App preview"
           ></iframe>
-          <div class="generation-controls">
-            <div class="lane-controls">
-              <select id="generation-model-select" class="form-input lane-model-select" title="Generation model"></select>
-              <button id="btn-start-generation" class="btn btn-primary btn-sm">Generate</button>
-              <button id="btn-stop-generation" class="btn btn-ghost btn-sm">Stop</button>
-            </div>
-            <div id="generation-status" class="form-hint generation-status">Idle.</div>
-          </div>
         </section>
       </div>
     </div>
@@ -148,46 +132,22 @@
     <div class="modal">
       <div class="modal-header">
         <h3>Settings</h3>
-        <button id="btn-close-settings" class="btn btn-ghost btn-sm">✕</button>
+        <asljs-button id="btn-close-settings"></asljs-button>
       </div>
       <div class="modal-body">
-        <label class="form-label" for="api-key-input">OpenAI API Key</label>
-        <input
-          id="api-key-input"
-          type="password"
-          class="form-input"
-          placeholder="sk-…  (optional, stored locally)"
-        />
+        <label class="form-label">OpenAI API Key</label>
+        <asljs-text-input id="api-key-input"></asljs-text-input>
         <p class="form-hint">
           Available models are loaded from OpenAI when the app starts. Choose
           the chat model in the chat panel header and the generation model below the
-          preview panel.
+          chat window.
         </p>
-        <label class="form-label" for="theme-select">Theme</label>
-        <select id="theme-select" class="form-input">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
-        <label class="form-label" for="font-size-input">Font size (px)</label>
-        <input
-          id="font-size-input"
-          type="number"
-          class="form-input"
-          min="12"
-          max="20"
-          step="1"
-          placeholder="14"
-        />
-        <label class="form-label" for="max-tool-steps-input">Max tool steps (initial)</label>
-        <input
-          id="max-tool-steps-input"
-          type="number"
-          class="form-input"
-          min="1"
-          max="200"
-          step="1"
-          placeholder="20"
-        />
+        <label class="form-label">Theme</label>
+        <asljs-select id="theme-select"></asljs-select>
+        <label class="form-label">Font size (px)</label>
+        <asljs-text-input id="font-size-input"></asljs-text-input>
+        <label class="form-label">Max tool steps (initial)</label>
+        <asljs-text-input id="max-tool-steps-input"></asljs-text-input>
         <p class="form-hint">
           Your key is stored only in this browser (IndexedDB). It is sent
           directly to OpenAI — no server proxy is involved. Leave blank to skip
@@ -195,8 +155,8 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button id="btn-save-settings" class="btn btn-primary">Save</button>
-        <button id="btn-cancel-settings" class="btn btn-ghost">Cancel</button>
+        <asljs-button id="btn-save-settings"></asljs-button>
+        <asljs-button id="btn-cancel-settings"></asljs-button>
       </div>
     </div>
   </div>
@@ -206,15 +166,15 @@
     <div class="modal">
       <div class="modal-header">
         <h3 id="name-modal-title">New App</h3>
-        <button id="btn-close-name-modal" class="btn btn-ghost btn-sm">✕</button>
+        <asljs-button id="btn-close-name-modal"></asljs-button>
       </div>
       <div class="modal-body">
-        <label class="form-label" for="app-name-input">App name</label>
-        <input id="app-name-input" type="text" class="form-input" placeholder="My App" />
+        <label class="form-label">App name</label>
+        <asljs-text-input id="app-name-input"></asljs-text-input>
       </div>
       <div class="modal-footer">
-        <button id="btn-confirm-name" class="btn btn-primary">OK</button>
-        <button id="btn-cancel-name" class="btn btn-ghost">Cancel</button>
+        <asljs-button id="btn-confirm-name"></asljs-button>
+        <asljs-button id="btn-cancel-name"></asljs-button>
       </div>
     </div>
   </div>
@@ -224,30 +184,20 @@
     <div class="modal">
       <div class="modal-header">
         <h3>Project Settings</h3>
-        <button id="btn-close-project-settings-x" class="btn btn-ghost btn-sm">✕</button>
+        <asljs-button id="btn-close-project-settings-x"></asljs-button>
       </div>
       <div class="modal-body">
-        <label class="form-label" for="project-name-input">Name</label>
-        <input id="project-name-input" type="text" class="form-input" placeholder="Project name" />
-        <label class="form-label" for="project-author-name-input">Author name (optional)</label>
-        <input
-          id="project-author-name-input"
-          type="text"
-          class="form-input"
-          placeholder="Jane Doe"
-        />
-        <label class="form-label" for="project-author-email-input">Author email (optional)</label>
-        <input
-          id="project-author-email-input"
-          type="email"
-          class="form-input"
-          placeholder="jane@example.com"
-        />
+        <label class="form-label">Name</label>
+        <asljs-text-input id="project-name-input"></asljs-text-input>
+        <label class="form-label">Author name (optional)</label>
+        <asljs-text-input id="project-author-name-input"></asljs-text-input>
+        <label class="form-label">Author email (optional)</label>
+        <asljs-text-input id="project-author-email-input"></asljs-text-input>
       </div>
       <div class="modal-footer">
-        <button id="btn-save-project-settings" class="btn btn-primary">Save</button>
-        <button id="btn-delete-project" class="btn btn-danger">Delete</button>
-        <button id="btn-close-project-settings" class="btn btn-ghost">Cancel</button>
+        <asljs-button id="btn-save-project-settings"></asljs-button>
+        <asljs-button id="btn-delete-project"></asljs-button>
+        <asljs-button id="btn-close-project-settings"></asljs-button>
       </div>
     </div>
   </div>
@@ -257,12 +207,12 @@
     <div class="modal">
       <div class="modal-header">
         <h3>Share</h3>
-        <button id="btn-close-share" class="btn btn-ghost btn-sm">✕</button>
+        <asljs-button id="btn-close-share"></asljs-button>
       </div>
       <div class="modal-body">
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button id="btn-share-link" class="btn btn-primary">Share with link</button>
-          <button id="btn-share-download" class="btn btn-ghost">Download export</button>
+          <asljs-button id="btn-share-link"></asljs-button>
+          <asljs-button id="btn-share-download"></asljs-button>
         </div>
         <label class="form-hint" style="display:block; margin-top:0.6rem;">
           <input id="share-minified-input" type="checkbox" />
@@ -281,44 +231,12 @@
           placeholder="Share link will appear here..."
         ></textarea>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.6rem;">
-          <button id="btn-share-copy-text" class="btn btn-ghost" type="button">
-            Copy as text link
-          </button>
-          <button id="btn-share-copy-html" class="btn btn-ghost" type="button">
-            Copy as HTML link
-          </button>
+          <asljs-button id="btn-share-copy-text"></asljs-button>
+          <asljs-button id="btn-share-copy-html"></asljs-button>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="btn-close-share-2" class="btn btn-ghost">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Agent instructions modal -->
-  <div id="agent-instructions-modal" class="modal-overlay hidden">
-    <div class="modal modal-lg">
-      <div class="modal-header">
-        <h3>Agent Instructions</h3>
-        <button id="btn-close-agent-instructions" class="btn btn-ghost btn-sm">✕</button>
-      </div>
-      <div class="modal-body">
-        <p class="form-hint" style="margin-bottom: 0.5rem;">
-          This is the full instruction text sent to the AI (including generated sections from package docs and API exports).
-        </p>
-        <p class="form-hint" style="margin-bottom: 0.75rem;">
-          Tool hint: multi-file writes use <code>setFilesContent([{ path, content }])</code>. Implementation turns should also update <code>app.tests.js</code> when <code>README.md</code> requirements change.
-        </p>
-        <textarea
-          id="agent-instructions-text"
-          class="prompt-view"
-          spellcheck="false"
-          readonly
-        ></textarea>
-      </div>
-      <div class="modal-footer">
-        <button id="btn-copy-agent-instructions" class="btn btn-ghost">Copy</button>
-        <button id="btn-close-agent-instructions-2" class="btn btn-primary">Close</button>
+        <asljs-button id="btn-close-share-2"></asljs-button>
       </div>
     </div>
   </div>

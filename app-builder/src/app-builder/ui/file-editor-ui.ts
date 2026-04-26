@@ -1,6 +1,8 @@
 import {
   createImageFileHandler,
+  createPdfFileHandler,
   createTextEditorFileHandler,
+  type SelectItem,
   type FileViewData,
   type FileViewProvider,
 } from 'asljs-components';
@@ -20,8 +22,14 @@ export type FileViewElement =
     fileName: string | null;
   };
 
+type FileSelectElement = {
+  items: SelectItem[];
+  value: string | null;
+  disabled: boolean;
+};
+
 export type RenderFileSelectUiOptions =
-  { selectElement: HTMLSelectElement;
+  { selectElement: FileSelectElement;
     files: FileListItem[];
     activeFileName: string | null; };
 
@@ -41,24 +49,20 @@ export function renderFileSelectUi(
   const selectElement = options.selectElement;
   const visibleFiles = options.files;
 
-  selectElement.replaceChildren();
-
   if (visibleFiles.length === 0) {
-    const option = document.createElement('option');
-    option.value = '';
-    option.textContent = 'No files';
-    selectElement.appendChild(option);
+    selectElement.items = [
+      { value: '', label: 'No files', disabled: true },
+    ];
     selectElement.value = '';
     selectElement.disabled = true;
     return;
   }
 
-  for (const file of visibleFiles) {
-    const option = document.createElement('option');
-    option.value = file.name;
-    option.textContent = file.name;
-    selectElement.appendChild(option);
-  }
+  selectElement.items =
+    visibleFiles.map(file => ({
+      value: file.name,
+      label: file.name,
+    }));
 
   const active =
     options.activeFileName !== null
@@ -106,7 +110,8 @@ export function renderFileContentUi(
 
   options.fileElement.provider = provider;
   options.fileElement.handlers =
-    [ createImageFileHandler(),
+    [ createPdfFileHandler(),
+      createImageFileHandler(),
       createTextEditorFileHandler() ];
   options.fileElement.fileName = options.activeFileName;
 }

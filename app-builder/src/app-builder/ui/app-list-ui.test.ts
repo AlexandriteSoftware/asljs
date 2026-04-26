@@ -11,12 +11,16 @@ import {
 test(
   'renderAppListUi renders sorted apps and action options',
   () => {
-    const dom = new JSDOM('<select id="apps"></select>');
+    const dom = new JSDOM('<div id="apps"></div>');
     const previousDocument = globalThis.document;
     globalThis.document = dom.window.document;
 
     const select = dom.window.document
-      .getElementById('apps') as HTMLSelectElement;
+      .getElementById('apps') as unknown as {
+        items: Array<{ value: string; label: string; disabled?: boolean; }>;
+        value: string | null;
+        disabled: boolean;
+      };
 
     try {
       renderAppListUi({
@@ -30,7 +34,7 @@ test(
         importActionValue: '__import__',
       });
 
-      const values = [ ...select.options ].map(item => item.value);
+      const values = select.items.map(item => item.value);
       assert.deepEqual(values, [ 'a2', 'a1', '__separator__', '__new__', '__import__' ]);
       assert.equal(select.value, 'a2');
     } finally {

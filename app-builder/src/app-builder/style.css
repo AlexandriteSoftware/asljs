@@ -43,6 +43,16 @@ body {
   overflow: hidden;
 }
 
+asljs-button,
+asljs-button-settings {
+  display: inline-flex;
+}
+
+asljs-text-input,
+asljs-select {
+  display: block;
+}
+
 .logo-link {
   text-decoration: none;
   color: var(--text);
@@ -289,6 +299,28 @@ body {
   color: var(--muted);
 }
 
+.chat-root .asljs-ai-chat-choice-panel {
+  border-top: 1px solid var(--border);
+  padding: 0 0.75rem 0.75rem;
+}
+
+.chat-root .asljs-ai-chat-choice-message {
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-root .asljs-ai-chat-choice-options {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.chat-root .asljs-ai-chat-choice-options asljs-select {
+  flex: 1 1 auto;
+}
+
 .chat-root .asljs-ai-chat-input {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -307,6 +339,49 @@ body {
 }
 
 .chat-root .asljs-ai-chat-input::placeholder { color: var(--muted); }
+
+.chat-root .asljs-ai-chat-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  min-height: 38px;
+  padding: 0.5rem 0.75rem;
+}
+
+.chat-root .asljs-ai-chat-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.chat-root .asljs-ai-chat-button {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+}
+
+.chat-root .asljs-ai-chat-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-root .asljs-ai-chat-send {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+  color: #fff;
+}
+
+.chat-root .asljs-ai-chat-send:not(:disabled):hover {
+  background: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+}
+
+.chat-root .asljs-ai-chat-choice-submit:not(:disabled):hover {
+  background: var(--surface2);
+}
 
 .chat-root .asljs-ai-chat-actions {
   padding: 0.75rem;

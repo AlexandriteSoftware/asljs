@@ -3,7 +3,7 @@ export {
   } from './themes/bootstrap-theme.js';
 
 export {
-    createAiChatComponent,
+  AiChat,
     createAiChatModel,
     serializeAiChatModelState,
     type AiChatBuildRequestArgs,
@@ -36,6 +36,10 @@ export {
 export {
     ButtonDelete,
   } from './buttons/button-delete.js';
+
+export {
+    ButtonSettings,
+  } from './buttons/button-settings.js';
 
 export {
     FileView,
@@ -87,6 +91,14 @@ export {
   } from './text-input.js';
 
 export {
+    Select,
+    type SelectChangeDetail,
+    type SelectItem,
+    type SelectStatus,
+    type SelectValidator,
+  } from './select.js';
+
+export {
     ThemeProvider,
   } from './themes/theme-provider.js';
 
@@ -101,6 +113,7 @@ export {
     type ButtonThemeDefinition,
     type ComponentsTheme,
     type ListThemeDefinition,
+    type SelectThemeDefinition,
     type TextInputThemeDefinition,
     type ThemeProviderLike,
     type ThemeTextFactory,

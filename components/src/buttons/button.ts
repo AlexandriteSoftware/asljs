@@ -30,6 +30,9 @@ export class Button
     accessor icon = '';
 
   @property({ attribute: false })
+    accessor buttonClassName = '';
+
+  @property({ attribute: false })
     accessor theme: ComponentsTheme | null = null;
 
   @property({ attribute: false })
@@ -88,6 +91,10 @@ export class Button
   }
 
   protected get resolvedButtonClassName(): string {
+    if (this.buttonClassName.trim() !== '') {
+      return this.buttonClassName.trim();
+    }
+
     return resolveThemeText(
       this.theme?.button?.className
       ?? this.#themeProvider?.theme?.button?.className

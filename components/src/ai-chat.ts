@@ -5,6 +5,21 @@ import {
     type EventMap,
     type Eventful,
   } from 'asljs-eventful';
+import {
+    LitElement,
+    html,
+    nothing,
+  } from 'lit';
+import {
+    customElement,
+    property,
+  } from 'lit/decorators.js';
+import {
+    unsafeHTML,
+  } from 'lit/directives/unsafe-html.js';
+import './buttons/button.js';
+import './select.js';
+import './text-input.js';
 
 const autoScrollBottomThresholdPx = 24;
 const defaultChatModel = 'gpt-4.1-mini';
@@ -166,6 +181,39 @@ type ObservableArray<T> =
   T[]
   & Eventful;
 
+type TextInputElement =
+  HTMLElement
+  & {
+    value: string | null;
+    draftValue: string;
+    multiline: boolean;
+    rows: number;
+    placeholder: string | null;
+    disabled: boolean;
+    enterKeyBehavior: 'finish' | 'newline';
+    controlClassName: string;
+  };
+
+type SelectElement =
+  HTMLElement
+  & {
+    label: string | null;
+    value: string | null;
+    items: AiChatChoiceOption[];
+    placeholder: string | null;
+    disabled: boolean;
+    controlClassName: string;
+  };
+
+type ButtonElement =
+  HTMLElement
+  & {
+    text: string;
+    disabled: boolean;
+    buttonClassName: string;
+    type: 'button' | 'submit' | 'reset';
+  };
+
 export interface AiChatOptions<
     TRequestContext = unknown,
     TToolsContext = unknown,
@@ -321,464 +369,505 @@ export function serializeAiChatModelState(
   };
 }
 
-export async function createAiChatComponent<
-    TRequestContext = unknown,
-    TToolsContext = unknown,
-  >(
-    options: AiChatOptions<TRequestContext, TToolsContext>,
-    model: AiChatModel = createAiChatModel(),
-  ): Promise<HTMLElement>
+@customElement('asljs-ai-chat')
+export class AiChat
+  extends LitElement
 {
-  if (options.stateStore) {
-    applyLoadedState(
-      model,
-      await options.stateStore.load());
+  #bindings: { dispose: () => void; } | null = null;
+  #persistState: () => void = () => {};
+  #setupVersion = 0;
+  #shouldRestoreMessagesScroll = false;
+  #shouldScrollMessagesToBottom = false;
+
+  @property({ attribute: false })
+    accessor model: AiChatModel = createAiChatModel();
+
+  @property({ attribute: false })
+    accessor options: AiChatOptions | null = null;
+
+  override createRenderRoot(): this {
+    return this;
   }
 
-  const tools =
-    options.getTools?.() ?? [ ];
+  connectedCallback(): void {
+    super.connectedCallback();
+    void this.#bindComponent();
+  }
 
-  const element =
-    document.createElement('div');
+  disconnectedCallback(): void {
+    this.#disposeBindings();
+    super.disconnectedCallback();
+  }
 
-  element.className = 'asljs-ai-chat';
-  element.style.display = 'flex';
-  element.style.flexDirection = 'column';
-  element.style.gap = '0.75rem';
-  element.style.height = '100%';
-  element.style.minHeight = '0';
+  protected override updated(
+      changedProperties: Map<PropertyKey, unknown>
+    ): void
+  {
+    if (changedProperties.has('model')
+        || changedProperties.has('options'))
+    {
+      void this.#bindComponent();
+    }
 
-  element.innerHTML =
-    `
-      <div class="asljs-ai-chat-window"
-           data-role="window"
+    this.#syncMessagesScroll();
+  }
+
+  override render(): ReturnType<LitElement['render']> {
+    const model =
+      this.model;
+    const progress =
+      model.progress;
+    const choicePrompt =
+      model.choicePrompt;
+
+    return html`
+      <div class="asljs-ai-chat"
            style="display:flex;
                   flex-direction:column;
                   gap:0.75rem;
-                  flex:1 1 auto;
-                  min-height:12em;
-                  overflow:hidden;">
-        <div class="asljs-ai-chat-messages"
-             data-role="messages"
+                  height:100%;
+                  min-height:0;">
+        <div class="asljs-ai-chat-window"
+             data-role="window"
              style="display:flex;
                     flex-direction:column;
                     gap:0.75rem;
                     flex:1 1 auto;
-                    overflow:auto;"></div>
-        <div class="asljs-ai-chat-progress"
-             data-role="progress"
-             style="display:none;"></div>
-        <div class="asljs-ai-chat-choice-panel"
-             data-role="choices"
-             style="display:none;"></div>
-      </div>
-      <textarea class="asljs-ai-chat-input"
-                data-role="prompt"
-                rows="3"
-                placeholder="Ask AI..."
-                style="resize:none;"></textarea>
-      <div class="asljs-ai-chat-actions"
-           style="display:flex;
-                  justify-content:flex-end;">
-        <button type="button"
-                class="asljs-ai-chat-send"
-                data-role="send">
-          Send
-        </button>
+                    min-height:12em;
+                    overflow:hidden;">
+          <div class="asljs-ai-chat-messages"
+               data-role="messages"
+               @scroll=${this.#handleMessagesScroll}
+               style="display:flex;
+                      flex-direction:column;
+                      gap:0.75rem;
+                      flex:1 1 auto;
+                      overflow:auto;">
+            ${model.messages.map(
+              message =>
+                html`
+                  <div class=${`asljs-ai-chat-message asljs-ai-chat-message-${message.role}`}>
+                    <div class="asljs-ai-chat-role">
+                      ${message.role === 'user'
+                        ? 'You'
+                        : message.role === 'assistant'
+                          ? 'AI'
+                          : 'System'}
+                    </div>
+                    <div class="asljs-ai-chat-bubble">
+                      ${message.role === 'assistant'
+                        ? unsafeHTML(
+                          renderAssistantContent(
+                            message.content,
+                            this.options?.renderAssistantMessage))
+                        : message.content}
+                    </div>
+                  </div>
+                `)}
+          </div>
+          <div class="asljs-ai-chat-progress"
+               data-role="progress"
+               style=${progress === null || !progress.visible
+                 ? 'display:none;'
+                 : ''}>
+            ${progress?.message ?? ''}
+          </div>
+          <div class="asljs-ai-chat-choice-panel"
+               data-role="choices"
+               style=${choicePrompt === null
+                 || choicePrompt.message.trim() === ''
+                 || choicePrompt.options.length === 0
+                   ? 'display:none;'
+                   : ''}>
+            ${choicePrompt === null
+              || choicePrompt.message.trim() === ''
+              || choicePrompt.options.length === 0
+                ? nothing
+                : html`
+                    <div class="asljs-ai-chat-choice-message">
+                      ${choicePrompt.message}
+                    </div>
+                    <div class="asljs-ai-chat-choice-options">
+                      <asljs-select
+                          data-role="choice-select"
+                          .items=${choicePrompt.options}
+                          .value=${this.#resolveChoiceValue(choicePrompt)}
+                          .placeholder=${null}
+                          .label=${null}
+                          .disabled=${model.sending}
+                          .controlClassName=${'asljs-ai-chat-select'}>
+                      </asljs-select>
+                      <asljs-button
+                          data-role="choice-submit"
+                          .type=${'button'}
+                          .text=${getInternalChoiceState(model).behavior === 'send'
+                            ? 'Send'
+                            : 'Choose'}
+                          .disabled=${model.sending}
+                          .buttonClassName=${'asljs-ai-chat-button asljs-ai-chat-choice-submit'}
+                          @click=${this.#handleChoiceSubmit}>
+                      </asljs-button>
+                    </div>
+                  `}
+          </div>
+        </div>
+        <asljs-text-input
+            data-role="prompt"
+            .value=${model.promptDraft}
+            .multiline=${true}
+            .rows=${3}
+            .placeholder=${'Ask AI...'}
+            .enterKeyBehavior=${'newline'}
+            .disabled=${model.sending}
+            .controlClassName=${'asljs-ai-chat-input'}
+            @input=${this.#handlePromptInput}
+            @keydown=${this.#handlePromptKeydown}>
+        </asljs-text-input>
+        <div class="asljs-ai-chat-actions"
+             style="display:flex;
+                    justify-content:flex-end;">
+          <asljs-button
+              data-role="send"
+              .type=${'button'}
+              .text=${'Send'}
+              .disabled=${model.sending}
+              .buttonClassName=${'asljs-ai-chat-button asljs-ai-chat-send'}
+              @click=${this.#handleSendClick}>
+          </asljs-button>
+        </div>
       </div>
     `;
+  }
 
-  const messagesElement =
-    element.querySelector('[data-role="messages"]') as HTMLElement;
-  const progressElement =
-    element.querySelector('[data-role="progress"]') as HTMLElement;
-  const choicesElement =
-    element.querySelector('[data-role="choices"]') as HTMLElement;
-  const promptElement =
-    element.querySelector('[data-role="prompt"]') as HTMLTextAreaElement;
-  const sendButton =
-    element.querySelector('[data-role="send"]') as HTMLButtonElement;
+  async #bindComponent(): Promise<void> {
+    const model =
+      this.model;
+    const options =
+      this.options;
+    const version =
+      ++this.#setupVersion;
 
-  promptElement.value = model.promptDraft;
+    this.#disposeBindings();
+    this.#persistState =
+      createStatePersistenceScheduler(
+        model,
+        options?.stateStore);
 
-  const persistState =
-    createStatePersistenceScheduler(
-      model,
-      options.stateStore);
+    if (options?.stateStore) {
+      applyLoadedState(
+        model,
+        await options.stateStore.load());
 
-  const saveMessagesScroll =
-    (): void => {
-      model.messagesScrollTop = messagesElement.scrollTop;
-      model.hasMessagesScrollTop = true;
-      persistState();
-    };
-
-  const restoreMessagesScroll =
-    (): void => {
-      if (!model.hasMessagesScrollTop) {
+      if (version !== this.#setupVersion) {
         return;
       }
+    }
 
-      messagesElement.scrollTop = model.messagesScrollTop;
-    };
-
-  const scrollMessagesToBottom =
-    (): void => {
-      messagesElement.scrollTop = messagesElement.scrollHeight;
-      saveMessagesScroll();
-    };
-
-  messagesElement.addEventListener(
-    'scroll',
-    () => {
-      saveMessagesScroll();
-    });
-
-  const chatElementWithApi =
-    element as HTMLElement & {
-      restoreMessagesScroll?: () => void;
-    };
-
-  chatElementWithApi.restoreMessagesScroll =
-    () => {
-      requestAnimationFrame(
+    this.#bindings =
+      bindModelListeners(
+        model,
         () => {
-          restoreMessagesScroll();
-        });
-    };
+          this.#shouldRestoreMessagesScroll = true;
+          this.requestUpdate();
+        },
+        () => {
+          this.requestUpdate();
+        },
+        () => {
+          this.requestUpdate();
+        },
+        () => {
+          this.requestUpdate();
+        },
+        this.#persistState);
 
-  const renderMessages =
-    (): void => {
-      messagesElement.replaceChildren();
+    await model.emitAsync(
+      'initialize',
+      { model });
 
-      for (const message of model.messages) {
-        const row =
-          document.createElement('div');
+    if (version !== this.#setupVersion) {
+      return;
+    }
 
-        row.className =
-          `asljs-ai-chat-message asljs-ai-chat-message-${message.role}`;
+    this.#shouldRestoreMessagesScroll = true;
+    this.requestUpdate();
+  }
 
-        const roleLabel =
-          document.createElement('div');
+  #disposeBindings(): void {
+    this.#bindings?.dispose();
+    this.#bindings = null;
+    this.#persistState = () => {};
+  }
 
-        roleLabel.className = 'asljs-ai-chat-role';
-        roleLabel.textContent =
-          message.role === 'user'
-            ? 'You'
-            : message.role === 'assistant'
-              ? 'AI'
-              : 'System';
+  #syncMessagesScroll(): void {
+    const messagesElement =
+      this.#messagesElement;
 
-        const bubble =
-          document.createElement('div');
+    if (messagesElement === null) {
+      return;
+    }
 
-        bubble.className = 'asljs-ai-chat-bubble';
-        bubble.innerHTML =
-          message.role === 'assistant'
-            ? renderAssistantContent(
-              message.content,
-              options.renderAssistantMessage)
-            : escapeHtml(message.content);
+    if (this.#shouldScrollMessagesToBottom) {
+      this.#shouldScrollMessagesToBottom = false;
+      messagesElement.scrollTop = messagesElement.scrollHeight;
+      this.#handleMessagesScroll();
+      return;
+    }
 
-        row.append(
-          roleLabel,
-          bubble);
+    if (!this.#shouldRestoreMessagesScroll) {
+      return;
+    }
 
-        messagesElement.appendChild(row);
-      }
+    this.#shouldRestoreMessagesScroll = false;
 
-      restoreMessagesScroll();
-    };
+    if (!this.model.hasMessagesScrollTop) {
+      return;
+    }
 
-  const renderProgress =
-    (): void => {
-      const progress =
-        model.progress;
+    messagesElement.scrollTop = this.model.messagesScrollTop;
+  }
 
-      if (progress === null || !progress.visible) {
-        progressElement.style.display = 'none';
-        progressElement.textContent = '';
-        return;
-      }
+  get #messagesElement(): HTMLElement | null {
+    return this.querySelector('[data-role="messages"]') as HTMLElement | null;
+  }
 
-      progressElement.style.display = '';
-      progressElement.textContent = progress.message;
-    };
+  get #promptElement(): TextInputElement | null {
+    return this.querySelector('[data-role="prompt"]') as TextInputElement | null;
+  }
 
-  const sendPromptValue =
-    async (
-      explicitPrompt?: string
-    ): Promise<void> =>
+  get #choiceSelectElement(): SelectElement | null {
+    return this.querySelector('[data-role="choice-select"]') as SelectElement | null;
+  }
+
+  #handleMessagesScroll = (): void => {
+    const messagesElement =
+      this.#messagesElement;
+
+    if (messagesElement === null) {
+      return;
+    }
+
+    this.model.messagesScrollTop = messagesElement.scrollTop;
+    this.model.hasMessagesScrollTop = true;
+    this.#persistState();
+  };
+
+  #handlePromptInput = (): void => {
+    this.model.promptDraft = this.#promptElement?.draftValue ?? '';
+    this.#persistState();
+  };
+
+  #handlePromptKeydown = (event: Event): void => {
+    const keyboardEvent =
+      event as KeyboardEvent;
+
+    if (keyboardEvent.key !== 'Enter'
+        || keyboardEvent.shiftKey
+        || keyboardEvent.ctrlKey
+        || keyboardEvent.metaKey)
     {
-      const prompt =
-        (explicitPrompt ?? promptElement.value).trim();
+      return;
+    }
 
-      if (prompt === '' || model.sending) {
-        return;
-      }
+    keyboardEvent.preventDefault();
+    void this.#sendPromptValue();
+  };
 
-      const apiKey =
-        (await options.provider.getOpenAiApiKey()).trim();
+  #handleSendClick = (): void => {
+    void this.#sendPromptValue();
+  };
 
-      if (apiKey === '') {
-        if (!model.missingKeyMessageShown) {
-          model.appendMessage(
-            'system',
-            options.missingKeyMessage
-            ?? defaultMissingCredentialsMessage);
-          model.missingKeyMessageShown = true;
-          persistState();
-        }
+  #handleChoiceSubmit = (): void => {
+    const selectedValue =
+      (this.#choiceSelectElement?.value ?? '').trim();
 
-        return;
-      }
+    if (selectedValue === '') {
+      return;
+    }
 
-      const chatModel =
-        (await options.provider.getChatModel()).trim()
-        || defaultChatModel;
+    const internalState =
+      getInternalChoiceState(this.model);
+    const behavior =
+      internalState.behavior;
 
-      const requestContext =
-        await options.getRequestContext();
+    dismissChoices(
+      this.model,
+      behavior === 'resolve'
+        ? selectedValue
+        : null);
+    this.#persistState();
 
-      const beforeSendContext =
-        createBeforeSendContext(
-          model,
-          prompt,
-          requestContext,
-          chatModel,
-          apiKey);
+    if (behavior === 'send') {
+      void this.#sendPromptValue(selectedValue);
+    }
+  };
 
-      await model.emitAsync(
-        'beforeSend',
-        beforeSendContext as AiChatBeforeSendContext);
+  #resolveChoiceValue(
+      prompt: AiChatChoicePrompt
+    ): string
+  {
+    const currentValue =
+      (this.#choiceSelectElement?.value ?? '').trim();
 
-      if (beforeSendContext.canceled) {
-        if (beforeSendContext.cancelMessage !== null
-            && beforeSendContext.cancelMessage !== '')
-        {
-          model.appendMessage(
-            'system',
-            beforeSendContext.cancelMessage);
-        }
+    if (prompt.options.some(option => option.value === currentValue)) {
+      return currentValue;
+    }
 
-        persistState();
-        return;
-      }
+    return prompt.options[0]?.value ?? '';
+  }
 
-      const distanceFromBottom =
-        messagesElement.scrollHeight
-        - (messagesElement.scrollTop + messagesElement.clientHeight);
+  async #sendPromptValue(
+      explicitPrompt?: string
+    ): Promise<void>
+  {
+    const options =
+      this.options;
+    const model =
+      this.model;
 
-      const shouldAutoScroll =
-        distanceFromBottom <= autoScrollBottomThresholdPx;
+    if (options === null) {
+      return;
+    }
 
-      model.appendMessage(
-        'user',
-        prompt);
-      model.promptDraft = '';
-      promptElement.value = '';
-      model.sending = true;
-      model.dismissChoices();
+    const prompt =
+      (explicitPrompt
+       ?? this.#promptElement?.draftValue
+       ?? this.#promptElement?.value
+       ?? '')
+        .trim();
 
-      if (shouldAutoScroll) {
-        requestAnimationFrame(
-          () => {
-            scrollMessagesToBottom();
-          });
-      }
+    if (prompt === '' || model.sending) {
+      return;
+    }
 
-      persistState();
+    const apiKey =
+      (await options.provider.getOpenAiApiKey()).trim();
 
-      try {
-        model.setProgress(
-          'Requesting assistant response...');
-
-        const requestInput =
-          await options.buildRequestInput(
-            { model,
-              prompt,
-              messageHistory:
-                model.messageHistory.slice(),
-              requestContext,
-              chatModel });
-
-        const assistantText =
-          await runWithTools(
-            apiKey,
-            chatModel,
-            requestInput,
-            tools,
-            model,
-            options.executeTool,
-            options.getToolsContext
-              ? await options.getToolsContext()
-              : undefined,
-            options.provider,
-            options.toolStepExtension ?? defaultToolStepExtension);
-
-        model.messageHistory.push(
-          { role: 'user',
-            content: prompt });
-        model.messageHistory.push(
-          { role: 'assistant',
-            content: assistantText });
-
-        while (model.messageHistory.length > 24) {
-          model.messageHistory.shift();
-        }
-
-        model.appendMessage(
-          'assistant',
-          assistantText);
-
-        await model.emitAsync(
-          'afterResponse',
-          { model,
-            prompt,
-            responseText: assistantText,
-            requestContext,
-            requestInput,
-            chatModel } as AiChatAfterResponseContext);
-      } catch (e) {
+    if (apiKey === '') {
+      if (!model.missingKeyMessageShown) {
         model.appendMessage(
           'system',
-          `Failed to send message: ${String(e)}`);
-      } finally {
-        model.sending = false;
-        model.clearProgress();
-        persistState();
+          options.missingKeyMessage
+          ?? defaultMissingCredentialsMessage);
+        model.missingKeyMessageShown = true;
+        this.#persistState();
       }
-    };
 
-  const renderChoices =
-    (): void => {
-      const prompt =
-        model.choicePrompt;
+      return;
+    }
 
-      choicesElement.replaceChildren();
+    const chatModel =
+      (await options.provider.getChatModel()).trim()
+      || defaultChatModel;
+    const requestContext =
+      await options.getRequestContext();
+    const beforeSendContext =
+      createBeforeSendContext(
+        model,
+        prompt,
+        requestContext,
+        chatModel,
+        apiKey);
 
-      if (prompt === null
-          || prompt.message.trim() === ''
-          || prompt.options.length === 0)
+    await model.emitAsync(
+      'beforeSend',
+      beforeSendContext as AiChatBeforeSendContext);
+
+    if (beforeSendContext.canceled) {
+      if (beforeSendContext.cancelMessage !== null
+          && beforeSendContext.cancelMessage !== '')
       {
-        choicesElement.style.display = 'none';
-        return;
+        model.appendMessage(
+          'system',
+          beforeSendContext.cancelMessage);
       }
 
-      const questionElement =
-        document.createElement('div');
+      this.#persistState();
+      return;
+    }
 
-      questionElement.className = 'asljs-ai-chat-choice-message';
-      questionElement.textContent = prompt.message;
+    const messagesElement =
+      this.#messagesElement;
+    const distanceFromBottom =
+      messagesElement === null
+        ? 0
+        : messagesElement.scrollHeight
+          - (messagesElement.scrollTop + messagesElement.clientHeight);
+    const shouldAutoScroll =
+      distanceFromBottom <= autoScrollBottomThresholdPx;
 
-      const optionsElement =
-        document.createElement('div');
+    model.appendMessage(
+      'user',
+      prompt);
+    model.promptDraft = '';
+    model.sending = true;
+    model.dismissChoices();
 
-      optionsElement.className = 'asljs-ai-chat-choice-options';
+    if (shouldAutoScroll) {
+      this.#shouldScrollMessagesToBottom = true;
+    }
 
-      for (const option of prompt.options) {
-        const button =
-          document.createElement('button');
+    this.#persistState();
 
-        button.type = 'button';
-        button.className = 'asljs-ai-chat-choice-option';
-        button.textContent = option.label;
-        button.addEventListener(
-          'click',
-          () => {
-            const internalState =
-              getInternalChoiceState(model);
-            const behavior =
-              internalState.behavior;
+    try {
+      model.setProgress(
+        'Requesting assistant response...');
 
-            dismissChoices(
-              model,
-              behavior === 'resolve'
-                ? option.value
-                : null);
-            persistState();
+      const requestInput =
+        await options.buildRequestInput(
+          { model,
+            prompt,
+            messageHistory:
+              model.messageHistory.slice(),
+            requestContext,
+            chatModel });
+      const assistantText =
+        await runWithTools(
+          apiKey,
+          chatModel,
+          requestInput,
+          options.getTools?.() ?? [ ],
+          model,
+          options.executeTool,
+          options.getToolsContext
+            ? await options.getToolsContext()
+            : undefined,
+          options.provider,
+          options.toolStepExtension ?? defaultToolStepExtension);
 
-            if (behavior === 'send') {
-              void sendPromptValue(option.value);
-            }
-          });
+      model.messageHistory.push(
+        { role: 'user',
+          content: prompt });
+      model.messageHistory.push(
+        { role: 'assistant',
+          content: assistantText });
 
-        optionsElement.appendChild(button);
+      while (model.messageHistory.length > 24) {
+        model.messageHistory.shift();
       }
 
-      choicesElement.append(
-        questionElement,
-        optionsElement);
-      choicesElement.style.display = '';
-    };
+      model.appendMessage(
+        'assistant',
+        assistantText);
 
-  const syncSendingUi =
-    (): void => {
-      promptElement.disabled = model.sending;
-      sendButton.disabled = model.sending;
-    };
-
-  const rebindArrayListeners =
-    bindModelListeners(
-      model,
-      renderMessages,
-      renderProgress,
-      renderChoices,
-      syncSendingUi,
-      persistState);
-
-  promptElement.addEventListener(
-    'input',
-    () => {
-      model.promptDraft = promptElement.value;
-      persistState();
-    });
-
-  promptElement.addEventListener(
-    'keydown',
-    event => {
-      const keyboardEvent =
-        event as KeyboardEvent;
-
-      if (keyboardEvent.key !== 'Enter'
-          || keyboardEvent.shiftKey)
-      {
-        return;
-      }
-
-      keyboardEvent.preventDefault();
-      void sendPromptValue();
-    });
-
-  sendButton.addEventListener(
-    'click',
-    () => {
-      void sendPromptValue();
-    });
-
-  renderMessages();
-  renderProgress();
-  renderChoices();
-  syncSendingUi();
-  persistState();
-
-  await model.emitAsync(
-    'initialize',
-    { model });
-
-  renderMessages();
-  renderProgress();
-  renderChoices();
-  syncSendingUi();
-  persistState();
-
-  element.addEventListener(
-    'DOMNodeRemoved',
-    () => {
-      rebindArrayListeners.dispose();
-    });
-
-  return element;
+      await model.emitAsync(
+        'afterResponse',
+        { model,
+          prompt,
+          responseText: assistantText,
+          requestContext,
+          requestInput,
+          chatModel } as AiChatAfterResponseContext);
+    } catch (error) {
+      model.appendMessage(
+        'system',
+        `Failed to send message: ${String(error)}`);
+    } finally {
+      model.sending = false;
+      model.clearProgress();
+      this.#persistState();
+    }
+  }
 }
 
 function defineModelMethod(

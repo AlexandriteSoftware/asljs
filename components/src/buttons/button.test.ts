@@ -15,6 +15,9 @@ import type {
     ButtonDelete,
   } from './button-delete.js';
 import type {
+    ButtonSettings,
+  } from './button-settings.js';
+import type {
     ThemeProvider,
   } from '../themes/theme-provider.js';
 
@@ -95,6 +98,29 @@ test(
   });
 
 test(
+  'button-settings: provides default settings icon and text',
+  async () => {
+    await ensureDom();
+    await import('./button.js');
+    await import('./button-settings.js');
+
+    const element =
+      document.createElement('asljs-button-settings') as ButtonSettings;
+
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const icon =
+      element.querySelector('.icon');
+    const text =
+      element.querySelector('.text');
+
+    assert.equal(icon?.textContent, '\uF3E5');
+    assert.equal(text?.textContent, 'Settings');
+  });
+
+test(
   'button-add: resolves bootstrap icon from theme provider',
   async () => {
     await ensureDom();
@@ -146,6 +172,29 @@ test(
       element.querySelector('button');
 
     assert.equal(button?.className, 'btn btn-primary');
+  });
+
+test(
+  'button: prefers explicit button class name over theme class',
+  async () => {
+    await ensureDom();
+    await import('./button.js');
+
+    const element =
+      document.createElement('asljs-button') as Button;
+
+    element.buttonClassName = 'btn btn-ghost';
+    element.theme =
+      { button:
+          { className: 'btn btn-primary' } };
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const button =
+      element.querySelector('button');
+
+    assert.equal(button?.className, 'btn btn-ghost');
   });
 
 async function ensureDom(): Promise<void> {

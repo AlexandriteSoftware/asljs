@@ -5,16 +5,16 @@
 Use this file as AI-facing guidance for `asljs-components`.
 
 This package currently exports the `AssistedInput`, `Button`, `ButtonAdd`,
-`ButtonDelete`, `Keyboard`, `Letterpad`, `List`, `Numpad`, and `TextInput`
-UI classes/components, AI chat model/factory helpers, the `FileView` web
-component plus file handlers, package theming helpers, a theme provider custom
-element, and related types.
+`ButtonDelete`, `ButtonSettings`, `Keyboard`, `Letterpad`, `List`, `Numpad`,
+`Select`, and `TextInput` UI classes/components, the `AiChat` custom element
+plus AI chat model helpers, the `FileView` web component plus file handlers,
+package theming helpers, a theme provider custom element, and related types.
 
 ## Package Scope
 
 Exports from `src/index.ts`:
 
-- `createAiChatComponent`
+- `AiChat`
 - `createAiChatModel`
 - `serializeAiChatModelState`
 - `createBootstrapTheme`
@@ -22,6 +22,7 @@ Exports from `src/index.ts`:
 - `Button`
 - `ButtonAdd`
 - `ButtonDelete`
+- `ButtonSettings`
 - `FileView`
 - `Keyboard`
 - `Letterpad`
@@ -31,6 +32,7 @@ Exports from `src/index.ts`:
 - `createTextFileHandler`
 - `createTextEditorFileHandler`
 - `List`
+- `Select`
 - `TextInput`
 - `ThemeProvider`
 - `findThemeProvider`
@@ -69,6 +71,11 @@ Exports from `src/index.ts`:
 - `KeyboardKeyDetail`
 - `LetterpadKeyDetail`
 - `ListThemeDefinition`
+- `SelectChangeDetail`
+- `SelectItem`
+- `SelectStatus`
+- `SelectThemeDefinition`
+- `SelectValidator`
 - `NumpadKeyDetail`
 - `TextInputChangeDetail`
 - `TextInputEnterKeyBehavior`
@@ -86,35 +93,39 @@ Exports from `src/index.ts`:
 
 Current custom elements:
 
+- `asljs-ai-chat`
 - `asljs-file`
 - `asljs-list`
 - `asljs-button`
 - `asljs-button-add`
 - `asljs-button-delete`
+- `asljs-button-settings`
 - `asljs-keyboard`
 - `asljs-numpad`
 - `asljs-letterpad`
+- `asljs-select`
 - `asljs-text-input`
 - `asljs-theme-provider`
 
 Current non-custom-element UI surface:
 
 - `AssistedInput`
-- `createAiChatComponent(...)`
 
 ## AI Quick Reference
 
 Component contract at a glance:
 
 - import with `import 'asljs-components';`
-- custom elements: `asljs-button`, `asljs-button-add`,
-  `asljs-button-delete`, `asljs-file`, `asljs-keyboard`,
-  `asljs-letterpad`, `asljs-list`, `asljs-numpad`, `asljs-text-input`,
-  `asljs-theme-provider`
-- AI chat is a model-plus-factory API, not a custom element
+- custom elements: `asljs-ai-chat`, `asljs-button`, `asljs-button-add`,
+  `asljs-button-delete`, `asljs-button-settings`, `asljs-file`,
+  `asljs-keyboard`, `asljs-letterpad`, `asljs-list`, `asljs-numpad`,
+  `asljs-select`, `asljs-text-input`, `asljs-theme-provider`
+- AI chat uses the `asljs-ai-chat` custom element plus
+  `createAiChatModel()` for explicit state ownership
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
 - button variants use explicit `icon` and `text` properties, with add/delete
-  icons resolved from theme first and Unicode fallbacks second
+  and settings icons resolved from theme first and Unicode fallbacks second;
+  the base button also accepts explicit `buttonClassName`
 - file viewing uses provider + ordered handler matching
 - keyboard uses a fixed QWERTY layout, a `characters` filter, and bubbling
   `key` plus `submit` events
@@ -131,6 +142,8 @@ Component contract at a glance:
 - optional text-input template: `template[data-slot="template"]`
 - optional text-input control templates: `template[data-slot="input"]` and
   `template[data-slot="textarea"]`
+- optional select template: `template[data-slot="template"]`
+- optional select control template: `template[data-slot="select"]`
 - theme fallback order: local slot template -> `list.theme` -> nearest
   `asljs-theme-provider` -> package default theme
 - container templates must include `[data-role="items"]`
@@ -143,8 +156,8 @@ Component contract at a glance:
 Use this package when:
 
 - you want reusable web components already designed for ASLJS patterns
-- you want a packaged UI surface with an explicit state contract, even when the
-  rendering surface is produced by a factory rather than a tag
+- you want a packaged UI surface with an explicit state contract and a custom
+  element tag
 - you specifically want `asljs-list` rather than raw DOM binding
 
 Use another package when:
@@ -165,12 +178,17 @@ The package currently uses more than one component form.
   event dispatch through `AssistedInput`.
 - `List` is a Lit custom element with explicit properties.
 - `Button` is a Lit custom element driven by explicit icon/text properties.
+- `ButtonSettings` is a Lit custom element with the same API as `Button` plus
+  a themed/default settings icon.
 - `Numpad` is a Lit custom element driven by a `characters` filter and key
   event dispatch through `AssistedInput`.
+- `Select` is a Lit custom element with explicit items, validation, and
+  template properties.
 - `TextInput` is a Lit custom element with explicit reset-value, validation,
   and template properties.
 - `ThemeProvider` is a lightweight `HTMLElement` provider.
-- AI chat uses `createAiChatModel()` plus `createAiChatComponent(...)`.
+- `AiChat` is a Lit custom element with explicit `model` and `options`
+  properties.
 
 Preserve the shared design rules across those forms.
 
@@ -214,11 +232,16 @@ Inside `asljs-button`, configure:
 
 - `icon` as an HTML string for the icon markup
 - `text` as the visible label
+- `buttonClassName` when host CSS needs to target the inner native button
 - `type` and `disabled` for native button behavior
 
 Prefer `asljs-button-add` and `asljs-button-delete` when their defaults fit.
 They inherit the same API but resolve `button.addIcon` and
 `button.deleteIcon` from theme before falling back to Unicode defaults.
+
+Prefer `asljs-button-settings` when the action is settings-oriented. It
+inherits the same API and resolves `button.settingsIcon` from theme before
+falling back to Unicode.
 
 If Bootstrap icon markup is desired, prefer `createBootstrapTheme()` over
 duplicating raw icon HTML literals at multiple call sites.
@@ -238,6 +261,33 @@ Inside `asljs-text-input`, configure:
 User edits update `draftValue` and `status`; they do not mutate `value`
 directly. Consumers should listen for `input` or `change` and decide whether
 to persist or reset.
+
+### Use explicit items/value semantics for select
+
+Inside `asljs-select`, configure:
+
+- `items` as explicit `{ value, label, disabled? }` entries
+- `value` as the external set/reset selection
+- `validator` to return an error message or `null`
+- `placeholder` when an empty prompt option should be shown first
+- `controlClassName` when host CSS needs to target the inner native `select`
+- `theme` or a local `template[data-slot="template"]` for layout override
+- local `template[data-slot="select"]` for themed control markup override
+
+User selection updates `draftValue` and `status`; it does not mutate `value`
+directly. Consumers should listen for `input` or `change` and decide whether
+to persist or reset.
+
+### Use explicit model/options semantics for AI chat
+
+Inside `asljs-ai-chat`, configure:
+
+- `model` as an `AiChatModel` created by `createAiChatModel()`
+- `options` as the request/persistence/tool callbacks the chat runtime needs
+
+The chat element owns the rendered conversation UI. The model remains the
+source of truth for messages, progress, choice prompts, scroll state, and
+serialized persistence.
 
 ### Keep text-input templates control-host based
 

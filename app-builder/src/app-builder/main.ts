@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import {
-  createAiChatComponent,
   createAiChatModel,
+  type SelectItem,
   type AiChatAfterResponseContext,
   type AiChatBeforeSendContext,
   type AiChatModel,
@@ -129,82 +129,116 @@ function mustElement<T extends HTMLElement>(id: string): T {
   return element as T;
 }
 
+type AppBuilderButtonElement =
+  HTMLElement
+  & {
+    text: string;
+    icon: string;
+    disabled: boolean;
+    buttonClassName: string;
+    type: 'button' | 'submit' | 'reset';
+  };
+
+type AppBuilderTextInputElement =
+  HTMLElement
+  & {
+    value: string | null;
+    placeholder: string | null;
+    inputType: string;
+    controlClassName: string;
+    disabled: boolean;
+  };
+
+type AppBuilderSelectElement =
+  HTMLElement
+  & {
+    value: string | null;
+    items: SelectItem[];
+    placeholder: string | null;
+    controlClassName: string;
+    disabled: boolean;
+  };
+
+type AppBuilderAiChatElement =
+  HTMLElement
+  & {
+    model: AiChatModel;
+    options: Record<string, unknown> | null;
+  };
+
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
 const elFirstAppSetup = mustElement<HTMLElement>('first-app-setup');
-const elFirstApiKeyInput = mustElement<HTMLInputElement>('first-api-key-input');
-const elFirstAppNameInput = mustElement<HTMLInputElement>('first-app-name-input');
-const elBtnCreateFirstApp = mustElement<HTMLButtonElement>('btn-create-first-app');
+const elFirstApiKeyInput = mustElement<AppBuilderTextInputElement>('first-api-key-input');
+const elFirstAppNameInput = mustElement<AppBuilderTextInputElement>('first-app-name-input');
+const elBtnCreateFirstApp = mustElement<AppBuilderButtonElement>('btn-create-first-app');
 const elBtnCreateTodoSample =
-  mustElement<HTMLButtonElement>('btn-create-todo-sample');
+  mustElement<AppBuilderButtonElement>('btn-create-todo-sample');
 const elPanels = mustElement<HTMLElement>('panels');
 const elPanelChat = mustElement<HTMLElement>('panel-chat');
 const elPanelEditor = mustElement<HTMLElement>('panel-editor');
-const elAppSelect = mustElement<HTMLSelectElement>('app-select');
-const elFileSelect = mustElement<HTMLSelectElement>('file-select');
+const elAppSelect = mustElement<AppBuilderSelectElement>('app-select');
+const elFileSelect = mustElement<AppBuilderSelectElement>('file-select');
 const elFileView = mustElement<FileViewElement>('file-view');
 const elChatRoot = mustElement<HTMLElement>('chat-root');
-const elChatModelSelect = mustElement<HTMLSelectElement>('chat-model-select');
-const elBtnRun = mustElement<HTMLButtonElement>('btn-run');
-const elBtnRefreshPreview =
-  mustElement<HTMLButtonElement>('btn-refresh-preview');
+const elChatModelSelect = mustElement<AppBuilderSelectElement>('chat-model-select');
+const elBtnRun = mustElement<AppBuilderButtonElement>('btn-run');
 const elPreviewFrame = mustElement<HTMLIFrameElement>('preview-frame');
-const elGenerationModelSelect = mustElement<HTMLSelectElement>('generation-model-select');
-const elBtnStartGeneration = mustElement<HTMLButtonElement>('btn-start-generation');
-const elBtnStopGeneration = mustElement<HTMLButtonElement>('btn-stop-generation');
+const elPreviewTitle = mustElement<HTMLElement>('panel-preview-title');
+const elGenerationModelSelect = mustElement<AppBuilderSelectElement>('generation-model-select');
+const elBtnStartGeneration = mustElement<AppBuilderButtonElement>('btn-start-generation');
+const elBtnStopGeneration = mustElement<AppBuilderButtonElement>('btn-stop-generation');
 const elGenerationStatus = mustElement<HTMLElement>('generation-status');
-const elBtnNewApp = mustElement<HTMLButtonElement>('btn-new-app');
-const elBtnImport = mustElement<HTMLButtonElement>('btn-import');
-const elBtnProjectSettings = mustElement<HTMLButtonElement>('btn-project-settings');
-const elBtnShare = mustElement<HTMLButtonElement>('btn-share');
-const elBtnSettings = mustElement<HTMLButtonElement>('btn-settings');
-const elBtnAgentInstructions =
-  mustElement<HTMLButtonElement>('btn-agent-instructions');
-const elBtnToggleChat = mustElement<HTMLButtonElement>('btn-toggle-chat');
-const elBtnToggleFiles = mustElement<HTMLButtonElement>('btn-toggle-files');
+const elBtnNewApp = mustElement<AppBuilderButtonElement>('btn-new-app');
+const elBtnImport = mustElement<AppBuilderButtonElement>('btn-import');
+const elBtnProjectSettings = mustElement<AppBuilderButtonElement>('btn-project-settings');
+const elBtnShare = mustElement<AppBuilderButtonElement>('btn-share');
+const elBtnSettings = mustElement<AppBuilderButtonElement>('btn-settings');
+const elBtnToggleChat = mustElement<AppBuilderButtonElement>('btn-toggle-chat');
+const elBtnToggleFiles = mustElement<AppBuilderButtonElement>('btn-toggle-files');
 
 const elSettingsModal = mustElement<HTMLElement>('settings-modal');
 const elBtnCloseSettings =
-  mustElement<HTMLButtonElement>('btn-close-settings');
-const elBtnSaveSettings = mustElement<HTMLButtonElement>('btn-save-settings');
+  mustElement<AppBuilderButtonElement>('btn-close-settings');
+const elBtnSaveSettings = mustElement<AppBuilderButtonElement>('btn-save-settings');
 const elBtnCancelSettings =
-  mustElement<HTMLButtonElement>('btn-cancel-settings');
-const elApiKeyInput = mustElement<HTMLInputElement>('api-key-input');
-const elThemeSelect = mustElement<HTMLSelectElement>('theme-select');
-const elFontSizeInput = mustElement<HTMLInputElement>('font-size-input');
+  mustElement<AppBuilderButtonElement>('btn-cancel-settings');
+const elApiKeyInput = mustElement<AppBuilderTextInputElement>('api-key-input');
+const elThemeSelect = mustElement<AppBuilderSelectElement>('theme-select');
+const elFontSizeInput = mustElement<AppBuilderTextInputElement>('font-size-input');
 const elMaxToolStepsInput =
-  mustElement<HTMLInputElement>('max-tool-steps-input');
+  mustElement<AppBuilderTextInputElement>('max-tool-steps-input');
 
 const elNameModal = mustElement<HTMLElement>('name-modal');
 const elNameModalTitle = mustElement<HTMLElement>('name-modal-title');
-const elAppNameInput = mustElement<HTMLInputElement>('app-name-input');
-const elBtnConfirmName = mustElement<HTMLButtonElement>('btn-confirm-name');
-const elBtnCancelName = mustElement<HTMLButtonElement>('btn-cancel-name');
+const elAppNameInput = mustElement<AppBuilderTextInputElement>('app-name-input');
+const elBtnConfirmName = mustElement<AppBuilderButtonElement>('btn-confirm-name');
+const elBtnCancelName = mustElement<AppBuilderButtonElement>('btn-cancel-name');
 const elBtnCloseNameModal =
-  mustElement<HTMLButtonElement>('btn-close-name-modal');
+  mustElement<AppBuilderButtonElement>('btn-close-name-modal');
 
 const elProjectSettingsModal = mustElement<HTMLElement>('project-settings-modal');
-const elProjectNameInput = mustElement<HTMLInputElement>('project-name-input');
+const elProjectNameInput = mustElement<AppBuilderTextInputElement>('project-name-input');
 const elProjectAuthorNameInput =
-  mustElement<HTMLInputElement>('project-author-name-input');
+  mustElement<AppBuilderTextInputElement>('project-author-name-input');
 const elProjectAuthorEmailInput =
-  mustElement<HTMLInputElement>('project-author-email-input');
+  mustElement<AppBuilderTextInputElement>('project-author-email-input');
 const elBtnSaveProjectSettings =
-  mustElement<HTMLButtonElement>('btn-save-project-settings');
-const elBtnDeleteProject = mustElement<HTMLButtonElement>('btn-delete-project');
+  mustElement<AppBuilderButtonElement>('btn-save-project-settings');
+const elBtnDeleteProject = mustElement<AppBuilderButtonElement>('btn-delete-project');
 const elBtnCloseProjectSettings =
-  mustElement<HTMLButtonElement>('btn-close-project-settings');
+  mustElement<AppBuilderButtonElement>('btn-close-project-settings');
 const elBtnCloseProjectSettingsX =
-  mustElement<HTMLButtonElement>('btn-close-project-settings-x');
+  mustElement<AppBuilderButtonElement>('btn-close-project-settings-x');
 
 const elShareModal = mustElement<HTMLElement>('share-modal');
-const elBtnCloseShare = mustElement<HTMLButtonElement>('btn-close-share');
-const elBtnCloseShare2 = mustElement<HTMLButtonElement>('btn-close-share-2');
-const elBtnShareLink = mustElement<HTMLButtonElement>('btn-share-link');
-const elBtnShareDownload = mustElement<HTMLButtonElement>('btn-share-download');
+const elBtnCloseShare = mustElement<AppBuilderButtonElement>('btn-close-share');
+const elBtnCloseShare2 = mustElement<AppBuilderButtonElement>('btn-close-share-2');
+const elBtnShareLink = mustElement<AppBuilderButtonElement>('btn-share-link');
+const elBtnShareDownload = mustElement<AppBuilderButtonElement>('btn-share-download');
 const elBtnShareCopyText =
-  mustElement<HTMLButtonElement>('btn-share-copy-text');
+  mustElement<AppBuilderButtonElement>('btn-share-copy-text');
 const elBtnShareCopyHtml =
-  mustElement<HTMLButtonElement>('btn-share-copy-html');
+  mustElement<AppBuilderButtonElement>('btn-share-copy-html');
 const elShareMinifiedInput =
   mustElement<HTMLInputElement>('share-minified-input');
 const elShareExcludeTestsInput =
@@ -213,17 +247,6 @@ const elShareLinkStatus = mustElement<HTMLElement>('share-link-status');
 const elShareLinkOutput = mustElement<HTMLTextAreaElement>('share-link-output');
 
 const elImportFile = mustElement<HTMLInputElement>('import-file');
-
-const elAgentInstructionsModal =
-  mustElement<HTMLElement>('agent-instructions-modal');
-const elAgentInstructionsText =
-  mustElement<HTMLTextAreaElement>('agent-instructions-text');
-const elBtnCloseAgentInstructions =
-  mustElement<HTMLButtonElement>('btn-close-agent-instructions');
-const elBtnCloseAgentInstructions2 =
-  mustElement<HTMLButtonElement>('btn-close-agent-instructions-2');
-const elBtnCopyAgentInstructions =
-  mustElement<HTMLButtonElement>('btn-copy-agent-instructions');
 
 const SETTINGS_KEY = 'asljs-app-builder-settings';
 const DEFAULT_THEME = 'light';
@@ -250,6 +273,8 @@ let generationStopRequested = false;
 let currentAppOpenAiApiKey = '';
 let currentAiChatModel: AiChatModel | null = null;
 
+configureShellControls();
+
 type BrowserEsbuildApi =
   { transform: (
       source: string,
@@ -258,6 +283,261 @@ type BrowserEsbuildApi =
           minify: boolean;
           target: string; }
     ) => Promise<{ code: string; }>; };
+
+function configureButton(
+    element: AppBuilderButtonElement,
+    options: {
+      text?: string;
+      icon?: string;
+      className: string;
+    }
+  ): void
+{
+  element.type = 'button';
+  element.buttonClassName = options.className;
+  element.text = options.text ?? '';
+  element.icon = options.icon ?? '';
+}
+
+function configureTextInput(
+    element: AppBuilderTextInputElement,
+    options: {
+      placeholder?: string;
+      inputType?: string;
+      className?: string;
+    }
+  ): void
+{
+  element.placeholder = options.placeholder ?? null;
+  element.inputType = options.inputType ?? 'text';
+  element.controlClassName = options.className ?? 'form-input';
+}
+
+function configureSelect(
+    element: AppBuilderSelectElement,
+    options: {
+      className: string;
+      items?: SelectItem[];
+      placeholder?: string | null;
+    }
+  ): void
+{
+  element.controlClassName = options.className;
+  element.items = options.items ?? [];
+  element.placeholder = options.placeholder ?? null;
+}
+
+function configureShellControls(): void {
+  configureButton(elBtnSettings, {
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnNewApp, {
+    icon: '＋',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnImport, {
+    text: 'Import',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnProjectSettings, {
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnToggleChat, {
+    text: 'Chat ▾',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnToggleFiles, {
+    text: 'Files ▾',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnRun, {
+    text: 'Run',
+    icon: '▶',
+    className: 'btn btn-success btn-sm',
+  });
+  configureButton(elBtnShare, {
+    text: 'Share',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnCreateFirstApp, {
+    text: 'Create Application',
+    className: 'btn btn-primary',
+  });
+  configureButton(elBtnCreateTodoSample, {
+    text: 'Create TODO Sample App',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnStartGeneration, {
+    text: 'Generate',
+    className: 'btn btn-primary btn-sm',
+  });
+  configureButton(elBtnStopGeneration, {
+    text: 'Stop',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnCloseSettings, {
+    text: '✕',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnSaveSettings, {
+    text: 'Save',
+    className: 'btn btn-primary',
+  });
+  configureButton(elBtnCancelSettings, {
+    text: 'Cancel',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnCloseNameModal, {
+    text: '✕',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnConfirmName, {
+    text: 'OK',
+    className: 'btn btn-primary',
+  });
+  configureButton(elBtnCancelName, {
+    text: 'Cancel',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnCloseProjectSettingsX, {
+    text: '✕',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnSaveProjectSettings, {
+    text: 'Save',
+    className: 'btn btn-primary',
+  });
+  configureButton(elBtnDeleteProject, {
+    text: 'Delete',
+    className: 'btn btn-danger',
+  });
+  configureButton(elBtnCloseProjectSettings, {
+    text: 'Cancel',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnCloseShare, {
+    text: '✕',
+    className: 'btn btn-ghost btn-sm',
+  });
+  configureButton(elBtnShareLink, {
+    text: 'Share with link',
+    className: 'btn btn-primary',
+  });
+  configureButton(elBtnShareDownload, {
+    text: 'Download export',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnShareCopyText, {
+    text: 'Copy as text link',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnShareCopyHtml, {
+    text: 'Copy as HTML link',
+    className: 'btn btn-ghost',
+  });
+  configureButton(elBtnCloseShare2, {
+    text: 'Close',
+    className: 'btn btn-ghost',
+  });
+
+  configureTextInput(elFirstApiKeyInput, {
+    placeholder: 'sk-...',
+    inputType: 'password',
+  });
+  configureTextInput(elFirstAppNameInput, {
+    placeholder: 'My App',
+  });
+  configureTextInput(elApiKeyInput, {
+    placeholder: 'sk-…  (optional, stored locally)',
+    inputType: 'password',
+  });
+  configureTextInput(elFontSizeInput, {
+    placeholder: '14',
+    inputType: 'number',
+  });
+  configureTextInput(elMaxToolStepsInput, {
+    placeholder: '20',
+    inputType: 'number',
+  });
+  configureTextInput(elAppNameInput, {
+    placeholder: 'My App',
+  });
+  configureTextInput(elProjectNameInput, {
+    placeholder: 'Project name',
+  });
+  configureTextInput(elProjectAuthorNameInput, {
+    placeholder: 'Jane Doe',
+  });
+  configureTextInput(elProjectAuthorEmailInput, {
+    placeholder: 'jane@example.com',
+    inputType: 'email',
+  });
+
+  configureSelect(elAppSelect, {
+    className: 'app-select',
+  });
+  configureSelect(elFileSelect, {
+    className: 'file-select',
+  });
+  configureSelect(elChatModelSelect, {
+    className: 'form-input lane-model-select',
+  });
+  configureSelect(elGenerationModelSelect, {
+    className: 'form-input lane-model-select',
+  });
+  configureSelect(elThemeSelect, {
+    className: 'form-input',
+    items: [
+      { value: 'dark', label: 'Dark' },
+      { value: 'light', label: 'Light' },
+    ],
+  });
+}
+
+function readControlValue(
+    element: { value: string | null; }
+  ): string
+{
+  return element.value ?? '';
+}
+
+function writeControlValue(
+    element: { value: string | null; },
+    value: string
+  ): void
+{
+  element.value = value;
+}
+
+function focusInnerControl(
+    element: HTMLElement
+  ): void
+{
+  const control =
+    element.querySelector('input, textarea, select, button') as HTMLElement | null;
+
+  if (control !== null) {
+    control.focus();
+    return;
+  }
+
+  element.focus();
+}
+
+function selectInnerTextControl(
+    element: HTMLElement
+  ): void
+{
+  const control =
+    element.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement | null;
+
+  control?.focus();
+  control?.select();
+}
+
+function renderPreviewTitle(): void {
+  elPreviewTitle.textContent = getCurrentApp()?.name ?? 'Preview';
+}
 
 function getLinkSharingService(): LinkSharingService {
   linkSharingService =
@@ -537,24 +817,25 @@ function renderWorkspace(): void {
   elPanels.classList.toggle('hidden', !hasApp);
 
   if (!hasApp) {
-    elFirstApiKeyInput.value = '';
-    elFirstAppNameInput.value = '';
+    writeControlValue(elFirstApiKeyInput, '');
+    writeControlValue(elFirstAppNameInput, '');
     return;
   }
 
   renderFileSelect();
   renderFileContent();
+  renderPreviewTitle();
 }
 
 async function createFirstAppFromForm(): Promise<void> {
-  const name = elFirstAppNameInput.value.trim();
+  const name = readControlValue(elFirstAppNameInput).trim();
 
   if (name === '') {
-    elFirstAppNameInput.focus();
+    focusInnerControl(elFirstAppNameInput);
     return;
   }
 
-  const apiKey = elFirstApiKeyInput.value.trim();
+  const apiKey = readControlValue(elFirstApiKeyInput).trim();
 
   const app: AppRecord = {
     id: randomId(),
@@ -581,12 +862,12 @@ async function createTodoSampleAppFromForm(): Promise<void> {
     return;
   }
 
-  const rawName = elFirstAppNameInput.value.trim();
+  const rawName = readControlValue(elFirstAppNameInput).trim();
   const name = rawName === ''
     ? sample.name
     : rawName;
 
-  const apiKey = elFirstApiKeyInput.value.trim();
+  const apiKey = readControlValue(elFirstApiKeyInput).trim();
 
   const app: AppRecord = {
     id: randomId(),
@@ -771,7 +1052,7 @@ async function mountAiChatForCurrentApp(): Promise<void> {
 
   model.on(
     'toolStepLimit',
-    context => {
+    (context: { deny: () => void; }) => {
       if (getMaxToolSteps() < 1) {
         context.deny();
       }
@@ -787,48 +1068,50 @@ async function mountAiChatForCurrentApp(): Promise<void> {
     });
 
   const component =
-    await createAiChatComponent(
-      { provider:
-          createAppBuilderAiChatSecretsAndSettingsProvider(
-            { appId,
-              readChatModel: getChatModel,
-              readInitialToolStepLimit: getMaxToolSteps }),
-        stateStore:
-          createSessionStorageAiChatStateStore(appId),
-        getRequestContext: () => ({
-          currentAppId: state.currentAppId,
-        }),
-        buildRequestInput: ({ model: chatModel }) => {
-          const transcript =
-            buildConversationPrompt(
-              chatModel.messages
-                .filter(
-                  isUserOrAssistantMessage)
-                .map(
-                  message =>
-                    ({ role: message.role,
-                       text: message.content })));
+    document.createElement('asljs-ai-chat') as AppBuilderAiChatElement;
 
-          return [
-            { role: 'system',
-              content: CHAT_SYSTEM_PROMPT },
-            { role: 'user',
-              content: transcript },
-          ];
-        },
-        getTools: () => OPENAI_TOOLS,
-        executeTool: async (
-            name: string,
-            argumentsJson: string
-          ): Promise<string> =>
-          executeToolCall(
-            { type: 'function_call',
-              name,
-              arguments: argumentsJson,
-              call_id: `app-chat:${name}` },
-            appRuntimeTools),
+  component.model = model;
+  component.options =
+    { provider:
+        createAppBuilderAiChatSecretsAndSettingsProvider(
+          { appId,
+            readChatModel: getChatModel,
+            readInitialToolStepLimit: getMaxToolSteps }),
+      stateStore:
+        createSessionStorageAiChatStateStore(appId),
+      getRequestContext: () => ({
+        currentAppId: state.currentAppId,
+      }),
+      buildRequestInput: ({ model: chatModel }: { model: AiChatModel; }) => {
+        const transcript =
+          buildConversationPrompt(
+            chatModel.messages
+              .filter(
+                isUserOrAssistantMessage)
+              .map(
+                (message: { role: 'user' | 'assistant'; content: string; }) =>
+                  ({ role: message.role,
+                     text: message.content })));
+
+        return [
+          { role: 'system',
+            content: CHAT_SYSTEM_PROMPT },
+          { role: 'user',
+            content: transcript },
+        ];
       },
-      model);
+      getTools: () => OPENAI_TOOLS,
+      executeTool: async (
+          name: string,
+          argumentsJson: string
+        ): Promise<string> =>
+        executeToolCall(
+          { type: 'function_call',
+            name,
+            arguments: argumentsJson,
+            call_id: `app-chat:${name}` },
+          appRuntimeTools),
+    };
 
   elChatRoot.replaceChildren(component);
   syncStateChatMessagesFromAiChatModel();
@@ -895,12 +1178,12 @@ function pickFirstFileName(
 
 function promptNewApp(): void {
   elNameModalTitle.textContent = 'New App';
-  elAppNameInput.value = '';
+  writeControlValue(elAppNameInput, '');
   elNameModal.classList.remove('hidden');
-  elAppNameInput.focus();
+  focusInnerControl(elAppNameInput);
 
   elBtnConfirmName.onclick = async () => {
-    const name = elAppNameInput.value.trim();
+    const name = readControlValue(elAppNameInput).trim();
 
     if (name === '') {
       return;
@@ -936,13 +1219,12 @@ function promptRenameApp(): void {
   }
 
   elNameModalTitle.textContent = 'Rename App';
-  elAppNameInput.value = app.name;
+  writeControlValue(elAppNameInput, app.name);
   elNameModal.classList.remove('hidden');
-  elAppNameInput.focus();
-  elAppNameInput.select();
+  selectInnerTextControl(elAppNameInput);
 
   elBtnConfirmName.onclick = async () => {
-    const name = elAppNameInput.value.trim();
+    const name = readControlValue(elAppNameInput).trim();
 
     if (name === '') {
       return;
@@ -972,12 +1254,11 @@ function openProjectSettings(): void {
     return;
   }
 
-  elProjectNameInput.value = app.name;
-  elProjectAuthorNameInput.value = app.author?.name ?? '';
-  elProjectAuthorEmailInput.value = app.author?.email ?? '';
+  writeControlValue(elProjectNameInput, app.name);
+  writeControlValue(elProjectAuthorNameInput, app.author?.name ?? '');
+  writeControlValue(elProjectAuthorEmailInput, app.author?.email ?? '');
   elProjectSettingsModal.classList.remove('hidden');
-  elProjectNameInput.focus();
-  elProjectNameInput.select();
+  selectInnerTextControl(elProjectNameInput);
 }
 
 function closeProjectSettings(): void {
@@ -991,15 +1272,15 @@ async function saveProjectSettings(): Promise<void> {
     return;
   }
 
-  const name = elProjectNameInput.value.trim();
+  const name = readControlValue(elProjectNameInput).trim();
 
   if (name === '') {
-    elProjectNameInput.focus();
+    focusInnerControl(elProjectNameInput);
     return;
   }
 
-  const authorName = elProjectAuthorNameInput.value.trim();
-  const authorEmail = elProjectAuthorEmailInput.value.trim();
+  const authorName = readControlValue(elProjectAuthorNameInput).trim();
+  const authorEmail = readControlValue(elProjectAuthorEmailInput).trim();
   const author: AppAuthor | undefined =
     authorName !== '' || authorEmail !== ''
       ? {
@@ -1653,13 +1934,14 @@ async function shareWithDownload(): Promise<void> {
 }
 
 async function openSettings(): Promise<void> {
-  elApiKeyInput.value =
-    await refreshCurrentAppOpenAiApiKey();
-  elThemeSelect.value = getTheme();
-  elFontSizeInput.value = String(getFontSize());
-  elMaxToolStepsInput.value = String(getMaxToolSteps());
+  writeControlValue(
+    elApiKeyInput,
+    await refreshCurrentAppOpenAiApiKey());
+  writeControlValue(elThemeSelect, getTheme());
+  writeControlValue(elFontSizeInput, String(getFontSize()));
+  writeControlValue(elMaxToolStepsInput, String(getMaxToolSteps()));
   elSettingsModal.classList.remove('hidden');
-  elApiKeyInput.focus();
+  focusInnerControl(elApiKeyInput);
 }
 
 function closeSettings(): void {
@@ -1670,18 +1952,18 @@ async function saveSettingsFromModal(): Promise<void> {
   const settings = loadSettings();
   delete settings.apiKey;
   settings.theme =
-    elThemeSelect.value === 'light'
+    readControlValue(elThemeSelect) === 'light'
       ? 'light'
       : DEFAULT_THEME;
 
-  const parsedFontSize = Number.parseInt(elFontSizeInput.value, 10);
+  const parsedFontSize = Number.parseInt(readControlValue(elFontSizeInput), 10);
   settings.fontSize = Number.isFinite(parsedFontSize)
                      && parsedFontSize >= 12
                      && parsedFontSize <= 20
     ? parsedFontSize
     : DEFAULT_FONT_SIZE;
 
-  const parsed = Number.parseInt(elMaxToolStepsInput.value, 10);
+  const parsed = Number.parseInt(readControlValue(elMaxToolStepsInput), 10);
   settings.maxToolSteps = Number.isFinite(parsed) && parsed >= 1
     ? parsed
     : DEFAULT_MAX_TOOL_STEPS;
@@ -1689,7 +1971,7 @@ async function saveSettingsFromModal(): Promise<void> {
   saveSettings(settings);
 
   if (state.currentAppId !== null) {
-    currentAppOpenAiApiKey = elApiKeyInput.value.trim();
+    currentAppOpenAiApiKey = readControlValue(elApiKeyInput).trim();
     await saveAppOpenAiApiKey(
       state.currentAppId,
       currentAppOpenAiApiKey);
@@ -1701,29 +1983,29 @@ async function saveSettingsFromModal(): Promise<void> {
 }
 
 function syncModelSelectOptions(
-    selectElement: HTMLSelectElement,
+    selectElement: AppBuilderSelectElement,
     modelIds: string[],
     selectedValue: string,
   ): void
 {
-  const currentValue = selectElement.value;
-  selectElement.innerHTML = '';
+  const currentValue = readControlValue(selectElement);
 
-  for (const modelId of modelIds) {
-    const option = document.createElement('option');
-    option.value = modelId;
-    option.textContent = modelId;
-    selectElement.append(option);
-  }
+  selectElement.items =
+    modelIds.map(modelId => ({
+      value: modelId,
+      label: modelId,
+    }));
 
   if (modelIds.includes(currentValue)) {
-    selectElement.value = currentValue;
+    writeControlValue(selectElement, currentValue);
     return;
   }
 
-  selectElement.value = modelIds.includes(selectedValue)
-    ? selectedValue
-    : modelIds[0] ?? selectedValue;
+  writeControlValue(
+    selectElement,
+    modelIds.includes(selectedValue)
+      ? selectedValue
+      : modelIds[0] ?? selectedValue);
 }
 
 function refreshLaneModelSelectOptions(): void {
@@ -1761,13 +2043,13 @@ function pickSavedOrDefaultModel(
 
 function saveChatModelSelection(): void {
   const settings = loadSettings();
-  settings.chatModel = elChatModelSelect.value;
+  settings.chatModel = readControlValue(elChatModelSelect);
   saveSettings(settings);
 }
 
 function saveGenerationModelSelection(): void {
   const settings = loadSettings();
-  settings.generationModel = elGenerationModelSelect.value;
+  settings.generationModel = readControlValue(elGenerationModelSelect);
   saveSettings(settings);
 }
 
@@ -1843,22 +2125,6 @@ async function refreshAvailableModels(
   refreshLaneModelSelectOptions();
 }
 
-function openAgentInstructions(): void {
-  elAgentInstructionsText.value = [
-    '=== Chat lane prompt ===',
-    CHAT_SYSTEM_PROMPT,
-    '',
-    '=== Generation lane prompt ===',
-    GENERATION_SYSTEM_PROMPT,
-  ].join('\n');
-  elAgentInstructionsModal.classList.remove('hidden');
-  elAgentInstructionsText.scrollTop = 0;
-}
-
-function closeAgentInstructions(): void {
-  elAgentInstructionsModal.classList.add('hidden');
-}
-
 function toggleAppsCollapsed(): void {
   togglePanelUi({
     panelElement: elPanelChat,
@@ -1881,24 +2147,14 @@ function toggleFilesCollapsed(): void {
   });
 }
 
-async function copyAgentInstructions(): Promise<void> {
-  const text = elAgentInstructionsText.value;
-
-  try {
-    await navigator.clipboard.writeText(text);
-    appendChatMessage('assistant', 'Agent instructions copied to clipboard.');
-  } catch {
-    appendChatMessage(
-      'assistant',
-      'Could not copy to clipboard automatically. You can still select and copy from the instructions modal.',
-    );
-  }
-}
-
-state.on('set:apps', () => renderAppList());
+state.on('set:apps', () => {
+  renderAppList();
+  renderPreviewTitle();
+});
 state.on('set:currentAppId', () => {
   renderAppList();
   renderWorkspace();
+  renderPreviewTitle();
 });
 state.on('set:files', () => {
   renderFileSelect();
@@ -1920,11 +2176,9 @@ elBtnStartGeneration.addEventListener('click', () => {
 });
 elBtnStopGeneration.addEventListener('click', handleStopGeneration);
 elBtnRun.addEventListener('click', handleRun);
-elBtnRefreshPreview.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', () => {
   void openSettings();
 });
-elBtnAgentInstructions.addEventListener('click', openAgentInstructions);
 elBtnToggleChat.addEventListener('click', toggleAppsCollapsed);
 elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
 
@@ -1938,17 +2192,6 @@ elGenerationModelSelect.addEventListener('change', saveGenerationModelSelection)
 elSettingsModal.addEventListener('click', (event: MouseEvent) => {
   if (event.target === elSettingsModal) {
     closeSettings();
-  }
-});
-
-elBtnCloseAgentInstructions.addEventListener('click', closeAgentInstructions);
-elBtnCloseAgentInstructions2.addEventListener('click', closeAgentInstructions);
-elBtnCopyAgentInstructions.addEventListener('click', () => {
-  void copyAgentInstructions();
-});
-elAgentInstructionsModal.addEventListener('click', (event: MouseEvent) => {
-  if (event.target === elAgentInstructionsModal) {
-    closeAgentInstructions();
   }
 });
 
@@ -2030,7 +2273,7 @@ elFirstAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
 });
 
 elAppSelect.addEventListener('change', () => {
-  const value = elAppSelect.value;
+  const value = readControlValue(elAppSelect);
 
   if (value === APP_ACTION_NEW) {
     promptNewApp();
@@ -2050,7 +2293,7 @@ elAppSelect.addEventListener('change', () => {
 });
 
 elFileSelect.addEventListener('change', () => {
-  const next = elFileSelect.value;
+  const next = readControlValue(elFileSelect);
 
   if (next === '' || next === state.activeFileName) {
     return;
@@ -2118,7 +2361,7 @@ async function init(): Promise<void> {
     state.activeFileName = null;
     state.chatMessages = [];
     renderWorkspace();
-    elFirstAppNameInput.focus();
+    focusInnerControl(elFirstAppNameInput);
   }
 }
 

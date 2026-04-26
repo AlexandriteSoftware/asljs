@@ -4,17 +4,19 @@ import assert
   from 'node:assert/strict';
 import {
   AssistedInput,
+  AiChat,
   Button,
   ButtonAdd,
   ButtonDelete,
+  ButtonSettings,
   createBootstrapTheme,
-    createAiChatComponent,
     createAiChatModel,
   FileView,
   Keyboard,
   Letterpad,
     List,
   Numpad,
+  Select,
   TextInput,
     ThemeProvider,
   createImageFileHandler,
@@ -38,6 +40,10 @@ test(
 
     assert.equal(
       typeof ButtonDelete,
+      'function');
+
+    assert.equal(
+      typeof ButtonSettings,
       'function');
 
     assert.equal(
@@ -69,7 +75,11 @@ test(
       'function');
 
     assert.equal(
-      typeof createAiChatComponent,
+      typeof Select,
+      'function');
+
+    assert.equal(
+      typeof AiChat,
       'function');
 
     assert.equal(

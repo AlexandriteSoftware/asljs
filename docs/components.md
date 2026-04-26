@@ -11,12 +11,11 @@ The simplest mental model is still:
   routes user interaction back into the model
 
 That model is intentionally broader than "Lit custom element". In ASLJS,
-components currently appear in three forms:
+components currently appear in two DOM-facing forms plus shared base classes:
 
 - custom elements built around Lit, for example `asljs-list`
 - lightweight provider elements built directly on `HTMLElement`, for example
   `asljs-theme-provider`
-- factory-built DOM components, for example `createAiChatComponent(...)`
 
 The component form should follow the runtime need, not a fixed framework rule.
 
@@ -51,6 +50,8 @@ Examples in the current package:
 - `asljs-numpad` exposes a fixed keypad surface with a `characters` filter and
   emitted `key` events.
 - `createAiChatModel()` creates an observable, eventful chat model.
+- `asljs-ai-chat` renders chat state from an explicit `model` plus `options`
+  configuration.
 - `asljs-file` accepts `provider`, `handlers`, and `fileName` as explicit
   inputs.
 - `asljs-list` accepts `items`, `context`, and `theme` as explicit inputs.
@@ -66,8 +67,8 @@ The view is the DOM-facing rendering surface.
   markup, lifecycle hooks, and property-driven rendering.
 - Use a plain `HTMLElement` subclass for lightweight provider elements that do
   not need Lit templating.
-- Use a DOM factory when setup is asynchronous or when the surface is easier
-  to assemble imperatively than as a custom element.
+- Use a plain helper or base abstraction only when no reusable custom element
+  surface is needed.
 
 ### Binding and composition
 
@@ -87,9 +88,6 @@ Use this decision rule.
   lifecycle hooks, use a custom element.
 - If the component mainly provides scoped configuration to descendants, use a
   lightweight provider element.
-- If the component requires asynchronous initialization or is more naturally
-  assembled from imperative DOM nodes, use a factory function that returns an
-  `HTMLElement`.
 
 ## General patterns to preserve
 
@@ -151,8 +149,6 @@ Components that subscribe to observable state or DOM events must clean up those
 links when detached or replaced.
 
 - Lit custom elements should dispose subscriptions in `disconnectedCallback()`.
-- Factory-built components should centralize listener setup and state sync so
-  cleanup remains tractable if disposal is added later.
 - Rebinding logic should tear down previous subscriptions before attaching new
   ones.
 
@@ -233,14 +229,11 @@ call site.
 - State surface: `theme`
 - Responsibility: provide themed defaults to descendant components
 
-### `createAiChatModel()` and `createAiChatComponent(...)`
+### `createAiChatModel()` and `asljs-ai-chat`
 
-- Form: explicit model plus async DOM factory
+- Form: explicit model plus Lit custom element view
 - State surface: observable chat model with serializable state and events
-- Rendering model: imperative DOM composition kept in sync with the model
-
-This means the package is component-oriented, but not every component is a Lit
-custom element.
+- Rendering model: custom-element rendering kept in sync with the model
 
 ## Example: Accounts editor component
 
