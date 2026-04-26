@@ -123,6 +123,7 @@ Use the package scripts when validating changes:
 
 - `npm -w asljs-app-builder run dev`
 - `npm -w asljs-app-builder run build`
+- `npm -w asljs-app-builder run lint`
 - `npm -w asljs-app-builder run test`
 - `npm -w asljs-app-builder run typecheck`
 

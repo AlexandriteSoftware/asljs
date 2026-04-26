@@ -95,24 +95,13 @@
         <!-- Chat / Generate panel -->
         <section id="panel-chat" class="panel">
           <div class="panel-header">
-            <span>Generate</span>
-            <button id="btn-agent-instructions" class="btn btn-ghost btn-sm">Instructions</button>
-          </div>
-          <div id="chat-messages" class="chat-messages"></div>
-          <div id="chat-progress" class="chat-progress hidden" aria-live="polite"></div>
-          <div id="chat-choices" class="chat-choices hidden"></div>
-          <div class="chat-input-area">
-            <textarea
-              id="chat-input"
-              class="chat-input"
-              placeholder="Describe the app you want to build…"
-              rows="3"
-            ></textarea>
-            <div class="lane-controls">
-              <select id="chat-model-select" class="form-input lane-model-select" title="Chat model"></select>
-              <button id="btn-generate" class="btn btn-primary btn-sm">Send</button>
+            <div class="panel-header-left">
+              <span>Generate</span>
+              <button id="btn-agent-instructions" class="btn btn-ghost btn-sm">Instructions</button>
             </div>
+            <select id="chat-model-select" class="form-input lane-model-select" title="Chat model"></select>
           </div>
+          <div id="chat-root" class="chat-root"></div>
         </section>
 
         <!-- File editor panel -->
@@ -122,16 +111,10 @@
             <select id="file-select" class="file-select" title="Select file"></select>
           </div>
           <div id="editor-layout" class="editor-layout">
-            <div id="file-preview-panel" class="file-preview-panel hidden">
-              <p id="file-preview-meta" class="form-hint"></p>
-              <img id="file-image-preview" class="file-image-preview" alt="" />
-            </div>
-            <textarea
-              id="file-content"
-              class="file-editor"
-              spellcheck="false"
-              placeholder="Select a file to edit…"
-            ></textarea>
+            <asljs-file
+              id="file-view"
+              class="file-preview-panel"
+            ></asljs-file>
           </div>
         </section>
 
@@ -177,7 +160,7 @@
         />
         <p class="form-hint">
           Available models are loaded from OpenAI when the app starts. Choose
-          the chat model below the chat box and the generation model below the
+          the chat model in the chat panel header and the generation model below the
           preview panel.
         </p>
         <label class="form-label" for="theme-select">Theme</label>
@@ -206,7 +189,7 @@
           placeholder="20"
         />
         <p class="form-hint">
-          Your key is stored only in this browser (localStorage). It is sent
+          Your key is stored only in this browser (IndexedDB). It is sent
           directly to OpenAI — no server proxy is involved. Leave blank to skip
           AI generation.
         </p>

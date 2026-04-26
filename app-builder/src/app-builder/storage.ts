@@ -36,6 +36,11 @@ async function getDb(
             'byAppId',
             'appId',
             { unique: false });
+        },
+        db => {
+          db.createObjectStore(
+            'chatSecrets',
+            { keyPath: 'appId' });
         } ]);
 
   return dbRef;
@@ -81,7 +86,7 @@ export async function deleteApp(
 
   const tx =
     db.transaction(
-      [ 'apps', 'files' ],
+      [ 'apps', 'files', 'chatSecrets' ],
       'readwrite');
 
   await dbRequestAsync(
@@ -98,6 +103,9 @@ export async function deleteApp(
     await dbRequestAsync(
       filesStore.delete(key));
   }
+
+  await dbRequestAsync(
+    tx.objectStore('chatSecrets').delete(id));
 }
 
 export async function listFiles(
@@ -179,4 +187,47 @@ export async function replaceFiles(
     await dbRequestAsync(
       store.put(file));
   }
+}
+
+export async function loadAppOpenAiApiKey(
+    appId: string
+  ): Promise<string>
+{
+  const db =
+    await getDb();
+
+  const tx =
+    db.transaction(
+      'chatSecrets',
+      'readonly');
+
+  const record =
+    await dbRequestAsync(
+      tx.objectStore('chatSecrets').get(appId)) as
+        | { appId?: unknown;
+            openAiApiKey?: unknown; }
+        | undefined;
+
+  return typeof record?.openAiApiKey === 'string'
+    ? record.openAiApiKey
+    : '';
+}
+
+export async function saveAppOpenAiApiKey(
+    appId: string,
+    apiKey: string
+  ): Promise<void>
+{
+  const db =
+    await getDb();
+
+  const tx =
+    db.transaction(
+      'chatSecrets',
+      'readwrite');
+
+  await dbRequestAsync(
+    tx.objectStore('chatSecrets').put(
+      { appId,
+        openAiApiKey: apiKey }));
 }

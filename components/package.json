@@ -51,6 +51,7 @@
   "dependencies": {
     "asljs-data-binding": "^0.2.4",
     "asljs-eventful": "^0.4.9",
+    "asljs-observable": "^0.5.4",
     "lit": "^3.3.1"
   }
 }

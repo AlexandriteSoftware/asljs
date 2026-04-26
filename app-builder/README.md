@@ -204,11 +204,19 @@ Generated-output boundary:
 
 Internal modules (not exported as a library):
 
-- `src/app-builder/state.js` — reactive app state via `asljs-observable`
-- `src/app-builder/storage.js` — IndexedDB persistence via `asljs-dali`
-- `src/app-builder/ai.js` — OpenAI chat completion (browser-direct)
-- `src/app-builder/preview.js` — sandboxed iframe renderer
-- `src/app-builder/main.js` — UI wiring and event handling
+- `src/app-builder/state.ts` — reactive app state via `asljs-observable`
+- `src/app-builder/storage.ts` — IndexedDB persistence via `asljs-dali`
+- `src/app-builder/ai/ai-repl.ts` — OpenAI Responses transport and tool-call
+  loop
+- `src/app-builder/ai/ai-tools.ts` — generated-app tool schemas and runtime
+  tool execution
+- `src/app-builder/ai/chat-instruction.ts` — normal chat-lane prompt
+- `src/app-builder/ai/ai-instruction.ts` — generated-app coding prompt
+- `src/app-builder/ai/conversation-loop.ts` — kickoff text, transcript
+  shaping, and README snapshot contract
+- `src/app-builder/preview.ts` — sandboxed iframe renderer
+- `src/app-builder/main.ts` — UI wiring, prompt routing, storage, preview,
+  import/export, sharing, and event handling
 
 Prompt input inventory:
 

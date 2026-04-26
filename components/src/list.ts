@@ -21,7 +21,7 @@ import {
     THEME_CHANGED_EVENT_NAME,
     type ComponentsTheme,
     type ThemeProviderLike,
-  } from './theme.js';
+  } from './themes/theme.js';
 
 type ListSlotName =
   'container'

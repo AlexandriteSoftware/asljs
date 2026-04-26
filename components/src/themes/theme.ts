@@ -13,14 +13,39 @@ export type ThemeTemplateValue<
   | null
   | undefined;
 
+export type ThemeTextFactory<
+    TComponent extends HTMLElement = HTMLElement
+  > = (
+      component: TComponent
+    ) => string | null | undefined;
+
+export type ThemeTextValue<
+    TComponent extends HTMLElement = HTMLElement
+  > =
+  | string
+  | ThemeTextFactory<TComponent>
+  | null
+  | undefined;
+
 export interface ListThemeDefinition {
   container?: ThemeTemplateValue;
   empty?: ThemeTemplateValue;
   item?: ThemeTemplateValue;
 }
 
+export interface TextInputThemeDefinition {
+  template?: ThemeTemplateValue;
+}
+
+export interface ButtonThemeDefinition {
+  addIcon?: ThemeTextValue;
+  deleteIcon?: ThemeTextValue;
+}
+
 export interface ComponentsTheme {
+  button?: ButtonThemeDefinition;
   list?: ListThemeDefinition;
+  textInput?: TextInputThemeDefinition;
 }
 
 export interface ThemeProviderLike extends Element {
@@ -93,4 +118,23 @@ export function resolveThemeTemplate(
     resolvedSource.content.cloneNode(true));
 
   return template;
+}
+
+export function resolveThemeText(
+    source: ThemeTextValue,
+    component: HTMLElement
+  ): string | null
+{
+  if (source === null
+      || source === undefined)
+  {
+    return null;
+  }
+
+  const resolvedSource =
+    typeof source === 'function'
+      ? source(component)
+      : source;
+
+  return resolvedSource ?? null;
 }

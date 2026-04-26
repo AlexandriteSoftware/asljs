@@ -8,8 +8,21 @@ performant JavaScript libraries for everyday use.
 `asljs-components` is a catalog of reusable UI components for web applications
 in the ASLJS monorepo.
 
-This package is component-oriented: each component has a custom element name,
-purpose, and usage pattern.
+This package is component-oriented, but not every component has the same form.
+The current package includes:
+
+- shared base classes such as `AssistedInput`
+- custom elements such as `asljs-button`, `asljs-button-add`, and
+  `asljs-button-delete`
+- custom elements such as `asljs-keyboard`
+- custom elements such as `asljs-letterpad`
+- custom elements such as `asljs-numpad`
+- custom elements such as `asljs-list`
+- custom elements such as `asljs-file`
+- custom elements such as `asljs-text-input`
+- provider elements such as `asljs-theme-provider`
+- explicit model and factory helpers such as `createAiChatModel()` and
+  `createAiChatComponent(...)`
 
 ## Installation
 
@@ -21,13 +34,33 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 
 ## Component Contract At A Glance
 
-- Import the package with `import 'asljs-components';` to register the custom
-  element.
-- The current custom element is `asljs-list`.
+- Import the package with `import 'asljs-components';` when you need the
+  package custom elements registered.
+- The current custom elements are `asljs-button`, `asljs-button-add`,
+  `asljs-button-delete`, `asljs-file`, `asljs-keyboard`,
+  `asljs-letterpad`, `asljs-list`, `asljs-numpad`, `asljs-text-input`, and
+  `asljs-theme-provider`.
+- AI chat is exposed as `createAiChatModel()` and
+  `createAiChatComponent(...)`, not as a custom element.
+- `AssistedInput` is the shared Lit base for the assisted on-screen input
+  components.
+- Button rendering is driven by explicit `icon` and `text` properties.
+- File rendering is driven by a provider plus ordered file handlers.
+- Keyboard rendering is driven by a fixed QWERTY layout, a `characters`
+  filter, and bubbling `key` and `submit` events.
+- Letterpad rendering is driven by a fixed alphabetic keypad layout, a
+  `characters` filter, a `collapsed` toggle, and bubbling `key` and `submit`
+  events.
+- Numpad rendering is driven by a fixed keypad layout plus a `characters`
+  filter and bubbling `key` events.
+- Text input editing is driven by explicit properties plus emitted `input` and
+  `change` events.
 - The required row template is `template[data-slot="item"]`.
 - Optional templates are `template[data-slot="empty"]` and
   `template[data-slot="container"]`.
 - If a container template is provided, it must include `[data-role="items"]`.
+- If a text-input template is provided, it must include
+  `[data-role="control-host"]`.
 - Row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
   `count`, and `context`.
 
@@ -35,10 +68,281 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 
 - Use `asljs-components` when you want reusable web components already shaped
   around ASLJS binding patterns.
+- Use `asljs-components` when you want a packaged UI surface plus its state or
+  theming contract, even when that surface is factory-built rather than a
+  custom element.
 - Use `asljs-data-binding` directly when you only need declarative DOM binding
   without a packaged component.
 
+## Buttons
+
+The button components are:
+
+- `asljs-button` for a reusable icon-plus-text button
+- `asljs-button-add` with default Bootstrap icon markup and text for Add
+- `asljs-button-delete` with default Bootstrap icon markup and text for Delete
+
+### Button Example
+
+```ts
+import 'asljs-components';
+
+const button =
+  document.createElement('asljs-button') as HTMLElement & {
+    icon: string;
+    text: string;
+    disabled: boolean;
+    type: 'button' | 'submit' | 'reset';
+  };
+
+button.icon = '<i class="bi bi-download"></i>';
+button.text = 'Download';
+button.type = 'button';
+button.disabled = false;
+```
+
+The specialized variants inherit the same API and provide defaults:
+
+- `asljs-button-add` -> `U+F26E` and `Add`
+- `asljs-button-delete` -> `U+F5DE` and `Delete`
+
+Bootstrap-style icon markup should come from theme configuration rather than
+being hard-coded into the component.
+
+```ts
+import {
+    createBootstrapTheme,
+    setDefaultTheme,
+  } from 'asljs-components';
+
+setDefaultTheme(
+  createBootstrapTheme());
+```
+
+`createBootstrapTheme()` currently supplies the Bootstrap icon markup for
+`asljs-button-add` and `asljs-button-delete`.
+
+## Assisted Input Base
+
+`AssistedInput` is the shared Lit base class for the package's on-screen input
+surfaces.
+
+It owns the common assisted-input contract:
+
+- `characters` filtering
+- host accessibility defaults with `role="group"`
+- bubbling `key` dispatch with `{ key: string }`
+- bubbling `submit` dispatch for Enter
+- pointer-down suppression to keep focus on the target field
+
+`asljs-keyboard`, `asljs-letterpad`, and `asljs-numpad` extend this base and
+provide only their layout-specific rendering and special interaction rules.
+
+## Numpad
+
+`asljs-numpad` is a visual keypad for numeric and operator entry.
+
+The main configuration surface is:
+
+- `numpad.characters`
+
+The component always allows `Backspace` and `Enter`. When `characters` is a
+non-empty string, single-character keys are enabled only if that string
+contains the key.
+
+The component emits a bubbling `key` event whose detail is shaped as:
+
+```ts
+{ key: string }
+```
+
+### Numpad Example
+
+```ts
+import 'asljs-components';
+
+const numpad =
+  document.createElement('asljs-numpad') as HTMLElement & {
+    characters: string;
+  };
+
+numpad.characters = '0123456789.';
+
+numpad.addEventListener(
+  'key',
+  event => {
+    const detail =
+      (event as CustomEvent<{ key: string }>).detail;
+
+    console.log(detail.key);
+  });
+```
+
+## Keyboard
+
+`asljs-keyboard` is a visual full-keyboard surface for mixed text entry.
+
+The main configuration surface is:
+
+- `keyboard.characters`
+
+The component always allows `Backspace` and `Enter`. When `characters` is a
+non-empty string, single-character keys are enabled only if that string
+contains the key. This includes digits, punctuation, and a literal space.
+
+The component emits bubbling `key` and `submit` events. The `key` detail is
+shaped as:
+
+```ts
+{ key: string }
+```
+
+### Keyboard Example
+
+```ts
+import 'asljs-components';
+
+const keyboard =
+  document.createElement('asljs-keyboard') as HTMLElement & {
+    characters: string;
+  };
+
+keyboard.characters = "abcdefghijklmnopqrstuvwxyz0123456789 .,'-";
+
+keyboard.addEventListener(
+  'key',
+  event => {
+    const detail =
+      (event as CustomEvent<{ key: string }>).detail;
+
+    console.log(JSON.stringify(detail.key));
+  });
+
+keyboard.addEventListener(
+  'submit',
+  () => {
+    console.log('submit');
+  });
+```
+
+## Letterpad
+
+`asljs-letterpad` is a visual keypad for alphabetic entry.
+
+The main configuration surface is:
+
+- `letterpad.characters`
+- `letterpad.collapsed`
+
+The component always allows `Backspace` and `Enter`. When `characters` is a
+non-empty string, single-character keys are enabled only if that string
+contains the key.
+
+The keyboard toggle button flips `collapsed` and updates its own accessible
+label between `Show letterpad` and `Hide letterpad`.
+
+The component emits bubbling `key` and `submit` events. The `key` detail is
+shaped as:
+
+```ts
+{ key: string }
+```
+
+### Letterpad Example
+
+```ts
+import 'asljs-components';
+
+const letterpad =
+  document.createElement('asljs-letterpad') as HTMLElement & {
+    characters: string;
+    collapsed: boolean;
+  };
+
+letterpad.characters = 'trace';
+letterpad.collapsed = false;
+
+letterpad.addEventListener(
+  'key',
+  event => {
+    const detail =
+      (event as CustomEvent<{ key: string }>).detail;
+
+    console.log(detail.key);
+  });
+
+letterpad.addEventListener(
+  'submit',
+  () => {
+    console.log('submit');
+  });
+```
+
+For the broader ASLJS component model, see
+`docs/development/UI Components.md` in the repository root.
+
 ## Configuration Surface
+
+The main configuration surface for `asljs-file` is:
+
+- `fileView.provider`
+- `fileView.handlers`
+- `fileView.fileName`
+
+`provider.loadFile(fileName)` returns normalized file data. The component asks
+handlers in order whether they can display the file and uses the first match.
+
+The package provides these handler factories:
+
+- `createPdfFileHandler()`
+- `createImageFileHandler()`
+- `createTextFileHandler()`
+- `createTextEditorFileHandler()`
+
+If no handler matches, the component shows fallback "Preview unavailable"
+content and an Open link when blob or data-url content is available.
+
+### File Component Example
+
+```ts
+import 'asljs-components';
+import {
+    createImageFileHandler,
+    createPdfFileHandler,
+    createTextFileHandler,
+  } from 'asljs-components';
+
+const fileView =
+  document.createElement('asljs-file') as HTMLElement & {
+    provider: {
+      loadFile: (fileName: string) => Promise<unknown>;
+    } | null;
+    handlers: unknown[];
+    fileName: string | null;
+  };
+
+fileView.provider =
+  { loadFile: async (fileName: string) => {
+      if (fileName === 'invoice.pdf') {
+        return {
+          name: 'invoice.pdf',
+          blob: new Blob([ 'pdf' ], { type: 'application/pdf' }),
+        };
+      }
+
+      return {
+        name: fileName,
+        text: 'No content',
+      };
+    } };
+
+fileView.handlers =
+  [ createPdfFileHandler(),
+    createImageFileHandler(),
+    createTextFileHandler() ];
+
+fileView.fileName = 'invoice.pdf';
+```
 
 The main configuration surface for `asljs-list` is:
 
@@ -50,6 +354,93 @@ The main configuration surface for `asljs-list` is:
 Do not look for React-style render callbacks, prop-driven row renderers, or
 custom callback protocols as the primary configuration model.
 
+The main configuration surface for `asljs-text-input` is:
+
+- `textInput.value`
+- `textInput.label`
+- `textInput.description`
+- `textInput.placeholder`
+- `textInput.validator`
+- `textInput.multiline`
+- `textInput.enterKeyBehavior`
+- `textInput.autoExtend`
+- `textInput.autoExtendMaxRows`
+- `textInput.theme`
+- local `template[data-slot="template"]`
+
+`value` is a set/reset input, not the live mutable draft state. User edits are
+kept in `draftValue`, reflected in the observable `status` object, and emitted
+through component `input` and `change` events.
+
+### Text Input Example
+
+```ts
+import 'asljs-components';
+
+const textInput =
+  document.createElement('asljs-text-input') as HTMLElement & {
+    label: string | null;
+    description: string | null;
+    value: string | null;
+    placeholder: string | null;
+    validator: ((value: string) => string | null) | null;
+    multiline: boolean;
+    enterKeyBehavior: 'finish' | 'newline';
+    autoExtend: boolean;
+    autoExtendMaxRows: number | null;
+    status: {
+      watch: (property: string, listener: (value: unknown) => void) => () => boolean;
+    };
+  };
+
+textInput.label = 'Summary';
+textInput.description = 'Ctrl+Enter always finishes editing.';
+textInput.placeholder = 'Write a short summary';
+textInput.multiline = true;
+textInput.enterKeyBehavior = 'newline';
+textInput.autoExtend = true;
+textInput.autoExtendMaxRows = 8;
+textInput.validator =
+  value => value.trim() === ''
+    ? 'Summary is required.'
+    : null;
+textInput.value = 'Initial text';
+
+textInput.addEventListener(
+  'change',
+  event => {
+    const detail =
+      (event as CustomEvent<{
+        value: string;
+        isValid: boolean;
+      }>).detail;
+
+    console.log(detail.value, detail.isValid);
+  });
+```
+
+### Text Input Template Override
+
+Provide a local `template[data-slot="template"]` when the layout must differ
+from the Bootstrap-oriented default. The template can use any supported
+`asljs-data-binding` attributes, but it must include `[data-role="control-host"]`
+so the component can mount the actual `input` or `textarea`.
+
+```html
+<asljs-text-input>
+  <template data-slot="template">
+    <div class="editor-field">
+      <div data-role="control-host"></div>
+      <small data-bind-text="description"
+             data-bind-prop-hidden="hideDescription"></small>
+      <div class="error"
+           data-bind-text="errorMessage"
+           data-bind-prop-hidden="hideError"></div>
+    </div>
+  </template>
+</asljs-text-input>
+```
+
 ## Theming
 
 The package supports structural theming through template fallback.
@@ -57,7 +448,7 @@ The package supports structural theming through template fallback.
 Resolution order:
 
 - local `template[data-slot]` inside the component
-- `list.theme`
+- per-component theme such as `list.theme` or `textInput.theme`
 - nearest `asljs-theme-provider`
 - package default theme set with `setDefaultTheme(...)`
 
@@ -84,10 +475,29 @@ setDefaultTheme(
             <a class="list-group-item list-group-item-action"
                data-bind-href="item.url"
                data-bind-text="item.title"></a>
+          ` },
+    textInput:
+      { template:
+          `
+            <div class="mb-3">
+              <label class="form-label"
+                     data-bind-text="label"
+                     data-bind-prop-hidden="hideLabel"
+                     data-bind-prop-for="inputId"></label>
+              <div data-role="control-host"></div>
+              <div class="form-text"
+                   data-bind-text="description"
+                   data-bind-prop-hidden="hideDescription"
+                   data-bind-prop-id="descriptionId"></div>
+              <div class="invalid-feedback"
+                   data-bind-text="errorMessage"
+                   data-bind-prop-hidden="hideError"
+                   data-bind-prop-id="errorId"></div>
+            </div>
           ` } });
 ```
 
-### Theme Provider
+### Theme Provider Usage
 
 Use `asljs-theme-provider` when you want one theme for a subtree.
 
@@ -197,6 +607,35 @@ list.items =
 
 ## Components
 
+### AI Chat
+
+- API: `createAiChatModel()`, `createAiChatComponent(...)`
+- Form: explicit model plus async DOM factory
+- Purpose: build a chat UI around an observable, eventful model with optional
+  persistence and tool execution hooks.
+
+Notes:
+
+- The model owns chat state, progress state, choice prompts, and message
+  history.
+- The rendering surface is created asynchronously because initialization may
+  restore persisted state.
+- This component follows the same explicit model/view split as the custom
+  elements, but it does not use a custom element tag.
+
+### File
+
+- Name: `FileView`
+- Custom element: `asljs-file`
+- Purpose: render one file through an ordered list of display handlers.
+
+Notes:
+
+- The component itself does not hard-code file types.
+- File-type decisions belong to handlers.
+- Providers abstract file lookup and optional text persistence.
+- The package includes PDF, image, text, and text-editor handlers.
+
 ### List
 
 - Name: `List`
@@ -211,6 +650,18 @@ Notes:
   `data-role="items"` insertion point.
 - Supports optional `context` object for shared row actions and state.
 - Supports optional theme-provided fallback templates.
+
+### Theme Provider Component
+
+- Name: `ThemeProvider`
+- Custom element: `asljs-theme-provider`
+- Purpose: provide theme defaults to descendant components.
+
+Notes:
+
+- This is a lightweight provider element built directly on `HTMLElement`.
+- Descendant components listen for theme changes and resolve local overrides
+  before provider or package defaults.
 
 ### How Row Actions Receive Row Data
 

@@ -299,7 +299,12 @@ test(
       readFileData: async path => ({
         mimeType: 'image/png',
         base64: 'AQID',
-        dataUrl: `data:image/png;base64:${path === 'assets/logo.png' ? 'AQID' : ''}`,
+        dataUrl:
+          `data:image/png;base64:${
+            path === 'assets/logo.png'
+              ? 'AQID'
+              : ''
+          }`,
       }),
     });
 
@@ -491,7 +496,10 @@ test(
           calls.push('run');
         },
         evaluateInApp: async code => {
-          const currentTest = code.includes('"second"') ? 'second' : 'first';
+          const currentTest =
+            code.includes('"second"')
+              ? 'second'
+              : 'first';
           calls.push(`eval:${currentTest}`);
           return currentTest === 'first';
         },

@@ -222,7 +222,7 @@ test(
     resetDomBody();
 
     const { setDefaultTheme } =
-      await import('./theme.js');
+      await import('./themes/theme.js');
 
     setDefaultTheme(
       { list:
@@ -299,7 +299,7 @@ test(
     resetDomBody();
 
     const { setDefaultTheme } =
-      await import('./theme.js');
+      await import('./themes/theme.js');
 
     setDefaultTheme(
       { list:

@@ -1,5 +1,10 @@
 import {
-  isImageMimeType,
+  createImageFileHandler,
+  createTextEditorFileHandler,
+  type FileViewData,
+  type FileViewProvider,
+} from 'asljs-components';
+import {
   readFileDataInfo,
 } from '../file-data.js';
 
@@ -7,17 +12,27 @@ export type FileListItem =
   { name: string;
     content: string; };
 
+export type FileViewElement =
+  HTMLElement
+  & {
+    provider: FileViewProvider | null;
+    handlers: unknown[];
+    fileName: string | null;
+  };
+
 export type RenderFileSelectUiOptions =
   { selectElement: HTMLSelectElement;
     files: FileListItem[];
     activeFileName: string | null; };
 
 export type RenderFileContentUiOptions =
-  { textAreaElement: HTMLTextAreaElement;
-    imagePreviewElement: HTMLImageElement;
-    previewFallbackElement: HTMLElement;
+  { fileElement: FileViewElement;
     files: FileListItem[];
-    activeFileName: string | null; };
+    activeFileName: string | null;
+    onSaveText?: (
+        fileName: string,
+        text: string
+      ) => Promise<void> | void; };
 
 export function renderFileSelectUi(
     options: RenderFileSelectUiOptions
@@ -58,34 +73,40 @@ export function renderFileContentUi(
     options: RenderFileContentUiOptions
   ): void
 {
-  const file = options.files.find(
-    item => item.name === options.activeFileName);
+  const provider: FileViewProvider =
+    { loadFile: async (fileName: string): Promise<FileViewData | null> => {
+        const file =
+          options.files.find(
+            item => item.name === fileName);
 
-  const fileData =
-    file === undefined
-      ? null
-      : readFileDataInfo(file.content);
+        if (file === undefined) {
+          return null;
+        }
 
-  const showImagePreview =
-    fileData !== null
-    && isImageMimeType(fileData.mimeType);
+        const fileData =
+          readFileDataInfo(file.content);
 
-  options.textAreaElement.value = file?.content ?? '';
-  options.textAreaElement.disabled = file === undefined || showImagePreview;
-  options.textAreaElement.classList.toggle('hidden', showImagePreview);
+        if (fileData !== null) {
+          return {
+            name: file.name,
+            mimeType: fileData.mimeType,
+            dataUrl: fileData.dataUrl,
+          };
+        }
 
-  options.imagePreviewElement.classList.toggle('hidden', !showImagePreview);
-  options.previewFallbackElement.classList.toggle('hidden', !showImagePreview);
-  options.previewFallbackElement.textContent =
-    showImagePreview
-      ? `${fileData?.mimeType ?? ''} preview`
-      : '';
+        return {
+          name: file.name,
+          text: file.content,
+        };
+      } };
 
-  if (showImagePreview) {
-    options.imagePreviewElement.src = fileData.dataUrl;
-    options.imagePreviewElement.alt = file?.name ?? 'Image preview';
-  } else {
-    options.imagePreviewElement.removeAttribute('src');
-    options.imagePreviewElement.alt = '';
+  if (options.onSaveText !== undefined) {
+    provider.saveText = options.onSaveText;
   }
+
+  options.fileElement.provider = provider;
+  options.fileElement.handlers =
+    [ createImageFileHandler(),
+      createTextEditorFileHandler() ];
+  options.fileElement.fileName = options.activeFileName;
 }
