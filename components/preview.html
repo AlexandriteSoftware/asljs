@@ -24,6 +24,7 @@
 			.component-list,
 			.theme-select,
 			.view-area,
+			.html-area,
 			.event-log,
 			.demo-input,
 			.demo-card {
@@ -32,7 +33,6 @@
 
 			.component-list {
 				width: 100%;
-				height: 320px;
 			}
 
 			.theme-select {
@@ -60,6 +60,23 @@
 				min-height: 320px;
 				padding: 12px;
 				overflow: auto;
+			}
+
+			.html-area {
+				margin: 0;
+				min-height: 320px;
+				padding: 12px;
+				overflow: auto;
+				white-space: pre-wrap;
+				font-family: Consolas, "Courier New", monospace;
+			}
+
+			.preview-tabs {
+				margin-bottom: 0;
+			}
+
+			.preview-pane {
+				border-top: 0;
 			}
 
 			.event-log {
@@ -133,8 +150,7 @@
 				<label for="component-list">Component list</label>
 				<select id="component-list"
 								class="component-list"
-								size="12"
-								aria-label="Component listbox"></select>
+								aria-label="Component selector"></select>
 			</aside>
 
 			<main class="content">
@@ -145,9 +161,51 @@
 					</section>
 
 					<section class="preview">
-						<h3>View</h3>
-						<div id="view-area"
-								 class="view-area"></div>
+						<h3>Preview</h3>
+						<ul class="nav nav-tabs preview-tabs"
+										id="preview-tabs"
+										role="tablist">
+							<li class="nav-item"
+									role="presentation">
+								<button class="nav-link active"
+											type="button"
+											id="preview-view-tab"
+											data-bs-toggle="tab"
+											data-bs-target="#preview-view-pane"
+											role="tab"
+											aria-controls="preview-view-pane"
+											aria-selected="true">View</button>
+							</li>
+							<li class="nav-item"
+									role="presentation">
+								<button class="nav-link"
+											type="button"
+											id="preview-html-tab"
+											data-bs-toggle="tab"
+											data-bs-target="#preview-html-pane"
+											role="tab"
+											aria-controls="preview-html-pane"
+											aria-selected="false">HTML</button>
+							</li>
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane fade show active"
+									 id="preview-view-pane"
+									 role="tabpanel"
+									 aria-labelledby="preview-view-tab"
+									 tabindex="0">
+								<div id="view-area"
+										 class="view-area preview-pane"></div>
+							</div>
+							<div class="tab-pane fade"
+									 id="preview-html-pane"
+									 role="tabpanel"
+									 aria-labelledby="preview-html-tab"
+									 tabindex="0">
+								<pre id="html-area"
+										 class="html-area preview-pane">Ready.</pre>
+							</div>
+						</div>
 					</section>
 
 					<section class="events">
@@ -175,6 +233,7 @@
 			const componentTitle = document.querySelector('#component-title');
 			const componentDescription = document.querySelector('#component-description');
 			const viewArea = document.querySelector('#view-area');
+			const htmlArea = document.querySelector('#html-area');
 			const eventLog = document.querySelector('#event-log');
 
 			const componentEntries = [
@@ -291,19 +350,22 @@
 			});
 
 			componentList.addEventListener('change', () => {
-				const selectedIndex = Number(componentList.value);
-				renderComponent(componentEntries[selectedIndex]);
+				navigateToHashState(
+					themeSelect.value,
+					componentEntries[Number(componentList.value)]?.name ?? componentEntries[0].name);
 			});
 
 			themeSelect.addEventListener('change', () => {
-				applySelectedTheme();
-				const selectedIndex = Number(componentList.value || 0);
-				renderComponent(componentEntries[selectedIndex]);
+				navigateToHashState(
+					themeSelect.value,
+					componentEntries[Number(componentList.value || 0)]?.name ?? componentEntries[0].name);
 			});
 
-			applySelectedTheme();
-			renderComponent(componentEntries[0]);
-			componentList.value = '0';
+			window.addEventListener('hashchange', () => {
+				applyHashState();
+			});
+
+			applyInitialHashState();
 
 			function renderComponent(entry) {
 				componentTitle.textContent = entry.name;
@@ -312,10 +374,92 @@
 				viewArea.replaceChildren();
 				const content = entry.create();
 				viewArea.appendChild(content);
+				void refreshHtmlPreview();
 			}
 
 			function applySelectedTheme() {
 				setDefaultTheme(getSelectedTheme());
+			}
+
+			function applyInitialHashState() {
+				const state =
+					readHashState();
+
+				if (state.hashMissing) {
+					navigateToHashState(state.theme, state.componentName);
+					return;
+				}
+
+				applyHashState();
+			}
+
+			function applyHashState() {
+				const state =
+					readHashState();
+				const componentIndex =
+					findComponentIndexByName(state.componentName);
+
+				themeSelect.value = state.theme;
+				componentList.value = String(componentIndex);
+				applySelectedTheme();
+				renderComponent(componentEntries[componentIndex]);
+			}
+
+			function navigateToHashState(theme, componentName) {
+				const params = new URLSearchParams();
+
+				params.set('theme', normalizeTheme(theme));
+				params.set('component', normalizeComponentName(componentName));
+
+				const nextHash = `#${params.toString()}`;
+
+				if (window.location.hash === nextHash) {
+					applyHashState();
+					return;
+				}
+
+				window.location.hash = nextHash;
+			}
+
+			function readHashState() {
+				const hash =
+					window.location.hash.startsWith('#')
+						? window.location.hash.slice(1)
+						: window.location.hash;
+				const params =
+					new URLSearchParams(hash);
+				const theme =
+					normalizeTheme(params.get('theme'));
+				const componentName =
+					normalizeComponentName(params.get('component'));
+
+				return {
+					hashMissing: hash === '',
+					theme,
+					componentName,
+				};
+			}
+
+			function normalizeTheme(value) {
+				return value === 'none'
+					? 'none'
+					: 'bootstrap';
+			}
+
+			function normalizeComponentName(value) {
+				const entry =
+					componentEntries.find(component => component.name === value);
+
+				return entry?.name ?? componentEntries[0].name;
+			}
+
+			function findComponentIndexByName(name) {
+				const index =
+					componentEntries.findIndex(component => component.name === name);
+
+				return index >= 0
+					? index
+					: 0;
 			}
 
 			function getSelectedTheme() {
@@ -367,6 +511,81 @@
 					current === '' || current === 'Ready.'
 						? line
 						: `${current}\n${line}`;
+			}
+
+			function formatPreviewHtml() {
+				const lines =
+					[...viewArea.childNodes]
+						.flatMap(node => formatNode(node, 0));
+
+				return lines.length === 0
+					? 'Ready.'
+					: lines.join('\n');
+			}
+
+			async function refreshHtmlPreview() {
+				await settleRenderedElements(viewArea);
+				htmlArea.textContent = formatPreviewHtml();
+			}
+
+			async function settleRenderedElements(root) {
+				await Promise.resolve();
+
+				const pending =
+					[root, ...root.querySelectorAll('*')]
+						.map(node => node.updateComplete)
+						.filter(Boolean);
+
+				if (pending.length > 0) {
+					await Promise.allSettled(pending);
+				}
+
+				await Promise.resolve();
+			}
+
+			function formatNode(node, depth) {
+				if (node.nodeType === Node.TEXT_NODE) {
+					return formatTextNode(node, depth);
+				}
+
+				if (node.nodeType !== Node.ELEMENT_NODE) {
+					return [];
+				}
+
+				const element = node;
+				const indent = '  '.repeat(depth);
+				const attributes = [...element.attributes]
+					.map(attribute => ` ${attribute.name}="${attribute.value}"`)
+					.join('');
+				const opening = `${indent}<${element.tagName.toLowerCase()}${attributes}>`;
+				const childLines =
+					[...element.childNodes]
+						.flatMap(child => formatNode(child, depth + 1));
+
+				if (childLines.length === 0) {
+					return [`${opening}</${element.tagName.toLowerCase()}>`];
+				}
+
+				return [
+					opening,
+					...childLines,
+					`${indent}</${element.tagName.toLowerCase()}>`,
+				];
+			}
+
+			function formatTextNode(node, depth) {
+				const text =
+					node.textContent
+						.split('\n')
+						.map(line => line.trim())
+						.filter(Boolean);
+
+				if (text.length === 0) {
+					return [];
+				}
+
+				const indent = '  '.repeat(depth);
+				return text.map(line => `${indent}${line}`);
 			}
 		</script>
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

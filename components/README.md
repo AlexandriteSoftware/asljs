@@ -61,6 +61,10 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 - If a container template is provided, it must include `[data-role="items"]`.
 - If a text-input template is provided, it must include
   `[data-role="control-host"]`.
+- Optional text-input control templates are `template[data-slot="input"]` and
+  `template[data-slot="textarea"]`.
+- If a text-input control template is provided, it must include the matching
+  native `input` or `textarea` element.
 - Row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
   `count`, and `context`.
 
@@ -367,6 +371,8 @@ The main configuration surface for `asljs-text-input` is:
 - `textInput.autoExtendMaxRows`
 - `textInput.theme`
 - local `template[data-slot="template"]`
+- local `template[data-slot="input"]`
+- local `template[data-slot="textarea"]`
 
 `value` is a set/reset input, not the live mutable draft state. User edits are
 kept in `draftValue`, reflected in the observable `status` object, and emitted
@@ -436,6 +442,24 @@ so the component can mount the actual `input` or `textarea`.
       <div class="error"
            data-bind-text="errorMessage"
            data-bind-prop-hidden="hideError"></div>
+    </div>
+  </template>
+</asljs-text-input>
+```
+
+Provide `template[data-slot="input"]` or `template[data-slot="textarea"]`
+when the native control markup itself must come from the local component or
+theme. The slot must include the matching native control element, but wrapper
+markup around that control is allowed. Control templates can also use
+`asljs-data-binding` attributes, for example to place validation feedback next
+to the real control.
+
+```html
+<asljs-text-input>
+  <template data-slot="input">
+    <div class="field-shell">
+      <input class="field-control"
+             data-control-invalid-class="field-control-invalid">
     </div>
   </template>
 </asljs-text-input>

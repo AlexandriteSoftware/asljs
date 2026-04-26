@@ -15,6 +15,7 @@ import {
   } from 'lit/decorators.js';
 import {
     findThemeProvider,
+  getDefaultTheme,
     resolveThemeTemplate,
     THEME_CHANGED_EVENT_NAME,
     type ComponentsTheme,
@@ -22,7 +23,9 @@ import {
   } from './themes/theme.js';
 
 type TextInputSlotName =
-  'template';
+  'template'
+  | 'input'
+  | 'textarea';
 
 export type TextInputEnterKeyBehavior =
   'finish'
@@ -71,9 +74,14 @@ export class TextInput
   extends LitElement
 {
   #templateElement: HTMLTemplateElement | null = null;
+  #inputTemplateElement: HTMLTemplateElement | null = null;
+  #textareaTemplateElement: HTMLTemplateElement | null = null;
   #templateDispose: (() => void) | null = null;
+  #controlTemplateDispose: (() => void) | null = null;
   #themeProvider: ThemeProviderLike | null = null;
   #control: HTMLInputElement | HTMLTextAreaElement | null = null;
+  #controlBaseClassName = '';
+  #controlInvalidClassName: string | null = null;
   #controlInputListener: (() => void) | null = null;
   #controlBlurListener: (() => void) | null = null;
   #controlKeydownListener: (() => void) | null = null;
@@ -169,6 +177,8 @@ export class TextInput
     this.#disposeControlBindings();
     this.#templateDispose?.();
     this.#templateDispose = null;
+    this.#controlTemplateDispose?.();
+    this.#controlTemplateDispose = null;
     this.#disposeThemeProvider();
     super.disconnectedCallback();
   }
@@ -215,21 +225,21 @@ export class TextInput
 
   #captureTemplates(): void {
     this.#templateElement = null;
+    this.#inputTemplateElement = null;
+    this.#textareaTemplateElement = null;
 
-    const templateElement =
-      this.querySelector<HTMLTemplateElement>('template[data-slot="template"]');
-
-    if (templateElement === null) {
-      return;
-    }
-
-    const clonedTemplate =
-      document.createElement('template');
-
-    clonedTemplate.content.append(
-      templateElement.content.cloneNode(true));
-
-    this.#templateElement = clonedTemplate;
+    this.#templateElement =
+      cloneNamedTemplate(
+        this,
+        'template');
+    this.#inputTemplateElement =
+      cloneNamedTemplate(
+        this,
+        'input');
+    this.#textareaTemplateElement =
+      cloneNamedTemplate(
+        this,
+        'textarea');
   }
 
   #syncThemeProvider(): void {
@@ -306,6 +316,8 @@ export class TextInput
 
     this.#templateDispose?.();
     this.#templateDispose = null;
+    this.#controlTemplateDispose?.();
+    this.#controlTemplateDispose = null;
     this.#disposeControlBindings();
 
     const template =
@@ -343,24 +355,31 @@ export class TextInput
       slotName: TextInputSlotName
     ): HTMLTemplateElement | null
   {
-    if (slotName === 'template') {
-      return this.#templateElement;
+    switch (slotName) {
+      case 'template':
+        return this.#templateElement;
+      case 'input':
+        return this.#inputTemplateElement;
+      case 'textarea':
+        return this.#textareaTemplateElement;
     }
-
-    return null;
   }
 
   #getThemeTemplate(
       slotName: TextInputSlotName
     ): HTMLTemplateElement | null
   {
-    if (slotName !== 'template') {
-      return null;
-    }
+    const theme =
+      this.theme
+      ?? this.#themeProvider?.theme
+      ?? getDefaultTheme();
 
     return resolveThemeTemplate(
-      this.theme?.textInput?.template
-      ?? this.#themeProvider?.theme?.textInput?.template,
+      slotName === 'template'
+        ? theme.textInput?.template
+        : slotName === 'input'
+          ? theme.textInput?.input
+          : theme.textInput?.textarea,
       this);
   }
 
@@ -372,13 +391,20 @@ export class TextInput
       return;
     }
 
+    const mountedControl =
+      this.#createMountedControl(controlHost);
     const control =
-      this.multiline
-        ? document.createElement('textarea') as HTMLTextAreaElement | HTMLInputElement
-        : createSingleLineInput();
+      mountedControl.control;
 
+    this.#controlTemplateDispose =
+      bindDataModel(
+        mountedControl.fragment,
+        this.#model as unknown as Record<string, unknown>);
+
+    controlHost.replaceChildren(mountedControl.fragment);
     this.#control = control;
-    controlHost.replaceChildren(control);
+    this.#controlBaseClassName = mountedControl.className;
+    this.#controlInvalidClassName = mountedControl.invalidClassName;
 
     const inputListener =
       (): void => {
@@ -455,9 +481,13 @@ export class TextInput
     control.id = this.#model.inputId;
     control.placeholder = normalizeOptionalText(this.placeholder) ?? '';
     control.disabled = this.disabled;
-    control.className = resolveControlClassName(this);
+    control.className = this.#controlBaseClassName;
     const invalidClassName =
-      resolveControlInvalidClassName(this);
+      this.#controlInvalidClassName;
+
+    if (control instanceof HTMLInputElement) {
+      control.type = 'text';
+    }
 
     if (invalidClassName !== null && !this.status.isValid) {
       control.classList.add(invalidClassName);
@@ -476,6 +506,44 @@ export class TextInput
 
     control.style.height = '';
     control.style.overflowY = '';
+  }
+
+  #createMountedControl(
+      controlHost: HTMLElement
+    ): MountedTextInputControl
+  {
+    const slotName: TextInputSlotName =
+      this.multiline
+        ? 'textarea'
+        : 'input';
+    const template =
+      this.#resolveTemplate(slotName);
+
+    if (template === null) {
+      return createFallbackMountedControl(
+        this.multiline,
+        controlHost);
+    }
+
+    const fragment =
+      template.content.cloneNode(true) as DocumentFragment;
+    const control =
+      this.multiline
+        ? fragment.querySelector('textarea')
+        : fragment.querySelector('input');
+
+    if (control === null) {
+      return createFallbackMountedControl(
+        this.multiline,
+        controlHost);
+    }
+
+    return {
+      fragment,
+      control,
+      className: resolveInitialControlClassName(control, controlHost),
+      invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+    };
   }
 
   #syncAutoExtend(
@@ -533,10 +601,20 @@ export class TextInput
     this.#controlBlurListener = null;
     this.#controlKeydownListener = null;
     this.#control = null;
+    this.#controlBaseClassName = '';
+    this.#controlInvalidClassName = null;
+    this.#controlTemplateDispose?.();
+    this.#controlTemplateDispose = null;
   }
 }
 
 let nextTextInputId = 1;
+
+type MountedTextInputControl =
+  { fragment: DocumentFragment,
+    control: HTMLInputElement | HTMLTextAreaElement,
+    className: string,
+    invalidClassName: string | null };
 
 function normalizeText(
     value: string | null | undefined
@@ -607,23 +685,44 @@ function resolveMaxHeight(
     + borderBottom;
 }
 
-function resolveControlClassName(
-    component: TextInput
-  ): string
+function cloneNamedTemplate(
+    host: Element,
+    slotName: TextInputSlotName
+  ): HTMLTemplateElement | null
 {
-  return component
-    .querySelector('[data-role="control-host"]')
-    ?.getAttribute('data-control-class')
-    ?? '';
+  const templateElement =
+    host.querySelector<HTMLTemplateElement>(`template[data-slot="${slotName}"]`);
+
+  if (templateElement === null) {
+    return null;
+  }
+
+  const clonedTemplate =
+    document.createElement('template');
+
+  clonedTemplate.content.append(
+    templateElement.content.cloneNode(true));
+
+  return clonedTemplate;
 }
 
-function resolveControlInvalidClassName(
-    component: TextInput
+function resolveInitialControlClassName(
+    control: HTMLInputElement | HTMLTextAreaElement,
+    controlHost: HTMLElement
+  ): string
+{
+  return control.className
+    || controlHost.getAttribute('data-control-class')
+    || '';
+}
+
+function resolveInitialControlInvalidClassName(
+    control: HTMLInputElement | HTMLTextAreaElement,
+    controlHost: HTMLElement
   ): string | null
 {
-  return component
-    .querySelector('[data-role="control-host"]')
-    ?.getAttribute('data-control-invalid-class')
+  return control.getAttribute('data-control-invalid-class')
+    ?? controlHost.getAttribute('data-control-invalid-class')
     ?? null;
 }
 
@@ -660,4 +759,68 @@ function createSingleLineInput(): HTMLInputElement {
   input.type = 'text';
 
   return input;
+}
+
+function createDefaultInputTemplate(): HTMLTemplateElement {
+  const template =
+    document.createElement('template');
+
+  template.innerHTML =
+    '<input type="text">';
+
+  return template;
+}
+
+function createDefaultTextareaTemplate(): HTMLTemplateElement {
+  const template =
+    document.createElement('template');
+
+  template.innerHTML =
+    '<textarea></textarea>';
+
+  return template;
+}
+
+function createFallbackMountedControl(
+    multiline: boolean,
+    controlHost: HTMLElement
+  ): MountedTextInputControl
+{
+  const fragment =
+    document.createDocumentFragment();
+  const template =
+    multiline
+      ? createDefaultTextareaTemplate()
+      : createDefaultInputTemplate();
+  const templateFragment =
+    template.content.cloneNode(true) as DocumentFragment;
+  const control =
+    multiline
+      ? templateFragment.querySelector('textarea')
+      : templateFragment.querySelector('input');
+
+  if (control === null) {
+    const fallbackControl =
+      multiline
+        ? document.createElement('textarea') as HTMLTextAreaElement | HTMLInputElement
+        : createSingleLineInput();
+
+    fragment.append(fallbackControl);
+
+    return {
+      fragment,
+      control: fallbackControl,
+      className: resolveInitialControlClassName(fallbackControl, controlHost),
+      invalidClassName: resolveInitialControlInvalidClassName(fallbackControl, controlHost),
+    };
+  }
+
+  fragment.append(templateFragment);
+
+  return {
+    fragment,
+    control,
+    className: resolveInitialControlClassName(control, controlHost),
+    invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+  };
 }

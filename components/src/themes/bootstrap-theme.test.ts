@@ -7,7 +7,7 @@ import {
   } from './bootstrap-theme.js';
 
 test(
-  'bootstrap-theme: returns bootstrap button icon defaults and text input template',
+  'bootstrap-theme: returns bootstrap button icon defaults and text input templates',
   () => {
     const theme =
       createBootstrapTheme();
@@ -23,10 +23,22 @@ test(
       '<i class="bi bi-trash"></i>');
     assert.match(
       theme.textInput?.template as string,
-      /form-control/);
+      /form-label/);
     assert.match(
       theme.textInput?.template as string,
-      /form-label/);
+      /data-role="control-host"/);
+    assert.match(
+      theme.textInput?.input as string,
+      /form-control/);
+    assert.match(
+      theme.textInput?.input as string,
+      /invalid-feedback/);
+    assert.match(
+      theme.textInput?.textarea as string,
+      /form-control/);
+    assert.match(
+      theme.textInput?.textarea as string,
+      /invalid-feedback/);
     assert.match(
       theme.list?.container as string,
       /list-group/);

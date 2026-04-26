@@ -129,10 +129,14 @@ Component contract at a glance:
 - optional templates: `template[data-slot="empty"]` and
   `template[data-slot="container"]`
 - optional text-input template: `template[data-slot="template"]`
+- optional text-input control templates: `template[data-slot="input"]` and
+  `template[data-slot="textarea"]`
 - theme fallback order: local slot template -> `list.theme` -> nearest
   `asljs-theme-provider` -> package default theme
 - container templates must include `[data-role="items"]`
 - text-input templates must include `[data-role="control-host"]`
+- text-input control templates must include a real `input` or `textarea`
+  element that matches the slot name
 - row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
   `count`, and `context`
 
@@ -228,6 +232,8 @@ Inside `asljs-text-input`, configure:
 - `multiline` and `enterKeyBehavior` for editing behavior
 - `autoExtend` plus `autoExtendMaxRows` for textarea growth
 - `theme` or a local `template[data-slot="template"]` for layout override
+- local `template[data-slot="input"]` or `template[data-slot="textarea"]`
+  for themed native control markup override
 
 User edits update `draftValue` and `status`; they do not mutate `value`
 directly. Consumers should listen for `input` or `change` and decide whether
@@ -238,6 +244,10 @@ to persist or reset.
 If a local or themed template is used for `asljs-text-input`, it must include
 `[data-role="control-host"]`. That host is where the real `input` or
 `textarea` is mounted.
+
+If a local or themed `template[data-slot="input"]` or
+`template[data-slot="textarea"]` is used, it must include the matching native
+control element. Wrappers around that control are allowed.
 
 Template bindings may include any supported `asljs-data-binding` expressions
 needed for label, description, error, or state classes.
@@ -321,6 +331,8 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
   insertion point.
 - `template[data-slot="template"]` for `TextInput` must keep
   `[data-role="control-host"]` as the insertion point.
+- `template[data-slot="input"]` and `template[data-slot="textarea"]` for
+  `TextInput` must keep a matching native control element.
 - `List.items` can be a plain array or an eventful-like collection; when the
   source emits `set`, `delete`, or `define`, list rerender behavior is part of
   the current design.
@@ -344,6 +356,8 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
   insertion point.
 - If touching text-input layout handling, then preserve
   `[data-role="control-host"]` as the insertion point.
+- If touching text-input control templating, then preserve matching native
+  `input` or `textarea` lookup for the documented control slots.
 - If touching row context, then preserve the documented field names.
 - If touching event binding integration, then preserve path-based
   `asljs-data-binding` handler rules.

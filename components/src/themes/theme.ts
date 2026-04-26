@@ -35,6 +35,8 @@ export interface ListThemeDefinition {
 
 export interface TextInputThemeDefinition {
   template?: ThemeTemplateValue;
+  input?: ThemeTemplateValue;
+  textarea?: ThemeTemplateValue;
 }
 
 export interface ButtonThemeDefinition {

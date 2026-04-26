@@ -23,18 +23,31 @@ export function createBootstrapTheme(
                      data-bind-text="label"
                      data-bind-prop-hidden="hideLabel"
                      data-bind-prop-for="inputId"></label>
-              <div data-role="control-host"
-                    data-control-class="form-control"
-                    data-control-invalid-class="is-invalid"></div>
+              <div data-role="control-host"></div>
               <div class="form-text"
                    data-bind-text="description"
                    data-bind-prop-hidden="hideDescription"
                    data-bind-prop-id="descriptionId"></div>
-              <div class="invalid-feedback"
-                   data-bind-text="errorMessage"
-                   data-bind-prop-hidden="hideError"
-                   data-bind-prop-id="errorId"></div>
             </div>
+          `,
+        input:
+          `
+            <input type="text"
+                   class="form-control"
+                   data-control-invalid-class="is-invalid">
+            <div class="invalid-feedback"
+                 data-bind-text="errorMessage"
+                 data-bind-prop-hidden="hideError"
+                 data-bind-prop-id="errorId"></div>
+          `,
+        textarea:
+          `
+            <textarea class="form-control"
+                      data-control-invalid-class="is-invalid"></textarea>
+            <div class="invalid-feedback"
+                 data-bind-text="errorMessage"
+                 data-bind-prop-hidden="hideError"
+                 data-bind-prop-id="errorId"></div>
           ` },
   };
 }

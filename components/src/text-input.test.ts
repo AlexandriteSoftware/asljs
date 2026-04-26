@@ -104,9 +104,69 @@ test(
 
     assert.equal(label.textContent, 'Title');
     assert.equal(input.value, 'Hello');
+    assert.equal(input.classList.contains('form-control'), true);
+    assert.equal(input.nextElementSibling, error);
     assert.equal(description.textContent, 'Shown below');
     assert.equal(input.classList.contains('is-invalid'), true);
     assert.equal(error.textContent, 'Value is invalid');
+  });
+
+test(
+  'text-input: bootstrap theme supplies bootstrap textarea control in multiline mode',
+  async () => {
+    const element =
+      await createElement();
+
+    const bootstrapThemeModule =
+      await import('./themes/bootstrap-theme.js');
+
+    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.multiline = true;
+    element.value = 'Hello';
+
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const textarea =
+      element.querySelector('textarea.form-control') as HTMLTextAreaElement;
+    const error =
+      element.querySelector('.invalid-feedback') as HTMLElement;
+
+    assert.equal(textarea.value, 'Hello');
+    assert.equal(textarea.classList.contains('form-control'), true);
+    assert.equal(textarea.nextElementSibling, error);
+  });
+
+test(
+  'text-input: package default theme applies bootstrap control classes',
+  async () => {
+    const element =
+      await createElement();
+
+    const themeModule =
+      await import('./themes/theme.js');
+    const bootstrapThemeModule =
+      await import('./themes/bootstrap-theme.js');
+
+    themeModule.setDefaultTheme(
+      bootstrapThemeModule.createBootstrapTheme());
+
+    try {
+      element.label = 'Project name';
+      element.value = 'ASLJS';
+
+      document.body.appendChild(element);
+
+      await settle(element);
+
+      const input =
+        element.querySelector('input') as HTMLInputElement;
+
+      assert.equal(input.classList.contains('form-control'), true);
+    } finally {
+      themeModule.setDefaultTheme(null);
+    }
   });
 
 test(
@@ -242,6 +302,39 @@ test(
       element.querySelector('.after') as HTMLElement;
 
     assert.equal(after.textContent, 'Moved');
+  });
+
+test(
+  'text-input: local input control template can provide themed control markup',
+  async () => {
+    const element =
+      await createElement();
+
+    element.innerHTML =
+      `
+        <template data-slot="input">
+          <div class="control-shell">
+            <input class="custom-control"
+                   data-control-invalid-class="custom-invalid">
+          </div>
+        </template>
+      `;
+    element.value = 'Hello';
+    element.validator =
+      () => 'Broken';
+
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const shell =
+      element.querySelector('.control-shell') as HTMLElement;
+    const input =
+      element.querySelector('input.custom-control') as HTMLInputElement;
+
+    assert.equal(shell.contains(input), true);
+    assert.equal(input.value, 'Hello');
+    assert.equal(input.classList.contains('custom-invalid'), true);
   });
 
 async function createElement(): Promise<TextInput> {
