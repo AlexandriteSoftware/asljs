@@ -1,7 +1,6 @@
 import { state } from './state.js';
 import {
   createAiChatModel,
-  type SelectItem,
   type AiChatAfterResponseContext,
   type AiChatBeforeSendContext,
   type AiChatModel,
@@ -109,6 +108,30 @@ import {
 import {
   renderAppBuilderShell,
 } from './ui/app-shell-ui.js';
+import {
+  createFirstApplicationDialogUi,
+} from './ui/first-application-dialog-ui.js';
+import {
+  createNameModalUi,
+} from './ui/name-modal-ui.js';
+import {
+  createProjectSettingsModalUi,
+} from './ui/project-settings-modal-ui.js';
+import {
+  createSettingsModalUi,
+} from './ui/settings-modal-ui.js';
+import {
+  createShareModalUi,
+} from './ui/share-modal-ui.js';
+import {
+  configureButton,
+  configureSelect,
+  mustElement,
+  readControlValue,
+  writeControlValue,
+  type AppBuilderButtonElement,
+  type AppBuilderSelectElement,
+} from './ui/control-ui.js';
 import * as esbuildWasm
   from 'esbuild-wasm';
 import esbuildWasmUrl
@@ -124,46 +147,6 @@ function now(): string {
   return new Date().toISOString();
 }
 
-function mustElement<T extends HTMLElement>(id: string): T {
-  const element = document.getElementById(id);
-
-  if (element === null) {
-    throw new Error(`Missing element #${id}`);
-  }
-
-  return element as T;
-}
-
-type AppBuilderButtonElement =
-  HTMLElement
-  & {
-    text: string;
-    icon: string;
-    disabled: boolean;
-    buttonClassName: string;
-    type: 'button' | 'submit' | 'reset';
-  };
-
-type AppBuilderTextInputElement =
-  HTMLElement
-  & {
-    value: string | null;
-    placeholder: string | null;
-    inputType: string;
-    controlClassName: string;
-    disabled: boolean;
-  };
-
-type AppBuilderSelectElement =
-  HTMLElement
-  & {
-    value: string | null;
-    items: SelectItem[];
-    placeholder: string | null;
-    controlClassName: string;
-    disabled: boolean;
-  };
-
 type AppBuilderAiChatElement =
   HTMLElement
   & {
@@ -172,12 +155,6 @@ type AppBuilderAiChatElement =
   };
 
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
-const elFirstAppSetup = mustElement<HTMLElement>('first-app-setup');
-const elFirstApiKeyInput = mustElement<AppBuilderTextInputElement>('first-api-key-input');
-const elFirstAppNameInput = mustElement<AppBuilderTextInputElement>('first-app-name-input');
-const elBtnCreateFirstApp = mustElement<AppBuilderButtonElement>('btn-create-first-app');
-const elBtnCreateTodoSample =
-  mustElement<AppBuilderButtonElement>('btn-create-todo-sample');
 const elPanels = mustElement<HTMLElement>('panels');
 const elPanelChat = mustElement<HTMLElement>('panel-chat');
 const elPanelEditor = mustElement<HTMLElement>('panel-editor');
@@ -200,56 +177,6 @@ const elBtnShare = mustElement<AppBuilderButtonElement>('btn-share');
 const elBtnSettings = mustElement<AppBuilderButtonElement>('btn-settings');
 const elBtnToggleChat = mustElement<AppBuilderButtonElement>('btn-toggle-chat');
 const elBtnToggleFiles = mustElement<AppBuilderButtonElement>('btn-toggle-files');
-
-const elSettingsModal = mustElement<HTMLElement>('settings-modal');
-const elBtnCloseSettings =
-  mustElement<AppBuilderButtonElement>('btn-close-settings');
-const elBtnSaveSettings = mustElement<AppBuilderButtonElement>('btn-save-settings');
-const elBtnCancelSettings =
-  mustElement<AppBuilderButtonElement>('btn-cancel-settings');
-const elApiKeyInput = mustElement<AppBuilderTextInputElement>('api-key-input');
-const elThemeSelect = mustElement<AppBuilderSelectElement>('theme-select');
-const elFontSizeInput = mustElement<AppBuilderTextInputElement>('font-size-input');
-const elMaxToolStepsInput =
-  mustElement<AppBuilderTextInputElement>('max-tool-steps-input');
-
-const elNameModal = mustElement<HTMLElement>('name-modal');
-const elNameModalTitle = mustElement<HTMLElement>('name-modal-title');
-const elAppNameInput = mustElement<AppBuilderTextInputElement>('app-name-input');
-const elBtnConfirmName = mustElement<AppBuilderButtonElement>('btn-confirm-name');
-const elBtnCancelName = mustElement<AppBuilderButtonElement>('btn-cancel-name');
-const elBtnCloseNameModal =
-  mustElement<AppBuilderButtonElement>('btn-close-name-modal');
-
-const elProjectSettingsModal = mustElement<HTMLElement>('project-settings-modal');
-const elProjectNameInput = mustElement<AppBuilderTextInputElement>('project-name-input');
-const elProjectAuthorNameInput =
-  mustElement<AppBuilderTextInputElement>('project-author-name-input');
-const elProjectAuthorEmailInput =
-  mustElement<AppBuilderTextInputElement>('project-author-email-input');
-const elBtnSaveProjectSettings =
-  mustElement<AppBuilderButtonElement>('btn-save-project-settings');
-const elBtnDeleteProject = mustElement<AppBuilderButtonElement>('btn-delete-project');
-const elBtnCloseProjectSettings =
-  mustElement<AppBuilderButtonElement>('btn-close-project-settings');
-const elBtnCloseProjectSettingsX =
-  mustElement<AppBuilderButtonElement>('btn-close-project-settings-x');
-
-const elShareModal = mustElement<HTMLElement>('share-modal');
-const elBtnCloseShare = mustElement<AppBuilderButtonElement>('btn-close-share');
-const elBtnCloseShare2 = mustElement<AppBuilderButtonElement>('btn-close-share-2');
-const elBtnShareLink = mustElement<AppBuilderButtonElement>('btn-share-link');
-const elBtnShareDownload = mustElement<AppBuilderButtonElement>('btn-share-download');
-const elBtnShareCopyText =
-  mustElement<AppBuilderButtonElement>('btn-share-copy-text');
-const elBtnShareCopyHtml =
-  mustElement<AppBuilderButtonElement>('btn-share-copy-html');
-const elShareMinifiedInput =
-  mustElement<HTMLInputElement>('share-minified-input');
-const elShareExcludeTestsInput =
-  mustElement<HTMLInputElement>('share-exclude-tests-input');
-const elShareLinkStatus = mustElement<HTMLElement>('share-link-status');
-const elShareLinkOutput = mustElement<HTMLTextAreaElement>('share-link-output');
 
 const elImportFile = mustElement<HTMLInputElement>('import-file');
 
@@ -280,6 +207,35 @@ let currentAiChatModel: AiChatModel | null = null;
 
 configureShellControls();
 
+const firstApplicationDialog =
+  createFirstApplicationDialogUi({
+    onCreateApplication: createFirstApp,
+    onCreateTodoSample: createTodoSampleApp,
+  });
+const nameModal = createNameModalUi();
+const projectSettingsModal =
+  createProjectSettingsModalUi({
+    onSave: saveProjectSettings,
+    onDelete: confirmDeleteApp,
+  });
+const settingsModal =
+  createSettingsModalUi({
+    loadValues: async () => ({
+      apiKey: await refreshCurrentAppOpenAiApiKey(),
+      theme: getTheme(),
+      fontSize: getFontSize(),
+      maxToolSteps: getMaxToolSteps(),
+    }),
+    onSave: saveSettingsFromModal,
+  });
+const shareModal =
+  createShareModalUi({
+    canOpen: () => getCurrentApp() !== undefined,
+    readAppName: () => getCurrentApp()?.name ?? 'Shared app',
+    prepareLink: prepareShareLink,
+    downloadExport: downloadShareExport,
+  });
+
 type BrowserEsbuildApi =
   { transform: (
       source: string,
@@ -288,49 +244,6 @@ type BrowserEsbuildApi =
           minify: boolean;
           target: string; }
     ) => Promise<{ code: string; }>; };
-
-function configureButton(
-    element: AppBuilderButtonElement,
-    options: {
-      text?: string;
-      icon?: string;
-      className: string;
-    }
-  ): void
-{
-  element.type = 'button';
-  element.buttonClassName = options.className;
-  element.text = options.text ?? '';
-  element.icon = options.icon ?? '';
-}
-
-function configureTextInput(
-    element: AppBuilderTextInputElement,
-    options: {
-      placeholder?: string;
-      inputType?: string;
-      className?: string;
-    }
-  ): void
-{
-  element.placeholder = options.placeholder ?? null;
-  element.inputType = options.inputType ?? 'text';
-  element.controlClassName = options.className ?? 'form-input';
-}
-
-function configureSelect(
-    element: AppBuilderSelectElement,
-    options: {
-      className: string;
-      items?: SelectItem[];
-      placeholder?: string | null;
-    }
-  ): void
-{
-  element.controlClassName = options.className;
-  element.items = options.items ?? [];
-  element.placeholder = options.placeholder ?? null;
-}
 
 function configureShellControls(): void {
   configureButton(elBtnSettings, {
@@ -364,14 +277,6 @@ function configureShellControls(): void {
     text: 'Share',
     className: 'btn btn-ghost btn-sm',
   });
-  configureButton(elBtnCreateFirstApp, {
-    text: 'Create Application',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCreateTodoSample, {
-    text: 'Create TODO Sample App',
-    className: 'btn btn-ghost',
-  });
   configureButton(elBtnStartGeneration, {
     text: 'Generate',
     className: 'btn btn-primary btn-sm',
@@ -379,103 +284,6 @@ function configureShellControls(): void {
   configureButton(elBtnStopGeneration, {
     text: 'Stop',
     className: 'btn btn-ghost btn-sm',
-  });
-  configureButton(elBtnCloseSettings, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
-  });
-  configureButton(elBtnSaveSettings, {
-    text: 'Save',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCancelSettings, {
-    text: 'Cancel',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnCloseNameModal, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
-  });
-  configureButton(elBtnConfirmName, {
-    text: 'OK',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCancelName, {
-    text: 'Cancel',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnCloseProjectSettingsX, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
-  });
-  configureButton(elBtnSaveProjectSettings, {
-    text: 'Save',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnDeleteProject, {
-    text: 'Delete',
-    className: 'btn btn-danger',
-  });
-  configureButton(elBtnCloseProjectSettings, {
-    text: 'Cancel',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnCloseShare, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
-  });
-  configureButton(elBtnShareLink, {
-    text: 'Share with link',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnShareDownload, {
-    text: 'Download export',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnShareCopyText, {
-    text: 'Copy as text link',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnShareCopyHtml, {
-    text: 'Copy as HTML link',
-    className: 'btn btn-ghost',
-  });
-  configureButton(elBtnCloseShare2, {
-    text: 'Close',
-    className: 'btn btn-ghost',
-  });
-
-  configureTextInput(elFirstApiKeyInput, {
-    placeholder: 'sk-...',
-    inputType: 'password',
-  });
-  configureTextInput(elFirstAppNameInput, {
-    placeholder: 'My App',
-  });
-  configureTextInput(elApiKeyInput, {
-    placeholder: 'sk-…  (optional, stored locally)',
-    inputType: 'password',
-  });
-  configureTextInput(elFontSizeInput, {
-    placeholder: '14',
-    inputType: 'number',
-  });
-  configureTextInput(elMaxToolStepsInput, {
-    placeholder: '20',
-    inputType: 'number',
-  });
-  configureTextInput(elAppNameInput, {
-    placeholder: 'My App',
-  });
-  configureTextInput(elProjectNameInput, {
-    placeholder: 'Project name',
-  });
-  configureTextInput(elProjectAuthorNameInput, {
-    placeholder: 'Jane Doe',
-  });
-  configureTextInput(elProjectAuthorEmailInput, {
-    placeholder: 'jane@example.com',
-    inputType: 'email',
   });
 
   configureSelect(elAppSelect, {
@@ -490,54 +298,6 @@ function configureShellControls(): void {
   configureSelect(elGenerationModelSelect, {
     className: 'form-input lane-model-select',
   });
-  configureSelect(elThemeSelect, {
-    className: 'form-input',
-    items: [
-      { value: 'dark', label: 'Dark' },
-      { value: 'light', label: 'Light' },
-    ],
-  });
-}
-
-function readControlValue(
-    element: { value: string | null; }
-  ): string
-{
-  return element.value ?? '';
-}
-
-function writeControlValue(
-    element: { value: string | null; },
-    value: string
-  ): void
-{
-  element.value = value;
-}
-
-function focusInnerControl(
-    element: HTMLElement
-  ): void
-{
-  const control =
-    element.querySelector('input, textarea, select, button') as HTMLElement | null;
-
-  if (control !== null) {
-    control.focus();
-    return;
-  }
-
-  element.focus();
-}
-
-function selectInnerTextControl(
-    element: HTMLElement
-  ): void
-{
-  const control =
-    element.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement | null;
-
-  control?.focus();
-  control?.select();
 }
 
 function renderPreviewTitle(): void {
@@ -818,48 +578,51 @@ function renderWorkspace(): void {
     state.currentAppId !== null
     && state.apps.some(item => item.id === state.currentAppId);
 
-  elFirstAppSetup.classList.toggle('hidden', hasApp);
   elPanels.classList.toggle('hidden', !hasApp);
 
   if (!hasApp) {
-    writeControlValue(elFirstApiKeyInput, '');
-    writeControlValue(elFirstAppNameInput, '');
+    firstApplicationDialog.show();
     return;
   }
+
+  firstApplicationDialog.hide();
 
   renderFileSelect();
   renderFileContent();
   renderPreviewTitle();
 }
 
-async function createFirstAppFromForm(): Promise<void> {
-  const name = readControlValue(elFirstAppNameInput).trim();
-
-  if (name === '') {
-    focusInnerControl(elFirstAppNameInput);
-    return;
-  }
-
-  const apiKey = readControlValue(elFirstApiKeyInput).trim();
-
+async function createFirstApp(
+    values: {
+      name: string;
+      apiKey: string;
+    }
+  ): Promise<void>
+{
   const app: AppRecord = {
     id: randomId(),
     uuid: createAppUuid(),
-    name,
+    name: values.name,
     createdAt: now(),
     updatedAt: now(),
   };
 
   await saveApp(app);
-  if (apiKey !== '') {
-    await saveAppOpenAiApiKey(app.id, apiKey);
+  if (values.apiKey !== '') {
+    await saveAppOpenAiApiKey(app.id, values.apiKey);
   }
   await replaceFiles(app.id, createDefaultWorkflowFiles(app.id, app.name, randomId));
   state.apps = [...state.apps, app];
   await openApp(app.id);
 }
 
-async function createTodoSampleAppFromForm(): Promise<void> {
+async function createTodoSampleApp(
+    values: {
+      name: string;
+      apiKey: string;
+    }
+  ): Promise<void>
+{
   const sample = getSampleByName('TODO Sample');
 
   if (sample === null) {
@@ -867,12 +630,9 @@ async function createTodoSampleAppFromForm(): Promise<void> {
     return;
   }
 
-  const rawName = readControlValue(elFirstAppNameInput).trim();
-  const name = rawName === ''
+  const name = values.name === ''
     ? sample.name
-    : rawName;
-
-  const apiKey = readControlValue(elFirstApiKeyInput).trim();
+    : values.name;
 
   const app: AppRecord = {
     id: randomId(),
@@ -886,8 +646,8 @@ async function createTodoSampleAppFromForm(): Promise<void> {
   const files = buildSampleFiles(sample, app.id, randomId);
 
   await saveApp(app);
-  if (apiKey !== '') {
-    await saveAppOpenAiApiKey(app.id, apiKey);
+  if (values.apiKey !== '') {
+    await saveAppOpenAiApiKey(app.id, values.apiKey);
   }
   await replaceFiles(app.id, files);
 
@@ -1182,38 +942,25 @@ function pickFirstFileName(
 }
 
 function promptNewApp(): void {
-  elNameModalTitle.textContent = 'New App';
-  writeControlValue(elAppNameInput, '');
-  elNameModal.classList.remove('hidden');
-  focusInnerControl(elAppNameInput);
+  nameModal.open({
+    title: 'New App',
+    initialValue: '',
+    selectText: false,
+    onConfirm: async (name: string) => {
+      const app: AppRecord = {
+        id: randomId(),
+        uuid: createAppUuid(),
+        name,
+        createdAt: now(),
+        updatedAt: now(),
+      };
 
-  elBtnConfirmName.onclick = async () => {
-    const name = readControlValue(elAppNameInput).trim();
-
-    if (name === '') {
-      return;
-    }
-
-    elNameModal.classList.add('hidden');
-
-    const app: AppRecord = {
-      id: randomId(),
-      uuid: createAppUuid(),
-      name,
-      createdAt: now(),
-      updatedAt: now(),
-    };
-
-    await saveApp(app);
-    await replaceFiles(app.id, createDefaultWorkflowFiles(app.id, app.name, randomId));
-    state.apps = [...state.apps, app];
-    await openApp(app.id);
-  };
-}
-
-function closeNameModal(): void {
-  elNameModal.classList.add('hidden');
-  elBtnConfirmName.onclick = null;
+      await saveApp(app);
+      await replaceFiles(app.id, createDefaultWorkflowFiles(app.id, app.name, randomId));
+      state.apps = [...state.apps, app];
+      await openApp(app.id);
+    },
+  });
 }
 
 function promptRenameApp(): void {
@@ -1223,33 +970,25 @@ function promptRenameApp(): void {
     return;
   }
 
-  elNameModalTitle.textContent = 'Rename App';
-  writeControlValue(elAppNameInput, app.name);
-  elNameModal.classList.remove('hidden');
-  selectInnerTextControl(elAppNameInput);
+  nameModal.open({
+    title: 'Rename App',
+    initialValue: app.name,
+    selectText: true,
+    onConfirm: async (name: string) => {
+      const updated: AppRecord = {
+        ...app,
+        name,
+        updatedAt: now(),
+      };
 
-  elBtnConfirmName.onclick = async () => {
-    const name = readControlValue(elAppNameInput).trim();
-
-    if (name === '') {
-      return;
-    }
-
-    elNameModal.classList.add('hidden');
-
-    const updated: AppRecord = {
-      ...app,
-      name,
-      updatedAt: now(),
-    };
-
-    await saveApp(updated);
-    state.apps =
-      state.apps.map(item => (
-        item.id === app.id
-          ? updated
-          : item));
-  };
+      await saveApp(updated);
+      state.apps =
+        state.apps.map(item => (
+          item.id === app.id
+            ? updated
+            : item));
+    },
+  });
 }
 
 function openProjectSettings(): void {
@@ -1259,48 +998,42 @@ function openProjectSettings(): void {
     return;
   }
 
-  writeControlValue(elProjectNameInput, app.name);
-  writeControlValue(elProjectAuthorNameInput, app.author?.name ?? '');
-  writeControlValue(elProjectAuthorEmailInput, app.author?.email ?? '');
-  elProjectSettingsModal.classList.remove('hidden');
-  selectInnerTextControl(elProjectNameInput);
+  projectSettingsModal.open({
+    name: app.name,
+    authorName: app.author?.name ?? '',
+    authorEmail: app.author?.email ?? '',
+  });
 }
 
-function closeProjectSettings(): void {
-  elProjectSettingsModal.classList.add('hidden');
-}
-
-async function saveProjectSettings(): Promise<void> {
+async function saveProjectSettings(
+    values: {
+      name: string;
+      authorName: string;
+      authorEmail: string;
+    }
+  ): Promise<void>
+{
   const app = state.apps.find(item => item.id === state.currentAppId);
 
   if (app === undefined) {
     return;
   }
 
-  const name = readControlValue(elProjectNameInput).trim();
-
-  if (name === '') {
-    focusInnerControl(elProjectNameInput);
-    return;
-  }
-
-  const authorName = readControlValue(elProjectAuthorNameInput).trim();
-  const authorEmail = readControlValue(elProjectAuthorEmailInput).trim();
   const author: AppAuthor | undefined =
-    authorName !== '' || authorEmail !== ''
+    values.authorName !== '' || values.authorEmail !== ''
       ? {
-        ...(authorName !== ''
-          ? { name: authorName }
+        ...(values.authorName !== ''
+          ? { name: values.authorName }
           : {}),
-        ...(authorEmail !== ''
-          ? { email: authorEmail }
+        ...(values.authorEmail !== ''
+          ? { email: values.authorEmail }
           : {}),
       }
       : undefined;
 
   const updated: AppRecord = {
     ...app,
-    name,
+    name: values.name,
     author,
     updatedAt: now(),
   };
@@ -1311,13 +1044,6 @@ async function saveProjectSettings(): Promise<void> {
       item.id === app.id
         ? updated
         : item));
-
-  closeProjectSettings();
-}
-
-async function deleteProjectFromSettings(): Promise<void> {
-  closeProjectSettings();
-  await confirmDeleteApp();
 }
 
 async function confirmDeleteApp(): Promise<void> {
@@ -1469,11 +1195,17 @@ function downloadExportPayload(payload: ExportPayload): void {
   URL.revokeObjectURL(url);
 }
 
-async function buildSharePayload(): Promise<ExportPayload> {
+async function buildSharePayload(
+    options: {
+      minified: boolean;
+      excludeNonApplicationFiles: boolean;
+    }
+  ): Promise<ExportPayload>
+{
   let payload =
     await buildExportPayload();
 
-  if (elShareExcludeTestsInput.checked) {
+  if (options.excludeNonApplicationFiles) {
     payload = {
       ...payload,
       files: Object.fromEntries(
@@ -1483,7 +1215,7 @@ async function buildSharePayload(): Promise<ExportPayload> {
     };
   }
 
-  if (!elShareMinifiedInput.checked) {
+  if (!options.minified) {
     return payload;
   }
 
@@ -1760,79 +1492,6 @@ async function handleImportFromHashOnStartup(): Promise<boolean> {
   }
 }
 
-async function prepareShareLinkUi(): Promise<void> {
-  const requestId = ++sharePreparationId;
-
-  elShareLinkOutput.value = '';
-  elBtnShareLink.disabled = true;
-  elBtnShareCopyText.disabled = true;
-  elBtnShareCopyHtml.disabled = true;
-  elShareLinkStatus.textContent = 'Preparing share link...';
-
-  try {
-    const linkResult =
-      await withTimeout(
-        (async () => {
-          const payload = await buildSharePayload();
-          return getLinkSharingService().createShareUrl(payload);
-        })(),
-        SHARE_PREPARE_TIMEOUT_MS,
-        'Preparing share link timed out. Use Download export instead.',
-      );
-
-    if (requestId !== sharePreparationId) {
-      return;
-    }
-
-    if (linkResult.exceedsMaxUrlLength) {
-      elShareLinkOutput.value = linkResult.url;
-      elShareLinkStatus.textContent =
-        buildShareStatusMessage(
-          linkResult.url.length,
-          SHARE_PRACTICAL_URL_LENGTH,
-          SHARE_MAX_URL_LENGTH,
-        );
-      elBtnShareLink.disabled = false;
-      elBtnShareCopyText.disabled = false;
-      elBtnShareCopyHtml.disabled = false;
-      return;
-    }
-
-    elShareLinkOutput.value = linkResult.url;
-    elShareLinkStatus.textContent =
-      buildShareStatusMessage(
-        linkResult.url.length,
-        SHARE_PRACTICAL_URL_LENGTH,
-        SHARE_MAX_URL_LENGTH,
-      );
-    elBtnShareLink.disabled = false;
-    elBtnShareCopyText.disabled = false;
-    elBtnShareCopyHtml.disabled = false;
-  } catch (error) {
-    const message = error instanceof Error
-      ? error.message
-      : String(error);
-
-    if (requestId === sharePreparationId) {
-      elShareLinkStatus.textContent = message;
-    }
-  }
-}
-
-function openShareModal(): void {
-  if (getCurrentApp() === undefined) {
-    return;
-  }
-
-  elShareModal.classList.remove('hidden');
-  void prepareShareLinkUi();
-}
-
-function closeShareModal(): void {
-  sharePreparationId += 1;
-  elShareModal.classList.add('hidden');
-}
-
 async function withTimeout<T>(
     promise: Promise<T>,
     timeoutMs: number,
@@ -1860,115 +1519,77 @@ async function withTimeout<T>(
   }
 }
 
-async function shareWithLink(): Promise<void> {
-  await copyShareUrlAsText();
-}
-
-async function copyShareUrlAsText(): Promise<void> {
-  if (elShareLinkOutput.value.trim() === '') {
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(elShareLinkOutput.value);
-    elShareLinkStatus.textContent = 'Share link copied to clipboard.';
-  } catch {
-    elShareLinkOutput.focus();
-    elShareLinkOutput.select();
-    elShareLinkStatus.textContent =
-      'Could not copy automatically. Link is selected, copy it manually.';
-  }
-}
-
-async function copyShareUrlAsHtml(): Promise<void> {
-  const url =
-    elShareLinkOutput.value.trim();
-
-  if (url === '') {
-    return;
-  }
-
-  const appName =
-    getCurrentApp()?.name.trim() || 'Shared app';
-  const html =
-    `<a href="${escapeHtml(url)}">${escapeHtml(appName)}</a>`;
-
-  try {
-    if (typeof ClipboardItem !== 'undefined'
-        && navigator.clipboard.write !== undefined)
-    {
-      await navigator.clipboard.write(
-        [
-          new ClipboardItem(
-            {
-              'text/html': new Blob([ html ], { type: 'text/html' }),
-              'text/plain': new Blob([ url ], { type: 'text/plain' }),
-            },
-          ),
-        ],
-      );
-
-      elShareLinkStatus.textContent =
-        'HTML link copied to clipboard.';
-      return;
+async function prepareShareLink(
+    options: {
+      minified: boolean;
+      excludeNonApplicationFiles: boolean;
     }
+  ): Promise<{
+    url: string;
+    status: string;
+  }>
+{
+  sharePreparationId += 1;
+  const requestId = sharePreparationId;
+  const linkResult =
+    await withTimeout(
+      (async () => {
+        const payload = await buildSharePayload(options);
+        return getLinkSharingService().createShareUrl(payload);
+      })(),
+      SHARE_PREPARE_TIMEOUT_MS,
+      'Preparing share link timed out. Use Download export instead.',
+    );
 
-    await navigator.clipboard.writeText(url);
-    elShareLinkStatus.textContent =
-      'HTML clipboard is unavailable here. URL copied as text.';
-  } catch {
-    elShareLinkOutput.focus();
-    elShareLinkOutput.select();
-    elShareLinkStatus.textContent =
-      'Could not copy automatically. Link is selected, copy it manually.';
+  if (requestId !== sharePreparationId) {
+    throw new Error('Share link preparation was superseded by a newer request.');
   }
+
+  return {
+    url: linkResult.url,
+    status: buildShareStatusMessage(
+      linkResult.url.length,
+      SHARE_PRACTICAL_URL_LENGTH,
+      SHARE_MAX_URL_LENGTH,
+    ),
+  };
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-async function shareWithDownload(): Promise<void> {
-  const payload = await buildSharePayload();
+async function downloadShareExport(
+    options: {
+      minified: boolean;
+      excludeNonApplicationFiles: boolean;
+    }
+  ): Promise<void>
+{
+  const payload = await buildSharePayload(options);
   downloadExportPayload(payload);
 }
 
-async function openSettings(): Promise<void> {
-  writeControlValue(
-    elApiKeyInput,
-    await refreshCurrentAppOpenAiApiKey());
-  writeControlValue(elThemeSelect, getTheme());
-  writeControlValue(elFontSizeInput, String(getFontSize()));
-  writeControlValue(elMaxToolStepsInput, String(getMaxToolSteps()));
-  elSettingsModal.classList.remove('hidden');
-  focusInnerControl(elApiKeyInput);
-}
-
-function closeSettings(): void {
-  elSettingsModal.classList.add('hidden');
-}
-
-async function saveSettingsFromModal(): Promise<void> {
+async function saveSettingsFromModal(
+    values: {
+      apiKey: string;
+      theme: string;
+      fontSizeText: string;
+      maxToolStepsText: string;
+    }
+  ): Promise<void>
+{
   const settings = loadSettings();
   delete settings.apiKey;
   settings.theme =
-    readControlValue(elThemeSelect) === 'light'
+    values.theme === 'light'
       ? 'light'
       : DEFAULT_THEME;
 
-  const parsedFontSize = Number.parseInt(readControlValue(elFontSizeInput), 10);
+  const parsedFontSize = Number.parseInt(values.fontSizeText, 10);
   settings.fontSize = Number.isFinite(parsedFontSize)
                      && parsedFontSize >= 12
                      && parsedFontSize <= 20
     ? parsedFontSize
     : DEFAULT_FONT_SIZE;
 
-  const parsed = Number.parseInt(readControlValue(elMaxToolStepsInput), 10);
+  const parsed = Number.parseInt(values.maxToolStepsText, 10);
   settings.maxToolSteps = Number.isFinite(parsed) && parsed >= 1
     ? parsed
     : DEFAULT_MAX_TOOL_STEPS;
@@ -1976,7 +1597,7 @@ async function saveSettingsFromModal(): Promise<void> {
   saveSettings(settings);
 
   if (state.currentAppId !== null) {
-    currentAppOpenAiApiKey = readControlValue(elApiKeyInput).trim();
+    currentAppOpenAiApiKey = values.apiKey;
     await saveAppOpenAiApiKey(
       state.currentAppId,
       currentAppOpenAiApiKey);
@@ -1984,7 +1605,6 @@ async function saveSettingsFromModal(): Promise<void> {
 
   await refreshAvailableModels();
   applyAppearanceSettings();
-  closeSettings();
 }
 
 function syncModelSelectOptions(
@@ -2174,7 +1794,7 @@ elBtnNewApp.addEventListener('click', promptNewApp);
 elBtnImport.addEventListener('click', handleImportClick);
 elBtnProjectSettings.addEventListener('click', openProjectSettings);
 elBtnShare.addEventListener('click', () => {
-  openShareModal();
+  shareModal.open();
 });
 elBtnStartGeneration.addEventListener('click', () => {
   void handleStartGeneration();
@@ -2182,100 +1802,12 @@ elBtnStartGeneration.addEventListener('click', () => {
 elBtnStopGeneration.addEventListener('click', handleStopGeneration);
 elBtnRun.addEventListener('click', handleRun);
 elBtnSettings.addEventListener('click', () => {
-  void openSettings();
+  void settingsModal.open();
 });
 elBtnToggleChat.addEventListener('click', toggleAppsCollapsed);
 elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
-
-elBtnCloseSettings.addEventListener('click', closeSettings);
-elBtnSaveSettings.addEventListener('click', () => {
-  void saveSettingsFromModal();
-});
-elBtnCancelSettings.addEventListener('click', closeSettings);
 elChatModelSelect.addEventListener('change', saveChatModelSelection);
 elGenerationModelSelect.addEventListener('change', saveGenerationModelSelection);
-elSettingsModal.addEventListener('click', (event: MouseEvent) => {
-  if (event.target === elSettingsModal) {
-    closeSettings();
-  }
-});
-
-elBtnCloseShare.addEventListener('click', closeShareModal);
-elBtnCloseShare2.addEventListener('click', closeShareModal);
-elBtnShareLink.addEventListener('click', () => {
-  void shareWithLink();
-});
-elBtnShareDownload.addEventListener('click', () => {
-  void shareWithDownload();
-});
-elBtnShareCopyText.addEventListener('click', () => {
-  void copyShareUrlAsText();
-});
-elBtnShareCopyHtml.addEventListener('click', () => {
-  void copyShareUrlAsHtml();
-});
-elShareMinifiedInput.addEventListener('change', () => {
-  void prepareShareLinkUi();
-});
-elShareExcludeTestsInput.addEventListener('change', () => {
-  void prepareShareLinkUi();
-});
-elShareModal.addEventListener('click', (event: MouseEvent) => {
-  if (event.target === elShareModal) {
-    closeShareModal();
-  }
-});
-
-elBtnConfirmName.addEventListener('click', () => {});
-elBtnCancelName.addEventListener('click', closeNameModal);
-elBtnCloseNameModal.addEventListener('click', closeNameModal);
-elNameModal.addEventListener('click', (event: MouseEvent) => {
-  if (event.target === elNameModal) {
-    closeNameModal();
-  }
-});
-
-elBtnSaveProjectSettings.addEventListener('click', () => {
-  void saveProjectSettings();
-});
-elBtnDeleteProject.addEventListener('click', () => {
-  void deleteProjectFromSettings();
-});
-elBtnCloseProjectSettings.addEventListener('click', closeProjectSettings);
-elBtnCloseProjectSettingsX.addEventListener('click', closeProjectSettings);
-elProjectSettingsModal.addEventListener('click', (event: MouseEvent) => {
-  if (event.target === elProjectSettingsModal) {
-    closeProjectSettings();
-  }
-});
-
-elAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    elBtnConfirmName.click();
-  }
-});
-
-elProjectNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    void saveProjectSettings();
-  }
-});
-
-elBtnCreateFirstApp.addEventListener('click', () => {
-  void createFirstAppFromForm();
-});
-
-elBtnCreateTodoSample.addEventListener('click', () => {
-  void createTodoSampleAppFromForm();
-});
-
-elFirstAppNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    void createFirstAppFromForm();
-  }
-});
 
 elAppSelect.addEventListener('change', () => {
   const value = readControlValue(elAppSelect);
@@ -2366,7 +1898,6 @@ async function init(): Promise<void> {
     state.activeFileName = null;
     state.chatMessages = [];
     renderWorkspace();
-    focusInnerControl(elFirstAppNameInput);
   }
 }
 
