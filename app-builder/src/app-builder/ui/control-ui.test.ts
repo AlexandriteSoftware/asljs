@@ -12,6 +12,7 @@ import {
   focusInnerControl,
   mustElement,
   readControlValue,
+  setButtonContent,
   selectInnerTextControl,
   writeControlValue,
   type AppBuilderButtonElement,
@@ -71,6 +72,38 @@ test(
         },
         /Missing element #missing/,
       );
+    } finally {
+      globalThis.document = previousDocument;
+    }
+  },
+);
+
+test(
+  'control-ui updates custom and native button content',
+  () => {
+    const dom = new JSDOM(
+      '<div id="button"></div><button id="native"></button>',
+    );
+    const previousDocument = globalThis.document;
+
+    globalThis.document = dom.window.document;
+
+    try {
+      const button = mustElement<AppBuilderButtonElement>('button');
+      const nativeButton = mustElement<HTMLButtonElement>('native');
+
+      setButtonContent(button, {
+        text: 'Run',
+        icon: '<i class="bi bi-play-fill"></i>',
+      });
+      setButtonContent(nativeButton, {
+        text: 'Run',
+        icon: '<i class="bi bi-play-fill"></i>',
+      });
+
+      assert.equal(button.text, 'Run');
+      assert.equal(button.icon, '<i class="bi bi-play-fill"></i>');
+      assert.equal(nativeButton.textContent, 'Run');
     } finally {
       globalThis.document = previousDocument;
     }

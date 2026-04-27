@@ -1,7 +1,12 @@
+import {
+  setButtonContent,
+} from './control-ui.js';
+
 type ToggleButtonElement =
   HTMLElement
   & {
     text?: string;
+    icon?: string;
   };
 
 export type TogglePanelUiOptions =
@@ -9,8 +14,10 @@ export type TogglePanelUiOptions =
     toggleButtonElement: ToggleButtonElement;
     panelsElement: HTMLElement;
     collapsedPanelsClass: string;
-    expandedLabel: string;
-    collapsedLabel: string; };
+    expandedText: string;
+    collapsedText: string;
+    expandedIcon?: string;
+    collapsedIcon?: string; };
 
 export function togglePanelUi(
     options: TogglePanelUiOptions
@@ -18,16 +25,17 @@ export function togglePanelUi(
 {
   const collapsed = !options.panelElement.classList.contains('collapsed');
 
-  const nextLabel =
+  const nextText =
     collapsed
-      ? options.collapsedLabel
-      : options.expandedLabel;
+      ? options.collapsedText
+      : options.expandedText;
 
-  if ('text' in options.toggleButtonElement) {
-    options.toggleButtonElement.text = nextLabel;
-  } else {
-    options.toggleButtonElement.textContent = nextLabel;
-  }
+  setButtonContent(options.toggleButtonElement, {
+    text: nextText,
+    icon: collapsed
+      ? options.collapsedIcon
+      : options.expandedIcon,
+  });
 
   options.toggleButtonElement.setAttribute(
     'aria-expanded',

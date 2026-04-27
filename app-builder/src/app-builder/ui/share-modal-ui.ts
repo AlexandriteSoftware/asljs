@@ -6,39 +6,43 @@ import {
 
 export function renderShareModal(): string {
   return `
-    <div id="share-modal" class="modal-overlay hidden">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Share</h3>
+    <div id="share-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
+      <div class="bg-body rounded-4 shadow border w-100" style="max-width: 44rem;">
+        <div class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+          <h3 class="h5 mb-0 d-flex align-items-center gap-2"><i class="bi bi-share"></i><span>Share</span></h3>
           <asljs-button id="btn-close-share"></asljs-button>
         </div>
-        <div class="modal-body">
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <div class="d-flex flex-column gap-3 p-4">
+          <div class="d-flex gap-2 flex-wrap">
             <asljs-button id="btn-share-link"></asljs-button>
             <asljs-button id="btn-share-download"></asljs-button>
           </div>
-          <label class="form-hint" style="display:block; margin-top:0.6rem;">
-            <input id="share-minified-input" type="checkbox" />
+          <label class="form-check d-flex align-items-start gap-2 mb-0">
+            <input id="share-minified-input" class="form-check-input mt-1 ms-0" type="checkbox" />
+            <span class="form-check-label text-body-secondary small">
             Share minified (esbuild JS/CSS + compact HTML/CSS)
+            </span>
           </label>
-          <label class="form-hint" style="display:block; margin-top:0.35rem;">
-            <input id="share-exclude-tests-input" type="checkbox" />
+          <label class="form-check d-flex align-items-start gap-2 mb-0">
+            <input id="share-exclude-tests-input" class="form-check-input mt-1 ms-0" type="checkbox" />
+            <span class="form-check-label text-body-secondary small">
             Only application files
+            </span>
           </label>
-          <p id="share-link-status" class="form-hint"></p>
+          <p id="share-link-status" class="small text-body-secondary mb-0"></p>
           <textarea
             id="share-link-output"
-            class="prompt-view"
+            class="form-control"
             style="min-height: 8rem;"
             readonly
             placeholder="Share link will appear here..."
           ></textarea>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.6rem;">
+          <div class="d-flex gap-2 flex-wrap">
             <asljs-button id="btn-share-copy-text"></asljs-button>
             <asljs-button id="btn-share-copy-html"></asljs-button>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="d-flex justify-content-end gap-2 px-4 py-3 border-top bg-body-tertiary rounded-bottom-4">
           <asljs-button id="btn-close-share-2"></asljs-button>
         </div>
       </div>
@@ -97,8 +101,8 @@ export function createShareModalUi(
   let preparationId = 0;
 
   configureButton(elBtnClose, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
+    icon: '<i class="bi bi-x-lg"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnShareLink, {
     text: 'Share with link',
@@ -106,19 +110,19 @@ export function createShareModalUi(
   });
   configureButton(elBtnShareDownload, {
     text: 'Download export',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
   configureButton(elBtnCopyText, {
     text: 'Copy as text link',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
   configureButton(elBtnCopyHtml, {
     text: 'Copy as HTML link',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
   configureButton(elBtnCloseFooter, {
     text: 'Close',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
 
   function readShareOptions(): ShareModalOptions {

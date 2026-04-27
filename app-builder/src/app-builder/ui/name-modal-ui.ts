@@ -12,17 +12,17 @@ import {
 
 export function renderNameModal(): string {
   return `
-    <div id="name-modal" class="modal-overlay hidden">
-      <div class="modal">
-        <div class="modal-header">
-          <h3 id="name-modal-title">New App</h3>
+    <div id="name-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
+      <div class="bg-body rounded-4 shadow border w-100" style="max-width: 32rem;">
+        <div class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+          <h3 id="name-modal-title" class="h5 mb-0 d-flex align-items-center gap-2"><i class="bi bi-type"></i><span>New App</span></h3>
           <asljs-button id="btn-close-name-modal"></asljs-button>
         </div>
-        <div class="modal-body">
-          <label class="form-label">App name</label>
+        <div class="d-flex flex-column gap-2 p-4">
+          <label class="form-label mb-0">App name</label>
           <asljs-text-input id="app-name-input"></asljs-text-input>
         </div>
-        <div class="modal-footer">
+        <div class="d-flex justify-content-end gap-2 px-4 py-3 border-top bg-body-tertiary rounded-bottom-4">
           <asljs-button id="btn-confirm-name"></asljs-button>
           <asljs-button id="btn-cancel-name"></asljs-button>
         </div>
@@ -57,8 +57,8 @@ export function createNameModalUi(): NameModalUi {
   let activeRequest: NameModalRequest | null = null;
 
   configureButton(elBtnClose, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
+    icon: '<i class="bi bi-x-lg"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnConfirm, {
     text: 'OK',
@@ -66,7 +66,7 @@ export function createNameModalUi(): NameModalUi {
   });
   configureButton(elBtnCancel, {
     text: 'Cancel',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
   configureTextInput(elInput, {
     placeholder: 'My App',

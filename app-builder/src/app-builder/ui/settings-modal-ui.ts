@@ -13,33 +13,41 @@ import {
 
 export function renderSettingsModal(): string {
   return `
-    <div id="settings-modal" class="modal-overlay hidden">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Settings</h3>
+    <div id="settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
+      <div class="bg-body rounded-4 shadow border w-100" style="max-width: 36rem;">
+        <div class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+          <h3 class="h5 mb-0 d-flex align-items-center gap-2"><i class="bi bi-gear"></i><span>Settings</span></h3>
           <asljs-button id="btn-close-settings"></asljs-button>
         </div>
-        <div class="modal-body">
-          <label class="form-label">OpenAI API Key</label>
+        <div class="d-flex flex-column gap-3 p-4">
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">OpenAI API Key</label>
           <asljs-text-input id="api-key-input"></asljs-text-input>
-          <p class="form-hint">
+          </div>
+          <p class="small text-body-secondary mb-0">
             Available models are loaded from OpenAI when the app starts. Choose
             the chat model in the chat panel header and the generation model
             below the chat window.
           </p>
-          <label class="form-label">Theme</label>
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Theme</label>
           <asljs-select id="theme-select"></asljs-select>
-          <label class="form-label">Font size (px)</label>
+          </div>
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Font size (px)</label>
           <asljs-text-input id="font-size-input"></asljs-text-input>
-          <label class="form-label">Max tool steps (initial)</label>
+          </div>
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Max tool steps (initial)</label>
           <asljs-text-input id="max-tool-steps-input"></asljs-text-input>
-          <p class="form-hint">
+          </div>
+          <p class="small text-body-secondary mb-0">
             Your key is stored only in this browser (IndexedDB). It is sent
             directly to OpenAI — no server proxy is involved. Leave blank to
             skip AI generation.
           </p>
         </div>
-        <div class="modal-footer">
+        <div class="d-flex justify-content-end gap-2 px-4 py-3 border-top bg-body-tertiary rounded-bottom-4">
           <asljs-button id="btn-save-settings"></asljs-button>
           <asljs-button id="btn-cancel-settings"></asljs-button>
         </div>
@@ -89,8 +97,8 @@ export function createSettingsModalUi(
     mustElement<AppBuilderTextInputElement>('max-tool-steps-input');
 
   configureButton(elBtnClose, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
+    icon: '<i class="bi bi-x-lg"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnSave, {
     text: 'Save',
@@ -98,7 +106,7 @@ export function createSettingsModalUi(
   });
   configureButton(elBtnCancel, {
     text: 'Cancel',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
 
   configureTextInput(elApiKeyInput, {
@@ -115,7 +123,7 @@ export function createSettingsModalUi(
   });
 
   configureSelect(elThemeSelect, {
-    className: 'form-input',
+    className: 'form-select bootstrap-select',
     items: [
       { value: 'dark', label: 'Dark' },
       { value: 'light', label: 'Light' },

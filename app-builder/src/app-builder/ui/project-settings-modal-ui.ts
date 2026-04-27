@@ -12,24 +12,32 @@ import {
 
 export function renderProjectSettingsModal(): string {
   return `
-    <div id="project-settings-modal" class="modal-overlay hidden">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Project Settings</h3>
+    <div id="project-settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
+      <div class="bg-body rounded-4 shadow border w-100" style="max-width: 36rem;">
+        <div class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+          <h3 class="h5 mb-0 d-flex align-items-center gap-2"><i class="bi bi-sliders"></i><span>Project Settings</span></h3>
           <asljs-button id="btn-close-project-settings-x"></asljs-button>
         </div>
-        <div class="modal-body">
-          <label class="form-label">Name</label>
+        <div class="d-flex flex-column gap-3 p-4">
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Name</label>
           <asljs-text-input id="project-name-input"></asljs-text-input>
-          <label class="form-label">Author name (optional)</label>
+          </div>
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Author name (optional)</label>
           <asljs-text-input id="project-author-name-input"></asljs-text-input>
-          <label class="form-label">Author email (optional)</label>
+          </div>
+          <div class="d-flex flex-column gap-2">
+          <label class="form-label mb-0">Author email (optional)</label>
           <asljs-text-input id="project-author-email-input"></asljs-text-input>
+          </div>
         </div>
-        <div class="modal-footer">
-          <asljs-button id="btn-save-project-settings"></asljs-button>
+        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap px-4 py-3 border-top bg-body-tertiary rounded-bottom-4">
           <asljs-button id="btn-delete-project"></asljs-button>
+          <div class="d-flex gap-2 flex-wrap justify-content-end">
+          <asljs-button id="btn-save-project-settings"></asljs-button>
           <asljs-button id="btn-close-project-settings"></asljs-button>
+          </div>
         </div>
       </div>
     </div>
@@ -73,8 +81,8 @@ export function createProjectSettingsModalUi(
     mustElement<AppBuilderButtonElement>('btn-close-project-settings-x');
 
   configureButton(elBtnCloseX, {
-    text: '✕',
-    className: 'btn btn-ghost btn-sm',
+    icon: '<i class="bi bi-x-lg"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnSave, {
     text: 'Save',
@@ -86,7 +94,7 @@ export function createProjectSettingsModalUi(
   });
   configureButton(elBtnClose, {
     text: 'Cancel',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
 
   configureTextInput(elNameInput, {

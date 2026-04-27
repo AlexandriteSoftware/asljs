@@ -11,24 +11,40 @@ import {
 
 export function renderFirstApplicationDialog(): string {
   return `
-    <section id="first-app-setup" class="first-app-setup hidden">
-      <div class="first-app-card">
-        <h2>Create Your First Application</h2>
-        <p>
+    <section id="first-app-setup" class="hidden d-flex flex-grow-1 align-items-center justify-content-center p-3 p-lg-5">
+      <div class="card shadow-sm border-0 w-100" style="max-width: 42rem;">
+        <div class="card-body d-flex flex-column gap-3 p-4 p-lg-5">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center app-icon-circle">
+              <i class="bi bi-stars"></i>
+            </div>
+            <div>
+              <h2 class="h4 mb-1">Create Your First Application</h2>
+              <p class="text-body-secondary mb-0">
+                Start with a blank project or the built-in TODO sample.
+              </p>
+            </div>
+          </div>
+          <p class="text-body-secondary mb-0">
           This is a local-only application builder. App data is stored in your
           browser and is not submitted to any server. If you provide an OpenAI
           key, requests are sent directly to OpenAI only.
-        </p>
-        <label class="form-label">OpenAI API Key</label>
-        <asljs-text-input id="first-api-key-input"></asljs-text-input>
-        <label class="form-label">Application Name</label>
-        <asljs-text-input id="first-app-name-input"></asljs-text-input>
-        <p class="form-hint">
+          </p>
+          <div class="d-flex flex-column gap-2">
+            <label class="form-label mb-0">OpenAI API Key</label>
+            <asljs-text-input id="first-api-key-input"></asljs-text-input>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <label class="form-label mb-0">Application Name</label>
+            <asljs-text-input id="first-app-name-input"></asljs-text-input>
+          </div>
+          <p class="small text-body-secondary mb-0">
           Want a quick start? Create a TODO sample app and modify it.
-        </p>
-        <div class="first-app-actions">
+          </p>
+          <div class="d-flex flex-wrap gap-2">
           <asljs-button id="btn-create-first-app"></asljs-button>
           <asljs-button id="btn-create-todo-sample"></asljs-button>
+        </div>
         </div>
       </div>
     </section>
@@ -74,7 +90,7 @@ export function createFirstApplicationDialogUi(
   });
   configureButton(elBtnCreateSample, {
     text: 'Create TODO Sample App',
-    className: 'btn btn-ghost',
+    className: 'btn btn-outline-secondary',
   });
 
   configureTextInput(elApiKeyInput, {

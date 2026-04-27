@@ -53,8 +53,26 @@ export function configureButton(
 {
   element.type = 'button';
   element.buttonClassName = options.className;
-  element.text = options.text ?? '';
+  setButtonContent(element, {
+    text: options.text ?? '',
+    icon: options.icon ?? '',
+  });
+}
+
+export function setButtonContent(
+    element: HTMLElement & { text?: string; icon?: string; },
+    options: {
+      text: string;
+      icon?: string;
+    }
+  ): void
+{
+  element.text = options.text;
   element.icon = options.icon ?? '';
+
+  if (element.localName === 'button') {
+    element.textContent = options.text;
+  }
 }
 
 export function configureTextInput(
@@ -68,7 +86,7 @@ export function configureTextInput(
 {
   element.placeholder = options.placeholder ?? null;
   element.inputType = options.inputType ?? 'text';
-  element.controlClassName = options.className ?? 'form-input';
+  element.controlClassName = options.className ?? 'form-control bootstrap-input';
 }
 
 export function configureSelect(

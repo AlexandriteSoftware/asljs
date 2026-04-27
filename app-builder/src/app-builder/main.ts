@@ -128,6 +128,7 @@ import {
   configureSelect,
   mustElement,
   readControlValue,
+  setButtonContent,
   writeControlValue,
   type AppBuilderButtonElement,
   type AppBuilderSelectElement,
@@ -247,35 +248,38 @@ type BrowserEsbuildApi =
 
 function configureShellControls(): void {
   configureButton(elBtnSettings, {
-    className: 'btn btn-ghost btn-sm',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnNewApp, {
-    icon: '＋',
-    className: 'btn btn-ghost btn-sm',
+    text: 'New',
+    icon: '<i class="bi bi-plus-lg"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnImport, {
     text: 'Import',
-    className: 'btn btn-ghost btn-sm',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnProjectSettings, {
-    className: 'btn btn-ghost btn-sm',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnToggleChat, {
-    text: 'Chat ▾',
-    className: 'btn btn-ghost btn-sm',
+    text: 'Chat',
+    icon: '<i class="bi bi-chevron-down"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnToggleFiles, {
-    text: 'Files ▾',
-    className: 'btn btn-ghost btn-sm',
+    text: 'Files',
+    icon: '<i class="bi bi-chevron-down"></i>',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnRun, {
     text: 'Run',
-    icon: '▶',
+    icon: '<i class="bi bi-play-fill"></i>',
     className: 'btn btn-success btn-sm',
   });
   configureButton(elBtnShare, {
     text: 'Share',
-    className: 'btn btn-ghost btn-sm',
+    className: 'btn btn-outline-secondary btn-sm',
   });
   configureButton(elBtnStartGeneration, {
     text: 'Generate',
@@ -283,20 +287,20 @@ function configureShellControls(): void {
   });
   configureButton(elBtnStopGeneration, {
     text: 'Stop',
-    className: 'btn btn-ghost btn-sm',
+    className: 'btn btn-outline-secondary btn-sm',
   });
 
   configureSelect(elAppSelect, {
-    className: 'app-select',
+    className: 'form-select form-select-sm bootstrap-select app-select',
   });
   configureSelect(elFileSelect, {
-    className: 'file-select',
+    className: 'form-select form-select-sm bootstrap-select file-select',
   });
   configureSelect(elChatModelSelect, {
-    className: 'form-input lane-model-select',
+    className: 'form-select form-select-sm bootstrap-select lane-model-select',
   });
   configureSelect(elGenerationModelSelect, {
-    className: 'form-input lane-model-select',
+    className: 'form-select form-select-sm bootstrap-select lane-model-select',
   });
 }
 
@@ -402,7 +406,7 @@ function getFontSize(): number {
 }
 
 function applyAppearanceSettings(): void {
-  document.body.dataset.theme = getTheme();
+  document.documentElement.setAttribute('data-bs-theme', getTheme());
   document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
 
@@ -1288,13 +1292,19 @@ function setWorkspaceMode(mode: 'edit' | 'run'): void {
   elPanels.classList.toggle('chat-collapsed', collapsed);
   elPanels.classList.toggle('files-collapsed', collapsed);
 
-  elBtnToggleChat.textContent = collapsed
-    ? 'Chat ▸'
-    : 'Chat ▾';
+  setButtonContent(elBtnToggleChat, {
+    text: 'Chat',
+    icon: collapsed
+      ? '<i class="bi bi-chevron-right"></i>'
+      : '<i class="bi bi-chevron-down"></i>',
+  });
 
-  elBtnToggleFiles.textContent = collapsed
-    ? 'Files ▸'
-    : 'Files ▾';
+  setButtonContent(elBtnToggleFiles, {
+    text: 'Files',
+    icon: collapsed
+      ? '<i class="bi bi-chevron-right"></i>'
+      : '<i class="bi bi-chevron-down"></i>',
+  });
 
   elBtnToggleChat.setAttribute('aria-expanded', String(!collapsed));
   elBtnToggleFiles.setAttribute('aria-expanded', String(!collapsed));
@@ -1756,8 +1766,10 @@ function toggleAppsCollapsed(): void {
     toggleButtonElement: elBtnToggleChat,
     panelsElement: elPanels,
     collapsedPanelsClass: 'chat-collapsed',
-    expandedLabel: 'Chat ▾',
-    collapsedLabel: 'Chat ▸',
+    expandedText: 'Chat',
+    collapsedText: 'Chat',
+    expandedIcon: '<i class="bi bi-chevron-down"></i>',
+    collapsedIcon: '<i class="bi bi-chevron-right"></i>',
   });
 }
 
@@ -1767,8 +1779,10 @@ function toggleFilesCollapsed(): void {
     toggleButtonElement: elBtnToggleFiles,
     panelsElement: elPanels,
     collapsedPanelsClass: 'files-collapsed',
-    expandedLabel: 'Files ▾',
-    collapsedLabel: 'Files ▸',
+    expandedText: 'Files',
+    collapsedText: 'Files',
+    expandedIcon: '<i class="bi bi-chevron-down"></i>',
+    collapsedIcon: '<i class="bi bi-chevron-right"></i>',
   });
 }
 

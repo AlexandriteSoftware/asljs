@@ -31,7 +31,7 @@ export function renderAppBuilderShell(): void {
     ${renderNameModal()}
     ${renderProjectSettingsModal()}
     ${renderShareModal()}
-    <input id="import-file" type="file" accept=".json" style="display:none" />
+    <input id="import-file" class="d-none" type="file" accept=".json" />
   `;
 
   root.replaceChildren(
