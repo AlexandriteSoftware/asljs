@@ -3,148 +3,533 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASLJS — App Builder</title>
+  <title>ASLJS</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
 
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #58a6ff;
-      --accent-hover: #79c0ff;
-      --btn-bg: #238636;
-      --btn-hover: #2ea043;
-      --radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      color-scheme: light;
+      --page: #f7fafc;
+      --surface: #ffffff;
+      --surface-soft: #eef7f4;
+      --surface-blue: #eef5ff;
+      --border: #d8e5ed;
+      --border-strong: #b7cad6;
+      --text: #24313a;
+      --muted: #60717f;
+      --accent: #217c8f;
+      --accent-strong: #126476;
+      --green: #2f8f6b;
+      --yellow: #f8d982;
+      --shadow: 0 18px 48px rgba(75, 107, 122, 0.16);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     }
 
     body {
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
       min-height: 100vh;
+      background:
+        linear-gradient(180deg, #ffffff 0%, var(--page) 44%, #f4fbf8 100%);
+      color: var(--text);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 56px;
+    }
+
+    .topline {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 44px;
+    }
+
+    .brand {
+      font-weight: 800;
+      color: var(--accent-strong);
+      letter-spacing: 0.08em;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a,
+    .button {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
-    }
-
-    .hero {
-      max-width: 640px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      border-radius: 2rem;
-      padding: 0.25rem 0.75rem;
-      align-self: center;
-    }
-
-    h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.03em;
-    }
-
-    h1 span {
-      color: var(--accent);
-    }
-
-    .subtitle {
-      font-size: 1.125rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .cta {
-      display: inline-block;
-      background: var(--btn-bg);
-      color: #fff;
-      font-size: 1.125rem;
-      font-weight: 600;
+      min-height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 0 14px;
       text-decoration: none;
-      padding: 0.875rem 2.25rem;
-      border-radius: var(--radius);
-      transition: background 0.15s;
-      align-self: center;
+      font-weight: 650;
+      font-size: 0.94rem;
+      background: rgba(255, 255, 255, 0.78);
     }
 
-    .cta:hover { background: var(--btn-hover); }
+    .button-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 10px 24px rgba(33, 124, 143, 0.22);
+    }
 
-    .features {
+    .hero-title {
+      margin: 0 0 34px;
+      max-width: 920px;
+      font-size: clamp(3rem, 8vw, 6.8rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+      color: #1f3843;
+    }
+
+    .intro-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 34px;
+    }
+
+    .intro-copy,
+    .builder-card,
+    .section,
+    .package-card,
+    .benefit {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .intro-copy,
+    .builder-card,
+    .section {
+      padding: clamp(24px, 4vw, 36px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      margin-bottom: 14px;
+      color: var(--accent-strong);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h2,
+    h3 {
+      margin: 0;
+      color: #24414c;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+
+    h3 {
+      font-size: 1.08rem;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .lead {
+      margin-top: 18px;
+      font-size: 1.14rem;
+    }
+
+    .pill-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
-      justify-content: center;
-      margin-top: 0.5rem;
+      gap: 10px;
+      margin-top: 24px;
     }
 
-    .feature {
-      font-size: 0.875rem;
-      color: var(--muted);
-      background: var(--surface);
+    .pill {
+      border: 1px solid #cce3dc;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: #2d6c58;
+      padding: 7px 11px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .builder-card {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
+    }
+
+    .builder-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .builder-preview {
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: 1px solid var(--border);
+      background: #f5f9fc;
+      padding: 10px 12px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--yellow);
+    }
+
+    .dot:nth-child(2) {
+      background: #9edbc3;
+    }
+
+    .dot:nth-child(3) {
+      background: #9fc7ee;
+    }
+
+    .preview-body {
+      display: grid;
+      grid-template-columns: 0.9fr 1fr;
+      min-height: 245px;
+    }
+
+    .preview-chat,
+    .preview-files {
+      padding: 14px;
+    }
+
+    .preview-chat {
+      border-right: 1px solid var(--border);
+      background: #fbfdfd;
+    }
+
+    .preview-label {
+      margin-bottom: 10px;
+      color: var(--accent-strong);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .bubble,
+    .file-line,
+    .preview-panel {
+      border-radius: 8px;
       border: 1px solid var(--border);
-      border-radius: 2rem;
-      padding: 0.375rem 0.875rem;
+      background: #ffffff;
+    }
+
+    .bubble {
+      margin-bottom: 10px;
+      padding: 10px;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .bubble-accent {
+      background: var(--surface-soft);
+      border-color: #c7e2d8;
+    }
+
+    .file-line {
+      height: 34px;
+      margin-bottom: 9px;
+      background:
+        linear-gradient(90deg, #dceaf2 0 28%, transparent 28% 100%),
+        #ffffff;
+    }
+
+    .preview-panel {
+      min-height: 78px;
+      margin-top: 14px;
+      padding: 12px;
+      background: var(--surface-blue);
+    }
+
+    .preview-panel span {
+      display: block;
+      width: 70%;
+      height: 10px;
+      margin-bottom: 9px;
+      border-radius: 999px;
+      background: #bfd6eb;
+    }
+
+    .preview-panel span:nth-child(2) {
+      width: 46%;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin: 18px 0 34px;
+    }
+
+    .package-card,
+    .benefit {
+      padding: 20px;
+      box-shadow: none;
+    }
+
+    .package-card {
+      min-height: 160px;
+    }
+
+    .package-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--accent-strong);
+      font-size: 0.95rem;
+    }
+
+    .benefit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .benefit {
+      background: #fbfefe;
+    }
+
+    .benefit h3 {
+      margin-bottom: 8px;
     }
 
     footer {
-      margin-top: 3rem;
-      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
       color: var(--muted);
-      text-align: center;
+      font-size: 0.92rem;
     }
 
     footer a {
-      color: var(--accent);
+      color: var(--accent-strong);
+      font-weight: 700;
       text-decoration: none;
     }
 
-    footer a:hover { text-decoration: underline; }
+    @media (max-width: 880px) {
+      .topline {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .intro-grid,
+      .details-grid,
+      .benefit-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-body {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-chat {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="hero">
-    <span class="badge">ASLJS Monorepo</span>
+  <main class="page">
+    <header class="topline">
+      <div class="brand">ASLJS</div>
+      <nav class="nav" aria-label="Primary">
+        <a href="app-builder/">App Builder</a>
+        <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+      </nav>
+    </header>
 
-    <h1>Build apps in your <span>browser</span></h1>
+    <h1 class="hero-title">ASLJS</h1>
 
-    <p class="subtitle">
-      ASLJS App Builder is a fully static, AI-assisted, local-first workspace
-      that runs entirely in your browser. Describe an app, generate files,
-      edit them, and run the result — no server required.
-    </p>
+    <section class="intro-grid" aria-label="ASLJS overview">
+      <div class="intro-copy">
+        <span class="eyebrow">AI-friendly application framework</span>
+        <h2>Small packages for building browser apps with clear runtime contracts.</h2>
+        <p class="lead">
+          ASLJS is an AI-friendly application building framework with packages
+          for reactivity, local browser data, declarative binding, web
+          components, event APIs, state machines, and monetary values.
+        </p>
+        <div class="pill-row" aria-label="Package areas">
+          <span class="pill">reactivity</span>
+          <span class="pill">local database</span>
+          <span class="pill">components</span>
+          <span class="pill">data binding</span>
+          <span class="pill">events</span>
+        </div>
+      </div>
 
-    <a class="cta" href="app-builder/">Launch App Builder</a>
+      <aside class="builder-card" aria-label="Application Builder">
+        <div>
+          <span class="eyebrow">Application Builder</span>
+          <h2>Describe, generate, edit, and run local-first apps.</h2>
+          <p class="lead">
+            The App Builder demonstrates ASLJS packages working together in a
+            static browser workspace with chat, files, preview, import, and
+            sharing.
+          </p>
+        </div>
+        <div class="builder-actions">
+          <a class="button button-primary" href="app-builder/">Launch App Builder</a>
+          <a class="button" href="https://github.com/AlexandriteSoftware/asljs/issues">
+            Issues and questions
+          </a>
+        </div>
+        <div class="builder-preview" aria-hidden="true">
+          <div class="preview-bar">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <div class="preview-body">
+            <div class="preview-chat">
+              <div class="preview-label">Chat</div>
+              <div class="bubble bubble-accent">Create a local task tracker.</div>
+              <div class="bubble">Plan files, update README, then implement.</div>
+            </div>
+            <div class="preview-files">
+              <div class="preview-label">Files and preview</div>
+              <div class="file-line"></div>
+              <div class="file-line"></div>
+              <div class="file-line"></div>
+              <div class="preview-panel">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
 
-    <div class="features">
-      <span class="feature">🗄️ Apps stored locally in IndexedDB</span>
-      <span class="feature">🔑 Bring your own OpenAI key</span>
-      <span class="feature">🌐 Works offline</span>
-      <span class="feature">⚡ Powered by ASLJS</span>
-    </div>
+    <section class="section">
+      <span class="eyebrow">Packages</span>
+      <h2>Composable pieces with explicit ownership.</h2>
+      <div class="details-grid">
+        <article class="package-card">
+          <strong>eventful</strong>
+          <p>Event API primitives for small, explicit communication points.</p>
+        </article>
+        <article class="package-card">
+          <strong>observable</strong>
+          <p>Reactive object and collection state built on eventful.</p>
+        </article>
+        <article class="package-card">
+          <strong>machine</strong>
+          <p>State-machine utilities that combine observable state and events.</p>
+        </article>
+        <article class="package-card">
+          <strong>data-binding</strong>
+          <p>Declarative DOM bindings for browser views and generated apps.</p>
+        </article>
+        <article class="package-card">
+          <strong>components</strong>
+          <p>Web components for inputs, lists, files, buttons, and AI chat.</p>
+        </article>
+        <article class="package-card">
+          <strong>dali</strong>
+          <p>IndexedDB tables, live records, sagas, and event-source helpers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <span class="eyebrow">Why AI-friendly</span>
+      <h2>Built for agents that need reliable boundaries.</h2>
+      <div class="benefit-grid">
+        <article class="benefit">
+          <h3>Package-local contracts</h3>
+          <p>
+            Each published package keeps a focused public API and local tests,
+            so generated changes can stay inside the right boundary.
+          </p>
+        </article>
+        <article class="benefit">
+          <h3>Plain browser runtime</h3>
+          <p>
+            Apps can run as static files with browser storage and standard DOM
+            APIs, reducing deployment assumptions.
+          </p>
+        </article>
+        <article class="benefit">
+          <h3>Explicit data flow</h3>
+          <p>
+            Observable state, event APIs, bindings, and local tables make state
+            changes inspectable and easy to reason about.
+          </p>
+        </article>
+        <article class="benefit">
+          <h3>Useful together or separately</h3>
+          <p>
+            Use the full stack for generated local-first apps, or pull in a
+            lower-level package when a focused utility is enough.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <span>ASLJS is published from the app-builder static build.</span>
+      <span>
+        <a href="https://github.com/AlexandriteSoftware/asljs">Repository</a>
+        ·
+        <a href="app-builder/">Application Builder</a>
+      </span>
+    </footer>
   </main>
-
-  <footer>
-    <p>
-      Built with
-      <a href="https://github.com/AlexandriteSoftware/asljs" target="_blank" rel="noopener">ASLJS</a>
-      — observable · eventful · dali · data-binding
-    </p>
-  </footer>
 </body>
 </html>

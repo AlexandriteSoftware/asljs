@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    sourcemap: true,
     rollupOptions: {
       input: {
         main: resolve(import.meta.dirname, 'src/index.html'),

@@ -41,9 +41,39 @@ async function getDb(
           db.createObjectStore(
             'chatSecrets',
             { keyPath: 'appId' });
-        } ]);
+        },
+        ensureStores ]);
 
   return dbRef;
+}
+
+function ensureStores(
+    db: IDBDatabase
+  ): void
+{
+  if (!db.objectStoreNames.contains('apps')) {
+    db.createObjectStore(
+      'apps',
+      { keyPath: 'id' });
+  }
+
+  if (!db.objectStoreNames.contains('files')) {
+    const filesStore =
+      db.createObjectStore(
+        'files',
+        { keyPath: 'id' });
+
+    filesStore.createIndex(
+      'byAppId',
+      'appId',
+      { unique: false });
+  }
+
+  if (!db.objectStoreNames.contains('chatSecrets')) {
+    db.createObjectStore(
+      'chatSecrets',
+      { keyPath: 'appId' });
+  }
 }
 
 export async function listApps(

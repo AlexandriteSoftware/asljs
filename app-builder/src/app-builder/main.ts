@@ -106,10 +106,15 @@ import {
   buildShareStatusMessage,
   shouldExcludeNonApplicationFileFromShare,
 } from './services/share-ui.js';
+import {
+  renderAppBuilderShell,
+} from './ui/app-shell-ui.js';
 import * as esbuildWasm
   from 'esbuild-wasm';
 import esbuildWasmUrl
   from 'esbuild-wasm/esbuild.wasm?url';
+
+renderAppBuilderShell();
 
 function randomId(): string {
   return crypto.randomUUID();
