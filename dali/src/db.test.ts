@@ -115,3 +115,71 @@ test(
 
     reopened.close();
   });
+
+test(
+  `${TEST_SUITE}: dbOpen runs all migrations for a new database`,
+  async () => {
+    const db =
+      await dbOpen(
+        `db-migration-test-${crypto.randomUUID()}`,
+        [ database => {
+            database.createObjectStore(
+              'first',
+              { keyPath: 'id' });
+          },
+          database => {
+            database.createObjectStore(
+              'second',
+              { keyPath: 'id' });
+          } ]);
+
+    assert.equal(
+      db.objectStoreNames.contains('first'),
+      true);
+    assert.equal(
+      db.objectStoreNames.contains('second'),
+      true);
+
+    db.close();
+  });
+
+test(
+  `${TEST_SUITE}: dbOpen starts migrations after existing oldVersion`,
+  async () => {
+    const dbName =
+      `db-upgrade-test-${crypto.randomUUID()}`;
+
+    const firstVersion =
+      await dbOpen(
+        dbName,
+        [ database => {
+            database.createObjectStore(
+              'first',
+              { keyPath: 'id' });
+          } ]);
+
+    firstVersion.close();
+
+    const secondVersion =
+      await dbOpen(
+        dbName,
+        [ database => {
+            database.createObjectStore(
+              'first',
+              { keyPath: 'id' });
+          },
+          database => {
+            database.createObjectStore(
+              'second',
+              { keyPath: 'id' });
+          } ]);
+
+    assert.equal(
+      secondVersion.objectStoreNames.contains('first'),
+      true);
+    assert.equal(
+      secondVersion.objectStoreNames.contains('second'),
+      true);
+
+    secondVersion.close();
+  });

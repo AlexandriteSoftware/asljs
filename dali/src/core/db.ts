@@ -47,9 +47,9 @@ export function dbOpen(
         e => {
           const updates =
             upgrades.slice(
-              e.oldVersion - 1,
+              e.oldVersion,
               e.newVersion
-              ?? upgrades.length - 1);
+              ?? upgrades.length);
 
           for (const update of updates) {
             update(request.result);
