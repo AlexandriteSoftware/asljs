@@ -55,16 +55,24 @@ graph TD
 
 ### Public API boundaries
 
-| Package | Public boundary | Notes |
-| --- | --- | --- |
-| `asljs-eventful` | package root export only | Event helpers and base types are exported from the root package. |
-| `asljs-observable` | package root export only | Observable wrappers, object base class, and types are exported from the root package. |
-| `asljs-data-binding` | package root export only | `bindDataModel`, built-in pipe creation, and public types are exported from the root package. |
-| `asljs-components` | package root export only | `AssistedInput`, `Button`, `ButtonAdd`, `ButtonDelete`, `createBootstrapTheme`, `FileView`, `Keyboard`, `Letterpad`, `List`, `Numpad`, `TextInput`, handler factories, theme helpers, and related types are public; component internals are not. |
-| `asljs-dali` | package root export only | Table, live views, strategies, transactions, event-source, and saga exports are public from the root package. |
-| `asljs-machine` | package root export only | The public surface is the `machine(...)` factory and its declared types. |
-| `asljs-money` | package root export only | The public surface is the `money` factory plus `Money` and `MoneyFactory` types. |
-| `asljs-app-builder` | no library API | This is a private app/demo package; `src/app-builder/*` modules are internal. |
+- `asljs-eventful`: Event helpers and base types are exported from the root
+  package.
+- `asljs-observable`: Observable wrappers, object base class, and types are
+  exported from the root package.
+- `asljs-data-binding`: `bindDataModel`, built-in pipe creation, and public
+  types are exported from the root package.
+- `asljs-components`: `AssistedInput`, `Button`, `ButtonAdd`, `ButtonDelete`,
+  `createBootstrapTheme`, `FileView`, `Keyboard`, `Letterpad`, `List`,
+  `Numpad`, `TextInput`, handler factories, theme helpers, and related types
+  are public; component internals are not.
+- `asljs-dali`: Table, live views, strategies, transactions, event-source,
+  and saga exports are public from the root package.
+- `asljs-machine`: The public surface is the `machine(...)` factory and its
+  declared types.
+- `asljs-money`: The public surface is the `money` factory plus `Money` and
+  `MoneyFactory` types.
+- `asljs-app-builder`: No library API. This is an app/demo package;
+  `src/app-builder/*` modules are internal.
 
 ### Package roles
 

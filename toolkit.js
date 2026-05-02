@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
+/**
+ * Repository CLI toolkit for package release and maintenance tasks.
+ *
+ * It resolves workspace packages from the repo root, reads package metadata,
+ * and dispatches named actions that run git, npm, and filesystem operations.
+ *
+ * For broader project and release workflow details, see README.md,
+ * DEVELOPMENT.md, and RELEASE.md in the repository root.
+ */
+
 import fs
   from 'node:fs';
 import path
@@ -19,6 +29,7 @@ import {
 const ROOT_DIR =
   path.dirname(
     fileURLToPath(import.meta.url));
+
 const DEPENDENCY_FIELD_NAMES =
   [ 'dependencies',
     'devDependencies',
@@ -27,19 +38,21 @@ const DEPENDENCY_FIELD_NAMES =
 
 function runGit(
     command,
-    cwd = ROOT_DIR,
-  ) {
+    cwd = ROOT_DIR
+  )
+{
   return execSync(
     command,
     { cwd,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [ 'ignore', 'pipe', 'pipe' ],
       encoding: 'utf8' });
 }
 
 function runCommand(
     command,
-    cwd,
-  ) {
+    cwd
+  )
+{
   execSync(
     command,
     { cwd,
@@ -47,8 +60,9 @@ function runCommand(
 }
 
 function readJsonFile(
-    filePath,
-  ) {
+    filePath
+  )
+{
   return JSON.parse(
     fs.readFileSync(
       filePath,
@@ -57,30 +71,51 @@ function readJsonFile(
 
 function writeJsonFile(
     filePath,
-    value,
-  ) {
+    value
+  )
+{
   fs.writeFileSync(
     filePath,
     `${JSON.stringify(value, null, 2)}\n`,
     'utf8');
 }
 
+function readTextFile(
+    filePath
+  )
+{
+  return fs.readFileSync(
+    filePath,
+    'utf8');
+}
+
 function getPackageJsonPath(
-    packageDir,
-  ) {
+    packageDir
+  )
+{
   return path.join(
     packageDir,
     'package.json');
 }
 
 function getRootPackageJson(
-  ) {
+  )
+{
   return readJsonFile(
     getPackageJsonPath(ROOT_DIR));
 }
 
+function getToolkitDocsPath(
+  )
+{
+  return path.join(
+    ROOT_DIR,
+    'toolkit.md');
+}
+
 function getWorkspacePackageDirs(
-  ) {
+  )
+{
   const rootPackageJson =
     getRootPackageJson();
 
@@ -89,28 +124,33 @@ function getWorkspacePackageDirs(
       'Root package.json must define a workspaces array.');
   }
 
-  return rootPackageJson.workspaces.map(workspace => {
-    if (typeof workspace !== 'string'
-        || workspace.trim() === '')
-    {
-      throw new Error(
-        'Workspace entries must be non-empty strings.');
-    }
+  return rootPackageJson.workspaces.map(
+    workspace => {
+      if (typeof workspace !== 'string'
+          || workspace.trim() === '')
+      {
+        throw new Error(
+          'Workspace entries must be non-empty strings.');
+      }
 
-    return path.join(
-      ROOT_DIR,
-      workspace);
-  });
+      return path.join(
+        ROOT_DIR,
+        workspace);
+    });
 }
 
 function getPackageInfo(
-    packageDir = process.cwd(),
-  ) {
+    packageDir = process.cwd()
+  )
+{
   const packageJsonPath =
     getPackageJsonPath(packageDir);
+
   const packageJson =
     readJsonFile(packageJsonPath);
+
   const name = packageJson.name;
+
   const version = packageJson.version;
 
   if (typeof name !== 'string'
@@ -138,7 +178,8 @@ function getPackageInfo(
 }
 
 function getPackageNameAndVersionFromPackageJson(
-  ) {
+  )
+{
   const packageInfo =
     getPackageInfo();
 
@@ -147,7 +188,8 @@ function getPackageNameAndVersionFromPackageJson(
 }
 
 function getReleaseTagId(
-  ) {
+  )
+{
   const packageInfo =
     getPackageNameAndVersionFromPackageJson();
 
@@ -155,7 +197,8 @@ function getReleaseTagId(
 }
 
 function cleanDist(
-  ) {
+  )
+{
   const distPath =
     path.join(
       process.cwd(),
@@ -171,7 +214,8 @@ function cleanDist(
 }
 
 function ensureCleanWorkingFolder(
-  ) {
+  )
+{
   const output =
     runGit(
       'git status --porcelain',
@@ -188,7 +232,8 @@ function ensureCleanWorkingFolder(
 
 function createReleaseTag(
     releaseId,
-  ) {
+  )
+{
   const existingTag =
     runGit(
       `git tag -l "${releaseId}"`,
@@ -209,7 +254,8 @@ function createReleaseTag(
 }
 
 function tagCommitWithReleaseId(
-  ) {
+  )
+{
   const releaseId =
     getReleaseTagId();
 
@@ -220,17 +266,22 @@ export function updateDependencyVersionRanges(
     packageJson,
     dependencyName,
     nextVersion,
-  ) {
+  )
+{
   let changed = false;
 
   for (const fieldName of DEPENDENCY_FIELD_NAMES) {
     const dependencies = packageJson[fieldName];
 
-    if (dependencies === undefined || dependencies === null) {
+    if (dependencies === undefined
+        || dependencies === null)
+    {
       continue;
     }
 
-    if (typeof dependencies !== 'object' || Array.isArray(dependencies)) {
+    if (typeof dependencies !== 'object'
+        || Array.isArray(dependencies))
+    {
       throw new Error(
         `package.json field "${fieldName}" must be an object when present.`);
     }
@@ -246,6 +297,7 @@ export function updateDependencyVersionRanges(
     }
 
     dependencies[dependencyName] = nextRange;
+
     changed = true;
   }
 
@@ -253,8 +305,9 @@ export function updateDependencyVersionRanges(
 }
 
 function ensureReleaseTarget(
-    packageInfo,
-  ) {
+    packageInfo
+  )
+{
   if (packageInfo.dir === ROOT_DIR) {
     throw new Error(
       'Release action must be run from a workspace package, not the repository root.');
@@ -268,8 +321,9 @@ function ensureReleaseTarget(
 
 function updateWorkspaceDependents(
     releasedPackageName,
-    nextVersion,
-  ) {
+    nextVersion
+  )
+{
   const changedPackageJsonPaths = [];
 
   for (const packageDir of getWorkspacePackageDirs()) {
@@ -299,8 +353,9 @@ function updateWorkspaceDependents(
 
 function commitReleaseChanges(
     filePaths,
-    releaseId,
-  ) {
+    releaseId
+  )
+{
   const relativePaths =
     filePaths
       .map(filePath => path.relative(ROOT_DIR, filePath))
@@ -314,24 +369,28 @@ function commitReleaseChanges(
   runCommand(
     `git add -- ${relativePaths.join(' ')}`,
     ROOT_DIR);
+
   runCommand(
     `git commit -m "releasing ${releaseId}"`,
     ROOT_DIR);
 }
 
 function pushRelease(
-    releaseId,
-  ) {
+    releaseId
+  )
+{
   runCommand(
     'git push',
     ROOT_DIR);
+
   runCommand(
     `git push origin "${releaseId}"`,
     ROOT_DIR);
 }
 
 function releasePatch(
-  ) {
+  )
+{
   ensureCleanWorkingFolder();
 
   const packageInfo =
@@ -348,10 +407,12 @@ function releasePatch(
 
   const releasedPackageInfo =
     getPackageInfo(packageInfo.dir);
+
   const changedDependencyPackageJsonPaths =
     updateWorkspaceDependents(
       releasedPackageInfo.name,
       releasedPackageInfo.version);
+
   const packageLockPath =
     path.join(
       ROOT_DIR,
@@ -360,6 +421,7 @@ function releasePatch(
   runCommand(
     'npm install --package-lock-only',
     ROOT_DIR);
+
   runCommand(
     'npm publish --ignore-scripts',
     releasedPackageInfo.dir);
@@ -372,15 +434,127 @@ function releasePatch(
       ...changedDependencyPackageJsonPaths,
       packageLockPath ],
     releaseId);
+
   createReleaseTag(releaseId);
+
   pushRelease(releaseId);
 }
 
-const action =
-  process.argv[2] ?? '';
+function normalizeHelpText(
+    text
+  )
+{
+  return text
+    .trim()
+    .replace(/\r\n/g, '\n');
+}
 
-const actions =
-  new Map([
+export function parseToolkitDocs(
+    markdownText
+  )
+{
+  const normalizedText =
+    markdownText.replace(/\r\n/g, '\n');
+
+  const lines =
+    normalizedText.split('\n');
+
+  if (lines[0]?.trim() !== '# toolkit') {
+    throw new Error(
+      'toolkit.md must start with "# toolkit".');
+  }
+
+  const commands = [];
+
+  let lineIndex = 1;
+
+  while (lineIndex < lines.length) {
+    while (lineIndex < lines.length
+           && lines[lineIndex].trim() === '')
+    {
+      lineIndex += 1;
+    }
+
+    if (lineIndex >= lines.length) {
+      break;
+    }
+
+    const headingLine =
+      lines[lineIndex];
+
+    if (!headingLine.startsWith('## ')) {
+      throw new Error(
+        `toolkit.md expected a command heading at line ${lineIndex + 1}.`);
+    }
+
+    const actionKey =
+      headingLine.slice(3).trim();
+
+    lineIndex += 1;
+
+    while (lineIndex < lines.length
+           && lines[lineIndex].trim() === '')
+    {
+      lineIndex += 1;
+    }
+
+    const summaryLine =
+      lines[lineIndex] ?? '';
+
+    if (!summaryLine.startsWith('> ')) {
+      throw new Error(
+        `toolkit.md expected a blockquote summary for "${actionKey}".`);
+    }
+
+    const actionSummary =
+      summaryLine.slice(2).trim();
+
+    lineIndex += 1;
+
+    while (lineIndex < lines.length
+           && lines[lineIndex].trim() === '')
+    {
+      lineIndex += 1;
+    }
+
+    const helpLines = [];
+
+    while (lineIndex < lines.length
+           && !lines[lineIndex].startsWith('## '))
+    {
+      helpLines.push(lines[lineIndex]);
+      lineIndex += 1;
+    }
+
+    const helpText =
+      normalizeHelpText(
+        helpLines.join('\n'));
+
+    if (helpText === '') {
+      throw new Error(
+        `toolkit.md expected help text for "${actionKey}".`);
+    }
+
+    commands.push({ actionKey,
+                    actionSummary,
+                    helpText });
+  }
+
+  return commands;
+}
+
+function getCommandDocs(
+  )
+{
+  return parseToolkitDocs(
+    readTextFile(
+      getToolkitDocsPath()));
+}
+
+function getCommands(
+  )
+{
+  return new Map([
     [ 'clean-dist',
       cleanDist ],
     [ 'ensure-clean-working-folder',
@@ -388,21 +562,54 @@ const actions =
     [ 'tag-commit-with-release-id',
       tagCommitWithReleaseId ],
     [ 'release-patch',
-      releasePatch ]
+      releasePatch ],
   ]);
+}
+
+function getActionHelpText(
+    commandDocs
+  )
+{
+  return commandDocs
+    .map(
+      commandDoc => [
+        `${commandDoc.actionKey}: ${commandDoc.actionSummary}`,
+        commandDoc.helpText,
+      ].join('\n'))
+    .join('\n\n');
+}
+
+const action =
+  process.argv[2] ?? '';
+
+const commandDocs =
+  getCommandDocs();
+
+const actions =
+  getCommands();
 
 export function main(
-  ) {
+  )
+{
+  if (action === ''
+      || action === 'help'
+      || action === '--help')
+  {
+    console.log(
+      `Available actions:\n\n${getActionHelpText(commandDocs)}`);
+
+    process.exit(
+      action === ''
+        ? 1
+        : 0);
+  }
+
   const selectedAction =
     actions.get(action);
 
   if (!selectedAction) {
-    const supportedActions =
-      [ ...actions.keys() ]
-        .join(', ');
-
     console.error(
-      `Unknown action. Use one of: ${supportedActions}`);
+      `Unknown action: ${action}\n\nAvailable actions:\n\n${getActionHelpText(commandDocs)}`);
 
     process.exit(1);
   }

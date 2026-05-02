@@ -15,6 +15,18 @@
 * `Assumption:` ...
 * `Impact:` ...
 
+### Reference governance
+
+* For every requested behavior or code change, check the project reference
+  documentation first (in `REFERENCE.md`).
+* Treat reference as the source of truth by default.
+* If the requested behavior contradicts reference documentation, do not proceed
+  silently: obtain explicit additional approval for the contradiction.
+* Reference documentation does not cover all use cases or edge cases. Its
+  purpose is to provide a solid and consistent core of documented behavior.
+* When implementing a significant behavior change that is missing from
+  reference, add the relevant facts to the reference. Keep it high-level.
+
 ### Priorities (in order)
 
 1. Correctness

@@ -8,8 +8,8 @@ Use the package-local release command for publishable packages:
 npm -w eventful run release:patch
 ```
 
-Do not add or use a root-level release script. `app-builder` is private and is
-not released with this flow.
+Do not add or use a root-level release script. `app-builder` is not released
+with this flow.
 
 Release prerequisites:
 
@@ -40,7 +40,7 @@ For the selected publishable package, `release:patch`:
 11. pushes the commit
 12. pushes the created release tag
 
-## Example: package release
+## Example: eventful is changed
 
 Run the package-local release script from the repository root.
 
