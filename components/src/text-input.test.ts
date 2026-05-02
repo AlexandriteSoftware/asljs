@@ -105,7 +105,7 @@ test(
     assert.equal(label.textContent, 'Title');
     assert.equal(input.value, 'Hello');
     assert.equal(input.classList.contains('form-control'), true);
-    assert.equal(input.nextElementSibling, error);
+    assert.equal(input.nextElementSibling, null);
     assert.equal(description.textContent, 'Shown below');
     assert.equal(input.classList.contains('is-invalid'), true);
     assert.equal(error.textContent, 'Value is invalid');
@@ -135,7 +135,8 @@ test(
 
     assert.equal(textarea.value, 'Hello');
     assert.equal(textarea.classList.contains('form-control'), true);
-    assert.equal(textarea.nextElementSibling, error);
+    assert.equal(textarea.nextElementSibling, null);
+    assert.equal(error.textContent, '');
   });
 
 test(

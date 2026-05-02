@@ -3,19 +3,35 @@ import test
 import assert
   from 'node:assert/strict';
 import {
+  AiChatModelDefinition,
+  AllComponentModelDefinitions,
   AssistedInput,
+  AssistedInputModelDefinition,
   AiChat,
   Button,
+  ButtonModelDefinition,
+  bindComponentPreviewModel,
+  createComponentPreviewModel,
   createBootstrapTheme,
     createAiChatModel,
   FileView,
+  FileViewModelDefinition,
   Keyboard,
+  KeyboardModelDefinition,
   Letterpad,
+  LetterpadModelDefinition,
     List,
+  ListModelDefinition,
   Numpad,
+  NumpadModelDefinition,
+  Properties,
+  PropertiesModelDefinition,
   Select,
+  SelectModelDefinition,
   TextInput,
+  TextInputModelDefinition,
     ThemeProvider,
+  ThemeProviderModelDefinition,
   createImageFileHandler,
   createPdfFileHandler,
   createTextEditorFileHandler,
@@ -32,7 +48,19 @@ test(
       'function');
 
     assert.equal(
+      typeof Properties,
+      'function');
+
+    assert.equal(
       typeof createBootstrapTheme,
+      'function');
+
+    assert.equal(
+      typeof createComponentPreviewModel,
+      'function');
+
+    assert.equal(
+      typeof bindComponentPreviewModel,
       'function');
 
     assert.equal(
@@ -102,4 +130,56 @@ test(
     assert.equal(
       typeof setDefaultTheme,
       'function');
+
+    assert.equal(
+      AiChatModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      AssistedInputModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      ButtonModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      FileViewModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      KeyboardModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      LetterpadModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      ListModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      NumpadModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      PropertiesModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      SelectModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      TextInputModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      ThemeProviderModelDefinition.properties.length > 0,
+      true);
+
+    assert.equal(
+      AllComponentModelDefinitions.length >= 12,
+      true);
   });

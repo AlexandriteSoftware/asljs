@@ -34,16 +34,25 @@ test(
       theme.textInput?.template as string,
       /data-role="control-host"/);
     assert.match(
-      theme.textInput?.input as string,
-      /form-control/);
-    assert.match(
-      theme.textInput?.input as string,
+      theme.textInput?.template as string,
       /invalid-feedback/);
     assert.match(
-      theme.textInput?.textarea as string,
+      theme.textInput?.input as string,
       /form-control/);
     assert.match(
       theme.textInput?.textarea as string,
+      /form-control/);
+    assert.doesNotMatch(
+      theme.textInput?.input as string,
+      /invalid-feedback/);
+    assert.doesNotMatch(
+      theme.textInput?.textarea as string,
+      /invalid-feedback/);
+    assert.match(
+      theme.select?.template as string,
+      /invalid-feedback/);
+    assert.doesNotMatch(
+      theme.select?.select as string,
       /invalid-feedback/);
     assert.match(
       theme.list?.container as string,

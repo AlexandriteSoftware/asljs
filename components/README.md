@@ -13,6 +13,7 @@ The current package includes:
 
 - shared base classes such as `AssistedInput`
 - custom elements such as `asljs-button`
+- custom elements such as `asljs-properties`
 - custom elements such as `asljs-keyboard`
 - custom elements such as `asljs-letterpad`
 - custom elements such as `asljs-numpad`
@@ -37,12 +38,16 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
   package custom elements registered.
 - The current custom elements are `asljs-ai-chat`, `asljs-button`,
   `asljs-file`, `asljs-keyboard`, `asljs-letterpad`, `asljs-list`,
-  `asljs-numpad`, `asljs-text-input`, and `asljs-theme-provider`.
+  `asljs-numpad`, `asljs-properties`, `asljs-text-input`, and
+  `asljs-theme-provider`.
 - AI chat is exposed as the `asljs-ai-chat` custom element plus
   `createAiChatModel()` for explicit state ownership.
 - `AssistedInput` is the shared Lit base for the assisted on-screen input
   components.
 - Button rendering is driven by explicit `icon` and `text` properties.
+- Runtime model metadata is exposed through exported `*ModelDefinition` values.
+- `asljs-properties` renders a generated property editor from a model
+  definition plus a target object.
 - File rendering is driven by a provider plus ordered file handlers.
 - Keyboard rendering is driven by a fixed QWERTY layout, a `characters`
   filter, and bubbling `key` and `submit` events.
@@ -128,6 +133,58 @@ setDefaultTheme(
 
 `createBootstrapTheme()` currently supplies Bootstrap icon markup and labels
 for the `add`, `delete`, and `settings` button variants.
+
+## Runtime Model Definitions
+
+The package exports runtime model-definition values such as
+`TextInputModelDefinition` and `ButtonModelDefinition`.
+
+Each property definition includes:
+
+- `name`
+- `type`
+- optional `title`
+- optional `description`
+- optional `editable`
+
+These definitions can be used directly or passed to `asljs-properties` to
+render a generated editor.
+
+```ts
+import {
+    TextInputModelDefinition,
+  } from 'asljs-components';
+
+console.log(
+  TextInputModelDefinition.properties);
+```
+
+## Properties Editor
+
+`asljs-properties` renders a form for editable properties in a model
+definition.
+
+- string and number properties use `asljs-text-input`
+- boolean properties use `asljs-select` with `Yes` / `No`
+- object, array, function, and read-only values are shown as read-only fields
+
+```ts
+import 'asljs-components';
+import {
+    ButtonModelDefinition,
+  } from 'asljs-components';
+
+const button =
+  document.createElement('asljs-button');
+const properties =
+  document.createElement('asljs-properties') as HTMLElement & {
+    definition: unknown;
+    target: object | null;
+  };
+
+properties.definition = ButtonModelDefinition;
+properties.target = button;
+```
 
 ## Assisted Input Base
 

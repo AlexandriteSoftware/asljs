@@ -3,6 +3,32 @@ export {
   } from './themes/bootstrap-theme.js';
 
 export {
+    bindComponentPreviewModel,
+    createComponentPreviewModel,
+    type ComponentPreviewBinding,
+    type ComponentPreviewModel,
+  } from './component-preview.js';
+
+export {
+    AiChatModelDefinition,
+    AllComponentModelDefinitions,
+    AssistedInputModelDefinition,
+    ButtonModelDefinition,
+    FileViewModelDefinition,
+    KeyboardModelDefinition,
+    LetterpadModelDefinition,
+    ListModelDefinition,
+    NumpadModelDefinition,
+    PropertiesModelDefinition,
+    SelectModelDefinition,
+    TextInputModelDefinition,
+    ThemeProviderModelDefinition,
+    type ComponentModelDefinition,
+    type ComponentModelPropertyDefinition,
+    type ComponentModelPropertyType,
+  } from './component-model.js';
+
+export {
   AiChat,
     createAiChatModel,
     serializeAiChatModelState,
@@ -28,6 +54,10 @@ export {
 export {
     Button,
   } from './button.js';
+
+export {
+    Properties,
+  } from './properties.js';
 
 export {
     FileView,

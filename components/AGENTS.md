@@ -5,10 +5,11 @@
 Use this file as AI-facing guidance for `asljs-components`.
 
 This package currently exports the `AssistedInput`, `Button`, `Keyboard`,
-`Letterpad`, `List`, `Numpad`, `Select`, and `TextInput` UI
+`Letterpad`, `List`, `Numpad`, `Properties`, `Select`, and `TextInput` UI
 classes/components, the `AiChat` custom element plus AI chat model helpers,
-the `FileView` web component plus file handlers, package theming helpers, a
-theme provider custom element, and related types.
+the `FileView` web component plus file handlers, runtime component model
+definitions, package theming helpers, a theme provider custom element, and
+related types.
 
 ## Package Scope
 
@@ -18,20 +19,34 @@ Exports from `src/index.ts`:
 - `createAiChatModel`
 - `serializeAiChatModelState`
 - `createBootstrapTheme`
+- `AiChatModelDefinition`
+- `AllComponentModelDefinitions`
 - `AssistedInput`
+- `AssistedInputModelDefinition`
 - `Button`
+- `ButtonModelDefinition`
 - `FileView`
+- `FileViewModelDefinition`
 - `Keyboard`
+- `KeyboardModelDefinition`
 - `Letterpad`
+- `LetterpadModelDefinition`
 - `Numpad`
+- `NumpadModelDefinition`
+- `Properties`
+- `PropertiesModelDefinition`
 - `createPdfFileHandler`
 - `createImageFileHandler`
 - `createTextFileHandler`
 - `createTextEditorFileHandler`
 - `List`
+- `ListModelDefinition`
 - `Select`
+- `SelectModelDefinition`
 - `TextInput`
+- `TextInputModelDefinition`
 - `ThemeProvider`
+- `ThemeProviderModelDefinition`
 - `findThemeProvider`
 - `getDefaultTheme`
 - `resolveThemeText`
@@ -58,6 +73,9 @@ Exports from `src/index.ts`:
 - `AiChatToolStepLimitContext`
 - `AssistedInputButtonDefinition`
 - `AssistedInputKeyDetail`
+- `ComponentModelDefinition`
+- `ComponentModelPropertyDefinition`
+- `ComponentModelPropertyType`
 - `ButtonVariantThemeDefinition`
 - `ButtonThemeDefinition`
 - `ComponentsTheme`
@@ -95,6 +113,7 @@ Current custom elements:
 - `asljs-file`
 - `asljs-list`
 - `asljs-button`
+- `asljs-properties`
 - `asljs-keyboard`
 - `asljs-numpad`
 - `asljs-letterpad`
@@ -113,7 +132,8 @@ Component contract at a glance:
 - import with `import 'asljs-components';`
 - custom elements: `asljs-ai-chat`, `asljs-button`, `asljs-file`,
   `asljs-keyboard`, `asljs-letterpad`, `asljs-list`, `asljs-numpad`,
-  `asljs-select`, `asljs-text-input`, `asljs-theme-provider`
+  `asljs-properties`, `asljs-select`, `asljs-text-input`,
+  `asljs-theme-provider`
 - AI chat uses the `asljs-ai-chat` custom element plus
   `createAiChatModel()` for explicit state ownership
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
@@ -121,6 +141,12 @@ Component contract at a glance:
   optional `variant`; theme lookup checks variant-specific overrides first,
   then base button defaults, with built-in package defaults for `add`,
   `delete`, and `settings`
+- runtime model metadata is exported through `*ModelDefinition` values whose
+  `properties` arrays describe runtime-visible property names, types, and edit
+  metadata
+- `asljs-properties` renders generated editors from a model definition plus a
+  target object, using `asljs-text-input` for string/number and `asljs-select`
+  for boolean values
 - file viewing uses provider + ordered handler matching
 - keyboard uses a fixed QWERTY layout, a `characters` filter, and bubbling
   `key` plus `submit` events
@@ -174,6 +200,8 @@ The package currently uses more than one component form.
 - `List` is a Lit custom element with explicit properties.
 - `Button` is a Lit custom element driven by explicit icon/text properties,
   an optional `variant`, and theme-backed defaults.
+- `Properties` is a Lit custom element that renders a generated property form
+  from runtime model metadata.
 - `Numpad` is a Lit custom element driven by a `characters` filter and key
   event dispatch through `AssistedInput`.
 - `Select` is a Lit custom element with explicit items, validation, and

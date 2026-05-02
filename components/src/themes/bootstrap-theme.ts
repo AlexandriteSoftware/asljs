@@ -32,6 +32,10 @@ export function createBootstrapTheme(
                      data-bind-prop-hidden="hideLabel"
                      data-bind-prop-for="inputId"></label>
               <div data-role="control-host"></div>
+              <div class="invalid-feedback"
+                   data-bind-text="errorMessage"
+                   data-bind-prop-hidden="hideError"
+                   data-bind-prop-id="errorId"></div>
               <div class="form-text"
                    data-bind-text="description"
                    data-bind-prop-hidden="hideDescription"
@@ -43,19 +47,11 @@ export function createBootstrapTheme(
             <input type="text"
                    class="form-control"
                    data-control-invalid-class="is-invalid">
-            <div class="invalid-feedback"
-                 data-bind-text="errorMessage"
-                 data-bind-prop-hidden="hideError"
-                 data-bind-prop-id="errorId"></div>
           `,
         textarea:
           `
             <textarea class="form-control"
                       data-control-invalid-class="is-invalid"></textarea>
-            <div class="invalid-feedback"
-                 data-bind-text="errorMessage"
-                 data-bind-prop-hidden="hideError"
-                 data-bind-prop-id="errorId"></div>
           ` },
     select:
       { template:
@@ -68,6 +64,10 @@ export function createBootstrapTheme(
                      data-bind-prop-hidden="hideLabel"
                      data-bind-prop-for="inputId"></label>
               <div data-role="control-host"></div>
+              <div class="invalid-feedback"
+                   data-bind-text="errorMessage"
+                   data-bind-prop-hidden="hideError"
+                   data-bind-prop-id="errorId"></div>
               <div class="form-text"
                    data-bind-text="description"
                    data-bind-prop-hidden="hideDescription"
@@ -78,10 +78,6 @@ export function createBootstrapTheme(
           `
             <select class="form-select"
                     data-control-invalid-class="is-invalid"></select>
-            <div class="invalid-feedback"
-                 data-bind-text="errorMessage"
-                 data-bind-prop-hidden="hideError"
-                 data-bind-prop-id="errorId"></div>
           ` },
   };
 }

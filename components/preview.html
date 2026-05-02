@@ -17,12 +17,13 @@
 
 			.page {
 				display: grid;
-				grid-template-columns: 220px 1fr;
+				grid-template-columns: 320px 1fr;
 				gap: 16px;
 			}
 
 			.component-list,
 			.theme-select,
+			.properties-area,
 			.view-area,
 			.html-area,
 			.event-log,
@@ -42,6 +43,13 @@
 			.content {
 				display: grid;
 				gap: 12px;
+			}
+
+			.properties-area {
+				margin-top: 12px;
+				min-height: 220px;
+				padding: 8px;
+				overflow: auto;
 			}
 
 			.header h2,
@@ -151,6 +159,9 @@
 				<select id="component-list"
 								class="component-list"
 								aria-label="Component selector"></select>
+				<div id="properties-area"
+						 class="properties-area"
+						 aria-label="Component properties"></div>
 			</aside>
 
 			<main class="content">
@@ -219,13 +230,24 @@
 
 		<script type="module">
 			import {
+					AiChatModelDefinition,
+					bindComponentPreviewModel,
+					ButtonModelDefinition,
+					createComponentPreviewModel,
 					createAiChatModel,
 					createBootstrapTheme,
 					createImageFileHandler,
 					createPdfFileHandler,
 					createTextEditorFileHandler,
 					createTextFileHandler,
+					FileViewModelDefinition,
+					KeyboardModelDefinition,
+					LetterpadModelDefinition,
+					ListModelDefinition,
+					NumpadModelDefinition,
+					SelectModelDefinition,
 					setDefaultTheme,
+					TextInputModelDefinition,
 				} from './dist/index.js';
 			import './dist/index.js';
 
@@ -234,169 +256,195 @@
 			const componentTitle = document.querySelector('#component-title');
 			const componentDescription = document.querySelector('#component-description');
 			const viewArea = document.querySelector('#view-area');
+			const propertiesArea = document.querySelector('#properties-area');
 			const htmlArea = document.querySelector('#html-area');
 			const eventLog = document.querySelector('#event-log');
 
-			const componentEntries = [
-				{
-					name: 'AiChat',
-					description: 'Custom element chat surface backed by an explicit AI chat model.',
-					create: () => {
-						const shell = document.createElement('div');
-						shell.className = 'demo-grid';
+			let activePreviewBinding = null;
 
-						const hint = document.createElement('div');
-						hint.className = 'demo-card';
-						hint.textContent = 'This preview uses a local model and no API key. Sending shows the missing-key path.';
+			const componentRegistry = [];
 
-						const chat = document.createElement('asljs-ai-chat');
-						chat.className = 'demo-card';
-						chat.style.minHeight = '28rem';
+			registerComponent(
+				'AiChat',
+				'Custom element chat surface backed by an explicit AI chat model.',
+				AiChatModelDefinition,
+				() => {
+					const shell = document.createElement('div');
+					shell.className = 'demo-grid';
 
-						const model = createAiChatModel();
+					const hint = document.createElement('div');
+					hint.className = 'demo-card';
+					hint.textContent = 'This preview uses a local model and no API key. Sending shows the missing-key path.';
 
-						model.on('initialize', () => {
-							if (model.messages.length === 0) {
-								model.appendMessage(
-									'assistant',
-									'Preview mode is ready. Type a message and send to see the component state flow.');
-							}
-						});
+					const chat = document.createElement('asljs-ai-chat');
+					chat.className = 'demo-card';
+					chat.style.minHeight = '28rem';
 
-						chat.model = model;
-						chat.options = {
-							provider: {
-								getOpenAiApiKey: async () => '',
-								getChatModel: async () => 'gpt-4.1-mini',
-							},
-							getRequestContext: () => ({
-								preview: true,
-							}),
-							buildRequestInput: ({ prompt }) => [
-								{ role: 'user',
-									content: prompt },
-							],
-							missingKeyMessage: 'Preview mode has no API key configured.',
-						};
+					const model = createAiChatModel();
 
-						shell.append(hint, chat);
-						return shell;
-					},
-				},
-				{
-					name: 'Button',
-					description: 'Base icon-plus-text button.',
-					create: () => {
-						const button = document.createElement('asljs-button');
-						button.icon = '<i class="bi bi-lightning-charge"></i>';
-						button.text = 'Run';
-						return button;
-					},
-				},
-				{
-					name: 'Button (add variant)',
-					description: 'Button using the add variant defaults from the active theme.',
-					create: () => {
-						const button = document.createElement('asljs-button');
-						button.variant = 'add';
-						return button;
-					},
-				},
-				{
-					name: 'Button (delete variant)',
-					description: 'Button using the delete variant defaults from the active theme.',
-					create: () => {
-						const button = document.createElement('asljs-button');
-						button.variant = 'delete';
-						return button;
-					},
-				},
-				{
-					name: 'List',
-					description: 'Template-driven list rendering with row bindings.',
-					create: () => {
-						const list = document.createElement('asljs-list');
-						const template = document.createElement('template');
-						template.dataset.slot = 'item';
-						template.innerHTML = `
-							<div class="demo-card"
-									 data-bind-text="item.title">
-							</div>
-						`;
-						list.appendChild(template);
-						list.items = [
-							{ title: 'Alpha row' },
-							{ title: 'Beta row' },
-							{ title: 'Gamma row' },
-						];
-						return list;
-					},
-				},
-				{
-					name: 'TextInput',
-					description: 'Text input with validation, status, and Bootstrap default template.',
-					create: () => {
-						const input = document.createElement('asljs-text-input');
-						input.label = 'Project name';
-						input.description = 'At least 4 characters.';
-						input.placeholder = 'Enter a name';
-						input.value = 'ASLJS';
-						input.validator = value =>
-							value.trim().length < 4
-								? 'Value must be at least 4 characters.'
-								: null;
-						return input;
-					},
-				},
-				{
-					name: 'Numpad',
-					description: 'Numeric assisted input with filtered key events.',
-					create: () => createAssistedInputDemo('asljs-numpad', '0123456789.', '123'),
-				},
-				{
-					name: 'Keyboard',
-					description: 'Full on-screen keyboard with filtered key and submit events.',
-					create: () => createAssistedInputDemo('asljs-keyboard', "abcdefghijklmnopqrstuvwxyz0123456789 .,'-", 'alex'),
-				},
-				{
-					name: 'Letterpad',
-					description: 'Alphabetic assisted input with collapse toggle.',
-					create: () => createAssistedInputDemo('asljs-letterpad', 'abcdefghijklmnopqrstuvwxyz', 'trace'),
-				},
-				{
-					name: 'FileView',
-					description: 'Provider- and handler-driven file preview surface.',
-					create: () => {
-						const shell = document.createElement('div');
-						shell.className = 'demo-grid';
+					model.on('initialize', () => {
+						if (model.messages.length === 0) {
+							model.appendMessage(
+								'assistant',
+								'Preview mode is ready. Type a message and send to see the component state flow.');
+						}
+					});
 
-						const fileView = document.createElement('asljs-file');
-						fileView.className = 'demo-card file-box';
-						fileView.provider = {
-							loadFile: async fileName => ({
-								name: fileName,
-								mimeType: 'text/plain',
-								text: 'ASLJS file preview demo\n\nThis text comes from an in-memory provider.',
-							}),
-							saveText: async (_fileName, text) => {
-								appendLog(`saveText -> ${JSON.stringify(text)}`);
-							},
-						};
-						fileView.handlers = [
-							createPdfFileHandler(),
-							createImageFileHandler(),
-							createTextEditorFileHandler(),
-							createTextFileHandler(),
-						];
-						fileView.fileName = 'demo.txt';
+					chat.model = model;
+					chat.options = {
+						provider: {
+							getOpenAiApiKey: async () => '',
+							getChatModel: async () => 'gpt-4.1-mini',
+						},
+						getRequestContext: () => ({
+							preview: true,
+						}),
+						buildRequestInput: ({ prompt }) => [
+							{ role: 'user',
+								content: prompt },
+						],
+						missingKeyMessage: 'Preview mode has no API key configured.',
+					};
 
-						shell.appendChild(fileView);
-						return shell;
-					},
-				},
-			];
+					shell.append(hint, chat);
+					return {
+						root: shell,
+						component: chat,
+					};
+				});
 
-			componentEntries.forEach((entry, index) => {
+			registerComponent(
+				'Button',
+				'Base icon-plus-text button.',
+				ButtonModelDefinition,
+				() => {
+					const button = document.createElement('asljs-button');
+					button.icon = '<i class="bi bi-lightning-charge"></i>';
+					button.text = 'Run';
+					return {
+						root: button,
+						component: button,
+					};
+				});
+
+			registerComponent(
+				'List',
+				'Template-driven list rendering with row bindings.',
+				ListModelDefinition,
+				() => {
+					const list = document.createElement('asljs-list');
+					const template = document.createElement('template');
+					template.dataset.slot = 'item';
+					template.innerHTML = `
+						<div class="demo-card"
+								 data-bind-text="item.title">
+						</div>
+					`;
+					list.appendChild(template);
+					list.items = [
+						{ title: 'Alpha row' },
+						{ title: 'Beta row' },
+						{ title: 'Gamma row' },
+					];
+					return {
+						root: list,
+						component: list,
+					};
+				});
+
+			registerComponent(
+				'Select',
+				'Select input with validation and option list rendering.',
+				SelectModelDefinition,
+				() => {
+					const select = document.createElement('asljs-select');
+					select.label = 'Theme';
+					select.description = 'Choose one option.';
+					select.items = [
+						{ value: 'bootstrap', label: 'Bootstrap' },
+						{ value: 'plain', label: 'Plain' },
+					];
+					select.value = 'bootstrap';
+					return {
+						root: select,
+						component: select,
+					};
+				});
+
+			registerComponent(
+				'TextInput',
+				'Text input with validation, status, and Bootstrap default template.',
+				TextInputModelDefinition,
+				() => {
+					const input = document.createElement('asljs-text-input');
+					input.label = 'Project name';
+					input.description = 'At least 4 characters.';
+					input.placeholder = 'Enter a name';
+					input.value = 'ASLJS';
+					input.validator = value =>
+						value.trim().length < 4
+							? 'Value must be at least 4 characters.'
+							: null;
+					return {
+						root: input,
+						component: input,
+					};
+				});
+
+			registerComponent(
+				'Numpad',
+				'Numeric assisted input with filtered key events.',
+				NumpadModelDefinition,
+				() => createAssistedInputDemo('asljs-numpad', '0123456789.', '123'));
+
+			registerComponent(
+				'Keyboard',
+				'Full on-screen keyboard with filtered key and submit events.',
+				KeyboardModelDefinition,
+				() => createAssistedInputDemo('asljs-keyboard', "abcdefghijklmnopqrstuvwxyz0123456789 .,'-", 'alex'));
+
+			registerComponent(
+				'Letterpad',
+				'Alphabetic assisted input with collapse toggle.',
+				LetterpadModelDefinition,
+				() => createAssistedInputDemo('asljs-letterpad', 'abcdefghijklmnopqrstuvwxyz', 'trace'));
+
+			registerComponent(
+				'FileView',
+				'Provider- and handler-driven file preview surface.',
+				FileViewModelDefinition,
+				() => {
+					const shell = document.createElement('div');
+					shell.className = 'demo-grid';
+
+					const fileView = document.createElement('asljs-file');
+					fileView.className = 'demo-card file-box';
+					fileView.provider = {
+						loadFile: async fileName => ({
+							name: fileName,
+							mimeType: 'text/plain',
+							text: 'ASLJS file preview demo\n\nThis text comes from an in-memory provider.',
+						}),
+						saveText: async (_fileName, text) => {
+							appendLog(`saveText -> ${JSON.stringify(text)}`);
+						},
+					};
+					fileView.handlers = [
+						createPdfFileHandler(),
+						createImageFileHandler(),
+						createTextEditorFileHandler(),
+						createTextFileHandler(),
+					];
+					fileView.fileName = 'demo.txt';
+
+					shell.appendChild(fileView);
+					return {
+						root: shell,
+						component: fileView,
+					};
+				});
+
+			componentRegistry.forEach((entry, index) => {
 				const option = document.createElement('option');
 				option.value = String(index);
 				option.textContent = entry.name;
@@ -406,13 +454,13 @@
 			componentList.addEventListener('change', () => {
 				navigateToHashState(
 					themeSelect.value,
-					componentEntries[Number(componentList.value)]?.name ?? componentEntries[0].name);
+					componentRegistry[Number(componentList.value)]?.name ?? componentRegistry[0].name);
 			});
 
 			themeSelect.addEventListener('change', () => {
 				navigateToHashState(
 					themeSelect.value,
-					componentEntries[Number(componentList.value || 0)]?.name ?? componentEntries[0].name);
+					componentRegistry[Number(componentList.value || 0)]?.name ?? componentRegistry[0].name);
 			});
 
 			window.addEventListener('hashchange', () => {
@@ -425,9 +473,25 @@
 				componentTitle.textContent = entry.name;
 				componentDescription.textContent = entry.description;
 				eventLog.textContent = `Selected ${entry.name}. Theme: ${themeSelect.value}.`;
+				activePreviewBinding?.dispose?.();
+				activePreviewBinding = null;
 				viewArea.replaceChildren();
-				const content = entry.create();
-				viewArea.appendChild(content);
+				propertiesArea.replaceChildren();
+				const preview = entry.create();
+				const properties = document.createElement('asljs-properties');
+				const model = createComponentPreviewModel(entry.definition, preview.component);
+
+				properties.definition = entry.definition;
+				properties.target = model;
+				properties.theme = getSelectedTheme();
+
+				activePreviewBinding = bindComponentPreviewModel(
+					entry.definition,
+					model,
+					preview.component);
+
+				viewArea.appendChild(preview.root);
+				propertiesArea.appendChild(properties);
 				void refreshHtmlPreview();
 			}
 
@@ -456,7 +520,7 @@
 				themeSelect.value = state.theme;
 				componentList.value = String(componentIndex);
 				applySelectedTheme();
-				renderComponent(componentEntries[componentIndex]);
+				renderComponent(componentRegistry[componentIndex]);
 			}
 
 			function navigateToHashState(theme, componentName) {
@@ -502,18 +566,27 @@
 
 			function normalizeComponentName(value) {
 				const entry =
-					componentEntries.find(component => component.name === value);
+					componentRegistry.find(component => component.name === value);
 
-				return entry?.name ?? componentEntries[0].name;
+				return entry?.name ?? componentRegistry[0].name;
 			}
 
 			function findComponentIndexByName(name) {
 				const index =
-					componentEntries.findIndex(component => component.name === name);
+					componentRegistry.findIndex(component => component.name === name);
 
 				return index >= 0
 					? index
 					: 0;
+			}
+
+			function registerComponent(name, description, definition, create) {
+				componentRegistry.push({
+					name,
+					description,
+					definition,
+					create,
+				});
 			}
 
 			function getSelectedTheme() {
@@ -556,7 +629,10 @@
 				});
 
 				shell.append(input, hint, assistedInput);
-				return shell;
+				return {
+					root: shell,
+					component: assistedInput,
+				};
 			}
 
 			function appendLog(line) {

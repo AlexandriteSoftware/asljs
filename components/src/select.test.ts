@@ -71,6 +71,37 @@ test(
   });
 
 test(
+  'select: bootstrap theme renders shared invalid feedback from the outer template',
+  async () => {
+    const element =
+      await createElement();
+
+    const bootstrapThemeModule =
+      await import('./themes/bootstrap-theme.js');
+
+    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.items = [
+      { value: 'gpt-4.1', label: 'GPT-4.1' },
+    ];
+    element.value = 'gpt-4.1';
+    element.validator =
+      () => 'Pick a supported model';
+
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const select =
+      element.querySelector('select.form-select') as HTMLSelectElement;
+    const error =
+      element.querySelector('.invalid-feedback') as HTMLElement;
+
+    assert.equal(select.nextElementSibling, null);
+    assert.equal(error.textContent, 'Pick a supported model');
+    assert.equal(error.hidden, false);
+  });
+
+test(
   'select: emits input and change details',
   async () => {
     const element =
