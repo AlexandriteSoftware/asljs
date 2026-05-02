@@ -4,11 +4,11 @@
 
 Use this file as AI-facing guidance for `asljs-components`.
 
-This package currently exports the `AssistedInput`, `Button`, `ButtonAdd`,
-`ButtonDelete`, `ButtonSettings`, `Keyboard`, `Letterpad`, `List`, `Numpad`,
-`Select`, and `TextInput` UI classes/components, the `AiChat` custom element
-plus AI chat model helpers, the `FileView` web component plus file handlers,
-package theming helpers, a theme provider custom element, and related types.
+This package currently exports the `AssistedInput`, `Button`, `Keyboard`,
+`Letterpad`, `List`, `Numpad`, `Select`, and `TextInput` UI
+classes/components, the `AiChat` custom element plus AI chat model helpers,
+the `FileView` web component plus file handlers, package theming helpers, a
+theme provider custom element, and related types.
 
 ## Package Scope
 
@@ -20,9 +20,6 @@ Exports from `src/index.ts`:
 - `createBootstrapTheme`
 - `AssistedInput`
 - `Button`
-- `ButtonAdd`
-- `ButtonDelete`
-- `ButtonSettings`
 - `FileView`
 - `Keyboard`
 - `Letterpad`
@@ -61,6 +58,7 @@ Exports from `src/index.ts`:
 - `AiChatToolStepLimitContext`
 - `AssistedInputButtonDefinition`
 - `AssistedInputKeyDetail`
+- `ButtonVariantThemeDefinition`
 - `ButtonThemeDefinition`
 - `ComponentsTheme`
 - `FileHandler`
@@ -97,9 +95,6 @@ Current custom elements:
 - `asljs-file`
 - `asljs-list`
 - `asljs-button`
-- `asljs-button-add`
-- `asljs-button-delete`
-- `asljs-button-settings`
 - `asljs-keyboard`
 - `asljs-numpad`
 - `asljs-letterpad`
@@ -116,16 +111,16 @@ Current non-custom-element UI surface:
 Component contract at a glance:
 
 - import with `import 'asljs-components';`
-- custom elements: `asljs-ai-chat`, `asljs-button`, `asljs-button-add`,
-  `asljs-button-delete`, `asljs-button-settings`, `asljs-file`,
+- custom elements: `asljs-ai-chat`, `asljs-button`, `asljs-file`,
   `asljs-keyboard`, `asljs-letterpad`, `asljs-list`, `asljs-numpad`,
   `asljs-select`, `asljs-text-input`, `asljs-theme-provider`
 - AI chat uses the `asljs-ai-chat` custom element plus
   `createAiChatModel()` for explicit state ownership
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
-- button variants use explicit `icon` and `text` properties, with add/delete
-  and settings icons resolved from theme first and Unicode fallbacks second;
-  the base button also accepts explicit `buttonClassName`
+- button rendering uses explicit `icon`, `text`, `buttonClassName`, and
+  optional `variant`; theme lookup checks variant-specific overrides first,
+  then base button defaults, with built-in package defaults for `add`,
+  `delete`, and `settings`
 - file viewing uses provider + ordered handler matching
 - keyboard uses a fixed QWERTY layout, a `characters` filter, and bubbling
   `key` plus `submit` events
@@ -177,9 +172,8 @@ The package currently uses more than one component form.
 - `Letterpad` is a Lit custom element driven by `characters`, `collapsed`, and
   event dispatch through `AssistedInput`.
 - `List` is a Lit custom element with explicit properties.
-- `Button` is a Lit custom element driven by explicit icon/text properties.
-- `ButtonSettings` is a Lit custom element with the same API as `Button` plus
-  a themed/default settings icon.
+- `Button` is a Lit custom element driven by explicit icon/text properties,
+  an optional `variant`, and theme-backed defaults.
 - `Numpad` is a Lit custom element driven by a `characters` filter and key
   event dispatch through `AssistedInput`.
 - `Select` is a Lit custom element with explicit items, validation, and
@@ -232,16 +226,15 @@ Inside `asljs-button`, configure:
 
 - `icon` as an HTML string for the icon markup
 - `text` as the visible label
+- `variant` when the button should use theme-provided defaults such as `add`,
+  `delete`, or `settings`
 - `buttonClassName` when host CSS needs to target the inner native button
 - `type` and `disabled` for native button behavior
 
-Prefer `asljs-button-add` and `asljs-button-delete` when their defaults fit.
-They inherit the same API but resolve `button.addIcon` and
-`button.deleteIcon` from theme before falling back to Unicode defaults.
-
-Prefer `asljs-button-settings` when the action is settings-oriented. It
-inherits the same API and resolves `button.settingsIcon` from theme before
-falling back to Unicode.
+Prefer `variant="add"`, `variant="delete"`, or `variant="settings"` when
+their defaults fit. Theme overrides live under
+`button.variants.<variantName>.icon`, `.text`, and `.className`. Explicit
+`icon`, `text`, and `buttonClassName` values still win over theme defaults.
 
 If Bootstrap icon markup is desired, prefer `createBootstrapTheme()` over
 duplicating raw icon HTML literals at multiple call sites.

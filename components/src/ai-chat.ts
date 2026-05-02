@@ -17,7 +17,7 @@ import {
 import {
     unsafeHTML,
   } from 'lit/directives/unsafe-html.js';
-import './buttons/button.js';
+import './button.js';
 import './select.js';
 import './text-input.js';
 

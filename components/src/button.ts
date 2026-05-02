@@ -18,13 +18,16 @@ import {
     type ButtonThemeDefinition,
     type ComponentsTheme,
     type ThemeProviderLike,
-  } from '../themes/theme.js';
+  } from './themes/theme.js';
 
 @customElement('asljs-button')
 export class Button
   extends LitElement
 {
   #themeProvider: ThemeProviderLike | null = null;
+
+  @property({ reflect: true })
+    accessor variant = '';
 
   @property({ attribute: false })
     accessor icon = '';
@@ -58,36 +61,19 @@ export class Button
     super.disconnectedCallback();
   }
 
-  protected get defaultIcon(): string {
-    return '';
-  }
-
-  protected get themeIconKey(): keyof ButtonThemeDefinition | null {
-    return null;
-  }
-
   protected get resolvedIcon(): string {
-    const themeIconKey =
-      this.themeIconKey;
-
-    if (themeIconKey !== null) {
-      const themedIcon =
-        resolveThemeText(
-          this.theme?.button?.[themeIconKey]
-          ?? this.#themeProvider?.theme?.button?.[themeIconKey]
-          ?? getDefaultTheme().button?.[themeIconKey],
-          this);
-
-      if (themedIcon !== null && themedIcon !== '') {
-        return themedIcon;
-      }
-    }
-
     if (this.icon !== '') {
       return this.icon;
     }
 
-    return this.defaultIcon;
+    const themedIcon =
+      this.#resolveButtonThemeText('icon');
+
+    if (themedIcon !== null) {
+      return themedIcon;
+    }
+
+    return '';
   }
 
   protected get resolvedButtonClassName(): string {
@@ -95,11 +81,16 @@ export class Button
       return this.buttonClassName.trim();
     }
 
-    return resolveThemeText(
-      this.theme?.button?.className
-      ?? this.#themeProvider?.theme?.button?.className
-      ?? getDefaultTheme().button?.className,
-      this)
+    return this.#resolveButtonThemeText('className')
+      ?? '';
+  }
+
+  protected get resolvedText(): string {
+    if (this.text !== '') {
+      return this.text;
+    }
+
+    return this.#resolveButtonThemeText('text')
       ?? '';
   }
 
@@ -123,9 +114,70 @@ export class Button
               ?hidden=${this.resolvedIcon === ''}
               aria-hidden="true">${unsafeHTML(this.resolvedIcon)}</span>
         <span class="text"
-              ?hidden=${this.text === ''}>${this.text}</span>
+              ?hidden=${this.resolvedText === ''}>${this.resolvedText}</span>
       </button>
     `;
+  }
+
+  #resolveButtonThemeText(
+      fieldName: 'className' | 'icon' | 'text'
+    ): string | null
+  {
+    for (const source of this.#getButtonThemeSources()) {
+      const themedVariantValue =
+        this.#resolveVariantThemeText(
+          source,
+          fieldName);
+
+      if (themedVariantValue !== null) {
+        return themedVariantValue;
+      }
+
+      const themedBaseValue =
+        resolveThemeText(
+          source?.[fieldName],
+          this);
+
+      if (themedBaseValue !== null && themedBaseValue !== '') {
+        return themedBaseValue;
+      }
+    }
+
+    return null;
+  }
+
+  #resolveVariantThemeText(
+      source: ButtonThemeDefinition | undefined,
+      fieldName: 'className' | 'icon' | 'text'
+    ): string | null
+  {
+    const variant =
+      this.variant.trim();
+
+    if (variant === '') {
+      return null;
+    }
+
+    const themedVariantValue =
+      resolveThemeText(
+        source?.variants?.[variant]?.[fieldName],
+        this);
+
+    if (themedVariantValue === null || themedVariantValue === '') {
+      return null;
+    }
+
+    return themedVariantValue;
+  }
+
+  #getButtonThemeSources(
+    ): Array<ButtonThemeDefinition | undefined>
+  {
+    return [
+      this.theme?.button,
+      this.#themeProvider?.theme?.button,
+      getDefaultTheme().button,
+    ];
   }
 
   #syncThemeProvider(): void {

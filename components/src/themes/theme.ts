@@ -44,11 +44,16 @@ export interface SelectThemeDefinition {
   select?: ThemeTemplateValue;
 }
 
-export interface ButtonThemeDefinition {
+export interface ButtonVariantThemeDefinition {
   className?: ThemeTextValue;
-  addIcon?: ThemeTextValue;
-  deleteIcon?: ThemeTextValue;
-  settingsIcon?: ThemeTextValue;
+  icon?: ThemeTextValue;
+  text?: ThemeTextValue;
+}
+
+export interface ButtonThemeDefinition
+  extends ButtonVariantThemeDefinition
+{
+  variants?: Record<string, ButtonVariantThemeDefinition | undefined>;
 }
 
 export interface ComponentsTheme {
@@ -68,12 +73,106 @@ export const THEME_PROVIDER_TAG_NAME =
 export const THEME_CHANGED_EVENT_NAME =
   'asljs-theme-changed';
 
+const PACKAGE_DEFAULT_THEME: ComponentsTheme =
+  { button:
+      { variants:
+          { add:
+              { icon: '&#xF26E;',
+                text: 'Add' },
+            delete:
+              { icon: '&#xF5DE;',
+                text: 'Delete' },
+            settings:
+              { icon: '&#xF3E5;',
+                text: 'Settings' } } } };
+
 let defaultTheme: ComponentsTheme = {};
+
+function mergeSection<
+    TSection extends object
+  >(
+    baseSection: TSection | undefined,
+    overrideSection: TSection | undefined
+  ): TSection | undefined
+{
+  if (baseSection === undefined
+      && overrideSection === undefined)
+  {
+    return undefined;
+  }
+
+  return {
+    ...(baseSection ?? {}),
+    ...(overrideSection ?? {}),
+  } as TSection;
+}
+
+function mergeButtonVariants(
+    baseVariants: Record<string, ButtonVariantThemeDefinition | undefined> | undefined,
+    overrideVariants: Record<string, ButtonVariantThemeDefinition | undefined> | undefined
+  ): Record<string, ButtonVariantThemeDefinition | undefined> | undefined
+{
+  if (baseVariants === undefined
+      && overrideVariants === undefined)
+  {
+    return undefined;
+  }
+
+  const variantNames =
+    new Set([
+      ...Object.keys(baseVariants ?? {}),
+      ...Object.keys(overrideVariants ?? {}),
+    ]);
+
+  const mergedVariants: Record<string, ButtonVariantThemeDefinition | undefined> = {};
+
+  for (const variantName of variantNames) {
+    mergedVariants[variantName] =
+      mergeSection(
+        baseVariants?.[variantName],
+        overrideVariants?.[variantName]);
+  }
+
+  return mergedVariants;
+}
+
+function mergeButtonThemeDefinition(
+    baseTheme: ButtonThemeDefinition | undefined,
+    overrideTheme: ButtonThemeDefinition | undefined
+  ): ButtonThemeDefinition | undefined
+{
+  if (baseTheme === undefined
+      && overrideTheme === undefined)
+  {
+    return undefined;
+  }
+
+  return {
+    ...(baseTheme ?? {}),
+    ...(overrideTheme ?? {}),
+    variants: mergeButtonVariants(
+      baseTheme?.variants,
+      overrideTheme?.variants),
+  };
+}
 
 export function getDefaultTheme(
   ): ComponentsTheme
 {
-  return defaultTheme;
+  return {
+    button: mergeButtonThemeDefinition(
+      PACKAGE_DEFAULT_THEME.button,
+      defaultTheme.button),
+    list: mergeSection(
+      PACKAGE_DEFAULT_THEME.list,
+      defaultTheme.list),
+    textInput: mergeSection(
+      PACKAGE_DEFAULT_THEME.textInput,
+      defaultTheme.textInput),
+    select: mergeSection(
+      PACKAGE_DEFAULT_THEME.select,
+      defaultTheme.select),
+  };
 }
 
 export function setDefaultTheme(

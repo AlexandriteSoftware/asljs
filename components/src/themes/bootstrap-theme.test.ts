@@ -16,11 +16,17 @@ test(
       theme.button?.className,
       'btn btn-primary');
     assert.equal(
-      theme.button?.addIcon,
+      theme.button?.variants?.add?.icon,
       '<i class="bi bi-plus"></i>');
     assert.equal(
-      theme.button?.deleteIcon,
+      theme.button?.variants?.delete?.icon,
       '<i class="bi bi-trash"></i>');
+    assert.equal(
+      theme.button?.variants?.settings?.icon,
+      '<i class="bi bi-gear"></i>');
+    assert.equal(
+      theme.button?.variants?.add?.text,
+      'Add');
     assert.match(
       theme.textInput?.template as string,
       /form-label/);

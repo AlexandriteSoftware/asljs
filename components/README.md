@@ -12,8 +12,7 @@ This package is component-oriented, but not every component has the same form.
 The current package includes:
 
 - shared base classes such as `AssistedInput`
-- custom elements such as `asljs-button`, `asljs-button-add`, and
-  `asljs-button-delete`
+- custom elements such as `asljs-button`
 - custom elements such as `asljs-keyboard`
 - custom elements such as `asljs-letterpad`
 - custom elements such as `asljs-numpad`
@@ -37,10 +36,8 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 - Import the package with `import 'asljs-components';` when you need the
   package custom elements registered.
 - The current custom elements are `asljs-ai-chat`, `asljs-button`,
-  `asljs-button-add`,
-  `asljs-button-delete`, `asljs-file`, `asljs-keyboard`,
-  `asljs-letterpad`, `asljs-list`, `asljs-numpad`, `asljs-text-input`, and
-  `asljs-theme-provider`.
+  `asljs-file`, `asljs-keyboard`, `asljs-letterpad`, `asljs-list`,
+  `asljs-numpad`, `asljs-text-input`, and `asljs-theme-provider`.
 - AI chat is exposed as the `asljs-ai-chat` custom element plus
   `createAiChatModel()` for explicit state ownership.
 - `AssistedInput` is the shared Lit base for the assisted on-screen input
@@ -83,8 +80,10 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
 The button components are:
 
 - `asljs-button` for a reusable icon-plus-text button
-- `asljs-button-add` with default Bootstrap icon markup and text for Add
-- `asljs-button-delete` with default Bootstrap icon markup and text for Delete
+
+Button variants are configured through `button.variant` and theme data rather
+than separate custom elements. The package default theme provides built-in
+`add`, `delete`, and `settings` variant defaults.
 
 ### Button Example
 
@@ -93,22 +92,26 @@ import 'asljs-components';
 
 const button =
   document.createElement('asljs-button') as HTMLElement & {
+    variant: string;
     icon: string;
     text: string;
     disabled: boolean;
     type: 'button' | 'submit' | 'reset';
   };
 
-button.icon = '<i class="bi bi-download"></i>';
-button.text = 'Download';
+button.variant = 'add';
 button.type = 'button';
 button.disabled = false;
 ```
 
-The specialized variants inherit the same API and provide defaults:
+Built-in package defaults are:
 
-- `asljs-button-add` -> `U+F26E` and `Add`
-- `asljs-button-delete` -> `U+F5DE` and `Delete`
+- `variant="add"` -> `U+F26E` and `Add`
+- `variant="delete"` -> `U+F5DE` and `Delete`
+- `variant="settings"` -> `U+F3E5` and `Settings`
+
+Explicit `icon`, `text`, and `buttonClassName` values still override the
+theme-provided variant defaults.
 
 Bootstrap-style icon markup should come from theme configuration rather than
 being hard-coded into the component.
@@ -123,8 +126,8 @@ setDefaultTheme(
   createBootstrapTheme());
 ```
 
-`createBootstrapTheme()` currently supplies the Bootstrap icon markup for
-`asljs-button-add` and `asljs-button-delete`.
+`createBootstrapTheme()` currently supplies Bootstrap icon markup and labels
+for the `add`, `delete`, and `settings` button variants.
 
 ## Assisted Input Base
 

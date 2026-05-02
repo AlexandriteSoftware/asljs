@@ -9,17 +9,8 @@ import type {
     Button,
   } from './button.js';
 import type {
-    ButtonAdd,
-  } from './button-add.js';
-import type {
-    ButtonDelete,
-  } from './button-delete.js';
-import type {
-    ButtonSettings,
-  } from './button-settings.js';
-import type {
     ThemeProvider,
-  } from '../themes/theme-provider.js';
+  } from './themes/theme-provider.js';
 
 let restoreDom: (() => void) | null = null;
 
@@ -52,14 +43,79 @@ test(
   });
 
 test(
-  'button-add: provides default add icon and text',
+  'button: resolves variant icon and text from theme provider',
+  async () => {
+    await ensureDom();
+    await import('./themes/theme-provider.js');
+    await import('./button.js');
+
+    const provider =
+      document.createElement('asljs-theme-provider') as ThemeProvider;
+    const element =
+      document.createElement('asljs-button') as Button;
+
+    provider.theme =
+      { button:
+          { variants:
+              { add:
+                  { icon: '<i class="bi bi-plus"></i>',
+                    text: 'Add' } } } };
+    element.variant = 'add';
+    provider.appendChild(element);
+    document.body.appendChild(provider);
+
+    await settle(element);
+
+    const icon =
+      element.querySelector('.icon i');
+    const text =
+      element.querySelector('.text');
+
+    assert.equal(icon?.className, 'bi bi-plus');
+    assert.equal(text?.textContent, 'Add');
+  });
+
+test(
+  'button: prefers explicit icon and text over variant theme defaults',
   async () => {
     await ensureDom();
     await import('./button.js');
-    await import('./button-add.js');
 
     const element =
-      document.createElement('asljs-button-add') as ButtonAdd;
+      document.createElement('asljs-button') as Button;
+
+    element.variant = 'add';
+    element.icon = '<i class="bi bi-star"></i>';
+    element.text = 'Save';
+    element.theme =
+      { button:
+          { variants:
+              { add:
+                  { icon: '<i class="bi bi-plus"></i>',
+                    text: 'Add' } } } };
+    document.body.appendChild(element);
+
+    await settle(element);
+
+    const icon =
+      element.querySelector('.icon i');
+    const text =
+      element.querySelector('.text');
+
+    assert.equal(icon?.className, 'bi bi-star');
+    assert.equal(text?.textContent, 'Save');
+  });
+
+test(
+  'button: provides default add icon and text for the add variant',
+  async () => {
+    await ensureDom();
+    await import('./button.js');
+
+    const element =
+      document.createElement('asljs-button') as Button;
+
+    element.variant = 'add';
 
     document.body.appendChild(element);
 
@@ -75,14 +131,15 @@ test(
   });
 
 test(
-  'button-delete: provides default delete icon and text',
+  'button: provides default delete icon and text for the delete variant',
   async () => {
     await ensureDom();
     await import('./button.js');
-    await import('./button-delete.js');
 
     const element =
-      document.createElement('asljs-button-delete') as ButtonDelete;
+      document.createElement('asljs-button') as Button;
+
+    element.variant = 'delete';
 
     document.body.appendChild(element);
 
@@ -98,14 +155,15 @@ test(
   });
 
 test(
-  'button-settings: provides default settings icon and text',
+  'button: provides default settings icon and text for the settings variant',
   async () => {
     await ensureDom();
     await import('./button.js');
-    await import('./button-settings.js');
 
     const element =
-      document.createElement('asljs-button-settings') as ButtonSettings;
+      document.createElement('asljs-button') as Button;
+
+    element.variant = 'settings';
 
     document.body.appendChild(element);
 
@@ -121,21 +179,23 @@ test(
   });
 
 test(
-  'button-add: resolves bootstrap icon from theme provider',
+  'button: resolves bootstrap icon from theme provider for the add variant',
   async () => {
     await ensureDom();
-    await import('../themes/theme-provider.js');
+    await import('./themes/theme-provider.js');
     await import('./button.js');
-    await import('./button-add.js');
 
     const provider =
       document.createElement('asljs-theme-provider') as ThemeProvider;
     const element =
-      document.createElement('asljs-button-add') as ButtonAdd;
+      document.createElement('asljs-button') as Button;
 
     provider.theme =
       { button:
-          { addIcon: '<i class="bi bi-plus"></i>' } };
+          { variants:
+              { add:
+                  { icon: '<i class="bi bi-plus"></i>' } } } };
+    element.variant = 'add';
     provider.appendChild(element);
     document.body.appendChild(provider);
 
@@ -148,21 +208,21 @@ test(
   });
 
 test(
-  'button-add: resolves bootstrap button class from theme provider',
+  'button: resolves bootstrap button class from theme provider for the add variant',
   async () => {
     await ensureDom();
-    await import('../themes/theme-provider.js');
+    await import('./themes/theme-provider.js');
     await import('./button.js');
-    await import('./button-add.js');
 
     const provider =
       document.createElement('asljs-theme-provider') as ThemeProvider;
     const element =
-      document.createElement('asljs-button-add') as ButtonAdd;
+      document.createElement('asljs-button') as Button;
 
     provider.theme =
       { button:
           { className: 'btn btn-primary' } };
+    element.variant = 'add';
     provider.appendChild(element);
     document.body.appendChild(provider);
 

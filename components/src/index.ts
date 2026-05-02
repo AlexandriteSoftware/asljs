@@ -27,19 +27,7 @@ export {
 
 export {
     Button,
-  } from './buttons/button.js';
-
-export {
-    ButtonAdd,
-  } from './buttons/button-add.js';
-
-export {
-    ButtonDelete,
-  } from './buttons/button-delete.js';
-
-export {
-    ButtonSettings,
-  } from './buttons/button-settings.js';
+  } from './button.js';
 
 export {
     FileView,
@@ -110,6 +98,7 @@ export {
     setDefaultTheme,
     THEME_CHANGED_EVENT_NAME,
     THEME_PROVIDER_TAG_NAME,
+  type ButtonVariantThemeDefinition,
     type ButtonThemeDefinition,
     type ComponentsTheme,
     type ListThemeDefinition,

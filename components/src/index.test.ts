@@ -6,9 +6,6 @@ import {
   AssistedInput,
   AiChat,
   Button,
-  ButtonAdd,
-  ButtonDelete,
-  ButtonSettings,
   createBootstrapTheme,
     createAiChatModel,
   FileView,
@@ -32,18 +29,6 @@ test(
   () => {
     assert.equal(
       typeof Button,
-      'function');
-
-    assert.equal(
-      typeof ButtonAdd,
-      'function');
-
-    assert.equal(
-      typeof ButtonDelete,
-      'function');
-
-    assert.equal(
-      typeof ButtonSettings,
       'function');
 
     assert.equal(

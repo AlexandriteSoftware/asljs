@@ -8,9 +8,16 @@ export function createBootstrapTheme(
   return {
     button:
       { className: 'btn btn-primary',
-        addIcon: '<i class="bi bi-plus"></i>',
-        deleteIcon: '<i class="bi bi-trash"></i>',
-        settingsIcon: '<i class="bi bi-gear"></i>' },
+        variants:
+          { add:
+              { icon: '<i class="bi bi-plus"></i>',
+                text: 'Add' },
+            delete:
+              { icon: '<i class="bi bi-trash"></i>',
+                text: 'Delete' },
+            settings:
+              { icon: '<i class="bi bi-gear"></i>',
+                text: 'Settings' } } },
     list:
       { container:
           '<div class="list-group" data-role="items"></div>' },

@@ -294,14 +294,22 @@
 					},
 				},
 				{
-					name: 'ButtonAdd',
-					description: 'Add button using the active theme icon fallback.',
-					create: () => document.createElement('asljs-button-add'),
+					name: 'Button (add variant)',
+					description: 'Button using the add variant defaults from the active theme.',
+					create: () => {
+						const button = document.createElement('asljs-button');
+						button.variant = 'add';
+						return button;
+					},
 				},
 				{
-					name: 'ButtonDelete',
-					description: 'Delete button using the active theme icon fallback.',
-					create: () => document.createElement('asljs-button-delete'),
+					name: 'Button (delete variant)',
+					description: 'Button using the delete variant defaults from the active theme.',
+					create: () => {
+						const button = document.createElement('asljs-button');
+						button.variant = 'delete';
+						return button;
+					},
 				},
 				{
 					name: 'List',
