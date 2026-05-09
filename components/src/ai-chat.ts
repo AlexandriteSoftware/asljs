@@ -385,6 +385,87 @@ export class AiChat
   @property({ attribute: false })
     accessor options: AiChatOptions | null = null;
 
+  get messages(): AiChatMessage[] {
+    return this.model.messages;
+  }
+  set messages(value: AiChatMessage[]) {
+    this.#setModelProperty(
+      'messages',
+      value);
+  }
+
+  get messageHistory(): AiChatResponsesInputItem[] {
+    return this.model.messageHistory;
+  }
+  set messageHistory(value: AiChatResponsesInputItem[]) {
+    this.#setModelProperty(
+      'messageHistory',
+      value);
+  }
+
+  get promptDraft(): string {
+    return this.model.promptDraft;
+  }
+  set promptDraft(value: string) {
+    this.#setModelProperty(
+      'promptDraft',
+      value);
+  }
+
+  get messagesScrollTop(): number {
+    return this.model.messagesScrollTop;
+  }
+  set messagesScrollTop(value: number) {
+    this.#setModelProperty(
+      'messagesScrollTop',
+      value);
+  }
+
+  get hasMessagesScrollTop(): boolean {
+    return this.model.hasMessagesScrollTop;
+  }
+  set hasMessagesScrollTop(value: boolean) {
+    this.#setModelProperty(
+      'hasMessagesScrollTop',
+      value);
+  }
+
+  get missingKeyMessageShown(): boolean {
+    return this.model.missingKeyMessageShown;
+  }
+  set missingKeyMessageShown(value: boolean) {
+    this.#setModelProperty(
+      'missingKeyMessageShown',
+      value);
+  }
+
+  get choicePrompt(): AiChatChoicePrompt | null {
+    return this.model.choicePrompt;
+  }
+  set choicePrompt(value: AiChatChoicePrompt | null) {
+    this.#setModelProperty(
+      'choicePrompt',
+      value);
+  }
+
+  get progress(): AiChatProgressState | null {
+    return this.model.progress;
+  }
+  set progress(value: AiChatProgressState | null) {
+    this.#setModelProperty(
+      'progress',
+      value);
+  }
+
+  get sending(): boolean {
+    return this.model.sending;
+  }
+  set sending(value: boolean) {
+    this.#setModelProperty(
+      'sending',
+      value);
+  }
+
   override createRenderRoot(): this {
     return this;
   }
@@ -867,6 +948,22 @@ export class AiChat
       model.clearProgress();
       this.#persistState();
     }
+  }
+
+  #setModelProperty<K extends keyof AiChatModel>(
+      propertyName: K,
+      value: AiChatModel[K]
+    ): void
+  {
+    const model =
+      this.model;
+
+    if (Object.is(model[propertyName], value)) {
+      return;
+    }
+
+    model[propertyName] = value;
+    this.requestUpdate();
   }
 }
 

@@ -6,6 +6,7 @@ import {
     JSDOM,
   } from 'jsdom';
 import {
+    AiChatModelDefinition,
     AllComponentModelDefinitions,
     ButtonModelDefinition,
     TextInputModelDefinition,
@@ -41,6 +42,36 @@ test(
         'TextInputModelDefinition',
         'ThemeProviderModelDefinition',
       ]);
+  });
+
+test(
+  'component-model: ai-chat definition exposes direct custom-element state properties',
+  () => {
+    const propertyByName =
+      new Map(
+        AiChatModelDefinition.properties.map(
+          property => [ property.name,
+                        property ]));
+
+    assert.deepEqual(
+      propertyByName.get('messages'),
+      { name: 'messages',
+        type: 'array',
+        title: 'Messages',
+        description: 'Rendered chat messages.' });
+    assert.deepEqual(
+      propertyByName.get('messageHistory'),
+      { name: 'messageHistory',
+        type: 'array',
+        title: 'Message history',
+        description: 'Recent request/response history used to build prompts.' });
+    assert.deepEqual(
+      propertyByName.get('sending'),
+      { name: 'sending',
+        type: 'boolean',
+        title: 'Sending',
+        description: 'Whether a request is currently in-flight.',
+        editable: false });
   });
 
 test(

@@ -26,3 +26,10 @@
 - Non-primitive or read-only fields are shown as read-only values and are not
 	mutated by the generated editor.
 
+## AI chat state surface
+
+- `asljs-ai-chat` exposes its mutable chat state directly on the custom element
+	properties (`messages`, `messageHistory`, `promptDraft`, and related state
+	fields).
+- Collection state should be configured on the custom element itself instead of
+	requiring a separate external model object.
