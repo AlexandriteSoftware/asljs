@@ -32,6 +32,8 @@ export {
   AiChat,
     createAiChatModel,
     serializeAiChatModelState,
+    OpenAiTransport,
+    type AiChatTransport,
     type AiChatBuildRequestArgs,
     type AiChatAfterResponseContext,
     type AiChatBeforeSendContext,
@@ -51,6 +53,11 @@ export {
     type AiChatToolDefinition,
     type AiChatToolStepLimitContext,
   } from './ai-chat.js';
+
+export {
+    AiChatKeyPrompt,
+    type AiChatKeySubmitDetail,
+  } from './ai-chat-key.js';
 
 export {
     Button,

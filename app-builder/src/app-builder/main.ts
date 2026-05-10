@@ -1,9 +1,9 @@
 import { state } from './state.js';
 import {
   createAiChatModel,
-  type AiChatAfterResponseContext,
-  type AiChatBeforeSendContext,
+  OpenAiTransport,
   type AiChatModel,
+  type AiChatKeySubmitDetail,
 } from 'asljs-components';
 import {
   listApps,
@@ -151,8 +151,14 @@ function now(): string {
 type AppBuilderAiChatElement =
   HTMLElement
   & {
-    model: AiChatModel;
     options: Record<string, unknown> | null;
+  };
+
+type AppBuilderAiChatKeyElement =
+  HTMLElement
+  & {
+    label: string;
+    submitLabel: string;
   };
 
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
@@ -771,120 +777,103 @@ async function mountAiChatForCurrentApp(): Promise<void> {
 
   currentAiChatModel = model;
 
-  model.on(
-    'initialize',
-    () => {
-      if (model.messages.read().length === 0) {
-        model.appendMessage(
-          'assistant',
-          getConversationKickoffMessage(
-            state.files.map(file => file.name)));
-      }
+  const buildChatOptions =
+    (transport: OpenAiTransport | null): Record<string, unknown> => (
+      { provider:
+          createAppBuilderAiChatSecretsAndSettingsProvider(
+            { appId,
+              readChatModel: getChatModel,
+              readInitialToolStepLimit: getMaxToolSteps }),
+        ...(transport !== null
+          ? { transport }
+          : {}),
+        stateStore:
+          createSessionStorageAiChatStateStore(appId),
+        getRequestContext: () => ({
+          currentAppId: state.currentAppId,
+        }),
+        buildRequestInput: ({ model: chatModel }: { model: AiChatModel; }) => {
+          const transcript =
+            buildConversationPrompt(
+              chatModel.messages
+                .read()
+                .filter(
+                  isUserOrAssistantMessage)
+                .map(
+                  (message: { role: 'user' | 'assistant'; content: string; }) =>
+                    ({ role: message.role,
+                       text: message.content })));
 
-      syncStateChatMessagesFromAiChatModel();
-    });
+          return [
+            { role: 'system',
+              content: CHAT_SYSTEM_PROMPT },
+            { role: 'user',
+              content: transcript },
+          ];
+        },
+        getTools: () => OPENAI_TOOLS,
+        executeTool: async (
+            name: string,
+            argumentsJson: string
+          ): Promise<string> =>
+          executeToolCall(
+            { type: 'function_call',
+              name,
+              arguments: argumentsJson,
+              call_id: `app-chat:${name}` },
+            appRuntimeTools),
+      });
 
-  model.on(
-    'beforeSend',
-    (context: AiChatBeforeSendContext) => {
-      if (state.currentAppId === null) {
-        context.cancel('Please create or open an app first.');
-        return;
-      }
-
-      clearChoicePrompt();
-    });
-
-  model.on(
-    'afterResponse',
-    async (_context: AiChatAfterResponseContext) => {
-      syncStateChatMessagesFromAiChatModel();
-
-      const app =
-        state.apps.find(item => item.id === state.currentAppId);
-
-      if (app !== undefined) {
-        const updated: AppRecord = {
-          ...app,
-          updatedAt: now(),
-        };
-
-        await saveApp(updated);
-        state.apps =
-          state.apps.map(item => (
-            item.id === app.id
-              ? updated
-              : item));
-      }
-
-      handleRun();
-    });
-
-  model.on(
-    'toolStepLimit',
-    (context: { deny: () => void; }) => {
-      if (getMaxToolSteps() < 1) {
-        context.deny();
-      }
-    });
-
-  model.on(
-    'set:sending',
-    payload => {
-      const setPayload =
-        payload as { value?: unknown; };
-
-      setGenerating(Boolean(setPayload.value));
-    });
+  const apiKey =
+    (await loadAppOpenAiApiKey(appId)).trim();
 
   const component =
     document.createElement('asljs-ai-chat') as AppBuilderAiChatElement;
 
-  component.model = model;
-  component.options =
-    { provider:
-        createAppBuilderAiChatSecretsAndSettingsProvider(
-          { appId,
-            readChatModel: getChatModel,
-            readInitialToolStepLimit: getMaxToolSteps }),
-      stateStore:
-        createSessionStorageAiChatStateStore(appId),
-      getRequestContext: () => ({
-        currentAppId: state.currentAppId,
-      }),
-      buildRequestInput: ({ model: chatModel }: { model: AiChatModel; }) => {
-        const transcript =
-          buildConversationPrompt(
-            chatModel.messages
-              .read()
-              .filter(
-                isUserOrAssistantMessage)
-              .map(
-                (message: { role: 'user' | 'assistant'; content: string; }) =>
-                  ({ role: message.role,
-                     text: message.content })));
+  if (apiKey !== '') {
+    component.options = buildChatOptions(new OpenAiTransport(apiKey));
+    elChatRoot.replaceChildren(component);
+  } else {
+    component.options = buildChatOptions(null);
 
-        return [
-          { role: 'system',
-            content: CHAT_SYSTEM_PROMPT },
-          { role: 'user',
-            content: transcript },
-        ];
-      },
-      getTools: () => OPENAI_TOOLS,
-      executeTool: async (
-          name: string,
-          argumentsJson: string
-        ): Promise<string> =>
-        executeToolCall(
-          { type: 'function_call',
-            name,
-            arguments: argumentsJson,
-            call_id: `app-chat:${name}` },
-          appRuntimeTools),
-    };
+    const keyPrompt =
+      document.createElement('asljs-ai-chat-key') as AppBuilderAiChatKeyElement;
 
-  elChatRoot.replaceChildren(component);
+    keyPrompt.label = 'Enter your OpenAI API key to start chatting';
+    keyPrompt.submitLabel = 'Start chatting';
+
+    keyPrompt.addEventListener(
+      'key-submit',
+      (event: Event) => {
+        const detail =
+          (event as CustomEvent<AiChatKeySubmitDetail>).detail;
+        const submittedKey =
+          detail.key.trim();
+
+        if (submittedKey === '') {
+          return;
+        }
+
+        void saveAppOpenAiApiKey(appId, submittedKey)
+          .then(() => {
+            currentAppOpenAiApiKey = submittedKey;
+            component.options =
+              buildChatOptions(new OpenAiTransport(submittedKey));
+            keyPrompt.remove();
+          });
+      });
+
+    const container =
+      document.createElement('div');
+
+    container.style.cssText =
+      'display:flex; flex-direction:column; height:100%; overflow:hidden;';
+    container.appendChild(keyPrompt);
+    container.appendChild(component);
+
+    elChatRoot.replaceChildren(container);
+  }
+
   syncStateChatMessagesFromAiChatModel();
 }
 
@@ -1609,10 +1598,15 @@ async function saveSettingsFromModal(
   saveSettings(settings);
 
   if (state.currentAppId !== null) {
+    const prevKey = currentAppOpenAiApiKey;
     currentAppOpenAiApiKey = values.apiKey;
     await saveAppOpenAiApiKey(
       state.currentAppId,
       currentAppOpenAiApiKey);
+
+    if (prevKey !== currentAppOpenAiApiKey) {
+      await mountAiChatForCurrentApp();
+    }
   }
 
   await refreshAvailableModels();

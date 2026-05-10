@@ -235,12 +235,52 @@ type ButtonElement =
     type: 'button' | 'submit' | 'reset';
   };
 
+export interface AiChatTransport {
+  postRequest: (
+      body: Record<string, unknown>
+    ) => Promise<Record<string, unknown>>;
+}
+
+export class OpenAiTransport
+  implements AiChatTransport
+{
+  readonly #apiKey: string;
+
+  constructor(apiKey: string) {
+    this.#apiKey = apiKey;
+  }
+
+  async postRequest(
+      body: Record<string, unknown>
+    ): Promise<Record<string, unknown>>
+  {
+    const response =
+      await fetch(
+        'https://api.openai.com/v1/responses',
+        { method: 'POST',
+          headers:
+            { 'Content-Type': 'application/json',
+              Authorization: `Bearer ${this.#apiKey}` },
+          body: JSON.stringify(body) });
+
+    if (!response.ok) {
+      const text =
+        await response.text();
+
+      throw new Error(`OpenAI request failed: ${response.status} ${text}`);
+    }
+
+    return await response.json() as Record<string, unknown>;
+  }
+}
+
 export interface AiChatOptions<
     TRequestContext = unknown,
     TToolsContext = unknown,
   >
 {
   provider: AiChatSecretsAndSettingsProvider;
+  transport?: AiChatTransport;
   stateStore?: AiChatStateStore;
   buildRequestInput: (
       args: AiChatBuildRequestArgs<TRequestContext>
@@ -924,20 +964,27 @@ export class AiChat
       return;
     }
 
-    const apiKey =
-      (await options.provider.getOpenAiApiKey()).trim();
+    let transport =
+      options.transport ?? null;
 
-    if (apiKey === '') {
-      if (!model.missingKeyMessageShown) {
-        model.appendMessage(
-          'system',
-          options.missingKeyMessage
-          ?? defaultMissingCredentialsMessage);
-        model.missingKeyMessageShown = true;
-        this.#persistState();
+    if (transport === null) {
+      const apiKey =
+        (await options.provider.getOpenAiApiKey()).trim();
+
+      if (apiKey === '') {
+        if (!model.missingKeyMessageShown) {
+          model.appendMessage(
+            'system',
+            options.missingKeyMessage
+            ?? defaultMissingCredentialsMessage);
+          model.missingKeyMessageShown = true;
+          this.#persistState();
+        }
+
+        return;
       }
 
-      return;
+      transport = new OpenAiTransport(apiKey);
     }
 
     const chatModel =
@@ -950,8 +997,7 @@ export class AiChat
         model,
         prompt,
         requestContext,
-        chatModel,
-        apiKey);
+        chatModel);
 
     await model.emitAsync(
       'beforeSend',
@@ -1007,7 +1053,7 @@ export class AiChat
             chatModel });
       const result =
         await runWithTools(
-          apiKey,
+          transport,
           chatModel,
           requestInput,
           options.getTools?.() ?? [ ],
@@ -1549,7 +1595,7 @@ function createBeforeSendContext<TRequestContext>(
     prompt: string,
     requestContext: TRequestContext,
     chatModel: string,
-    apiKey: string
+    apiKey: string = ''
   ): AiChatBeforeSendContext<TRequestContext>
 {
   const context =
@@ -1575,7 +1621,7 @@ function createBeforeSendContext<TRequestContext>(
 }
 
 async function runWithTools<TToolsContext>(
-    apiKey: string,
+    transport: AiChatTransport,
     chatModel: string,
     input: AiChatResponsesInputItem[],
     tools: AiChatToolDefinition[],
@@ -1604,9 +1650,7 @@ async function runWithTools<TToolsContext>(
   }
 
   let response =
-    await postResponse(
-      apiKey,
-      requestBody);
+    await transport.postRequest(requestBody);
 
   let stepLimit =
     await readInitialToolStepLimit(provider);
@@ -1693,8 +1737,7 @@ async function runWithTools<TToolsContext>(
       `Step ${stepNumber}: submitting ${functionOutputs.length} tool result(s)...`);
 
     response =
-      await postResponse(
-        apiKey,
+      await transport.postRequest(
         { model: chatModel,
           previous_response_id: response.id,
           input: functionOutputs,
@@ -1778,30 +1821,6 @@ function isFunctionCallResponseItem(
   }
 
   return (value as { type?: unknown }).type === 'function_call';
-}
-
-async function postResponse(
-    apiKey: string,
-    body: Record<string, unknown>
-  ): Promise<Record<string, unknown>>
-{
-  const response =
-    await fetch(
-      'https://api.openai.com/v1/responses',
-      { method: 'POST',
-        headers:
-          { 'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify(body) });
-
-  if (!response.ok) {
-    const text =
-      await response.text();
-
-    throw new Error(`OpenAI request failed: ${response.status} ${text}`);
-  }
-
-  return await response.json() as Record<string, unknown>;
 }
 
 function renderAssistantContent(
