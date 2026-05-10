@@ -1341,7 +1341,7 @@ function normalizeSerializableState(
     lastResponseId:
       typeof source.lastResponseId === 'string'
       || source.lastResponseId === null
-        ? source.lastResponseId as string | null
+        ? source.lastResponseId
         : undefined,
     choicePrompt:
       source.choicePrompt === null
