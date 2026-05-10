@@ -32,7 +32,10 @@ test(
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
           missingKeyMessageShown: false,
-          lastResponseId: 'resp_1' });
+          lastResponseId: 'resp_1',
+          choicePrompt: null,
+          progress: null,
+          sending: false });
 
       assert.deepEqual(
         await store.load(),
@@ -43,7 +46,10 @@ test(
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
           missingKeyMessageShown: false,
-          lastResponseId: 'resp_1' });
+          lastResponseId: 'resp_1',
+          choicePrompt: null,
+          progress: null,
+          sending: false });
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
     }
