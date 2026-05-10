@@ -1890,8 +1890,12 @@ elMobileTabFiles.addEventListener('click', () => {
   setMobileWorkspaceTab('files');
 });
 elMobileTabRun.addEventListener('click', () => {
+  const alreadyActive =
+    elPanels.classList.contains('mobile-tab-run');
   setMobileWorkspaceTab('run');
-  handleRun();
+  if (!alreadyActive) {
+    handleRun();
+  }
 });
 elChatModelSelect.addEventListener('change', saveChatModelSelection);
 elGenerationModelSelect.addEventListener('change', saveGenerationModelSelection);
