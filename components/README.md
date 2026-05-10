@@ -707,8 +707,9 @@ Notes:
   integration.
 - If `options.stateStore` is not provided, the component uses sessionStorage by
   default so refresh keeps chat history.
-- Persisted state includes the last OpenAI response id to reconnect the chat
-  response flow after refresh when possible.
+- Persisted state includes the last OpenAI response id plus operational state
+  (`choicePrompt`, `progress`, and `sending`) so refresh restores in-progress
+  chat context.
 
 ### File
 

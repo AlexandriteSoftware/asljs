@@ -5,18 +5,20 @@ import assert
 import {
     JSDOM,
   } from 'jsdom';
-import {
-    type AiChatMessages,
-    createAiChatModel,
-    serializeAiChatModelState,
-  } from './ai-chat.js';
+import type * as AiChatModule
+  from './ai-chat.js';
 
 let domRestore: (() => void) | null = null;
 let modulesLoaded = false;
+let aiChatModulePromise:
+  Promise<typeof AiChatModule> | null = null;
 
 test(
   'createAiChatModel initializes the persisted chat state shape',
-  () => {
+  async () => {
+    const {
+      createAiChatModel,
+    } = await loadAiChatModule();
     const model =
       createAiChatModel();
 
@@ -38,17 +40,30 @@ test(
 
 test(
   'createAiChatModel preserves persisted fields when restoring state',
-  () => {
+  async () => {
+    const {
+      createAiChatModel,
+    } = await loadAiChatModule();
     const model =
       createAiChatModel(
         { messages:
             [ { role: 'assistant',
                 content: 'Persisted answer' } ],
-          promptDraft: 'next prompt',
-          messagesScrollTop: 42,
-          hasMessagesScrollTop: true,
-          missingKeyMessageShown: true,
-          lastResponseId: 'resp_1' });
+           promptDraft: 'next prompt',
+           messagesScrollTop: 42,
+           hasMessagesScrollTop: true,
+           missingKeyMessageShown: true,
+           lastResponseId: 'resp_1',
+           choicePrompt:
+             { message: 'Pick one',
+               options:
+                 [ { value: 'a',
+                     label: 'A' } ],
+               behavior: 'send' },
+           progress:
+             { message: 'Waiting...',
+               visible: true },
+           sending: true });
 
     assert.equal(model.messages.read().length, 1);
     assert.equal(model.promptDraft, 'next prompt');
@@ -56,11 +71,26 @@ test(
     assert.equal(model.hasMessagesScrollTop, true);
     assert.equal(model.missingKeyMessageShown, true);
     assert.equal(model.lastResponseId, 'resp_1');
+    assert.deepEqual(
+      model.choicePrompt,
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] });
+    assert.deepEqual(
+      model.progress,
+      { message: 'Waiting...',
+        visible: true });
+    assert.equal(model.sending, true);
   });
 
 test(
   'createAiChatModel exposes model-level choice and progress helpers',
   async () => {
+    const {
+      createAiChatModel,
+      serializeAiChatModelState,
+    } = await loadAiChatModule();
     const model =
       createAiChatModel();
 
@@ -89,7 +119,48 @@ test(
         messagesScrollTop: 0,
         hasMessagesScrollTop: false,
         missingKeyMessageShown: false,
-        lastResponseId: null });
+        lastResponseId: null,
+        choicePrompt: null,
+        progress:
+          { message: 'Working',
+            visible: true },
+        sending: false });
+  });
+
+test(
+  'serializeAiChatModelState stores operational state including choice behavior',
+  async () => {
+    const {
+      createAiChatModel,
+      serializeAiChatModelState,
+    } = await loadAiChatModule();
+    const model =
+      createAiChatModel();
+
+    await model.presentChoices(
+      'Pick one',
+      [ 'a', 'b' ],
+      'send');
+    model.setProgress('Working');
+    model.sending = true;
+
+    const state =
+      serializeAiChatModelState(model);
+
+    assert.deepEqual(
+      state.choicePrompt,
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'a' },
+            { value: 'b',
+              label: 'b' } ],
+        behavior: 'send' });
+    assert.deepEqual(
+      state.progress,
+      { message: 'Working',
+        visible: true });
+    assert.equal(state.sending, true);
   });
 
 test(
@@ -122,6 +193,9 @@ test(
   async () => {
     await ensureDom();
     await loadModules();
+    const {
+      createAiChatModel,
+    } = await loadAiChatModule();
 
     const chat =
       document.createElement('asljs-ai-chat') as AiChatElement;
@@ -159,6 +233,15 @@ test(
     first.messages.save(
       'assistant',
       'Persisted session message');
+    first.choicePrompt =
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] };
+    first.progress =
+      { message: 'Waiting...',
+        visible: true };
+    first.sending = true;
     await Promise.resolve();
     await Promise.resolve();
 
@@ -174,9 +257,22 @@ test(
     assert.equal(
       restored.messages.read()[0].content,
       'Persisted session message');
+    assert.deepEqual(
+      restored.choicePrompt,
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] });
+    assert.deepEqual(
+      restored.progress,
+      { message: 'Waiting...',
+        visible: true });
+    assert.equal(restored.sending, true);
   });
 
 async function loadModules(): Promise<void> {
+  await ensureDom();
+
   if (modulesLoaded) {
     return;
   }
@@ -184,14 +280,29 @@ async function loadModules(): Promise<void> {
   await import('./button.js');
   await import('./text-input.js');
   await import('./select.js');
-  await import('./ai-chat.js');
+  await loadAiChatModule();
   modulesLoaded = true;
+}
+
+async function loadAiChatModule(
+  ): Promise<typeof AiChatModule>
+{
+  await ensureDom();
+
+  if (aiChatModulePromise === null) {
+    aiChatModulePromise =
+      import('./ai-chat.js');
+  }
+
+  return aiChatModulePromise;
 }
 
 async function ensureDom(): Promise<void> {
   if (domRestore === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>',
+        { url: 'https://asljs.test/' });
 
     const previous =
       { window: globalThis.window,
@@ -284,6 +395,21 @@ type LitElementLike =
 type AiChatElement =
   LitElementLike
   & {
-    messages: AiChatMessages;
+    messages: {
+      read: () => ReadonlyArray<{ role: string; content: string; }>;
+      save: (
+          role: 'user' | 'assistant' | 'system',
+          content: string
+        ) => void;
+    };
     promptDraft: string;
+    choicePrompt: {
+      message: string;
+      options: Array<{ value: string; label: string; }>;
+    } | null;
+    progress: {
+      message: string;
+      visible: boolean;
+    } | null;
+    sending: boolean;
   };

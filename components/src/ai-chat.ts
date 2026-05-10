@@ -75,6 +75,12 @@ export interface AiChatProgressState {
   visible: boolean;
 }
 
+export interface AiChatSerializableChoicePrompt {
+  message: string;
+  options: AiChatChoiceOption[];
+  behavior: ChoiceBehavior;
+}
+
 export interface AiChatSerializableState {
   messages: AiChatMessage[];
   promptDraft: string;
@@ -82,6 +88,9 @@ export interface AiChatSerializableState {
   hasMessagesScrollTop: boolean;
   missingKeyMessageShown: boolean;
   lastResponseId: string | null;
+  choicePrompt: AiChatSerializableChoicePrompt | null;
+  progress: AiChatProgressState | null;
+  sending: boolean;
 }
 
 export interface AiChatSecretsAndSettingsProvider {
@@ -179,7 +188,7 @@ type AiChatModelEvents =
   };
 
 export type AiChatModel =
-  Omit<AiChatSerializableState, 'messages'>
+  Omit<AiChatSerializableState, 'messages' | 'choicePrompt' | 'progress' | 'sending'>
   & {
     messages: AiChatMessages;
     choicePrompt: AiChatChoicePrompt | null;
@@ -253,6 +262,12 @@ export function createAiChatModel(
     initial: Partial<AiChatSerializableState> = { }
   ): AiChatModel
 {
+  const initialChoicePrompt =
+    normalizeSerializableChoicePrompt(
+      initial.choicePrompt);
+  const initialProgress =
+    normalizeSerializableProgressState(
+      initial.progress);
   const messages =
     createAiChatMessages(
       initial.messages);
@@ -264,13 +279,27 @@ export function createAiChatModel(
         hasMessagesScrollTop: initial.hasMessagesScrollTop ?? false,
         missingKeyMessageShown: initial.missingKeyMessageShown ?? false,
         lastResponseId: initial.lastResponseId ?? null,
-        choicePrompt: null,
-        progress: null,
-        sending: false }) as unknown as AiChatModel;
+        choicePrompt:
+          initialChoicePrompt === undefined
+            ? null
+            : { message: initialChoicePrompt.message,
+                options:
+                  initialChoicePrompt.options.map(
+                    option =>
+                      ({ value: option.value,
+                         label: option.label })) },
+        progress:
+          initialProgress === undefined
+            ? null
+            : { message: initialProgress.message,
+                visible: initialProgress.visible },
+        sending: initial.sending === true }) as unknown as AiChatModel;
 
   internalChoiceStateByModel.set(
     model,
-    { behavior: 'resolve',
+    { behavior:
+        initialChoicePrompt?.behavior
+        ?? 'resolve',
       resolver: null });
 
   Object.defineProperties(
@@ -406,6 +435,11 @@ export function serializeAiChatModelState(
     model: AiChatModel
   ): AiChatSerializableState
 {
+  const choicePrompt =
+    model.choicePrompt;
+  const progress =
+    model.progress;
+
   return {
     messages:
       model.messages.read().map(
@@ -417,6 +451,23 @@ export function serializeAiChatModelState(
     hasMessagesScrollTop: model.hasMessagesScrollTop,
     missingKeyMessageShown: model.missingKeyMessageShown,
     lastResponseId: model.lastResponseId,
+    choicePrompt:
+      choicePrompt === null
+        ? null
+        : { message: choicePrompt.message,
+            options:
+              choicePrompt.options.map(
+                option =>
+                  ({ value: option.value,
+                     label: option.label })),
+            behavior:
+              getInternalChoiceState(model).behavior },
+    progress:
+      progress === null
+        ? null
+        : { message: progress.message,
+            visible: progress.visible },
+    sending: model.sending,
   };
 }
 
@@ -1081,7 +1132,7 @@ function applyLoadedState(
   ): void
 {
   if (Array.isArray(loaded.messages)) {
-    model.messages.list.splice(
+    (model.messages.list as ObservableArray<AiChatMessage>).splice(
       0,
       model.messages.list.length,
       ...loaded.messages.map(
@@ -1110,6 +1161,37 @@ function applyLoadedState(
     model.lastResponseId = loaded.lastResponseId;
   } else if (loaded.lastResponseId === null) {
     model.lastResponseId = null;
+  }
+
+  if (loaded.choicePrompt === null) {
+    dismissChoices(
+      model,
+      null);
+  } else if (loaded.choicePrompt !== undefined) {
+    const internalState =
+      getInternalChoiceState(model);
+
+    internalState.resolver = null;
+    internalState.behavior = loaded.choicePrompt.behavior;
+    model.choicePrompt =
+      { message: loaded.choicePrompt.message,
+        options:
+          loaded.choicePrompt.options.map(
+            option =>
+              ({ value: option.value,
+                 label: option.label })) };
+  }
+
+  if (loaded.progress === null) {
+    model.progress = null;
+  } else if (loaded.progress !== undefined) {
+    model.progress =
+      { message: loaded.progress.message,
+        visible: loaded.progress.visible };
+  }
+
+  if (typeof loaded.sending === 'boolean') {
+    model.sending = loaded.sending;
   }
 }
 
@@ -1261,6 +1343,92 @@ function normalizeSerializableState(
       || source.lastResponseId === null
         ? source.lastResponseId as string | null
         : undefined,
+    choicePrompt:
+      source.choicePrompt === null
+        ? null
+        : normalizeSerializableChoicePrompt(source.choicePrompt),
+    progress:
+      source.progress === null
+        ? null
+        : normalizeSerializableProgressState(source.progress),
+    sending:
+      typeof source.sending === 'boolean'
+        ? source.sending
+        : undefined,
+  };
+}
+
+function normalizeSerializableChoicePrompt(
+    value: unknown
+  ): AiChatSerializableChoicePrompt | undefined
+{
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  if (typeof source.message !== 'string'
+      || !Array.isArray(source.options))
+  {
+    return undefined;
+  }
+
+  const behavior =
+    source.behavior === 'resolve'
+    || source.behavior === 'send'
+      ? source.behavior
+      : undefined;
+
+  if (behavior === undefined) {
+    return undefined;
+  }
+
+  const options =
+    source.options
+      .filter(
+        option =>
+          !!option
+          && typeof option === 'object'
+          && typeof (option as { value?: unknown; }).value === 'string'
+          && typeof (option as { label?: unknown; }).label === 'string')
+      .map(
+        option =>
+          ({ value: (option as { value: string; }).value,
+             label: (option as { label: string; }).label }))
+      .filter(
+        option =>
+          option.value.trim() !== ''
+          && option.label.trim() !== '');
+
+  return {
+    message: source.message,
+    options,
+    behavior,
+  };
+}
+
+function normalizeSerializableProgressState(
+    value: unknown
+  ): AiChatProgressState | undefined
+{
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  if (typeof source.message !== 'string'
+      || typeof source.visible !== 'boolean')
+  {
+    return undefined;
+  }
+
+  return {
+    message: source.message,
+    visible: source.visible,
   };
 }
 
@@ -1323,11 +1491,13 @@ function bindModelListeners(
       'set:progress',
       () => {
         renderProgress();
+        persistState();
       }),
     model.on(
       'set:choicePrompt',
       () => {
         renderChoices();
+        persistState();
       }),
     model.on(
       'set:promptDraft',
@@ -1358,6 +1528,7 @@ function bindModelListeners(
       'set:sending',
       () => {
         syncSendingUi();
+        persistState();
       }));
 
   return {

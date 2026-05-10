@@ -34,7 +34,8 @@
 	collection for rendering and data-binding.
 - If `options.stateStore` is not provided, `asljs-ai-chat` persists state in
 	sessionStorage using a key derived from page path and element id.
-- Persisted chat state includes `lastResponseId` so the OpenAI responses flow
-	can reconnect after refresh when possible.
+- Persisted chat state includes `lastResponseId` plus operational UI state
+	(`choicePrompt`, `progress`, and `sending`) so refresh can restore in-progress
+	chat context.
 - Collection state should be configured on the custom element itself instead of
 	requiring a separate external model object.
