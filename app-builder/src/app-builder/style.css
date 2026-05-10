@@ -78,6 +78,10 @@ asljs-file {
   min-height: 0;
 }
 
+.mobile-tab-bar {
+  display: none;
+}
+
 .chat-root .chat-key-container {
   display: flex;
   flex-direction: column;
@@ -220,32 +224,44 @@ asljs-file {
 
 @media (max-width: 991.98px) {
   body {
-    overflow: auto;
+    overflow: hidden;
   }
 
   #workspace,
   #app-builder-root,
   #app-workspace {
-    height: auto;
-    min-height: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
   }
 
   .app-panels {
-    flex-direction: column;
-    overflow: auto;
+    overflow: hidden;
   }
 
   .app-panels > .panel {
-    min-height: 22rem;
+    display: none !important;
+    min-height: 0;
     border-right: 0 !important;
-    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+    border-bottom: 0 !important;
   }
 
-  .app-panels > .panel:last-child {
-    border-bottom: 0;
+  .app-panels.mobile-tab-chat #panel-chat,
+  .app-panels.mobile-tab-files #panel-editor,
+  .app-panels.mobile-tab-run #panel-preview {
+    display: flex !important;
   }
 
-  .app-panels.files-collapsed #panel-chat {
-    flex: 1 1 auto !important;
+  #top-bar {
+    flex: 0 0 auto;
+  }
+
+  #panels {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  #mobile-tab-bar {
+    display: flex;
+    flex: 0 0 auto;
   }
 }

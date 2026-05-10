@@ -103,6 +103,11 @@ export function renderWorkspace(): string {
             ></iframe>
           </section>
         </div>
+        <nav id="mobile-tab-bar" class="mobile-tab-bar border-top bg-body p-2 gap-2" aria-label="Workspace tabs">
+          <asljs-button id="mobile-tab-chat" title="Chat tab" aria-label="Chat"></asljs-button>
+          <asljs-button id="mobile-tab-files" title="Files tab" aria-label="Files"></asljs-button>
+          <asljs-button id="mobile-tab-run" title="Run tab" aria-label="Run"></asljs-button>
+        </nav>
       </div>
     </main>
   `;

@@ -21,6 +21,10 @@ test(
       'id="file-select"',
       'id="preview-frame"',
       'id="btn-share"',
+      'id="mobile-tab-bar"',
+      'id="mobile-tab-chat"',
+      'id="mobile-tab-files"',
+      'id="mobile-tab-run"',
     ]) {
       assert.equal(
         html.includes(fragment),

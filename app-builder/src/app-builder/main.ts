@@ -162,6 +162,11 @@ type AppBuilderAiChatKeyElement =
     submitLabel: string;
   };
 
+type MobileWorkspaceTab =
+  'chat'
+  | 'files'
+  | 'run';
+
 const elAppWorkspace = mustElement<HTMLElement>('app-workspace');
 const elPanels = mustElement<HTMLElement>('panels');
 const elPanelChat = mustElement<HTMLElement>('panel-chat');
@@ -185,6 +190,10 @@ const elBtnShare = mustElement<AppBuilderButtonElement>('btn-share');
 const elBtnSettings = mustElement<AppBuilderButtonElement>('btn-settings');
 const elBtnToggleChat = mustElement<AppBuilderButtonElement>('btn-toggle-chat');
 const elBtnToggleFiles = mustElement<AppBuilderButtonElement>('btn-toggle-files');
+const elMobileTabBar = mustElement<HTMLElement>('mobile-tab-bar');
+const elMobileTabChat = mustElement<AppBuilderButtonElement>('mobile-tab-chat');
+const elMobileTabFiles = mustElement<AppBuilderButtonElement>('mobile-tab-files');
+const elMobileTabRun = mustElement<AppBuilderButtonElement>('mobile-tab-run');
 
 const elImportFile = mustElement<HTMLInputElement>('import-file');
 
@@ -214,6 +223,7 @@ let currentAppOpenAiApiKey = '';
 let currentAiChatModel: AiChatModel | null = null;
 
 configureShellControls();
+setMobileWorkspaceTab('chat');
 
 const firstApplicationDialog =
   createFirstApplicationDialogUi({
@@ -284,6 +294,21 @@ function configureShellControls(): void {
     icon: '<i class="bi bi-play-fill"></i>',
     className: 'btn btn-success btn-sm',
   });
+  configureButton(elMobileTabChat, {
+    text: 'Chat',
+    icon: '<i class="bi bi-chat-dots"></i>',
+    className: 'btn btn-outline-secondary flex-fill',
+  });
+  configureButton(elMobileTabFiles, {
+    text: 'Files',
+    icon: '<i class="bi bi-folder2-open"></i>',
+    className: 'btn btn-outline-secondary flex-fill',
+  });
+  configureButton(elMobileTabRun, {
+    text: 'Run',
+    icon: '<i class="bi bi-play-fill"></i>',
+    className: 'btn btn-outline-secondary flex-fill',
+  });
   configureButton(elBtnShare, {
     text: 'Share',
     className: 'btn btn-outline-secondary btn-sm',
@@ -309,6 +334,32 @@ function configureShellControls(): void {
   configureSelect(elGenerationModelSelect, {
     className: 'form-select form-select-sm bootstrap-select lane-model-select',
   });
+}
+
+function isMobileViewport(): boolean {
+  return window.getComputedStyle(elMobileTabBar).display !== 'none';
+}
+
+function setMobileWorkspaceTab(tab: MobileWorkspaceTab): void {
+  elPanels.classList.remove('mobile-tab-chat', 'mobile-tab-files', 'mobile-tab-run');
+  elPanels.classList.add(`mobile-tab-${tab}`);
+
+  const tabs: {
+    tab: MobileWorkspaceTab;
+    button: AppBuilderButtonElement;
+  }[] = [
+    { tab: 'chat', button: elMobileTabChat },
+    { tab: 'files', button: elMobileTabFiles },
+    { tab: 'run', button: elMobileTabRun },
+  ];
+
+  for (const item of tabs) {
+    const active = item.tab === tab;
+    item.button.buttonClassName = active
+      ? 'btn btn-primary flex-fill'
+      : 'btn btn-outline-secondary flex-fill';
+    item.button.setAttribute('aria-selected', String(active));
+  }
 }
 
 function renderPreviewTitle(): void {
@@ -1154,6 +1205,9 @@ function handleStopGeneration(): void {
 }
 
 function handleRun(): void {
+  if (isMobileViewport()) {
+    setMobileWorkspaceTab('run');
+  }
   void persistCurrentFile().then(() => {
     renderPreview(elPreviewFrame, state.files, {
       hostOpenAiApiKey: getCurrentAppOpenAiApiKey(),
@@ -1299,6 +1353,14 @@ function setWorkspaceMode(mode: 'edit' | 'run'): void {
 
   elBtnToggleChat.setAttribute('aria-expanded', String(!collapsed));
   elBtnToggleFiles.setAttribute('aria-expanded', String(!collapsed));
+
+  if (isMobileViewport()) {
+    if (mode === 'run') {
+      setMobileWorkspaceTab('run');
+    } else {
+      setMobileWorkspaceTab('chat');
+    }
+  }
 }
 
 function askPostLinkImportMode(): 'edit' | 'run' {
@@ -1757,6 +1819,11 @@ async function refreshAvailableModels(
 }
 
 function toggleAppsCollapsed(): void {
+  if (isMobileViewport()) {
+    setMobileWorkspaceTab('chat');
+    return;
+  }
+
   togglePanelUi({
     panelElement: elPanelChat,
     toggleButtonElement: elBtnToggleChat,
@@ -1770,6 +1837,11 @@ function toggleAppsCollapsed(): void {
 }
 
 function toggleFilesCollapsed(): void {
+  if (isMobileViewport()) {
+    setMobileWorkspaceTab('files');
+    return;
+  }
+
   togglePanelUi({
     panelElement: elPanelEditor,
     toggleButtonElement: elBtnToggleFiles,
@@ -1816,6 +1888,20 @@ elBtnSettings.addEventListener('click', () => {
 });
 elBtnToggleChat.addEventListener('click', toggleAppsCollapsed);
 elBtnToggleFiles.addEventListener('click', toggleFilesCollapsed);
+elMobileTabChat.addEventListener('click', () => {
+  setMobileWorkspaceTab('chat');
+});
+elMobileTabFiles.addEventListener('click', () => {
+  setMobileWorkspaceTab('files');
+});
+elMobileTabRun.addEventListener('click', () => {
+  const isRunTabAlreadyActive =
+    elPanels.classList.contains('mobile-tab-run');
+  setMobileWorkspaceTab('run');
+  if (!isRunTabAlreadyActive) {
+    handleRun();
+  }
+});
 elChatModelSelect.addEventListener('change', saveChatModelSelection);
 elGenerationModelSelect.addEventListener('change', saveGenerationModelSelection);
 
