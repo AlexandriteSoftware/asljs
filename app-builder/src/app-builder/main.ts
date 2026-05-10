@@ -1204,7 +1204,9 @@ function handleStopGeneration(): void {
 }
 
 function handleRun(): void {
-  setMobileWorkspaceTab('run');
+  if (isMobileViewport()) {
+    setMobileWorkspaceTab('run');
+  }
   void persistCurrentFile().then(() => {
     renderPreview(elPreviewFrame, state.files, {
       hostOpenAiApiKey: getCurrentAppOpenAiApiKey(),
@@ -1351,10 +1353,12 @@ function setWorkspaceMode(mode: 'edit' | 'run'): void {
   elBtnToggleChat.setAttribute('aria-expanded', String(!collapsed));
   elBtnToggleFiles.setAttribute('aria-expanded', String(!collapsed));
 
-  if (mode === 'run') {
-    setMobileWorkspaceTab('run');
-  } else {
-    setMobileWorkspaceTab('chat');
+  if (isMobileViewport()) {
+    if (mode === 'run') {
+      setMobileWorkspaceTab('run');
+    } else {
+      setMobileWorkspaceTab('chat');
+    }
   }
 }
 
