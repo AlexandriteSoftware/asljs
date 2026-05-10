@@ -13,7 +13,7 @@ export function getConversationKickoffMessage(fileNames: string[]): string {
     return 'What would you like to create? You can describe it in simple words, and I will help shape the plan first.';
   }
 
-  return 'What would you like to add or change? I will keep README.md as the current app state and put new ideas into DEVELOP.md.';
+  return 'What would you like to add or change? I will keep README.md as the current app state and put new ideas into PLAN.md.';
 }
 
 export function buildConversationPrompt(messages: ChatMessage[]): string {

@@ -58,13 +58,12 @@ semantics when the package-local guide exists.
 - Prefer changes in the existing module boundaries instead of adding new app
   layers.
 - Keep preview execution sandboxed in the iframe flow.
-- Preserve the README-first conversation loop: clarify, update README, ask the
-  next question, ask permission to implement, then code and test.
+- Preserve the PLAN-first conversation loop: clarify, update PLAN, ask the next
+  question, ask permission to implement, then queue generation.
 - Preserve short-term conversation context across turns so follow-up replies
   like "yes" or "2 players" still make sense.
-- Preserve the `.README.md` contract as the last completed README
-  snapshot.
 - Treat direct user edits to `README.md` as real product-definition input.
+- Treat direct user edits to `PLAN.md` as real pending-change input.
 - Keep assistant wording simple unless the user clearly wants more technical
   detail.
 
@@ -77,7 +76,7 @@ semantics when the package-local guide exists.
 - built `app-builder/dist/` output is the primary editing surface
 - the AI call is naturally stateful across turns without host-side transcript
   support
-- `.README.md` can be overwritten early during clarification
+- `PLAN.md` can be skipped and implementation can start directly from vague chat
 
 ## Constraints To Preserve
 

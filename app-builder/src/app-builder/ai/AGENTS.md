@@ -28,12 +28,12 @@ equivalent stateful input model. Without that context, short answers like
 
 ## README Contract
 
-- `README.md` is the live vision document for the current loop.
-- `.README.md` is the last completed README snapshot.
-- During clarification and implementation, keep `.README.md` unchanged.
-- Only refresh `.README.md` after implementation or repair work is done
-  and tested.
-- Direct user edits to `README.md` are intentional requirements.
+- `README.md` is the current implemented app state.
+- `PLAN.md` is the pending changeset developed during normal chat turns.
+- `CHANGE.md` is the active generation queue for an implementation cycle.
+- During normal chat turns, edit `PLAN.md` and do not edit runtime files.
+- Keep direct user edits to `README.md` or `PLAN.md` as intentional
+  requirements.
 
 ## User Language Profile
 

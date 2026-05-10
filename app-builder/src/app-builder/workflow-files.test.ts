@@ -4,7 +4,7 @@ import assert
   from 'node:assert/strict';
 import {
   CHANGE_FILE,
-  DEVELOP_FILE,
+  PLAN_FILE,
   README_FILE,
   createDefaultWorkflowFiles,
   ensureWorkflowFiles,
@@ -12,7 +12,7 @@ import {
 } from './workflow-files.js';
 
 test(
-  'createDefaultWorkflowFiles creates README DEVELOP and CHANGE in order',
+  'createDefaultWorkflowFiles creates README PLAN and CHANGE in order',
   () => {
     let nextId = 0;
     const files = createDefaultWorkflowFiles(
@@ -23,7 +23,7 @@ test(
 
     assert.deepEqual(
       files.map(file => file.name),
-      [ README_FILE, DEVELOP_FILE, CHANGE_FILE ],
+      [ README_FILE, PLAN_FILE, CHANGE_FILE ],
     );
     assert.match(files[0].content, /This app is empty\./);
   });
@@ -49,7 +49,7 @@ test(
     assert.equal(result.files[0].content, '# Existing README');
     assert.deepEqual(
       result.files.map(file => file.name),
-      [ README_FILE, DEVELOP_FILE, CHANGE_FILE ],
+      [ README_FILE, PLAN_FILE, CHANGE_FILE ],
     );
   });
 
@@ -58,7 +58,7 @@ test(
   () => {
     assert.equal(hasOnlyWorkflowFiles([]), true);
     assert.equal(
-      hasOnlyWorkflowFiles([ README_FILE, DEVELOP_FILE, CHANGE_FILE ]),
+      hasOnlyWorkflowFiles([ README_FILE, PLAN_FILE, CHANGE_FILE ]),
       true,
     );
     assert.equal(hasOnlyWorkflowFiles([ README_FILE, 'app.js' ]), false);
