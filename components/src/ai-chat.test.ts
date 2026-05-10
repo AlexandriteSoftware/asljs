@@ -112,16 +112,17 @@ test(
     document.body.appendChild(chat);
     await settleDeep(chat);
 
-    assert.equal(chat.model.messages, chat.messages);
-    assert.equal(chat.model.messageHistory, chat.messageHistory);
-    assert.equal(chat.model.promptDraft, 'Draft prompt');
+    assert.equal(chat.messages.length, 1);
+    assert.equal(chat.messages[0].content, 'Hello there');
+    assert.equal(chat.messageHistory.length, 1);
+    assert.equal(chat.promptDraft, 'Draft prompt');
     assert.equal(
       chat.querySelector('.asljs-ai-chat-bubble')?.textContent?.includes('Hello there'),
       true);
   });
 
 test(
-  'ai-chat: direct state properties stay in sync after model replacement',
+  'ai-chat: direct state properties render restored chat values',
   async () => {
     await ensureDom();
     await loadModules();
@@ -138,7 +139,9 @@ test(
                 content: 'Restored' } ],
           promptDraft: 'restored draft' });
 
-    chat.model = restoredModel;
+    chat.messages = restoredModel.messages;
+    chat.messageHistory = restoredModel.messageHistory;
+    chat.promptDraft = restoredModel.promptDraft;
     document.body.appendChild(chat);
     await settleDeep(chat);
 
@@ -250,7 +253,6 @@ type LitElementLike =
 type AiChatElement =
   LitElementLike
   & {
-    model: ReturnType<typeof createAiChatModel>;
     messages: AiChatMessage[];
     messageHistory: AiChatResponsesInputItem[];
     promptDraft: string;

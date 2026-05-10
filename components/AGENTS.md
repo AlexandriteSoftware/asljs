@@ -135,8 +135,7 @@ Component contract at a glance:
   `asljs-properties`, `asljs-select`, `asljs-text-input`,
   `asljs-theme-provider`
 - AI chat state lives on `asljs-ai-chat` direct properties (`messages`,
-  `messageHistory`, `promptDraft`, and related fields) with optional
-  `createAiChatModel()` usage
+  `messageHistory`, `promptDraft`, and related fields)
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
 - button rendering uses explicit `icon`, `text`, `buttonClassName`, and
   optional `variant`; theme lookup checks variant-specific overrides first,
@@ -308,8 +307,7 @@ Inside `asljs-ai-chat`, configure:
 - `options` as the request/persistence/tool callbacks the chat runtime needs
 
 The chat element owns the rendered conversation UI and the primary state
-surface. `model` remains available for compatibility and advanced external
-ownership.
+surface.
 
 ### Keep text-input templates control-host based
 

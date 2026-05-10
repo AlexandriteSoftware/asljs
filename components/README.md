@@ -22,7 +22,6 @@ The current package includes:
 - custom elements such as `asljs-ai-chat`
 - custom elements such as `asljs-text-input`
 - provider elements such as `asljs-theme-provider`
-- state helpers such as `createAiChatModel()`
 
 ## Installation
 
@@ -693,7 +692,7 @@ list.items =
 
 ### AI Chat
 
-- API: `AiChat` (optional helper: `createAiChatModel()`)
+- API: `AiChat`
 - Custom element: `asljs-ai-chat`
 - Purpose: build a chat UI around explicit custom-element state with optional
   persistence and tool execution hooks.
@@ -704,8 +703,6 @@ Notes:
   `messages`, `messageHistory`, and `promptDraft`.
 - The custom element accepts explicit `options` for request and persistence
   integration.
-- A `model` property still exists for compatibility and advanced ownership, but
-  it is no longer required for normal DOM/data-binding initialization.
 - Persisted state can still be restored through `options.stateStore`.
 
 ### File

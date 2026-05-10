@@ -374,19 +374,17 @@ export class AiChat
   extends LitElement
 {
   #bindings: { dispose: () => void; } | null = null;
+  #model: AiChatModel = createAiChatModel();
   #persistState: () => void = () => {};
   #setupVersion = 0;
   #shouldRestoreMessagesScroll = false;
   #shouldScrollMessagesToBottom = false;
 
   @property({ attribute: false })
-    accessor model: AiChatModel = createAiChatModel();
-
-  @property({ attribute: false })
     accessor options: AiChatOptions | null = null;
 
   get messages(): AiChatMessage[] {
-    return this.model.messages;
+    return this.#model.messages;
   }
   set messages(value: AiChatMessage[]) {
     this.#setModelProperty(
@@ -395,7 +393,7 @@ export class AiChat
   }
 
   get messageHistory(): AiChatResponsesInputItem[] {
-    return this.model.messageHistory;
+    return this.#model.messageHistory;
   }
   set messageHistory(value: AiChatResponsesInputItem[]) {
     this.#setModelProperty(
@@ -404,7 +402,7 @@ export class AiChat
   }
 
   get promptDraft(): string {
-    return this.model.promptDraft;
+    return this.#model.promptDraft;
   }
   set promptDraft(value: string) {
     this.#setModelProperty(
@@ -413,7 +411,7 @@ export class AiChat
   }
 
   get messagesScrollTop(): number {
-    return this.model.messagesScrollTop;
+    return this.#model.messagesScrollTop;
   }
   set messagesScrollTop(value: number) {
     this.#setModelProperty(
@@ -422,7 +420,7 @@ export class AiChat
   }
 
   get hasMessagesScrollTop(): boolean {
-    return this.model.hasMessagesScrollTop;
+    return this.#model.hasMessagesScrollTop;
   }
   set hasMessagesScrollTop(value: boolean) {
     this.#setModelProperty(
@@ -431,7 +429,7 @@ export class AiChat
   }
 
   get missingKeyMessageShown(): boolean {
-    return this.model.missingKeyMessageShown;
+    return this.#model.missingKeyMessageShown;
   }
   set missingKeyMessageShown(value: boolean) {
     this.#setModelProperty(
@@ -440,7 +438,7 @@ export class AiChat
   }
 
   get choicePrompt(): AiChatChoicePrompt | null {
-    return this.model.choicePrompt;
+    return this.#model.choicePrompt;
   }
   set choicePrompt(value: AiChatChoicePrompt | null) {
     this.#setModelProperty(
@@ -449,7 +447,7 @@ export class AiChat
   }
 
   get progress(): AiChatProgressState | null {
-    return this.model.progress;
+    return this.#model.progress;
   }
   set progress(value: AiChatProgressState | null) {
     this.#setModelProperty(
@@ -458,7 +456,7 @@ export class AiChat
   }
 
   get sending(): boolean {
-    return this.model.sending;
+    return this.#model.sending;
   }
   set sending(value: boolean) {
     this.#setModelProperty(
@@ -484,8 +482,7 @@ export class AiChat
       changedProperties: Map<PropertyKey, unknown>
     ): void
   {
-    if (changedProperties.has('model')
-        || changedProperties.has('options'))
+    if (changedProperties.has('options'))
     {
       void this.#bindComponent();
     }
@@ -495,7 +492,7 @@ export class AiChat
 
   override render(): ReturnType<LitElement['render']> {
     const model =
-      this.model;
+      this.#model;
     const progress =
       model.progress;
     const choicePrompt =
@@ -622,7 +619,7 @@ export class AiChat
 
   async #bindComponent(): Promise<void> {
     const model =
-      this.model;
+      this.#model;
     const options =
       this.options;
     const version =
@@ -701,11 +698,11 @@ export class AiChat
 
     this.#shouldRestoreMessagesScroll = false;
 
-    if (!this.model.hasMessagesScrollTop) {
+    if (!this.#model.hasMessagesScrollTop) {
       return;
     }
 
-    messagesElement.scrollTop = this.model.messagesScrollTop;
+    messagesElement.scrollTop = this.#model.messagesScrollTop;
   }
 
   get #messagesElement(): HTMLElement | null {
@@ -728,13 +725,13 @@ export class AiChat
       return;
     }
 
-    this.model.messagesScrollTop = messagesElement.scrollTop;
-    this.model.hasMessagesScrollTop = true;
+    this.#model.messagesScrollTop = messagesElement.scrollTop;
+    this.#model.hasMessagesScrollTop = true;
     this.#persistState();
   };
 
   #handlePromptInput = (): void => {
-    this.model.promptDraft = this.#promptElement?.draftValue ?? '';
+    this.#model.promptDraft = this.#promptElement?.draftValue ?? '';
     this.#persistState();
   };
 
@@ -767,12 +764,12 @@ export class AiChat
     }
 
     const internalState =
-      getInternalChoiceState(this.model);
+      getInternalChoiceState(this.#model);
     const behavior =
       internalState.behavior;
 
     dismissChoices(
-      this.model,
+      this.#model,
       behavior === 'resolve'
         ? selectedValue
         : null);
@@ -804,7 +801,7 @@ export class AiChat
     const options =
       this.options;
     const model =
-      this.model;
+      this.#model;
 
     if (options === null) {
       return;
@@ -956,7 +953,7 @@ export class AiChat
     ): void
   {
     const model =
-      this.model;
+      this.#model;
 
     if (Object.is(model[propertyName], value)) {
       return;
