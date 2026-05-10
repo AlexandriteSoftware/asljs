@@ -3,7 +3,7 @@ import {
 } from './ai-tools.js';
 
 type ChatLaneOptions =
-  { developFileName: string;
+  { planFileName: string;
     startGeneration: () => Promise<string>; };
 
 export function createChatLaneTools(
@@ -11,13 +11,13 @@ export function createChatLaneTools(
     options: ChatLaneOptions,
   ): AiTools
 {
-  const normalizedDevelopFileName =
-    normalizePath(options.developFileName);
+  const normalizedPlanFileName =
+    normalizePath(options.planFileName);
 
-  function assertDevelopOnly(path: string): void {
-    if (normalizePath(path) !== normalizedDevelopFileName) {
+  function assertPlanOnly(path: string): void {
+    if (normalizePath(path) !== normalizedPlanFileName) {
       throw new Error(
-        'The chat lane may only edit DEVELOP.md. Ask the generation lane to implement runtime files.',
+        'The chat lane may only edit PLAN.md. Ask the generation lane to implement runtime files.',
       );
     }
   }
@@ -26,7 +26,7 @@ export function createChatLaneTools(
     ...baseTools,
     setFilesContent: async files => {
       for (const file of files) {
-        assertDevelopOnly(file.path);
+        assertPlanOnly(file.path);
       }
 
       await baseTools.setFilesContent(files);
@@ -35,15 +35,15 @@ export function createChatLaneTools(
       throw new Error('The chat lane cannot create binary assets. Use a direct file command or the generation lane.');
     },
     setFileContent: async (path, content) => {
-      assertDevelopOnly(path);
+      assertPlanOnly(path);
       await baseTools.setFileContent(path, content);
     },
     deleteFile: async path => {
-      assertDevelopOnly(path);
+      assertPlanOnly(path);
       await baseTools.deleteFile(path);
     },
     replaceFilePart: async (path, search, replacement, replaceAll) => {
-      assertDevelopOnly(path);
+      assertPlanOnly(path);
       await baseTools.replaceFilePart(path, search, replacement, replaceAll);
     },
     evalInApp: async () => {

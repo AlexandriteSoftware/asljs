@@ -6,7 +6,7 @@ Replace the current single staged README conversation loop with a two-lane
 workflow:
 
 - `README.md` is the current app state and source of truth.
-- `DEVELOP.md` is the next pending changeset being discussed in chat.
+- `PLAN.md` is the next pending changeset being discussed in chat.
 - `CHANGE.md` is the active implementation queue for the running generation
   cycle.
 
@@ -24,7 +24,7 @@ snapshot moved into `CHANGE.md` at the moment generation starts.
   real available models.
 - Preserve direct-file commands as an escape hatch when the user explicitly
   asks to modify a specific file or asset outside the normal
-  `DEVELOP.md -> CHANGE.md -> README.md` cycle.
+  `PLAN.md -> CHANGE.md -> README.md` cycle.
 
 ## Current Baseline
 
@@ -40,7 +40,7 @@ snapshot moved into `CHANGE.md` at the moment generation starts.
 ### Chat lane
 
 - Reads project files and current workflow files.
-- Can edit `DEVELOP.md`.
+- Can edit `PLAN.md`.
 - Can request or start a generation cycle.
 - Must not modify arbitrary app files during normal chat turns.
 
@@ -57,17 +57,17 @@ snapshot moved into `CHANGE.md` at the moment generation starts.
 
 - New or empty apps should contain:
   - `README.md`
-  - `DEVELOP.md`
+  - `PLAN.md`
   - `CHANGE.md`
 - When generation starts:
-  - lock the current `DEVELOP.md` snapshot for that cycle
+  - lock the current `PLAN.md` snapshot for that cycle
   - transform that snapshot into actionable items in `CHANGE.md`
   - clear or unlock the cycle snapshot while allowing new chat changes to keep
-    accumulating in `DEVELOP.md`
+    accumulating in `PLAN.md`
 - When generation completes:
   - `README.md` reflects implemented state
   - `CHANGE.md` is cleared
-  - `DEVELOP.md` keeps any newly accumulated post-start changes
+  - `PLAN.md` keeps any newly accumulated post-start changes
 
 ## Implementation Phases
 
@@ -76,7 +76,7 @@ snapshot moved into `CHANGE.md` at the moment generation starts.
 Status: in progress
 
 - Add this plan file.
-- Bootstrap `README.md`, `DEVELOP.md`, and `CHANGE.md` for new apps and for
+- Bootstrap `README.md`, `PLAN.md`, and `CHANGE.md` for new apps and for
   existing apps when opened.
 - Add helper functions for reading, creating, and updating workflow files.
 - Add host state for:
@@ -107,7 +107,7 @@ Status: not started
 - Add a chat-specific AI prompt.
 - Add a chat-lane tool surface that allows:
   - reading files
-  - editing `DEVELOP.md`
+  - editing `PLAN.md`
   - optionally reading `CHANGE.md`
   - requesting generation start
 - Prevent normal chat turns from editing arbitrary app runtime files.
@@ -142,7 +142,7 @@ Status: not started
 - Add tests for generation-start gating.
 - Add tests for model dropdown population.
 - Add tests for chat/generation lane status transitions.
-- Add prompt/contract tests for `DEVELOP.md` and `CHANGE.md` usage.
+- Add prompt/contract tests for `PLAN.md` and `CHANGE.md` usage.
 
 ## Progress Log
 

@@ -3,10 +3,10 @@ import {
 } from './types.js';
 
 export const README_FILE = 'README.md';
-export const DEVELOP_FILE = 'DEVELOP.md';
+export const PLAN_FILE = 'PLAN.md';
 export const CHANGE_FILE = 'CHANGE.md';
 
-const WORKFLOW_FILE_ORDER = [ README_FILE, DEVELOP_FILE, CHANGE_FILE ] as const;
+const WORKFLOW_FILE_ORDER = [ README_FILE, PLAN_FILE, CHANGE_FILE ] as const;
 
 export function createDefaultWorkflowFiles(
     appId: string,
@@ -64,9 +64,9 @@ export function hasOnlyWorkflowFiles(fileNames: string[]): boolean {
     WORKFLOW_FILE_ORDER.includes(fileName as typeof WORKFLOW_FILE_ORDER[number]));
 }
 
-export function createEmptyDevelopContent(): string {
+export function createEmptyPlanContent(): string {
   return [
-    '# DEVELOP',
+    '# PLAN',
     '',
     'Pending changes for the next generation cycle go here.',
   ].join('\n');
@@ -112,8 +112,8 @@ function buildDefaultWorkflowContent(
         '- No changes have been implemented yet.',
       ].join('\n');
 
-    case DEVELOP_FILE:
-      return createEmptyDevelopContent();
+    case PLAN_FILE:
+      return createEmptyPlanContent();
 
     case CHANGE_FILE:
       return createEmptyChangeContent();

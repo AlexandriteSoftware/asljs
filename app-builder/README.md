@@ -54,33 +54,32 @@ straight to code on the first sentence.
    wants to create.
 2. When an app already has files, the chat should begin by asking what the user
    wants to add or change.
-3. Early turns should reshape `README.md` into a vision document before editing
-   runtime files.
-4. The vision document should describe the app in simple structured terms such
-   as the app purpose, key actors, scenes, data models, behaviors, and
-   constraints.
-5. The previous completed README should be preserved in
-   `.README.md` while the current loop is still being clarified or
-   implemented.
+3. Early turns should develop `PLAN.md` into the pending implementation plan
+   before editing runtime files.
+4. `README.md` should stay as the current implemented app state.
+5. `PLAN.md` should describe the next changes in simple structured terms such as
+   purpose, actors, screens, data, behaviors, and constraints.
 6. Once the idea is clear enough, the agent should ask whether it should run
-   the implementation changes.
+   implementation.
 7. When the user is choosing between a few concrete options, the host can show
    clickable choice chips under the chat input while still allowing a typed
    custom reply.
-8. After approval, the agent should update the app code from `README.md`, test
-   the result through runtime interaction, then refresh `.README.md`
-   only after the implementation is complete.
-9. After a fix or implementation pass, the agent should ask whether it worked
+8. After approval, the agent should call `startGeneration()` to queue
+   implementation after the current chat turn finishes.
+9. The generation lane should copy pending items from `PLAN.md` into
+   `CHANGE.md`, update runtime files, update `README.md`, and clear `CHANGE.md`
+   when done.
+10. After a fix or implementation pass, the agent should ask whether it worked
    and either continue repairing or return to the add/change loop.
 
 The generated-app workflow also supports a maintained `app.tests.js` test
-module so the agent can keep executable checks aligned with the README. Tests
-are normal JavaScript code, not JSON-encoded checks. When README requirements
-change intentionally, the implementation pass should update that test module in
-the same loop before finishing.
+module so the agent can keep executable checks aligned with `README.md`. Tests
+are normal JavaScript code, not JSON-encoded checks. When `README.md`
+requirements change intentionally, the implementation pass should update that
+test module in the same loop before finishing.
 
-Direct editing of `README.md` is part of this workflow. User edits to the
-README are treated as intentional design changes, not incidental text edits.
+Direct editing of `README.md` and `PLAN.md` is part of this workflow. User
+edits are treated as intentional design changes, not incidental text edits.
 
 ## User Profiling
 
@@ -112,7 +111,7 @@ Read the package in this order when working on AI behavior:
 - `src/app-builder/ai/ai-instruction.ts`: system prompt for generated app
    behavior
 - `src/app-builder/ai/AGENTS.md`: AI-subsystem maintenance notes for the
-   conversation loop, transcript handling, and README snapshot contract
+   conversation loop, transcript handling, and PLAN/CHANGE workflow contract
 - imported package `AGENTS.md` files: package capability context used by the
    generator
 

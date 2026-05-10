@@ -17,15 +17,15 @@ const CHAT_INSTRUCTION_PATH =
   join(CURRENT_DIR, 'chat-instruction.ts');
 
 test(
-  'chat-instruction prompt restricts normal chat turns to DEVELOP and generation handoff',
+  'chat-instruction prompt restricts normal chat turns to PLAN and generation handoff',
   async () => {
     const source =
       await readFile(CHAT_INSTRUCTION_PATH, 'utf8');
 
     assert.match(source, /You are the chat lane for the ASLJS app builder\./);
     assert.match(source, /README\.md is the current implemented app state/i);
-    assert.match(source, /DEVELOP\.md is where the next changeset is drafted/i);
-    assert.match(source, /During normal chat turns, only edit DEVELOP\.md\./i);
+    assert.match(source, /PLAN\.md is where the next changeset is drafted/i);
+    assert.match(source, /During normal chat turns, only edit PLAN\.md\./i);
     assert.match(source, /call startGeneration\(\)/i);
     assert.match(source, /Do not use runAppTests\(\), evalInApp\(\), assertInApp\(\), setFileData\(\), or\s+deleteFile\(\)/i);
   });

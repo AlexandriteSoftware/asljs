@@ -39,7 +39,6 @@ test(
     assert.match(source, /listFileset\(\)/);
     assert.match(source, /readFile\(path\)/);
     assert.match(source, /choose\(question, options\)/);
-    assert.match(source, /choose\("Shall I build these changes\?", \["yes", "continue asking"\]\)/);
     assert.match(source, /readFileData\(path\)/);
     assert.match(source, /setFileData\(path, mimeType, base64\)/);
     assert.match(source, /setFilesContent\(files\)/);
@@ -47,15 +46,16 @@ test(
     assert.match(source, /app\.tests\.js/);
     assert.match(source, /app\.tests\.js should contain normal JavaScript tests, not JSON-encoded test data/i);
     assert.match(source, /README\.md requirements changed intentionally, treat that as a required app\.tests\.js update/i);
-    assert.match(source, /update app\.tests\.js for any README requirement changes, run the app, interact with it, repair issues, run the tests/i);
+    assert.match(source, /update app\.tests\.js for README requirement changes, run the app, interact with it, repair issues, run the tests, then clear CHANGE\.md/i);
     assert.match(source, /setFileContent\(path, content\)/);
     assert.match(source, /replaceFilePart\(path, search, replacement, replaceAll\?\)/);
     assert.match(source, /deleteFile\(path\)/);
     assert.match(source, /evalInApp\(code\)/);
     assert.match(source, /getAppDiagnostics\(\)/);
     assert.match(source, /runAppAndCollectDiagnostics\(\)/);
-    assert.match(source, /\.README\.md/);
-    assert.match(source, /conversation loop/i);
+    assert.match(source, /PLAN\.md/);
+    assert.match(source, /CHANGE\.md/);
+    assert.match(source, /implementation cycle/i);
     assert.match(source, /Assume the user is about 8 years old/i);
-    assert.match(source, /Do not modify app runtime files until the user explicitly approves implementation/i);
+    assert.match(source, /Do not ask clarification questions in this lane/i);
   });

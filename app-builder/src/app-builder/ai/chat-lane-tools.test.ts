@@ -40,17 +40,17 @@ function makeBaseTools(): AiTools {
 }
 
 test(
-  'createChatLaneTools only allows DEVELOP.md writes',
+  'createChatLaneTools only allows PLAN.md writes',
   async () => {
     const chatTools =
       createChatLaneTools(makeBaseTools(), {
-        developFileName: 'DEVELOP.md',
+        planFileName: 'PLAN.md',
         startGeneration: async () => 'queued',
       });
 
     await assert.rejects(
       () => chatTools.setFileContent('app.js', 'console.log(1);'),
-      /only edit DEVELOP\.md/i,
+      /only edit PLAN\.md/i,
     );
   });
 
@@ -61,7 +61,7 @@ test(
 
     const chatTools =
       createChatLaneTools(makeBaseTools(), {
-        developFileName: 'DEVELOP.md',
+        planFileName: 'PLAN.md',
         startGeneration: async () => {
           called = true;
           return 'queued';

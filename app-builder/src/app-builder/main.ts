@@ -78,13 +78,13 @@ import {
 } from './examples/samples.js';
 import {
   createDefaultWorkflowFiles,
-  DEVELOP_FILE,
+  PLAN_FILE,
   CHANGE_FILE,
   ensureWorkflowFiles,
 } from './workflow-files.js';
 import {
-  buildChangeListFromDevelop,
-  hasPendingDevelopChanges,
+  buildChangeListFromPlan,
+  hasPendingPlanChanges,
 } from './generation-workflow.js';
 import {
   createLinkSharingService,
@@ -1085,14 +1085,14 @@ async function handleStartGeneration(): Promise<void> {
 
   await persistCurrentFile();
 
-  const developContent = readCurrentFileContent(DEVELOP_FILE);
+  const planContent = readCurrentFileContent(PLAN_FILE);
 
-  if (!hasPendingDevelopChanges(developContent)) {
-    setGenerationStatus('No pending changes in DEVELOP.md.');
+  if (!hasPendingPlanChanges(planContent)) {
+    setGenerationStatus('No pending changes in PLAN.md.');
     return;
   }
 
-  const changeContent = buildChangeListFromDevelop(developContent);
+  const changeContent = buildChangeListFromPlan(planContent);
   await writeCurrentFileContent(CHANGE_FILE, changeContent);
 
   generationStopRequested = false;
@@ -1105,7 +1105,7 @@ async function handleStartGeneration(): Promise<void> {
         'Implement the pending changes listed in CHANGE.md.',
         'Use README.md as the current implemented app state.',
         'Work through CHANGE.md, update app files, update README.md, and clear CHANGE.md when the cycle is complete.',
-        'Do not consume new changes that may later appear in DEVELOP.md during this cycle.',
+        'Do not consume new changes that may later appear in PLAN.md during this cycle.',
       ].join('\n'),
       apiKey,
       getCodeGenerationModel(),
