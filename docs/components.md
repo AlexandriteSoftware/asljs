@@ -202,5 +202,5 @@ call site.
 
 - Form: Lit custom element
 - State surface: explicit chat properties on the element (`messages`,
-  `messageHistory`, `promptDraft`, and related state fields) plus `options`
+  `promptDraft`, and related state fields) plus `options`
 - Rendering model: custom-element rendering driven directly by those properties

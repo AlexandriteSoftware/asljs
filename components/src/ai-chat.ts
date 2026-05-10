@@ -1146,15 +1146,35 @@ function resolveAiChatSessionStorageKey(
   ): string
 {
   const path =
-    typeof location?.pathname === 'string'
+    typeof location !== 'undefined'
+    && location !== null
+    && typeof location.pathname === 'string'
       ? encodeURIComponent(location.pathname)
       : '';
   const id =
     component.id.trim() !== ''
       ? encodeURIComponent(component.id.trim())
-      : 'default';
+      : `default-${resolveAiChatElementIndex(component)}`;
 
   return `asljs-ai-chat:${path}:${id}`;
+}
+
+function resolveAiChatElementIndex(
+    component: AiChat
+  ): number
+{
+  if (typeof document === 'undefined') {
+    return 0;
+  }
+
+  const components =
+    [ ...document.querySelectorAll('asljs-ai-chat') ];
+  const index =
+    components.indexOf(component);
+
+  return index >= 0
+    ? index
+    : 0;
 }
 
 function createSessionStorageStateStore(
@@ -1175,7 +1195,8 @@ function createSessionStorageStateStore(
           return { };
         }
 
-        return JSON.parse(raw) as Partial<AiChatSerializableState>;
+        return normalizeSerializableState(
+          JSON.parse(raw));
       } catch {
         return { };
       }
@@ -1187,6 +1208,59 @@ function createSessionStorageStateStore(
         storageKey,
         JSON.stringify(state));
     },
+  };
+}
+
+function normalizeSerializableState(
+    value: unknown
+  ): Partial<AiChatSerializableState>
+{
+  if (!value || typeof value !== 'object') {
+    return { };
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  return {
+    messages:
+      Array.isArray(source.messages)
+        ? source.messages
+            .filter(
+              message =>
+                !!message
+                && typeof message === 'object'
+                && (
+                  (message as { role?: unknown }).role === 'user'
+                  || (message as { role?: unknown }).role === 'assistant'
+                  || (message as { role?: unknown }).role === 'system')
+                && typeof (message as { content?: unknown }).content === 'string')
+            .map(
+              message =>
+                ({ role: (message as { role: AiChatMessageRole; }).role,
+                   content: (message as { content: string; }).content }))
+        : undefined,
+    promptDraft:
+      typeof source.promptDraft === 'string'
+        ? source.promptDraft
+        : undefined,
+    messagesScrollTop:
+      typeof source.messagesScrollTop === 'number'
+        ? source.messagesScrollTop
+        : undefined,
+    hasMessagesScrollTop:
+      typeof source.hasMessagesScrollTop === 'boolean'
+        ? source.hasMessagesScrollTop
+        : undefined,
+    missingKeyMessageShown:
+      typeof source.missingKeyMessageShown === 'boolean'
+        ? source.missingKeyMessageShown
+        : undefined,
+    lastResponseId:
+      typeof source.lastResponseId === 'string'
+      || source.lastResponseId === null
+        ? source.lastResponseId as string | null
+        : undefined,
   };
 }
 
@@ -1349,15 +1423,19 @@ async function runWithTools<TToolsContext>(
       responseId: string | null; }
   >
 {
+  const requestBody: Record<string, unknown> =
+    { model: chatModel,
+      input,
+      tools };
+
+  if (previousResponseId) {
+    requestBody.previous_response_id = previousResponseId;
+  }
+
   let response =
     await postResponse(
       apiKey,
-      { model: chatModel,
-        ...(previousResponseId
-            ? { previous_response_id: previousResponseId }
-            : { }),
-        input,
-        tools });
+      requestBody);
 
   let stepLimit =
     await readInitialToolStepLimit(provider);

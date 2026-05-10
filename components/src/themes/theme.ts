@@ -187,6 +187,7 @@ export function getComponentVariantList(
     theme?: ComponentsTheme | null
   ): string[]
 {
+  // Currently only button defines named variants in the theme surface.
   const resolvedTheme =
     theme ?? getDefaultTheme();
 
