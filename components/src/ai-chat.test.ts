@@ -369,9 +369,10 @@ test(
         await transport.postRequest({ model: 'gpt-4o', input: [] });
 
       assert.equal(capturedRequests.length, 1);
-      assert.ok(
-        capturedRequests[0].url.includes('openai.com'),
-        'request sent to OpenAI');
+      assert.equal(
+        capturedRequests[0].url,
+        'https://api.openai.com/v1/responses',
+        'request sent to correct OpenAI endpoint');
 
       const headers =
         capturedRequests[0].init.headers as Record<string, string>;

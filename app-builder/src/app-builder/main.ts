@@ -4,6 +4,7 @@ import {
   OpenAiTransport,
   type AiChatModel,
   type AiChatKeySubmitDetail,
+  type AiChatOptions,
 } from 'asljs-components';
 import {
   listApps,
@@ -151,7 +152,7 @@ function now(): string {
 type AppBuilderAiChatElement =
   HTMLElement
   & {
-    options: Record<string, unknown> | null;
+    options: AiChatOptions<{ currentAppId: string | null }> | null;
   };
 
 type AppBuilderAiChatKeyElement =
@@ -778,7 +779,7 @@ async function mountAiChatForCurrentApp(): Promise<void> {
   currentAiChatModel = model;
 
   const buildChatOptions =
-    (transport: OpenAiTransport | null): Record<string, unknown> => (
+    (transport: OpenAiTransport | null): AiChatOptions<{ currentAppId: string | null }> => (
       { provider:
           createAppBuilderAiChatSecretsAndSettingsProvider(
             { appId,
