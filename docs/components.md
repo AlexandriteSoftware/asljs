@@ -1,17 +1,9 @@
 # Components
 
-Components in ASLJS are reusable UI building blocks with a clear rendering
-surface and a clear state/update contract.
+Components in ASLJS are reusable UI building blocks with a clear DOM-facing
+state/update contract.
 
-The simplest mental model is still:
-
-- model: state and operations that drive the UI
-- view: DOM or custom-element surface that renders the state
-- binding/composition: code that keeps the view in sync with the model and
-  routes user interaction back into the model
-
-That model is intentionally broader than "Lit custom element". In ASLJS,
-components currently appear in two DOM-facing forms plus shared base classes:
+Components currently appear in two DOM-facing forms plus shared base classes:
 
 - custom elements built around Lit, for example `asljs-list`
 - lightweight provider elements built directly on `HTMLElement`, for example
@@ -25,16 +17,7 @@ the on-screen keyboard-style controls.
 
 ## Shared structure
 
-Most ASLJS UI components still share the same responsibilities.
-
-### Model
-
-The model owns mutable state and the operations that change it.
-
-- Prefer explicit state and methods over hidden DOM-derived state.
-- Use ASLJS primitives such as `observable` and `eventful` when the component
-  needs reactivity or emitted events.
-- Keep rendering details out of the model.
+Most ASLJS UI components share the same state and interaction principles.
 
 Examples in the current package:
 
@@ -49,9 +32,8 @@ Examples in the current package:
   events.
 - `asljs-numpad` exposes a fixed keypad surface with a `characters` filter and
   emitted `key` events.
-- `createAiChatModel()` creates an observable, eventful chat model.
-- `asljs-ai-chat` renders chat state from an explicit `model` plus `options`
-  configuration.
+- `asljs-ai-chat` exposes chat state directly as custom-element properties plus
+  `options` configuration.
 - `asljs-file` accepts `provider`, `handlers`, and `fileName` as explicit
   inputs.
 - `asljs-list` accepts `items`, `context`, and `theme` as explicit inputs.
@@ -59,24 +41,11 @@ Examples in the current package:
   explicit inputs while keeping live draft state in an observable status
   object.
 
-### View
-
-The view is the DOM-facing rendering surface.
-
-- Use a Lit custom element when the component benefits from declarative
-  markup, lifecycle hooks, and property-driven rendering.
-- Use a plain `HTMLElement` subclass for lightweight provider elements that do
-  not need Lit templating.
-- Use a plain helper or base abstraction only when no reusable custom element
-  surface is needed.
-
-### Binding and composition
-
-Binding/composition connects model state to the rendered DOM.
+Binding/composition connects explicit component state to rendered DOM.
 
 - Prefer declarative binding with `asljs-data-binding` when rendering repeated
   or model-driven DOM.
-- Keep interaction flow explicit: DOM event -> model method or emitted event.
+- Keep interaction flow explicit: DOM event -> property update or emitted event.
 - Keep template-driven rendering template-driven. Do not add ad hoc callback
   protocols when a binding context already expresses the relationship.
 
@@ -94,12 +63,12 @@ Use this decision rule.
 These patterns already show up across `asljs-components` and should remain the
 default approach for new work.
 
-### Keep state separate from rendering
+### Keep state explicit on the component
 
-- The model should be usable without immediately creating DOM.
-- Rendering should consume model state instead of becoming the source of truth.
-- Serialization and persistence belong with model/state code, not with a Lit
-  render function.
+- The component should expose the mutable state needed for initialization.
+- Rendering should consume explicit component properties instead of hidden DOM
+  state.
+- Serialization and persistence should continue to be explicit and testable.
 
 ### Keep component inputs explicit
 
@@ -229,173 +198,9 @@ call site.
 - State surface: `theme`
 - Responsibility: provide themed defaults to descendant components
 
-### `createAiChatModel()` and `asljs-ai-chat`
+### `asljs-ai-chat`
 
-- Form: explicit model plus Lit custom element view
-- State surface: observable chat model with serializable state and events
-- Rendering model: custom-element rendering kept in sync with the model
-
-## Example: Accounts editor component
-
-This example shows the common ASLJS pattern for a custom-element view layered
-over an explicit model and declarative binding.
-
-```ts
-import {
-    LitElement,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    bindDataModel,
-  } from 'asljs-data-binding';
-import 'asljs-components';
-
-export type Account =
-  { id: string;
-    name: string; };
-
-export type AccountsListEvents =
-  { select: [id: string]; };
-
-export type AccountsList =
-  { records: Account[];
-    watch: (
-        propertyName: 'records',
-        listener: () => void
-      ) => (() => void);
-    emit: (
-        name: 'select',
-        id: string
-      ) => void; };
-
-type AccountListItem =
-  { id: string;
-    name: string; };
-
-type AccountsListContext =
-  { select: (this: { item: AccountListItem }, event: Event) => void; };
-
-@customElement('example-account-list')
-class ExampleAccountList
-  extends LitElement
-{
-  #unbind: (() => void) | null = null;
-  #unwatch: (() => void) | null = null;
-
-  @property({ attribute: false })
-    accessor model: AccountsList | null = null;
-
-  createRenderRoot(): this {
-    return this;
-  }
-
-  disconnectedCallback(): void {
-    this.#unwatch?.();
-    this.#unwatch = null;
-    this.#unbind?.();
-    this.#unbind = null;
-    super.disconnectedCallback();
-  }
-
-  updated(changedProperties: Map<PropertyKey, unknown>): void {
-    super.updated(changedProperties);
-
-    if (changedProperties.has('model')) {
-      this.#bindModel();
-    }
-  }
-
-  #bindModel(): void {
-    this.#unwatch?.();
-    this.#unwatch = null;
-
-    if (this.model === null) {
-      this.#unbind?.();
-      this.#unbind = null;
-      this.replaceChildren();
-      return;
-    }
-
-    this.#unwatch =
-      this.model.watch(
-        'records',
-        () => {
-          this.#renderFromModel();
-        });
-
-    this.#renderFromModel();
-  }
-
-  #renderFromModel(): void {
-    if (this.model === null) {
-      return;
-    }
-
-    const model =
-      this.model;
-
-    const items: AccountListItem[] =
-      model.records.map(
-        record =>
-          ({ id: record.id,
-             name: record.name }));
-
-    const context: AccountsListContext =
-      { select(this: { item: AccountListItem }): void {
-          model.emit(
-            'select',
-            this.item.id);
-        } };
-
-    const template =
-      document.createElement('template');
-
-    template.innerHTML =
-      `
-        <asljs-list data-bind-prop-items="items"
-                    data-bind-prop-context="context">
-          <template data-slot="item">
-            <div>
-              <span data-bind-text="item.name"></span>
-              <button data-bind-onclick="context.select">Edit</button>
-            </div>
-          </template>
-        </asljs-list>
-      `;
-
-    const root =
-      template.content.firstElementChild as HTMLElement;
-
-    this.#unbind?.();
-    this.#unbind =
-      bindDataModel(
-        root,
-        { items,
-          context });
-
-    this.replaceChildren(root);
-  }
-}
-```
-
-Usage:
-
-```ts
-const component =
-  document.createElement('example-account-list') as HTMLElement & {
-    model: AccountsList | null;
-  };
-
-component.model = model;
-host.appendChild(component);
-```
-
-Or with binding:
-
-```html
-<example-account-list
-  data-bind-prop-model="accountListModel"></example-account-list>
-```
+- Form: Lit custom element
+- State surface: explicit chat properties on the element (`messages`,
+  `promptDraft`, and related state fields) plus `options`
+- Rendering model: custom-element rendering driven directly by those properties

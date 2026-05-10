@@ -139,6 +139,14 @@ function getWorkspacePackageDirs(
     });
 }
 
+function getWorkspacePackageInfos(
+  )
+{
+  return getWorkspacePackageDirs().map(
+    packageDir =>
+      getPackageInfo(packageDir));
+}
+
 function getPackageInfo(
     packageDir = process.cwd()
   )
@@ -302,6 +310,158 @@ export function updateDependencyVersionRanges(
   }
 
   return changed;
+}
+
+function getLocalWorkspaceDependencyNameGraph(
+    workspacePackageInfos
+  )
+{
+  const workspacePackageNames =
+    new Set(
+      workspacePackageInfos.map(
+        packageInfo =>
+          packageInfo.name));
+
+  return new Map(
+    workspacePackageInfos.map(
+      packageInfo => {
+        const dependencies =
+          new Set();
+
+        for (const fieldName of DEPENDENCY_FIELD_NAMES) {
+          const fieldValue =
+            packageInfo.packageJson[fieldName];
+
+          if (!fieldValue
+              || typeof fieldValue !== 'object'
+              || Array.isArray(fieldValue))
+          {
+            continue;
+          }
+
+          for (const dependencyName of Object.keys(fieldValue)) {
+            if (dependencyName !== packageInfo.name
+                && workspacePackageNames.has(dependencyName))
+            {
+              dependencies.add(dependencyName);
+            }
+          }
+        }
+
+        return [ packageInfo.name,
+                 [ ...dependencies ] ];
+      }));
+}
+
+export function resolveLocalWorkspaceDependencyBuildOrder(
+    packageName,
+    dependencyGraph
+  )
+{
+  const permanent =
+    new Set();
+
+  const temporary =
+    new Set();
+
+  const buildOrder =
+    [];
+
+  const buildOrderSet =
+    new Set();
+
+  function visit(
+      currentPackageName
+    )
+  {
+    if (permanent.has(currentPackageName)) {
+      return;
+    }
+
+    if (temporary.has(currentPackageName)) {
+      throw new Error(
+        `Detected circular workspace dependency involving "${currentPackageName}".`);
+    }
+
+    temporary.add(currentPackageName);
+
+    const dependencyNames =
+      dependencyGraph.get(currentPackageName)
+      ?? [];
+
+    for (const dependencyName of dependencyNames) {
+      visit(dependencyName);
+
+      if (!buildOrderSet.has(dependencyName)) {
+        buildOrderSet.add(dependencyName);
+        buildOrder.push(dependencyName);
+      }
+    }
+
+    temporary.delete(currentPackageName);
+
+    permanent.add(currentPackageName);
+  }
+
+  visit(packageName);
+
+  return buildOrder;
+}
+
+function buildLocalDeps(
+  )
+{
+  const workspacePackageInfos =
+    getWorkspacePackageInfos();
+
+  const packageInfoByName =
+    new Map(
+      workspacePackageInfos.map(
+        packageInfo => [
+          packageInfo.name,
+          packageInfo,
+        ]));
+
+  const packageInfo =
+    getPackageInfo(process.cwd());
+
+  if (!packageInfoByName.has(packageInfo.name)) {
+    throw new Error(
+      `Current package "${packageInfo.name}" is not part of the root workspaces.`);
+  }
+
+  const dependencyGraph =
+    getLocalWorkspaceDependencyNameGraph(
+      workspacePackageInfos);
+
+  const dependencyBuildOrder =
+    resolveLocalWorkspaceDependencyBuildOrder(
+      packageInfo.name,
+      dependencyGraph);
+
+  if (dependencyBuildOrder.length === 0) {
+    console.log(
+      `No local workspace dependencies to build for ${packageInfo.name}.`);
+
+    return;
+  }
+
+  for (const dependencyName of dependencyBuildOrder) {
+    const dependencyPackageInfo =
+      packageInfoByName.get(dependencyName);
+
+    if (!dependencyPackageInfo) {
+      throw new Error(
+        `Workspace package metadata not found for "${dependencyName}".`);
+    }
+
+    console.log(
+      `Building local workspace dependency: ${dependencyName}`);
+
+    runCommand(
+      'npm run build',
+      dependencyPackageInfo.dir);
+  }
 }
 
 function ensureReleaseTarget(
@@ -557,6 +717,8 @@ function getCommands(
   return new Map([
     [ 'clean-dist',
       cleanDist ],
+    [ 'build-local-deps',
+      buildLocalDeps ],
     [ 'ensure-clean-working-folder',
       ensureCleanWorkingFolder ],
     [ 'tag-commit-with-release-id',

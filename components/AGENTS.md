@@ -48,6 +48,7 @@ Exports from `src/index.ts`:
 - `ThemeProvider`
 - `ThemeProviderModelDefinition`
 - `findThemeProvider`
+- `getComponentVariantList`
 - `getDefaultTheme`
 - `resolveThemeText`
 - `resolveThemeTemplate`
@@ -61,6 +62,7 @@ Exports from `src/index.ts`:
 - `AiChatChoicePrompt`
 - `AiChatInitializeContext`
 - `AiChatMessage`
+- `AiChatMessages`
 - `AiChatMessageRole`
 - `AiChatModel`
 - `AiChatOptions`
@@ -134,8 +136,8 @@ Component contract at a glance:
   `asljs-keyboard`, `asljs-letterpad`, `asljs-list`, `asljs-numpad`,
   `asljs-properties`, `asljs-select`, `asljs-text-input`,
   `asljs-theme-provider`
-- AI chat uses the `asljs-ai-chat` custom element plus
-  `createAiChatModel()` for explicit state ownership
+- AI chat state lives on `asljs-ai-chat` direct properties (`messages`,
+  `promptDraft`, and related fields)
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
 - button rendering uses explicit `icon`, `text`, `buttonClassName`, and
   optional `variant`; theme lookup checks variant-specific overrides first,
@@ -209,12 +211,11 @@ The package currently uses more than one component form.
 - `TextInput` is a Lit custom element with explicit reset-value, validation,
   and template properties.
 - `ThemeProvider` is a lightweight `HTMLElement` provider.
-- `AiChat` is a Lit custom element with explicit `model` and `options`
-  properties.
+- `AiChat` is a Lit custom element with explicit state properties and `options`.
 
 Preserve the shared design rules across those forms.
 
-- keep state explicit and separate from rendering
+- keep state explicit on the custom element and separate from rendering
 - use the simplest rendering surface that fits the runtime need
 - keep model-to-view synchronization explicit
 - clean up subscriptions and listeners when components detach or rebind
@@ -299,16 +300,18 @@ User selection updates `draftValue` and `status`; it does not mutate `value`
 directly. Consumers should listen for `input` or `change` and decide whether
 to persist or reset.
 
-### Use explicit model/options semantics for AI chat
+### Use explicit state/options semantics for AI chat
 
 Inside `asljs-ai-chat`, configure:
 
-- `model` as an `AiChatModel` created by `createAiChatModel()`
+- `messages`, `promptDraft`, and related chat state directly
+  on the custom element
 - `options` as the request/persistence/tool callbacks the chat runtime needs
+- `messages` as a store object (`save(...)`, `read()`, and `list`)
+- rely on default sessionStorage persistence when `options.stateStore` is omitted
 
-The chat element owns the rendered conversation UI. The model remains the
-source of truth for messages, progress, choice prompts, scroll state, and
-serialized persistence.
+The chat element owns the rendered conversation UI and the primary state
+surface.
 
 ### Keep text-input templates control-host based
 

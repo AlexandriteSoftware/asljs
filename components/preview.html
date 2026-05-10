@@ -234,7 +234,6 @@
 					bindComponentPreviewModel,
 					ButtonModelDefinition,
 					createComponentPreviewModel,
-					createAiChatModel,
 					createBootstrapTheme,
 					createImageFileHandler,
 					createPdfFileHandler,
@@ -280,17 +279,9 @@
 					chat.className = 'demo-card';
 					chat.style.minHeight = '28rem';
 
-					const model = createAiChatModel();
-
-					model.on('initialize', () => {
-						if (model.messages.length === 0) {
-							model.appendMessage(
-								'assistant',
-								'Preview mode is ready. Type a message and send to see the component state flow.');
-						}
-					});
-
-					chat.model = model;
+					chat.messages.save(
+						'assistant',
+						'Preview mode is ready. Type a message and send to see the component state flow.');
 					chat.options = {
 						provider: {
 							getOpenAiApiKey: async () => '',

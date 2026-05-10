@@ -22,7 +22,6 @@ The current package includes:
 - custom elements such as `asljs-ai-chat`
 - custom elements such as `asljs-text-input`
 - provider elements such as `asljs-theme-provider`
-- explicit model helpers such as `createAiChatModel()`
 
 ## Installation
 
@@ -40,8 +39,8 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
   `asljs-file`, `asljs-keyboard`, `asljs-letterpad`, `asljs-list`,
   `asljs-numpad`, `asljs-properties`, `asljs-text-input`, and
   `asljs-theme-provider`.
-- AI chat is exposed as the `asljs-ai-chat` custom element plus
-  `createAiChatModel()` for explicit state ownership.
+- AI chat state is exposed directly on the `asljs-ai-chat` custom element
+  (`messages`, `promptDraft`, and related state fields).
 - `AssistedInput` is the shared Lit base for the assisted on-screen input
   components.
 - Button rendering is driven by explicit `icon` and `text` properties.
@@ -693,17 +692,24 @@ list.items =
 
 ### AI Chat
 
-- API: `createAiChatModel()`, `AiChat`
+- API: `AiChat`
 - Custom element: `asljs-ai-chat`
-- Purpose: build a chat UI around an observable, eventful model with optional
+- Purpose: build a chat UI around explicit custom-element state with optional
   persistence and tool execution hooks.
 
 Notes:
 
-- The model owns chat state, progress state, choice prompts, and message
-  history.
-- The custom element accepts explicit `model` and `options` properties.
-- Persisted state can still be restored through `options.stateStore`.
+- The custom element owns chat state directly through properties such as
+  `messages`, `promptDraft`, and related fields.
+- `messages` is a store object that provides methods for saving messages and
+  reading the messages list.
+- The custom element accepts explicit `options` for request and persistence
+  integration.
+- If `options.stateStore` is not provided, the component uses sessionStorage by
+  default so refresh keeps chat history.
+- Persisted state includes the last OpenAI response id plus operational state
+  (`choicePrompt`, `progress`, and `sending`) so refresh restores in-progress
+  chat context.
 
 ### File
 
@@ -808,6 +814,7 @@ Exports:
 - `ListThemeDefinition` type
 - `ThemeTemplateValue` type
 - `getDefaultTheme`
+- `getComponentVariantList`
 - `setDefaultTheme`
 - `ListItem` type
 - `ListItemsSource` type

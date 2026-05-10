@@ -735,6 +735,7 @@ function syncStateChatMessagesFromAiChatModel(): void {
     currentAiChatModel === null
       ? [ ]
       : currentAiChatModel.messages
+        .read()
         .filter(
             isUserOrAssistantMessage)
           .map(
@@ -773,7 +774,7 @@ async function mountAiChatForCurrentApp(): Promise<void> {
   model.on(
     'initialize',
     () => {
-      if (model.messages.length === 0) {
+      if (model.messages.read().length === 0) {
         model.appendMessage(
           'assistant',
           getConversationKickoffMessage(
@@ -855,6 +856,7 @@ async function mountAiChatForCurrentApp(): Promise<void> {
         const transcript =
           buildConversationPrompt(
             chatModel.messages
+              .read()
               .filter(
                 isUserOrAssistantMessage)
               .map(

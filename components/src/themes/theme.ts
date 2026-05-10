@@ -182,6 +182,24 @@ export function setDefaultTheme(
   defaultTheme = theme ?? {};
 }
 
+export function getComponentVariantList(
+    component: keyof ComponentsTheme,
+    theme?: ComponentsTheme | null
+  ): string[]
+{
+  // Currently only button defines named variants in the theme surface.
+  const resolvedTheme =
+    theme ?? getDefaultTheme();
+
+  switch (component) {
+    case 'button':
+      return Object.keys(
+        resolvedTheme.button?.variants ?? {});
+    default:
+      return [ ];
+  }
+}
+
 export function findThemeProvider(
     element: Element
   ): ThemeProviderLike | null

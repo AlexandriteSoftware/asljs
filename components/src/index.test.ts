@@ -36,6 +36,7 @@ import {
   createPdfFileHandler,
   createTextEditorFileHandler,
   createTextFileHandler,
+    getComponentVariantList,
     getDefaultTheme,
     setDefaultTheme,
   } from './index.js';
@@ -125,6 +126,10 @@ test(
 
     assert.equal(
       typeof getDefaultTheme,
+      'function');
+
+    assert.equal(
+      typeof getComponentVariantList,
       'function');
 
     assert.equal(

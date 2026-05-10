@@ -28,22 +28,28 @@ test(
         { messages:
             [ { role: 'assistant',
                 content: 'Hi' } ],
-          messageHistory: [ ],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
-          missingKeyMessageShown: false });
+          missingKeyMessageShown: false,
+          lastResponseId: 'resp_1',
+          choicePrompt: null,
+          progress: null,
+          sending: false });
 
       assert.deepEqual(
         await store.load(),
         { messages:
             [ { role: 'assistant',
                 content: 'Hi' } ],
-          messageHistory: [ ],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
-          missingKeyMessageShown: false });
+          missingKeyMessageShown: false,
+          lastResponseId: 'resp_1',
+          choicePrompt: null,
+          progress: null,
+          sending: false });
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
     }

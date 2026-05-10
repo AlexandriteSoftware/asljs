@@ -7,14 +7,6 @@ import {
     property,
   } from 'lit/decorators.js';
 import {
-    type Select,
-    type SelectChangeDetail,
-  } from './select.js';
-import {
-    type TextInput,
-    type TextInputChangeDetail,
-  } from './text-input.js';
-import {
     PropertiesModelDefinition,
     type ComponentModelDefinition,
     type ComponentModelPropertyDefinition,
@@ -25,6 +17,24 @@ import {
   } from './themes/theme.js';
 import './select.js';
 import './text-input.js';
+
+type SelectSourceElement =
+  EventTarget
+  & {
+    draftValue?: string;
+  };
+
+type SelectInputDetail =
+  { value?: string; };
+
+type TextInputSourceElement =
+  EventTarget
+  & {
+    draftValue?: string;
+  };
+
+type TextInputDetail =
+  { value?: string; };
 
 const BOOLEAN_ITEMS =
   [ { value: 'yes', label: 'Yes' },
@@ -87,7 +97,9 @@ export class Properties
             .label=${label}
             .description=${description}
             .items=${BOOLEAN_ITEMS}
-            .value=${propertyValue === true ? 'yes' : 'no'}
+            .value=${propertyValue === true
+              ? 'yes'
+              : 'no'}
             .disabled=${!isEditable}
             @input=${(event: Event) => this.#handleBooleanInput(propertyDefinition, event)}>
         </asljs-select>
@@ -120,9 +132,9 @@ export class Properties
     }
 
     const detail =
-      (event as CustomEvent<SelectChangeDetail>).detail;
+      (event as CustomEvent<SelectInputDetail>).detail;
     const source =
-      event.currentTarget as Select | null;
+      event.currentTarget as SelectSourceElement | null;
     const nextValue =
       detail?.value
       ?? source?.draftValue;
@@ -146,9 +158,9 @@ export class Properties
     }
 
     const detail =
-      (event as CustomEvent<TextInputChangeDetail>).detail;
+      (event as CustomEvent<TextInputDetail>).detail;
     const source =
-      event.currentTarget as TextInput | null;
+      event.currentTarget as TextInputSourceElement | null;
     const rawValue =
       detail?.value
       ?? source?.draftValue;

@@ -75,13 +75,22 @@ export interface AiChatProgressState {
   visible: boolean;
 }
 
+export interface AiChatSerializableChoicePrompt {
+  message: string;
+  options: AiChatChoiceOption[];
+  behavior: ChoiceBehavior;
+}
+
 export interface AiChatSerializableState {
   messages: AiChatMessage[];
-  messageHistory: AiChatResponsesInputItem[];
   promptDraft: string;
   messagesScrollTop: number;
   hasMessagesScrollTop: boolean;
   missingKeyMessageShown: boolean;
+  lastResponseId: string | null;
+  choicePrompt: AiChatSerializableChoicePrompt | null;
+  progress: AiChatProgressState | null;
+  sending: boolean;
 }
 
 export interface AiChatSecretsAndSettingsProvider {
@@ -134,9 +143,20 @@ export interface AiChatToolStepLimitContext {
 export interface AiChatBuildRequestArgs<TRequestContext> {
   model: AiChatModel;
   prompt: string;
-  messageHistory: AiChatResponsesInputItem[];
+  messages: AiChatMessages;
   requestContext: TRequestContext;
   chatModel: string;
+}
+
+export interface AiChatMessages {
+  readonly list: readonly AiChatMessage[];
+  read: () => readonly AiChatMessage[];
+  save: (
+      role: AiChatMessageRole,
+      content: string
+    ) => void;
+  clear: () => void;
+  toResponsesInput: () => AiChatResponsesInputItem[];
 }
 
 export interface AiChatModelMethods {
@@ -168,8 +188,9 @@ type AiChatModelEvents =
   };
 
 export type AiChatModel =
-  AiChatSerializableState
+  Omit<AiChatSerializableState, 'messages' | 'choicePrompt' | 'progress' | 'sending'>
   & {
+    messages: AiChatMessages;
     choicePrompt: AiChatChoicePrompt | null;
     progress: AiChatProgressState | null;
     sending: boolean;
@@ -241,21 +262,44 @@ export function createAiChatModel(
     initial: Partial<AiChatSerializableState> = { }
   ): AiChatModel
 {
+  const initialChoicePrompt =
+    normalizeSerializableChoicePrompt(
+      initial.choicePrompt);
+  const initialProgress =
+    normalizeSerializableProgressState(
+      initial.progress);
+  const messages =
+    createAiChatMessages(
+      initial.messages);
   const model =
     observable(
-      { messages: initial.messages ?? [ ],
-        messageHistory: initial.messageHistory ?? [ ],
+      { messages,
         promptDraft: initial.promptDraft ?? '',
         messagesScrollTop: initial.messagesScrollTop ?? 0,
         hasMessagesScrollTop: initial.hasMessagesScrollTop ?? false,
         missingKeyMessageShown: initial.missingKeyMessageShown ?? false,
-        choicePrompt: null,
-        progress: null,
-        sending: false }) as unknown as AiChatModel;
+        lastResponseId: initial.lastResponseId ?? null,
+        choicePrompt:
+          initialChoicePrompt === undefined
+            ? null
+            : { message: initialChoicePrompt.message,
+                options:
+                  initialChoicePrompt.options.map(
+                    option =>
+                      ({ value: option.value,
+                         label: option.label })) },
+        progress:
+          initialProgress === undefined
+            ? null
+            : { message: initialProgress.message,
+                visible: initialProgress.visible },
+        sending: initial.sending === true }) as unknown as AiChatModel;
 
   internalChoiceStateByModel.set(
     model,
-    { behavior: 'resolve',
+    { behavior:
+        initialChoicePrompt?.behavior
+        ?? 'resolve',
       resolver: null });
 
   Object.defineProperties(
@@ -267,20 +311,16 @@ export function createAiChatModel(
             content: string
           ): void =>
           {
-            model.messages.push(
-              { role,
-                content });
+            model.messages.save(
+              role,
+              content);
           }),
       clearMessages:
         defineModelMethod(
           (): void =>
           {
-            model.messages.splice(
-              0,
-              model.messages.length);
-            model.messageHistory.splice(
-              0,
-              model.messageHistory.length);
+            model.messages.clear();
+            model.lastResponseId = null;
           }),
       clearProgress:
         defineModelMethod(
@@ -348,24 +388,86 @@ export function createAiChatModel(
   return model;
 }
 
+function createAiChatMessages(
+    initialMessages: AiChatMessage[] | undefined
+  ): AiChatMessages
+{
+  const list =
+    observable(
+      (initialMessages ?? [ ])
+        .map(
+          message =>
+            ({ role: message.role,
+               content: message.content }))) as unknown as ObservableArray<AiChatMessage>;
+
+  return {
+    list,
+    read: () => list,
+    save: (
+        role: AiChatMessageRole,
+        content: string
+      ): void =>
+      {
+        list.push(
+          { role,
+            content });
+      },
+    clear: (): void => {
+      list.splice(
+        0,
+        list.length);
+    },
+    toResponsesInput: () =>
+      list
+        .filter(
+          message =>
+            message.role === 'user'
+            || message.role === 'assistant')
+        .slice(-24)
+        .map(
+          message =>
+            ({ role: message.role,
+               content: message.content })),
+  };
+}
+
 export function serializeAiChatModelState(
     model: AiChatModel
   ): AiChatSerializableState
 {
+  const choicePrompt =
+    model.choicePrompt;
+  const progress =
+    model.progress;
+
   return {
     messages:
-      model.messages.map(
+      model.messages.read().map(
         message =>
           ({ role: message.role,
              content: message.content })),
-    messageHistory:
-      model.messageHistory.map(
-        entry =>
-          cloneInputItem(entry)),
     promptDraft: model.promptDraft,
     messagesScrollTop: model.messagesScrollTop,
     hasMessagesScrollTop: model.hasMessagesScrollTop,
     missingKeyMessageShown: model.missingKeyMessageShown,
+    lastResponseId: model.lastResponseId,
+    choicePrompt:
+      choicePrompt === null
+        ? null
+        : { message: choicePrompt.message,
+            options:
+              choicePrompt.options.map(
+                option =>
+                  ({ value: option.value,
+                     label: option.label })),
+            behavior:
+              getInternalChoiceState(model).behavior },
+    progress:
+      progress === null
+        ? null
+        : { message: progress.message,
+            visible: progress.visible },
+    sending: model.sending,
   };
 }
 
@@ -374,16 +476,95 @@ export class AiChat
   extends LitElement
 {
   #bindings: { dispose: () => void; } | null = null;
+  #model: AiChatModel = createAiChatModel();
   #persistState: () => void = () => {};
   #setupVersion = 0;
   #shouldRestoreMessagesScroll = false;
   #shouldScrollMessagesToBottom = false;
 
   @property({ attribute: false })
-    accessor model: AiChatModel = createAiChatModel();
-
-  @property({ attribute: false })
     accessor options: AiChatOptions | null = null;
+
+  get messages(): AiChatMessages {
+    return this.#model.messages;
+  }
+  set messages(value: AiChatMessages) {
+    this.#setModelProperty(
+      'messages',
+      value);
+  }
+
+  get promptDraft(): string {
+    return this.#model.promptDraft;
+  }
+  set promptDraft(value: string) {
+    this.#setModelProperty(
+      'promptDraft',
+      value);
+  }
+
+  get messagesScrollTop(): number {
+    return this.#model.messagesScrollTop;
+  }
+  set messagesScrollTop(value: number) {
+    this.#setModelProperty(
+      'messagesScrollTop',
+      value);
+  }
+
+  get hasMessagesScrollTop(): boolean {
+    return this.#model.hasMessagesScrollTop;
+  }
+  set hasMessagesScrollTop(value: boolean) {
+    this.#setModelProperty(
+      'hasMessagesScrollTop',
+      value);
+  }
+
+  get missingKeyMessageShown(): boolean {
+    return this.#model.missingKeyMessageShown;
+  }
+  set missingKeyMessageShown(value: boolean) {
+    this.#setModelProperty(
+      'missingKeyMessageShown',
+      value);
+  }
+
+  get lastResponseId(): string | null {
+    return this.#model.lastResponseId;
+  }
+  set lastResponseId(value: string | null) {
+    this.#setModelProperty(
+      'lastResponseId',
+      value);
+  }
+
+  get choicePrompt(): AiChatChoicePrompt | null {
+    return this.#model.choicePrompt;
+  }
+  set choicePrompt(value: AiChatChoicePrompt | null) {
+    this.#setModelProperty(
+      'choicePrompt',
+      value);
+  }
+
+  get progress(): AiChatProgressState | null {
+    return this.#model.progress;
+  }
+  set progress(value: AiChatProgressState | null) {
+    this.#setModelProperty(
+      'progress',
+      value);
+  }
+
+  get sending(): boolean {
+    return this.#model.sending;
+  }
+  set sending(value: boolean) {
+    this.#setModelProperty(
+      'sending',
+      value);
+  }
 
   override createRenderRoot(): this {
     return this;
@@ -403,8 +584,7 @@ export class AiChat
       changedProperties: Map<PropertyKey, unknown>
     ): void
   {
-    if (changedProperties.has('model')
-        || changedProperties.has('options'))
+    if (changedProperties.has('options'))
     {
       void this.#bindComponent();
     }
@@ -414,7 +594,7 @@ export class AiChat
 
   override render(): ReturnType<LitElement['render']> {
     const model =
-      this.model;
+      this.#model;
     const progress =
       model.progress;
     const choicePrompt =
@@ -443,7 +623,7 @@ export class AiChat
                       gap:0.75rem;
                       flex:1 1 auto;
                       overflow:auto;">
-            ${model.messages.map(
+            ${model.messages.read().map(
               message =>
                 html`
                   <div class=${`asljs-ai-chat-message asljs-ai-chat-message-${message.role}`}>
@@ -541,9 +721,13 @@ export class AiChat
 
   async #bindComponent(): Promise<void> {
     const model =
-      this.model;
+      this.#model;
     const options =
       this.options;
+    const stateStore =
+      options?.stateStore
+      ?? createSessionStorageStateStore(
+        resolveAiChatSessionStorageKey(this));
     const version =
       ++this.#setupVersion;
 
@@ -551,12 +735,12 @@ export class AiChat
     this.#persistState =
       createStatePersistenceScheduler(
         model,
-        options?.stateStore);
+        stateStore);
 
-    if (options?.stateStore) {
+    if (stateStore) {
       applyLoadedState(
         model,
-        await options.stateStore.load());
+        await stateStore.load());
 
       if (version !== this.#setupVersion) {
         return;
@@ -620,11 +804,11 @@ export class AiChat
 
     this.#shouldRestoreMessagesScroll = false;
 
-    if (!this.model.hasMessagesScrollTop) {
+    if (!this.#model.hasMessagesScrollTop) {
       return;
     }
 
-    messagesElement.scrollTop = this.model.messagesScrollTop;
+    messagesElement.scrollTop = this.#model.messagesScrollTop;
   }
 
   get #messagesElement(): HTMLElement | null {
@@ -647,13 +831,13 @@ export class AiChat
       return;
     }
 
-    this.model.messagesScrollTop = messagesElement.scrollTop;
-    this.model.hasMessagesScrollTop = true;
+    this.#model.messagesScrollTop = messagesElement.scrollTop;
+    this.#model.hasMessagesScrollTop = true;
     this.#persistState();
   };
 
   #handlePromptInput = (): void => {
-    this.model.promptDraft = this.#promptElement?.draftValue ?? '';
+    this.#model.promptDraft = this.#promptElement?.draftValue ?? '';
     this.#persistState();
   };
 
@@ -686,12 +870,12 @@ export class AiChat
     }
 
     const internalState =
-      getInternalChoiceState(this.model);
+      getInternalChoiceState(this.#model);
     const behavior =
       internalState.behavior;
 
     dismissChoices(
-      this.model,
+      this.#model,
       behavior === 'resolve'
         ? selectedValue
         : null);
@@ -723,7 +907,7 @@ export class AiChat
     const options =
       this.options;
     const model =
-      this.model;
+      this.#model;
 
     if (options === null) {
       return;
@@ -817,11 +1001,11 @@ export class AiChat
         await options.buildRequestInput(
           { model,
             prompt,
-            messageHistory:
-              model.messageHistory.slice(),
+            messages:
+              model.messages,
             requestContext,
             chatModel });
-      const assistantText =
+      const result =
         await runWithTools(
           apiKey,
           chatModel,
@@ -833,22 +1017,16 @@ export class AiChat
             ? await options.getToolsContext()
             : undefined,
           options.provider,
-          options.toolStepExtension ?? defaultToolStepExtension);
+          options.toolStepExtension ?? defaultToolStepExtension,
+          model.lastResponseId);
 
-      model.messageHistory.push(
-        { role: 'user',
-          content: prompt });
-      model.messageHistory.push(
-        { role: 'assistant',
-          content: assistantText });
-
-      while (model.messageHistory.length > 24) {
-        model.messageHistory.shift();
-      }
+      const assistantText =
+        result.text;
 
       model.appendMessage(
         'assistant',
         assistantText);
+      model.lastResponseId = result.responseId;
 
       await model.emitAsync(
         'afterResponse',
@@ -867,6 +1045,22 @@ export class AiChat
       model.clearProgress();
       this.#persistState();
     }
+  }
+
+  #setModelProperty<K extends keyof AiChatModel>(
+      propertyName: K,
+      value: AiChatModel[K]
+    ): void
+  {
+    const model =
+      this.#model;
+
+    if (Object.is(model[propertyName], value)) {
+      return;
+    }
+
+    model[propertyName] = value;
+    this.requestUpdate();
   }
 }
 
@@ -932,36 +1126,19 @@ function getInternalChoiceState(
   return state;
 }
 
-function cloneInputItem(
-    entry: AiChatResponsesInputItem
-  ): AiChatResponsesInputItem
-{
-  return JSON.parse(
-    JSON.stringify(entry)) as AiChatResponsesInputItem;
-}
-
 function applyLoadedState(
     model: AiChatModel,
     loaded: Partial<AiChatSerializableState>
   ): void
 {
   if (Array.isArray(loaded.messages)) {
-    model.messages.splice(
+    (model.messages.list as ObservableArray<AiChatMessage>).splice(
       0,
-      model.messages.length,
+      model.messages.list.length,
       ...loaded.messages.map(
         message =>
           ({ role: message.role,
              content: message.content })));
-  }
-
-  if (Array.isArray(loaded.messageHistory)) {
-    model.messageHistory.splice(
-      0,
-      model.messageHistory.length,
-      ...loaded.messageHistory.map(
-        entry =>
-          cloneInputItem(entry)));
   }
 
   if (typeof loaded.promptDraft === 'string') {
@@ -978,6 +1155,43 @@ function applyLoadedState(
 
   if (typeof loaded.missingKeyMessageShown === 'boolean') {
     model.missingKeyMessageShown = loaded.missingKeyMessageShown;
+  }
+
+  if (typeof loaded.lastResponseId === 'string') {
+    model.lastResponseId = loaded.lastResponseId;
+  } else if (loaded.lastResponseId === null) {
+    model.lastResponseId = null;
+  }
+
+  if (loaded.choicePrompt === null) {
+    dismissChoices(
+      model,
+      null);
+  } else if (loaded.choicePrompt !== undefined) {
+    const internalState =
+      getInternalChoiceState(model);
+
+    internalState.resolver = null;
+    internalState.behavior = loaded.choicePrompt.behavior;
+    model.choicePrompt =
+      { message: loaded.choicePrompt.message,
+        options:
+          loaded.choicePrompt.options.map(
+            option =>
+              ({ value: option.value,
+                 label: option.label })) };
+  }
+
+  if (loaded.progress === null) {
+    model.progress = null;
+  } else if (loaded.progress !== undefined) {
+    model.progress =
+      { message: loaded.progress.message,
+        visible: loaded.progress.visible };
+  }
+
+  if (typeof loaded.sending === 'boolean') {
+    model.sending = loaded.sending;
   }
 }
 
@@ -1009,6 +1223,215 @@ function createStatePersistenceScheduler(
   };
 }
 
+function resolveAiChatSessionStorageKey(
+    component: AiChat
+  ): string
+{
+  const path =
+    typeof location !== 'undefined'
+    && location !== null
+    && typeof location.pathname === 'string'
+      ? encodeURIComponent(location.pathname)
+      : '';
+  const id =
+    component.id.trim() !== ''
+      ? encodeURIComponent(component.id.trim())
+      : `default-${resolveAiChatElementIndex(component)}`;
+
+  return `asljs-ai-chat:${path}:${id}`;
+}
+
+function resolveAiChatElementIndex(
+    component: AiChat
+  ): number
+{
+  if (typeof document === 'undefined') {
+    return 0;
+  }
+
+  const components =
+    [ ...document.querySelectorAll('asljs-ai-chat') ];
+  const index =
+    components.indexOf(component);
+
+  return index >= 0
+    ? index
+    : 0;
+}
+
+function createSessionStorageStateStore(
+    storageKey: string
+  ): AiChatStateStore | undefined
+{
+  if (typeof sessionStorage === 'undefined') {
+    return undefined;
+  }
+
+  return {
+    load: async (): Promise<Partial<AiChatSerializableState>> => {
+      try {
+        const raw =
+          sessionStorage.getItem(storageKey);
+
+        if (!raw || raw.trim() === '') {
+          return { };
+        }
+
+        return normalizeSerializableState(
+          JSON.parse(raw));
+      } catch {
+        return { };
+      }
+    },
+    save: async (
+        state: AiChatSerializableState
+      ): Promise<void> => {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify(state));
+    },
+  };
+}
+
+function normalizeSerializableState(
+    value: unknown
+  ): Partial<AiChatSerializableState>
+{
+  if (!value || typeof value !== 'object') {
+    return { };
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  return {
+    messages:
+      Array.isArray(source.messages)
+        ? source.messages
+            .filter(
+              message =>
+                !!message
+                && typeof message === 'object'
+                && (
+                  (message as { role?: unknown }).role === 'user'
+                  || (message as { role?: unknown }).role === 'assistant'
+                  || (message as { role?: unknown }).role === 'system')
+                && typeof (message as { content?: unknown }).content === 'string')
+            .map(
+              message =>
+                ({ role: (message as { role: AiChatMessageRole; }).role,
+                   content: (message as { content: string; }).content }))
+        : undefined,
+    promptDraft:
+      typeof source.promptDraft === 'string'
+        ? source.promptDraft
+        : undefined,
+    messagesScrollTop:
+      typeof source.messagesScrollTop === 'number'
+        ? source.messagesScrollTop
+        : undefined,
+    hasMessagesScrollTop:
+      typeof source.hasMessagesScrollTop === 'boolean'
+        ? source.hasMessagesScrollTop
+        : undefined,
+    missingKeyMessageShown:
+      typeof source.missingKeyMessageShown === 'boolean'
+        ? source.missingKeyMessageShown
+        : undefined,
+    lastResponseId:
+      typeof source.lastResponseId === 'string'
+      || source.lastResponseId === null
+        ? source.lastResponseId
+        : undefined,
+    choicePrompt:
+      source.choicePrompt === null
+        ? null
+        : normalizeSerializableChoicePrompt(source.choicePrompt),
+    progress:
+      source.progress === null
+        ? null
+        : normalizeSerializableProgressState(source.progress),
+    sending:
+      typeof source.sending === 'boolean'
+        ? source.sending
+        : undefined,
+  };
+}
+
+function normalizeSerializableChoicePrompt(
+    value: unknown
+  ): AiChatSerializableChoicePrompt | undefined
+{
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  if (typeof source.message !== 'string'
+      || !Array.isArray(source.options))
+  {
+    return undefined;
+  }
+
+  const behavior =
+    source.behavior === 'resolve'
+    || source.behavior === 'send'
+      ? source.behavior
+      : undefined;
+
+  if (behavior === undefined) {
+    return undefined;
+  }
+
+  const options =
+    source.options
+      .filter(
+        option =>
+          !!option
+          && typeof option === 'object'
+          && typeof (option as { value?: unknown; }).value === 'string'
+          && typeof (option as { label?: unknown; }).label === 'string')
+      .map(
+        option =>
+          ({ value: (option as { value: string; }).value,
+             label: (option as { label: string; }).label }))
+      .filter(
+        option =>
+          option.value.trim() !== ''
+          && option.label.trim() !== '');
+
+  return {
+    message: source.message,
+    options,
+    behavior,
+  };
+}
+
+function normalizeSerializableProgressState(
+    value: unknown
+  ): AiChatProgressState | undefined
+{
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const source =
+    value as Record<string, unknown>;
+
+  if (typeof source.message !== 'string'
+      || typeof source.visible !== 'boolean')
+  {
+    return undefined;
+  }
+
+  return {
+    message: source.message,
+    visible: source.visible,
+  };
+}
+
 function bindModelListeners(
     model: AiChatModel,
     renderMessages: () => void,
@@ -1022,12 +1445,11 @@ function bindModelListeners(
 {
   const disposers: Array<() => boolean> = [ ];
   let messagesArrayDisposers: Array<() => boolean> = [ ];
-  let messageHistoryArrayDisposers: Array<() => boolean> = [ ];
 
   const bindMessagesArray =
     (): void => {
       const messages =
-        model.messages as ObservableArray<AiChatMessage>;
+        model.messages.list as ObservableArray<AiChatMessage>;
 
       for (const dispose of messagesArrayDisposers) {
         dispose();
@@ -1055,36 +1477,7 @@ function bindModelListeners(
       ];
     };
 
-  const bindMessageHistoryArray =
-    (): void => {
-      const messageHistory =
-        model.messageHistory as ObservableArray<AiChatResponsesInputItem>;
-
-      for (const dispose of messageHistoryArrayDisposers) {
-        dispose();
-      }
-
-      messageHistoryArrayDisposers = [
-        messageHistory.on(
-          'set',
-          () => {
-            persistState();
-          }),
-        messageHistory.on(
-          'delete',
-          () => {
-            persistState();
-          }),
-        messageHistory.on(
-          'define',
-          () => {
-            persistState();
-          }),
-      ];
-    };
-
   bindMessagesArray();
-  bindMessageHistoryArray();
 
   disposers.push(
     model.on(
@@ -1095,20 +1488,16 @@ function bindModelListeners(
         persistState();
       }),
     model.on(
-      'set:messageHistory',
-      () => {
-        bindMessageHistoryArray();
-        persistState();
-      }),
-    model.on(
       'set:progress',
       () => {
         renderProgress();
+        persistState();
       }),
     model.on(
       'set:choicePrompt',
       () => {
         renderChoices();
+        persistState();
       }),
     model.on(
       'set:promptDraft',
@@ -1131,18 +1520,20 @@ function bindModelListeners(
         persistState();
       }),
     model.on(
+      'set:lastResponseId',
+      () => {
+        persistState();
+      }),
+    model.on(
       'set:sending',
       () => {
         syncSendingUi();
+        persistState();
       }));
 
   return {
     dispose: (): void => {
       for (const dispose of messagesArrayDisposers) {
-        dispose();
-      }
-
-      for (const dispose of messageHistoryArrayDisposers) {
         dispose();
       }
 
@@ -1196,15 +1587,26 @@ async function runWithTools<TToolsContext>(
       ) => Promise<unknown>) | undefined,
     toolsContext: TToolsContext | undefined,
     provider: AiChatSecretsAndSettingsProvider,
-    toolStepExtension: number
-  ): Promise<string>
+    toolStepExtension: number,
+    previousResponseId: string | null
+  ): Promise<
+    { text: string;
+      responseId: string | null; }
+  >
 {
+  const requestBody: Record<string, unknown> =
+    { model: chatModel,
+      input,
+      tools };
+
+  if (previousResponseId) {
+    requestBody.previous_response_id = previousResponseId;
+  }
+
   let response =
     await postResponse(
       apiKey,
-      { model: chatModel,
-        input,
-        tools });
+      requestBody);
 
   let stepLimit =
     await readInitialToolStepLimit(provider);
@@ -1225,7 +1627,13 @@ async function runWithTools<TToolsContext>(
     if (functionCalls.length === 0) {
       model.setProgress(
         `Completed in ${stepsCompleted} step(s).`);
-      return extractAssistantText(response);
+      return {
+        text: extractAssistantText(response),
+        responseId:
+          typeof response.id === 'string'
+            ? response.id
+            : null,
+      };
     }
 
     if (executeTool === undefined) {

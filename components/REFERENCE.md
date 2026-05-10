@@ -26,3 +26,16 @@
 - Non-primitive or read-only fields are shown as read-only values and are not
 	mutated by the generated editor.
 
+## AI chat state surface
+
+- `asljs-ai-chat` exposes its mutable chat state directly on the custom element
+	properties (`messages`, `promptDraft`, and related state fields).
+- `messages` is a store object with methods to save/read messages and a `list`
+	collection for rendering and data-binding.
+- If `options.stateStore` is not provided, `asljs-ai-chat` persists state in
+	sessionStorage using a key derived from page path and element id.
+- Persisted chat state includes `lastResponseId` plus operational UI state
+	(`choicePrompt`, `progress`, and `sending`) so refresh can restore in-progress
+	chat context.
+- Collection state should be configured on the custom element itself instead of
+	requiring a separate external model object.
