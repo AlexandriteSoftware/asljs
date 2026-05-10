@@ -367,6 +367,9 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
   const buildOrder =
     [];
 
+  const buildOrderSet =
+    new Set();
+
   function visit(
       currentPackageName
     )
@@ -389,7 +392,8 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
     for (const dependencyName of dependencyNames) {
       visit(dependencyName);
 
-      if (!buildOrder.includes(dependencyName)) {
+      if (!buildOrderSet.has(dependencyName)) {
+        buildOrderSet.add(dependencyName);
         buildOrder.push(dependencyName);
       }
     }
