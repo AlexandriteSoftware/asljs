@@ -140,7 +140,7 @@ export interface AiChatBuildRequestArgs<TRequestContext> {
 }
 
 export interface AiChatMessages {
-  list: AiChatMessage[];
+  readonly list: readonly AiChatMessage[];
   read: () => readonly AiChatMessage[];
   save: (
       role: AiChatMessageRole,
@@ -1147,11 +1147,11 @@ function resolveAiChatSessionStorageKey(
 {
   const path =
     typeof location?.pathname === 'string'
-      ? location.pathname
+      ? encodeURIComponent(location.pathname)
       : '';
   const id =
     component.id.trim() !== ''
-      ? component.id.trim()
+      ? encodeURIComponent(component.id.trim())
       : 'default';
 
   return `asljs-ai-chat:${path}:${id}`;

@@ -183,19 +183,20 @@ export function setDefaultTheme(
 }
 
 export function getComponentVariantList(
-    component: 'button',
+    component: keyof ComponentsTheme,
     theme?: ComponentsTheme | null
   ): string[]
 {
   const resolvedTheme =
     theme ?? getDefaultTheme();
 
-  if (component === 'button') {
-    return Object.keys(
-      resolvedTheme.button?.variants ?? {});
+  switch (component) {
+    case 'button':
+      return Object.keys(
+        resolvedTheme.button?.variants ?? {});
+    default:
+      return [ ];
   }
-
-  return [ ];
 }
 
 export function findThemeProvider(
