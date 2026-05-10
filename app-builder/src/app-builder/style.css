@@ -78,6 +78,13 @@ asljs-file {
   min-height: 0;
 }
 
+.chat-root .chat-key-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 .chat-root .asljs-ai-chat {
   display: flex;
   flex: 1 1 auto;

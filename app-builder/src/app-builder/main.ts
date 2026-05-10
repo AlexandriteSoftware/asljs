@@ -867,8 +867,7 @@ async function mountAiChatForCurrentApp(): Promise<void> {
     const container =
       document.createElement('div');
 
-    container.style.cssText =
-      'display:flex; flex-direction:column; height:100%; overflow:hidden;';
+    container.className = 'chat-key-container';
     container.appendChild(keyPrompt);
     container.appendChild(component);
 

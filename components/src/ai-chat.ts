@@ -1595,7 +1595,6 @@ function createBeforeSendContext<TRequestContext>(
     prompt: string,
     requestContext: TRequestContext,
     chatModel: string,
-    apiKey: string = ''
   ): AiChatBeforeSendContext<TRequestContext>
 {
   const context =
@@ -1603,7 +1602,7 @@ function createBeforeSendContext<TRequestContext>(
       prompt,
       requestContext,
       chatModel,
-      apiKey,
+      apiKey: '',
       canceled: false,
       cancelMessage: null as string | null,
       cancel: (
