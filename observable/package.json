@@ -34,7 +34,7 @@
   "scripts": {
     "clean": "node ../toolkit.js clean-dist",
     "build": "npx tsc -p tsconfig.build.json",
-    "build:test": "npx tsc -p tsconfig.test.json",
+    "build:test": "node ../toolkit.js build-local-deps && npx tsc -p tsconfig.test.json",
     "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",

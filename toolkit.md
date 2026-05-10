@@ -7,6 +7,14 @@
 Deletes the dist directory under the current working directory. Use this from a
 workspace package before rebuilding its publish output.
 
+## build-local-deps
+
+> Build local workspace dependencies for the current package.
+
+Resolves workspace-local package dependencies recursively from package.json
+dependency fields and runs `npm run build` for each dependency in dependency
+order.
+
 ## ensure-clean-working-folder
 
 > Fail when the repository working tree is dirty.
