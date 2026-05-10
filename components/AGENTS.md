@@ -48,6 +48,7 @@ Exports from `src/index.ts`:
 - `ThemeProvider`
 - `ThemeProviderModelDefinition`
 - `findThemeProvider`
+- `getComponentVariantList`
 - `getDefaultTheme`
 - `resolveThemeText`
 - `resolveThemeTemplate`
@@ -61,6 +62,7 @@ Exports from `src/index.ts`:
 - `AiChatChoicePrompt`
 - `AiChatInitializeContext`
 - `AiChatMessage`
+- `AiChatMessages`
 - `AiChatMessageRole`
 - `AiChatModel`
 - `AiChatOptions`
@@ -135,7 +137,7 @@ Component contract at a glance:
   `asljs-properties`, `asljs-select`, `asljs-text-input`,
   `asljs-theme-provider`
 - AI chat state lives on `asljs-ai-chat` direct properties (`messages`,
-  `messageHistory`, `promptDraft`, and related fields)
+  `promptDraft`, and related fields)
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
 - button rendering uses explicit `icon`, `text`, `buttonClassName`, and
   optional `variant`; theme lookup checks variant-specific overrides first,
@@ -302,9 +304,11 @@ to persist or reset.
 
 Inside `asljs-ai-chat`, configure:
 
-- `messages`, `messageHistory`, `promptDraft`, and related chat state directly
+- `messages`, `promptDraft`, and related chat state directly
   on the custom element
 - `options` as the request/persistence/tool callbacks the chat runtime needs
+- `messages` as a store object (`save(...)`, `read()`, and `list`)
+- rely on default sessionStorage persistence when `options.stateStore` is omitted
 
 The chat element owns the rendered conversation UI and the primary state
 surface.

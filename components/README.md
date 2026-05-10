@@ -40,7 +40,7 @@ NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
   `asljs-numpad`, `asljs-properties`, `asljs-text-input`, and
   `asljs-theme-provider`.
 - AI chat state is exposed directly on the `asljs-ai-chat` custom element
-  (`messages`, `messageHistory`, `promptDraft`, and related state fields).
+  (`messages`, `promptDraft`, and related state fields).
 - `AssistedInput` is the shared Lit base for the assisted on-screen input
   components.
 - Button rendering is driven by explicit `icon` and `text` properties.
@@ -700,10 +700,15 @@ list.items =
 Notes:
 
 - The custom element owns chat state directly through properties such as
-  `messages`, `messageHistory`, and `promptDraft`.
+  `messages`, `promptDraft`, and related fields.
+- `messages` is a store object that provides methods for saving messages and
+  reading the messages list.
 - The custom element accepts explicit `options` for request and persistence
   integration.
-- Persisted state can still be restored through `options.stateStore`.
+- If `options.stateStore` is not provided, the component uses sessionStorage by
+  default so refresh keeps chat history.
+- Persisted state includes the last OpenAI response id to reconnect the chat
+  response flow after refresh when possible.
 
 ### File
 
@@ -808,6 +813,7 @@ Exports:
 - `ListThemeDefinition` type
 - `ThemeTemplateValue` type
 - `getDefaultTheme`
+- `getComponentVariantList`
 - `setDefaultTheme`
 - `ListItem` type
 - `ListItemsSource` type

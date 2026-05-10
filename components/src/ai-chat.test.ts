@@ -6,8 +6,7 @@ import {
     JSDOM,
   } from 'jsdom';
 import {
-    type AiChatMessage,
-    type AiChatResponsesInputItem,
+    type AiChatMessages,
     createAiChatModel,
     serializeAiChatModelState,
   } from './ai-chat.js';
@@ -23,15 +22,18 @@ test(
 
     assert.deepEqual(
       model,
-      { messages: [ ],
-        messageHistory: [ ],
+      { messages: model.messages,
         promptDraft: '',
         messagesScrollTop: 0,
         hasMessagesScrollTop: false,
         missingKeyMessageShown: false,
+        lastResponseId: null,
         choicePrompt: null,
         progress: null,
         sending: false });
+    assert.deepEqual(
+      model.messages.read(),
+      [ ]);
   });
 
 test(
@@ -42,20 +44,18 @@ test(
         { messages:
             [ { role: 'assistant',
                 content: 'Persisted answer' } ],
-          messageHistory:
-            [ { role: 'assistant',
-                content: 'Persisted answer' } ],
           promptDraft: 'next prompt',
           messagesScrollTop: 42,
           hasMessagesScrollTop: true,
-          missingKeyMessageShown: true });
+          missingKeyMessageShown: true,
+          lastResponseId: 'resp_1' });
 
-    assert.equal(model.messages.length, 1);
-    assert.equal(model.messageHistory.length, 1);
+    assert.equal(model.messages.read().length, 1);
     assert.equal(model.promptDraft, 'next prompt');
     assert.equal(model.messagesScrollTop, 42);
     assert.equal(model.hasMessagesScrollTop, true);
     assert.equal(model.missingKeyMessageShown, true);
+    assert.equal(model.lastResponseId, 'resp_1');
   });
 
 test(
@@ -85,15 +85,15 @@ test(
     assert.deepEqual(
       state,
       { messages: [ ],
-        messageHistory: [ ],
         promptDraft: '',
         messagesScrollTop: 0,
         hasMessagesScrollTop: false,
-        missingKeyMessageShown: false });
+        missingKeyMessageShown: false,
+        lastResponseId: null });
   });
 
 test(
-  'ai-chat: custom element exposes messages and messageHistory as direct properties',
+  'ai-chat: custom element exposes messages store and draft as direct properties',
   async () => {
     await ensureDom();
     await loadModules();
@@ -101,20 +101,16 @@ test(
     const chat =
       document.createElement('asljs-ai-chat') as AiChatElement;
 
-    chat.messages =
-      [ { role: 'assistant',
-          content: 'Hello there' } ];
-    chat.messageHistory =
-      [ { role: 'assistant',
-          content: 'Hello there' } ];
+    chat.messages.save(
+      'assistant',
+      'Hello there');
     chat.promptDraft = 'Draft prompt';
 
     document.body.appendChild(chat);
     await settleDeep(chat);
 
-    assert.equal(chat.messages.length, 1);
-    assert.equal(chat.messages[0].content, 'Hello there');
-    assert.equal(chat.messageHistory.length, 1);
+    assert.equal(chat.messages.read().length, 1);
+    assert.equal(chat.messages.read()[0].content, 'Hello there');
     assert.equal(chat.promptDraft, 'Draft prompt');
     assert.equal(
       chat.querySelector('.asljs-ai-chat-bubble')?.textContent?.includes('Hello there'),
@@ -134,21 +130,50 @@ test(
         { messages:
             [ { role: 'assistant',
                 content: 'Restored' } ],
-          messageHistory:
-            [ { role: 'assistant',
-                content: 'Restored' } ],
           promptDraft: 'restored draft' });
 
     chat.messages = restoredModel.messages;
-    chat.messageHistory = restoredModel.messageHistory;
     chat.promptDraft = restoredModel.promptDraft;
     document.body.appendChild(chat);
     await settleDeep(chat);
 
-    assert.equal(chat.messages.length, 1);
-    assert.equal(chat.messages[0].content, 'Restored');
-    assert.equal(chat.messageHistory.length, 1);
+    assert.equal(chat.messages.read().length, 1);
+    assert.equal(chat.messages.read()[0].content, 'Restored');
     assert.equal(chat.promptDraft, 'restored draft');
+  });
+
+test(
+  'ai-chat: auto session storage restores messages by component id',
+  async () => {
+    await ensureDom();
+    await loadModules();
+
+    sessionStorage.clear();
+
+    const first =
+      document.createElement('asljs-ai-chat') as AiChatElement;
+    first.id = 'session-chat';
+    document.body.appendChild(first);
+    await settleDeep(first);
+
+    first.messages.save(
+      'assistant',
+      'Persisted session message');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    document.body.replaceChildren();
+
+    const restored =
+      document.createElement('asljs-ai-chat') as AiChatElement;
+    restored.id = 'session-chat';
+    document.body.appendChild(restored);
+    await settleDeep(restored);
+
+    assert.equal(restored.messages.read().length, 1);
+    assert.equal(
+      restored.messages.read()[0].content,
+      'Persisted session message');
   });
 
 async function loadModules(): Promise<void> {
@@ -184,7 +209,9 @@ async function ensureDom(): Promise<void> {
         ShadowRoot: globalThis.ShadowRoot,
         CSSStyleSheet: globalThis.CSSStyleSheet,
         Node: globalThis.Node,
-        getComputedStyle: globalThis.getComputedStyle };
+        getComputedStyle: globalThis.getComputedStyle,
+        sessionStorage: globalThis.sessionStorage,
+        location: globalThis.location };
 
     globalThis.window = dom.window as unknown as typeof globalThis.window;
     globalThis.document = dom.window.document;
@@ -202,6 +229,8 @@ async function ensureDom(): Promise<void> {
     globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
     globalThis.Node = dom.window.Node;
     globalThis.getComputedStyle = dom.window.getComputedStyle.bind(dom.window);
+    globalThis.sessionStorage = dom.window.sessionStorage;
+    globalThis.location = dom.window.location;
 
     domRestore = () => {
       globalThis.window = previous.window;
@@ -220,6 +249,8 @@ async function ensureDom(): Promise<void> {
       globalThis.CSSStyleSheet = previous.CSSStyleSheet;
       globalThis.Node = previous.Node;
       globalThis.getComputedStyle = previous.getComputedStyle;
+      globalThis.sessionStorage = previous.sessionStorage;
+      globalThis.location = previous.location;
     };
   }
 
@@ -253,7 +284,6 @@ type LitElementLike =
 type AiChatElement =
   LitElementLike
   & {
-    messages: AiChatMessage[];
-    messageHistory: AiChatResponsesInputItem[];
+    messages: AiChatMessages;
     promptDraft: string;
   };

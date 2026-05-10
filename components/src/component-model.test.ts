@@ -56,15 +56,15 @@ test(
     assert.deepEqual(
       propertyByName.get('messages'),
       { name: 'messages',
-        type: 'array',
+        type: 'object',
         title: 'Messages',
-        description: 'Rendered chat messages.' });
+        description: 'Chat messages store with read/save methods and list access.' });
     assert.deepEqual(
-      propertyByName.get('messageHistory'),
-      { name: 'messageHistory',
-        type: 'array',
-        title: 'Message history',
-        description: 'Recent request/response history used to build prompts.' });
+      propertyByName.get('lastResponseId'),
+      { name: 'lastResponseId',
+        type: 'string',
+        title: 'Last response id',
+        description: 'Persisted response id used to reconnect OpenAI response sessions.' });
     assert.deepEqual(
       propertyByName.get('sending'),
       { name: 'sending',

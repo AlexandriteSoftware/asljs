@@ -182,6 +182,22 @@ export function setDefaultTheme(
   defaultTheme = theme ?? {};
 }
 
+export function getComponentVariantList(
+    component: 'button',
+    theme?: ComponentsTheme | null
+  ): string[]
+{
+  const resolvedTheme =
+    theme ?? getDefaultTheme();
+
+  if (component === 'button') {
+    return Object.keys(
+      resolvedTheme.button?.variants ?? {});
+  }
+
+  return [ ];
+}
+
 export function findThemeProvider(
     element: Element
   ): ThemeProviderLike | null

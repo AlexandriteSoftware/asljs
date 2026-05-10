@@ -77,11 +77,11 @@ export interface AiChatProgressState {
 
 export interface AiChatSerializableState {
   messages: AiChatMessage[];
-  messageHistory: AiChatResponsesInputItem[];
   promptDraft: string;
   messagesScrollTop: number;
   hasMessagesScrollTop: boolean;
   missingKeyMessageShown: boolean;
+  lastResponseId: string | null;
 }
 
 export interface AiChatSecretsAndSettingsProvider {
@@ -134,9 +134,20 @@ export interface AiChatToolStepLimitContext {
 export interface AiChatBuildRequestArgs<TRequestContext> {
   model: AiChatModel;
   prompt: string;
-  messageHistory: AiChatResponsesInputItem[];
+  messages: AiChatMessages;
   requestContext: TRequestContext;
   chatModel: string;
+}
+
+export interface AiChatMessages {
+  list: AiChatMessage[];
+  read: () => readonly AiChatMessage[];
+  save: (
+      role: AiChatMessageRole,
+      content: string
+    ) => void;
+  clear: () => void;
+  toResponsesInput: () => AiChatResponsesInputItem[];
 }
 
 export interface AiChatModelMethods {
@@ -168,8 +179,9 @@ type AiChatModelEvents =
   };
 
 export type AiChatModel =
-  AiChatSerializableState
+  Omit<AiChatSerializableState, 'messages'>
   & {
+    messages: AiChatMessages;
     choicePrompt: AiChatChoicePrompt | null;
     progress: AiChatProgressState | null;
     sending: boolean;
@@ -241,14 +253,17 @@ export function createAiChatModel(
     initial: Partial<AiChatSerializableState> = { }
   ): AiChatModel
 {
+  const messages =
+    createAiChatMessages(
+      initial.messages);
   const model =
     observable(
-      { messages: initial.messages ?? [ ],
-        messageHistory: initial.messageHistory ?? [ ],
+      { messages,
         promptDraft: initial.promptDraft ?? '',
         messagesScrollTop: initial.messagesScrollTop ?? 0,
         hasMessagesScrollTop: initial.hasMessagesScrollTop ?? false,
         missingKeyMessageShown: initial.missingKeyMessageShown ?? false,
+        lastResponseId: initial.lastResponseId ?? null,
         choicePrompt: null,
         progress: null,
         sending: false }) as unknown as AiChatModel;
@@ -267,20 +282,16 @@ export function createAiChatModel(
             content: string
           ): void =>
           {
-            model.messages.push(
-              { role,
-                content });
+            model.messages.save(
+              role,
+              content);
           }),
       clearMessages:
         defineModelMethod(
           (): void =>
           {
-            model.messages.splice(
-              0,
-              model.messages.length);
-            model.messageHistory.splice(
-              0,
-              model.messageHistory.length);
+            model.messages.clear();
+            model.lastResponseId = null;
           }),
       clearProgress:
         defineModelMethod(
@@ -348,24 +359,64 @@ export function createAiChatModel(
   return model;
 }
 
+function createAiChatMessages(
+    initialMessages: AiChatMessage[] | undefined
+  ): AiChatMessages
+{
+  const list =
+    observable(
+      (initialMessages ?? [ ])
+        .map(
+          message =>
+            ({ role: message.role,
+               content: message.content }))) as unknown as ObservableArray<AiChatMessage>;
+
+  return {
+    list,
+    read: () => list,
+    save: (
+        role: AiChatMessageRole,
+        content: string
+      ): void =>
+      {
+        list.push(
+          { role,
+            content });
+      },
+    clear: (): void => {
+      list.splice(
+        0,
+        list.length);
+    },
+    toResponsesInput: () =>
+      list
+        .filter(
+          message =>
+            message.role === 'user'
+            || message.role === 'assistant')
+        .slice(-24)
+        .map(
+          message =>
+            ({ role: message.role,
+               content: message.content })),
+  };
+}
+
 export function serializeAiChatModelState(
     model: AiChatModel
   ): AiChatSerializableState
 {
   return {
     messages:
-      model.messages.map(
+      model.messages.read().map(
         message =>
           ({ role: message.role,
              content: message.content })),
-    messageHistory:
-      model.messageHistory.map(
-        entry =>
-          cloneInputItem(entry)),
     promptDraft: model.promptDraft,
     messagesScrollTop: model.messagesScrollTop,
     hasMessagesScrollTop: model.hasMessagesScrollTop,
     missingKeyMessageShown: model.missingKeyMessageShown,
+    lastResponseId: model.lastResponseId,
   };
 }
 
@@ -383,21 +434,12 @@ export class AiChat
   @property({ attribute: false })
     accessor options: AiChatOptions | null = null;
 
-  get messages(): AiChatMessage[] {
+  get messages(): AiChatMessages {
     return this.#model.messages;
   }
-  set messages(value: AiChatMessage[]) {
+  set messages(value: AiChatMessages) {
     this.#setModelProperty(
       'messages',
-      value);
-  }
-
-  get messageHistory(): AiChatResponsesInputItem[] {
-    return this.#model.messageHistory;
-  }
-  set messageHistory(value: AiChatResponsesInputItem[]) {
-    this.#setModelProperty(
-      'messageHistory',
       value);
   }
 
@@ -434,6 +476,15 @@ export class AiChat
   set missingKeyMessageShown(value: boolean) {
     this.#setModelProperty(
       'missingKeyMessageShown',
+      value);
+  }
+
+  get lastResponseId(): string | null {
+    return this.#model.lastResponseId;
+  }
+  set lastResponseId(value: string | null) {
+    this.#setModelProperty(
+      'lastResponseId',
       value);
   }
 
@@ -521,7 +572,7 @@ export class AiChat
                       gap:0.75rem;
                       flex:1 1 auto;
                       overflow:auto;">
-            ${model.messages.map(
+            ${model.messages.read().map(
               message =>
                 html`
                   <div class=${`asljs-ai-chat-message asljs-ai-chat-message-${message.role}`}>
@@ -622,6 +673,10 @@ export class AiChat
       this.#model;
     const options =
       this.options;
+    const stateStore =
+      options?.stateStore
+      ?? createSessionStorageStateStore(
+        resolveAiChatSessionStorageKey(this));
     const version =
       ++this.#setupVersion;
 
@@ -629,12 +684,12 @@ export class AiChat
     this.#persistState =
       createStatePersistenceScheduler(
         model,
-        options?.stateStore);
+        stateStore);
 
-    if (options?.stateStore) {
+    if (stateStore) {
       applyLoadedState(
         model,
-        await options.stateStore.load());
+        await stateStore.load());
 
       if (version !== this.#setupVersion) {
         return;
@@ -895,11 +950,11 @@ export class AiChat
         await options.buildRequestInput(
           { model,
             prompt,
-            messageHistory:
-              model.messageHistory.slice(),
+            messages:
+              model.messages,
             requestContext,
             chatModel });
-      const assistantText =
+      const result =
         await runWithTools(
           apiKey,
           chatModel,
@@ -911,22 +966,16 @@ export class AiChat
             ? await options.getToolsContext()
             : undefined,
           options.provider,
-          options.toolStepExtension ?? defaultToolStepExtension);
+          options.toolStepExtension ?? defaultToolStepExtension,
+          model.lastResponseId);
 
-      model.messageHistory.push(
-        { role: 'user',
-          content: prompt });
-      model.messageHistory.push(
-        { role: 'assistant',
-          content: assistantText });
-
-      while (model.messageHistory.length > 24) {
-        model.messageHistory.shift();
-      }
+      const assistantText =
+        result.text;
 
       model.appendMessage(
         'assistant',
         assistantText);
+      model.lastResponseId = result.responseId;
 
       await model.emitAsync(
         'afterResponse',
@@ -1026,36 +1075,19 @@ function getInternalChoiceState(
   return state;
 }
 
-function cloneInputItem(
-    entry: AiChatResponsesInputItem
-  ): AiChatResponsesInputItem
-{
-  return JSON.parse(
-    JSON.stringify(entry)) as AiChatResponsesInputItem;
-}
-
 function applyLoadedState(
     model: AiChatModel,
     loaded: Partial<AiChatSerializableState>
   ): void
 {
   if (Array.isArray(loaded.messages)) {
-    model.messages.splice(
+    model.messages.list.splice(
       0,
-      model.messages.length,
+      model.messages.list.length,
       ...loaded.messages.map(
         message =>
           ({ role: message.role,
              content: message.content })));
-  }
-
-  if (Array.isArray(loaded.messageHistory)) {
-    model.messageHistory.splice(
-      0,
-      model.messageHistory.length,
-      ...loaded.messageHistory.map(
-        entry =>
-          cloneInputItem(entry)));
   }
 
   if (typeof loaded.promptDraft === 'string') {
@@ -1072,6 +1104,12 @@ function applyLoadedState(
 
   if (typeof loaded.missingKeyMessageShown === 'boolean') {
     model.missingKeyMessageShown = loaded.missingKeyMessageShown;
+  }
+
+  if (typeof loaded.lastResponseId === 'string') {
+    model.lastResponseId = loaded.lastResponseId;
+  } else if (loaded.lastResponseId === null) {
+    model.lastResponseId = null;
   }
 }
 
@@ -1103,6 +1141,55 @@ function createStatePersistenceScheduler(
   };
 }
 
+function resolveAiChatSessionStorageKey(
+    component: AiChat
+  ): string
+{
+  const path =
+    typeof location?.pathname === 'string'
+      ? location.pathname
+      : '';
+  const id =
+    component.id.trim() !== ''
+      ? component.id.trim()
+      : 'default';
+
+  return `asljs-ai-chat:${path}:${id}`;
+}
+
+function createSessionStorageStateStore(
+    storageKey: string
+  ): AiChatStateStore | undefined
+{
+  if (typeof sessionStorage === 'undefined') {
+    return undefined;
+  }
+
+  return {
+    load: async (): Promise<Partial<AiChatSerializableState>> => {
+      try {
+        const raw =
+          sessionStorage.getItem(storageKey);
+
+        if (!raw || raw.trim() === '') {
+          return { };
+        }
+
+        return JSON.parse(raw) as Partial<AiChatSerializableState>;
+      } catch {
+        return { };
+      }
+    },
+    save: async (
+        state: AiChatSerializableState
+      ): Promise<void> => {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify(state));
+    },
+  };
+}
+
 function bindModelListeners(
     model: AiChatModel,
     renderMessages: () => void,
@@ -1116,12 +1203,11 @@ function bindModelListeners(
 {
   const disposers: Array<() => boolean> = [ ];
   let messagesArrayDisposers: Array<() => boolean> = [ ];
-  let messageHistoryArrayDisposers: Array<() => boolean> = [ ];
 
   const bindMessagesArray =
     (): void => {
       const messages =
-        model.messages as ObservableArray<AiChatMessage>;
+        model.messages.list as ObservableArray<AiChatMessage>;
 
       for (const dispose of messagesArrayDisposers) {
         dispose();
@@ -1149,36 +1235,7 @@ function bindModelListeners(
       ];
     };
 
-  const bindMessageHistoryArray =
-    (): void => {
-      const messageHistory =
-        model.messageHistory as ObservableArray<AiChatResponsesInputItem>;
-
-      for (const dispose of messageHistoryArrayDisposers) {
-        dispose();
-      }
-
-      messageHistoryArrayDisposers = [
-        messageHistory.on(
-          'set',
-          () => {
-            persistState();
-          }),
-        messageHistory.on(
-          'delete',
-          () => {
-            persistState();
-          }),
-        messageHistory.on(
-          'define',
-          () => {
-            persistState();
-          }),
-      ];
-    };
-
   bindMessagesArray();
-  bindMessageHistoryArray();
 
   disposers.push(
     model.on(
@@ -1186,12 +1243,6 @@ function bindModelListeners(
       () => {
         bindMessagesArray();
         renderMessages();
-        persistState();
-      }),
-    model.on(
-      'set:messageHistory',
-      () => {
-        bindMessageHistoryArray();
         persistState();
       }),
     model.on(
@@ -1225,6 +1276,11 @@ function bindModelListeners(
         persistState();
       }),
     model.on(
+      'set:lastResponseId',
+      () => {
+        persistState();
+      }),
+    model.on(
       'set:sending',
       () => {
         syncSendingUi();
@@ -1233,10 +1289,6 @@ function bindModelListeners(
   return {
     dispose: (): void => {
       for (const dispose of messagesArrayDisposers) {
-        dispose();
-      }
-
-      for (const dispose of messageHistoryArrayDisposers) {
         dispose();
       }
 
@@ -1290,13 +1342,20 @@ async function runWithTools<TToolsContext>(
       ) => Promise<unknown>) | undefined,
     toolsContext: TToolsContext | undefined,
     provider: AiChatSecretsAndSettingsProvider,
-    toolStepExtension: number
-  ): Promise<string>
+    toolStepExtension: number,
+    previousResponseId: string | null
+  ): Promise<
+    { text: string;
+      responseId: string | null; }
+  >
 {
   let response =
     await postResponse(
       apiKey,
       { model: chatModel,
+        ...(previousResponseId
+            ? { previous_response_id: previousResponseId }
+            : { }),
         input,
         tools });
 
@@ -1319,7 +1378,13 @@ async function runWithTools<TToolsContext>(
     if (functionCalls.length === 0) {
       model.setProgress(
         `Completed in ${stepsCompleted} step(s).`);
-      return extractAssistantText(response);
+      return {
+        text: extractAssistantText(response),
+        responseId:
+          typeof response.id === 'string'
+            ? response.id
+            : null,
+      };
     }
 
     if (executeTool === undefined) {

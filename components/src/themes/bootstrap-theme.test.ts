@@ -5,6 +5,9 @@ import assert
 import {
     createBootstrapTheme,
   } from './bootstrap-theme.js';
+import {
+    getComponentVariantList,
+  } from './theme.js';
 
 test(
   'bootstrap-theme: returns bootstrap button icon defaults and text input templates',
@@ -57,4 +60,11 @@ test(
     assert.match(
       theme.list?.container as string,
       /list-group/);
+    assert.deepEqual(
+      getComponentVariantList(
+        'button',
+        theme),
+      [ 'add',
+        'delete',
+        'settings' ]);
   });

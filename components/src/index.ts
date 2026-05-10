@@ -39,6 +39,7 @@ export {
     type AiChatChoicePrompt,
     type AiChatInitializeContext,
     type AiChatMessage,
+    type AiChatMessages,
     type AiChatMessageRole,
     type AiChatModel,
     type AiChatOptions,
@@ -121,6 +122,7 @@ export {
   } from './themes/theme-provider.js';
 
 export {
+    getComponentVariantList,
     findThemeProvider,
     getDefaultTheme,
     resolveThemeText,
