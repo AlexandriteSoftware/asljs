@@ -270,6 +270,123 @@ test(
     assert.equal(restored.sending, true);
   });
 
+test(
+  'ai-chat-key: custom element renders label and emits key-submit on submit',
+  async () => {
+    await ensureDom();
+    await loadModules();
+    await import('./ai-chat-key.js');
+
+    const keyPrompt =
+      document.createElement('asljs-ai-chat-key') as AiChatKeyPromptElement;
+
+    keyPrompt.label = 'Enter your key';
+    keyPrompt.submitLabel = 'Go';
+
+    document.body.appendChild(keyPrompt);
+    await settleDeep(keyPrompt);
+
+    const labelEl =
+      keyPrompt.querySelector('.asljs-ai-chat-key-label');
+
+    assert.ok(
+      labelEl !== null,
+      'key label element is present');
+    assert.ok(
+      labelEl?.textContent?.includes('Enter your key'),
+      'key label text is rendered');
+
+    let submittedKey: string | null = null;
+
+    keyPrompt.addEventListener(
+      'key-submit',
+      (event: Event) => {
+        submittedKey =
+          (event as CustomEvent<{ key: string }>).detail.key;
+      });
+
+    const textInput =
+      keyPrompt.querySelector('asljs-text-input') as HTMLElement | null;
+
+    assert.ok(
+      textInput !== null,
+      'asljs-text-input is rendered inside key prompt');
+
+    if (textInput !== null) {
+      const innerInput =
+        textInput.querySelector('input') as HTMLInputElement | null;
+
+      if (innerInput !== null) {
+        innerInput.value = 'sk-test-key';
+        innerInput.dispatchEvent(new Event('input', { bubbles: true }));
+        await Promise.resolve();
+      }
+    }
+
+    const button =
+      keyPrompt.querySelector('asljs-button') as HTMLElement | null;
+
+    button?.dispatchEvent(new Event('click', { bubbles: true }));
+    await Promise.resolve();
+
+    assert.equal(
+      submittedKey,
+      'sk-test-key',
+      'key-submit event carries the entered key');
+  });
+
+test(
+  'OpenAiTransport: postRequest sends to openai and returns parsed JSON',
+  async () => {
+    const { OpenAiTransport: Transport } =
+      await import('./ai-chat.js');
+
+    const capturedRequests: Array<{
+      url: string;
+      init: RequestInit;
+    }> = [];
+
+    const originalFetch =
+      globalThis.fetch;
+
+    globalThis.fetch =
+      (async (
+          url: string,
+          init?: RequestInit
+        ): Promise<Response> => {
+        capturedRequests.push({ url, init: init ?? {} });
+        return {
+          ok: true,
+          json: async () => ({ id: 'resp_1', output: [] }),
+        } as unknown as Response;
+      }) as typeof fetch;
+
+    try {
+      const transport =
+        new Transport('sk-test');
+
+      const result =
+        await transport.postRequest({ model: 'gpt-4o', input: [] });
+
+      assert.equal(capturedRequests.length, 1);
+      assert.equal(
+        capturedRequests[0].url,
+        'https://api.openai.com/v1/responses',
+        'request sent to correct OpenAI endpoint');
+
+      const headers =
+        capturedRequests[0].init.headers as Record<string, string>;
+
+      assert.ok(
+        headers.Authorization.includes('sk-test'),
+        'Authorization header includes API key');
+
+      assert.equal(result.id, 'resp_1');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
 async function loadModules(): Promise<void> {
   await ensureDom();
 
@@ -412,4 +529,11 @@ type AiChatElement =
       visible: boolean;
     } | null;
     sending: boolean;
+  };
+
+type AiChatKeyPromptElement =
+  LitElementLike
+  & {
+    label: string;
+    submitLabel: string;
   };

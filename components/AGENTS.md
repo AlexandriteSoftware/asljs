@@ -6,18 +6,21 @@ Use this file as AI-facing guidance for `asljs-components`.
 
 This package currently exports the `AssistedInput`, `Button`, `Keyboard`,
 `Letterpad`, `List`, `Numpad`, `Properties`, `Select`, and `TextInput` UI
-classes/components, the `AiChat` custom element plus AI chat model helpers,
-the `FileView` web component plus file handlers, runtime component model
-definitions, package theming helpers, a theme provider custom element, and
-related types.
+classes/components, the `AiChat` custom element plus AI chat model helpers and
+transport classes (`OpenAiTransport`), the `AiChatKeyPrompt` custom element for
+user-supplied API key collection, the `FileView` web component plus file
+handlers, runtime component model definitions, package theming helpers, a theme
+provider custom element, and related types.
 
 ## Package Scope
 
 Exports from `src/index.ts`:
 
 - `AiChat`
+- `AiChatKeyPrompt`
 - `createAiChatModel`
 - `serializeAiChatModelState`
+- `OpenAiTransport`
 - `createBootstrapTheme`
 - `AiChatModelDefinition`
 - `AllComponentModelDefinitions`
@@ -66,6 +69,7 @@ Exports from `src/index.ts`:
 - `AiChatMessageRole`
 - `AiChatModel`
 - `AiChatOptions`
+- `AiChatTransport`
 - `AiChatProgressState`
 - `AiChatResponsesInputItem`
 - `AiChatSecretsAndSettingsProvider`
@@ -73,6 +77,7 @@ Exports from `src/index.ts`:
 - `AiChatStateStore`
 - `AiChatToolDefinition`
 - `AiChatToolStepLimitContext`
+- `AiChatKeySubmitDetail`
 - `AssistedInputButtonDefinition`
 - `AssistedInputKeyDetail`
 - `ComponentModelDefinition`
@@ -112,6 +117,7 @@ Exports from `src/index.ts`:
 Current custom elements:
 
 - `asljs-ai-chat`
+- `asljs-ai-chat-key`
 - `asljs-file`
 - `asljs-list`
 - `asljs-button`
@@ -132,12 +138,19 @@ Current non-custom-element UI surface:
 Component contract at a glance:
 
 - import with `import 'asljs-components';`
-- custom elements: `asljs-ai-chat`, `asljs-button`, `asljs-file`,
-  `asljs-keyboard`, `asljs-letterpad`, `asljs-list`, `asljs-numpad`,
-  `asljs-properties`, `asljs-select`, `asljs-text-input`,
+- custom elements: `asljs-ai-chat`, `asljs-ai-chat-key`, `asljs-button`,
+  `asljs-file`, `asljs-keyboard`, `asljs-letterpad`, `asljs-list`,
+  `asljs-numpad`, `asljs-properties`, `asljs-select`, `asljs-text-input`,
   `asljs-theme-provider`
 - AI chat state lives on `asljs-ai-chat` direct properties (`messages`,
   `promptDraft`, and related fields)
+- `options.transport` sets the HTTP transport for `asljs-ai-chat`; if omitted,
+  the component falls back to `options.provider.getOpenAiApiKey()`
+- `OpenAiTransport` is the built-in OpenAI Responses API transport class;
+  construct with an API key string
+- `asljs-ai-chat-key` is a small form component that collects an API key from
+  the user; it dispatches a `key-submit` event with `{ detail: { key } }` when
+  the user submits the key
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
 - button rendering uses explicit `icon`, `text`, `buttonClassName`, and
   optional `variant`; theme lookup checks variant-specific overrides first,
@@ -212,6 +225,8 @@ The package currently uses more than one component form.
   and template properties.
 - `ThemeProvider` is a lightweight `HTMLElement` provider.
 - `AiChat` is a Lit custom element with explicit state properties and `options`.
+- `AiChatKeyPrompt` is a Lit custom element that renders an API key input form;
+  it dispatches `key-submit` on the DOM when the user submits a non-empty key.
 
 Preserve the shared design rules across those forms.
 

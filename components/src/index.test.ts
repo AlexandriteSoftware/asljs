@@ -8,12 +8,14 @@ import {
   AssistedInput,
   AssistedInputModelDefinition,
   AiChat,
+  AiChatKeyPrompt,
   Button,
   ButtonModelDefinition,
   bindComponentPreviewModel,
   createComponentPreviewModel,
   createBootstrapTheme,
     createAiChatModel,
+    OpenAiTransport,
   FileView,
   FileViewModelDefinition,
   Keyboard,
@@ -94,6 +96,14 @@ test(
 
     assert.equal(
       typeof AiChat,
+      'function');
+
+    assert.equal(
+      typeof AiChatKeyPrompt,
+      'function');
+
+    assert.equal(
+      typeof OpenAiTransport,
       'function');
 
     assert.equal(
