@@ -190,6 +190,7 @@ const elBtnShare = mustElement<AppBuilderButtonElement>('btn-share');
 const elBtnSettings = mustElement<AppBuilderButtonElement>('btn-settings');
 const elBtnToggleChat = mustElement<AppBuilderButtonElement>('btn-toggle-chat');
 const elBtnToggleFiles = mustElement<AppBuilderButtonElement>('btn-toggle-files');
+const elMobileTabBar = mustElement<HTMLElement>('mobile-tab-bar');
 const elMobileTabChat = mustElement<AppBuilderButtonElement>('mobile-tab-chat');
 const elMobileTabFiles = mustElement<AppBuilderButtonElement>('mobile-tab-files');
 const elMobileTabRun = mustElement<AppBuilderButtonElement>('mobile-tab-run');
@@ -336,7 +337,7 @@ function configureShellControls(): void {
 }
 
 function isMobileViewport(): boolean {
-  return window.matchMedia('(max-width: 991.98px)').matches;
+  return window.getComputedStyle(elMobileTabBar).display !== 'none';
 }
 
 function setMobileWorkspaceTab(tab: MobileWorkspaceTab): void {
@@ -1894,10 +1895,10 @@ elMobileTabFiles.addEventListener('click', () => {
   setMobileWorkspaceTab('files');
 });
 elMobileTabRun.addEventListener('click', () => {
-  const alreadyActive =
+  const isRunTabAlreadyActive =
     elPanels.classList.contains('mobile-tab-run');
   setMobileWorkspaceTab('run');
-  if (!alreadyActive) {
+  if (!isRunTabAlreadyActive) {
     handleRun();
   }
 });
