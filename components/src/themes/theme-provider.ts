@@ -2,6 +2,18 @@ import {
     type ComponentsTheme,
     THEME_CHANGED_EVENT_NAME,
   } from './theme.js';
+import {
+    type ComponentModelDefinition,
+  } from '../abstractions/model.js';
+
+export const ThemeProviderModelDefinition: ComponentModelDefinition =
+  { name: 'ThemeProviderModelDefinition',
+    title: 'Theme Provider',
+    properties:
+      [ { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description: 'Active components theme.' } ] };
 
 const ThemeProviderBase =
   (globalThis.HTMLElement

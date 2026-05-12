@@ -43,6 +43,23 @@ test(
   });
 
 test(
+  'button: model definition includes the variant property metadata',
+  async () => {
+    await ensureDom();
+
+    const {
+      ButtonModelDefinition,
+    } = await import('./button.js');
+
+    assert.deepEqual(
+      ButtonModelDefinition.properties[0],
+      { name: 'variant',
+        type: 'string',
+        title: 'Variant',
+        description: 'Variant key used to resolve theme defaults such as add or delete.' });
+  });
+
+test(
   'button: resolves variant icon and text from theme provider',
   async () => {
     await ensureDom();

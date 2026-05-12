@@ -8,21 +8,6 @@ performant JavaScript libraries for everyday use.
 `asljs-components` is a catalog of reusable UI components for web applications
 in the ASLJS monorepo.
 
-This package is component-oriented, but not every component has the same form.
-The current package includes:
-
-- shared base classes such as `AssistedInput`
-- custom elements such as `asljs-button`
-- custom elements such as `asljs-properties`
-- custom elements such as `asljs-keyboard`
-- custom elements such as `asljs-letterpad`
-- custom elements such as `asljs-numpad`
-- custom elements such as `asljs-list`
-- custom elements such as `asljs-file`
-- custom elements such as `asljs-ai-chat`
-- custom elements such as `asljs-text-input`
-- provider elements such as `asljs-theme-provider`
-
 ## Installation
 
 ```bash
@@ -30,54 +15,6 @@ npm install asljs-components
 ```
 
 NPM Package: [asljs-components](https://www.npmjs.com/package/asljs-components)
-
-## Component Contract At A Glance
-
-- Import the package with `import 'asljs-components';` when you need the
-  package custom elements registered.
-- The current custom elements are `asljs-ai-chat`, `asljs-button`,
-  `asljs-file`, `asljs-keyboard`, `asljs-letterpad`, `asljs-list`,
-  `asljs-numpad`, `asljs-properties`, `asljs-text-input`, and
-  `asljs-theme-provider`.
-- AI chat state is exposed directly on the `asljs-ai-chat` custom element
-  (`messages`, `promptDraft`, and related state fields).
-- `AssistedInput` is the shared Lit base for the assisted on-screen input
-  components.
-- Button rendering is driven by explicit `icon` and `text` properties.
-- Runtime model metadata is exposed through exported `*ModelDefinition` values.
-- `asljs-properties` renders a generated property editor from a model
-  definition plus a target object.
-- File rendering is driven by a provider plus ordered file handlers.
-- Keyboard rendering is driven by a fixed QWERTY layout, a `characters`
-  filter, and bubbling `key` and `submit` events.
-- Letterpad rendering is driven by a fixed alphabetic keypad layout, a
-  `characters` filter, a `collapsed` toggle, and bubbling `key` and `submit`
-  events.
-- Numpad rendering is driven by a fixed keypad layout plus a `characters`
-  filter and bubbling `key` events.
-- Text input editing is driven by explicit properties plus emitted `input` and
-  `change` events.
-- The required row template is `template[data-slot="item"]`.
-- Optional templates are `template[data-slot="empty"]` and
-  `template[data-slot="container"]`.
-- If a container template is provided, it must include `[data-role="items"]`.
-- If a text-input template is provided, it must include
-  `[data-role="control-host"]`.
-- Optional text-input control templates are `template[data-slot="input"]` and
-  `template[data-slot="textarea"]`.
-- If a text-input control template is provided, it must include the matching
-  native `input` or `textarea` element.
-- Row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
-  `count`, and `context`.
-
-## When To Use This Package
-
-- Use `asljs-components` when you want reusable web components already shaped
-  around ASLJS binding patterns.
-- Use `asljs-components` when you want a packaged UI surface plus its state or
-  theming contract through a documented custom element API.
-- Use `asljs-data-binding` directly when you only need declarative DOM binding
-  without a packaged component.
 
 ## Buttons
 
@@ -692,24 +629,17 @@ list.items =
 
 ### AI Chat
 
-- API: `AiChat`
+- API: `createAiChatModel()`, `AiChat`
 - Custom element: `asljs-ai-chat`
-- Purpose: build a chat UI around explicit custom-element state with optional
+- Purpose: build a chat UI around an observable, eventful model with optional
   persistence and tool execution hooks.
 
 Notes:
 
-- The custom element owns chat state directly through properties such as
-  `messages`, `promptDraft`, and related fields.
-- `messages` is a store object that provides methods for saving messages and
-  reading the messages list.
-- The custom element accepts explicit `options` for request and persistence
-  integration.
-- If `options.stateStore` is not provided, the component uses sessionStorage by
-  default so refresh keeps chat history.
-- Persisted state includes the last OpenAI response id plus operational state
-  (`choicePrompt`, `progress`, and `sending`) so refresh restores in-progress
-  chat context.
+- The model owns chat state, progress state, choice prompts, and message
+  history.
+- The custom element accepts explicit `model` and `options` properties.
+- Persisted state can still be restored through `options.stateStore`.
 
 ### File
 
@@ -814,7 +744,6 @@ Exports:
 - `ListThemeDefinition` type
 - `ThemeTemplateValue` type
 - `getDefaultTheme`
-- `getComponentVariantList`
 - `setDefaultTheme`
 - `ListItem` type
 - `ListItemsSource` type

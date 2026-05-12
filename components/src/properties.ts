@@ -7,38 +7,44 @@ import {
     property,
   } from 'lit/decorators.js';
 import {
-    PropertiesModelDefinition,
+    type Select,
+    type SelectChangeDetail,
+  } from './select.js';
+import {
+    type TextInput,
+    type TextInputChangeDetail,
+  } from './text-input.js';
+import {
     type ComponentModelDefinition,
     type ComponentModelPropertyDefinition,
     type ComponentModelPropertyType,
-  } from './component-model.js';
+  } from './abstractions/model.js';
 import {
     type ComponentsTheme,
   } from './themes/theme.js';
 import './select.js';
 import './text-input.js';
 
-type SelectSourceElement =
-  EventTarget
-  & {
-    draftValue?: string;
-  };
-
-type SelectInputDetail =
-  { value?: string; };
-
-type TextInputSourceElement =
-  EventTarget
-  & {
-    draftValue?: string;
-  };
-
-type TextInputDetail =
-  { value?: string; };
-
 const BOOLEAN_ITEMS =
   [ { value: 'yes', label: 'Yes' },
     { value: 'no', label: 'No' } ];
+
+export const PropertiesModelDefinition: ComponentModelDefinition =
+  { name: 'PropertiesModelDefinition',
+    title: 'Properties',
+    properties:
+      [ { name: 'definition',
+          title: 'Definition',
+          type: 'object',
+          description: 'Component model definition that drives the generated form.' },
+        { name: 'target',
+          title: 'Target',
+          type: 'object',
+          description: 'Target object updated by the generated controls.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description: 'Theme forwarded to nested controls.' } ] };
 
 @customElement('asljs-properties')
 export class Properties
@@ -98,8 +104,8 @@ export class Properties
             .description=${description}
             .items=${BOOLEAN_ITEMS}
             .value=${propertyValue === true
-              ? 'yes'
-              : 'no'}
+? 'yes'
+: 'no'}
             .disabled=${!isEditable}
             @input=${(event: Event) => this.#handleBooleanInput(propertyDefinition, event)}>
         </asljs-select>
@@ -132,9 +138,9 @@ export class Properties
     }
 
     const detail =
-      (event as CustomEvent<SelectInputDetail>).detail;
+      (event as CustomEvent<SelectChangeDetail>).detail;
     const source =
-      event.currentTarget as SelectSourceElement | null;
+      event.currentTarget as Select | null;
     const nextValue =
       detail?.value
       ?? source?.draftValue;
@@ -158,9 +164,9 @@ export class Properties
     }
 
     const detail =
-      (event as CustomEvent<TextInputDetail>).detail;
+      (event as CustomEvent<TextInputChangeDetail>).detail;
     const source =
-      event.currentTarget as TextInputSourceElement | null;
+      event.currentTarget as TextInput | null;
     const rawValue =
       detail?.value
       ?? source?.draftValue;

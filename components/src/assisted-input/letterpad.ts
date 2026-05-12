@@ -11,12 +11,26 @@ import {
   } from 'lit/directives/unsafe-html.js';
 import {
     AssistedInput,
+    AssistedInputModelProperties,
     type AssistedInputButtonDefinition,
     type AssistedInputKeyDetail,
   } from './assisted-input.js';
+import {
+    type ComponentModelDefinition,
+  } from '../abstractions/model.js';
 
 export type LetterpadKeyDetail =
   AssistedInputKeyDetail;
+
+export const LetterpadModelDefinition: ComponentModelDefinition =
+  { name: 'LetterpadModelDefinition',
+    title: 'Letterpad',
+    properties:
+      [ ...AssistedInputModelProperties,
+        { name: 'collapsed',
+          title: 'Collapsed',
+          type: 'boolean',
+          description: 'Whether the letterpad is collapsed.' } ] };
 
 const KEYBOARD_ICON_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">'

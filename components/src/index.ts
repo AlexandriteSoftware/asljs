@@ -3,33 +3,14 @@ export {
   } from './themes/bootstrap-theme.js';
 
 export {
-    bindComponentPreviewModel,
-    createComponentPreviewModel,
-    type ComponentPreviewBinding,
-    type ComponentPreviewModel,
-  } from './component-preview.js';
-
-export {
-    AiChatModelDefinition,
-    AllComponentModelDefinitions,
-    AssistedInputModelDefinition,
-    ButtonModelDefinition,
-    FileViewModelDefinition,
-    KeyboardModelDefinition,
-    LetterpadModelDefinition,
-    ListModelDefinition,
-    NumpadModelDefinition,
-    PropertiesModelDefinition,
-    SelectModelDefinition,
-    TextInputModelDefinition,
-    ThemeProviderModelDefinition,
     type ComponentModelDefinition,
     type ComponentModelPropertyDefinition,
     type ComponentModelPropertyType,
-  } from './component-model.js';
+  } from './abstractions/model.js';
 
 export {
   AiChat,
+    AiChatModelDefinition,
     createAiChatModel,
     serializeAiChatModelState,
     OpenAiTransport,
@@ -61,14 +42,17 @@ export {
 
 export {
     Button,
+    ButtonModelDefinition,
   } from './button.js';
 
 export {
     Properties,
+    PropertiesModelDefinition,
   } from './properties.js';
 
 export {
     FileView,
+    FileViewModelDefinition,
     createImageFileHandler,
     createPdfFileHandler,
     createTextEditorFileHandler,
@@ -82,27 +66,32 @@ export {
 
 export {
     AssistedInput,
+    AssistedInputModelDefinition,
     type AssistedInputButtonDefinition,
     type AssistedInputKeyDetail,
   } from './assisted-input/assisted-input.js';
 
 export {
     Keyboard,
+    KeyboardModelDefinition,
     type KeyboardKeyDetail,
   } from './assisted-input/keyboard.js';
 
 export {
     Letterpad,
+    LetterpadModelDefinition,
     type LetterpadKeyDetail,
   } from './assisted-input/letterpad.js';
 
 export {
     Numpad,
+    NumpadModelDefinition,
     type NumpadKeyDetail,
   } from './assisted-input/numpad.js';
 
 export {
     List,
+    ListModelDefinition,
     type ListItem,
     type ListItemsSource,
     type ListRowContext,
@@ -110,6 +99,7 @@ export {
 
 export {
     TextInput,
+  TextInputModelDefinition,
     type TextInputChangeDetail,
     type TextInputEnterKeyBehavior,
     type TextInputStatus,
@@ -118,6 +108,7 @@ export {
 
 export {
     Select,
+  SelectModelDefinition,
     type SelectChangeDetail,
     type SelectItem,
     type SelectStatus,
@@ -126,6 +117,7 @@ export {
 
 export {
     ThemeProvider,
+  ThemeProviderModelDefinition,
   } from './themes/theme-provider.js';
 
 export {

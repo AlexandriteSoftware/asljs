@@ -23,7 +23,6 @@ Exports from `src/index.ts`:
 - `OpenAiTransport`
 - `createBootstrapTheme`
 - `AiChatModelDefinition`
-- `AllComponentModelDefinitions`
 - `AssistedInput`
 - `AssistedInputModelDefinition`
 - `Button`

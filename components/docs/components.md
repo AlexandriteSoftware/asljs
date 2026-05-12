@@ -21,8 +21,7 @@ Most ASLJS UI components share the same state and interaction principles.
 
 Examples in the current package:
 
-- `asljs-button`, `asljs-button-add`, and `asljs-button-delete` expose simple
-  explicit inputs for icon/text button content.
+- `asljs-button` expose simple explicit inputs for icon/text button content.
 - `AssistedInput` owns the shared `characters` filter plus `key` and `submit`
   event contract for the package's assisted input controls.
 - `asljs-keyboard` exposes a fixed QWERTY keyboard surface with a

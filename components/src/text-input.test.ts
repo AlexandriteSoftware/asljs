@@ -45,6 +45,40 @@ test(
   });
 
 test(
+  'text-input: model definition exposes critical runtime properties with types and captions',
+  async () => {
+    await ensureDomAndModuleLoaded();
+
+    const {
+      TextInputModelDefinition,
+    } = await import('./text-input.js');
+
+    const propertyByName =
+      new Map(
+        TextInputModelDefinition.properties.map(
+          property => [ property.name,
+                        property ]));
+
+    assert.deepEqual(
+      propertyByName.get('errorMessage'),
+      { name: 'errorMessage',
+        type: 'string',
+        title: 'Error message',
+        description: 'Current validation message or null.',
+        editable: false });
+    assert.deepEqual(
+      propertyByName.get('rows'),
+      { name: 'rows',
+        type: 'number',
+        title: 'Rows' });
+    assert.deepEqual(
+      propertyByName.get('multiline'),
+      { name: 'multiline',
+        type: 'boolean',
+        title: 'Multiline' });
+  });
+
+test(
   'text-input: validator sets aria-invalid and shows error message',
   async () => {
     const element =

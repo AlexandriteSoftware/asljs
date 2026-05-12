@@ -8,6 +8,9 @@ import {
     property
   } from 'lit/decorators.js';
 import {
+    type ComponentModelDefinition,
+  } from './abstractions/model.js';
+import {
     bindDataModel
   } from 'asljs-data-binding';
 import {
@@ -24,7 +27,7 @@ import {
   } from './themes/theme.js';
 
 type ListSlotName =
-  'container'
+  | 'container'
   | 'empty'
   | 'item';
 
@@ -43,6 +46,23 @@ export type ListItem =
 
 export type ListItemsSource =
   ListItem[];
+
+export const ListModelDefinition: ComponentModelDefinition =
+  { name: 'ListModelDefinition',
+    title: 'List',
+    properties:
+      [ { name: 'items',
+          title: 'Items',
+          type: 'array',
+          description: 'Rows rendered by the list.' },
+        { name: 'context',
+          title: 'Context',
+          type: 'object',
+          description: 'Shared row binding context.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description: 'Per-instance components theme override.' } ] };
 
 @customElement('asljs-list')
 export class List

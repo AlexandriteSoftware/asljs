@@ -11,6 +11,9 @@ import {
     unsafeHTML,
   } from 'lit/directives/unsafe-html.js';
 import {
+    type ComponentModelDefinition,
+  } from './abstractions/model.js';
+import {
     findThemeProvider,
     getDefaultTheme,
     resolveThemeText,
@@ -19,6 +22,39 @@ import {
     type ComponentsTheme,
     type ThemeProviderLike,
   } from './themes/theme.js';
+
+export const ButtonModelDefinition: ComponentModelDefinition =
+  { name: 'ButtonModelDefinition',
+    title: 'Button',
+    properties:
+      [ { name: 'variant',
+          title: 'Variant',
+          type: 'string',
+          description: 'Variant key used to resolve theme defaults such as add or delete.' },
+        { name: 'icon',
+          title: 'Icon',
+          type: 'string',
+          description: 'HTML markup string for the icon.' },
+        { name: 'buttonClassName',
+          title: 'Button class name',
+          type: 'string',
+          description: 'Class name applied to the native button.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description: 'Per-instance components theme override.' },
+        { name: 'text',
+          title: 'Text',
+          type: 'string',
+          description: 'Visible button label.' },
+        { name: 'disabled',
+          title: 'Disabled',
+          type: 'boolean',
+          description: 'Native disabled state.' },
+        { name: 'type',
+          title: 'Type',
+          type: 'string',
+          description: 'Native button type such as button, submit, or reset.' } ] };
 
 @customElement('asljs-button')
 export class Button

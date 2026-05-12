@@ -6,6 +6,26 @@ import {
     customElement,
     property,
   } from 'lit/decorators.js';
+import {
+    type ComponentModelDefinition,
+  } from './abstractions/model.js';
+
+export const FileViewModelDefinition: ComponentModelDefinition =
+  { name: 'FileViewModelDefinition',
+    title: 'File View',
+    properties:
+      [ { name: 'provider',
+          title: 'Provider',
+          type: 'object',
+          description: 'File provider used to load and optionally save files.' },
+        { name: 'handlers',
+          title: 'Handlers',
+          type: 'array',
+          description: 'Ordered file handlers from most specific to most general.' },
+        { name: 'fileName',
+          title: 'File name',
+          type: 'string',
+          description: 'Selected file name to preview.' } ] };
 
 export interface FileViewData {
   name: string;

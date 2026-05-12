@@ -17,9 +17,25 @@ import {
 import {
     unsafeHTML,
   } from 'lit/directives/unsafe-html.js';
+import {
+    type ComponentModelDefinition,
+  } from './abstractions/model.js';
 import './button.js';
 import './select.js';
 import './text-input.js';
+
+export const AiChatModelDefinition: ComponentModelDefinition =
+  { name: 'AiChatModelDefinition',
+    title: 'Ai Chat',
+    properties:
+      [ { name: 'model',
+          title: 'Model',
+          type: 'object',
+          description: 'Chat runtime state model.' },
+        { name: 'options',
+          title: 'Options',
+          type: 'object',
+          description: 'Provider, request, and persistence callbacks.' } ] };
 
 const autoScrollBottomThresholdPx = 24;
 const defaultChatModel = 'gpt-4.1-mini';

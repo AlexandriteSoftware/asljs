@@ -14,8 +14,11 @@ import {
     property,
   } from 'lit/decorators.js';
 import {
+    type ComponentModelDefinition,
+  } from './abstractions/model.js';
+import {
     findThemeProvider,
-  getDefaultTheme,
+    getDefaultTheme,
     resolveThemeTemplate,
     THEME_CHANGED_EVENT_NAME,
     type ComponentsTheme,
@@ -23,12 +26,12 @@ import {
   } from './themes/theme.js';
 
 type TextInputSlotName =
-  'template'
+  | 'template'
   | 'input'
   | 'textarea';
 
 export type TextInputEnterKeyBehavior =
-  'finish'
+  | 'finish'
   | 'newline';
 
 export type TextInputValidator =
@@ -68,6 +71,57 @@ type TextInputTemplateModel =
     descriptionId: string;
     errorId: string;
   }>;
+
+export const TextInputModelDefinition: ComponentModelDefinition =
+  { name: 'TextInputModelDefinition',
+    title: 'Text Input',
+    properties:
+      [ { name: 'label', title: 'Label', type: 'string' },
+        { name: 'description', title: 'Description', type: 'string' },
+        { name: 'validator',
+          title: 'Validator',
+          type: 'function',
+          description: 'Validation function that returns an error message or null.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description: 'Per-instance components theme override.' },
+        { name: 'value', title: 'Value', type: 'string' },
+        { name: 'placeholder', title: 'Placeholder', type: 'string' },
+        { name: 'inputType', title: 'Input type', type: 'string' },
+        { name: 'controlClassName', title: 'Control class name', type: 'string' },
+        { name: 'multiline', title: 'Multiline', type: 'boolean' },
+        { name: 'autoExtend', title: 'Auto extend', type: 'boolean' },
+        { name: 'autoExtendMaxRows',
+          title: 'Auto extend max rows',
+          type: 'number',
+          description: 'Maximum rows when auto extend is enabled.' },
+        { name: 'enterKeyBehavior', title: 'Enter key behavior', type: 'string' },
+        { name: 'disabled', title: 'Disabled', type: 'boolean' },
+        { name: 'rows', title: 'Rows', type: 'number' },
+        { name: 'status',
+          title: 'Status',
+          type: 'object',
+          description: 'Observable draft status object.',
+          editable: false },
+        { name: 'draftValue',
+          title: 'Draft value',
+          type: 'string',
+          description: 'Current in-progress text.',
+          editable: false },
+        { name: 'isEmpty',
+          title: 'Is empty',
+          type: 'boolean',
+          editable: false },
+        { name: 'isValid',
+          title: 'Is valid',
+          type: 'boolean',
+          editable: false },
+        { name: 'errorMessage',
+          title: 'Error message',
+          type: 'string',
+          description: 'Current validation message or null.',
+          editable: false } ] };
 
 @customElement('asljs-text-input')
 export class TextInput

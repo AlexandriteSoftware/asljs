@@ -4,15 +4,12 @@ import assert
   from 'node:assert/strict';
 import {
   AiChatModelDefinition,
-  AllComponentModelDefinitions,
   AssistedInput,
   AssistedInputModelDefinition,
   AiChat,
   AiChatKeyPrompt,
   Button,
   ButtonModelDefinition,
-  bindComponentPreviewModel,
-  createComponentPreviewModel,
   createBootstrapTheme,
     createAiChatModel,
     OpenAiTransport,
@@ -56,14 +53,6 @@ test(
 
     assert.equal(
       typeof createBootstrapTheme,
-      'function');
-
-    assert.equal(
-      typeof createComponentPreviewModel,
-      'function');
-
-    assert.equal(
-      typeof bindComponentPreviewModel,
       'function');
 
     assert.equal(
@@ -194,7 +183,4 @@ test(
       ThemeProviderModelDefinition.properties.length > 0,
       true);
 
-    assert.equal(
-      AllComponentModelDefinitions.length >= 12,
-      true);
   });

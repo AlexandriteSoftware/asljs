@@ -5,6 +5,10 @@ import {
 import {
     property,
   } from 'lit/decorators.js';
+import {
+    type ComponentModelDefinition,
+    type ComponentModelPropertyDefinition,
+  } from '../abstractions/model.js';
 
 export interface AssistedInputKeyDetail {
   key: string;
@@ -15,6 +19,18 @@ export type AssistedInputButtonDefinition =
     label?: string;
     className?: string;
     action?: string; };
+
+export const AssistedInputModelProperties =
+  [ { name: 'characters',
+      title: 'Characters',
+      type: 'string',
+      description: 'Allowed single-character keys. Empty means no filter.' },
+  ] as const satisfies readonly ComponentModelPropertyDefinition[];
+
+export const AssistedInputModelDefinition: ComponentModelDefinition =
+  { name: 'AssistedInputModelDefinition',
+    title: 'Assisted Input',
+    properties: AssistedInputModelProperties };
 
 export abstract class AssistedInput
   extends LitElement

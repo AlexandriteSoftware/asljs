@@ -7,12 +7,21 @@ import {
   } from 'lit/decorators.js';
 import {
     AssistedInput,
+    AssistedInputModelProperties,
     type AssistedInputButtonDefinition,
     type AssistedInputKeyDetail,
   } from './assisted-input.js';
+import {
+    type ComponentModelDefinition,
+  } from '../abstractions/model.js';
 
 export type NumpadKeyDetail =
   AssistedInputKeyDetail;
+
+export const NumpadModelDefinition: ComponentModelDefinition =
+  { name: 'NumpadModelDefinition',
+    title: 'Numpad',
+    properties: AssistedInputModelProperties };
 
 const BUTTONS: readonly AssistedInputButtonDefinition[] =
   [ { key: 'Backspace', label: '⌫' },

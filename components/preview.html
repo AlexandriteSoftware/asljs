@@ -10,63 +10,8 @@
 		<link rel="stylesheet"
 				href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 		<style>
-			body {
-				margin: 16px;
-				font: 14px/1.4 sans-serif;
-			}
-
-			.page {
-				display: grid;
-				grid-template-columns: 320px 1fr;
-				gap: 16px;
-			}
-
-			.component-list,
-			.theme-select,
-			.properties-area,
-			.view-area,
-			.html-area,
-			.event-log,
-			.demo-input,
-			.demo-card {
-				border: 1px solid #bbb;
-			}
-
-			.component-list {
-				width: 100%;
-			}
-
-			.theme-select {
-				width: 100%;
-			}
-
-			.content {
-				display: grid;
-				gap: 12px;
-			}
-
 			.properties-area {
-				margin-top: 12px;
 				min-height: 220px;
-				padding: 8px;
-				overflow: auto;
-			}
-
-			.header h2,
-			.preview h3,
-			.events h3,
-			.sidebar h1 {
-				margin: 0 0 8px;
-			}
-
-			.sidebar p,
-			.header p {
-				margin: 0 0 8px;
-			}
-
-			.view-area {
-				min-height: 320px;
-				padding: 12px;
 				overflow: auto;
 			}
 
@@ -77,6 +22,11 @@
 				overflow: auto;
 				white-space: pre-wrap;
 				font-family: Consolas, "Courier New", monospace;
+			}
+
+			.preview-surface {
+				display: block;
+				min-height: 320px;
 			}
 
 			.preview-tabs {
@@ -94,34 +44,31 @@
 				white-space: pre-wrap;
 			}
 
-			.demo-stack,
-			.demo-grid {
+			.preview-sidebar {
+				top: 1rem;
+			}
+
+			.panel-grid {
 				display: grid;
-				gap: 12px;
+				gap: 1.5rem;
 			}
 
-			.demo-row {
-				display: flex;
-				gap: 8px;
-				flex-wrap: wrap;
+			.section-copy > :last-child {
+				margin-bottom: 0;
 			}
 
-			.demo-input,
-			.demo-card {
-				padding: 8px;
+			.code-panel {
+				background: #1f2430;
+				color: #f3f5f7;
 			}
 
-			.assisted-box {
-				max-width: 32rem;
-			}
-
-			.file-box {
-				min-height: 24rem;
+			.event-panel {
+				background: var(--bs-tertiary-bg);
 			}
 
 			@media (max-width: 800px) {
-				.page {
-					grid-template-columns: 1fr;
+				.preview-sidebar {
+					position: static !important;
 				}
 			}
 		</style>
@@ -143,36 +90,70 @@
 			}
 		</script>
 	</head>
-	<body>
-		<div class="page">
-			<aside class="sidebar">
-				<h1>ASLJS Components</h1>
-				<p>Select a component to clear the preview area and recreate a live demo.</p>
-				<label for="theme-select">Theme</label>
-				<select id="theme-select"
-							class="theme-select"
-							aria-label="Theme selector">
+	<body class="bg-body-tertiary">
+		<div class="container-fluid py-4 py-lg-5">
+			<div class="row g-4 align-items-start">
+				<aside class="col-12 col-xl-3">
+					<div class="card shadow-sm border-0 sticky-xl-top preview-sidebar">
+						<div class="card-body d-grid gap-4">
+							<div class="section-copy d-grid gap-2">
+								<div>
+									<p class="text-uppercase small fw-semibold text-secondary mb-2">Workbench</p>
+									<h1 class="h3 mb-2">ASLJS Components</h1>
+									<p class="text-secondary mb-0">Select a component to recreate a live demo inside an isolated shadow-DOM preview surface.</p>
+								</div>
+							</div>
+							<div>
+								<label for="theme-select"
+										 class="form-label fw-semibold">Theme</label>
+								<select id="theme-select"
+											class="form-select"
+											aria-label="Theme selector">
 					<option value="none">None</option>
 					<option value="bootstrap" selected>Bootstrap</option>
 				</select>
-				<label for="component-list">Component list</label>
-				<select id="component-list"
-								class="component-list"
-								aria-label="Component selector"></select>
-				<div id="properties-area"
-						 class="properties-area"
-						 aria-label="Component properties"></div>
-			</aside>
+							</div>
+							<div>
+								<label for="component-list"
+										 class="form-label fw-semibold">Component list</label>
+								<select id="component-list"
+											class="form-select"
+											aria-label="Component selector"></select>
+							</div>
+							<div class="border rounded-4 bg-body-tertiary p-3">
+								<div class="d-flex align-items-center justify-content-between mb-3">
+									<h2 class="h6 mb-0">Properties</h2>
+									<span class="badge text-bg-light border">Live model</span>
+								</div>
+								<div id="properties-area"
+										 class="properties-area"
+										 aria-label="Component properties"></div>
+							</div>
+						</div>
+					</div>
+				</aside>
 
-			<main class="content">
-				<div class="panel">
-					<section class="header">
-						<h2 id="component-title">Component preview</h2>
-						<p id="component-description">Select a component from the list to render it.</p>
-					</section>
+				<main class="col-12 col-xl-9">
+					<div class="card shadow-sm border-0">
+						<div class="card-body panel-grid">
+							<section class="section-copy d-grid gap-2">
+								<div>
+									<p class="text-uppercase small fw-semibold text-secondary mb-2">Preview</p>
+									<h2 id="component-title"
+											class="h3 mb-2">Component preview</h2>
+									<p id="component-description"
+										 class="text-secondary mb-0">Select a component from the list to render it.</p>
+								</div>
+							</section>
 
-					<section class="preview">
-						<h3>Preview</h3>
+							<section class="section-copy d-grid gap-3">
+								<div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+									<div>
+										<p class="text-uppercase small fw-semibold text-secondary mb-2">Surface</p>
+										<h3 class="h5 mb-0">Preview</h3>
+									</div>
+									<span class="badge text-bg-primary-subtle text-primary-emphasis border border-primary-subtle">Shadow DOM isolated</span>
+								</div>
 						<ul class="nav nav-tabs preview-tabs"
 										id="preview-tabs"
 										role="tablist">
@@ -205,8 +186,8 @@
 									 role="tabpanel"
 									 aria-labelledby="preview-view-tab"
 									 tabindex="0">
-								<div id="view-area"
-										 class="view-area preview-pane"></div>
+								<asljs-preview-surface id="preview-surface"
+														class="preview-surface preview-pane"></asljs-preview-surface>
 							</div>
 							<div class="tab-pane fade"
 									 id="preview-html-pane"
@@ -214,26 +195,33 @@
 									 aria-labelledby="preview-html-tab"
 									 tabindex="0">
 								<pre id="html-area"
-										 class="html-area preview-pane">Ready.</pre>
+										 class="html-area preview-pane code-panel rounded-bottom-4">Ready.</pre>
 							</div>
 						</div>
 					</section>
 
-					<section class="events">
-						<h3>Event log</h3>
+							<section class="section-copy d-grid gap-3">
+								<div>
+									<p class="text-uppercase small fw-semibold text-secondary mb-2">Events</p>
+									<h3 class="h5 mb-0">Event log</h3>
+								</div>
 						<pre id="event-log"
-								 class="event-log">Ready.</pre>
-					</section>
-				</div>
-			</main>
+									 class="event-log event-panel rounded-4 border">Ready.</pre>
+							</section>
+						</div>
+					</div>
+				</main>
+			</div>
 		</div>
 
 		<script type="module">
 			import {
+					observable,
+				} from 'asljs-observable';
+			import {
 					AiChatModelDefinition,
-					bindComponentPreviewModel,
 					ButtonModelDefinition,
-					createComponentPreviewModel,
+					createAiChatModel,
 					createBootstrapTheme,
 					createImageFileHandler,
 					createPdfFileHandler,
@@ -245,7 +233,6 @@
 					ListModelDefinition,
 					NumpadModelDefinition,
 					SelectModelDefinition,
-					setDefaultTheme,
 					TextInputModelDefinition,
 				} from './dist/index.js';
 			import './dist/index.js';
@@ -254,10 +241,124 @@
 			const themeSelect = document.querySelector('#theme-select');
 			const componentTitle = document.querySelector('#component-title');
 			const componentDescription = document.querySelector('#component-description');
-			const viewArea = document.querySelector('#view-area');
+			const previewSurface = document.querySelector('#preview-surface');
 			const propertiesArea = document.querySelector('#properties-area');
 			const htmlArea = document.querySelector('#html-area');
 			const eventLog = document.querySelector('#event-log');
+
+			class AsljsPreviewSurface extends HTMLElement {
+				#themeProvider = null;
+				#previewRoot = null;
+
+				connectedCallback() {
+					this.#ensureInitialized();
+				}
+
+				setPreview(root, theme) {
+					this.#ensureInitialized();
+					this.#themeProvider.theme = theme ?? null;
+					this.#previewRoot.replaceChildren(root);
+				}
+
+				clearPreview() {
+					this.#ensureInitialized();
+					this.#themeProvider.theme = null;
+					this.#previewRoot.replaceChildren();
+				}
+
+				get previewRoot() {
+					this.#ensureInitialized();
+					return this.#previewRoot;
+				}
+
+				#ensureInitialized() {
+					if (this.#previewRoot !== null && this.#themeProvider !== null) {
+						return;
+					}
+
+					const shadowRoot =
+						this.shadowRoot
+						?? this.attachShadow({ mode: 'open' });
+
+					if (shadowRoot.childNodes.length === 0) {
+						shadowRoot.innerHTML = `
+							<link rel="stylesheet"
+									href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+							<link rel="stylesheet"
+									href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+							<style>
+								:host {
+									display: block;
+									min-height: 320px;
+								}
+
+								.preview-shell {
+									min-height: 320px;
+									padding: 1rem;
+									border: 1px solid var(--bs-border-color);
+									border-top: 0;
+									border-radius: 0 0 1rem 1rem;
+									background: var(--bs-body-bg);
+									box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+								}
+
+								.preview-root {
+									min-height: 288px;
+								}
+
+								.demo-stack,
+								.demo-grid {
+									display: grid;
+									gap: 1rem;
+								}
+
+								.demo-row {
+									display: flex;
+									gap: 0.75rem;
+									flex-wrap: wrap;
+								}
+
+								.demo-input,
+								.demo-card {
+									padding: 0.75rem;
+									border: 1px solid var(--bs-border-color);
+									border-radius: 0.75rem;
+									background: var(--bs-body-bg);
+								}
+
+								.demo-input {
+									display: block;
+									width: 100%;
+								}
+
+								.assisted-box {
+									display: block;
+									max-width: 32rem;
+								}
+
+								.file-box {
+									min-height: 24rem;
+								}
+							</style>
+							<asljs-theme-provider id="theme-provider">
+								<div class="preview-shell">
+									<div id="preview-root"
+											 class="preview-root"></div>
+								</div>
+							</asljs-theme-provider>
+						`;
+					}
+
+					this.#themeProvider = shadowRoot.querySelector('#theme-provider');
+					this.#previewRoot = shadowRoot.querySelector('#preview-root');
+				}
+			}
+
+			if (!customElements.get('asljs-preview-surface')) {
+				customElements.define(
+					'asljs-preview-surface',
+					AsljsPreviewSurface);
+			}
 
 			let activePreviewBinding = null;
 
@@ -279,9 +380,17 @@
 					chat.className = 'demo-card';
 					chat.style.minHeight = '28rem';
 
-					chat.messages.save(
-						'assistant',
-						'Preview mode is ready. Type a message and send to see the component state flow.');
+					const model = createAiChatModel();
+
+					model.on('initialize', () => {
+						if (model.messages.length === 0) {
+							model.appendMessage(
+								'assistant',
+								'Preview mode is ready. Type a message and send to see the component state flow.');
+						}
+					});
+
+					chat.model = model;
 					chat.options = {
 						provider: {
 							getOpenAiApiKey: async () => '',
@@ -460,34 +569,111 @@
 
 			applyInitialHashState();
 
+			function createPreviewModel(definition, component) {
+				return observable(
+					Object.fromEntries(
+						definition.properties.map(
+							property => [ property.name,
+								component[property.name] ])));
+			}
+
+			function bindPreviewModel(definition, model, component) {
+				const editablePropertyNames =
+					new Set(
+						definition.properties
+							.filter(
+								property => isPreviewPropertyEditable(property))
+							.map(
+								property => property.name));
+
+				const modelChangeDispose =
+					model.on(
+						'set',
+						({ property, value }) => {
+							if (!editablePropertyNames.has(property)) {
+								return;
+							}
+
+							component[property] = value;
+						});
+
+				const syncFromComponent =
+					() => {
+						for (const property of definition.properties) {
+							const nextValue =
+								component[property.name];
+
+							if (!Object.is(model[property.name], nextValue)) {
+								model[property.name] = nextValue;
+							}
+						}
+					};
+
+				const handleComponentChanged =
+					() => {
+						syncFromComponent();
+					};
+
+				component.addEventListener(
+					'input',
+					handleComponentChanged);
+				component.addEventListener(
+					'change',
+					handleComponentChanged);
+
+				syncFromComponent();
+
+				return {
+					model,
+					syncFromComponent,
+					dispose() {
+						modelChangeDispose();
+						component.removeEventListener(
+							'input',
+							handleComponentChanged);
+						component.removeEventListener(
+							'change',
+							handleComponentChanged);
+					},
+				};
+			}
+
+			function isPreviewPropertyEditable(property) {
+				if (property.editable !== undefined) {
+					return property.editable;
+				}
+
+				return property.type === 'boolean'
+					|| property.type === 'number'
+					|| property.type === 'string';
+			}
+
 			function renderComponent(entry) {
 				componentTitle.textContent = entry.name;
 				componentDescription.textContent = entry.description;
 				eventLog.textContent = `Selected ${entry.name}. Theme: ${themeSelect.value}.`;
 				activePreviewBinding?.dispose?.();
 				activePreviewBinding = null;
-				viewArea.replaceChildren();
+				previewSurface.clearPreview();
 				propertiesArea.replaceChildren();
 				const preview = entry.create();
 				const properties = document.createElement('asljs-properties');
-				const model = createComponentPreviewModel(entry.definition, preview.component);
+				const model = createPreviewModel(entry.definition, preview.component);
 
 				properties.definition = entry.definition;
 				properties.target = model;
 				properties.theme = getSelectedTheme();
 
-				activePreviewBinding = bindComponentPreviewModel(
+				activePreviewBinding = bindPreviewModel(
 					entry.definition,
 					model,
 					preview.component);
 
-				viewArea.appendChild(preview.root);
+				previewSurface.setPreview(
+					preview.root,
+					getSelectedTheme());
 				propertiesArea.appendChild(properties);
 				void refreshHtmlPreview();
-			}
-
-			function applySelectedTheme() {
-				setDefaultTheme(getSelectedTheme());
 			}
 
 			function applyInitialHashState() {
@@ -510,7 +696,6 @@
 
 				themeSelect.value = state.theme;
 				componentList.value = String(componentIndex);
-				applySelectedTheme();
 				renderComponent(componentRegistry[componentIndex]);
 			}
 
@@ -636,7 +821,7 @@
 
 			function formatPreviewHtml() {
 				const lines =
-					[...viewArea.childNodes]
+					[...previewSurface.previewRoot.childNodes]
 						.flatMap(node => formatNode(node, 0));
 
 				return lines.length === 0
@@ -645,7 +830,7 @@
 			}
 
 			async function refreshHtmlPreview() {
-				await settleRenderedElements(viewArea);
+				await settleRenderedElements(previewSurface.previewRoot);
 				htmlArea.textContent = formatPreviewHtml();
 			}
 
