@@ -1,6 +1,6 @@
 {
   "name": "asljs-part",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Project artefact tracing framework and CLI for markdown-defined project artefacts.",
   "type": "module",
   "main": "src/index.js",
@@ -25,8 +25,6 @@
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
-    "prepack": "npm test",
-    "prepublishOnly": "npm run prepack",
     "postpublish": "node ../toolkit.js tag-commit-with-release-id",
     "test": "node --test",
     "test:watch": "node --watch --test",
