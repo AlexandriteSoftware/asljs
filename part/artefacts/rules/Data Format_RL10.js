@@ -34,7 +34,18 @@ async function listTestFiles(rootDirectory)
 
 function extractArtefactId(filePath)
 {
-  const baseName = path.basename(filePath, path.extname(filePath));
-  const match = baseName.match(/^([A-Z]+\d+)\b/);
-  return match ? match[1] : null;
+  const baseName =
+    path.basename(
+      filePath,
+      path.extname(filePath));
+
+  const match =
+    baseName.match(/^([A-Z]+\d+)\b/);
+
+  const id =
+    match
+    ? match[1]
+    : null;
+
+  return id;
 }

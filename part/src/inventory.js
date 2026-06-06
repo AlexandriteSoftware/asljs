@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 
 import { glob } from 'glob';
 
@@ -10,14 +10,6 @@ import {
 import { DefinitionProvider } from './definitionProvider.js';
 import { GitIgnore } from './gitIgnore.js';
 import { runRules } from './ruleRunner.js';
-
-const IGNORED_DIRECTORIES = new Set([
-  '.git',
-  'coverage',
-  'dist',
-  'node_modules',
-  'part',
-]);
 
 export async function buildInventoryReport(rootDirectory, options = {})
 {
@@ -73,7 +65,9 @@ export async function buildCheckReport(rootDirectory, options = {})
           path: artefact.file,
           rule: `${definition.name}_${ruleResult.rule.id}`,
           passed: ruleResult.result === 'Ok',
-          result: ruleResult.result === 'Ok' ? 'OK' : ruleResult.message,
+          result: ruleResult.result === 'Ok'
+? 'OK'
+: ruleResult.message,
         };
 
         hasFailures = hasFailures || !row.passed;
@@ -154,7 +148,9 @@ async function collectInventoryItems(rootDirectory, definitions)
       .sort((left, right) => left.orderKey.localeCompare(right.orderKey) || left.name.localeCompare(right.name))
       .map((definition) => definition.name)
       .join(','),
-    rules: entry.rulesOk ? 'Ok' : 'Fail',
+    rules: entry.rulesOk
+? 'Ok'
+: 'Fail',
   }));
 
   items.sort((left, right) => left.file.localeCompare(right.file));
@@ -192,7 +188,9 @@ async function buildArtefact(rootDirectory, definition, artifactPath)
 
 async function listArtifactPaths(rootDirectory, definition)
 {
-  const gitIgnore = definition.location.gitIgnore ? new GitIgnore(rootDirectory) : null;
+  const gitIgnore = definition.location.gitIgnore
+? new GitIgnore(rootDirectory)
+: null;
   const searchPatterns = toSearchPatterns(definition.location);
   const artifactPaths = new Set();
 
@@ -229,42 +227,6 @@ function toSearchPatterns(location)
 function trimTrailingSlash(value)
 {
   return value.replace(/[\\/]+$/, '');
-}
-
-async function listMarkdownFiles(rootDirectory, options)
-{
-  try {
-    const entries = await readdir(rootDirectory, {
-      withFileTypes: true,
-    });
-    const files = [];
-
-    for (const entry of entries) {
-      const entryPath = path.join(rootDirectory, entry.name);
-
-      if (entry.isDirectory()) {
-        if (options.ignoredDirectories.has(entry.name)) {
-          continue;
-        }
-
-        files.push(...await listMarkdownFiles(entryPath, options));
-        continue;
-      }
-
-      if (entry.isFile() && entry.name.endsWith('.md')) {
-        files.push(entryPath);
-      }
-    }
-
-    return files;
-  }
-  catch (error) {
-    if (options.allowMissingRoot && isMissingPathError(error)) {
-      return [];
-    }
-
-    throw error;
-  }
 }
 
 function formatInventoryTable(items)
@@ -320,7 +282,9 @@ function formatDefinitionDetails(definition, rootDirectory)
     rules: definition.rules.map((rule) => ({
       id: rule.id,
       description: rule.description,
-      ...(rule.filePath ? { filePath: rule.filePath } : {}),
+      ...(rule.filePath
+? { filePath: rule.filePath }
+: {}),
     })),
     definitionPath: toPosixPath(path.relative(rootDirectory, definition.definitionPath)),
   });
@@ -344,21 +308,6 @@ function formatCheckTable(items)
   }
 
   return lines.join('\n');
-}
-
-async function findMatchingDefinitions(rootDirectory, artifactPath, definitions)
-{
-  const matches = [];
-
-  for (const definition of definitions) {
-    const artifactPaths = await listArtifactPaths(rootDirectory, definition);
-
-    if (artifactPaths.some((currentPath) => path.resolve(currentPath) === path.resolve(artifactPath))) {
-      matches.push(definition);
-    }
-  }
-
-  return matches;
 }
 
 function filterDefinitions(definitions, definitionNames = [])

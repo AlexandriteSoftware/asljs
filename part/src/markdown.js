@@ -1,7 +1,14 @@
 export function extractHeading(content)
 {
-  const match = content.match(/^#\s+(.+)$/m);
-  return match ? match[1].trim() : null;
+  const match =
+    content.match(/^#\s+(.+)$/m);
+
+  const heading =
+    match
+    ? match[1].trim()
+    : null;
+
+  return heading;
 }
 
 export function extractSectionBody(content, sectionName)
@@ -45,7 +52,9 @@ export function parseLocationFolder(locationBody)
   }
 
   const proseMatch = locationBody.match(/stored in (?:the )?(.+?) folder/i);
-  return proseMatch ? proseMatch[1].trim() : null;
+  return proseMatch
+? proseMatch[1].trim()
+: null;
 }
 
 export function parsePropertyDefinitions(propertiesBody)

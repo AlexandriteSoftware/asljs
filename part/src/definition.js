@@ -43,7 +43,11 @@ export class Definition
 
   static async parse(content, options = {})
   {
-    const filePath = options.filePath ? path.resolve(options.filePath) : null;
+    const filePath =
+      options.filePath
+      ? path.resolve(options.filePath)
+      : null;
+
     const tree = MARKDOWN_PARSER.parse(content);
     const heading = getFirstHeading(tree.children);
 
@@ -52,7 +56,11 @@ export class Definition
     }
 
     const name = extractText(heading);
-    const expectedName = filePath ? path.basename(filePath, path.extname(filePath)) : null;
+
+    const expectedName =
+      filePath
+      ? path.basename(filePath, path.extname(filePath))
+      : null;
 
     if (expectedName && name !== expectedName) {
       return null;
@@ -105,7 +113,9 @@ function extractDescription(content, nodes, heading)
 {
   const headingIndex = nodes.indexOf(heading);
   const nextHeadingIndex = nodes.findIndex((node, index) => index > headingIndex && node.type === 'heading');
-  const sectionNodes = nodes.slice(headingIndex + 1, nextHeadingIndex === -1 ? undefined : nextHeadingIndex);
+  const sectionNodes = nodes.slice(headingIndex + 1, nextHeadingIndex === -1
+? undefined
+: nextHeadingIndex);
   return sliceNodes(content, sectionNodes);
 }
 
@@ -120,7 +130,9 @@ function getSection(nodes, content, sectionName)
   const nextHeadingIndex = nodes.findIndex(
     (node, index) => index > headingIndex && node.type === 'heading' && node.depth <= 2,
   );
-  const sectionNodes = nodes.slice(headingIndex + 1, nextHeadingIndex === -1 ? undefined : nextHeadingIndex);
+  const sectionNodes = nodes.slice(headingIndex + 1, nextHeadingIndex === -1
+? undefined
+: nextHeadingIndex);
 
   return {
     nodes: sectionNodes,
@@ -173,7 +185,9 @@ function parseLocation(rawSection, nodes)
   }
 
   return {
-    type: /folder/i.test(rawSection) ? 'Folders' : 'Files',
+    type: /folder/i.test(rawSection)
+? 'Folders'
+: 'Files',
     pattern: inlineCodeMatch[1].trim(),
     exclude: [],
     gitIgnore: false,
@@ -214,8 +228,12 @@ async function loadRules(ruleEntries, options)
     return {
       id: ruleEntry.id,
       description: ruleEntry.description,
-      filePath: resolvedRuleFile ? resolvedRuleFile.filePath : null,
-      absoluteFilePath: resolvedRuleFile ? resolvedRuleFile.absoluteFilePath : null,
+      filePath: resolvedRuleFile
+? resolvedRuleFile.filePath
+: null,
+      absoluteFilePath: resolvedRuleFile
+? resolvedRuleFile.absoluteFilePath
+: null,
     };
   }));
 }
@@ -314,7 +332,9 @@ function extractText(node)
 
 function normalizeLocationType(value)
 {
-  return value.toLowerCase() === 'files' ? 'Files' : 'Folders';
+  return value.toLowerCase() === 'files'
+? 'Files'
+: 'Folders';
 }
 
 function toPropertyName(label)

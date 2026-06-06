@@ -41,7 +41,11 @@ export async function runCli(args, environment)
     return result.exitCode;
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message =
+      error instanceof Error
+      ? error.message
+      : String(error);
+
     environment.stderr.write(`${message}\n`);
     return 1;
   }
@@ -49,7 +53,9 @@ export async function runCli(args, environment)
 
 function isSupportedCommand(command)
 {
-  return command === 'inventory' || command === 'artefactdefinition' || command === 'check';
+  return command === 'inventory'
+         || command === 'artefactdefinition'
+         || command === 'check';
 }
 
 function parseOptions(args)
@@ -174,7 +180,9 @@ async function buildReport(command, cwd, options)
 
     return {
       report: checkResult.report,
-      exitCode: checkResult.hasFailures ? 1 : 0,
+      exitCode: checkResult.hasFailures
+? 1
+: 0,
     };
   }
 

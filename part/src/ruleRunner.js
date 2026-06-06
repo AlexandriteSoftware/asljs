@@ -122,10 +122,20 @@ async function runExecutableRule(rule, artefact, context)
     });
 
     child.on('close', (code) => {
+      const result =
+        code === 0
+        ? 'Ok'
+        : 'Fail';
+      
+      const message =
+        code === 0
+        ? ''
+        : stderr.trim() || rule.description;
+
       resolve({
         rule,
-        result: code === 0 ? 'Ok' : 'Fail',
-        message: code === 0 ? '' : stderr.trim() || rule.description,
+        result,
+        message
       });
     });
   });

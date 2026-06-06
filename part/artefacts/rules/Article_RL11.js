@@ -30,6 +30,6 @@ export async function validate(artefact, context)
   const actualHeading = headingMatch[1].trim();
 
   if (actualHeading !== expectedHeading) {
-    throw new Error(`Article heading must be \"${expectedHeading}\".`);
+    throw new Error(`Article heading must be "${expectedHeading}".`);
   }
 }
