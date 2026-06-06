@@ -271,6 +271,43 @@ test(
   });
 
 test(
+  'ai-chat: send button keeps theme button classes alongside chat classes',
+  async () => {
+    await ensureDom();
+    await loadModules();
+
+    const provider =
+      document.createElement('asljs-theme-provider') as HTMLElement & {
+        theme: unknown;
+      };
+    const chat =
+      document.createElement('asljs-ai-chat') as AiChatElement;
+    const {
+      createBootstrapTheme,
+    } = await import('./index.js');
+
+    provider.theme = createBootstrapTheme();
+    provider.appendChild(chat);
+    document.body.appendChild(provider);
+    await settleDeep(chat);
+
+    const sendButton =
+      chat.querySelector('[data-role="send"] button');
+    const sendButtonClassName =
+      sendButton?.getAttribute('class') ?? '';
+
+    assert.match(
+      sendButtonClassName,
+      /\bbtn\b/);
+    assert.match(
+      sendButtonClassName,
+      /\bbtn-primary\b/);
+    assert.match(
+      sendButtonClassName,
+      /\basljs-ai-chat-send\b/);
+  });
+
+test(
   'ai-chat-key: custom element renders label and emits key-submit on submit',
   async () => {
     await ensureDom();

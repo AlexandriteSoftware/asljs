@@ -17,6 +17,8 @@ Libraries:
   control flow.
 - [money](money) - provides utilities for handling monetary values.
 - [observable](observable) - makes any object emit events on property changes.
+- [part](part) - defines project artefacts in markdown and validates them with
+  CLI rules.
 
 ## Architecture
 
@@ -36,6 +38,7 @@ graph TD
   dali[asljs-dali]
   machine[asljs-machine]
   money[asljs-money]
+  part[asljs-part]
   appbuilder[asljs-app-builder]
 
   eventful --> observable
@@ -71,21 +74,24 @@ graph TD
   declared types.
 - `asljs-money`: The public surface is the `money` factory plus `Money` and
   `MoneyFactory` types.
+- `asljs-part`: The public surface is the package-root CLI/report helpers and
+  definition-discovery types.
 - `asljs-app-builder`: No library API. This is an app/demo package;
   `src/app-builder/*` modules are internal.
 
 ### Package roles
 
 | Package | Browser-only | Framework-agnostic | Demo/app package | Publishable library |
-| --- | --- | --- | --- | --- |
-| `asljs-eventful` | No | Yes | No | Yes |
-| `asljs-observable` | No | Yes | No | Yes |
-| `asljs-data-binding` | Yes | Yes | No | Yes |
-| `asljs-components` | Yes | Yes | No | Yes |
-| `asljs-dali` | Yes | Yes | No | Yes |
-| `asljs-machine` | No | Yes | No | Yes |
-| `asljs-money` | No | Yes | No | Yes |
-| `asljs-app-builder` | Yes | No | Yes | No |
+| -------------------- | --- | --- | --- | --- |
+| `asljs-eventful`     | No  | Yes | No  | Yes |
+| `asljs-observable`   | No  | Yes | No  | Yes |
+| `asljs-data-binding` | Yes | Yes | No  | Yes |
+| `asljs-components`   | Yes | Yes | No  | Yes |
+| `asljs-dali`         | Yes | Yes | No  | Yes |
+| `asljs-machine`      | No  | Yes | No  | Yes |
+| `asljs-money`        | No  | Yes | No  | Yes |
+| `asljs-part`         | No  | Yes | No  | Yes |
+| `asljs-app-builder`  | Yes | No  | Yes | No  |
 
 ### Placement guidance
 
@@ -96,6 +102,8 @@ graph TD
 - Put IndexedDB storage, live table views, and transaction helpers in `dali`.
 - Put control-flow state machines in `machine`.
 - Put monetary value and currency logic in `money`.
+- Put markdown-defined project artefact tracing, inventory, and rule checks in
+  `part`.
 - Put demo-specific or AI-assisted app behavior in `app-builder`.
 
 If a feature could live in more than one package, prefer the lowest-level

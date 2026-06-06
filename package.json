@@ -12,7 +12,8 @@
     "eventful",
     "machine",
     "money",
-    "observable"
+    "observable",
+    "part"
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",

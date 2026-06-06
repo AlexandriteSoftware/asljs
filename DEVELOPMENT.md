@@ -19,6 +19,7 @@ The repo is an npm workspace monorepo. Packages live in:
 - `observable`
 - `machine`
 - `money`
+- `part`
 - `data-binding`
 - `components`
 - `dali`
@@ -44,6 +45,7 @@ npm -w asljs-eventful run test
 npm -w asljs-observable run typecheck
 npm -w asljs-components run lint
 npm -w asljs-dali run build
+npm -w asljs-part run test
 ```
 
 Use the narrowest command that matches the change.
@@ -106,6 +108,7 @@ Use the package map from `README.md` when deciding where a change belongs:
 - `observable` for change tracking and watch behavior
 - `machine` for state-machine flow
 - `money` for monetary value behavior
+- `part` for markdown-defined project artefact tracing and CLI checks
 - `data-binding` for DOM binding syntax and runtime
 - `components` for browser UI components
 - `dali` for IndexedDB storage, live views, and transactions
@@ -212,6 +215,19 @@ npm -w $env:FOLDER run typecheck
 npm -w $env:FOLDER run lint
 npm -w $env:FOLDER test
 ```
+
+For `asljs-part`, use the same root workspace pattern:
+
+```pwsh
+npm -w asljs-part run typecheck
+npm -w asljs-part run lint
+npm -w asljs-part run test
+npm -w asljs-part run build
+```
+
+`asljs-part` stays JavaScript-only. Its `typecheck` and `build` scripts exist
+to satisfy the shared publish workflow contract, not to add a transpilation
+step.
 
 Then follow `RELEASE.md` for versioning, publish, and tag push steps.
 

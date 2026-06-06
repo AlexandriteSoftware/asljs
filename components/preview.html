@@ -372,10 +372,6 @@
 					const shell = document.createElement('div');
 					shell.className = 'demo-grid';
 
-					const hint = document.createElement('div');
-					hint.className = 'demo-card';
-					hint.textContent = 'This preview uses a local model and no API key. Sending shows the missing-key path.';
-
 					const chat = document.createElement('asljs-ai-chat');
 					chat.className = 'demo-card';
 					chat.style.minHeight = '28rem';
@@ -392,9 +388,31 @@
 
 					chat.model = model;
 					chat.options = {
+						transport: {
+							postRequest: async body => {
+								const input = Array.isArray(body.input)
+									? body.input
+									: [];
+								const latestUserMessage =
+									[...input]
+										.reverse()
+										.find(item => item?.role === 'user' && typeof item.content === 'string');
+
+								return {
+									id: 'preview-echo-response',
+									output_text: typeof latestUserMessage?.content === 'string'
+										? latestUserMessage.content
+										: '',
+								};
+							},
+						},
 						provider: {
 							getOpenAiApiKey: async () => '',
 							getChatModel: async () => 'gpt-4.1-mini',
+						},
+						stateStore: {
+							load: async () => ({}),
+							save: async () => {},
 						},
 						getRequestContext: () => ({
 							preview: true,
@@ -403,10 +421,9 @@
 							{ role: 'user',
 								content: prompt },
 						],
-						missingKeyMessage: 'Preview mode has no API key configured.',
 					};
 
-					shell.append(hint, chat);
+					shell.append(chat);
 					return {
 						root: shell,
 						component: chat,

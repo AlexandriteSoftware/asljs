@@ -171,6 +171,7 @@ Use this package map before deciding where a change belongs.
   * `observable` -> builds on `eventful`
   * `machine` -> state-machine utility built on `eventful` and `observable`
   * `money` -> standalone monetary value utility
+  * `part` -> markdown-defined project artefact tracing and CLI checks
 * Browser-facing libraries:
   * `data-binding` -> browser DOM binding, builds on `observable`
   * `components` -> web components, builds on `data-binding` and `eventful`

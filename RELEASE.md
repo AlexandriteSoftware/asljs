@@ -52,4 +52,5 @@ npm -w money run release:patch
 npm -w data-binding run release:patch
 npm -w dali run release:patch
 npm -w components run release:patch
+npm -w part run release:patch
 ```

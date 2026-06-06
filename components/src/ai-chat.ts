@@ -20,6 +20,11 @@ import {
 import {
     type ComponentModelDefinition,
   } from './abstractions/model.js';
+import {
+    findThemeProvider,
+    getDefaultTheme,
+    resolveThemeText,
+  } from './themes/theme.js';
 import './button.js';
 import './select.js';
 import './text-input.js';
@@ -740,7 +745,10 @@ export class AiChat
                             ? 'Send'
                             : 'Choose'}
                           .disabled=${model.sending}
-                          .buttonClassName=${'asljs-ai-chat-button asljs-ai-chat-choice-submit'}
+                          .buttonClassName=${resolveAiChatButtonClassName(
+                            this,
+                            'asljs-ai-chat-button',
+                            'asljs-ai-chat-choice-submit')}
                           @click=${this.#handleChoiceSubmit}>
                       </asljs-button>
                     </div>
@@ -767,7 +775,10 @@ export class AiChat
               .type=${'button'}
               .text=${'Send'}
               .disabled=${model.sending}
-              .buttonClassName=${'asljs-ai-chat-button asljs-ai-chat-send'}
+              .buttonClassName=${resolveAiChatButtonClassName(
+                this,
+                'asljs-ai-chat-button',
+                'asljs-ai-chat-send')}
               @click=${this.#handleSendClick}>
           </asljs-button>
         </div>
@@ -1852,6 +1863,32 @@ function renderAssistantContent(
   } catch {
     return escapeHtml(content);
   }
+}
+
+function resolveAiChatButtonClassName(
+    component: AiChat,
+    ...classNames: string[]
+  ): string
+{
+  const themeClassName =
+    resolveThemeText(
+      findThemeProvider(component)?.theme?.button?.className,
+      component)
+    ?? resolveThemeText(
+      getDefaultTheme().button?.className,
+      component)
+    ?? '';
+
+  return [ themeClassName, ...classNames ]
+    .flatMap(
+      value => value.split(/\s+/u))
+    .map(
+      value => value.trim())
+    .filter(
+      (value, index, values) =>
+        value !== ''
+        && values.indexOf(value) === index)
+    .join(' ');
 }
 
 function escapeHtml(
