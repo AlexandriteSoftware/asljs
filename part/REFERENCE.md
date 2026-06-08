@@ -48,6 +48,10 @@ Rule file resolution behavior:
 
 ## CLI Contract
 
+### version
+
+- Prints the package version from `package.json`.
+
 ### inventory
 
 - Scans artefacts matched by discovered definitions.

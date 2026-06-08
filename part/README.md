@@ -33,6 +33,7 @@ definition inspection, and rule checks.
 - `part check` runs rules for matching artefacts, returns a non-zero exit code
   on any failure, and shows only failures by default.
 - `part check --with-positives` includes passing `OK` rows in the output.
+- `part version` prints the package version from `package.json`.
 
 ## Quick Start
 

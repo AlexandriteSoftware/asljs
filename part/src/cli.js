@@ -1,198 +1,235 @@
 import {
-  buildArtefactDefinitionReport,
-  buildCheckReport,
-  buildInventoryReport,
-} from './inventory.js';
+    createRequire
+  } from 'node:module';
+import {
+    Command
+  } from 'commander';
+import {
+    buildArtefactDefinitionReport,
+    buildCheckReport,
+    buildInventoryReport,
+  } from './inventory.js';
 
-const HELP_TEXT = `Usage: part <command>
+const require =
+  createRequire(
+    import.meta.url);
 
-Commands:
-  inventory            Scan the current folder and print artifact inventory
-  artefactdefinition   List definitions and their locations
-  check                Run rules for artefacts matching a pattern
+const { version: packageVersion } =
+  require('../package.json');
 
-Options:
-  --definitions <path> Search definitions in the specified folder only
-  --with-positives     Show passing and failing check rows
-`;
-
-export async function runCli(args, environment)
+export async function runCli(
+  args,
+  environment)
 {
-  const [command, ...rest] = args;
+  const normalizedArgs =
+    normalizeArgs(args);
 
-  if (!command || command === '--help' || command === '-h') {
-    environment.stdout.write(`${HELP_TEXT}\n`);
+  const cli =
+    createCli(environment);
+
+  if (normalizedArgs.length === 0) {
+    cli.outputHelp();
     return 0;
   }
 
-  const parsedCommand = command.toLowerCase();
-
-  if (!isSupportedCommand(parsedCommand)) {
-    environment.stderr.write(`Unknown command: ${command}\n`);
-    environment.stderr.write(`${HELP_TEXT}\n`);
-    return 1;
-  }
-
   try {
-    const options = parseOptions(rest);
-    validateOptions(parsedCommand, options);
-    const result = await buildReport(parsedCommand, environment.cwd, options);
-    environment.stdout.write(`${result.report}\n`);
-    return result.exitCode;
-  }
-  catch (error) {
+    await cli.parseAsync(
+      normalizedArgs,
+      { from: 'user' });
+
+    return cli.exitCode ?? 0;
+  } catch (error) {
+    if (writeCommanderError(environment, error, normalizedArgs, cli)) {
+      return 1;
+    }
+
     const message =
       error instanceof Error
       ? error.message
       : String(error);
+
+    if (!message) {
+      return 1;
+    }
 
     environment.stderr.write(`${message}\n`);
     return 1;
   }
 }
 
-function isSupportedCommand(command)
+function createCli(
+  environment)
 {
-  return command === 'inventory'
-         || command === 'artefactdefinition'
-         || command === 'check';
-}
+  const cli = new Command();
 
-function parseOptions(args)
-{
-  const options = {
-    positionals: [],
-  };
-
-  for (let index = 0; index < args.length; index += 1) {
-    const current = args[index];
-
-    if (!current.startsWith('--')) {
-      options.positionals.push(current);
-      continue;
-    }
-
-    const parsedOption = parseLongOption(current, args[index + 1]);
-    options[parsedOption.name] = parsedOption.value;
-
-    if (parsedOption.consumesNextArgument) {
-      index += 1;
-    }
-  }
-
-  if (options.definitions === true) {
-    throw new Error('Option --definitions requires a value.');
-  }
-
-  return options;
-}
-
-function validateOptions(command, options)
-{
-  const supportedOptionNames = getSupportedOptionNames(command);
-
-  for (const optionName of Object.keys(options)) {
-    if (optionName === 'positionals') {
-      continue;
-    }
-
-    if (!supportedOptionNames.has(optionName)) {
-      throw new Error(`Unknown option: --${optionName}`);
-    }
-  }
-}
-
-function getSupportedOptionNames(command)
-{
-  if (command === 'inventory' || command === 'artefactdefinition') {
-    return new Set(['definitions']);
-  }
-
-  if (command === 'check') {
-    return new Set(['definitions', 'rules', 'definitions-path', 'with-positives']);
-  }
-
-  return new Set();
-}
-
-function parseLongOption(current, next)
-{
-  const equalsIndex = current.indexOf('=');
-
-  if (equalsIndex !== -1) {
-    const name = current.slice(2, equalsIndex);
-    const value = current.slice(equalsIndex + 1);
-
-    if (!name) {
-      throw new Error(`Invalid option: ${current}`);
-    }
-
-    return {
-      name,
-      value,
-      consumesNextArgument: false,
-    };
-  }
-
-  const name = current.slice(2);
-
-  if (!name) {
-    throw new Error(`Invalid option: ${current}`);
-  }
-
-  if (next && !next.startsWith('--')) {
-    return {
-      name,
-      value: next,
-      consumesNextArgument: true,
-    };
-  }
-
-  return {
-    name,
-    value: true,
-    consumesNextArgument: false,
-  };
-}
-
-async function buildReport(command, cwd, options)
-{
-  if (command === 'artefactdefinition') {
-    return {
-      report: await buildArtefactDefinitionReport(cwd, {
-        ...options,
-        definitionTarget: options.positionals[0],
-        definitionsPath: options.definitions,
-      }),
-      exitCode: 0,
-    };
-  }
-
-  if (command === 'check') {
-    const checkResult = await buildCheckReport(cwd, {
-      ...options,
-      pattern: options.positionals[0],
-      definitionNames: splitCommaSeparatedOption(options.definitions),
-      ruleNames: splitCommaSeparatedOption(options.rules),
-      definitionsPath: options['definitions-path'],
-      withPositives: options['with-positives'] === true,
+  cli
+    .name('part')
+    .description('Project artefact tracing CLI')
+    .allowExcessArguments(false)
+    .helpCommand(false)
+    .configureOutput({
+      writeOut: (value) => {
+        environment.stdout.write(value);
+      },
+      writeErr: (value) => {
+        environment.stderr.write(value);
+      },
+      outputError: () => {
+      },
+    })
+    .exitOverride((error) => {
+      throw error;
     });
 
-    return {
-      report: checkResult.report,
-      exitCode: checkResult.hasFailures
-? 1
-: 0,
-    };
+  cli.command('inventory')
+    .description('Scan the current folder and print artefact inventory')
+    .option('--definitions <path>', 'Search definitions in the specified folder only')
+    .action(async (options) => {
+      await writeReport(
+        environment,
+        await buildInventoryReport(
+          environment.cwd,
+          { definitionsPath: options.definitions }),
+      );
+    });
+
+  cli.command('artefactdefinition')
+    .description('List definitions and their locations')
+    .argument('[definitionTarget]')
+    .option('--definitions <path>', 'Search definitions in the specified folder only')
+    .action(async (definitionTarget, options) => {
+      await writeReport(
+        environment,
+        await buildArtefactDefinitionReport(
+          environment.cwd,
+          { definitionTarget,
+            definitionsPath: options.definitions }),
+      );
+    });
+
+  cli.command('check')
+    .description('Run rules for artefacts matching a pattern')
+    .argument('[pattern]')
+    .option('--definitions <definitions>', 'Comma-separated definition names to include')
+    .option('--rules <rules>', 'Comma-separated rule names to include')
+    .option('--definitions-path <path>', 'Search definitions in the specified folder only')
+    .option('--with-positives', 'Show passing and failing check rows')
+    .action(async (pattern, options) => {
+      const result =
+        await buildCheckReport(
+          environment.cwd,
+          { pattern,
+            definitionNames: splitCommaSeparatedOption(options.definitions),
+            ruleNames: splitCommaSeparatedOption(options.rules),
+            definitionsPath: options.definitionsPath,
+            withPositives: options.withPositives === true });
+
+      await writeReport(environment, result.report);
+
+      cli.exitCode =
+        result.hasFailures
+        ? 1
+        : 0;
+    });
+
+  cli.command('version')
+    .description('Print the current package version')
+    .action(() => {
+      environment.stdout.write(`${packageVersion}\n`);
+    });
+
+  return cli;
+}
+
+async function writeReport(environment, report)
+{
+  environment.stdout.write(`${report}\n`);
+}
+
+function normalizeArgs(
+  args)
+{
+  if (args.length === 0) {
+    return args;
   }
 
-  return {
-    report: await buildInventoryReport(cwd, {
-      ...options,
-      definitionsPath: options.definitions,
-    }),
-    exitCode: 0,
-  };
+  const [command, ...rest] = args;
+
+  const normalizedCommand =
+    normalizeCommand(command);
+
+  return [ normalizedCommand,
+           ...rest];
+}
+
+function normalizeCommand(
+  command)
+{
+  if (typeof command !== 'string'
+      || command.startsWith('-'))
+  {
+    return command;
+  }
+
+  const lowercaseCommand =
+    command.toLowerCase();
+
+  const supportedCommands =
+    new Set(
+      [ 'inventory',
+        'artefactdefinition',
+        'check',
+        'version' ]);
+
+  return supportedCommands.has(lowercaseCommand)
+    ? lowercaseCommand
+    : command;
+}
+
+function writeCommanderError(
+  environment,
+  error,
+  args,
+  cli)
+{
+  if (!(error instanceof Error)
+      || typeof error.code !== 'string')
+  {
+    return false;
+  }
+
+  if (error.code === 'commander.optionMissingArgument') {
+    const optionName = extractOptionName(error.message);
+
+    environment.stderr.write(`Option ${optionName} requires a value.\n`);
+    return true;
+  }
+
+  if (error.code === 'commander.unknownOption') {
+    const optionName = extractOptionName(error.message);
+
+    environment.stderr.write(`Unknown option: ${optionName}\n`);
+    return true;
+  }
+
+  if (error.code === 'commander.unknownCommand') {
+    const commandName = args[0] ?? '';
+
+    environment.stderr.write(`Unknown command: ${commandName}\n`);
+    cli.outputHelp({
+      error: true,
+    });
+    return true;
+  }
+
+  return false;
+}
+
+function extractOptionName(message)
+{
+  const match = /'(--[^ <']+)/.exec(message);
+
+  return match?.[1] ?? '--unknown';
 }
 
 function splitCommaSeparatedOption(value)
