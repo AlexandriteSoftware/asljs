@@ -10,7 +10,7 @@ the project.
 
 ## Location
 
-- Files: `development/**/DF*.md`
+- Files: `../development/**/DF*.md`
 
 ## Rules
 

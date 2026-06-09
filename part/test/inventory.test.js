@@ -74,6 +74,52 @@ I need to buy milk.
   assert.match(stdout.toString(), /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Ok\s+\|/);
 });
 
+test('inventory resolves artefact locations relative to the definition file', async () =>
+{
+  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
+
+  await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
+  await mkdir(path.join(workspacePath, 'development'), { recursive: true });
+  await writeFile(
+    path.join(workspacePath, 'artefacts', 'Requirement.md'),
+    `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - Requirement rule.
+`,
+    'utf8',
+  );
+  await writeFile(
+    path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js'),
+    'export async function validate() {}\n',
+    'utf8',
+  );
+  await writeFile(
+    path.join(workspacePath, 'development', 'RQ101 Example.md'),
+    '# RQ101 Example\n',
+    'utf8',
+  );
+
+  const stdout = createWritableBuffer();
+  const stderr = createWritableBuffer();
+  const exitCode = await runCli(['inventory'], {
+    cwd: workspacePath,
+    stdout,
+    stderr,
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.toString(), '');
+  assert.match(stdout.toString(), /\| development\/RQ101 Example\.md \| Requirement\s+\| Ok\s+\|/);
+});
+
 test('inventory lists all definitions applied to the same artefact', async () =>
 {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
@@ -104,7 +150,7 @@ Definition file.
 
 ## Location
 
-- Files: definitions/**/*.md
+- Files: ../definitions/**/*.md
 
 ## Rules
 
@@ -149,7 +195,7 @@ A todo item is a task that needs to be done.
 
 ## Location
 
-- Folders: Todo Items
+- Folders: ../Todo Items
 
 ## Rules
 
@@ -255,7 +301,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -298,7 +344,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -380,7 +426,7 @@ Definition file.
 
 ## Location
 
-- Files: definitions/**/*.md
+- Files: ../definitions/**/*.md
 
 ## Rules
 
@@ -420,7 +466,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -502,7 +548,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -570,7 +616,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -611,7 +657,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: development/**/RQ*.md
+- Files: ../development/**/RQ*.md
 
 ## Rules
 
@@ -669,7 +715,7 @@ Todo item.
 
 ## Location
 
-- Folders: Todo Items
+- Folders: ../Todo Items
 `,
     'utf8',
   );

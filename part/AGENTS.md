@@ -28,6 +28,7 @@ Public behavior at a glance:
 
 - definitions are markdown files with a level 1 heading matching the file name
 - definitions require a `Location` section to be valid
+- definition `Location` paths are resolved relative to the definition file
 - definitions can declare `Properties` and `Rules`
 - rules resolve from a sibling `rules/` directory first, then the repository
   `part/` folder
@@ -36,6 +37,9 @@ Public behavior at a glance:
 - `check` returns a non-zero exit code on any failure
 - `check` shows failures only by default; `--with-positives` includes `OK`
   rows
+- `init` bootstraps a definitions directory with artefact templates
+- `update-rules` creates missing JS rule files and refreshes stale rule
+  comments
 
 Use this package when:
 
@@ -65,6 +69,8 @@ Do not assume:
 
 - A valid definition must have a level 1 heading matching the file name and a
   `Location` section.
+- Definition location paths must continue to resolve relative to the definition
+  file.
 - Rules must continue to support IDs such as `R1` and `RL10`.
 - `inventory` must preserve the ability to show more than one matching
   definition for the same artefact.

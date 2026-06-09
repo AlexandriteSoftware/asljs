@@ -9,7 +9,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: `development/**/RQ*.md`
+- Files: `../development/**/RQ*.md`
 
 ## Rules
 

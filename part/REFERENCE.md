@@ -24,6 +24,7 @@ Stable definition behavior:
 
 - A definition is a markdown file whose level 1 heading matches the file name.
 - A valid definition includes a `Location` section.
+- Definition `Location` paths are resolved relative to the definition file.
 - `Properties` list items map markdown labels to normalized property names for
   rule input.
 - `Rules` list items use IDs such as `R1` or `RL10` and can include an optional
@@ -52,6 +53,15 @@ Rule file resolution behavior:
 
 - Prints the package version from `package.json`.
 
+### init
+
+- Copies `Artefact Definition.md` and `Rule File.md` into the chosen
+  definitions directory.
+- Ensures a sibling `rules/` directory exists in the chosen definitions
+  directory.
+- Uses the current working directory by default and `--definitions <path>` when
+  provided.
+
 ### inventory
 
 - Scans artefacts matched by discovered definitions.
@@ -71,6 +81,14 @@ Rule file resolution behavior:
 - Shows only failing rows by default.
 - `--with-positives` includes passing `OK` rows.
 - Rows are sorted by path, then by rule.
+
+### update-rules
+
+- Scans rules from discovered definitions in the chosen definitions directory.
+- Creates missing JavaScript rule files in a sibling `rules/` directory.
+- Updates JavaScript rule files whose first comment no longer matches the rule
+  text from the definition.
+- Skips non-JavaScript rule files and reports a warning for each skipped file.
 
 ## Preferred Usage Patterns
 

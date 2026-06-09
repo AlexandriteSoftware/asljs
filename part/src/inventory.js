@@ -191,7 +191,10 @@ async function listArtifactPaths(rootDirectory, definition)
   const gitIgnore = definition.location.gitIgnore
 ? new GitIgnore(rootDirectory)
 : null;
-  const searchPatterns = toSearchPatterns(definition.location);
+  const searchPatterns = toSearchPatterns(rootDirectory, definition);
+  const ignorePatterns = definition.location.exclude.map((excludePattern) =>
+    resolveDefinitionLocationPath(rootDirectory, definition, excludePattern),
+  );
   const artifactPaths = new Set();
 
   for (const pattern of searchPatterns) {
@@ -200,7 +203,7 @@ async function listArtifactPaths(rootDirectory, definition)
       cwd: rootDirectory,
       dot: true,
       nodir: true,
-      ignore: definition.location.exclude,
+      ignore: ignorePatterns,
     });
 
     for (const match of matches) {
@@ -213,15 +216,37 @@ async function listArtifactPaths(rootDirectory, definition)
   return Array.from(artifactPaths);
 }
 
-function toSearchPatterns(location)
+function toSearchPatterns(rootDirectory, definition)
 {
-  if (location.type === 'Files') {
-    return [location.pattern];
+  const pattern = resolveDefinitionLocationPath(
+    rootDirectory,
+    definition,
+    definition.location.pattern,
+  );
+
+  if (definition.location.type === 'Files') {
+    return [pattern];
   }
 
   return [
-    `${trimTrailingSlash(location.pattern)}/**/*.md`,
+    `${trimTrailingSlash(pattern)}/**/*.md`,
   ];
+}
+
+function resolveDefinitionLocationPath(rootDirectory, definition, locationPath)
+{
+  if (!definition.definitionPath) {
+    return locationPath;
+  }
+
+  const resolvedPath = path.resolve(path.dirname(definition.definitionPath), locationPath);
+  const relativePath = path.relative(rootDirectory, resolvedPath);
+
+  if (!relativePath.startsWith('..') && !path.isAbsolute(relativePath)) {
+    return toPosixPath(relativePath);
+  }
+
+  return toPosixPath(resolvedPath);
 }
 
 function trimTrailingSlash(value)

@@ -4,9 +4,9 @@
 directory.
 
 It searches for definitions by enumerating markdown files and checking whether
-their content matches [DF1 Definition][1].
+their content matches [Artefact Definition][1].
 
 The files and folders that are in .gitignore files are excluded from the search
 results.
 
-[1]: <DF1 Definition.md>
+[1]: <../artefacts/Artefact Definition.md>

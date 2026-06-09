@@ -5,6 +5,12 @@ import {
     Command
   } from 'commander';
 import {
+    initializeDefinitionsDirectory
+  } from './bootstrap.js';
+import {
+    updateRules
+  } from './updateRules.js';
+import {
     buildArtefactDefinitionReport,
     buildCheckReport,
     buildInventoryReport,
@@ -64,26 +70,20 @@ function createCli(
 
   cli
     .name('part')
-    .description('Project artefact tracing CLI')
+    .description('`part` is a project artefact tracing tool.')
     .allowExcessArguments(false)
     .helpCommand(false)
-    .configureOutput({
-      writeOut: (value) => {
-        environment.stdout.write(value);
-      },
-      writeErr: (value) => {
-        environment.stderr.write(value);
-      },
-      outputError: () => {
-      },
-    })
-    .exitOverride((error) => {
-      throw error;
-    });
+    .configureOutput(
+      { writeOut: value => environment.stdout.write(value),
+        writeErr: value => environment.stderr.write(value),
+        outputError: () => { } })
+    .exitOverride(error => { throw error; });
 
   cli.command('inventory')
     .description('Scan the current folder and print artefact inventory')
-    .option('--definitions <path>', 'Search definitions in the specified folder only')
+    .option(
+      '--definitions <path>',
+      'Search definitions in the specified folder only')
     .action(async (options) => {
       await writeReport(
         environment,
@@ -96,7 +96,9 @@ function createCli(
   cli.command('artefactdefinition')
     .description('List definitions and their locations')
     .argument('[definitionTarget]')
-    .option('--definitions <path>', 'Search definitions in the specified folder only')
+    .option(
+      '--definitions <path>',
+      'Search definitions in the specified folder only')
     .action(async (definitionTarget, options) => {
       await writeReport(
         environment,
@@ -107,36 +109,88 @@ function createCli(
       );
     });
 
+  cli.command('init')
+    .description('Initialize an artefact definitions directory')
+    .option(
+      '--definitions <path>',
+      'Initialize the specified definitions directory')
+    .action(
+      async (options) => {
+        const initializedPath =
+          await initializeDefinitionsDirectory(
+            environment.cwd,
+            options.definitions);
+
+        environment.stdout.write(`Initialized definitions directory: ${initializedPath}\n`);
+      });
+
+  cli.command('update-rules')
+    .description('Create or refresh JS rule files from artefact definitions')
+    .option(
+      '--definitions <path>',
+      'Search definitions in the specified folder only')
+    .action(
+      async (options) => {
+        const result =
+          await updateRules(
+            environment.cwd,
+            {
+              definitionsPath: options.definitions,
+              runCopilotCli: environment.runCopilotCli,
+            },
+          );
+
+        if (result.updates.length === 0) {
+          environment.stdout.write('No rule updates were needed.\n');
+        }
+
+        for (const update of result.updates) {
+          environment.stdout.write(`${update}\n`);
+        }
+
+        for (const warning of result.warnings) {
+          environment.stderr.write(`${warning}\n`);
+        }
+      });
+
   cli.command('check')
     .description('Run rules for artefacts matching a pattern')
     .argument('[pattern]')
-    .option('--definitions <definitions>', 'Comma-separated definition names to include')
-    .option('--rules <rules>', 'Comma-separated rule names to include')
-    .option('--definitions-path <path>', 'Search definitions in the specified folder only')
-    .option('--with-positives', 'Show passing and failing check rows')
-    .action(async (pattern, options) => {
-      const result =
-        await buildCheckReport(
-          environment.cwd,
-          { pattern,
-            definitionNames: splitCommaSeparatedOption(options.definitions),
-            ruleNames: splitCommaSeparatedOption(options.rules),
-            definitionsPath: options.definitionsPath,
-            withPositives: options.withPositives === true });
+    .option(
+      '--definitions <definitions>',
+      'Comma-separated definition names to include')
+    .option(
+      '--rules <rules>',
+      'Comma-separated rule names to include')
+    .option(
+      '--definitions-path <path>',
+      'Search definitions in the specified folder only')
+    .option(
+      '--with-positives',
+      'Show passing and failing check rows')
+    .action(
+      async (pattern, options) => {
+        const result =
+          await buildCheckReport(
+            environment.cwd,
+            { pattern,
+              definitionNames: splitCommaSeparatedOption(options.definitions),
+              ruleNames: splitCommaSeparatedOption(options.rules),
+              definitionsPath: options.definitionsPath,
+              withPositives: options.withPositives === true });
 
-      await writeReport(environment, result.report);
+        await writeReport(environment, result.report);
 
-      cli.exitCode =
-        result.hasFailures
-        ? 1
-        : 0;
-    });
+        cli.exitCode =
+          result.hasFailures
+          ? 1
+          : 0;
+      });
 
   cli.command('version')
     .description('Print the current package version')
-    .action(() => {
-      environment.stdout.write(`${packageVersion}\n`);
-    });
+    .action(
+      () => environment.stdout.write(`${packageVersion}\n`));
 
   return cli;
 }
@@ -178,6 +232,8 @@ function normalizeCommand(
     new Set(
       [ 'inventory',
         'artefactdefinition',
+        'init',
+        'update-rules',
         'check',
         'version' ]);
 
@@ -234,12 +290,14 @@ function extractOptionName(message)
 
 function splitCommaSeparatedOption(value)
 {
-  if (typeof value !== 'string' || value.trim() === '') {
+  if (typeof value !== 'string'
+      || value.trim() === '')
+  {
     return [];
   }
 
   return value
     .split(',')
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
+    .map(entry => entry.trim())
+    .filter(entry => entry.length > 0);
 }

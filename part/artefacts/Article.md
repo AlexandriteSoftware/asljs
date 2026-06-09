@@ -4,8 +4,8 @@ Markdown article.
 
 ## Location
 
-- Files: `**/*.md`
-- Exclude: `README.md`
+- Files: `../**/*.md`
+- Exclude: `../**/README.md`
 - GitIgnore
 
 ## Rules

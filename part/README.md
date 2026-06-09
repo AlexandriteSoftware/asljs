@@ -18,6 +18,7 @@ definition inspection, and rule checks.
 
 - A definition is a markdown file whose level 1 heading matches the file name.
 - Each definition describes where artefacts live via a `Location` section.
+- `Location` paths are resolved relative to the definition file.
 - Optional `Properties` entries map markdown list labels into rule inputs.
 - `Rules` entries resolve to JavaScript or executable rule files and are run by
   the `check` command.
@@ -33,6 +34,10 @@ definition inspection, and rule checks.
 - `part check` runs rules for matching artefacts, returns a non-zero exit code
   on any failure, and shows only failures by default.
 - `part check --with-positives` includes passing `OK` rows in the output.
+- `part init` bootstraps a definitions directory with `Artefact Definition.md`,
+  `Rule File.md`, and a `rules/` folder.
+- `part update-rules` creates or refreshes JavaScript rule files for discovered
+  definitions.
 - `part version` prints the package version from `package.json`.
 
 ## Quick Start
@@ -50,7 +55,7 @@ A task that needs to be done.
 
 ## Location
 
-- Files: Todo Items/*.md
+- Files: ../Todo Items/*.md
 
 ## Rules
 
@@ -85,6 +90,12 @@ Run inventory:
 
 ```bash
 part inventory
+```
+
+Bootstrap a definitions folder:
+
+```bash
+part init --definitions artefacts
 ```
 
 Example output:
