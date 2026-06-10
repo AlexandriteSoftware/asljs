@@ -1,4 +1,4 @@
-# MIT License
+# LICENSE
 
 Copyright (c) 2025 Alexandrite Software Ltd
 

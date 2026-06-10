@@ -1,4 +1,4 @@
-# RQ123 Check action
+# RQ123 CLI Check action
 
 When CLI is invoked with Check action, it obtains all artefact definitions,
 gets list of artefacts and list of rules per definition, and runs rule function

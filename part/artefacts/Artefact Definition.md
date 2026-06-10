@@ -18,3 +18,9 @@ Artefact Definition is a markdown file, with the following content:
 ## Location
 
 - Files: `**/*.md`
+
+## Rules
+
+- RL1 - Each rule in the definition file should have a corresponding rule file
+  that implements it. The rule file should be named
+  `<DefinitionName>_<RuleId>.<extension>`, for example, `Todo Item_R1.js`.

@@ -6,6 +6,8 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 
 import { GitIgnore } from './gitIgnore.js';
 
+// See RQ203
+
 test('GitIgnore filters paths using root and nested .gitignore files', async () =>
 {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-gitignore-'));

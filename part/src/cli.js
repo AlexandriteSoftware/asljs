@@ -1,12 +1,13 @@
 import {
     createRequire
   } from 'node:module';
+import path from 'node:path';
 import {
     Command
   } from 'commander';
 import {
     initializeDefinitionsDirectory
-  } from './bootstrap.js';
+  } from './init.js';
 import {
     updateRules
   } from './updateRules.js';
@@ -129,6 +130,9 @@ function createCli(
     .option(
       '--definitions <path>',
       'Search definitions in the specified folder only')
+    .option(
+      '--dry-run',
+      'Print Copilot prompts without running them or writing files')
     .action(
       async (options) => {
         const result =
@@ -136,6 +140,7 @@ function createCli(
             environment.cwd,
             {
               definitionsPath: options.definitions,
+              dryRun: options.dryRun,
               runCopilotCli: environment.runCopilotCli,
             },
           );
@@ -150,6 +155,13 @@ function createCli(
 
         for (const warning of result.warnings) {
           environment.stderr.write(`${warning}\n`);
+        }
+
+        if (options.dryRun) {
+          for (const prompt of result.prompts) {
+            environment.stdout.write(`\n--- ${prompt.mode.toUpperCase()} ${toPosixPath(path.relative(environment.cwd, prompt.targetFilePath))} ---\n`);
+            environment.stdout.write(`${prompt.prompt}\n`);
+          }
         }
       });
 
@@ -300,4 +312,9 @@ function splitCommaSeparatedOption(value)
     .split(',')
     .map(entry => entry.trim())
     .filter(entry => entry.length > 0);
+}
+
+function toPosixPath(value)
+{
+  return value.replaceAll('\\', '/');
 }

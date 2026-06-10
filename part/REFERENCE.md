@@ -9,6 +9,7 @@
 
 The package-root export surface includes:
 
+- `ArtefactProvider`
 - `runCli`
 - `Definition`
 - `DefinitionProvider`
@@ -42,10 +43,21 @@ Rule file resolution behavior:
 - `DefinitionProvider` discovers markdown definitions from visible files under
   the chosen definitions path.
 - Definition discovery respects `.gitignore` filtering.
+- `ArtefactProvider` resolves artefacts from a definition `Location`, applies
+  `Exclude` patterns, and honors opt-in `.gitignore` filtering.
+- `ArtefactProvider#getDefinitionsForArtefact(...)` returns all discovered
+  definitions whose locations include the target artefact.
 - Artefact discovery uses the definition `Location` pattern and optional
   `Exclude` entries.
 - Artefact locations opt into `.gitignore` filtering only when the definition
   includes `GitIgnore` in its `Location` section.
+
+## Rule Runtime Contract
+
+- JavaScript rules receive `context.artefacts`, an `ArtefactProvider` rooted at
+  the current repository and backed by the active definition set for that run.
+- JavaScript rules continue to receive `context.artifactPath`,
+  `context.rootDirectory`, and `context.definition`.
 
 ## CLI Contract
 
@@ -89,10 +101,22 @@ Rule file resolution behavior:
 - Updates JavaScript rule files whose first comment no longer matches the rule
   text from the definition.
 - Skips non-JavaScript rule files and reports a warning for each skipped file.
+- Prompts the AI runner to return the complete file content on standard output;
+  the runner must not edit files directly.
+- Uses `PART_COPILOT_CLI_COMMAND` when set as the command used to generate the
+  rule file content. PART writes the prompt to the command's standard input and
+  reads the generated file content from standard output.
+- When `PART_COPILOT_CLI_COMMAND` is not set, first tries
+  `gh copilot -p <prompt> --allow-all-tools --allow-all-paths --no-ask-user --silent`,
+  then falls back to `copilot -p <prompt> --allow-all-tools --allow-all-paths --no-ask-user --silent`.
+- `--dry-run` prints the prompts that would be sent to the AI runner and does
+  not invoke the runner or write files.
 
 ## Preferred Usage Patterns
 
 - Use the CLI when you want repository-local inventory or rule validation.
+- Use `ArtefactProvider` when you need to enumerate artefacts for a definition
+  or find definitions for a specific file.
 - Use the package-root report builders when you need to embed PART in another
   Node.js workflow.
 - Keep definitions close to the artefacts or domains they describe and keep

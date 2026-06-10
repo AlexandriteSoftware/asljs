@@ -1,4 +1,4 @@
-# ASLJS PART AI Guidance
+# AGENTS
 
 ## Purpose
 
@@ -11,6 +11,7 @@ inventory, definition inspection, and rule checks.
 
 Root exports:
 
+- `ArtefactProvider`
 - `runCli`
 - `Definition`
 - `DefinitionProvider`
@@ -29,9 +30,13 @@ Public behavior at a glance:
 - definitions are markdown files with a level 1 heading matching the file name
 - definitions require a `Location` section to be valid
 - definition `Location` paths are resolved relative to the definition file
+- `ArtefactProvider` resolves artefacts for a definition and can find all
+  matching definitions for a file
 - definitions can declare `Properties` and `Rules`
 - rules resolve from a sibling `rules/` directory first, then the repository
   `part/` folder
+- JavaScript rules receive `context.artefacts` as an `ArtefactProvider`
+  rooted at the current repository
 - `inventory` shows all matching definitions for each artefact
 - `check` runs all rules from all matching definitions for each artefact
 - `check` returns a non-zero exit code on any failure
@@ -61,6 +66,8 @@ Do not assume:
 - Use `runCli(...)` when you want the same behavior as the `part` executable.
 - Use `DefinitionProvider` to discover definitions rather than hand-rolling
   markdown scans.
+- Use `ArtefactProvider` when you need definition-aware artefact discovery or
+  to inspect which definitions apply to a file.
 - Use the report builders for embedding inventory or check flows in scripts.
 - Keep stable public usage on the package-root exports; treat other `src/*`
   files as internal implementation unless they are re-exported.

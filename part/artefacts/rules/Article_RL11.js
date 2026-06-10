@@ -1,24 +1,17 @@
+/*
+RL11 - Top-level heading is the file name without extension.
+*/
+
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import { listFiles } from './_listFiles.js';
-
-const ARTICLE_PATTERN = '*.md';
-const ARTICLE_EXCLUDE = ['README.md'];
-
 export async function validate(artefact, context)
 {
-  const articlePaths = await listFiles(context.rootDirectory, {
-    pattern: ARTICLE_PATTERN,
-    exclude: ARTICLE_EXCLUDE,
-    gitIgnore: true,
-  });
-  const artifactPath = path.resolve(context.artifactPath);
-
-  if (!articlePaths.some((filePath) => path.resolve(filePath) === artifactPath)) {
+  if (!await context.artefacts.isArtefactOfDefinition(context.artifactPath, context.definition)) {
     return;
   }
 
+  const artifactPath = path.resolve(context.artifactPath);
   const content = await readFile(artifactPath, 'utf8');
   const headingMatch = content.match(/^#\s+(.+)$/m);
 

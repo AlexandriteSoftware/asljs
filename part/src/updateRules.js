@@ -16,8 +16,10 @@ export async function updateRules(rootDirectory, options = {})
   const provider = new DefinitionProvider(rootDirectory);
   const definitions = await provider.getDefinitions(definitionsDirectory);
   const runCopilotCli = options.runCopilotCli ?? runConfiguredCopilotCli;
+  const dryRun = options.dryRun === true;
   const updates = [];
   const warnings = [];
+  const prompts = [];
 
   for (const definition of definitions) {
     for (const rule of definition.rules) {
@@ -25,9 +27,22 @@ export async function updateRules(rootDirectory, options = {})
       const expectedFilePath = getExpectedRuleFilePath(definition, rule);
 
       if (!currentFilePath) {
-        const content = await runCopilotCli(
-          buildCopilotRequest('create', definition, rule, expectedFilePath),
+        const request = buildCopilotRequest(
+          'create',
+          definition,
+          rule,
+          expectedFilePath,
+          null,
+          rootDirectory,
         );
+
+        if (dryRun) {
+          prompts.push(request);
+          updates.push(`Would create ${toPosixPath(path.relative(rootDirectory, expectedFilePath))}`);
+          continue;
+        }
+
+        const content = await runCopilotCli(request);
 
         await mkdir(path.dirname(expectedFilePath), {
           recursive: true,
@@ -51,9 +66,22 @@ export async function updateRules(rootDirectory, options = {})
         continue;
       }
 
-      const updatedContent = await runCopilotCli(
-        buildCopilotRequest('update', definition, rule, currentFilePath, currentContent),
+      const request = buildCopilotRequest(
+        'update',
+        definition,
+        rule,
+        currentFilePath,
+        currentContent,
+        rootDirectory,
       );
+
+      if (dryRun) {
+        prompts.push(request);
+        updates.push(`Would update ${toPosixPath(path.relative(rootDirectory, currentFilePath))}`);
+        continue;
+      }
+
+      const updatedContent = await runCopilotCli(request);
 
       await writeFile(currentFilePath, ensureTrailingNewline(updatedContent), 'utf8');
       updates.push(`Updated ${toPosixPath(path.relative(rootDirectory, currentFilePath))}`);
@@ -63,6 +91,7 @@ export async function updateRules(rootDirectory, options = {})
   return {
     updates,
     warnings,
+    prompts,
   };
 }
 
@@ -75,10 +104,18 @@ function getExpectedRuleFilePath(definition, rule)
   );
 }
 
-function buildCopilotRequest(mode, definition, rule, targetFilePath, currentContent = null)
+function buildCopilotRequest(
+  mode,
+  definition,
+  rule,
+  targetFilePath,
+  currentContent = null,
+  rootDirectory = path.dirname(definition.definitionPath),
+)
 {
   return {
     mode,
+    rootDirectory,
     targetFilePath,
     definitionName: definition.name,
     definitionPath: definition.definitionPath,
@@ -93,8 +130,8 @@ function buildCopilotRequest(mode, definition, rule, targetFilePath, currentCont
 function buildPrompt(mode, definition, rule, targetFilePath, currentContent)
 {
   const instruction = mode === 'create'
-    ? 'Create the complete JavaScript rule file.'
-    : 'Update the existing JavaScript rule file.';
+    ? 'Return the complete JavaScript rule file content.'
+    : 'Return the complete updated JavaScript rule file content.';
 
   return [
     instruction,
@@ -102,8 +139,9 @@ function buildPrompt(mode, definition, rule, targetFilePath, currentContent)
     `Definition file: ${definition.definitionPath}`,
     `Rule: ${rule.id} - ${rule.description}`,
     `Target file: ${targetFilePath}`,
-    `The first comment in the file must be exactly: ${formatRuleComment(rule)}`,
-    'Return only the full file content.',
+    `The first comment in the file must be multiline and exactly: ${formatRuleComment(rule)}`,
+    'Do not edit files, run tools, or apply patches directly.',
+    'Write to standard output only the updated file content, no other text.',
     currentContent === null
       ? null
       : `Current file content:\n${currentContent}`,
@@ -112,16 +150,20 @@ function buildPrompt(mode, definition, rule, targetFilePath, currentContent)
 
 async function runConfiguredCopilotCli(request)
 {
-  const command = process.env.PART_COPILOT_CLI_COMMAND;
+  const command = process.env.PART_COPILOT_CLI_COMMAND?.trim();
 
-  if (!command) {
-    throw new Error(
-      'UpdateRules requires environment.runCopilotCli or PART_COPILOT_CLI_COMMAND.',
-    );
+  if (command) {
+    return runShellCopilotCli(command, request);
   }
 
+  return runDefaultCopilotCli(request);
+}
+
+async function runShellCopilotCli(command, request)
+{
   return new Promise((resolve, reject) => {
     const child = spawn(command, {
+      cwd: request.rootDirectory,
       shell: true,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
@@ -147,6 +189,93 @@ async function runConfiguredCopilotCli(request)
     child.stdin.write(request.prompt);
     child.stdin.end();
   });
+}
+
+async function runDefaultCopilotCli(request)
+{
+  const attempts = getDefaultCopilotCliInvocations(request.prompt);
+  let lastError = null;
+
+  for (const attempt of attempts) {
+    try {
+      return await runExecutableCopilotCli(attempt.command, attempt.args, request.rootDirectory);
+    } catch (error) {
+      if (!isMissingCommandError(error)) {
+        throw error;
+      }
+
+      lastError = error;
+    }
+  }
+
+  throw new Error(
+    'UpdateRules requires GitHub Copilot CLI in PATH (via `gh copilot` or `copilot`) or PART_COPILOT_CLI_COMMAND.',
+    { cause: lastError ?? undefined },
+  );
+}
+
+function buildDefaultCopilotArgs(prompt)
+{
+  return [
+    '-p',
+    prompt,
+    '--allow-all-tools',
+    '--allow-all-paths',
+    '--no-ask-user',
+    '--silent',
+  ];
+}
+
+export function getDefaultCopilotCliInvocations(prompt)
+{
+  return [
+    {
+      command: 'gh',
+      args: [
+        'copilot',
+        ...buildDefaultCopilotArgs(prompt),
+      ],
+    },
+    {
+      command: 'copilot',
+      args: buildDefaultCopilotArgs(prompt),
+    },
+  ];
+}
+
+async function runExecutableCopilotCli(command, args, cwd)
+{
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (chunk) => {
+      stdout += String(chunk);
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += String(chunk);
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(stderr.trim() || `Copilot CLI failed with exit code ${code}.`));
+        return;
+      }
+
+      resolve(stdout);
+    });
+  });
+}
+
+function isMissingCommandError(error)
+{
+  return error instanceof Error
+    && 'code' in error
+    && error.code === 'ENOENT';
 }
 
 function extractFirstComment(content)

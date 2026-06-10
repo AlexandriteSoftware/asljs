@@ -1,20 +1,16 @@
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
 
 import { glob } from 'glob';
 
-import {
-  extractHeading,
-  parsePropertyValues,
-} from './markdown.js';
+import { ArtefactProvider } from './artefactProvider.js';
 import { DefinitionProvider } from './definitionProvider.js';
-import { GitIgnore } from './gitIgnore.js';
 import { runRules } from './ruleRunner.js';
 
 export async function buildInventoryReport(rootDirectory, options = {})
 {
   const definitions = await loadDefinitions(rootDirectory, options);
-  const items = await collectInventoryItems(rootDirectory, definitions);
+  const artefacts = new ArtefactProvider(rootDirectory, definitions);
+  const items = await collectInventoryItems(rootDirectory, definitions, artefacts);
   return formatInventoryTable(items);
 }
 
@@ -32,6 +28,7 @@ export async function buildArtefactDefinitionReport(rootDirectory, options = {})
 export async function buildCheckReport(rootDirectory, options = {})
 {
   const definitions = filterDefinitions(await loadDefinitions(rootDirectory, options), options.definitionNames);
+  const artefacts = new ArtefactProvider(rootDirectory, definitions);
   const matchingPaths = options.pattern
     ? new Set((await glob(options.pattern, {
       absolute: true,
@@ -44,16 +41,18 @@ export async function buildCheckReport(rootDirectory, options = {})
   let hasFailures = false;
 
   for (const definition of definitions) {
-    const artifactPaths = await listArtifactPaths(rootDirectory, definition);
-    const selectedArtifactPaths = artifactPaths
-      .map((artifactPath) => path.resolve(artifactPath))
-      .filter((artifactPath) => matchingPaths === null || matchingPaths.has(artifactPath));
+    const definitionArtefacts = await artefacts.getArtefacts(definition);
+    const selectedArtefacts = definitionArtefacts.filter((artefact) => {
+      const artifactPath = path.resolve(rootDirectory, artefact.file);
+      return matchingPaths === null || matchingPaths.has(artifactPath);
+    });
 
-    for (const artifactPath of selectedArtifactPaths) {
-      const artefact = await buildArtefact(rootDirectory, definition, artifactPath);
+    for (const artefact of selectedArtefacts) {
+      const artifactPath = path.resolve(rootDirectory, artefact.file);
       const ruleResults = filterRuleResults(
         await runRules(definition, artefact, {
           artifactPath,
+          artefacts,
           rootDirectory,
         }),
         definition,
@@ -113,32 +112,33 @@ async function loadDefinitions(rootDirectory, options)
   return definitions;
 }
 
-async function collectInventoryItems(rootDirectory, definitions)
+async function collectInventoryItems(rootDirectory, definitions, artefacts)
 {
   const artefactIndex = new Map();
 
   for (const definition of definitions) {
-    const artifactPaths = await listArtifactPaths(rootDirectory, definition);
+    const definitionArtefacts = await artefacts.getArtefacts(definition);
 
-    for (const artifactPath of artifactPaths) {
+    for (const artefact of definitionArtefacts) {
+      const artifactPath = path.resolve(rootDirectory, artefact.file);
+
       if (path.resolve(artifactPath) === path.resolve(definition.definitionPath)) {
         continue;
       }
 
-      const relativePath = toPosixPath(path.relative(rootDirectory, artifactPath));
-      const existingEntry = artefactIndex.get(relativePath) ?? {
-        file: relativePath,
+      const existingEntry = artefactIndex.get(artefact.file) ?? {
+        file: artefact.file,
         definitions: [],
         rulesOk: true,
       };
-      const artifactResult = await inspectArtifact(rootDirectory, definition, artifactPath);
+      const artifactResult = await inspectArtifact(rootDirectory, definition, artefact, artefacts);
 
       existingEntry.definitions.push({
         name: definition.name,
         orderKey: toPosixPath(path.relative(rootDirectory, definition.definitionPath)),
       });
       existingEntry.rulesOk = existingEntry.rulesOk && artifactResult.rulesOk;
-      artefactIndex.set(relativePath, existingEntry);
+      artefactIndex.set(artefact.file, existingEntry);
     }
   }
 
@@ -157,101 +157,19 @@ async function collectInventoryItems(rootDirectory, definitions)
   return items;
 }
 
-async function inspectArtifact(rootDirectory, definition, artifactPath)
+async function inspectArtifact(rootDirectory, definition, artefact, artefacts)
 {
-  const artifact = await buildArtefact(rootDirectory, definition, artifactPath);
-  const ruleResults = await runRules(definition, artifact, {
-    artifactPath,
+  const ruleResults = await runRules(definition, artefact, {
+    artifactPath: path.resolve(rootDirectory, artefact.file),
+    artefacts,
     rootDirectory,
   });
 
   return {
-    file: artifact.file,
+    file: artefact.file,
     definition: definition.name,
     rulesOk: ruleResults.every((result) => result.result === 'Ok'),
   };
-}
-
-async function buildArtefact(rootDirectory, definition, artifactPath)
-{
-  const content = await readFile(artifactPath, 'utf8');
-  const properties = parsePropertyValues(content, definition.propertyDefinitions);
-
-  return {
-    file: toPosixPath(path.relative(rootDirectory, artifactPath)),
-    title: extractHeading(content) ?? path.basename(artifactPath, '.md'),
-    type: definition.typeId,
-    properties,
-    ...properties,
-  };
-}
-
-async function listArtifactPaths(rootDirectory, definition)
-{
-  const gitIgnore = definition.location.gitIgnore
-? new GitIgnore(rootDirectory)
-: null;
-  const searchPatterns = toSearchPatterns(rootDirectory, definition);
-  const ignorePatterns = definition.location.exclude.map((excludePattern) =>
-    resolveDefinitionLocationPath(rootDirectory, definition, excludePattern),
-  );
-  const artifactPaths = new Set();
-
-  for (const pattern of searchPatterns) {
-    const matches = await glob(pattern, {
-      absolute: true,
-      cwd: rootDirectory,
-      dot: true,
-      nodir: true,
-      ignore: ignorePatterns,
-    });
-
-    for (const match of matches) {
-      if (!gitIgnore || !gitIgnore.isIgnored(match)) {
-        artifactPaths.add(match);
-      }
-    }
-  }
-
-  return Array.from(artifactPaths);
-}
-
-function toSearchPatterns(rootDirectory, definition)
-{
-  const pattern = resolveDefinitionLocationPath(
-    rootDirectory,
-    definition,
-    definition.location.pattern,
-  );
-
-  if (definition.location.type === 'Files') {
-    return [pattern];
-  }
-
-  return [
-    `${trimTrailingSlash(pattern)}/**/*.md`,
-  ];
-}
-
-function resolveDefinitionLocationPath(rootDirectory, definition, locationPath)
-{
-  if (!definition.definitionPath) {
-    return locationPath;
-  }
-
-  const resolvedPath = path.resolve(path.dirname(definition.definitionPath), locationPath);
-  const relativePath = path.relative(rootDirectory, resolvedPath);
-
-  if (!relativePath.startsWith('..') && !path.isAbsolute(relativePath)) {
-    return toPosixPath(relativePath);
-  }
-
-  return toPosixPath(resolvedPath);
-}
-
-function trimTrailingSlash(value)
-{
-  return value.replace(/[\\/]+$/, '');
 }
 
 function formatInventoryTable(items)

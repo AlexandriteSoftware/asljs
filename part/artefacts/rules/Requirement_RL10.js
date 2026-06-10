@@ -1,51 +1,43 @@
+/*
+RL10 - At least one test file has requirement ID in its content.
+*/
+
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 
-import { listFiles } from './_listFiles.js';
+import { glob } from 'glob';
+
+import { GitIgnore } from '../../src/gitIgnore.js';
 
 export async function validate(artefact, context)
 {
-  const requirementId = extractArtefactId(artefact.file);
+  const basename = path.basename(context.artifactPath);
+  const idMatch = basename.match(/^(RQ\d+)/);
 
-  if (!requirementId) {
-    throw new Error('Requirement ID was not found in the artefact file name.');
+  if (!idMatch) { 
+    return;
   }
 
-  const testFiles = await listTestFiles(context.rootDirectory);
+  const requirementId = idMatch[1];
+  const rootDirectory = context.rootDirectory;
+  const gitIgnore = new GitIgnore(rootDirectory);
 
-  for (const testFilePath of testFiles) {
-    const content = await readFile(testFilePath, 'utf8');
+  const testFiles = await glob('**/*.test.*', {
+    absolute: true,
+    cwd: rootDirectory,
+    dot: true,
+    nodir: true,
+  });
+
+  const visibleTestFiles = testFiles.filter((f) => !gitIgnore.isIgnored(f));
+
+  for (const testFile of visibleTestFiles) {
+    const content = await readFile(testFile, 'utf8');
 
     if (content.includes(requirementId)) {
       return;
     }
   }
 
-  throw new Error(`No test file references ${requirementId}.`);
-}
-
-async function listTestFiles(rootDirectory)
-{
-  return listFiles(rootDirectory, {
-    pattern: '**/*.test.*',
-    gitIgnore: true,
-  });
-}
-
-function extractArtefactId(filePath)
-{
-  const baseName =
-    path.basename(
-      filePath,
-      path.extname(filePath));
-
-  const match =
-    baseName.match(/^([A-Z]+\d+)\b/);
-
-  const id =
-    match
-    ? match[1]
-    : null;
-
-  return id;
+  throw new Error(`No test file found containing requirement ID "${requirementId}".`);
 }

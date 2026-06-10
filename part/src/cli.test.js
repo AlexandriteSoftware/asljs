@@ -7,6 +7,7 @@ import { mkdtemp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { runCli } from './cli.js';
+import { getDefaultCopilotCliInvocations } from './updateRules.js';
 
 const require = createRequire(import.meta.url);
 const { version: packageVersion } = require('../package.json');
@@ -74,14 +75,23 @@ test('init copies bootstrap artefact files into the definitions directory', asyn
     /# Rule File/,
   );
   assert.ok((await stat(path.join(workspacePath, 'definitions', 'rules'))).isDirectory());
+  assert.match(
+    await readFile(path.join(workspacePath, 'definitions', 'Article.md'), 'utf8'),
+    /# Article/,
+  );
+  assert.ok((await stat(path.join(workspacePath, 'definitions', 'rules', 'Article_RL10.js'))).isFile());
 });
 
 test('update-rules creates missing JS rule files via the Copilot runner', async () =>
 {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-cli-'));
+  let requestPrompt = '';
   const environment = createEnvironment({
     cwd: workspacePath,
-    runCopilotCli: async (request) => `/* ${request.expectedComment} */\nexport async function validate() {}\n`,
+    runCopilotCli: async (request) => {
+      requestPrompt = request.prompt;
+      return `/* ${request.expectedComment} */\nexport async function validate() {}\n`;
+    },
   });
 
   await mkdir(path.join(workspacePath, 'artefacts'), {
@@ -113,9 +123,59 @@ Requirement definition.
   assert.equal(exitCode, 0);
   assert.equal(environment.stderr.output, '');
   assert.match(environment.stdout.output, /Created artefacts\/rules\/Requirement_RL10\.js/);
+  assert.match(requestPrompt, /Do not edit files, run tools, or apply patches directly\./);
+  assert.match(requestPrompt, /Write the updated file content to standard output only\./);
   assert.match(
     await readFile(path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js'), 'utf8'),
     /RL10 - Requirement rule\./,
+  );
+});
+
+test('update-rules dry-run prints prompts without invoking Copilot or writing files', async () =>
+{
+  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-cli-'));
+  const environment = createEnvironment({
+    cwd: workspacePath,
+    runCopilotCli: async () => {
+      throw new Error('runCopilotCli should not be called during dry-run');
+    },
+  });
+
+  await mkdir(path.join(workspacePath, 'artefacts'), {
+    recursive: true,
+  });
+  await writeFile(
+    path.join(workspacePath, 'artefacts', 'Requirement.md'),
+    `# Requirement
+
+Requirement definition.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - Requirement rule.
+`,
+    'utf8',
+  );
+
+  const exitCode = await runCli([
+    'update-rules',
+    '--definitions',
+    'artefacts',
+    '--dry-run',
+  ], environment);
+
+  assert.equal(exitCode, 0);
+  assert.equal(environment.stderr.output, '');
+  assert.match(environment.stdout.output, /Would create artefacts\/rules\/Requirement_RL10\.js/);
+  assert.match(environment.stdout.output, /--- CREATE artefacts\/rules\/Requirement_RL10\.js ---/);
+  assert.match(environment.stdout.output, /Return the complete JavaScript rule file content\./);
+  assert.match(environment.stdout.output, /Return only the full file content\./);
+  await assert.rejects(
+    stat(path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js')),
   );
 });
 
@@ -172,6 +232,38 @@ Requirement definition.
     /RL10 - Requirement rule\./,
   );
 });
+
+  test('update-rules builds a GitHub Copilot CLI fallback invocation', async () =>
+  {
+    const prompt = 'Create the complete JavaScript rule file.';
+    const invocations = getDefaultCopilotCliInvocations(prompt);
+
+    assert.deepEqual(invocations, [
+      {
+        command: 'gh',
+        args: [
+          'copilot',
+          '-p',
+          prompt,
+          '--allow-all-tools',
+          '--allow-all-paths',
+          '--no-ask-user',
+          '--silent',
+        ],
+      },
+      {
+        command: 'copilot',
+        args: [
+          '-p',
+          prompt,
+          '--allow-all-tools',
+          '--allow-all-paths',
+          '--no-ask-user',
+          '--silent',
+        ],
+      },
+    ]);
+  });
 
 function createEnvironment(options = {})
 {

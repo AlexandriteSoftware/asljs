@@ -6,6 +6,8 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 
 import { Definition } from './definition.js';
 
+// See RQ202
+
 test('Definition loads markdown definition metadata and structured rules', async () =>
 {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-definition-'));

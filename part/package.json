@@ -8,6 +8,10 @@
     ".": "./src/index.js"
   },
   "files": [
+    "artefacts/rules/Artefact Definition_RL*.js",
+    "artefacts/rules/Rule File_RL*.js",
+    "artefacts/Artefact Definition.md",
+    "artefacts/Rule File.md",
     "bin/**",
     "src/**",
     "README.md",

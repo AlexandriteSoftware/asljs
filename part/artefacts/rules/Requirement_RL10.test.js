@@ -4,12 +4,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 
+import { ArtefactProvider } from '../../src/artefactProvider.js';
 import { validate } from './Requirement_RL10.js';
 
 test('Requirement_RL10 uses gitignore-aware glob discovery for test files', async () =>
 {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-requirement-rl10-'));
   const requirementPath = path.join(workspacePath, 'development', 'RQ101 Example.md');
+  const artefacts = new ArtefactProvider(workspacePath);
 
   await mkdir(path.dirname(requirementPath), { recursive: true });
   await mkdir(path.join(workspacePath, 'visible'), { recursive: true });
@@ -21,6 +23,7 @@ test('Requirement_RL10 uses gitignore-aware glob discovery for test files', asyn
 
   await assert.doesNotReject(() => validate({ file: 'development/RQ101 Example.md' }, {
     artifactPath: requirementPath,
+    artefacts,
     rootDirectory: workspacePath,
   }));
 });
