@@ -123,8 +123,7 @@ Requirement definition.
   assert.equal(exitCode, 0);
   assert.equal(environment.stderr.output, '');
   assert.match(environment.stdout.output, /Created artefacts\/rules\/Requirement_RL10\.js/);
-  assert.match(requestPrompt, /Do not edit files, run tools, or apply patches directly\./);
-  assert.match(requestPrompt, /Write the updated file content to standard output only\./);
+  assert.match(requestPrompt, /Write to standard output only the updated file content, no other text\./);
   assert.match(
     await readFile(path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js'), 'utf8'),
     /RL10 - Requirement rule\./,
@@ -172,8 +171,7 @@ Requirement definition.
   assert.equal(environment.stderr.output, '');
   assert.match(environment.stdout.output, /Would create artefacts\/rules\/Requirement_RL10\.js/);
   assert.match(environment.stdout.output, /--- CREATE artefacts\/rules\/Requirement_RL10\.js ---/);
-  assert.match(environment.stdout.output, /Return the complete JavaScript rule file content\./);
-  assert.match(environment.stdout.output, /Return only the full file content\./);
+  assert.match(environment.stdout.output, /Write to standard output only the updated file content, no other text\./);
   await assert.rejects(
     stat(path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js')),
   );

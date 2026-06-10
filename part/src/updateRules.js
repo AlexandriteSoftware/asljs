@@ -129,18 +129,13 @@ function buildCopilotRequest(
 
 function buildPrompt(mode, definition, rule, targetFilePath, currentContent)
 {
-  const instruction = mode === 'create'
-    ? 'Return the complete JavaScript rule file content.'
-    : 'Return the complete updated JavaScript rule file content.';
-
   return [
-    instruction,
     `Definition: ${definition.name}`,
     `Definition file: ${definition.definitionPath}`,
     `Rule: ${rule.id} - ${rule.description}`,
     `Target file: ${targetFilePath}`,
     `The first comment in the file must be multiline and exactly: ${formatRuleComment(rule)}`,
-    'Do not edit files, run tools, or apply patches directly.',
+    'Do not edit files or apply patches directly.',
     'Write to standard output only the updated file content, no other text.',
     currentContent === null
       ? null
