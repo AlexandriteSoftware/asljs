@@ -2,12 +2,14 @@
 RL10 - At least one test file has requirement ID in its content.
 */
 
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
-
-import { glob } from 'glob';
-
-import { GitIgnore } from '../../src/gitIgnore.js';
+import path
+  from 'node:path';
+import { readFile }
+  from 'node:fs/promises';
+import { glob }
+  from 'glob';
+import { GitIgnore }
+  from '../../src/gitIgnore.js';
 
 export async function validate(artefact, context)
 {

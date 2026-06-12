@@ -1,11 +1,19 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
-
-import { ArtefactProvider } from '../../src/artefactProvider.js';
-import { validate } from './Requirement_RL10.js';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import os
+  from 'node:os';
+import path
+  from 'node:path';
+import { mkdtemp,
+         mkdir,
+         writeFile }
+  from 'node:fs/promises';
+import { ArtefactProvider }
+  from '../../src/artefactProvider.js';
+import { validate }
+  from './Requirement_RL10.js';
 
 test('Requirement_RL10 uses gitignore-aware glob discovery for test files', async () =>
 {

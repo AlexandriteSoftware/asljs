@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import {
-    runCli
-  } from '../src/cli.js';
+import { runCli }
+  from '../src/cli.js';
 
 const exitCode =
   await runCli(
