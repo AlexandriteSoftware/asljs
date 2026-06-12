@@ -1,48 +1,75 @@
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import path
+  from 'node:path';
+import { readFile }
+  from 'node:fs/promises';
+import { glob }
+  from 'glob';
+import { extractHeading,
+         parsePropertyValues }
+  from './markdown.js';
+import { GitIgnore }
+  from './gitIgnore.js';
 
-import { glob } from 'glob';
-
-import {
-  extractHeading,
-  parsePropertyValues,
-} from './markdown.js';
-import { GitIgnore } from './gitIgnore.js';
-
+/**
+ * Provides artefacts based on definitions. Caches artefacts in memory to avoid
+ * redundant file system operations.
+ */
 export class ArtefactProvider
 {
-  constructor(rootPath, definitions = [])
+  constructor(
+    logger,
+    rootPath)
   {
+    this.logger = logger;
     this.rootPath = path.resolve(rootPath);
-    this.definitions = definitions;
     this.artefactCache = new WeakMap();
     this.loadedDefinitions = null;
   }
 
-  async getArtefacts(definition)
+  async getArtefacts(
+    definition)
   {
-    const cachedArtefacts = this.artefactCache.get(definition);
+    const cachedArtefacts =
+      this.artefactCache.get(definition);
 
     if (cachedArtefacts) {
       return cachedArtefacts;
     }
 
-    const artefacts = await loadArtefacts(this.rootPath, definition);
-    this.artefactCache.set(definition, artefacts);
+    const artefacts =
+      await loadArtefacts(
+        this.rootPath,
+        definition);
+
+    this.artefactCache.set(
+      definition,
+      artefacts);
+
     return artefacts;
   }
 
-  async isArtefactOfDefinition(artefactPath, definition)
+  async isArtefactOfDefinition(
+    artefactPath,
+    definition)
   {
-    const resolvedArtefactPath = toAbsolutePath(this.rootPath, artefactPath);
-    const artefacts = await this.getArtefacts(definition);
+    const resolvedArtefactPath =
+      toAbsolutePath(
+        this.rootPath,
+        artefactPath);
 
-    return artefacts.some((artefact) => toAbsolutePath(this.rootPath, artefact.file) === resolvedArtefactPath);
+    const artefacts =
+      await this.getArtefacts(definition);
+
+    return artefacts.some(
+      artefact =>
+        toAbsolutePath(this.rootPath, artefact.file) === resolvedArtefactPath);
   }
 
-  async getDefinitionsForArtefact(artefactPath)
+  async getDefinitionsForArtefact(
+    artefactPath)
   {
     const definitions = await this.loadDefinitions();
+
     const matchingDefinitions = [];
 
     for (const definition of definitions) {
@@ -53,38 +80,27 @@ export class ArtefactProvider
 
     return matchingDefinitions;
   }
-
-  async loadDefinitions()
-  {
-    if (this.loadedDefinitions !== null) {
-      return this.loadedDefinitions;
-    }
-
-    if (Array.isArray(this.definitions)) {
-      this.loadedDefinitions = this.definitions;
-      return this.loadedDefinitions;
-    }
-
-    if (this.definitions && typeof this.definitions.getDefinitions === 'function') {
-      this.loadedDefinitions = await this.definitions.getDefinitions();
-      return this.loadedDefinitions;
-    }
-
-    this.loadedDefinitions = [];
-    return this.loadedDefinitions;
-  }
 }
 
-async function loadArtefacts(rootDirectory, definition)
+async function loadArtefacts(
+  rootDirectory,
+  definition)
 {
-  const artefactPaths = await listArtefactPaths(rootDirectory, definition);
+  const artefactPaths =
+    await listArtefactPaths(
+      rootDirectory,
+      definition);
+     
   const artefacts = [];
 
   for (const artefactPath of artefactPaths) {
-    artefacts.push(await buildArtefact(rootDirectory, definition, artefactPath));
+    artefacts.push(
+      await buildArtefact(rootDirectory, definition, artefactPath));
   }
 
-  artefacts.sort((left, right) => left.file.localeCompare(right.file));
+  artefacts.sort(
+    (left, right) =>
+      left.file.localeCompare(right.file));
   return artefacts;
 }
 
@@ -103,25 +119,39 @@ async function buildArtefact(rootDirectory, definition, artefactPath)
   };
 }
 
-async function listArtefactPaths(rootDirectory, definition)
+async function listArtefactPaths(
+  rootDirectory,
+  definition)
 {
-  const gitIgnore = definition.location.gitIgnore
+  const gitIgnore =
+    definition.location.gitIgnore
     ? new GitIgnore(rootDirectory)
     : null;
-  const searchPatterns = toSearchPatterns(rootDirectory, definition);
-  const ignorePatterns = (definition.location.exclude ?? []).map((excludePattern) =>
-    resolveDefinitionLocationPath(rootDirectory, definition, excludePattern),
-  );
+
+  const searchPatterns =
+    toSearchPatterns(
+      rootDirectory,
+      definition);
+
+  const ignorePatterns =
+    (definition.location.exclude ?? []).map(
+      excludePattern =>
+        resolveDefinitionLocationPath(
+          rootDirectory,
+          definition,
+          excludePattern));
+
   const artefactPaths = new Set();
 
   for (const pattern of searchPatterns) {
-    const matches = await glob(pattern, {
-      absolute: true,
-      cwd: rootDirectory,
-      dot: true,
-      nodir: true,
-      ignore: ignorePatterns,
-    });
+    const matches =
+      await glob(
+        pattern,
+        { absolute: true,
+          cwd: rootDirectory,
+          dot: true,
+          nodir: true,
+          ignore: ignorePatterns });
 
     for (const match of matches) {
       if (!gitIgnore || !gitIgnore.isIgnored(match)) {
@@ -133,13 +163,15 @@ async function listArtefactPaths(rootDirectory, definition)
   return Array.from(artefactPaths);
 }
 
-function toSearchPatterns(rootDirectory, definition)
+function toSearchPatterns(
+  rootDirectory,
+  definition)
 {
-  const pattern = resolveDefinitionLocationPath(
-    rootDirectory,
-    definition,
-    definition.location.pattern,
-  );
+  const pattern =
+    resolveDefinitionLocationPath(
+      rootDirectory,
+      definition,
+      definition.location.pattern);
 
   if (definition.location.type === 'Files') {
     return [pattern];
@@ -148,35 +180,47 @@ function toSearchPatterns(rootDirectory, definition)
   return [`${trimTrailingSlash(pattern)}/**/*.md`];
 }
 
-function resolveDefinitionLocationPath(rootDirectory, definition, locationPath)
+function resolveDefinitionLocationPath(
+  rootDirectory,
+  definition,
+  locationPath)
 {
-  if (!definition.definitionPath) {
-    return locationPath;
-  }
+  const resolvedPath =
+    path.resolve(
+      path.dirname(definition.definitionPath),
+      locationPath);
 
-  const resolvedPath = path.resolve(path.dirname(definition.definitionPath), locationPath);
-  const relativePath = path.relative(rootDirectory, resolvedPath);
+  const relativePath =
+    path.relative(
+      rootDirectory,
+      resolvedPath);
 
-  if (!relativePath.startsWith('..') && !path.isAbsolute(relativePath)) {
+  if (!relativePath.startsWith('..')
+      && !path.isAbsolute(relativePath))
+  {
     return toPosixPath(relativePath);
   }
 
   return toPosixPath(resolvedPath);
 }
 
-function trimTrailingSlash(value)
+function trimTrailingSlash(
+  value)
 {
   return value.replace(/[\\/]+$/, '');
 }
 
-function toAbsolutePath(rootPath, targetPath)
+function toAbsolutePath(
+  rootPath,
+  targetPath)
 {
   return path.isAbsolute(targetPath)
     ? path.resolve(targetPath)
     : path.resolve(rootPath, targetPath);
 }
 
-function toPosixPath(value)
+function toPosixPath(
+  value)
 {
   return value.replaceAll('\\', '/');
 }

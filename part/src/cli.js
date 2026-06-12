@@ -1,52 +1,52 @@
-import {
-    createRequire
-  } from 'node:module';
-import path from 'node:path';
-import {
-    Command
-  } from 'commander';
-import {
-    initializeDefinitionsDirectory
-  } from './init.js';
-import {
-    updateRules
-  } from './updateRules.js';
-import {
-    buildArtefactDefinitionReport,
-    buildCheckReport,
-    buildInventoryReport,
-  } from './inventory.js';
+import { createRequire }
+  from 'node:module';
+import path
+  from 'node:path';
+import { Command }
+  from 'commander';
+import { initializeDefinitionsDirectory }
+  from './init.js';
+import { updateRules }
+  from './updateRules.js';
+import { buildArtefactDefinitionReport,
+         buildCheckReport,
+         buildInventoryReport }
+  from './inventory.js';
+import { createLogger }
+  from './logging.js';
 
-const require =
-  createRequire(
-    import.meta.url);
+const packageVersion =
+  (() => {
+    const require =
+      createRequire(
+        import.meta.url);
 
-const { version: packageVersion } =
-  require('../package.json');
+    const { version } =
+      require('../package.json');
+
+    return version;
+  })();
 
 export async function runCli(
   args,
   environment)
 {
-  const normalizedArgs =
-    normalizeArgs(args);
-
   const cli =
     createCli(environment);
 
-  if (normalizedArgs.length === 0) {
+  if (args.length === 0) {
     cli.outputHelp();
     return 0;
   }
 
   try {
     await cli.parseAsync(
-      normalizedArgs,
+      args,
       { from: 'user' });
 
     return cli.exitCode ?? 0;
   } catch (error) {
-    if (writeCommanderError(environment, error, normalizedArgs, cli)) {
+    if (writeCommanderError(environment, error, args, cli)) {
       return 1;
     }
 
@@ -78,21 +78,55 @@ function createCli(
       { writeOut: value => environment.stdout.write(value),
         writeErr: value => environment.stderr.write(value),
         outputError: () => { } })
-    .exitOverride(error => { throw error; });
+    .exitOverride(error => { throw error; })
+    .option(
+      '--loglevel <level>',
+      'Log level: trace, debug, information, warning, error',
+      'information')
+    .option(
+      '--logfile <path>',
+      'Write logs to file')
+    .option(
+      '--log',
+      'Enables logging')
+    .hook(
+      'preAction',
+      (thisCommand, actionCommand) => {
+        const options =
+          actionCommand.optsWithGlobals();
+
+        const loggerOptions =
+          { enabled: options.log,
+            level: options.loglevel,
+            file: options.logfile };
+
+        const logger =
+          createLogger(
+            loggerOptions);
+
+        environment.logger = logger;
+
+        logger.trace(
+          `Initialised logger with ${JSON.stringify(loggerOptions)}`);
+
+        logger.info(
+          `Started app with ${JSON.stringify(options)}`);
+      });      
 
   cli.command('inventory')
     .description('Scan the current folder and print artefact inventory')
     .option(
       '--definitions <path>',
       'Search definitions in the specified folder only')
-    .action(async (options) => {
-      await writeReport(
-        environment,
-        await buildInventoryReport(
-          environment.cwd,
-          { definitionsPath: options.definitions }),
-      );
-    });
+    .action(
+      async (options) => {
+        await writeReport(
+          environment,
+          await buildInventoryReport(
+            environment.cwd,
+            { definitionsPath: options.definitions }),
+        );
+      });
 
   cli.command('artefactdefinition')
     .description('List definitions and their locations')
@@ -100,12 +134,13 @@ function createCli(
     .option(
       '--definitions <path>',
       'Search definitions in the specified folder only')
-    .action(async (definitionTarget, options) => {
-      await writeReport(
-        environment,
-        await buildArtefactDefinitionReport(
-          environment.cwd,
-          { definitionTarget,
+    .action(
+      async (definitionTarget, options) => {
+        await writeReport(
+          environment,
+          await buildArtefactDefinitionReport(
+            environment.cwd,
+            { definitionTarget,
             definitionsPath: options.definitions }),
       );
     });
@@ -207,51 +242,11 @@ function createCli(
   return cli;
 }
 
-async function writeReport(environment, report)
+async function writeReport(
+  environment,
+  report)
 {
   environment.stdout.write(`${report}\n`);
-}
-
-function normalizeArgs(
-  args)
-{
-  if (args.length === 0) {
-    return args;
-  }
-
-  const [command, ...rest] = args;
-
-  const normalizedCommand =
-    normalizeCommand(command);
-
-  return [ normalizedCommand,
-           ...rest];
-}
-
-function normalizeCommand(
-  command)
-{
-  if (typeof command !== 'string'
-      || command.startsWith('-'))
-  {
-    return command;
-  }
-
-  const lowercaseCommand =
-    command.toLowerCase();
-
-  const supportedCommands =
-    new Set(
-      [ 'inventory',
-        'artefactdefinition',
-        'init',
-        'update-rules',
-        'check',
-        'version' ]);
-
-  return supportedCommands.has(lowercaseCommand)
-    ? lowercaseCommand
-    : command;
 }
 
 function writeCommanderError(
@@ -269,24 +264,28 @@ function writeCommanderError(
   if (error.code === 'commander.optionMissingArgument') {
     const optionName = extractOptionName(error.message);
 
-    environment.stderr.write(`Option ${optionName} requires a value.\n`);
+    environment.stderr.write(
+      `Option ${optionName} requires a value.\n`);
     return true;
   }
 
   if (error.code === 'commander.unknownOption') {
     const optionName = extractOptionName(error.message);
 
-    environment.stderr.write(`Unknown option: ${optionName}\n`);
+    environment.stderr.write(
+      `Unknown option: ${optionName}\n`);
     return true;
   }
 
   if (error.code === 'commander.unknownCommand') {
     const commandName = args[0] ?? '';
 
-    environment.stderr.write(`Unknown command: ${commandName}\n`);
-    cli.outputHelp({
-      error: true,
-    });
+    environment.stderr.write(
+      `Unknown command: ${commandName}\n`);
+
+    cli.outputHelp(
+      { error: true });
+
     return true;
   }
 

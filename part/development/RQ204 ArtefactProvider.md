@@ -18,8 +18,7 @@ const ruleFile =
 
 const artefacts =
   new ArtefactProvider(
-    repositoryPath,
-    definitions);
+    repositoryPath);
 
 const ruleFiles =
   await artefacts.getArtefacts(ruleFile);
@@ -36,8 +35,7 @@ const ruleFile =
 
 const artefacts =
   new ArtefactProvider(
-    repositoryPath,
-    definitions);
+    repositoryPath);
 
 const isRuleFile =
   await artefacts.isArtefactOfDefinition(
@@ -53,8 +51,7 @@ const definitions =
 
 const artefacts =
   new ArtefactProvider(
-    repositoryPath,
-    definitions);
+    repositoryPath);
 
 const definitionsForRuleFile =
   await artefacts.getDefinitionsForArtefact(

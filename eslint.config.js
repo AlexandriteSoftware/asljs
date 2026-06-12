@@ -1,6 +1,11 @@
-import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+import js
+  from '@eslint/js';
+import tsParser
+  from '@typescript-eslint/parser';
+import tsPlugin
+  from '@typescript-eslint/eslint-plugin';
+import importStyleRule
+  from './common/code-formatting/eslint-import-style-rule.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -93,6 +98,11 @@ export default [
       sourceType: 'module'
     },
     plugins: {
+      asljs: {
+        rules: {
+          'import-style': importStyleRule
+        }
+      }
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -139,7 +149,8 @@ export default [
           avoidEscape: true,
           allowTemplateLiterals: true
         }
-      ]
+      ],
+      'asljs/import-style': 'error'
     }
   }
 ];

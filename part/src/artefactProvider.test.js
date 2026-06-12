@@ -1,26 +1,53 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import os
+  from 'node:os';
+import path
+  from 'node:path';
+import {
+    mkdtemp,
+    mkdir,
+    writeFile
+  } from 'node:fs/promises';
+import {
+    ArtefactProvider
+  } from './artefactProvider.js';
+import {
+    DefinitionProvider
+  } from './definitionProvider.js';
+import {
+    createLogger
+  } from './logging.js';
 
-import { ArtefactProvider } from './artefactProvider.js';
-import { DefinitionProvider } from './definitionProvider.js';
+test(
+  'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',
+  async () =>
+  {
+    const workspacePath =
+      await mkdtemp(
+        path.join(os.tmpdir(), 'part-artefacts-'));
 
-// See RQ204
+    const definitionsPath =
+      path.join(
+        workspacePath,
+        'artefacts');
 
-test('ArtefactProvider returns gitignore-filtered artefacts for a definition', async () =>
-{
-  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-artefacts-'));
-  const definitionsPath = path.join(workspacePath, 'artefacts');
+    await mkdir(
+      definitionsPath,
+      { recursive: true });
 
-  await mkdir(definitionsPath, { recursive: true });
-  await mkdir(path.join(workspacePath, 'development', 'visible'), { recursive: true });
-  await mkdir(path.join(workspacePath, 'development', 'hidden'), { recursive: true });
-  await writeFile(path.join(workspacePath, '.gitignore'), 'development/hidden/\n', 'utf8');
-  await writeFile(
-    path.join(definitionsPath, 'Requirement.md'),
-    `# Requirement
+    await mkdir(
+      path.join(workspacePath, 'development', 'visible'),
+      { recursive: true });
+
+    await mkdir(
+      path.join(workspacePath, 'development', 'hidden'),
+      { recursive: true });
+
+    const requriementDefinitionContent =
+      `# Requirement
 
 Requirement.
 
@@ -28,15 +55,28 @@ Requirement.
 
 - Files: ../development/**/RQ*.md
 - GitIgnore
-`,
-    'utf8',
-  );
-  await writeFile(path.join(workspacePath, 'development', 'visible', 'RQ101 Example.md'), '# RQ101 Example\n', 'utf8');
-  await writeFile(path.join(workspacePath, 'development', 'hidden', 'RQ999 Hidden.md'), '# RQ999 Hidden\n', 'utf8');
+`;
+
+  await writeFile(
+    path.join(definitionsPath, 'Requirement.md'),
+    requriementDefinitionContent);
+
+  await writeFile(
+    path.join(workspacePath, 'development', 'visible', 'RQ101 Example.md'),
+    '# RQ101 Example\n');
+
+  await writeFile(
+    path.join(workspacePath, 'development', 'hidden', 'RQ999 Hidden.md'),
+    '# RQ999 Hidden\n');
 
   const definitions = new DefinitionProvider(workspacePath);
   const [requirementDefinition] = await definitions.getDefinitions(definitionsPath);
-  const artefacts = new ArtefactProvider(workspacePath, definitions);
+  
+  const artefacts =
+    new ArtefactProvider(
+      createLogger(),
+      workspacePath);
+
   const requirementArtefacts = await artefacts.getArtefacts(requirementDefinition);
 
   assert.deepEqual(requirementArtefacts.map((artefact) => artefact.file), ['development/visible/RQ101 Example.md']);
@@ -44,10 +84,13 @@ Requirement.
   assert.equal(await artefacts.isArtefactOfDefinition('development/hidden/RQ999 Hidden.md', requirementDefinition), false);
 });
 
-test('ArtefactProvider returns all matching definitions for an artefact', async () =>
-{
-  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-artefacts-'));
-  const definitionsPath = path.join(workspacePath, 'artefacts');
+test(
+  'RQ205: ArtefactProvider returns all matching definitions for an artefact',
+  async () =>
+  {
+    const workspacePath =
+      await mkdtemp(path.join(os.tmpdir(), 'part-artefacts-'));
+    const definitionsPath = path.join(workspacePath, 'artefacts');
 
   await mkdir(definitionsPath, { recursive: true });
   await mkdir(path.join(workspacePath, 'docs', 'specs'), { recursive: true });
