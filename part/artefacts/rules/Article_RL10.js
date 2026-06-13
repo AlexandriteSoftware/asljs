@@ -2,11 +2,17 @@
 RL10 - Article start with a level 1 heading.
 */
 
-import { readFile } from 'node:fs/promises';
+import { readFile }
+  from 'node:fs/promises';
 
-export async function validate(artefact, context)
+export async function validate(
+  artefact,
+  context)
 {
-  if (!await context.artefacts.isArtefactOfDefinition(context.artifactPath, context.definition)) {
+  if (!await context.artefacts.isArtefactOfDefinition(
+      context.artifactPath,
+      context.definition))
+  {
     return;
   }
 

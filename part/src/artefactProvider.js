@@ -104,7 +104,10 @@ async function loadArtefacts(
   return artefacts;
 }
 
-async function buildArtefact(rootDirectory, definition, artefactPath)
+async function buildArtefact(
+  rootDirectory,
+  definition,
+  artefactPath)
 {
   const content = await readFile(artefactPath, 'utf8');
   const propertyDefinitions = definition.propertyDefinitions ?? new Map();

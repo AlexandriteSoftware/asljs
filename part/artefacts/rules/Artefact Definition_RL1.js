@@ -5,23 +5,28 @@ RL1 - Each rule in the definition file should have a corresponding rule file tha
 import { Definition }
   from '../../src/definition.js';
 
-export function validate(
+export async function validate(
   artefact,
   context)
 {
-  const definition = await Definition.load(context.artifactPath, {
-    rootPath: context.rootDirectory,
-  });
+  const definition =
+    await Definition.load(
+      context.artifactPath,
+      { rootPath: context.rootDirectory });
+  
   if (!definition) {
     return;
   }
-  const missingRuleIds = definition.rules
-    .filter((rule) => !rule.absoluteFilePath)
-    .map((rule) => rule.id);
+  
+  const missingRuleIds =
+    definition.rules
+      .filter((rule) => !rule.absoluteFilePath)
+      .map((rule) => rule.id);
+    
   if (missingRuleIds.length === 0) {
     return;
   }
+  
   throw new Error(
-    `Definition is missing rule files for: ${missingRuleIds.join(', ')}.`,
-  );
+    `Definition is missing rule files for: ${missingRuleIds.join(', ')}.`);
 }

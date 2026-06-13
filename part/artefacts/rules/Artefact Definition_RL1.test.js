@@ -1,10 +1,17 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
-
-import { validate } from './Artefact Definition_RL1.js';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import os
+  from 'node:os';
+import path
+  from 'node:path';
+import { mkdtemp,
+         mkdir,
+         writeFile }
+  from 'node:fs/promises';
+import { validate }
+  from './Artefact Definition_RL1.js';
 
 test('Artefact Definition_RL1 ignores markdown files that are not definitions', async () =>
 {

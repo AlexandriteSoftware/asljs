@@ -11,7 +11,9 @@ import { glob }
 import { GitIgnore }
   from '../../src/gitIgnore.js';
 
-export async function validate(artefact, context)
+export async function validate(
+  artefact,
+  context)
 {
   const basename = path.basename(context.artifactPath);
   const idMatch = basename.match(/^(RQ\d+)/);

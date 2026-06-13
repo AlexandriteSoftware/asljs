@@ -6,20 +6,16 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import {
-    mkdtemp,
-    mkdir,
-    writeFile
-  } from 'node:fs/promises';
-import {
-    ArtefactProvider
-  } from './artefactProvider.js';
-import {
-    DefinitionProvider
-  } from './definitionProvider.js';
-import {
-    createLogger
-  } from './logging.js';
+import { mkdtemp,
+         mkdir,
+         writeFile }
+  from 'node:fs/promises';
+import { ArtefactProvider }
+  from './artefactProvider.js';
+import { DefinitionProvider }
+  from './definitionProvider.js';
+import { createLogger }
+  from './logging.js';
 
 test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',

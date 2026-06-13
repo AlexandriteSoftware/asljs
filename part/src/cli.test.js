@@ -1,13 +1,26 @@
-import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
-import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import assert
+  from 'node:assert/strict';
+import { createRequire }
+  from 'node:module';
+import test
+  from 'node:test';
+import { fileURLToPath }
+  from 'node:url';
 
-import { mkdtemp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
-import { runCli } from './cli.js';
-import { getDefaultCopilotCliInvocations } from './updateRules.js';
+import { mkdtemp,
+         mkdir,
+         readFile,
+         stat,
+         writeFile }
+  from 'node:fs/promises';
+import os
+  from 'node:os';
+import path
+  from 'node:path';
+import { runCli }
+  from './cli.js';
+import { getDefaultCopilotCliInvocations }
+  from './updateRules.js';
 
 const require = createRequire(import.meta.url);
 const { version: packageVersion } = require('../package.json');
@@ -263,7 +276,8 @@ Requirement definition.
     ]);
   });
 
-function createEnvironment(options = {})
+function createEnvironment(
+  options = {})
 {
   return {
     cwd: options.cwd ?? fileURLToPath(new URL('../', import.meta.url)),

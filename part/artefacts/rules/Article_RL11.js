@@ -2,12 +2,19 @@
 RL11 - Top-level heading is the file name without extension.
 */
 
-import path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import path
+  from 'node:path';
+import { readFile }
+  from 'node:fs/promises';
 
-export async function validate(artefact, context)
+export async function validate(
+  artefact,
+  context)
 {
-  if (!await context.artefacts.isArtefactOfDefinition(context.artifactPath, context.definition)) {
+  if (!await context.artefacts.isArtefactOfDefinition(
+      context.artifactPath,
+      context.definition))
+  {
     return;
   }
 
