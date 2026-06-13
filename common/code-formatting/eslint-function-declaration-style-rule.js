@@ -62,7 +62,13 @@ function buildFunctionDeclaration(
         context.sourceCode.getText(parameter));
 
   const code =
-    [ 'function ' ];
+    [ ];
+
+  if (node.async) {
+    code.push('async ');
+  }
+
+  code.push('function ');
 
   if (name) {
     code.push(name);
@@ -94,22 +100,7 @@ function buildFunctionDeclaration(
 
   code.push(formattingContext.newLine);
 
-  code.push('{');
-
-  if (body
-      && body.body
-      && body.body.length > 0)
-  {
-    for (const statement of body.body) {
-      code.push(formattingContext.newLine);
-      code.push(
-        `  ${context.sourceCode.getText(statement)}`);
-    }
-  }
-
-  code.push(formattingContext.newLine);
-
-  code.push('}');
-
+  code.push(context.sourceCode.getText(body));
+ 
   return code.join('');
 }

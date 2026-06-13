@@ -3,7 +3,8 @@
 ## Tests
 
 ```js
-function test() { }
+function test() {
+}
 // ---
 function test()
 {
@@ -11,7 +12,8 @@ function test()
 ```
 
 ```js
-function test(param1) { }
+function test(param1) {
+}
 // ---
 function test(
   param1)
@@ -20,7 +22,8 @@ function test(
 ```
 
 ```js
-function test(param1, param2) { }
+function test(param1, param2) {
+}
 // ---
 function test(
   param1,
@@ -30,7 +33,8 @@ function test(
 ```
 
 ```js
-function test(param1, param2) { }
+function test(param1, param2) {
+}
 // ---
 function test(
   param1,
@@ -40,7 +44,8 @@ function test(
 ```
 
 ```js
-function test(param1, param2 = null) { }
+function test(param1, param2 = null) {
+}
 // ---
 function test(
   param1,
@@ -62,3 +67,32 @@ function test(
 }
 ```
 
+```js
+async function test(param1, param2 = null) {
+  console.log('test');
+}
+// ---
+async function test(
+  param1,
+  param2 = null)
+{
+  console.log('test');
+}
+```
+
+```js
+async function test(param1, param2 = null) {
+  console.log('test');
+
+  return false;
+}
+// ---
+async function test(
+  param1,
+  param2 = null)
+{
+  console.log('test');
+
+  return false;
+}
+```
