@@ -10,6 +10,10 @@ import functionDeclarationStyleRule
   from './common/code-formatting/eslint-function-declaration-style-rule.js';
 import callExpressionStyleRule
   from './common/code-formatting/eslint-call-expression-style-rule.js';
+import variableDeclarationStyleRule
+  from './common/code-formatting/eslint-variable-declaration-style-rule.js';
+import statementSpacingStyleRule
+  from './eslint-statement-spacing-style-rule.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -106,7 +110,9 @@ export default [
         rules: {
           'import-style': importStyleRule,
           'function-declaration-style': functionDeclarationStyleRule,
-          'call-expression-style': callExpressionStyleRule
+          'call-expression-style': callExpressionStyleRule,
+          'variable-declaration-style': variableDeclarationStyleRule,
+          'statement-spacing': statementSpacingStyleRule
         }
       }
     },
@@ -158,7 +164,9 @@ export default [
       ],
       'asljs/import-style': 'error',
       'asljs/function-declaration-style': 'error',
-      'asljs/call-expression-style': 'error'
+      'asljs/call-expression-style': 'error',
+      'asljs/variable-declaration-style': 'error',
+      'asljs/statement-spacing': 'error'
     }
   }
 ];

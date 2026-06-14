@@ -15,15 +15,17 @@ import { validate }
 
 test(
   'Artefact Definition_RL1 ignores markdown files that are not definitions',
-  async () =>
-  {
-    const workspacePath = await mkdtemp(
-  path.join(
-    os.tmpdir(),
-    'part-artefact-definition-rl1-'));
-    const articlePath = path.join(
-      workspacePath,
-      'Article.md');
+  async () => {
+    const workspacePath =
+      await mkdtemp(
+        path.join(
+          os.tmpdir(),
+          'part-artefact-definition-rl1-'));
+
+    const articlePath =
+      path.join(
+        workspacePath,
+        'Article.md');
 
     await writeFile(
       articlePath,
@@ -31,41 +33,40 @@ test(
       'utf8');
 
     await assert.doesNotReject(
-  () => validate(
-    {},
-    {
-      artifactPath: articlePath,
-      rootDirectory: workspacePath,
-    }));
+      () => validate(
+        {},
+        {
+          artifactPath: articlePath,
+          rootDirectory: workspacePath,
+        }));
   });
 
 test(
   'Artefact Definition_RL1 passes when each declared rule file exists',
-  async () =>
-{
-  const workspacePath = await mkdtemp(
-  path.join(
-    os.tmpdir(),
-    'part-artefact-definition-rl1-'));
-  const rulesPath = path.join(
-    workspacePath,
-    'rules');
-  const definitionPath = path.join(
-    workspacePath,
-    'Todo Item.md');
+  async () => {
+    const workspacePath = await mkdtemp(
+      path.join(
+        os.tmpdir(),
+        'part-artefact-definition-rl1-'));
+    const rulesPath = path.join(
+      workspacePath,
+      'rules');
+    const definitionPath = path.join(
+      workspacePath,
+      'Todo Item.md');
 
-  await mkdir(
-    rulesPath,
-    { recursive: true });
-  await writeFile(
-    path.join(
+    await mkdir(
       rulesPath,
-      'Todo Item_RL1.js'),
-    'export async function validate() {}\n',
-    'utf8');
-  await writeFile(
-    definitionPath,
-    `# Todo Item
+      { recursive: true });
+    await writeFile(
+      path.join(
+        rulesPath,
+        'Todo Item_RL1.js'),
+      'export async function validate() {}\n',
+      'utf8');
+    await writeFile(
+      definitionPath,
+      `# Todo Item
 
 Definition.
 
@@ -77,32 +78,31 @@ Definition.
 
 - RL1 - Must have a rule file.
 `,
-    'utf8');
+      'utf8');
 
-  await assert.doesNotReject(
-  () => validate(
-    {},
-    {
-    artifactPath: definitionPath,
-    rootDirectory: workspacePath,
-  }));
-});
+    await assert.doesNotReject(
+      () => validate(
+        {},
+        {
+          artifactPath: definitionPath,
+          rootDirectory: workspacePath,
+        }));
+  });
 
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
-  async () =>
-{
-  const workspacePath = await mkdtemp(
-  path.join(
-    os.tmpdir(),
-    'part-artefact-definition-rl1-'));
-  const definitionPath = path.join(
-    workspacePath,
-    'Todo Item.md');
+  async () => {
+    const workspacePath = await mkdtemp(
+      path.join(
+        os.tmpdir(),
+        'part-artefact-definition-rl1-'));
+    const definitionPath = path.join(
+      workspacePath,
+      'Todo Item.md');
 
-  await writeFile(
-    definitionPath,
-    `# Todo Item
+    await writeFile(
+      definitionPath,
+      `# Todo Item
 
 Definition.
 
@@ -115,14 +115,14 @@ Definition.
 - RL1 - Must have a rule file.
 - RL2 - Must also have a second rule file.
 `,
-    'utf8');
+      'utf8');
 
-  await assert.rejects(
-    () => validate(
-      {},
-      {
-      artifactPath: definitionPath,
-      rootDirectory: workspacePath,
-    }),
-    /Definition is missing rule files for: RL1, RL2\./);
-});
+    await assert.rejects(
+      () => validate(
+        {},
+        {
+          artifactPath: definitionPath,
+          rootDirectory: workspacePath,
+        }),
+      /Definition is missing rule files for: RL1, RL2\./);
+  });

@@ -39,6 +39,27 @@ test(
 ```
 
 ```js
+test('ok');
+// ---
+test('ok');
+```
+
+```js
+test(
+  'ok');
+// ---
+test(
+  'ok');
+```
+
+```js
+test('12345678901234567890');
+// ---
+test(
+  '12345678901234567890');
+```
+
+```js
 test('test', async () => {
   await doSomething();
 });
@@ -127,4 +148,22 @@ test
   .another(
     a,
     b);
+```
+
+```js
+  const test = fn(a, b);
+// ---
+  const test = fn(
+    a,
+    b);
+```
+
+```js
+  const test =
+    fn(a, b);
+// ---
+  const test =
+    fn(
+      a,
+      b);
 ```

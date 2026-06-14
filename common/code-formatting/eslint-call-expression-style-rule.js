@@ -54,9 +54,10 @@ export default {
 /**
  * Checks that:
  * 
- * - complex function call expressions are on a separate line (complex is:
- *   single variable that is longer than 15 characters or not a single variable)
- * - multiple function call parameters are on separate lines
+ * - Complex function call expressions are on a separate line. Complex is:
+ *   - single variable or literal that is longer than 15 characters, or
+ *   - expression that is not a single variable or literal.
+ * - Multiple function call parameters are on separate lines
  */
 function checkLayout(
   node,
@@ -73,16 +74,13 @@ function checkLayout(
     const argument =
       argumentsList[0];
 
-    const isSimpleIdentifier =
-      argument.type === 'Identifier';
-
-    const isShortIdentifier =
-      isSimpleIdentifier
-      && argument.name.length < LONG_IDENTIFIER_LENGTH;
+    const isShortParameter =
+      argumentIsShortEnoughToStayOnSameLine(
+        argument);
 
     // Keep existing layout for:
     // foo(shortIdentifier)
-    if (isShortIdentifier) {
+    if (isShortParameter) {
       return true;
     }
 
@@ -119,6 +117,20 @@ function checkLayout(
   return true;
 }
 
+function argumentIsShortEnoughToStayOnSameLine(
+  argument)
+{
+  if (argument.type === 'Identifier') {
+    return argument.name.length < LONG_IDENTIFIER_LENGTH;
+  }
+
+  if (argument.type === 'Literal') {
+    return argument.raw.length < LONG_IDENTIFIER_LENGTH;
+  }
+
+  return false;
+}
+
 function buildCallExpression(
   node,
   sourceCode,
@@ -128,12 +140,8 @@ function buildCallExpression(
     [ ];
 
   const callee =
-    sourceCode.getText(node.callee);
-
-  const argumentsText =
-    node.arguments.map(
-      argument =>
-        sourceCode.getText(argument));
+    sourceCode.getText(
+      node.callee);
 
   code.push(callee);
   code.push('(');
@@ -143,35 +151,44 @@ function buildCallExpression(
       sourceCode,
       node);
 
-  if (argumentsText.length === 1) {
-    if (argumentsText[0].length > LONG_IDENTIFIER_LENGTH
-        || argumentsText[0].includes('\n'))
-    {
+  if (node.arguments.length === 1) {
+    const argument =
+      node.arguments[0];
+
+    const argumentText =
+      sourceCode.getText(argument);
+
+    if (argumentIsShortEnoughToStayOnSameLine(argument)) {
+      code.push(
+        argumentText);
+    } else {
       code.push(
         formattingContext.newLine);
       code.push(indentation);
       code.push('  ');
-      code.push(argumentsText[0]);
-    } else {
-      code.push(argumentsText[0]);
+      code.push(
+        argumentText);
     }
-  } else if (argumentsText.length > 1) {
+  } else if (node.arguments.length > 1) {
     for (let index = 0;
-         index < argumentsText.length;
+         index < node.arguments.length;
          index++)
     {
-      const argument =
-        argumentsText[index];
-
       if (index > 0) {
         code.push(',');
       }
 
+      const argument =
+        node.arguments[index];
+
+      const argumentText =
+        sourceCode.getText(argument);
+
       code.push(
         formattingContext.newLine);
       code.push(indentation);
       code.push('  ');
-      code.push(argument);
+      code.push(argumentText);
     }
   }
 

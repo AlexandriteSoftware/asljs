@@ -1,5 +1,7 @@
 /*
-RL1 - Each rule in the definition file should have a corresponding rule file that implements it. The rule file should be named <DefinitionName>_<RuleId>.<extension>, for example, Todo Item_R1.js.
+- RL1 - Each rule in the definition file should have a corresponding rule file
+  that implements it. The rule file should be named
+  `<DefinitionName>_<RuleId>.<extension>`, for example, `Todo Item_R1.js`.
 */
 
 import { Definition }
@@ -21,13 +23,17 @@ export async function validate(
   const missingRuleIds =
     definition.rules
       .filter(
-      rule => !rule.absoluteFilePath)
-      .map(rule => rule.id);
+        rule => !rule.absoluteFilePath)
+      .map(
+        rule => rule.id);
     
   if (missingRuleIds.length === 0) {
     return;
   }
-  
+
+  const missingRulesText =
+    missingRuleIds.join(', ');
+
   throw new Error(
-    `Definition is missing rule files for: ${missingRuleIds.join(', ')}.`);
+    `Definition is missing rule files for: ${missingRulesText}.`);
 }

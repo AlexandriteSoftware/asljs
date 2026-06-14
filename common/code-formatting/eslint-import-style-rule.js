@@ -94,13 +94,15 @@ function getImportSpecifierGroup(
   specifiers,
   startAt)
 {
-  const group = [];
+  const group =
+    [];
 
   for (let index = startAt;
        index < specifiers.length;
        index++)
   {
-    const specifier = specifiers[index];
+    const specifier =
+      specifiers[index];
 
     if (specifier.type !== 'ImportSpecifier') {
       break;
@@ -116,7 +118,8 @@ function formatImportSpecifierGroup(
   importSpecifierGroup,
   formattingContext)
 {
-  const code = [];
+  const code =
+    [];
 
   let firstImportSpecifier = true;
   for (const specifier of importSpecifierGroup) {

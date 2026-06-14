@@ -78,12 +78,13 @@ function checkLayout(
   }
 
   const closingParen =
-    context.sourceCode.getTokenBefore(node.body);
+    context.sourceCode
+      .getTokenBefore(
+        node.body);
 
   if (
     closingParen
-    && closingParen.loc.end.line
-      === node.body.loc.start.line
+    && closingParen.loc.end.line === node.body.loc.start.line
   ) {
     return false;
   }
