@@ -20,8 +20,9 @@ export async function validate(
   
   const missingRuleIds =
     definition.rules
-      .filter((rule) => !rule.absoluteFilePath)
-      .map((rule) => rule.id);
+      .filter(
+      rule => !rule.absoluteFilePath)
+      .map(rule => rule.id);
     
   if (missingRuleIds.length === 0) {
     return;

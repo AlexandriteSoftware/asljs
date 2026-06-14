@@ -24,15 +24,16 @@ export default {
           return;
         }
 
-        context.report({
-          node,
-          message: 'Use asljs import style.',
-          fix(fixer) {
-            return fixer.replaceText(
-              node,
-              replacement);
-          }
-        });
+        context.report(
+          {
+            node,
+            message: 'Use asljs import style.',
+            fix(fixer) {
+              return fixer.replaceText(
+                node,
+                replacement);
+            }
+          });
       }
     };
   }
@@ -46,9 +47,6 @@ function formatImportNode(
   const code =
     [ 'import ' ];
 
-  const moduleName =
-    node.source.raw;
-
   if (node.specifiers.length === 0) {
     code.push('{ }');
   } else {
@@ -59,7 +57,8 @@ function formatImportNode(
         first = false;
       } else {
         code.push(',');
-        code.push(formattingContext.newLine);
+        code.push(
+          formattingContext.newLine);
         code.push('       ');
       }
 
@@ -83,10 +82,10 @@ function formatImportNode(
     }
   }
 
-  code.push(formattingContext.newLine);
-  code.push('  from ');
-  code.push(moduleName);
-  code.push(';');
+  code.push(
+    formatSource(
+      node.source,
+      formattingContext));
 
   return code.join('');
 }
@@ -126,14 +125,17 @@ function formatImportSpecifierGroup(
       code.push('{ ');
     } else {
       code.push(',');
-      code.push(formattingContext.newLine);
+      code.push(
+        formattingContext.newLine);
       code.push('         ');
     }
 
     if (specifier.imported.name === specifier.local.name) {
-      code.push(specifier.imported.name);
+      code.push(
+        specifier.imported.name);
     } else {
-      code.push(`${specifier.imported.name} as ${specifier.local.name}`);
+      code.push(
+        `${specifier.imported.name} as ${specifier.local.name}`);
     }
   }
 
@@ -142,6 +144,20 @@ function formatImportSpecifierGroup(
   return code.join('');
 }
 
+function formatSource(
+  source,
+  formattingContext)
+{
+  return formattingContext.newLine
+    + '  from '
+    + source.raw
+    + ';';
+}
+
+/**
+ * Formats `ImportDefaultSpecifier` and `ImportNamespaceSpecifier`.
+ * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
+ */
 function formatSpecifier(
   specifier)
 {

@@ -1,6 +1,25 @@
 # eslint-import-style-rule
 
+This rule formats `ImportDeclaration` nodes.
+
+`ImportDeclaration` has the following structure:
+
+- `specifiers` (array of `ImportSpecifier`, `ImportDefaultSpecifier`,
+  or `ImportNamespaceSpecifier`)
+  - `ImportSpecifier` (for named imports, e.g., `{ readFile }`)
+  - `ImportDefaultSpecifier` (for default imports, e.g., `fs`)
+  - `ImportNamespaceSpecifier` (for namespace imports, e.g., `* as fs`)
+- `source` (the module specifier, e.g., `'node:fs/promises'`)
+
 ## Tests
+
+```js
+import { readFile }
+  from 'node:fs/promises';
+// ---
+import { readFile }
+  from 'node:fs/promises';
+```
 
 ```js
 import{readFile}from'node:fs/promises';

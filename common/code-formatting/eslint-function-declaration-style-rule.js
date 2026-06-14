@@ -8,42 +8,88 @@ export default {
   create(context) {
     return {
       FunctionDeclaration(node) {
-        const newLine =
-          context.sourceCode.text.includes('\r\n')
-            ? '\r\n'
-            : '\n';
-
-        const formattingContext =
-          { newLine };
-
-        const replacement =
-          buildFunctionDeclaration(
+        const correctLayout =
+          checkLayout(
             node,
-            context,
-            formattingContext);
+            context);
 
-        const currentText =
-          context.sourceCode.getText(node);
-
-        if (currentText === replacement) {
+        if (correctLayout) {
           return;
         }
 
-        context.report({
-          node,
-          message:
-            'Use asljs function declaration style.',
+        context.report(
+          {
+            node,
+            message: 'Use asljs function declaration style.',
+            fix(fixer) {
+              const newLine =
+                context.sourceCode.text.includes('\r\n')
+                  ? '\r\n'
+                  : '\n';
 
-          fix(fixer) {
-            return fixer.replaceText(
-              node,
-              replacement);
-          },
-        });
-      },
+              const formattingContext =
+                { newLine };
+
+              const replacement =
+                buildFunctionDeclaration(
+                  node,
+                  context,
+                  formattingContext);
+
+              return fixer.replaceText(
+                node,
+                replacement);
+            },
+          });
+      }
     };
   },
 };
+
+/**
+ * Checks that function parameters are on separate lines and the opening brace
+ * is on a new line.
+ */
+function checkLayout(
+  node,
+  context)
+{
+  const parameters =
+    node.params;
+
+  if (parameters.length > 1) {
+    for (let index = 1;
+          index < parameters.length;
+          index++)
+    {
+      const previousParameter =
+        parameters[index - 1];
+
+      const currentParameter =
+        parameters[index];
+
+      if (
+        previousParameter.loc.end.line
+        === currentParameter.loc.start.line
+      ) {
+        return false;
+      }
+    }
+  }
+
+  const closingParen =
+    context.sourceCode.getTokenBefore(node.body);
+
+  if (
+    closingParen
+    && closingParen.loc.end.line
+      === node.body.loc.start.line
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 function buildFunctionDeclaration(
   node,
@@ -79,7 +125,8 @@ function buildFunctionDeclaration(
   if (parameters.length === 0) {
     code.push(')');
   } else {
-    code.push(formattingContext.newLine);
+    code.push(
+      formattingContext.newLine);
 
     for (let index = 0;
           index < parameters.length;
@@ -91,16 +138,19 @@ function buildFunctionDeclaration(
         code.push(',');
       }
       if (index < parameters.length - 1) {
-        code.push(formattingContext.newLine);
+        code.push(
+          formattingContext.newLine);
       }
     }
 
     code.push(')');
   }
 
-  code.push(formattingContext.newLine);
+  code.push(
+    formattingContext.newLine);
 
-  code.push(context.sourceCode.getText(body));
+  code.push(
+    context.sourceCode.getText(body));
  
   return code.join('');
 }

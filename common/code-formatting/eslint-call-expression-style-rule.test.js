@@ -7,21 +7,21 @@ import { ESLint }
 import { addRuleTestsFromMarkdown }
   from './extractTests.js';
 import rule
-  from './eslint-import-style-rule.js';
+  from './eslint-call-expression-style-rule.js';
 
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
       fix: true,
       overrideConfig:
-        { plugins: { asljs: { rules: { 'import-style': rule } } },
-          rules: { 'asljs/import-style': 'error' } } });
+        { plugins: { asljs: { rules: { 'call-expression-style': rule } } },
+          rules: { 'asljs/call-expression-style': 'error' } } });
 
 test(
   'markdown example: \\r\\n line endings',
   async () => {
     const code =
-      'import { readFile }\r\n  from \'node:fs/promises\';';
+      'test(\r\n  a,\r\n  b);';
 
     const [ result ] =
       await eslint.lintText(code);
@@ -32,5 +32,6 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  'eslint-import-style-rule.md',
+  'eslint-call-expression-style-rule.md',
   eslint);
+

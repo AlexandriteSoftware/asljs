@@ -1,21 +1,29 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import os from 'node:os';
-import path from 'node:path';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import os
+  from 'node:os';
+import path
+  from 'node:path';
+import { mkdtemp,
+         mkdir,
+         writeFile }
+  from 'node:fs/promises';
+import { runCli }
+  from '../src/cli.js';
 
-import { runCli } from '../src/cli.js';
+test(
+  'inventory reports README example artifact as OK',
+  async () => {
+    const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
-test('inventory reports README example artifact as OK', async () =>
-{
-  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
+    await mkdir(path.join(workspacePath, 'Todo Items'), { recursive: true });
+    await mkdir(path.join(workspacePath, 'part'), { recursive: true });
 
-  await mkdir(path.join(workspacePath, 'Todo Items'), { recursive: true });
-  await mkdir(path.join(workspacePath, 'part'), { recursive: true });
-
-  await writeFile(
-    path.join(workspacePath, 'Todo Item.md'),
-    `# Todo Item
+    await writeFile(
+      path.join(workspacePath, 'Todo Item.md'),
+      `# Todo Item
 
 A todo item is a task that needs to be done.
 
@@ -31,12 +39,12 @@ Todo items are stored in the \`Todo Items\` folder.
 
 - R1 Due date must be in the future.
 `,
-    'utf8',
-  );
+      'utf8',
+    );
 
-  await writeFile(
-    path.join(workspacePath, 'part', 'TodoItem_R1.js'),
-    `export function validate(todoItem) {
+    await writeFile(
+      path.join(workspacePath, 'part', 'TodoItem_R1.js'),
+      `export function validate(todoItem) {
   const now = new Date();
   const dueDate = new Date(todoItem.dueDate);
   if (dueDate <= now) {
@@ -44,45 +52,46 @@ Todo items are stored in the \`Todo Items\` folder.
   }
 }
 `,
-    'utf8',
-  );
+      'utf8',
+    );
 
-  const futureYear = new Date().getUTCFullYear() + 1;
+    const futureYear = new Date().getUTCFullYear() + 1;
 
-  await writeFile(
-    path.join(workspacePath, 'Todo Items', 'Buy milk.md'),
-    `# Buy milk
+    await writeFile(
+      path.join(workspacePath, 'Todo Items', 'Buy milk.md'),
+      `# Buy milk
 
 - Due date: ${futureYear}-07-01
 
 I need to buy milk.
 `,
-    'utf8',
-  );
+      'utf8',
+    );
 
-  const stdout = createWritableBuffer();
-  const stderr = createWritableBuffer();
-  const exitCode = await runCli(['inventory'], {
-    cwd: workspacePath,
-    stdout,
-    stderr,
+    const stdout = createWritableBuffer();
+    const stderr = createWritableBuffer();
+    const exitCode = await runCli(['inventory'], {
+      cwd: workspacePath,
+      stdout,
+      stderr,
+    });
+
+    assert.equal(exitCode, 0);
+    assert.equal(stderr.toString(), '');
+    assert.match(stdout.toString(), /\| Location\s+\| Definitions\s+\| Rules \|/);
+    assert.match(stdout.toString(), /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Ok\s+\|/);
   });
 
-  assert.equal(exitCode, 0);
-  assert.equal(stderr.toString(), '');
-  assert.match(stdout.toString(), /\| Location\s+\| Definitions\s+\| Rules \|/);
-  assert.match(stdout.toString(), /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Ok\s+\|/);
-});
+test(
+  'inventory resolves artefact locations relative to the definition file',
+  async () => {
+    const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
-test('inventory resolves artefact locations relative to the definition file', async () =>
-{
-  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
-
-  await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
-  await mkdir(path.join(workspacePath, 'development'), { recursive: true });
-  await writeFile(
-    path.join(workspacePath, 'artefacts', 'Requirement.md'),
-    `# Requirement
+    await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
+    await mkdir(path.join(workspacePath, 'development'), { recursive: true });
+    await writeFile(
+      path.join(workspacePath, 'artefacts', 'Requirement.md'),
+      `# Requirement
 
 A statement about the system that must be true.
 
@@ -94,41 +103,42 @@ A statement about the system that must be true.
 
 - RL10 - Requirement rule.
 `,
-    'utf8',
-  );
-  await writeFile(
-    path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js'),
-    'export async function validate() {}\n',
-    'utf8',
-  );
-  await writeFile(
-    path.join(workspacePath, 'development', 'RQ101 Example.md'),
-    '# RQ101 Example\n',
-    'utf8',
-  );
+      'utf8',
+    );
+    await writeFile(
+      path.join(workspacePath, 'artefacts', 'rules', 'Requirement_RL10.js'),
+      'export async function validate() {}\n',
+      'utf8',
+    );
+    await writeFile(
+      path.join(workspacePath, 'development', 'RQ101 Example.md'),
+      '# RQ101 Example\n',
+      'utf8',
+    );
 
-  const stdout = createWritableBuffer();
-  const stderr = createWritableBuffer();
-  const exitCode = await runCli(['inventory'], {
-    cwd: workspacePath,
-    stdout,
-    stderr,
+    const stdout = createWritableBuffer();
+    const stderr = createWritableBuffer();
+    const exitCode = await runCli(['inventory'], {
+      cwd: workspacePath,
+      stdout,
+      stderr,
+    });
+
+    assert.equal(exitCode, 0);
+    assert.equal(stderr.toString(), '');
+    assert.match(stdout.toString(), /\| development\/RQ101 Example\.md \| Requirement\s+\| Ok\s+\|/);
   });
 
-  assert.equal(exitCode, 0);
-  assert.equal(stderr.toString(), '');
-  assert.match(stdout.toString(), /\| development\/RQ101 Example\.md \| Requirement\s+\| Ok\s+\|/);
-});
+test(
+  'inventory lists all definitions applied to the same artefact',
+  async () => {
+    const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
-test('inventory lists all definitions applied to the same artefact', async () =>
-{
-  const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
-
-  await mkdir(path.join(workspacePath, 'definitions', 'rules'), { recursive: true });
-  await mkdir(path.join(workspacePath, 'part'), { recursive: true });
-  await writeFile(
-    path.join(workspacePath, 'Article.md'),
-    `# Article
+    await mkdir(path.join(workspacePath, 'definitions', 'rules'), { recursive: true });
+    await mkdir(path.join(workspacePath, 'part'), { recursive: true });
+    await writeFile(
+      path.join(workspacePath, 'Article.md'),
+      `# Article
 
 Markdown article.
 
@@ -140,11 +150,11 @@ Markdown article.
 
 - RL10 - Article rule.
 `,
-    'utf8',
-  );
-  await writeFile(
-    path.join(workspacePath, 'definitions', 'Artefact Definition.md'),
-    `# Artefact Definition
+      'utf8',
+    );
+    await writeFile(
+      path.join(workspacePath, 'definitions', 'Artefact Definition.md'),
+      `# Artefact Definition
 
 Definition file.
 
@@ -156,27 +166,26 @@ Definition file.
 
 - RL10 - Definition rule.
 `,
-    'utf8',
-  );
-  await writeFile(path.join(workspacePath, 'part', 'Article_RL10.js'), 'export async function validate() {}\n', 'utf8');
-  await writeFile(path.join(workspacePath, 'definitions', 'rules', 'Artefact Definition_RL10.js'), 'export async function validate() {}\n', 'utf8');
-  await writeFile(path.join(workspacePath, 'definitions', 'Requirement.md'), '# Requirement\n', 'utf8');
+      'utf8',
+    );
+    await writeFile(path.join(workspacePath, 'part', 'Article_RL10.js'), 'export async function validate() {}\n', 'utf8');
+    await writeFile(path.join(workspacePath, 'definitions', 'rules', 'Artefact Definition_RL10.js'), 'export async function validate() {}\n', 'utf8');
+    await writeFile(path.join(workspacePath, 'definitions', 'Requirement.md'), '# Requirement\n', 'utf8');
 
-  const stdout = createWritableBuffer();
-  const stderr = createWritableBuffer();
-  const exitCode = await runCli(['inventory'], {
-    cwd: workspacePath,
-    stdout,
-    stderr,
+    const stdout = createWritableBuffer();
+    const stderr = createWritableBuffer();
+    const exitCode = await runCli(['inventory'], {
+      cwd: workspacePath,
+      stdout,
+      stderr,
+    });
+
+    assert.equal(exitCode, 0);
+    assert.equal(stderr.toString(), '');
+    assert.match(stdout.toString(), /\| definitions\/Requirement\.md\s+\| Article,Artefact Definition\s+\| Ok\s+\|/);
   });
 
-  assert.equal(exitCode, 0);
-  assert.equal(stderr.toString(), '');
-  assert.match(stdout.toString(), /\| definitions\/Requirement\.md\s+\| Article,Artefact Definition\s+\| Ok\s+\|/);
-});
-
-test('inventory respects Definitions parameter and reports Fail when any rule fails', async () =>
-{
+test('inventory respects Definitions parameter and reports Fail when any rule fails', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'definitions'), { recursive: true });
@@ -239,8 +248,7 @@ A todo item is a task that needs to be done.
   assert.match(stdout.toString(), /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Fail\s+\|/);
 });
 
-test('artefactdefinition lists definitions and respects Definitions parameter', async () =>
-{
+test('artefactdefinition lists definitions and respects Definitions parameter', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'definitions'), { recursive: true });
@@ -284,8 +292,7 @@ This top-level definition should be ignored by the Definitions parameter.
   assert.doesNotMatch(stdout.toString(), /Wrong Items/);
 });
 
-test('artefactdefinition prints detailed definition content for a named definition', async () =>
-{
+test('artefactdefinition prints detailed definition content for a named definition', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -330,8 +337,7 @@ A statement about the system that must be true.
   assert.match(stdout.toString(), /- filePath: rules\/Requirement_RL10\.js/);
 });
 
-test('check prints one row per matched file and rule', async () =>
-{
+test('check prints one row per matched file and rule', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -396,8 +402,7 @@ A statement about the system that must be true.
   assert.match(stdout.toString(), /\| development\/features\/RQ102 Example\.md \| Requirement_RL10 \| development\/features\/RQ102 Example\.md is not referenced by any test\. \|/);
 });
 
-test('check includes rules from all matching definitions for the same artefact', async () =>
-{
+test('check includes rules from all matching definitions for the same artefact', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'definitions', 'rules'), { recursive: true });
@@ -452,8 +457,7 @@ Definition file.
   assert.match(stdout.toString(), /\| definitions\/Requirement\.md \| Artefact Definition_RL10\s+\| OK\s+\|/);
 });
 
-test('check filters by definitions and rules', async () =>
-{
+test('check filters by definitions and rules', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -533,8 +537,7 @@ Markdown article.
   assert.doesNotMatch(stdout.toString(), /Article_RL10/);
 });
 
-test('check uses artefact locations when pattern is omitted and sorts by path then rule', async () =>
-{
+test('check uses artefact locations when pattern is omitted and sorts by path then rule', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -602,8 +605,7 @@ A statement about the system that must be true.
   ]);
 });
 
-test('check shows only failing rows by default and still returns non-zero', async () =>
-{
+test('check shows only failing rows by default and still returns non-zero', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -643,8 +645,7 @@ A statement about the system that must be true.
   assert.doesNotMatch(stdout.toString(), /Requirement_RL11/);
 });
 
-test('check with-positives shows passing and failing rows', async () =>
-{
+test('check with-positives shows passing and failing rows', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'artefacts', 'rules'), { recursive: true });
@@ -699,8 +700,7 @@ function createWritableBuffer()
   };
 }
 
-test('inventory accepts --definitions=value option syntax', async () =>
-{
+test('inventory accepts --definitions=value option syntax', async () => {
   const workspacePath = await mkdtemp(path.join(os.tmpdir(), 'part-'));
 
   await mkdir(path.join(workspacePath, 'definitions'), { recursive: true });
@@ -738,8 +738,7 @@ Todo item.
   assert.match(stdout.toString(), /Todo Items\/Buy milk\.md/);
 });
 
-test('cli reports missing option values as command errors', async () =>
-{
+test('cli reports missing option values as command errors', async () => {
   const stdout = createWritableBuffer();
   const stderr = createWritableBuffer();
 
@@ -753,17 +752,18 @@ test('cli reports missing option values as command errors', async () =>
   assert.match(stderr.toString(), /Option --definitions requires a value\./);
 });
 
-test('cli rejects unsupported long options', async () =>
-{
-  const stdout = createWritableBuffer();
-  const stderr = createWritableBuffer();
+test(
+  'cli rejects unsupported long options',
+  async () => {
+    const stdout = createWritableBuffer();
+    const stderr = createWritableBuffer();
 
-  const exitCode = await runCli(['inventory', '--verbose'], {
-    cwd: process.cwd(),
-    stdout,
-    stderr,
+    const exitCode = await runCli(['inventory', '--verbose'], {
+      cwd: process.cwd(),
+      stdout,
+      stderr,
+    });
+
+    assert.equal(exitCode, 1);
+    assert.match(stderr.toString(), /Unknown option: --verbose/);
   });
-
-  assert.equal(exitCode, 1);
-  assert.match(stderr.toString(), /Unknown option: --verbose/);
-});

@@ -1,6 +1,29 @@
 # eslint-function-declaration-style-rule
 
+Chops `FunctionDeclaration` parameters into multiple lines and moves the opening
+brace to a new line.
+
+`FunctionDeclaration` structure:
+
+- `id` : `Identifier` (the function name, e.g., `test`)
+- `params` : `Node[]` (the function parameters, e.g., `param1`, `param2`)
+- `body` : `BlockStatement` (the function body, e.g., `{ test(); }`)
+
 ## Tests
+
+```js
+function test(
+  param1,
+  param2)
+{
+}
+// ---
+function test(
+  param1,
+  param2)
+{
+}
+```
 
 ```js
 function test() {

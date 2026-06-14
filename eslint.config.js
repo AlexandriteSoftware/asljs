@@ -8,6 +8,8 @@ import importStyleRule
   from './common/code-formatting/eslint-import-style-rule.js';
 import functionDeclarationStyleRule
   from './common/code-formatting/eslint-function-declaration-style-rule.js';
+import callExpressionStyleRule
+  from './common/code-formatting/eslint-call-expression-style-rule.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -103,7 +105,8 @@ export default [
       asljs: {
         rules: {
           'import-style': importStyleRule,
-          'function-declaration-style': functionDeclarationStyleRule
+          'function-declaration-style': functionDeclarationStyleRule,
+          'call-expression-style': callExpressionStyleRule
         }
       }
     },
@@ -154,7 +157,8 @@ export default [
         }
       ],
       'asljs/import-style': 'error',
-      'asljs/function-declaration-style': 'error'
+      'asljs/function-declaration-style': 'error',
+      'asljs/call-expression-style': 'error'
     }
   }
 ];

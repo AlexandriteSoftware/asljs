@@ -6,7 +6,6 @@ import test
   from 'node:test';
 import { fileURLToPath }
   from 'node:url';
-
 import { mkdtemp,
          mkdir,
          readFile,
