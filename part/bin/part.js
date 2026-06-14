@@ -8,6 +8,7 @@ const exitCode =
     process.argv.slice(2),
     { cwd: process.cwd(),
       stdout: process.stdout,
-      stderr: process.stderr });
+      stderr: process.stderr,
+      resolve: value => value });
 
 process.exitCode = exitCode;

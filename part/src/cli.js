@@ -1,38 +1,31 @@
-import { createRequire }
-  from 'node:module';
 import path
   from 'node:path';
-import { Command }
-  from 'commander';
-import { initializeDefinitionsDirectory }
-  from './init.js';
-import { updateRules }
-  from './updateRules.js';
-import { buildArtefactDefinitionReport,
-         buildCheckReport,
-         buildInventoryReport }
-  from './inventory.js';
 import { createLogger }
   from './logging.js';
-
-const packageVersion =
-  (() => {
-    const require =
-      createRequire(
-        import.meta.url);
-
-    const { version } =
-      require('../package.json');
-
-    return version;
-  })();
+import { Command }
+  from 'commander';
+import { execInit }
+  from './commands/init.js';
+import { execUpdate }
+  from './commands/update.js';
+import { execInventory }
+  from './commands/inventory.js';
+import { execDefinitions }
+  from './commands/definitions.js';
+import { execCheck }
+  from './commands/check.js';
+import { execDefinition }
+  from './commands/definition.js';
+import { execVersion }
+  from './commands/version.js';
 
 export async function runCli(
   args,
   environment)
 {
   const cli =
-    createCli(environment);
+    createCli(
+      environment);
 
   if (args.length === 0) {
     cli.outputHelp();
@@ -46,7 +39,13 @@ export async function runCli(
 
     return cli.exitCode ?? 0;
   } catch (error) {
-    if (writeCommanderError(environment, error, args, cli)) {
+    if (
+      writeCommanderError(
+        environment,
+        error,
+        args,
+        cli))
+    {
       return 1;
     }
 
@@ -59,7 +58,9 @@ export async function runCli(
       return 1;
     }
 
-    environment.stderr.write(`${message}\n`);
+    environment.stderr.write(
+      `${message}\n`);
+
     return 1;
   }
 }
@@ -67,18 +68,20 @@ export async function runCli(
 function createCli(
   environment)
 {
-  const cli = new Command();
+  const cli =
+    new Command();
 
-  cli
-    .name('part')
-    .description('`part` is a project artefact tracing tool.')
+  cli.name('part')
+    .description(
+      '`part` is a project artefact tracing tool.')
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
       { writeOut: value => environment.stdout.write(value),
         writeErr: value => environment.stderr.write(value),
         outputError: () => { } })
-    .exitOverride(error => { throw error; })
+    .exitOverride(
+      error => { throw error; })
     .option(
       '--loglevel <level>',
       'Log level: trace, debug, information, warning, error',
@@ -89,9 +92,12 @@ function createCli(
     .option(
       '--log',
       'Enables logging')
+    .option(
+      '--definitions <path>',
+      'Path to artefact definitions directory. Defaults to the current working directory.')
     .hook(
       'preAction',
-      (thisCommand, actionCommand) => {
+      (_, actionCommand) => {
         const options =
           actionCommand.optsWithGlobals();
 
@@ -111,142 +117,174 @@ function createCli(
 
         logger.info(
           `Started app with ${JSON.stringify(options)}`);
+
+        if (
+          options.definitions !== undefined
+          && options.definitions !== null
+          && options.definitions.trim() !== '')
+        {
+          environment.definitions =
+            path.resolve(
+              options.definitions);
+        } else {
+          environment.definitions =
+            environment.cwd;
+        }
       });      
 
   cli.command('inventory')
-    .description('Scan the current folder and print artefact inventory')
-    .option(
-      '--definitions <path>',
-      'Search definitions in the specified folder only')
+    .description(
+      'Scan the current folder and print artefact inventory')
     .action(
-      async (options) => {
-        await writeReport(
-          environment,
-          await buildInventoryReport(
-            environment.cwd,
-            { definitionsPath: options.definitions }),
-        );
+      async () => {
+        const method =
+          environment.resolve(
+            execInventory);
+
+        const result =
+          await method(
+            environment);
+
+        updateExitCode(
+          cli,
+          result);
       });
 
-  cli.command('artefactdefinition')
-    .description('List definitions and their locations')
-    .argument('[definitionTarget]')
-    .option(
-      '--definitions <path>',
-      'Search definitions in the specified folder only')
+  cli.command('definition')
+    .description(
+      'List definitions and their locations')
+    .argument(
+      'target')
     .action(
-      async (definitionTarget, options) => {
-        await writeReport(
-          environment,
-          await buildArtefactDefinitionReport(
-            environment.cwd,
-            { definitionTarget,
-            definitionsPath: options.definitions }),
-      );
+      async target => {
+        const method =
+          environment.resolve(
+            execDefinition);
+
+        const result =
+          await method(
+            environment,
+            { target });
+
+        updateExitCode(
+          cli,
+          result);
+    });
+
+  cli.command('definitions')
+    .description(
+      'List definitions and their locations')
+    .action(
+      async () => {
+        const method =
+          environment.resolve(
+            execDefinitions);
+
+        const result =
+          await method(
+            environment);
+
+        updateExitCode(
+          cli,
+          result);
     });
 
   cli.command('init')
-    .description('Initialize an artefact definitions directory')
-    .option(
-      '--definitions <path>',
-      'Initialize the specified definitions directory')
+    .description(
+      'Initialize an artefact definitions directory')
     .action(
-      async (options) => {
-        const initializedPath =
-          await initializeDefinitionsDirectory(
-            environment.cwd,
-            options.definitions);
+      async () => {
+        const method =
+          environment.resolve(
+            execInit);
 
-        environment.stdout.write(`Initialized definitions directory: ${initializedPath}\n`);
+        const result =
+          await method(
+            environment);
+
+        updateExitCode(
+          cli,
+          result);
       });
 
-  cli.command('update-rules')
-    .description('Create or refresh JS rule files from artefact definitions')
-    .option(
-      '--definitions <path>',
-      'Search definitions in the specified folder only')
+  cli.command('update')
+    .description(
+      'Create or refresh JS rule files from artefact definitions')
     .option(
       '--dry-run',
       'Print Copilot prompts without running them or writing files')
     .action(
       async (options) => {
+        const method =
+          environment.resolve(
+            execUpdate);
+
         const result =
-          await updateRules(
-            environment.cwd,
-            {
-              definitionsPath: options.definitions,
-              dryRun: options.dryRun,
-              runCopilotCli: environment.runCopilotCli,
-            },
-          );
+          await method(
+            environment,
+            options);
 
-        if (result.updates.length === 0) {
-          environment.stdout.write('No rule updates were needed.\n');
-        }
-
-        for (const update of result.updates) {
-          environment.stdout.write(`${update}\n`);
-        }
-
-        for (const warning of result.warnings) {
-          environment.stderr.write(`${warning}\n`);
-        }
-
-        if (options.dryRun) {
-          for (const prompt of result.prompts) {
-            environment.stdout.write(`\n--- ${prompt.mode.toUpperCase()} ${toPosixPath(path.relative(environment.cwd, prompt.targetFilePath))} ---\n`);
-            environment.stdout.write(`${prompt.prompt}\n`);
-          }
-        }
+        updateExitCode(
+          cli,
+          result);
       });
 
   cli.command('check')
-    .description('Run rules for artefacts matching a pattern')
+    .description(
+      'Run rules for artefacts matching a pattern')
     .argument('[pattern]')
     .option(
-      '--definitions <definitions>',
+      '--check-definitions <definitions>',
       'Comma-separated definition names to include')
     .option(
-      '--rules <rules>',
+      '--check-rules <rules>',
       'Comma-separated rule names to include')
-    .option(
-      '--definitions-path <path>',
-      'Search definitions in the specified folder only')
     .option(
       '--with-positives',
       'Show passing and failing check rows')
     .action(
       async (pattern, options) => {
+        const method =
+          environment.resolve(
+            execCheck);
+
         const result =
-          await buildCheckReport(
-            environment.cwd,
+          await method(
+            environment,
             { pattern,
-              definitionNames: splitCommaSeparatedOption(options.definitions),
-              ruleNames: splitCommaSeparatedOption(options.rules),
-              definitionsPath: options.definitionsPath,
-              withPositives: options.withPositives === true });
+              definitionNames:
+                splitCommaSeparatedOption(
+                  options.checkDefinitions),
+              ruleNames:
+                splitCommaSeparatedOption(
+                  options.checkRules),
+              withPositives:
+                options.withPositives === true });
 
-        await writeReport(environment, result.report);
-
-        cli.exitCode =
-          result.hasFailures
-          ? 1
-          : 0;
+        updateExitCode(
+          cli,
+          result);
       });
 
   cli.command('version')
-    .description('Print the current package version')
+    .description(
+      'Print the current package version')
     .action(
-      () => environment.stdout.write(`${packageVersion}\n`));
+      async () => {
+        const method =
+          environment.resolve(
+            execVersion);
+
+        const result =
+          await method(
+            environment);
+
+        updateExitCode(
+          cli,
+          result);
+      });
 
   return cli;
-}
-
-async function writeReport(
-  environment,
-  report)
-{
-  environment.stdout.write(`${report}\n`);
 }
 
 function writeCommanderError(
@@ -262,23 +300,30 @@ function writeCommanderError(
   }
 
   if (error.code === 'commander.optionMissingArgument') {
-    const optionName = extractOptionName(error.message);
+    const optionName =
+      extractOptionName(
+        error.message);
 
     environment.stderr.write(
       `Option ${optionName} requires a value.\n`);
+
     return true;
   }
 
   if (error.code === 'commander.unknownOption') {
-    const optionName = extractOptionName(error.message);
+    const optionName =
+      extractOptionName(
+        error.message);
 
     environment.stderr.write(
       `Unknown option: ${optionName}\n`);
+
     return true;
   }
 
   if (error.code === 'commander.unknownCommand') {
-    const commandName = args[0] ?? '';
+    const commandName =
+      args[0] ?? '';
 
     environment.stderr.write(
       `Unknown command: ${commandName}\n`);
@@ -294,7 +339,8 @@ function writeCommanderError(
 
 function extractOptionName(message)
 {
-  const match = /'(--[^ <']+)/.exec(message);
+  const match =
+    /'(--[^ <']+)/.exec(message);
 
   return match?.[1] ?? '--unknown';
 }
@@ -309,11 +355,18 @@ function splitCommaSeparatedOption(value)
 
   return value
     .split(',')
-    .map(entry => entry.trim())
-    .filter(entry => entry.length > 0);
+    .map(
+      entry => entry.trim())
+    .filter(
+      entry => entry.length > 0);
 }
 
-function toPosixPath(value)
+function updateExitCode(
+  cli,
+  result)
 {
-  return value.replaceAll('\\', '/');
+  cli.exitCode =
+    result.hasFailures
+    ? 1
+    : 0;
 }

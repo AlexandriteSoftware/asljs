@@ -1,9 +1,17 @@
-import path from 'node:path';
-import { spawn } from 'node:child_process';
-import { access } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
+import path
+  from 'node:path';
+import { spawn }
+  from 'node:child_process';
+import { access }
+  from 'node:fs/promises';
+import { pathToFileURL }
+  from 'node:url';
 
-export async function runRule(rule, artefact, context)
+export async function runRule(
+  logger,
+  rule,
+  artefact,
+  context)
 {
   if (!rule.filePath || !rule.absoluteFilePath) {
     return {
@@ -14,7 +22,8 @@ export async function runRule(rule, artefact, context)
   }
 
   try {
-    await access(rule.absoluteFilePath);
+    await access(
+      rule.absoluteFilePath);
   }
   catch {
     return {
@@ -24,31 +33,52 @@ export async function runRule(rule, artefact, context)
     };
   }
 
-  if (path.extname(rule.absoluteFilePath).toLowerCase() === '.js') {
-    return runJavaScriptRule(rule, artefact, context);
+  if (path.extname(
+    rule.absoluteFilePath).toLowerCase() === '.js') {
+    return runJavaScriptRule(
+      rule,
+      artefact,
+      context);
   }
 
-  return runExecutableRule(rule, artefact, context);
+  return runExecutableRule(
+    rule,
+    artefact,
+    context);
 }
 
-export async function runRules(definition, artefact, context)
+export async function runRules(
+  definition,
+  artefact,
+  context)
 {
-  const results = [];
+  const results =
+    [];
 
   for (const rule of definition.rules) {
-    results.push(await runRule(rule, artefact, {
-      ...context,
-      definition,
-    }));
+    results.push(
+      await runRule(
+        rule,
+        artefact,
+        {
+          ...context,
+          definition,
+        }));
   }
 
   return results;
 }
 
-async function runJavaScriptRule(rule, artefact, context)
+async function runJavaScriptRule(
+  logger,
+  rule,
+  artefact,
+  context)
 {
   try {
-    const validatorModule = await import(pathToFileURL(rule.absoluteFilePath).href);
+    const validatorModule =
+      await import(pathToFileURL(
+        rule.absoluteFilePath).href);
 
     if (typeof validatorModule.validate !== 'function') {
       return {
@@ -58,7 +88,11 @@ async function runJavaScriptRule(rule, artefact, context)
       };
     }
 
-    const outcome = await validatorModule.validate(artefact, context);
+    const outcome =
+      await validatorModule.validate(
+        artefact,
+        { ...context,
+          logger });
 
     if (outcome === false) {
       return {
@@ -91,10 +125,17 @@ async function runJavaScriptRule(rule, artefact, context)
   }
 }
 
-async function runExecutableRule(rule, artefact, context)
+async function runExecutableRule(
+  rule,
+  artefact,
+  context)
 {
   return new Promise((resolve) => {
-    const child = spawn(rule.absoluteFilePath, [context.artifactPath], {
+    const child =
+      spawn(
+        rule.absoluteFilePath,
+        [context.artifactPath],
+        {
       cwd: context.rootDirectory,
       env: {
         ...process.env,
@@ -104,24 +145,34 @@ async function runExecutableRule(rule, artefact, context)
       },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
+
     let stderr = '';
 
-    child.stdin.write(`${JSON.stringify(artefact)}\n`);
+    child.stdin.write(
+      `${JSON.stringify(artefact)}\n`);
+
     child.stdin.end();
 
-    child.stderr.on('data', (chunk) => {
+    child.stderr.on(
+      'data',
+      (chunk) => {
       stderr += String(chunk);
     });
 
-    child.on('error', (error) => {
-      resolve({
+    child.on(
+      'error',
+      (error) => {
+      resolve(
+        {
         rule,
         result: 'Fail',
         message: formatError(error),
       });
     });
 
-    child.on('close', (code) => {
+    child.on(
+      'close',
+      (code) => {
       const result =
         code === 0
         ? 'Ok'
@@ -132,7 +183,8 @@ async function runExecutableRule(rule, artefact, context)
         ? ''
         : stderr.trim() || rule.description;
 
-      resolve({
+      resolve(
+        {
         rule,
         result,
         message
@@ -144,7 +196,9 @@ async function runExecutableRule(rule, artefact, context)
 function formatError(error)
 {
   if (error instanceof Error) {
-    return error.message.replaceAll('\n', ' ');
+    return error.message.replaceAll(
+      '\n',
+      ' ');
   }
 
   return String(error);

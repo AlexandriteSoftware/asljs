@@ -19,7 +19,8 @@ export async function addRuleTestsFromMarkdown(
       `markdown example: ${testCase.source}`,
       async () => {
         const [ result ] =
-          await eslint.lintText(testCase.source);
+          await eslint.lintText(
+            testCase.source);
 
         if (testCase.source === testCase.expected) {
           assert.strictEqual(
@@ -46,11 +47,14 @@ export async function extractTests(
     marked.lexer(markdown);
 
   let inTests = false;
-  const tests = [];
 
-  for (let index = 0;
-       index < tokens.length;
-       index++)
+  const tests =
+    [];
+
+  for (
+    let index = 0;
+    index < tokens.length;
+    index++)
   {
     const token =
       tokens[index];
@@ -70,26 +74,36 @@ export async function extractTests(
       }
     }
 
-    if (!inTests) {
+    if (
+      !inTests
+      || token.type !== 'code')
+    {
       continue;
     }
 
-    if (token.type === 'code'
-        && token.lang === 'js')
-    {
-      const code =
-        tokens[index];
+    const tags =
+      token.lang.split(/\s+/);
 
-      const parts =
-        code.text.split(
-          /\r?\n\/\/ ---\r?\n/g);
+    const code =
+      tokens[index];
 
-      tests.push(
-        { source: parts[0],
-          expected: parts[1] });
+    const parts =
+      code.text.split(
+        /\r?\n\/\/ ---\r?\n/g);
 
-      index++;
-    }
+    tests.push(
+      { source: parts[0],
+        expected: parts[1],
+        tags: tags });
+  }
+
+  const focusedTests =
+    tests.filter(
+      testCase =>
+        testCase.tags.includes('focus'));
+
+  if (focusedTests.length > 0) {
+    return focusedTests;
   }
 
   return tests;

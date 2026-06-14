@@ -1,8 +1,11 @@
 import pino
   from 'pino';
 
-export function createLogger(options = { }) {
+export function createLogger(
+  options = { })
+{
   let level;
+
   if (!options.enabled) {
     level = 'silent';
   } else {
@@ -16,6 +19,7 @@ export function createLogger(options = { }) {
   }
 
   let transport;
+
   if (options.file) {
     transport =
       { target: 'pino/file',

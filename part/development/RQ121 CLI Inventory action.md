@@ -8,3 +8,9 @@ produces a report of all artefacts, with these columns:
 - `Definitions` - comma-separated list of all definitions that apply to the
   artefact.
 - `Rules` - `Ok` if all rules are satisfied, otherwise `Fail`.
+
+See also:
+
+- [RQ111 CLI Definitions parameter][1]
+
+[1]: <RQ111 CLI Definitions parameter.md>

@@ -23,6 +23,14 @@ test(
 ```
 
 ```js
+test(
+a);
+// ---
+test(
+  a);
+```
+
+```js
 test(a, b);
 // ---
 test(
@@ -57,6 +65,25 @@ test('12345678901234567890');
 // ---
 test(
   '12345678901234567890');
+```
+
+```js
+test(test(test()));
+// ---
+test(
+  test(
+    test()));
+```
+
+```js
+test(
+  path.join(os.tmpdir(),
+    'part-gitignore-'));
+// ---
+test(
+  path.join(
+    os.tmpdir(),
+    'part-gitignore-'));
 ```
 
 ```js
@@ -166,4 +193,16 @@ test
     fn(
       a,
       b);
+```
+
+```js
+  const gitIgnoreContent =
+    readFileSync(
+    gitIgnorePath,
+    'utf8');
+// ---
+  const gitIgnoreContent =
+    readFileSync(
+      gitIgnorePath,
+      'utf8');
 ```

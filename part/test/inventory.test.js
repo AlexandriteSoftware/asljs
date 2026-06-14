@@ -163,6 +163,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -172,6 +173,7 @@ A statement about the system that must be true.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -183,8 +185,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['inventory'],
@@ -197,9 +201,11 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| development\/RQ101 Example\.md \| Requirement\s+\| Ok\s+\|/);
@@ -220,11 +226,13 @@ test(
         'definitions',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'part'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -243,6 +251,7 @@ Markdown article.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -262,6 +271,7 @@ Definition file.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -269,6 +279,7 @@ Definition file.
         'Article_RL10.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -277,6 +288,7 @@ Definition file.
         'Artefact Definition_RL10.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -287,8 +299,10 @@ Definition file.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['inventory'],
@@ -301,9 +315,11 @@ Definition file.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| definitions\/Requirement\.md\s+\| Article,Artefact Definition\s+\| Ok\s+\|/);
@@ -323,11 +339,13 @@ test(
         workspacePath,
         'definitions'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'Todo Items'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
@@ -388,8 +406,10 @@ A todo item is a task that needs to be done.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['inventory', '--definitions', 'definitions'],
@@ -402,9 +422,11 @@ A todo item is a task that needs to be done.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Fail\s+\|/);
@@ -424,6 +446,7 @@ test(
         workspacePath,
         'definitions'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -439,6 +462,7 @@ A todo item is a task that needs to be done.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -456,8 +480,10 @@ This top-level definition should be ignored by the Definitions parameter.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['artefactdefinition', '--definitions', 'definitions'],
@@ -470,15 +496,19 @@ This top-level definition should be ignored by the Definitions parameter.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| Name\s+\| Location\s+\|/);
+
     assert.match(
       stdout.toString(),
       /\| Todo Item \| definitions\/Todo Item\.md \|/);
+
     assert.doesNotMatch(
       stdout.toString(),
       /Wrong Items/);
@@ -499,6 +529,7 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -523,6 +554,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -535,8 +567,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['artefactdefinition', 'Requirement'],
@@ -549,12 +583,15 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /- name: Requirement/);
+
     assert.match(
       stdout.toString(),
       /- filePath: rules\/Requirement_RL10\.js/);
@@ -575,12 +612,14 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development',
         'features'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -601,6 +640,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -613,6 +653,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -625,6 +666,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -634,6 +676,7 @@ A statement about the system that must be true.
       '# RQ101 Example\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -646,8 +689,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['check', 'development/features/*.md', '--with-positives'],
@@ -660,18 +705,23 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       1);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| Path\s+\| Rule\s+\| Result\s+\|/);
+
     assert.match(
       stdout.toString(),
       /\| development\/features\/RQ101 Example\.md \| Requirement_RL10 \| development\/features\/RQ101 Example\.md is not referenced by any test\. \|/);
+
     assert.match(
       stdout.toString(),
       /\| development\/features\/RQ101 Example\.md \| Requirement_RL11 \| OK\s+\|/);
+
     assert.match(
       stdout.toString(),
       /\| development\/features\/RQ102 Example\.md \| Requirement_RL10 \| development\/features\/RQ102 Example\.md is not referenced by any test\. \|/);
@@ -692,11 +742,13 @@ test(
         'definitions',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'part'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -715,6 +767,7 @@ Markdown article.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -734,6 +787,7 @@ Definition file.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -741,6 +795,7 @@ Definition file.
         'Article_RL10.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -749,6 +804,7 @@ Definition file.
         'Artefact Definition_RL10.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -759,8 +815,10 @@ Definition file.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['check', 'definitions/Requirement.md', '--with-positives'],
@@ -773,12 +831,15 @@ Definition file.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /\| definitions\/Requirement\.md \| Article_RL10\s+\| OK\s+\|/);
+
     assert.match(
       stdout.toString(),
       /\| definitions\/Requirement\.md \| Artefact Definition_RL10\s+\| OK\s+\|/);
@@ -799,11 +860,13 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -824,6 +887,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -843,6 +907,7 @@ Markdown article.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -852,6 +917,7 @@ Markdown article.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -861,6 +927,7 @@ Markdown article.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -870,6 +937,7 @@ Markdown article.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -881,8 +949,10 @@ Markdown article.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         [
@@ -901,15 +971,19 @@ Markdown article.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /Requirement_RL11/);
+
     assert.doesNotMatch(
       stdout.toString(),
       /Requirement_RL10/);
+
     assert.doesNotMatch(
       stdout.toString(),
       /Article_RL10/);
@@ -930,18 +1004,21 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development',
         'zeta'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development',
         'alpha'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -962,6 +1039,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -971,6 +1049,7 @@ A statement about the system that must be true.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -980,6 +1059,7 @@ A statement about the system that must be true.
       'export async function validate() {}\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -989,6 +1069,7 @@ A statement about the system that must be true.
       '# RQ200 Later\n',
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1001,8 +1082,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['check', '--definitions=Requirement', '--with-positives'],
@@ -1015,6 +1098,7 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
@@ -1055,11 +1139,13 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1080,6 +1166,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1088,6 +1175,7 @@ A statement about the system that must be true.
         'Requirement_RL10.js'),
       'export async function validate() { throw new Error(\'Failed.\'); }\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1096,6 +1184,7 @@ A statement about the system that must be true.
         'Requirement_RL11.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1106,8 +1195,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['check'],
@@ -1120,12 +1211,15 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       1);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /Requirement_RL10/);
+
     assert.doesNotMatch(
       stdout.toString(),
       /Requirement_RL11/);
@@ -1146,11 +1240,13 @@ test(
         'artefacts',
         'rules'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'development'),
       { recursive: true });
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1171,6 +1267,7 @@ A statement about the system that must be true.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1179,6 +1276,7 @@ A statement about the system that must be true.
         'Requirement_RL10.js'),
       'export async function validate() { throw new Error(\'Failed.\'); }\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1187,6 +1285,7 @@ A statement about the system that must be true.
         'Requirement_RL11.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1197,8 +1296,10 @@ A statement about the system that must be true.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['check', '--with-positives'],
@@ -1211,15 +1312,19 @@ A statement about the system that must be true.
     assert.equal(
       exitCode,
       1);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /Requirement_RL10/);
+
     assert.match(
       stdout.toString(),
       /Requirement_RL11/);
+
     assert.match(
       stdout.toString(),
       /\| development\/RQ101 Example\.md \| Requirement_RL11 \| OK\s+\|/);
@@ -1255,11 +1360,13 @@ test(
         workspacePath,
         'definitions'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
         'Todo Items'),
       { recursive: true });
+
     await mkdir(
       path.join(
         workspacePath,
@@ -1281,6 +1388,7 @@ Todo item.
 `,
       'utf8',
     );
+
     await writeFile(
       path.join(
         workspacePath,
@@ -1292,8 +1400,10 @@ Todo item.
 
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
+
     const exitCode =
       await runCli(
         ['inventory', '--definitions=definitions'],
@@ -1306,9 +1416,11 @@ Todo item.
     assert.equal(
       exitCode,
       0);
+
     assert.equal(
       stderr.toString(),
       '');
+
     assert.match(
       stdout.toString(),
       /Todo Items\/Buy milk\.md/);
@@ -1319,6 +1431,7 @@ test(
   async () => {
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
 
@@ -1334,6 +1447,7 @@ test(
     assert.equal(
       missingValueExitCode,
       1);
+
     assert.match(
       stderr.toString(),
       /Option --definitions requires a value\./);
@@ -1344,6 +1458,7 @@ test(
   async () => {
     const stdout =
       createWritableBuffer();
+
     const stderr =
       createWritableBuffer();
 
@@ -1359,6 +1474,7 @@ test(
     assert.equal(
       exitCode,
       1);
+
     assert.match(
       stderr.toString(),
       /Unknown option: --verbose/);

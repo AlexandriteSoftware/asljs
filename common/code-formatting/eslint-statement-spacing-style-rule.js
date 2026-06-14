@@ -12,12 +12,11 @@ export default {
           node.body,
           context);
       },
-
       BlockStatement(node) {
         checkStatements(
           node.body,
           context);
-      },
+      }
     };
   },
 };
@@ -47,31 +46,63 @@ function checkStatements(
     const nextStatement =
       statements[index + 1];
 
-    if (!statementIsMultiline(statement)) {
-      continue;
-    }
-
-    const linesBetween =
-      nextStatement.loc.start.line
-      - statement.loc.end.line;
-
-    if (linesBetween >= 2) {
+    if (
+      !shouldSpace(
+        statement,
+        nextStatement)
+    ) {
       continue;
     }
 
     context.report(
       {
         node: nextStatement,
-        message:
-          'Add a blank line after multiline statement.',
-
+        message: 'Add a blank line between statements.',
         fix(fixer) {
-          return fixer.insertTextBefore(
-            nextStatement,
-            newLine);
-        },
+          const range =
+            [
+              statement.range[1],
+              nextStatement.range[0],
+            ];
+
+          const nextStatementIndentation =
+            getIndentation(
+              sourceCode,
+              nextStatement);
+
+          return fixer.replaceTextRange(
+            range,
+            newLine
+            + newLine
+            + nextStatementIndentation);
+        }
       });
   }
+}
+
+function shouldSpace(
+  statement,
+  nextStatement)
+{
+  if (statement.type === 'ImportDeclaration'
+      || nextStatement.type === 'ImportDeclaration')
+  {
+    return false;
+  }
+
+  const requiresSpacing =
+    statementIsMultiline(statement)
+    || statementIsMultiline(nextStatement);
+
+  if (!requiresSpacing) {
+    return false;
+  }
+
+  const linesBetween =
+    nextStatement.loc.start.line
+    - statement.loc.end.line;
+
+    return linesBetween < 2;
 }
 
 function statementIsMultiline(
@@ -79,4 +110,18 @@ function statementIsMultiline(
 {
   return statement.loc.start.line
          < statement.loc.end.line;
+}
+
+function getIndentation(
+  sourceCode,
+  node)
+{
+  const line =
+    sourceCode.lines[
+      node.loc.start.line - 1];
+
+  const match =
+    /^[ \t]*/.exec(line);
+
+  return match?.[0] ?? '';
 }

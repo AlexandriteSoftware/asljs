@@ -26,11 +26,13 @@ export class GitIgnore
     targetPath)
   {
     const absolutePath =
-      toAbsolutePath(
+      path.resolve(
         this.rootPath,
         targetPath);
 
-    if (!isInsideRoot(this.rootPath, absolutePath)) {
+    if (!isInsideRoot(
+      this.rootPath,
+      absolutePath)) {
       return false;
     }
 
@@ -47,8 +49,10 @@ export class GitIgnore
         continue;
       }
 
-      if (matcher.matcher.ignores(relativePath)
-          || matcher.matcher.ignores(`${relativePath}/`))
+      if (
+        matcher.matcher.ignores(relativePath)
+        || matcher.matcher.ignores(
+            `${relativePath}/`))
       {
         return true;
       }
@@ -80,9 +84,24 @@ function loadMatchers(
 
   const matchers =
     gitIgnorePaths.map(
-      gitIgnorePath =>
-        ({ basePath: path.dirname(gitIgnorePath),
-          matcher: ignore().add(readFileSync(gitIgnorePath, 'utf8')) }));
+      gitIgnorePath => {
+        const basePath =
+          path.dirname(gitIgnorePath);
+
+        const gitIgnoreContent =
+          readFileSync(
+            gitIgnorePath,
+            'utf8');
+
+        const matcher =
+          ignore().add(
+            gitIgnoreContent);
+
+        return {
+          basePath,
+          matcher
+        };
+      });
 
   logger.debug(
     `Loaded ${matchers.length} .gitignore file(s) from ${rootPath}`);
@@ -90,23 +109,32 @@ function loadMatchers(
   return matchers;
 }
 
-function toAbsolutePath(
-  rootPath,
-  targetPath)
-{
-  return path.isAbsolute(targetPath)
-    ? path.resolve(targetPath)
-    : path.resolve(rootPath, targetPath);
-}
-
+/**
+ * Checks if the target path is inside the root path.
+ *
+ * @param {string} rootPath - The root path. Should be an absolute path.
+ * @param {string} targetPath - The target path to check.
+ * @returns {boolean} - True if the target path is inside the root path, false
+ *                      otherwise.
+ */
 function isInsideRoot(
   rootPath,
   targetPath)
 {
+  if (!path.isAbsolute(rootPath)) {
+    throw new Error(
+      `'rootPath' must be absolute.`);
+  }
+
+  const absoluteTargetPath =
+    path.resolve(
+      rootPath,
+      targetPath);
+
   const relativePath =
     path.relative(
       rootPath,
-      targetPath);
+      absoluteTargetPath);
 
   return relativePath === ''
          || (!relativePath.startsWith('..')
@@ -116,5 +144,7 @@ function isInsideRoot(
 function toPosixPath(
   value)
 {
-  return value.replaceAll('\\', '/');
+  return value.replaceAll(
+    '\\',
+    '/');
 }

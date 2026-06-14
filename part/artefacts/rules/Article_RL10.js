@@ -9,14 +9,10 @@ export async function validate(
   artefact,
   context)
 {
-  if (!await context.artefacts.isArtefactOfDefinition(
+  const content =
+    await readFile(
       context.artifactPath,
-      context.definition))
-  {
-    return;
-  }
-
-  const content = await readFile(context.artifactPath, 'utf8');
+      'utf8');
 
   if (!/^\ufeff?#\s+\S.*(?:\r?\n|$)/.test(content)) {
     throw new Error('Article must start with a level 1 heading.');

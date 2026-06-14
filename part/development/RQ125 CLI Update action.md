@@ -1,6 +1,6 @@
-# RQ125 CLI UpdateRules action
+# RQ125 CLI Update action
 
-When CLI is invoked with UpdateRules action, it build inventory of the rules
+When CLI is invoked with Update action, it build inventory of the rules
 and goes through all the rules to check if their files are missing or outdated
 compared to the definition files.
 
@@ -18,4 +18,8 @@ the first comment in the rule file, skip this file.
 When the rule has any other file type, the CLI skips it and prints a warning
 that only JS rule files are supported for auto-update.
 
-The UpdateRules action considers `DefinitionsDirectory`.
+See also:
+
+- [RQ111 CLI Definitions parameter][1]
+
+[1]: <RQ111 CLI Definitions parameter.md>

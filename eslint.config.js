@@ -13,7 +13,7 @@ import callExpressionStyleRule
 import variableDeclarationStyleRule
   from './common/code-formatting/eslint-variable-declaration-style-rule.js';
 import statementSpacingStyleRule
-  from './eslint-statement-spacing-style-rule.js';
+  from './common/code-formatting/eslint-statement-spacing-style-rule.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [

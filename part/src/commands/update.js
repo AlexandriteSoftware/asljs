@@ -6,31 +6,33 @@ import { mkdir,
          readFile,
          writeFile }
   from 'node:fs/promises';
-
 import { DefinitionProvider }
-  from './definitionProvider.js';
+  from '../providers/definitionProvider.js';
 
-export async function updateRules(
-  rootDirectory,
-  options = {})
+export async function execUpdate(
+  environment,
+  options = { })
 {
-  const definitionsDirectory =
-    options.definitionsPath
-      ? path.resolve(
-        rootDirectory,
-        options.definitionsPath)
-      : path.resolve(rootDirectory);
+  const logger =
+    environment.logger;
+
+  logger.trace(
+    'execUpdate: start');
+
+  const rootDir =
+    environment.cwd;
 
   const provider =
     new DefinitionProvider(
-      rootDirectory);
+      logger,
+      rootDir,
+      environment.definitions);
 
   const definitions =
-    await provider.getDefinitions(
-      definitionsDirectory);
+    await provider.getDefinitions();
 
   const runCopilotCli =
-    options.runCopilotCli
+    environment.runCopilotCli
     ?? runConfiguredCopilotCli;
 
   const dryRun =
@@ -46,16 +48,25 @@ export async function updateRules(
     [];
 
   for (const definition of definitions) {
+    logger.trace(
+      `processing definition: ${definition.name}`);
+
     for (const rule of definition.rules) {
+      logger.trace(
+        `processing rule: ${definition.name}_${rule.id}`);
+
       const currentFilePath =
         rule.absoluteFilePath;
 
-      const expectedFilePath =
-        getExpectedRuleFilePath(
-          definition,
-          rule);
-
       if (!currentFilePath) {
+        logger.trace(
+          `rule file does not exist: ${definition.name}_${rule.id}`);
+
+        const expectedFilePath =
+          getExpectedRuleFilePath(
+            definition,
+            rule);
+
         const request =
           buildCopilotRequest(
             'create',
@@ -63,7 +74,7 @@ export async function updateRules(
             rule,
             expectedFilePath,
             null,
-            rootDirectory);
+            rootDir);
 
         if (dryRun) {
           prompts.push(request);
@@ -71,13 +82,20 @@ export async function updateRules(
           updates.push(
             `Would create ${toPosixPath(
               path.relative(
-                rootDirectory,
+                rootDir,
                 expectedFilePath))}`);
+
           continue;
         }
 
+        logger.trace(
+          `requesting Copilot CLI to generate the rule file`);
+
         const content =
           await runCopilotCli(request);
+
+        logger.trace(
+          `writing new rule file: ${expectedFilePath}`);
 
         await mkdir(
           path.dirname(
@@ -85,15 +103,18 @@ export async function updateRules(
           {
             recursive: true,
           });
+
         await writeFile(
           expectedFilePath,
           ensureTrailingNewline(content),
           'utf8');
+
         updates.push(
           `Created ${toPosixPath(
             path.relative(
-              rootDirectory,
+              rootDir,
               expectedFilePath))}`);
+
         continue;
       }
 
@@ -102,9 +123,10 @@ export async function updateRules(
         warnings.push(
           `Skipping ${toPosixPath(
             path.relative(
-              rootDirectory,
+              rootDir,
               currentFilePath))}: only JS rule files are supported for auto-update.`,
         );
+
         continue;
       }
 
@@ -112,6 +134,7 @@ export async function updateRules(
         await readFile(
           currentFilePath,
           'utf8');
+
       const firstComment =
         extractFirstComment(currentContent);
 
@@ -128,16 +151,18 @@ export async function updateRules(
           rule,
           currentFilePath,
           currentContent,
-          rootDirectory,
+          rootDir,
         );
 
       if (dryRun) {
         prompts.push(request);
+
         updates.push(
           `Would update ${toPosixPath(
             path.relative(
-              rootDirectory,
+              rootDir,
               currentFilePath))}`);
+
         continue;
       }
 
@@ -148,19 +173,49 @@ export async function updateRules(
         currentFilePath,
         ensureTrailingNewline(updatedContent),
         'utf8');
+
       updates.push(
         `Updated ${toPosixPath(
           path.relative(
-            rootDirectory,
+            rootDir,
             currentFilePath))}`);
     }
   }
 
-  return {
+  const result =
+    {
     updates,
     warnings,
     prompts,
   };
+
+  if (result.updates.length === 0) {
+    environment.stdout.write(
+      'No rule updates were needed.\n');
+  }
+
+  for (const update of result.updates) {
+    environment.stdout.write(
+      `${update}\n`);
+  }
+
+  for (const warning of result.warnings) {
+    environment.stderr.write(
+      `${warning}\n`);
+  }
+
+  if (options.dryRun) {
+    for (const prompt of result.prompts) {
+      environment.stdout.write(
+        `\n--- ${prompt.mode.toUpperCase()} ${toPosixPath(
+          path.relative(
+            environment.cwd,
+            prompt.targetFilePath))} ---\n`);
+
+      environment.stdout.write(
+        `${prompt.prompt}\n`);
+    }
+  }
 }
 
 function getExpectedRuleFilePath(
@@ -253,6 +308,7 @@ async function runShellCopilotCli(
           shell: true,
           stdio: ['pipe', 'pipe', 'pipe'],
         });
+
     let stdout = '';
     let stderr = '';
 
@@ -261,20 +317,24 @@ async function runShellCopilotCli(
       (chunk) => {
         stdout += String(chunk);
       });
+
     child.stderr.on(
       'data',
       (chunk) => {
         stderr += String(chunk);
       });
+
     child.on(
       'error',
       reject);
+
     child.on(
       'close',
       (code) => {
         if (code !== 0) {
           reject(
             new Error(stderr.trim() || `Copilot CLI failed with exit code ${code}.`));
+
           return;
         }
 
@@ -283,6 +343,7 @@ async function runShellCopilotCli(
 
     child.stdin.write(
       request.prompt);
+
     child.stdin.end();
   });
 }
@@ -293,6 +354,7 @@ async function runDefaultCopilotCli(
   const attempts =
     getDefaultCopilotCliInvocations(
       request.prompt);
+
   let lastError = null;
 
   for (const attempt of attempts) {
@@ -361,6 +423,7 @@ async function runExecutableCopilotCli(
           cwd,
           stdio: ['ignore', 'pipe', 'pipe'],
         });
+
     let stdout = '';
     let stderr = '';
 
@@ -369,20 +432,24 @@ async function runExecutableCopilotCli(
       (chunk) => {
         stdout += String(chunk);
       });
+
     child.stderr.on(
       'data',
       (chunk) => {
         stderr += String(chunk);
       });
+
     child.on(
       'error',
       reject);
+
     child.on(
       'close',
       (code) => {
         if (code !== 0) {
           reject(
             new Error(stderr.trim() || `Copilot CLI failed with exit code ${code}.`));
+
           return;
         }
 

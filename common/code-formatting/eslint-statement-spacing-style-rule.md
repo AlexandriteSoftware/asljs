@@ -22,3 +22,41 @@ await fn(
 
 fn(a);
 ```
+
+```js
+  await fn(
+    a,
+    b);
+  fn(a);
+// ---
+  await fn(
+    a,
+    b);
+
+  fn(a);
+```
+
+```js
+  fn(a);
+  await fn(
+    a,
+    b);
+// ---
+  fn(a);
+
+  await fn(
+    a,
+    b);
+```
+
+```js
+import { a }
+  from 'a';
+import { b }
+  from 'b';
+// ---
+import { a }
+  from 'a';
+import { b }
+  from 'b';
+```

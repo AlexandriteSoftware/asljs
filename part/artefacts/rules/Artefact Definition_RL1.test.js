@@ -44,26 +44,33 @@ test(
 test(
   'Artefact Definition_RL1 passes when each declared rule file exists',
   async () => {
-    const workspacePath = await mkdtemp(
+    const workspacePath =
+      await mkdtemp(
+        path.join(
+          os.tmpdir(),
+          'part-artefact-definition-rl1-'));
+
+    const rulesPath =
       path.join(
-        os.tmpdir(),
-        'part-artefact-definition-rl1-'));
-    const rulesPath = path.join(
-      workspacePath,
-      'rules');
-    const definitionPath = path.join(
-      workspacePath,
-      'Todo Item.md');
+        workspacePath,
+        'rules');
+
+    const definitionPath =
+      path.join(
+        workspacePath,
+        'Todo Item.md');
 
     await mkdir(
       rulesPath,
       { recursive: true });
+
     await writeFile(
       path.join(
         rulesPath,
         'Todo Item_RL1.js'),
       'export async function validate() {}\n',
       'utf8');
+
     await writeFile(
       definitionPath,
       `# Todo Item
@@ -92,13 +99,16 @@ Definition.
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
   async () => {
-    const workspacePath = await mkdtemp(
+    const workspacePath =
+      await mkdtemp(
+        path.join(
+          os.tmpdir(),
+          'part-artefact-definition-rl1-'));
+
+    const definitionPath =
       path.join(
-        os.tmpdir(),
-        'part-artefact-definition-rl1-'));
-    const definitionPath = path.join(
-      workspacePath,
-      'Todo Item.md');
+        workspacePath,
+        'Todo Item.md');
 
     await writeFile(
       definitionPath,

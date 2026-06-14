@@ -1,12 +1,10 @@
 const LONG_IDENTIFIER_LENGTH = 15;
 
 export default {
-  meta: {
-    type: 'layout',
-    fixable: 'code',
-    schema: [],
-  },
-
+  meta:
+    { type: 'layout',
+      fixable: 'code',
+      schema: [] },
   create(context) {
     return {
       CallExpression(node) {
@@ -70,46 +68,69 @@ function checkLayout(
     return true;
   }
 
+  const openingParenthesis =
+    context.sourceCode.getTokenAfter(
+      node.callee,
+      token => token.value === '(');
+
+  const indent =
+    getIndentation(
+      context.sourceCode,
+      openingParenthesis);
+
+  const requiredArgumentIndent =
+    indent + '  ';
+
   if (argumentsList.length === 1) {
     const argument =
       argumentsList[0];
 
     const isShortParameter =
-      argumentIsShortEnoughToStayOnSameLine(
-        argument);
+      argumentIsShortEnoughToStayOnSameLine(argument);
 
-    // Keep existing layout for:
-    // foo(shortIdentifier)
-    if (isShortParameter) {
-      return true;
+    if (isShortParameter
+        && openingParenthesis.loc.end.line === argument.loc.start.line)
+    {
+        return true;
     }
 
-    // Complex single argument must be on its own line.
-    const openingParen =
-      context.sourceCode.getTokenAfter(
-        node.callee,
-        token => token.value === '(');
+    const argumentIndent =
+      getIndentation(
+        context.sourceCode,
+        argument);
 
-    return openingParen.loc.end.line
-           < argument.loc.start.line;
+    return requiredArgumentIndent === argumentIndent;
   }
 
   // Multiple arguments: each argument must start
   // on a separate line.
-  for (let index = 1;
-        index < argumentsList.length;
-        index++)
+  for (
+    let index = 0;
+    index < argumentsList.length;
+    index++)
   {
-    const previousArgument =
-      argumentsList[index - 1];
-
-    const currentArgument =
+    const argument =
       argumentsList[index];
 
-    if (
-      previousArgument.loc.end.line
-      === currentArgument.loc.start.line
-    ) {
+    if (index === 0) {
+      if (openingParenthesis.loc.end.line === argument.loc.start.line) {
+        return false;
+      }
+    } else {
+      const previousArgument =
+        argumentsList[index - 1];
+
+      if (previousArgument.loc.end.line === argument.loc.start.line) {
+        return false;
+      }
+    }
+
+    const argumentIndent =
+      getIndentation(
+        context.sourceCode,
+        argument);
+
+    if (requiredArgumentIndent !== argumentIndent) {
       return false;
     }
   }
@@ -136,6 +157,19 @@ function buildCallExpression(
   sourceCode,
   formattingContext)
 {
+  const openingParenthesis =
+    sourceCode.getTokenAfter(
+      node.callee,
+      token => token.value === '(');
+
+  const indent =
+    getIndentation(
+      sourceCode,
+      openingParenthesis);
+
+  const requiredArgumentIndent =
+    indent + '  ';
+
   const code =
     [ ];
 
@@ -146,11 +180,6 @@ function buildCallExpression(
   code.push(callee);
   code.push('(');
 
-  const indentation =
-    getIndentation(
-      sourceCode,
-      node);
-
   if (node.arguments.length === 1) {
     const argument =
       node.arguments[0];
@@ -159,20 +188,30 @@ function buildCallExpression(
       sourceCode.getText(argument);
 
     if (argumentIsShortEnoughToStayOnSameLine(argument)) {
+      if (openingParenthesis.loc.end.line !== argument.loc.start.line) {
+        code.push(
+          formattingContext.newLine);
+
+        code.push(
+          requiredArgumentIndent);
+      }
+
       code.push(
         argumentText);
     } else {
       code.push(
         formattingContext.newLine);
-      code.push(indentation);
-      code.push('  ');
+
       code.push(
-        argumentText);
+        requiredArgumentIndent);
+
+      code.push(argumentText);
     }
   } else if (node.arguments.length > 1) {
-    for (let index = 0;
-         index < node.arguments.length;
-         index++)
+    for (
+      let index = 0;
+      index < node.arguments.length;
+      index++)
     {
       if (index > 0) {
         code.push(',');
@@ -186,8 +225,10 @@ function buildCallExpression(
 
       code.push(
         formattingContext.newLine);
-      code.push(indentation);
-      code.push('  ');
+
+      code.push(
+        requiredArgumentIndent);
+
       code.push(argumentText);
     }
   }
@@ -201,14 +242,8 @@ function getIndentation(
   sourceCode,
   node)
 {
-  const openingParen =
-    sourceCode.getTokenAfter(
-      node.callee,
-      token => token.value === '(');
-
   const line =
-    sourceCode.lines[
-      openingParen.loc.start.line - 1];
+    sourceCode.lines[node.loc.start.line - 1];
 
   const match =
     /^[ \t]*/.exec(line);
