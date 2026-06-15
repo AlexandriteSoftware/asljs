@@ -73,10 +73,16 @@ A task that needs to be done.
 Create a matching rule in `rules/Todo Item_R1.js`:
 
 ```js
-export function validate(todoItem)
+import fsp from 'node:fs/promises';
+
+export async function validate(artefact)
 {
+  const dueDate =
+    new Date(
+      await fsp.readFile(artefact, 'utf-8')
+        .then(text => text.match(/- Due date: (.*)/)[1]));
+
   const now = new Date();
-  const dueDate = new Date(todoItem.dueDate);
 
   if (dueDate <= now) {
     throw new Error('Due date must be in the future.');

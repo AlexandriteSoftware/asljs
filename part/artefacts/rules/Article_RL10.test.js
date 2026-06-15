@@ -6,96 +6,83 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import { mkdtemp,
-         writeFile }
-  from 'node:fs/promises';
+import { TmpDir }
+  from '../../src/TmpDir.js';
 import { ArtefactProvider }
-  from '../../src/artefactProvider.js';
+  from '../../src/providers/artefactProvider.js';
 import { validate }
   from './Article_RL10.js';
 import { createLogger }
   from '../../src/logging.js';
 
 const ARTICLE_DEFINITION =
-  {
-    location: {
-      type: 'Files',
-      pattern: '*.md',
-      exclude: ['README.md'],
-      gitIgnore: true,
-    },
-    propertyDefinitions: new Map(),
-    typeId: 'article',
-  };
+{
+  location: {
+    type: 'Files',
+    pattern: '*.md',
+    exclude: ['README.md'],
+    gitIgnore: true,
+  },
+  propertyDefinitions: new Map(),
+  typeId: 'article',
+};
 
 test(
   'Article_RL10 passes when the article starts with a level 1 heading',
-  async () =>
-{
-  const workspacePath =
-    await mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'part-article-rl10-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-  const articlePath =
-    path.join(
-      workspacePath,
-      'Article.md');
+    t.after(
+      () => workspace.cleanup());
 
-  const artefacts =
-    new ArtefactProvider(
-      createLogger(),
-      workspacePath);
+    const artefacts =
+      new ArtefactProvider(
+        createLogger(),
+        workspace.path);
 
-  await writeFile(
-    articlePath,
-    '# Article\n\nBody.\n',
-    'utf8');
+    workspace.writeText(
+      'Article.md',
+      '# Article\n\nBody.\n',
+      'utf8');
 
-  await assert.doesNotReject(
-    () => validate(
-      {},
-      {
-        artifactPath: articlePath,
-        artefacts,
-        definition: ARTICLE_DEFINITION,
-      }));
-});
+    await assert.doesNotReject(
+      () =>
+        validate(
+          { path: workspace.resolve('Article.md') },
+          {
+            artefacts,
+            definition: ARTICLE_DEFINITION,
+            rootDirectory: workspace.path
+          }));
+  });
 
 test(
   'Article_RL10 fails when the article does not start with a level 1 heading',
-  async () =>
-{
-  const workspacePath =
-    await mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'part-article-rl10-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-  const articlePath =
-    path.join(
-      workspacePath,
-      'Article.md');
+    t.after(
+      () => workspace.cleanup());
 
-  const artefacts =
-    new ArtefactProvider(
-      createLogger(),
-      workspacePath);
+    const artefacts =
+      new ArtefactProvider(
+        createLogger(),
+        workspace.path);
 
-  await writeFile(
-    articlePath,
-    'Intro\n# Article\n',
-    'utf8');
+    workspace.writeText(
+      'Article.md',
+      'Intro\n# Article\n');
 
-  await assert.rejects(
-    () => validate(
-      {},
-      {
-        artifactPath: articlePath,
-        artefacts,
-        definition: ARTICLE_DEFINITION,
-      }),
-    /Article must start with a level 1 heading\./,
-  );
-});
+    await assert.rejects(
+      () =>
+        validate(
+          { path: workspace.resolve('Article.md') },
+          {
+            artefacts,
+            definition: ARTICLE_DEFINITION,
+          }),
+      /Article must start with a level 1 heading\./,
+    );
+  });

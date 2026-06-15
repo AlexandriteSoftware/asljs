@@ -4,45 +4,72 @@ import path
   from 'node:path';
 import { ArtefactProvider }
   from '../providers/artefactProvider.js';
-import { runRules }
+import { DefinitionProvider }
+  from '../providers/definitionProvider.js';
+import { RuleRunner }
   from '../ruleRunner.js';
 import { filterDefinitions,
-         loadDefinitions,
          filterRuleResults,
          formatCheckTable }
   from './inventory.js';
 
 export async function execCheck(
-  rootDirectory,
-  options = {})
+  environment,
+  options = { })
 {
+  const rootDirectory =
+    environment.cwd;
+
+  const definitionProvider =
+    new DefinitionProvider(
+      environment.logger,
+      rootDirectory,
+      environment.definitions);
+
+  const allDefinitions =
+    await definitionProvider.getDefinitions();
+
   const definitions =
     filterDefinitions(
-    await loadDefinitions(
-      rootDirectory,
-      options),
-    options.definitionNames);
+      allDefinitions,
+      options.checkDefinitions);
 
   const artefacts =
-    new ArtefactProvider(rootDirectory, definitions);
+    new ArtefactProvider(
+      environment.logger,
+      rootDirectory,
+      definitionProvider);
 
-  const matchingPaths =
-    options.pattern
-    ? new Set((await glob(
-      options.pattern,
-      {
-        absolute: true,
-        cwd: rootDirectory,
-        dot: true,
-        nodir: true,
-      })).map(
-        (filePath) => path.resolve(filePath)))
-    : null;
+  let matchingPaths = null;
+
+  if (options.pattern) {
+    const files =
+      await glob(
+        options.pattern,
+        {
+          absolute: true,
+          cwd: rootDirectory,
+          dot: true,
+          nodir: true,
+        });
+
+    matchingPaths =
+      new Set(
+        files.map(
+          filePath =>
+            path.resolve(
+              rootDirectory,
+              filePath)));
+  }
 
   const results =
     [];
 
   let hasFailures = false;
+
+  const ruleRunner =
+    new RuleRunner(
+      environment.logger);
 
   for (const definition of definitions) {
     const definitionArtefacts =
@@ -50,46 +77,37 @@ export async function execCheck(
 
     const selectedArtefacts =
       definitionArtefacts.filter(
-      (artefact) => {
-        const artifactPath =
-          path.resolve(
-          rootDirectory,
-          artefact.file);
+        artefact => {
+          const artifactPath =
+            artefact.path;
 
-        return matchingPaths === null || matchingPaths.has(artifactPath);
-      });
+          return matchingPaths === null
+                 || matchingPaths.has(artifactPath);
+        });
 
     for (const artefact of selectedArtefacts) {
-      const artifactPath =
-        path.resolve(
-        rootDirectory,
-        artefact.file);
-
       const ruleResults =
         filterRuleResults(
-        await runRules(
+          await ruleRunner.runRules(
+            definition,
+            artefact),
           definition,
-          artefact,
-          {
-            artifactPath,
-            artefacts,
-            rootDirectory,
-          }),
-        definition,
-        options.ruleNames);
+          options.checkRules);
 
       for (const ruleResult of ruleResults) {
         const row =
           {
-          path: artefact.file,
-          rule: `${definition.name}_${ruleResult.rule.id}`,
-          passed: ruleResult.result === 'Ok',
-          result: ruleResult.result === 'Ok'
-            ? 'OK'
-            : ruleResult.message,
-        };
+            path: artefact.relativePath,
+            rule: `${definition.name}_${ruleResult.rule.id}`,
+            passed: ruleResult.result === 'Ok',
+            result: ruleResult.result === 'Ok'
+              ? 'OK'
+              : ruleResult.message,
+          };
 
-        hasFailures = hasFailures || !row.passed;
+        hasFailures =
+          hasFailures
+          || !row.passed;
 
         if (!options.withPositives && row.passed) {
           continue;
@@ -114,8 +132,11 @@ export async function execCheck(
         right.rule);
     });
 
+  environment.stdout.write(
+    formatCheckTable(
+      results));
+
   return {
-    report: formatCheckTable(results),
-    hasFailures,
+    hasFailures
   };
 }

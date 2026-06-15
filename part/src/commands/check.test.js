@@ -1,0 +1,481 @@
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import { TmpDir }
+  from '../tmpDir.js';
+import { createTestEnvironment }
+  from '../testEnvironment.js';
+import { execCheck }
+  from './check.js';
+
+test(
+  'check prints one row per matched file and rule',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+
+    workspace.mkdir(
+      'artefacts/rules');
+
+    workspace.mkdir(
+      'development/features');
+
+    workspace.writeText(
+      'artefacts/Requirement.md',
+      `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - At least one test file has requirement ID in its content.
+- RL11 - Requirement passes a second rule.
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL10.js',
+      `export async function validate(artefact) {
+  throw new Error(artefact.relativePath + ' is not referenced by any test.');
+}
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL11.js',
+      `export async function validate() {
+  return;
+}
+`);
+
+    workspace.writeText(
+      'development/features/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    workspace.writeText(
+      'development/features/RQ102 Example.md',
+      '# RQ102 Example\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+      environment);
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| Path\s+\| Rule\s+\| Result\s+\|/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| development\/features\/RQ101 Example\.md \| Requirement_RL10 \| development\/features\/RQ101 Example\.md is not referenced by any test\. \|/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| development\/features\/RQ102 Example\.md \| Requirement_RL10 \| development\/features\/RQ102 Example\.md is not referenced by any test\. \|/);
+  });
+
+test(
+  'check includes rules from all matching definitions for the same artefact',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+    workspace.mkdir(
+      'definitions/rules');
+
+    workspace.mkdir(
+      'part');
+
+    workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Location
+
+- Files: **/*.md
+
+## Rules
+
+- RL10 - Article rule.
+`);
+
+    workspace.writeText(
+      'definitions/Artefact Definition.md',
+      `# Artefact Definition
+
+Definition file.
+
+## Location
+
+- Files: ../definitions/**/*.md
+
+## Rules
+
+- RL10 - Definition rule.
+`);
+
+    workspace.writeText(
+      'part/Article_RL10.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'definitions/rules/Artefact Definition_RL10.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'definitions/Requirement.md',
+      '# Requirement\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+        environment,
+        { target: 'definitions/Requirement.md',
+          withPositives: true });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /\|\s+definitions\/Requirement\.md\s+\| Article_RL10\s+\| OK\s+\|/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /\|\s+definitions\/Requirement\.md\s+\| Artefact Definition_RL10\s+\| OK\s+\|/);
+  });
+
+test(
+  'check filters by definitions and rules',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+
+    workspace.mkdir(
+      'artefacts',
+        'rules');
+
+    workspace.mkdir(
+      'development');
+
+    workspace.writeText(
+      'artefacts/Requirement.md',
+      `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - Requirement rule.
+- RL11 - Second requirement rule.
+`);
+
+    workspace.writeText(
+      'artefacts/Article.md',
+      `# Article
+
+Markdown article.
+
+## Location
+
+- Files: *.md
+
+## Rules
+
+- RL10 - Article rule.
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL10.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL11.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'artefacts/rules/Article_RL10.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'development/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+        environment,
+        { target: 'development/**/*.md',
+          checkDefinitions: ['Requirement'],
+          checkRules: ['Requirement_RL11'],
+          withPositives: true });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /Requirement_RL11/);
+
+    assert.doesNotMatch(
+      environment.stdout.toString(),
+      /Requirement_RL10/);
+
+    assert.doesNotMatch(
+      environment.stdout.toString(),
+      /Article_RL10/);
+  });
+
+test(
+  'check uses artefact locations when pattern is omitted and sorts by path then rule',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+    workspace.mkdir(
+      'artefacts',
+        'rules');
+
+    workspace.mkdir(
+      'development',
+        'zeta');
+
+    workspace.mkdir(
+      'development',
+        'alpha');
+
+    workspace.writeText(
+      'artefacts/Requirement.md',
+      `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - First rule.
+- RL11 - Second rule.
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL10.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL11.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'development/zeta/RQ200 Later.md',
+      '# RQ200 Later\n');
+
+    workspace.writeText(
+      'development/alpha/RQ100 Earlier.md',
+      '# RQ100 Earlier\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+      environment,
+      { withPositives: true,
+        checkDefinitions: ['Requirement'] });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    const rows =
+      environment.stdout.toString()
+        .split('\n')
+        .filter(
+          (line) => line.startsWith(
+            '| development/'))
+        .map(
+          (line) => line.split('|').map(
+            (cell) => cell.trim()).filter(
+              (cell) => cell.length > 0));
+
+    assert.deepEqual(
+      rows,
+      [
+        ['development/alpha/RQ100 Earlier.md', 'Requirement_RL10', 'OK'],
+        ['development/alpha/RQ100 Earlier.md', 'Requirement_RL11', 'OK'],
+        ['development/zeta/RQ200 Later.md', 'Requirement_RL10', 'OK'],
+        ['development/zeta/RQ200 Later.md', 'Requirement_RL11', 'OK'],
+      ]);
+  });
+
+test(
+  'check shows only failing rows by default and still returns non-zero',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+
+    workspace.mkdir(
+      'artefacts',
+        'rules');
+
+    workspace.mkdir(
+      'development');
+
+    workspace.writeText(
+      'artefacts/Requirement.md',
+      `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - Failing rule.
+- RL11 - Passing rule.
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL10.js',
+      'export async function validate() { throw new Error(\'Failed.\'); }\n');
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL11.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'development/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+      environment);
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /Requirement_RL10/);
+
+    assert.doesNotMatch(
+      environment.stdout.toString(),
+      /Requirement_RL11/);
+  });
+
+test(
+  'check with-positives shows passing and failing rows',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+
+    workspace.mkdir(
+      'artefacts',
+        'rules');
+
+    workspace.mkdir(
+      'development');
+
+    workspace.writeText(
+      'artefacts/Requirement.md',
+      `# Requirement
+
+A statement about the system that must be true.
+
+## Location
+
+- Files: ../development/**/RQ*.md
+
+## Rules
+
+- RL10 - Failing rule.
+- RL11 - Passing rule.
+`);
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL10.js',
+      'export async function validate() { throw new Error(\'Failed.\'); }\n');
+
+    workspace.writeText(
+      'artefacts/rules/Requirement_RL11.js',
+      'export async function validate() {}\n');
+
+    workspace.writeText(
+      'development/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    const environment =
+      createTestEnvironment(
+        { cwd: workspace.path });
+
+    await execCheck(
+      environment,
+      { withPositives: true });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /Requirement_RL10/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /Requirement_RL11/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| development\/RQ101 Example\.md \| Requirement_RL11 \| OK\s+\|/);
+  });

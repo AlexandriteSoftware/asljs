@@ -13,7 +13,8 @@ export async function validate(
 {
   const artifactPath =
     path.resolve(
-      context.artifactPath);
+      context.rootDirectory,
+      artefact.file);
 
   const content =
     await readFile(

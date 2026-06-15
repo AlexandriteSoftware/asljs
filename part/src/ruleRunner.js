@@ -7,199 +7,205 @@ import { access }
 import { pathToFileURL }
   from 'node:url';
 
-export async function runRule(
-  logger,
-  rule,
-  artefact,
-  context)
-{
-  if (!rule.filePath || !rule.absoluteFilePath) {
-    return {
-      rule,
-      result: 'Fail',
-      message: 'Missing rule file.',
-    };
+export class RuleRunner {
+  constructor(
+    logger,
+    definitionProvider,
+    artefactProvider)
+  {
+    this.logger = logger;
+    this.definitionProvider = definitionProvider;
+    this.artefactProvider = artefactProvider;
   }
 
-  try {
-    await access(
-      rule.absoluteFilePath);
-  }
-  catch {
-    return {
-      rule,
-      result: 'Fail',
-      message: 'Missing rule file.',
-    };
-  }
-
-  if (path.extname(
-    rule.absoluteFilePath).toLowerCase() === '.js') {
-    return runJavaScriptRule(
-      rule,
-      artefact,
-      context);
-  }
-
-  return runExecutableRule(
+  async runRule(
     rule,
-    artefact,
-    context);
-}
-
-export async function runRules(
-  definition,
-  artefact,
-  context)
-{
-  const results =
-    [];
-
-  for (const rule of definition.rules) {
-    results.push(
-      await runRule(
-        rule,
-        artefact,
-        {
-          ...context,
-          definition,
-        }));
-  }
-
-  return results;
-}
-
-async function runJavaScriptRule(
-  logger,
-  rule,
-  artefact,
-  context)
-{
-  try {
-    const validatorModule =
-      await import(pathToFileURL(
-        rule.absoluteFilePath).href);
-
-    if (typeof validatorModule.validate !== 'function') {
+    artefact)
+  {
+    if (
+      !rule.filePath
+      || !rule.absoluteFilePath)
+    {
       return {
         rule,
         result: 'Fail',
-        message: 'Rule module must export validate.',
+        message: 'Missing rule file.',
       };
     }
 
-    const outcome =
-      await validatorModule.validate(
-        artefact,
-        { ...context,
-          logger });
-
-    if (outcome === false) {
+    try {
+      await access(
+        rule.absoluteFilePath);
+    }
+    catch {
       return {
         rule,
         result: 'Fail',
-        message: rule.description,
+        message: 'Missing rule file.',
       };
     }
 
-    if (typeof outcome === 'string' && outcome.length > 0) {
-      return {
+    const ruleFileExtension =
+      path.extname(
+        rule.absoluteFilePath);
+
+    if (ruleFileExtension.toLowerCase() === '.js') {
+      return this.runJavaScriptRule(
         rule,
-        result: 'Fail',
-        message: outcome,
-      };
+        artefact);
     }
 
-    return {
+    return this.runExecutableRule(
       rule,
-      result: 'Ok',
-      message: '',
-    };
+      artefact);
   }
-  catch (error) {
-    return {
-      rule,
-      result: 'Fail',
-      message: formatError(error),
-    };
-  }
-}
 
-async function runExecutableRule(
-  rule,
-  artefact,
-  context)
-{
-  return new Promise((resolve) => {
-    const child =
-      spawn(
-        rule.absoluteFilePath,
-        [context.artifactPath],
-        {
-      cwd: context.rootDirectory,
-      env: {
-        ...process.env,
-        PART_ARTEFACT_FILE: context.artifactPath,
-        PART_DEFINITION_NAME: context.definition.name,
-        PART_RULE_ID: rule.id,
-      },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+  async runRules(
+    definition,
+    artefact)
+  {
+    const results =
+      [];
 
-    let stderr = '';
-
-    child.stdin.write(
-      `${JSON.stringify(artefact)}\n`);
-
-    child.stdin.end();
-
-    child.stderr.on(
-      'data',
-      (chunk) => {
-      stderr += String(chunk);
-    });
-
-    child.on(
-      'error',
-      (error) => {
-      resolve(
-        {
-        rule,
-        result: 'Fail',
-        message: formatError(error),
-      });
-    });
-
-    child.on(
-      'close',
-      (code) => {
+    for (const rule of definition.rules) {
       const result =
-        code === 0
-        ? 'Ok'
-        : 'Fail';
-      
-      const message =
-        code === 0
-        ? ''
-        : stderr.trim() || rule.description;
+        await this.runRule(
+          rule,
+          artefact);
 
-      resolve(
-        {
-        rule,
-        result,
-        message
-      });
-    });
-  });
-}
+      results.push(result);
+    }
 
-function formatError(error)
-{
-  if (error instanceof Error) {
-    return error.message.replaceAll(
-      '\n',
-      ' ');
+    return results;
   }
 
-  return String(error);
+  async runJavaScriptRule(
+    rule,
+    artefact)
+  {
+    try {
+      const validatorModule =
+        await import(
+          pathToFileURL(
+            rule.absoluteFilePath).href);
+
+      if (typeof validatorModule.validate !== 'function') {
+        return {
+          rule,
+          result: 'Fail',
+          message: 'Rule module must export validate.',
+        };
+      }
+
+      const outcome =
+        await validatorModule.validate(
+          artefact,
+          {
+            logger: this.logger,
+            definitions: this.definitionProvider,
+            artefacts: this.artefactProvider
+          });
+
+      if (outcome === false) {
+        return {
+          rule,
+          result: 'Fail',
+          message: rule.description,
+        };
+      }
+
+      if (typeof outcome === 'string' && outcome.length > 0) {
+        return {
+          rule,
+          result: 'Fail',
+          message: outcome,
+        };
+      }
+
+      return {
+        rule,
+        result: 'Ok',
+        message: '',
+      };
+    }
+    catch (error) {
+      return {
+        rule,
+        result: 'Fail',
+        message: this.formatError(error),
+      };
+    }
+  }
+
+  async runExecutableRule(
+    rule,
+    artefact)
+  {
+    return new Promise((resolve) => {
+      const child =
+        spawn(
+          rule.absoluteFilePath,
+          [artefact.path],
+          {
+            cwd: artefact.baseDirectory,
+            env: process.env,
+            stdio: ['pipe', 'pipe', 'pipe'],
+          });
+
+      let stderr = '';
+
+      child.stdin.write(
+        `${JSON.stringify(artefact)}\n`);
+
+      child.stdin.end();
+
+      child.stderr.on(
+        'data',
+        (chunk) => {
+          stderr += String(chunk);
+        });
+
+      child.on(
+        'error',
+        (error) => {
+          resolve(
+            {
+              rule,
+              result: 'Fail',
+              message: this.formatError(error),
+            });
+        });
+
+      child.on(
+        'close',
+        (code) => {
+          const result =
+            code === 0
+              ? 'Ok'
+              : 'Fail';
+
+          const message =
+            code === 0
+              ? ''
+              : stderr.trim() || rule.description;
+
+          resolve(
+            {
+              rule,
+              result,
+              message
+            });
+        });
+    });
+  }
+
+  formatError(error) {
+    if (error instanceof Error) {
+      return error.message.replaceAll(
+        '\n',
+        ' ');
+    }
+
+    return String(error);
+  }
 }

@@ -1,5 +1,48 @@
+import path
+  from 'path';
+import { DefinitionProvider }
+  from '../providers/definitionProvider.js';
+import { renderObjectsToMarkdownTable }
+  from '../markdown.js';
+
 export async function execDefinitions(
   environment)
 {
-  return true;
+  const rootDirectory =
+    environment.cwd;
+
+  const definitionProvider =
+    new DefinitionProvider(
+      environment.logger,
+      rootDirectory,
+      environment.definitions);
+
+  const definitions =
+    await definitionProvider.getDefinitions();
+
+  const objects =
+    definitions.map(
+      definition => ({
+        name: definition.name,
+        path: toPosixPath(
+          path.relative(
+            rootDirectory,
+            definition.definitionPath))
+      }));
+
+  const markdown =
+    renderObjectsToMarkdownTable(
+      [ { name: 'Name', property: 'name' },
+        { name: 'Location', property: 'path' } ],
+      objects);
+
+  environment.stdout.write(
+    `${markdown}\n`);
+}
+
+function toPosixPath(value)
+{
+  return value.replaceAll(
+    '\\',
+    '/');
 }

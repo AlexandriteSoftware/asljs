@@ -2,97 +2,201 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import os
-  from 'node:os';
 import path
   from 'node:path';
-import { mkdtemp,
-         mkdir,
-         writeFile }
-  from 'node:fs/promises';
 import { createLogger }
   from '../logging.js';
+import { TmpDir }
+  from '../tmpDir.js';
 import { DefinitionProvider }
   from './definitionProvider.js';
+import { Definition }
+  from './../definition.js';
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
-  async () =>
-{
-  const workspacePath =
-    await mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'part-provider-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-  await mkdir(
-    path.join(
-      workspacePath,
-      'hidden'),
-    { recursive: true });
+    t.after(
+      () => workspace.cleanup());
 
-  await writeFile(
-    path.join(
-      workspacePath,
-      '.gitignore'),
-    'hidden/\n',
-    'utf8');
+    workspace.mkdir('hidden');
 
-  await writeFile(
-    path.join(
-      workspacePath,
-      'Todo Item.md'),
-    `# Todo Item
+    workspace.writeText(
+      '.gitignore',
+      'hidden/\n');
+
+    workspace.writeText(
+      'Todo Item.md',
+      `# Todo Item
 
 A todo item.
 
 ## Location
 
 - Folders: Todo Items
-`,
-    'utf8',
-  );
+`);
 
-  await writeFile(
-    path.join(
-      workspacePath,
-      'Notes.md'),
-    `# Notes
+    workspace.writeText(
+      'Notes.md',
+      `# Notes
 
 This is not a PART definition.
-`,
-    'utf8',
-  );
+`);
 
-  await writeFile(
-    path.join(
-      workspacePath,
-      'hidden',
-      'Hidden Item.md'),
-    `# Hidden Item
+    workspace.writeText(
+      'hidden/Hidden Item.md',
+      `# Hidden Item
 
 Hidden definition.
 
 ## Location
 
 - Folders: Hidden Items
-`,
-    'utf8',
-  );
+`);
 
-  const provider =
-    new DefinitionProvider(
-      createLogger(),
-      workspacePath);
+    const provider =
+      new DefinitionProvider(
+        createLogger(),
+        workspace.path);
 
-  const definitions =
-    await provider.getDefinitions();
+    const definitions =
+      await provider.getDefinitions();
 
-  assert.equal(
-    definitions.length,
-    1);
+    assert.equal(
+      definitions.length,
+      1);
 
-  assert.equal(
-    definitions[0].name,
-    'Todo Item');
-});
+    assert.equal(
+      definitions[0].name,
+      'Todo Item');
+  });
+
+test(
+  'RQ202: DefinitionProvider loads markdown definition metadata and structured rules',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+    workspace.mkdir('rules');
+
+    workspace.writeText(
+      'rules/Todo Item_R1.js',
+      `export async function validate(artefact) {
+  if (!artefact.dueDate || artefact.dueDate < '2030-01-01') {
+    throw new Error('Due date must be in the future.');
+  }
+}
+`);
+
+    workspace.writeText(
+      'Todo Item.md',
+      `# Todo Item
+
+A todo item is a task that needs to be done.
+
+## Properties
+
+- Due date: when it needs to be done.
+
+## Location
+
+- Folders: Todo Items
+- Exclude: Todo Items/Templates
+- GitIgnore
+
+## Rules
+
+- R1 Due date must be in the future.
+`);
+
+    const definitionProvider =
+      new DefinitionProvider(
+        createLogger(),
+        workspace.path);
+
+    const definition =
+      await definitionProvider.loadDefinitionFromFile(
+        workspace.resolve('Todo Item.md'));
+
+    assert.ok(definition);
+
+    assert.equal(
+      definition.name,
+      'Todo Item');
+
+    assert.equal(
+      definition.description,
+      'A todo item is a task that needs to be done.');
+
+    assert.deepEqual(
+      definition.location,
+      {
+        type: 'Folders',
+        pattern: 'Todo Items',
+        exclude: ['Todo Items/Templates'],
+        gitIgnore: true,
+      });
+
+    assert.deepEqual(
+      definition.properties,
+      {
+        dueDate: 'when it needs to be done.',
+      });
+
+    assert.equal(
+      definition.ruleIds.length,
+      1);
+
+    assert.deepEqual(
+      definition.rules,
+      [
+        {
+          id: 'R1',
+          description: 'Due date must be in the future.',
+          filePath: 'rules/Todo Item_R1.js',
+          absoluteFilePath: path.join(
+            workspace.path,
+            'rules',
+            'Todo Item_R1.js'),
+        },
+      ]);
+  });
+
+test(
+  'RQ203: Definition returns null for markdown files that do not match the definition format',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+    const definitionPath =
+      'Todo Item.md';
+
+    workspace.writeText(
+      definitionPath,
+      `# Different Name
+
+This file should not be treated as a definition.
+`);
+
+    const definitionProvider =
+      new DefinitionProvider(
+        createLogger(),
+        workspace.path);
+
+    const definition =
+      await definitionProvider.loadDefinitionFromFile(
+        workspace.resolve(definitionPath));
+
+    assert.equal(
+      definition,
+      null);
+  });

@@ -1,4 +1,5 @@
-export function extractHeading(content)
+export function extractHeading(
+  content)
 {
   const match =
     content.match(/^#\s+(.+)$/m);
@@ -69,7 +70,8 @@ export function parseLocationFolder(locationBody)
 : null;
 }
 
-export function parsePropertyDefinitions(propertiesBody)
+export function parsePropertyDefinitions(
+  propertiesBody)
 {
   const definitions =
     new Map();
@@ -85,6 +87,101 @@ export function parsePropertyDefinitions(propertiesBody)
   }
 
   return definitions;
+}
+
+export function getSection(
+  nodes,
+  content,
+  sectionName)
+{
+  const headingIndex =
+    nodes.findIndex(
+      (node) =>
+        node.type === 'heading'
+        && node.depth === 2
+        && extractText(node) === sectionName);
+
+  if (headingIndex === -1) {
+    return null;
+  }
+
+  const nextHeadingIndex =
+    nodes.findIndex(
+      (node, index) =>
+        index > headingIndex
+        && node.type === 'heading'
+        && node.depth <= 2);
+
+  const sectionNodes =
+    nodes.slice(
+      headingIndex + 1,
+      nextHeadingIndex === -1
+        ? undefined
+        : nextHeadingIndex);
+
+  return {
+    nodes: sectionNodes,
+    raw: sliceNodes(
+      content,
+      sectionNodes),
+  };
+}
+
+export function extractText(
+  node)
+{
+  if (!node) {
+    return '';
+  }
+
+  if (typeof node.value === 'string') {
+    return node.value;
+  }
+
+  if (
+    Array.isArray(
+      node.children))
+  {
+    const text =
+      node.children
+        .map(
+          childNode =>
+            extractText(childNode))
+        .join('');
+    
+    return text;
+  }
+
+  return '';
+}
+
+export function sliceNodes(
+  content,
+  nodes)
+{
+  if (nodes.length === 0) {
+    return '';
+  }
+
+  const startOffset =
+    nodes[0].position?.start?.offset;
+
+  const endOffset =
+    nodes[nodes.length - 1].position?.end?.offset;
+
+  if (
+    typeof startOffset !== 'number'
+    || typeof endOffset !== 'number')
+  {
+    return '';
+  }
+
+  const fragment =
+    content.slice(
+      startOffset,
+      endOffset);
+
+  return fragment.trim();
 }
 
 export function parsePropertyValues(
@@ -118,18 +215,6 @@ export function parseRuleIds(rulesBody)
     rulesBody.matchAll(
       /^-\s+([A-Z]\d+)\b/gm),
     (match) => match[1]);
-}
-
-export function toTypeId(name)
-{
-  const parts =
-    name.match(
-      /[A-Za-z0-9]+/g) ?? [];
-
-  return parts
-    .map(
-      (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join('');
 }
 
 function toPropertyName(label)

@@ -68,9 +68,7 @@ export class ArtefactProvider
 
     return artefacts.some(
       artefact =>
-        path.resolve(
-          this.rootPath,
-          artefact.file) === resolvedArtefactPath);
+        artefact.path === resolvedArtefactPath);
   }
 
   async getDefinitionsForArtefact(
@@ -115,8 +113,8 @@ export class ArtefactProvider
 
     artefacts.sort(
       (left, right) =>
-        left.file.localeCompare(
-          right.file));
+        left.relativePath.localeCompare(
+          right.relativePath));
 
     return artefacts;
   }
@@ -182,16 +180,25 @@ async function buildArtefact(
       propertyDefinitions);
 
   return {
-    file: toPosixPath(
-      path.relative(
-        rootDirectory,
-        artefactPath)),
-    title: extractHeading(content) ?? path.basename(
-      artefactPath,
-      '.md'),
-    type: definition.typeId ?? null,
+    path: artefactPath,
+    relativePath:
+      toPosixPath(
+        path.relative(
+          rootDirectory,
+          artefactPath)),
+    basePath:
+      rootDirectory,
+    name:
+      path.basename(
+        artefactPath,
+        path.extname(artefactPath)),
+    title:
+      extractHeading(content)
+      ?? path.basename(
+          artefactPath,
+          path.extname(artefactPath)),
     properties,
-    ...properties,
+    ...properties
   };
 }
 

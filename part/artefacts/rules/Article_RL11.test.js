@@ -12,21 +12,21 @@ import { mkdtemp,
 import { createLogger }
   from '../../src/logging.js';
 import { ArtefactProvider }
-  from '../../src/artefactProvider.js';
+  from '../../src/providers/artefactProvider.js';
 import { validate }
   from './Article_RL11.js';
 
 const ARTICLE_DEFINITION =
   {
-  location: {
-    type: 'Files',
-    pattern: '*.md',
-    exclude: ['README.md'],
-    gitIgnore: true,
-  },
-  propertyDefinitions: new Map(),
-  typeId: 'article',
-};
+    location: {
+      type: 'Files',
+      pattern: '*.md',
+      exclude: ['README.md'],
+      gitIgnore: true,
+    },
+    propertyDefinitions: new Map(),
+    typeId: 'article',
+  };
 
 test(
   'Article_RL11 passes when the top-level heading matches the file name',
@@ -55,12 +55,12 @@ test(
 
   await assert.doesNotReject(
     () => validate(
-      {},
+      { file: 'Article.md' },
       {
-    artifactPath: articlePath,
-    artefacts,
-    definition: ARTICLE_DEFINITION,
-  }));
+        artefacts,
+        definition: ARTICLE_DEFINITION,
+        rootDirectory: workspacePath,
+      }));
 });
 
 test(
@@ -89,13 +89,14 @@ test(
     'utf8');
 
   await assert.rejects(
-    () => validate(
-      {},
-      {
-      artifactPath: articlePath,
-      artefacts,
-      definition: ARTICLE_DEFINITION,
-    }),
+    () =>
+      validate(
+        { file: 'Article.md' },
+        {
+          artefacts,
+          definition: ARTICLE_DEFINITION,
+          rootDirectory: workspacePath,
+        }),
     /Article heading must be "Article"\./,
   );
 });

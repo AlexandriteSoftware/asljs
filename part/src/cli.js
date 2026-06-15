@@ -252,10 +252,10 @@ function createCli(
           await method(
             environment,
             { pattern,
-              definitionNames:
+              checkDefinitions:
                 splitCommaSeparatedOption(
                   options.checkDefinitions),
-              ruleNames:
+              checkRules:
                 splitCommaSeparatedOption(
                   options.checkRules),
               withPositives:
@@ -363,10 +363,10 @@ function splitCommaSeparatedOption(value)
 
 function updateExitCode(
   cli,
-  result)
+  result = { })
 {
   cli.exitCode =
     result.hasFailures
-    ? 1
-    : 0;
+      ? 1
+      : 0;
 }

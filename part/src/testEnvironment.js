@@ -39,6 +39,10 @@ function createWritableBuffer()
     write(value)
     {
       this.output += value;
+    },
+    toString()
+    {
+      return this.output;
     }
   };
 }

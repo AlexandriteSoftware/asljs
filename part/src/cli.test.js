@@ -84,23 +84,63 @@ test(
 test(
   'unknown options are rejected by the command parser',
   async () =>
-{
-  const environment =
-    createTestEnvironment();
+  {
+    const environment =
+      createTestEnvironment();
 
-  const exitCode =
-    await runCli(
-      [
-        'inventory',
-        '--unsupported',
-      ],
-      environment);
+    const exitCode =
+      await runCli(
+        [
+          'inventory',
+          '--unsupported',
+        ],
+        environment);
 
-  assert.equal(
-    exitCode,
-    1);
+    assert.equal(
+      exitCode,
+      1);
 
-  assert.match(
-    environment.stderr.output,
-    /Unknown option: --unsupported/);
-});
+    assert.match(
+      environment.stderr.output,
+      /Unknown option: --unsupported/);
+  });
+
+test(
+  'cli reports missing option values as command errors',
+  async () => {
+    const environment =
+      createTestEnvironment();
+
+    const missingValueExitCode =
+      await runCli(
+        ['inventory', '--definitions'],
+        environment);
+
+    assert.equal(
+      missingValueExitCode,
+      1);
+
+    assert.match(
+      environment.stderr.toString(),
+      /Option --definitions requires a value\./);
+  });
+
+test(
+  'cli rejects unsupported long options',
+  async () => {
+    const environment =
+      createTestEnvironment();
+
+    const exitCode =
+      await runCli(
+        ['inventory', '--verbose'],
+        environment);
+
+    assert.equal(
+      exitCode,
+      1);
+
+    assert.match(
+      environment.stderr.toString(),
+      /Unknown option: --verbose/);
+  });

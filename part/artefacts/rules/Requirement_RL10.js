@@ -2,25 +2,17 @@
 RL10 - At least one test file has requirement ID in its content.
 */
 
-import path
-  from 'node:path';
 import { readFile }
   from 'node:fs/promises';
 import { glob }
   from 'glob';
-import { GitIgnore }
-  from '../../src/gitIgnore.js';
 
 export async function validate(
   artefact,
   context)
 {
-  const basename =
-    path.basename(
-      context.artifactPath);
-
   const idMatch =
-    basename.match(/^(RQ\d+)/);
+    artefact.name.match(/^(RQ\d+)/);
 
   if (!idMatch) { 
     return;
@@ -32,11 +24,6 @@ export async function validate(
   const rootDirectory =
     context.rootDirectory;
 
-  const gitIgnore =
-    new GitIgnore(
-      context.logger,
-      rootDirectory);
-
   const testFiles =
     await glob(
       '**/*.test.*',
@@ -47,11 +34,7 @@ export async function validate(
         nodir: true,
       });
 
-  const visibleTestFiles =
-    testFiles.filter(
-      (f) => !gitIgnore.isIgnored(f));
-
-  for (const testFile of visibleTestFiles) {
+  for (const testFile of testFiles) {
     const content =
       await readFile(
         testFile,

@@ -6,15 +6,15 @@ import { readFile }
   from 'node:fs/promises';
 
 export async function validate(
-  artefact,
-  context)
+  artefact)
 {
   const content =
     await readFile(
-      context.artifactPath,
+      artefact.path,
       'utf8');
 
   if (!/^\ufeff?#\s+\S.*(?:\r?\n|$)/.test(content)) {
-    throw new Error('Article must start with a level 1 heading.');
+    throw new Error(
+      'Article must start with a level 1 heading.');
   }
 }

@@ -81,8 +81,10 @@ Requirement.
       requirementDefinition);
 
   assert.deepEqual(
-    requirementArtefacts.map(
-      artefact => artefact.file),
+    requirementArtefacts
+      .map(
+        artefact => artefact.relativePath)
+      .sort(),
     ['development/visible/RQ101 Example.md']);
 
   assert.equal(

@@ -2,77 +2,60 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import os
-  from 'node:os';
-import path
-  from 'node:path';
-import { mkdtemp,
-         mkdir,
-         writeFile }
-  from 'node:fs/promises';
+import { createLogger }
+  from '../../src/logging.js';
+import { DefinitionProvider }
+  from '../../src/providers/definitionProvider.js';
+import { TmpDir }
+  from '../../src/TmpDir.js';
 import { validate }
   from './Artefact Definition_RL1.js';
 
 test(
   'Artefact Definition_RL1 ignores markdown files that are not definitions',
-  async () => {
-    const workspacePath =
-      await mkdtemp(
-        path.join(
-          os.tmpdir(),
-          'part-artefact-definition-rl1-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-    const articlePath =
-      path.join(
-        workspacePath,
-        'Article.md');
+    t.after(
+      () => workspace.cleanup());
 
-    await writeFile(
-      articlePath,
-      '# Different Name\n\nNot a definition.\n',
-      'utf8');
+    workspace.writeText(
+      'Article.md',
+      '# Different Name\n\nNot a definition.\n');
 
+    const logger =
+      createLogger();
+
+    const definitionProvider =
+      new DefinitionProvider(
+        logger,
+        workspace.path);
+      
     await assert.doesNotReject(
-      () => validate(
-        {},
-        {
-          artifactPath: articlePath,
-          rootDirectory: workspacePath,
-        }));
+      () =>
+        validate(
+          { path: workspace.resolve('Article.md') },
+          { definitions: definitionProvider }));
   });
 
 test(
   'Artefact Definition_RL1 passes when each declared rule file exists',
-  async () => {
-    const workspacePath =
-      await mkdtemp(
-        path.join(
-          os.tmpdir(),
-          'part-artefact-definition-rl1-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-    const rulesPath =
-      path.join(
-        workspacePath,
-        'rules');
+    t.after(
+      () => workspace.cleanup());
 
-    const definitionPath =
-      path.join(
-        workspacePath,
-        'Todo Item.md');
+    workspace.mkdir('rules');
 
-    await mkdir(
-      rulesPath,
-      { recursive: true });
+    workspace.writeText(
+      'rules/Todo Item_RL1.js',
+      'export async function validate() {}\n');
 
-    await writeFile(
-      path.join(
-        rulesPath,
-        'Todo Item_RL1.js'),
-      'export async function validate() {}\n',
-      'utf8');
-
-    await writeFile(
-      definitionPath,
+    workspace.writeText(
+      'Todo Item.md',
       `# Todo Item
 
 Definition.
@@ -84,34 +67,34 @@ Definition.
 ## Rules
 
 - RL1 - Must have a rule file.
-`,
-      'utf8');
+`);
+
+    const logger =
+      createLogger();
+
+    const definitionProvider =
+      new DefinitionProvider(
+        logger,
+        workspace.path);
 
     await assert.doesNotReject(
-      () => validate(
-        {},
-        {
-          artifactPath: definitionPath,
-          rootDirectory: workspacePath,
-        }));
+      () =>
+        validate(
+          { path: workspace.resolve('Todo Item.md') },
+          { definitions: definitionProvider }));
   });
 
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
-  async () => {
-    const workspacePath =
-      await mkdtemp(
-        path.join(
-          os.tmpdir(),
-          'part-artefact-definition-rl1-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-    const definitionPath =
-      path.join(
-        workspacePath,
-        'Todo Item.md');
+    t.after(
+      () => workspace.cleanup());
 
-    await writeFile(
-      definitionPath,
+    workspace.writeText(
+      'Todo Item.md',
       `# Todo Item
 
 Definition.
@@ -124,15 +107,20 @@ Definition.
 
 - RL1 - Must have a rule file.
 - RL2 - Must also have a second rule file.
-`,
-      'utf8');
+`);
+
+    const logger =
+      createLogger();
+
+    const definitionProvider =
+      new DefinitionProvider(
+        logger,
+        workspace.path);
 
     await assert.rejects(
-      () => validate(
-        {},
-        {
-          artifactPath: definitionPath,
-          rootDirectory: workspacePath,
-        }),
+      () =>
+        validate(
+          { path: workspace.resolve('Todo Item.md') },
+          { definitions: definitionProvider }),
       /Definition is missing rule files for: RL1, RL2\./);
   });
