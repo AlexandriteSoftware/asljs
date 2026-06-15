@@ -11,14 +11,12 @@ export async function validate(
   artefact,
   context)
 {
-  const artifactPath =
-    path.resolve(
-      context.rootDirectory,
-      artefact.file);
+  context.logger.trace(
+    `Article_RL11.validate(${artefact.path})`);
 
   const content =
     await readFile(
-      artifactPath,
+      artefact.path,
       'utf8');
 
   const headingMatch =
@@ -30,8 +28,9 @@ export async function validate(
 
   const expectedHeading =
     path.basename(
-      artifactPath,
-      path.extname(artifactPath));
+      artefact.path,
+      path.extname(
+        artefact.path));
 
   const actualHeading =
     headingMatch[1].trim();

@@ -10,7 +10,7 @@ import { execDefinition }
   from './definition.js';
 
 test(
-  'definition prints detailed definition content for a named definition',
+  'RQ126: definition prints detailed definition content for a named definition',
   async t => {
     const workspace =
       new TmpDir();

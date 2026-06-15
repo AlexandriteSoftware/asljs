@@ -36,7 +36,8 @@ test(
       () =>
         validate(
           { path: workspace.resolve('Article.md') },
-          { definitions: definitionProvider }));
+          { definitions: definitionProvider,
+            logger: createLogger() }));
   });
 
 test(
@@ -81,7 +82,8 @@ Definition.
       () =>
         validate(
           { path: workspace.resolve('Todo Item.md') },
-          { definitions: definitionProvider }));
+          { definitions: definitionProvider,
+            logger: createLogger() }));
   });
 
 test(
@@ -121,6 +123,7 @@ Definition.
       () =>
         validate(
           { path: workspace.resolve('Todo Item.md') },
-          { definitions: definitionProvider }),
+          { definitions: definitionProvider,
+            logger: createLogger() }),
       /Definition is missing rule files for: RL1, RL2\./);
   });

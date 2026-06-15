@@ -18,7 +18,7 @@ const logger =
       enabled: false });
 
 test(
-  'update-rules creates missing JS rule files via the Copilot runner',
+  'RQ125: update creates missing JS rule files via the Copilot runner',
   async t => {
     logger.trace(
       t.name);
@@ -82,7 +82,7 @@ Requirement definition.
   });
 
 test(
-  'update-rules dry-run prints prompts without invoking Copilot or writing files',
+  'RQ125: update dry-run prints prompts without invoking Copilot or writing files',
   async t => {
     const workspace =
       new TmpDir();
@@ -145,7 +145,7 @@ Requirement definition.
   });
 
 test(
-  'update-rules refreshes stale JS comments and warns on non-JS rules',
+  'RQ125: update refreshes stale JS comments and warns on non-JS rules',
   async t => {
     const workspace =
       new TmpDir();
@@ -207,7 +207,7 @@ Requirement definition.
   });
 
 test(
-  'update-rules builds a GitHub Copilot CLI fallback invocation',
+  'RQ125: update builds a GitHub Copilot CLI fallback invocation',
   async () => {
     const prompt =
       'Create the complete JavaScript rule file.';

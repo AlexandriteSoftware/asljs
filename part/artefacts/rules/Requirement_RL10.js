@@ -11,6 +11,9 @@ export async function validate(
   artefact,
   context)
 {
+  context.logger.trace(
+    `Requirement_RL10.validate(${artefact.path})`);
+
   const idMatch =
     artefact.name.match(/^(RQ\d+)/);
 

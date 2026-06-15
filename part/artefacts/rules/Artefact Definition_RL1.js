@@ -8,6 +8,9 @@ export async function validate(
   artefact,
   context)
 {
+  context.logger.trace(
+    `Artefact Definition_RL1.validate(${artefact.path})`);
+
   const definition =
     await context.definitions
       .loadDefinitionFromFile(

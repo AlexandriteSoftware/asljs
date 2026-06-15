@@ -10,7 +10,7 @@ import { execInit }
   from './init.js';
 
 test(
-  'init copies bootstrap artefact files into the definitions directory',
+  'RQ124: init copies bootstrap artefact files into the definitions directory',
   async t => {
     const workspace =
       new TmpDir();

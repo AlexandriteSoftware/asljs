@@ -10,7 +10,7 @@ import { execDefinitions }
   from './definitions.js';
 
 test(
-  'definitions lists definitions',
+  'RQ122: definitions lists definitions',
   async t => {
     const workspace =
       new TmpDir();

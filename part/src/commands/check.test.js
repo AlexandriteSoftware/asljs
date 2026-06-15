@@ -10,7 +10,7 @@ import { execCheck }
   from './check.js';
 
 test(
-  'check prints one row per matched file and rule',
+  'RQ123: check prints one row per matched file and rule',
   async t => {
     const workspace =
       new TmpDir();
@@ -88,7 +88,7 @@ A statement about the system that must be true.
   });
 
 test(
-  'check includes rules from all matching definitions for the same artefact',
+  'RQ123: check includes rules from all matching definitions for the same artefact',
   async t => {
     const workspace =
       new TmpDir();
@@ -167,7 +167,7 @@ Definition file.
   });
 
 test(
-  'check filters by definitions and rules',
+  'RQ123: check filters by definitions and rules',
   async t => {
     const workspace =
       new TmpDir();
@@ -259,7 +259,7 @@ Markdown article.
   });
 
 test(
-  'check uses artefact locations when pattern is omitted and sorts by path then rule',
+  'RQ123: check uses artefact locations when pattern is omitted and sorts by path then rule',
   async t => {
     const workspace =
       new TmpDir();
@@ -346,7 +346,7 @@ A statement about the system that must be true.
   });
 
 test(
-  'check shows only failing rows by default and still returns non-zero',
+  'RQ123: check shows only failing rows by default and still returns non-zero',
   async t => {
     const workspace =
       new TmpDir();
@@ -411,7 +411,7 @@ A statement about the system that must be true.
   });
 
 test(
-  'check with-positives shows passing and failing rows',
+  'RQ123: check with-positives shows passing and failing rows',
   async t => {
     const workspace =
       new TmpDir();

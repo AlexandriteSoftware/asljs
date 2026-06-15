@@ -38,7 +38,10 @@ export function createLogger(
         transport });
 
   const proxy =
-    { trace: message => logger.trace(message),
+    { logLevel: level,
+      enabled: options.enabled,
+      file: options.file,
+      trace: message => logger.trace(message),
       debug: message => logger.debug(message),
       info: message => logger.info(message),
       information: message => logger.info(message),

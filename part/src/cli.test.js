@@ -82,6 +82,35 @@ test(
   });
 
 test(
+  'RQ131 cli initialises logger',
+  async () =>
+  {
+    const environment =
+      createTestEnvironment();
+
+    environment.register(
+      execVersion,
+      async () => {
+      });
+
+    await runCli(
+      [
+        'version',
+        '--log',
+        '--loglevel=silent',
+      ],
+      environment);
+
+    assert.equal(
+      environment.logger.logLevel,
+      'silent');
+
+    assert.equal(
+      environment.logger.enabled,
+      true);
+  });
+
+test(
   'unknown options are rejected by the command parser',
   async () =>
   {

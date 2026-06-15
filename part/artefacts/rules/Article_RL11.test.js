@@ -2,13 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import os
-  from 'node:os';
 import path
   from 'node:path';
-import { mkdtemp,
-         writeFile }
-  from 'node:fs/promises';
+import { TmpDir }
+  from '../../src/TmpDir.js';
 import { createLogger }
   from '../../src/logging.js';
 import { ArtefactProvider }
@@ -17,86 +14,74 @@ import { validate }
   from './Article_RL11.js';
 
 const ARTICLE_DEFINITION =
-  {
-    location: {
-      type: 'Files',
-      pattern: '*.md',
-      exclude: ['README.md'],
-      gitIgnore: true,
-    },
-    propertyDefinitions: new Map(),
-    typeId: 'article',
-  };
+{
+  location: {
+    type: 'Files',
+    pattern: '*.md',
+    exclude: ['README.md'],
+    gitIgnore: true,
+  },
+  propertyDefinitions: new Map(),
+  typeId: 'article',
+};
 
 test(
   'Article_RL11 passes when the top-level heading matches the file name',
-  async () =>
-{
-  const workspacePath =
-    await mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'part-article-rl11-'));
+  async t => {
+    const workspace =
+      new TmpDir();
 
-  const articlePath =
-    path.join(
-      workspacePath,
-      'Article.md');
+    t.after(
+      () => workspace.cleanup());
 
-  const artefacts =
-    new ArtefactProvider(
-      createLogger(),
-      workspacePath);
+    const artefacts =
+      new ArtefactProvider(
+        createLogger(),
+        workspace.path);
 
-  await writeFile(
-    articlePath,
-    '# Article\n\nBody.\n',
-    'utf8');
+    workspace.writeText(
+      'Article.md',
+      '# Article\n\nBody.\n');
 
-  await assert.doesNotReject(
-    () => validate(
-      { file: 'Article.md' },
-      {
-        artefacts,
-        definition: ARTICLE_DEFINITION,
-        rootDirectory: workspacePath,
-      }));
-});
-
-test(
-  'Article_RL11 fails when the top-level heading differs from the file name',
-  async () =>
-{
-  const workspacePath =
-    await mkdtemp(
-      path.join(
-        os.tmpdir(),
-        'part-article-rl11-'));
-
-  const articlePath =
-    path.join(
-      workspacePath,
-      'Article.md');
-
-  const artefacts =
-    new ArtefactProvider(
-      createLogger(),
-      workspacePath);
-
-  await writeFile(
-    articlePath,
-    '# Different\n\nBody.\n',
-    'utf8');
-
-  await assert.rejects(
-    () =>
-      validate(
-        { file: 'Article.md' },
+    await assert.doesNotReject(
+      () => validate(
+        { path: workspace.resolve('Article.md') },
         {
           artefacts,
           definition: ARTICLE_DEFINITION,
-          rootDirectory: workspacePath,
-        }),
-    /Article heading must be "Article"\./,
-  );
-});
+          rootDirectory: workspace.path,
+          logger: createLogger()
+        }));
+  });
+
+test(
+  'Article_RL11 fails when the top-level heading differs from the file name',
+  async t => {
+    const workspace =
+      new TmpDir();
+
+    t.after(
+      () => workspace.cleanup());
+
+    const artefacts =
+      new ArtefactProvider(
+        createLogger(),
+        workspace.path);
+
+    workspace.writeText(
+      'Article.md',
+      '# Different\n\nBody.\n');
+
+    await assert.rejects(
+      () =>
+        validate(
+          { path: workspace.resolve('Article.md') },
+          {
+            artefacts,
+            definition: ARTICLE_DEFINITION,
+            rootDirectory: workspace.path,
+            logger: createLogger()
+          }),
+      /Article heading must be "Article"\./,
+    );
+  });

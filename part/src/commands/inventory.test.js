@@ -12,7 +12,7 @@ import { execCheck }
   from './check.js';
 
 test(
-  'inventory reports artefacts in Todo Item example as OK',
+  'RQ121: inventory reports artefacts in Todo Item example as OK',
   async t => {
     const workspace =
       new TmpDir();
@@ -104,7 +104,7 @@ I need to buy milk.
   });
 
 test(
-  'inventory resolves artefact locations relative to the definition file',
+  'RQ121: inventory resolves artefact locations relative to the definition file',
   async t => {
     const workspace =
       new TmpDir();
@@ -158,7 +158,7 @@ A statement about the system that must be true.
   });
 
 test(
-  'inventory lists all definitions applied to the same artefact',
+  'RQ121: inventory lists all definitions applied to the same artefact',
   async t => {
     const workspace =
       new TmpDir();
@@ -232,7 +232,7 @@ Definition file.
   });
 
 test(
-  'inventory respects Definitions parameter and reports Fail when any rule fails',
+  'RQ121: inventory respects Definitions parameter and reports Fail when any rule fails',
   async t => {
     const workspace =
       new TmpDir();
