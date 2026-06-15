@@ -149,8 +149,8 @@ Definition file.
         { cwd: workspace.path });
 
     await execCheck(
-        environment,
-        { target: 'definitions/Requirement.md',
+      environment,
+      { target: 'definitions/Requirement.md',
           withPositives: true });
 
     assert.equal(
@@ -178,7 +178,7 @@ test(
 
     workspace.mkdir(
       'artefacts',
-        'rules');
+      'rules');
 
     workspace.mkdir(
       'development');
@@ -235,8 +235,8 @@ Markdown article.
         { cwd: workspace.path });
 
     await execCheck(
-        environment,
-        { target: 'development/**/*.md',
+      environment,
+      { target: 'development/**/*.md',
           checkDefinitions: ['Requirement'],
           checkRules: ['Requirement_RL11'],
           withPositives: true });
@@ -269,15 +269,15 @@ test(
 
     workspace.mkdir(
       'artefacts',
-        'rules');
+      'rules');
 
     workspace.mkdir(
       'development',
-        'zeta');
+      'zeta');
 
     workspace.mkdir(
       'development',
-        'alpha');
+      'alpha');
 
     workspace.writeText(
       'artefacts/Requirement.md',
@@ -357,7 +357,7 @@ test(
 
     workspace.mkdir(
       'artefacts',
-        'rules');
+      'rules');
 
     workspace.mkdir(
       'development');
@@ -422,7 +422,7 @@ test(
 
     workspace.mkdir(
       'artefacts',
-        'rules');
+      'rules');
 
     workspace.mkdir(
       'development');

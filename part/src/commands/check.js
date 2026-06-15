@@ -122,7 +122,7 @@ export async function execCheck(
     (left, right) => {
       const pathCompare =
         left.path.localeCompare(
-        right.path);
+          right.path);
 
       if (pathCompare !== 0) {
         return pathCompare;

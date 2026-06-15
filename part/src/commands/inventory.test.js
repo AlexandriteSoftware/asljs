@@ -168,7 +168,7 @@ test(
 
     workspace.mkdir(
       'definitions',
-        'rules');
+      'rules');
 
     workspace.mkdir(
       'part');

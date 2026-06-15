@@ -52,7 +52,7 @@ export class GitIgnore
       if (
         matcher.matcher.ignores(relativePath)
         || matcher.matcher.ignores(
-            `${relativePath}/`))
+          `${relativePath}/`))
       {
         return true;
       }

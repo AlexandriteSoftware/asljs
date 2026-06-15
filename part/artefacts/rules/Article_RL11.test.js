@@ -2,8 +2,6 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import path
-  from 'node:path';
 import { TmpDir }
   from '../../src/TmpDir.js';
 import { createLogger }

@@ -195,8 +195,8 @@ async function buildArtefact(
     title:
       extractHeading(content)
       ?? path.basename(
-          artefactPath,
-          path.extname(artefactPath)),
+        artefactPath,
+        path.extname(artefactPath)),
     properties,
     ...properties
   };

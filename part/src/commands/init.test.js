@@ -46,7 +46,7 @@ test(
 
     assert.ok(
       workspace.stat(
-          'definitions/rules')
+        'definitions/rules')
         .isDirectory());
 
     assert.match(

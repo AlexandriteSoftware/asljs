@@ -10,8 +10,6 @@ import { TmpDir }
   from '../tmpDir.js';
 import { DefinitionProvider }
   from './definitionProvider.js';
-import { Definition }
-  from './../definition.js';
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
