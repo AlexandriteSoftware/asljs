@@ -6,48 +6,6 @@ performant JavaScript libraries for everyday use.
 Markdown-defined project artefact tracing framework with a CLI for inventory,
 definition inspection, and rule checks.
 
-## Public API At A Glance
-
-- CLI command: `part`
-- Package name: `asljs-part`
-- Package-root exports: `runCli`, `ArtefactProvider`, `Definition`,
-  `DefinitionProvider`, `GitIgnore`, `buildInventoryReport`,
-  `buildArtefactDefinitionReport`, `buildCheckReport`, and
-  `generateInventoryTable`
-
-## Core Concepts
-
-- A definition is a markdown file whose level 1 heading matches the file name.
-- Each definition describes where artefacts live via a `Location` section.
-- `Location` paths are resolved relative to the definition file.
-- Optional `Properties` entries map markdown list labels into rule inputs.
-- `Rules` entries resolve to JavaScript or executable rule files and are run by
-  the `check` command.
-- JavaScript rules receive `context.artefacts`, an `ArtefactProvider` that can
-  enumerate artefacts for definitions and find which definitions match a file.
-- The same artefact can match more than one definition; PART keeps all matching
-  definitions visible in inventory and check results.
-
-## CLI
-
-- `part inventory` scans the current folder and reports artefacts, matching
-  definitions, and aggregate rule state.
-- `part artefactdefinition` lists discovered definitions or prints a specific
-  definition in detail.
-- `part check` runs rules for matching artefacts, returns a non-zero exit code
-  on any failure, and shows only failures by default.
-- `part check --with-positives` includes passing `OK` rows in the output.
-- `part init` initialises a definitions directory with `Artefact Definition.md`,
-  `Rule File.md`, and a `rules/` folder.
-- `part update-rules` creates or refreshes JavaScript rule files for discovered
-  definitions. If `PART_COPILOT_CLI_COMMAND` is unset, it uses GitHub Copilot
-  CLI in non-interactive mode via `gh copilot -p ...` and falls back to
-  `copilot -p ...` when needed. The AI runner is expected to return full file
-  content on standard output rather than editing files directly.
-- `part update-rules --dry-run` prints the prompts that would be sent to the AI
-  runner and does not invoke Copilot or write files.
-- `part version` prints the package version from `package.json`.
-
 ## Quick Start
 
 Create a definition such as `Todo Item.md`:
@@ -125,3 +83,36 @@ the package-root helpers from `asljs-part` and call the report builders or
 `runCli(...)` directly.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+
+## Core Concepts
+
+- A definition is a markdown file whose level 1 heading matches the file name.
+- Each definition describes where artefacts live via a `Location` section.
+- `Location` paths are resolved relative to the definition file.
+- Optional `Properties` entries map markdown list labels into rule inputs.
+- `Rules` entries resolve to JavaScript or executable rule files and are run by
+  the `check` command.
+- JavaScript rules receive `context.artefacts`, an `ArtefactProvider` that can
+  enumerate artefacts for definitions and find which definitions match a file.
+- The same artefact can match more than one definition; PART keeps all matching
+  definitions visible in inventory and check results.
+
+## CLI
+
+- `part inventory` scans the current folder and reports artefacts, matching
+  definitions, and aggregate rule state.
+- `part artefactdefinition` lists discovered definitions or prints a specific
+  definition in detail.
+- `part check` runs rules for matching artefacts, returns a non-zero exit code
+  on any failure, and shows only failures by default.
+- `part check --with-positives` includes passing `OK` rows in the output.
+- `part init` initialises a definitions directory with `Artefact Definition.md`,
+  `Rule File.md`, and a `rules/` folder.
+- `part update-rules` creates or refreshes JavaScript rule files for discovered
+  definitions. If `PART_COPILOT_CLI_COMMAND` is unset, it uses GitHub Copilot
+  CLI in non-interactive mode via `gh copilot -p ...` and falls back to
+  `copilot -p ...` when needed. The AI runner is expected to return full file
+  content on standard output rather than editing files directly.
+- `part update-rules --dry-run` prints the prompts that would be sent to the AI
+  runner and does not invoke Copilot or write files.
+- `part version` prints the package version from `package.json`.
