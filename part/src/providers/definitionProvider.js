@@ -487,14 +487,6 @@ function getListItemTexts(
       (text) => text.length > 0);
 }
 
-function normalizeLocationType(
-  value)
-{
-  return value.toLowerCase() === 'files'
-    ? 'Files'
-    : 'Folders';
-}
-
 function toPropertyName(
   label)
 {
