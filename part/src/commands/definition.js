@@ -8,7 +8,7 @@ export async function execDefinition(
   options)
 {
   const rootDirectory =
-    environment.cwd;
+    environment.project;
 
   const definitionProvider =
     new DefinitionProvider(
@@ -47,12 +47,12 @@ function resolveDefinition(
   const byPath =
     definitions.find(
       (definition) => path.resolve(
-        definition.definitionPath) === absoluteTarget)
+        definition.path) === absoluteTarget)
     ?? definitions.find(
       (definition) => toPosixPath(
         path.relative(
           rootDirectory,
-          definition.definitionPath)) === normalizedTarget,
+          definition.path)) === normalizedTarget,
     );
 
   if (byPath) {
@@ -80,23 +80,23 @@ function formatDefinitionDetails(
 {
   return serializeMarkdownList(
     {
-    name: definition.name,
-    description: definition.description,
-    location: definition.location,
-    properties: definition.properties,
-    rules: definition.rules.map(
-      (rule) => ({
-      id: rule.id,
-      description: rule.description,
-      ...(rule.filePath
-? { filePath: rule.filePath }
-: {}),
-    })),
-    definitionPath: toPosixPath(
-      path.relative(
-        rootDirectory,
-        definition.definitionPath)),
-  });
+      name: definition.name,
+      description: definition.description,
+      location: definition.location,
+      properties: definition.properties,
+      rules: definition.rules.map(
+        (rule) => ({
+          id: rule.id,
+          description: rule.description,
+          ...(rule.filePath
+            ? { filePath: rule.filePath }
+            : {}),
+        })),
+      path: toPosixPath(
+        path.relative(
+          rootDirectory,
+          definition.path)),
+    });
 }
 
 function serializeMarkdownList(
@@ -164,22 +164,24 @@ function serializeArrayEntry(
 
   const nested =
     Object.entries(value)
-    .map(
-      ([key, entry]) => serializeObjectEntry(
-        key,
-        entry,
-        indent + 2))
-    .join('\n');
+      .map(
+        ([key, entry]) => serializeObjectEntry(
+          key,
+          entry,
+          indent + 2))
+      .join('\n');
 
   return `${prefix}-\n${nested}`;
 }
 
-function isScalar(value)
+function isScalar(
+  value)
 {
   return value === null || typeof value !== 'object';
 }
 
-function toPosixPath(value)
+function toPosixPath(
+  value)
 {
   return value.replaceAll(
     '\\',

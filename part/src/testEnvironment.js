@@ -25,7 +25,8 @@ export function createTestEnvironment(
         logger: createLogger(),
         resolve: type => registry[type] ?? type,
         register: (type, value) => registry[type] = value,
-        definitions: cwd
+        definitions: cwd,
+        project: cwd
       },
       options);
 

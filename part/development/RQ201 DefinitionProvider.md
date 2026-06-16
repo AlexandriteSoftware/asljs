@@ -6,10 +6,27 @@ directory.
 It searches for definitions by enumerating markdown files and checking whether
 their content matches [Artefact Definition][1].
 
-The files and folders that are in .gitignore files are excluded from the search
-results.
+The files and folders that are in `.gitignore` files are excluded from
+search results.
 
 `DefinitionProvider` is available to JS rules via the `definitions` property of
 the `context` object.
+
+`DefinitionProvider` caches the definitions, considering them immutable.
+If the definition file is changed, recreate the `DefinitionProvider` instance to
+get the updated definitions.
+
+Example:
+
+```js
+const definitionProvider =
+  new DefinitionProvider(
+    createLogger(),
+    projectPath,
+    definitionsPath);
+
+const ruleFileDefinition =
+  await definitionProvider.getDefinition('Rule File');
+```
 
 [1]: <../artefacts/Artefact Definition.md>

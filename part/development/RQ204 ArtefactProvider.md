@@ -11,7 +11,10 @@ the `context` object.
 
 ```js
 const definitions =
-  new DefinitionProvider(definitionsPath);
+  new DefinitionProvider(
+    createLogger(),
+    projectPath,
+    definitionsPath);
 
 const ruleFile =
   await definitions.getDefinition('Rule File');

@@ -25,7 +25,8 @@ export class DefinitionProvider {
   constructor(
     logger,
     rootPath,
-    definitionsPath = rootPath) {
+    definitionsPath = rootPath)
+  {
     this.logger = logger;
     this.rootPath = path.resolve(rootPath);
 
@@ -63,16 +64,13 @@ export class DefinitionProvider {
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
 
-    const definitions =
-      [];
+    const definitions = [];
 
     for (const markdownPath of visibleMarkdownPaths) {
       const definition =
         await this.loadDefinitionFromFile(
           markdownPath,
-          {
-            rootPath: this.rootPath,
-          });
+          { rootPath: this.rootPath });
 
       if (definition) {
         definitions.push(definition);
@@ -80,8 +78,9 @@ export class DefinitionProvider {
     }
 
     definitions.sort(
-      (left, right) => left.name.localeCompare(
-        right.name));
+      (left, right) =>
+        left.name.localeCompare(
+          right.name));
 
     this.cache = definitions;
 
@@ -90,8 +89,7 @@ export class DefinitionProvider {
 
 
   async loadDefinitionFromFile(
-    filePath)
-  {
+    filePath) {
     const content =
       await readFile(
         filePath,
@@ -107,7 +105,8 @@ export class DefinitionProvider {
 
   static async parseDefinitionFile(
     content,
-    options = {}) {
+    options = {})
+  {
     const filePath =
       options.filePath
         ? path.resolve(
@@ -203,7 +202,7 @@ export class DefinitionProvider {
         });
 
     return new Definition({
-      definitionPath: filePath,
+      path: filePath,
       name,
       description,
       location,
@@ -268,22 +267,20 @@ function parseLocation(
   if (listItems.length > 0) {
     const location =
     {
-      type: null,
-      pattern: null,
+      patterns: [],
       exclude: [],
-      gitIgnore: false,
+      filters: [],
     };
 
     for (const itemText of listItems) {
       const typeMatch =
         itemText.match(
-          /^(Files|Folders)\s*:\s*(.+)$/i);
+          /^(Files|Folders|Pattern)\s*:\s*(.+)$/i);
 
       if (typeMatch) {
-        location.type = normalizeLocationType(
-          typeMatch[1]);
+        location.patterns.push(
+          typeMatch[2].trim());
 
-        location.pattern = typeMatch[2].trim();
         continue;
       }
 
@@ -299,11 +296,12 @@ function parseLocation(
       }
 
       if (/^GitIgnore$/i.test(itemText)) {
-        location.gitIgnore = true;
+        location.filters.push(
+          { name: 'GitIgnore' });
       }
     }
 
-    if (location.type && location.pattern) {
+    if (location.patterns.length > 0) {
       return location;
     }
   }
@@ -407,8 +405,7 @@ async function resolveRuleFile(
   if (
     !options.rootPath
     || !options.definitionName
-    || !options.definitionPath)
-  {
+    || !options.definitionPath) {
     return null;
   }
 

@@ -35,7 +35,7 @@ A todo item is a task that needs to be done.
 
 ## Location
 
-Todo items are stored in the \`Todo Items\` folder.
+- Pattern: Todo Items/*.md
 
 ## Rules
 
@@ -261,7 +261,7 @@ A todo item is a task that needs to be done.
 
 ## Location
 
-- Folders: ../Todo Items
+- Pattern: ../Todo Items/*.md
 
 ## Rules
 

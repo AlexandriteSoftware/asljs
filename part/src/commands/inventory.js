@@ -11,7 +11,7 @@ export async function execInventory(
   environment)
 {
   const rootDirectory =
-    environment.cwd;
+    environment.project;
 
   const definitionsProvider =
     new DefinitionProvider(
@@ -63,7 +63,7 @@ async function collectInventoryItems(
     for (const artefact of definitionArtefacts) {
       const definitionPath =
         path.resolve(
-          definition.definitionPath);
+          definition.path);
 
       if (artefact.path === definitionPath) {
         continue;
@@ -72,10 +72,10 @@ async function collectInventoryItems(
       const existingEntry =
         artefactIndex.get(
           artefact.relativePath) ?? {
-        file: artefact.relativePath,
-        definitions: [],
-        rulesOk: true,
-      };
+          file: artefact.relativePath,
+          definitions: [],
+          rulesOk: true,
+        };
 
       const artifactResult =
         await inspectArtifact(
@@ -86,12 +86,12 @@ async function collectInventoryItems(
 
       existingEntry.definitions.push(
         {
-        name: definition.name,
-        orderKey: toPosixPath(
-          path.relative(
-            rootDirectory,
-            definition.definitionPath)),
-      });
+          name: definition.name,
+          orderKey: toPosixPath(
+            path.relative(
+              rootDirectory,
+              definition.path)),
+        });
 
       existingEntry.rulesOk = existingEntry.rulesOk && artifactResult.rulesOk;
 
@@ -105,19 +105,19 @@ async function collectInventoryItems(
     Array.from(
       artefactIndex.values(),
       (entry) => ({
-    file: entry.file,
-    definitions: entry.definitions
-      .sort(
-        (left, right) => left.orderKey.localeCompare(
-          right.orderKey) || left.name.localeCompare(
-            right.name))
-      .map(
-        (definition) => definition.name)
-      .join(','),
-    rules: entry.rulesOk
-? 'Ok'
-: 'Fail',
-  }));
+        file: entry.file,
+        definitions: entry.definitions
+          .sort(
+            (left, right) => left.orderKey.localeCompare(
+              right.orderKey) || left.name.localeCompare(
+                right.name))
+          .map(
+            (definition) => definition.name)
+          .join(','),
+        rules: entry.rulesOk
+          ? 'Ok'
+          : 'Fail',
+      }));
 
   items.sort(
     (left, right) => left.file.localeCompare(
@@ -149,7 +149,8 @@ async function inspectArtifact(
   };
 }
 
-function formatInventoryTable(items)
+function formatInventoryTable(
+  items)
 {
   const rows =
     items.map(
@@ -161,15 +162,15 @@ function formatInventoryTable(items)
   const widths =
     headers.map(
       (header, index) => {
-    const cellWidths =
-      rows.map(
-        (row) => row[index].length);
+        const cellWidths =
+          rows.map(
+            (row) => row[index].length);
 
-    return Math.max(
-      header.length,
-      ...cellWidths,
-      3);
-  });
+        return Math.max(
+          header.length,
+          ...cellWidths,
+          3);
+      });
 
   const lines =
     [];
@@ -195,7 +196,8 @@ function formatInventoryTable(items)
   return lines.join('\n');
 }
 
-export function formatCheckTable(items)
+export function formatCheckTable(
+  items)
 {
   const rows =
     items.map(
@@ -207,15 +209,15 @@ export function formatCheckTable(items)
   const widths =
     headers.map(
       (header, index) => {
-    const cellWidths =
-      rows.map(
-        (row) => row[index].length);
+        const cellWidths =
+          rows.map(
+            (row) => row[index].length);
 
-    return Math.max(
-      header.length,
-      ...cellWidths,
-      3);
-  });
+        return Math.max(
+          header.length,
+          ...cellWidths,
+          3);
+      });
 
   const lines =
     [];
@@ -283,7 +285,8 @@ function formatRow(
       widths[index])).join(' | ')} |`;
 }
 
-function toPosixPath(value)
+function toPosixPath(
+  value)
 {
   return value.replaceAll(
     '\\',

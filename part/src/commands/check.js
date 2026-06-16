@@ -18,7 +18,7 @@ export async function execCheck(
   options = { })
 {
   const rootDirectory =
-    environment.cwd;
+    environment.project;
 
   const definitionProvider =
     new DefinitionProvider(

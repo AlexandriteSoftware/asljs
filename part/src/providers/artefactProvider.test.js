@@ -11,6 +11,11 @@ import { createLogger }
 import { TmpDir }
   from '../tmpDir.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',
   async t => {
@@ -65,7 +70,7 @@ Requirement.
 
   const definitions =
     new DefinitionProvider(
-      createLogger(),
+      logger,
       workspace.path);
 
   const [requirementDefinition] =
@@ -73,7 +78,7 @@ Requirement.
   
   const artefacts =
     new ArtefactProvider(
-      createLogger(),
+      logger,
       workspace.path);
 
   const requirementArtefacts =
@@ -140,9 +145,6 @@ Specification.
   workspace.writeText(
     'docs/specs/Example.md',
     '# Example\n');
-
-  const logger =
-    createLogger();
 
   const definitions =
     new DefinitionProvider(

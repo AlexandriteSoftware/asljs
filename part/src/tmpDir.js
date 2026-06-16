@@ -18,45 +18,57 @@ export class TmpDir
           os.tmpdir(),
           `part-test-`));
 
+    this.ctx = `TmpDir[${this.path}]`;
+
     this.logger?.trace(
-      `TmpDir created: ${this.path}`);
+      `${this.ctx}: created`);
+
+    this.deleted = false;
   }
 
   resolve(
     ...segments)
   {
+    const segmentsAreValid =
+      segments.every(
+        item => !path.isAbsolute(item));
+
+    if (!segmentsAreValid) {
+      throw new Error(
+        'All path segments must be relative');
+    }
+
     return path.resolve(
       this.path,
       ...segments);
   }
 
   mkdir(
-    ...segments)
+    directoryPath)
   {
-    const dirPath =
-      this.resolve(
-        ...segments);
-
     this.logger?.trace(
-      `mkdir: ${dirPath}`);
+      `${this.ctx}.mkdir(${directoryPath})`);
+
+    const resolvedDirectoryPath =
+      this.resolve(
+        directoryPath);
 
     fs.mkdirSync(
-      dirPath,
+      resolvedDirectoryPath,
       { recursive: true });
-
-    return dirPath;
   }
 
   writeText(
     filePath,
     content)
   {
-    const resolvedFilePath =
-      this.resolve(
-        filePath);
-
     this.logger?.trace(
-      `writeText: ${resolvedFilePath}`);
+      `${this.ctx}.writeText(${filePath}, ...)`);
+
+    const resolvedFilePath =
+      path.resolve(
+        this.path,
+        filePath);
 
     fs.mkdirSync(
       path.dirname(
@@ -72,12 +84,12 @@ export class TmpDir
   readText(
     filePath)
   {
+    this.logger?.trace(
+      `${this.ctx}.readText(${filePath})`);
+
     const resolvedFilePath =
       this.resolve(
         filePath);
-
-    this.logger?.trace(
-      `readText: ${resolvedFilePath}`);
 
     return fs.readFileSync(
       resolvedFilePath,
@@ -87,12 +99,12 @@ export class TmpDir
   stat(
     path)
   {
+    this.logger?.trace(
+      `${this.ctx}.stat(${path})`);
+
     const resolvedPath =
       this.resolve(
         path);
-
-    this.logger?.trace(
-      `stat: ${resolvedPath}`);
 
     return fs.statSync(
       resolvedPath);
@@ -101,7 +113,7 @@ export class TmpDir
   cleanup()
   {
     this.logger?.trace(
-      `cleanup: ${this.path}`);
+      `${this.ctx}.cleanup()`);
 
     fs.rmSync(
       this.path,
@@ -109,5 +121,7 @@ export class TmpDir
         recursive: true,
         force: true,
       });
+    
+    this.deleted = true;
   }
 }

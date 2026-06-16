@@ -46,11 +46,9 @@ test(
       () =>
         validate(
           { path: workspace.resolve('Article.md') },
-          {
-            artefacts,
+          { artefacts,
             definition: ARTICLE_DEFINITION,
-            rootDirectory: workspace.path
-          }));
+            rootDirectory: workspace.path }));
   });
 
 test(
@@ -75,10 +73,8 @@ test(
       () =>
         validate(
           { path: workspace.resolve('Article.md') },
-          {
-            artefacts,
-            definition: ARTICLE_DEFINITION,
-          }),
+          { artefacts,
+            definition: ARTICLE_DEFINITION }),
       /Article must start with a level 1 heading\./,
     );
   });

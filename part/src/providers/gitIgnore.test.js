@@ -2,102 +2,67 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import os
-  from 'node:os';
-import path
-  from 'node:path';
-import { mkdtemp,
-         mkdir,
-         writeFile }
-  from 'node:fs/promises';
-import { GitIgnore }
-  from './gitIgnore.js';
+import { TmpDir }
+  from '../tmpDir.js';
 import { createLogger }
   from '../logging.js';
+import { GitIgnore }
+  from './gitIgnore.js';
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
   async () =>
   {
-    const workspacePath =
-      await mkdtemp(
-        path.join(
-          os.tmpdir(),
-          'part-gitignore-'));
+    const workspace =
+      new TmpDir();
 
-    await mkdir(
-      path.join(
-        workspacePath,
-        'docs',
-        'drafts'),
-      { recursive: true });
+    workspace.mkdir(
+      'docs/drafts');
 
-    await writeFile(
-      path.join(
-        workspacePath,
-        '.gitignore'),
+    workspace.writeText(
+      '.gitignore',
       'ignored.md\n');
 
-    await writeFile(
-      path.join(
-        workspacePath,
-        'docs',
-        '.gitignore'),
+    workspace.writeText(
+      'docs/.gitignore',
       'drafts/\n');
 
     const gitIgnore =
       new GitIgnore(
         createLogger(),
-        workspacePath);
+        workspace.path);
 
-    const filePaths =
-      [ path.join(
-        workspacePath,
-        'keep.md'),
-        path.join(
-          workspacePath,
-          'ignored.md'),
-        path.join(
-          workspacePath,
-          'docs',
-          'guide.md'),
-        path.join(
-          workspacePath,
-          'docs',
-          'drafts',
-          'draft.md') ];
+    const files =
+      [ 'keep.md',
+        'ignored.md',
+        'docs/guide.md',
+        'docs/drafts/draft.md' ];
+
+    const filePaths = { };
+
+    for (const file of files) {
+      filePaths[file] =
+        workspace.resolve(file);
+    }
 
     assert.equal(
       gitIgnore.isIgnored(
-        path.join(
-          workspacePath,
-          'ignored.md')),
+        filePaths['ignored.md']),
       true);
 
     assert.equal(
       gitIgnore.isIgnored(
-        path.join(
-          workspacePath,
-          'docs',
-          'drafts',
-          'draft.md')),
+        filePaths['docs/drafts/draft.md']),
       true);
 
     assert.equal(
       gitIgnore.isIgnored(
-        path.join(
-          workspacePath,
-          'docs',
-          'guide.md')),
+        filePaths['docs/guide.md']),
       false);
 
     assert.deepEqual(
-      gitIgnore.filter(filePaths),
-      [ path.join(
-        workspacePath,
-        'keep.md'),
-        path.join(
-          workspacePath,
-          'docs',
-          'guide.md') ]);
+      gitIgnore.filter(
+        Object.values(filePaths)),
+      [ filePaths['keep.md'],
+        filePaths['docs/guide.md'] ]);
   });

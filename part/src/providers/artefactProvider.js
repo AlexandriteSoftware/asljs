@@ -7,8 +7,8 @@ import { glob }
 import { extractHeading,
          parsePropertyValues }
   from './markdown.js';
-import { GitIgnore }
-  from './gitIgnore.js';
+import { FilesystemLocationResolver }
+  from './filesystemLocationResolver.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -26,8 +26,8 @@ export class ArtefactProvider
     this.cache = new WeakMap();
     this.definitionsProvider = definitionsProvider;
 
-    this.gitIgnore =
-      new GitIgnore(
+    this.locationResolver =
+      new FilesystemLocationResolver(
         this.logger,
         this.rootPath);
   }
@@ -44,7 +44,6 @@ export class ArtefactProvider
 
     const artefacts =
       await this.loadArtefacts(
-        this.rootPath,
         definition);
 
     this.cache.set(
@@ -92,21 +91,23 @@ export class ArtefactProvider
   }
 
   async loadArtefacts(
-    rootDirectory,
     definition)
   {
     const artefactPaths =
-      await this.listArtefactPaths(
-        rootDirectory,
-        definition);
-      
-    const artefacts =
-      [];
+      await this.locationResolver
+        .resolve(
+          path.dirname(
+            definition.path),
+          definition.location.patterns,
+          definition.location.exclude ?? [],
+          definition.location.filters ?? []);
+
+    const artefacts = [];
 
     for (const artefactPath of artefactPaths) {
       artefacts.push(
         await buildArtefact(
-          rootDirectory,
+          this.rootPath,
           definition,
           artefactPath));
     }
@@ -166,6 +167,23 @@ async function buildArtefact(
   definition,
   artefactPath)
 {
+  if (artefactPath.endsWith('.md') === false) {
+    return {
+      path: artefactPath,
+      relativePath:
+        toPosixPath(
+          path.relative(
+            rootDirectory,
+            artefactPath)),
+      basePath:
+        rootDirectory,
+      name:
+        path.basename(
+          artefactPath,
+          path.extname(artefactPath)),
+    };
+  }
+
   const content =
     await readFile(
       artefactPath,

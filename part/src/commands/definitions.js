@@ -9,7 +9,7 @@ export async function execDefinitions(
   environment)
 {
   const rootDirectory =
-    environment.cwd;
+    environment.project;
 
   const definitionProvider =
     new DefinitionProvider(
@@ -27,7 +27,7 @@ export async function execDefinitions(
         path: toPosixPath(
           path.relative(
             rootDirectory,
-            definition.definitionPath))
+            definition.path))
       }));
 
   const markdown =

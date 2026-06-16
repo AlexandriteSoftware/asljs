@@ -4,16 +4,16 @@ import tsParser
   from '@typescript-eslint/parser';
 import tsPlugin
   from '@typescript-eslint/eslint-plugin';
-import importStyleRule
-  from './common/code-formatting/eslint-import-style-rule.js';
-import functionDeclarationStyleRule
-  from './common/code-formatting/eslint-function-declaration-style-rule.js';
-import callExpressionStyleRule
-  from './common/code-formatting/eslint-call-expression-style-rule.js';
-import variableDeclarationStyleRule
-  from './common/code-formatting/eslint-variable-declaration-style-rule.js';
-import statementSpacingStyleRule
-  from './common/code-formatting/eslint-statement-spacing-style-rule.js';
+import jsImportStyleRule
+  from './common/code-formatting-js/eslint-import-style-rule.js';
+import jsFunctionDeclarationStyleRule
+  from './common/code-formatting-js/eslint-function-declaration-style-rule.js';
+import jsCallExpressionStyleRule
+  from './common/code-formatting-js/eslint-call-expression-style-rule.js';
+import jsVariableDeclarationStyleRule
+  from './common/code-formatting-js/eslint-variable-declaration-style-rule.js';
+import jsStatementSpacingStyleRule
+  from './common/code-formatting-js/eslint-statement-spacing-style-rule.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -108,11 +108,11 @@ export default [
     plugins: {
       asljs: {
         rules: {
-          'import-style': importStyleRule,
-          'function-declaration-style': functionDeclarationStyleRule,
-          'call-expression-style': callExpressionStyleRule,
-          'variable-declaration-style': variableDeclarationStyleRule,
-          'statement-spacing': statementSpacingStyleRule
+          'import-style': jsImportStyleRule,
+          'function-declaration-style': jsFunctionDeclarationStyleRule,
+          'call-expression-style': jsCallExpressionStyleRule,
+          'variable-declaration-style': jsVariableDeclarationStyleRule,
+          'statement-spacing': jsStatementSpacingStyleRule
         }
       }
     },

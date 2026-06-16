@@ -95,6 +95,9 @@ function createCli(
     .option(
       '--definitions <path>',
       'Path to artefact definitions directory. Defaults to the current working directory.')
+    .option(
+      '--project <path>',
+      'Path to artefact directory. Defaults to the current working directory.')
     .hook(
       'preAction',
       (_, actionCommand) => {
@@ -124,10 +127,25 @@ function createCli(
           && options.definitions.trim() !== '')
         {
           environment.definitions =
-            path.resolve(
-              options.definitions);
+            path.normalize(
+              path.resolve(
+                options.definitions));
         } else {
           environment.definitions =
+            environment.cwd;
+        }
+
+        if (
+          options.project !== undefined
+          && options.project !== null
+          && options.project.trim() !== '')
+        {
+          environment.project =
+            path.normalize(
+              path.resolve(
+                options.project));
+        } else {
+          environment.project =
             environment.cwd;
         }
       });      

@@ -20,7 +20,7 @@ export async function execUpdate(
     'execUpdate: start');
 
   const rootDir =
-    environment.cwd;
+    environment.project;
 
   const provider =
     new DefinitionProvider(
@@ -209,7 +209,7 @@ export async function execUpdate(
       environment.stdout.write(
         `\n--- ${prompt.mode.toUpperCase()} ${toPosixPath(
           path.relative(
-            environment.cwd,
+            environment.project,
             prompt.targetFilePath))} ---\n`);
 
       environment.stdout.write(
@@ -224,7 +224,7 @@ function getExpectedRuleFilePath(
 {
   return path.join(
     path.dirname(
-      definition.definitionPath),
+      definition.path),
     'rules',
     `${definition.name}_${rule.id}.js`,
   );
@@ -237,14 +237,14 @@ function buildCopilotRequest(
   targetFilePath,
   currentContent = null,
   rootDirectory = path.dirname(
-    definition.definitionPath))
+    definition.path))
 {
   return {
     mode,
     rootDirectory,
     targetFilePath,
     definitionName: definition.name,
-    definitionPath: definition.definitionPath,
+    definitionPath: definition.path,
     ruleId: rule.id,
     ruleDescription: rule.description,
     expectedComment: formatRuleComment(rule),
@@ -267,7 +267,7 @@ function buildPrompt(
 {
   return [
     `Definition: ${definition.name}`,
-    `Definition file: ${definition.definitionPath}`,
+    `Definition file: ${definition.path}`,
     `Rule: ${rule.id} - ${rule.description}`,
     `Target file: ${targetFilePath}`,
     `The first comment in the file must be multiline and exactly: ${formatRuleComment(rule)}`,

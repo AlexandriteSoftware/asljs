@@ -1,47 +1,49 @@
 import path
   from 'node:path';
-import { readFileSync }
+import { readFileSync,
+         statSync }
   from 'node:fs';
-import { globSync }
-  from 'glob';
 import ignore
   from 'ignore';
 
 export class GitIgnore
 {
   constructor(
-    logger,
-    rootPath)
+    logger)
   {
     this.logger = logger;
-    this.rootPath = path.resolve(rootPath);
-
-    this.matchers =
-      loadMatchers(
-        this.logger,
-        this.rootPath);
+    this.matchers = [];
+    this.visitedPaths = new Set();
   }
 
   isIgnored(
     targetPath)
   {
-    const absolutePath =
-      path.resolve(
-        this.rootPath,
-        targetPath);
+    const isDirectory =
+      targetPath.endsWith(
+        path.sep);
 
-    if (!isInsideRoot(
-      this.rootPath,
-      absolutePath)) {
-      return false;
+    const normalisedPath =
+      path.normalize(
+        path.resolve(
+          this.rootPath,
+          targetPath));
+
+    if (isDirectory) {
+      this.loadMatchers(
+        normalisedPath);
+    } else {
+      this.loadMatchers(
+        path.dirname(
+          normalisedPath));
     }
 
     for (const matcher of this.matchers) {
       const relativePath =
         toPosixPath(
           path.relative(
-            matcher.basePath,
-            absolutePath));
+            matcher.path,
+            normalisedPath));
 
       if (relativePath === ''
           || relativePath.startsWith('../'))
@@ -49,10 +51,15 @@ export class GitIgnore
         continue;
       }
 
+    const testRelativePath =
+      isDirectory
+        ? relativePath + '/'
+        : relativePath;
+
+
       if (
-        matcher.matcher.ignores(relativePath)
-        || matcher.matcher.ignores(
-          `${relativePath}/`))
+        matcher.matcher.ignores(
+          testRelativePath))
       {
         return true;
       }
@@ -68,77 +75,59 @@ export class GitIgnore
       filePath =>
         !this.isIgnored(filePath));
   }
-}
 
-function loadMatchers(
-  logger,
-  rootPath)
-{
-  const gitIgnorePaths =
-    globSync(
-      '**/.gitignore',
-      { absolute: true,
-        cwd: rootPath,
-        dot: true,
-        nodir: true });
+  loadMatchers(
+    normalisedPath)
+  {
+    if (this.visitedPaths.has(normalisedPath)) {
+      return;
+    }
+    
+    this.visitedPaths
+      .add(
+        normalisedPath);
 
-  const matchers =
-    gitIgnorePaths.map(
-      gitIgnorePath => {
-        const basePath =
-          path.dirname(gitIgnorePath);
+    const gitIgnorePath =
+      path.join(
+        normalisedPath,
+        '.gitignore');
 
-        const gitIgnoreContent =
-          readFileSync(
-            gitIgnorePath,
-            'utf8');
+    let gitIgnoreExists = false;
 
-        const matcher =
-          ignore().add(
+    try {
+      statSync(gitIgnorePath);
+      gitIgnoreExists = true;
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
+
+    if (gitIgnoreExists) {
+      const gitIgnoreContent =
+        readFileSync(
+          gitIgnorePath,
+          'utf8');
+
+      const matcher =
+        ignore()
+          .add(
             gitIgnoreContent);
 
-        return {
-          basePath,
-          matcher
-        };
-      });
+      this.matchers.push(
+        { path: normalisedPath,
+          matcher });
+    }
 
-  logger.debug(
-    `Loaded ${matchers.length} .gitignore file(s) from ${rootPath}`);
+    const parentPath =
+      path.dirname(
+        normalisedPath);
 
-  return matchers;
-}
-
-/**
- * Checks if the target path is inside the root path.
- *
- * @param {string} rootPath - The root path. Should be an absolute path.
- * @param {string} targetPath - The target path to check.
- * @returns {boolean} - True if the target path is inside the root path, false
- *                      otherwise.
- */
-function isInsideRoot(
-  rootPath,
-  targetPath)
-{
-  if (!path.isAbsolute(rootPath)) {
-    throw new Error(
-      `'rootPath' must be absolute.`);
+    if (parentPath !== normalisedPath) {
+      this.loadMatchers(
+        parentPath);
+    }
   }
-
-  const absoluteTargetPath =
-    path.resolve(
-      rootPath,
-      targetPath);
-
-  const relativePath =
-    path.relative(
-      rootPath,
-      absoluteTargetPath);
-
-  return relativePath === ''
-         || (!relativePath.startsWith('..')
-             && !path.isAbsolute(relativePath));
 }
 
 function toPosixPath(

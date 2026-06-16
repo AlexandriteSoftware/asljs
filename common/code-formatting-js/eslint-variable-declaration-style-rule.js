@@ -1,13 +1,12 @@
 const LONG_IDENTIFIER_LENGTH = 15;
 
 export default {
-  meta: {
-    type: 'layout',
-    fixable: 'code',
-    schema: [],
-  },
-
-  create(context) {
+  meta:
+    { type: 'layout',
+      fixable: 'code',
+      schema: [] },
+  create(context)
+  {
     return {
       VariableDeclarator(node) {
         if (!node.init) {
@@ -81,17 +80,24 @@ function initializerIsShortEnoughToStayOnSameLine(
   initializer)
 {
   if (initializer.type === 'Identifier') {
-    return (
-      initializer.name.length
-      < LONG_IDENTIFIER_LENGTH
-    );
+    return initializer.name.length < LONG_IDENTIFIER_LENGTH;
   }
 
   if (initializer.type === 'Literal') {
-    return (
-      initializer.raw.length
-      < LONG_IDENTIFIER_LENGTH
-    );
+    return initializer.raw.length < LONG_IDENTIFIER_LENGTH;
+  }
+
+  if (initializer.type === 'ObjectExpression') {
+    return initializer.properties.length === 0;
+  }
+
+  if (initializer.type === 'ArrayExpression') {
+    return initializer.elements.length === 0;
+  }
+
+  if (initializer.type === 'UnaryExpression') {
+    return initializerIsShortEnoughToStayOnSameLine(
+      initializer.argument);
   }
 
   return false;
@@ -130,6 +136,7 @@ function buildVariableDeclarator(
 
     code.push(
       formattingContext.newLine);
+
     code.push(indentation);
     code.push('  ');
     code.push(initText);

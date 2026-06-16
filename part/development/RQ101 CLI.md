@@ -10,7 +10,7 @@ Action is a positional parameter.
 
 Options are parameters in one of these formats:
 
-- `--name value`
+- `--name value` (preferred, in examples, in documentation, etc.)
 - `--name=value`
 - `--flag`
 

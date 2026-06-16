@@ -135,10 +135,9 @@ A todo item is a task that needs to be done.
     assert.deepEqual(
       definition.location,
       {
-        type: 'Folders',
-        pattern: 'Todo Items',
+        patterns: ['Todo Items'],
         exclude: ['Todo Items/Templates'],
-        gitIgnore: true,
+        filters: [{ name: 'GitIgnore' }],
       });
 
     assert.deepEqual(

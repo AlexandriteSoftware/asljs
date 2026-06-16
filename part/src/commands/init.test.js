@@ -18,10 +18,12 @@ test(
     t.after(
       () => workspace.cleanup());
 
+    workspace.mkdir('definitions');
+
     const environment =
       createTestEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.mkdir('definitions') });
+          definitions: workspace.resolve('definitions') });
 
     await execInit(
       environment);

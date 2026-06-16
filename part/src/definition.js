@@ -1,7 +1,7 @@
 export class Definition
 {
   constructor(
-    { definitionPath,
+    { path,
       name,
       description,
       location,
@@ -10,7 +10,7 @@ export class Definition
       propertyDefinitions,
       ruleIds })
   {
-    this.definitionPath = definitionPath;
+    this.path = path;
     this.name = name;
     this.description = description;
     this.location = location;
