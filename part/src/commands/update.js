@@ -4,6 +4,8 @@ import { spawn }
   from 'node:child_process';
 import { readFile }
   from 'node:fs/promises';
+import { toPosixPath }
+  from '../formatting.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 
@@ -260,6 +262,11 @@ export async function execUpdate(
   }
 }
 
+/**
+ * @param {ArtefactDefinition} definition 
+ * @param {ArtefactDefinitionRule} rule 
+ * @returns {string}
+ */
 function getExpectedRuleFilePath(
   definition,
   rule)
@@ -467,18 +474,18 @@ async function runCopilotCli(
 
     child.stdout.on(
       'data',
-      (chunk) => {
+      chunk => {
         logger.trace(
-          `${String(chunk)}`);
+          String(chunk));
 
         stdout += String(chunk);
       });
 
     child.stderr.on(
       'data',
-      (chunk) => {
+      chunk => {
         logger.trace(
-          `${String(chunk)}`);
+          String(chunk));
 
         stderr += String(chunk);
       });
@@ -489,7 +496,7 @@ async function runCopilotCli(
 
     child.on(
       'close',
-      (code) => {
+      code => {
         if (code !== 0) {
           reject(
             new Error(
@@ -509,80 +516,88 @@ async function runCopilotCli(
   });
 }
 
+/**
+ * @param {string} content 
+ * @returns {string}
+ */
 function extractFirstComment(
   content)
 {
-  const match =
-    /^\s*(\/\*[\s\S]*?\*\/|(?:\/\/[^\n]*\r?\n?)*)/.exec(content);
+  const openingCommentIndex =
+    content.indexOf('/*');
 
-  if (!match || !match[1].trim()) {
-    return null;
-  }
+  if (openingCommentIndex === -1)
+    return '';
 
-  return normalizeCommentText(
-    match[1]);
+  const closingCommentIndex =
+    content.indexOf(
+      '*/',
+      openingCommentIndex + 2);
+    
+  if (closingCommentIndex === -1)
+    return '';
+
+  const commentText =
+    content.substring(
+      openingCommentIndex,
+      closingCommentIndex + 2);
+
+  return commentText;
 }
 
-function normalizeCommentText(
-  commentText)
-{
-  if (commentText.trim().startsWith('/*')) {
-    return commentText
-      .replace(
-        /^\s*\/\*/,
-        '')
-      .replace(
-        /\*\/\s*$/,
-        '')
-      .split(/\r?\n/)
-      .map(
-        (line) => line.replace(
-          /^\s*\*?\s?/,
-          '').trimEnd())
-      .join('\n')
-      .trim();
-  }
-
-  return commentText
-    .split(/\r?\n/)
-    .map(
-      (line) => line.replace(
-        /^\s*\/\/\s?/,
-        '').trimEnd())
-    .join('\n')
-    .trim();
-}
-
+/**
+ * @param {string} firstComment 
+ * @param {ArtefactDefinitionRule} rule 
+ * @returns {boolean}
+ */
 function commentMatchesRule(
   firstComment,
   rule)
 {
-  if (firstComment === null) {
+  if (
+    firstComment === null
+    || firstComment === ''
+  ) {
     return false;
   }
 
-  return normalizeWhitespace(firstComment) === normalizeWhitespace(
-    formatRuleComment(rule));
+  const actualNormalisedComment =
+    normaliseText(firstComment);
+
+  const expectedNormalisedComment =
+    normaliseText(
+      formatRuleComment(rule));
+
+  return actualNormalisedComment === expectedNormalisedComment;
 }
 
+/**
+ * @param {ArtefactDefinitionRule} rule 
+ * @returns {string}
+ */
 function formatRuleComment(
   rule)
 {
   return `${rule.id} - ${rule.description}`;
 }
 
-function normalizeWhitespace(
+/**
+ * @param {string} value 
+ * @returns {string}
+ */
+function normaliseText(
   value)
 {
-  return value.replace(
-    /\s+/g,
-    ' ').trim();
-}
+  const normalised =
+    value
+      .replace(
+        /\r?\n/g,
+        ' ')
+      .replace(
+        /\s+/g,
+        ' ')
+      .toUpperCase()
+      .trim();
 
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
+  return normalised;
 }

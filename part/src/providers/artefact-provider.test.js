@@ -69,18 +69,19 @@ Requirement.
     'development/hidden/RQ999 Hidden.md',
     '# RQ999 Hidden\n');
 
-  const definitions =
+  const definitionsProvider =
     new DefinitionProvider(
       logger,
       workspace.path);
 
   const [requirementDefinition] =
-    await definitions.getDefinitions();
+    await definitionsProvider.getDefinitions();
   
   const artefacts =
     new ArtefactProvider(
       logger,
-      workspace.path);
+      workspace.path,
+      definitionsProvider);
 
   const requirementArtefacts =
     await artefacts.getArtefacts(
@@ -115,12 +116,6 @@ test(
 
     t.after(
       () => workspace.cleanup());
-
-    workspace.mkdir(
-      'artefacts');
-
-    workspace.mkdir(
-      'docs/specs');
 
     workspace.writeText(
       'artefacts/Article.md',

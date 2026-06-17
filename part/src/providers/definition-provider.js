@@ -9,6 +9,8 @@ import { unified }
   from 'unified';
 import remarkParse
   from 'remark-parse';
+import { toPosixPath }
+  from '../formatting.js';
 import { GitIgnore }
   from './git-ignore.js';
 import { sliceNodes,
@@ -537,12 +539,4 @@ function normalizeLabel(
   return label.trim().replace(
     /\s+/g,
     ' ').toLowerCase();
-}
-
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

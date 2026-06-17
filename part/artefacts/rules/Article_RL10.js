@@ -10,12 +10,8 @@ import { readFile }
  *           .ruleValidationFunction }
  */
 export async function validate(
-  artefact,
-  context)
+  artefact)
 {
-  context.logger.trace(
-    `Article_RL10.validate(${artefact.path})`);
-
   const content =
     await readFile(
       artefact.path,

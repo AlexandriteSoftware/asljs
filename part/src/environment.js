@@ -17,7 +17,7 @@ import { createLogger }
  * @property {string} cwd
  * @property {WritableBuffer} stdout
  * @property {WritableBuffer} stderr
- * @property {import('./logging.js').Logger} logger
+ * @property {Logger} logger
  * @property {<T>(type: T) => T} resolve
  * @property {<T>(type: T, value: T) => void} register
  * @property {string} definitions
@@ -25,6 +25,7 @@ import { createLogger }
  * @property {(logger: Logger,
  *             value: CopilotRequest)
  *            => Promise<string>} [runCopilotCli]
+ * @property {number} [exitCode]
  */
 
 /**

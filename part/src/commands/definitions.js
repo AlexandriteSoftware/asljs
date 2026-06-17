@@ -1,5 +1,7 @@
 import path
   from 'path';
+import { toPosixPath }
+  from '../formatting.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
@@ -38,11 +40,4 @@ export async function execDefinitions(
 
   environment.stdout.write(
     `${markdown}\n`);
-}
-
-function toPosixPath(value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

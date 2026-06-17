@@ -47,8 +47,22 @@ export class RuleRunner
     artefactProvider)
   {
     this.logger = logger;
-    this.definitionProvider = definitionProvider;
-    this.artefactProvider = artefactProvider;
+
+    if (definitionProvider === undefined) {
+      throw new Error(
+        'Missing definition provider.');
+    }
+
+    this.definitionProvider =
+      definitionProvider;
+
+    if (artefactProvider === undefined) {
+      throw new Error(
+        'Missing artefact provider.');
+    }
+
+    this.artefactProvider =
+      artefactProvider;
   }
 
   /**
@@ -59,11 +73,17 @@ export class RuleRunner
     rule,
     artefact)
   {
+    const ctx =
+      `RuleRunner.runRule(${rule.name}, ${artefact.name}): `;
+
     this.logger.trace(
-      `RuleRunner.runRule: ${rule.name} for artefact ${artefact.path}`);
+      `${ctx}${rule.name} for artefact ${artefact.path}`);
 
     if (!rule.path)
     {
+      this.logger.trace(
+        `${ctx}rule file is missing`);
+
       return {
         rule,
         result: 'Fail',
@@ -76,10 +96,13 @@ export class RuleRunner
         rule.path);
     }
     catch {
+      this.logger.trace(
+        `${ctx}cannot access rule file`);
+
       return {
         rule,
         result: 'Fail',
-        message: 'Missing rule file.',
+        message: 'Cannot access rule file.',
       };
     }
 
@@ -87,15 +110,26 @@ export class RuleRunner
       path.extname(
         rule.path);
 
+    let result;
+
     if (ruleFileExtension.toLowerCase() === '.js') {
-      return this.runJavaScriptRule(
-        rule,
-        artefact);
+      result =
+        await this.runJavaScriptRule(
+          rule,
+          artefact);
+    } else {
+      result =
+        await this.runExecutableRule(
+          rule,
+          artefact);
     }
 
-    return this.runExecutableRule(
-      rule,
-      artefact);
+    if (result.result === 'Fail') {
+      this.logger.trace(
+        `${ctx}${result.message}`);
+    }
+
+    return result;
   }
 
   /**
@@ -149,12 +183,15 @@ export class RuleRunner
 
       let result = null;
 
+      const validationContext =
+        { logger: this.logger,
+          definitions: this.definitionProvider,
+          artefacts: this.artefactProvider };
+
       try {
         await validatorModule.validate(
           artefact,
-          { logger: this.logger,
-            definitions: this.definitionProvider,
-            artefacts: this.artefactProvider });
+          validationContext);
       } catch (error) {
         result =
           error

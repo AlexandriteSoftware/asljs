@@ -5,6 +5,8 @@ import { readFileSync,
   from 'node:fs';
 import ignore
   from 'ignore';
+import { toPosixPath }
+  from '../formatting.js';
 
 /**
  * @typedef
@@ -163,16 +165,4 @@ export class GitIgnore
         parentPath);
     }
   }
-}
-
-/**
- * @param {string} value 
- * @returns {string}
- */
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

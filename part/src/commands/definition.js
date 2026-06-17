@@ -1,5 +1,7 @@
 import path
   from 'node:path';
+import { toPosixPath }
+  from '../formatting.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 
@@ -178,12 +180,4 @@ function isScalar(
   value)
 {
   return value === null || typeof value !== 'object';
-}
-
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

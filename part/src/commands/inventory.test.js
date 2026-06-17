@@ -182,13 +182,6 @@ test(
     t.after(
       () => workspace.cleanup());
 
-    workspace.mkdir(
-      'definitions',
-      'rules');
-
-    workspace.mkdir(
-      'part');
-
     workspace.writeText(
       'Article.md',
       `# Article
@@ -220,7 +213,7 @@ Definition file.
 `);
 
     workspace.writeText(
-      'part/Article_RL10.js',
+      'definitions/rules/Article_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -310,8 +303,7 @@ A todo item is a task that needs to be done.
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
-          project: workspace.path,
-          definition: workspace.resolve('definitions') });
+          project: workspace.path });
 
     await execInventory(
       environment);

@@ -1,6 +1,16 @@
 import { createRequire }
   from 'node:module';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @param {Environment} environment
+ */
 export function execVersion(
   environment)
 {

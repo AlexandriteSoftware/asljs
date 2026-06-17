@@ -4,5 +4,5 @@ File with JS unit tests.
 
 ## Location
 
-- Pattern: `**/*.test.js`
+- Pattern: `/**/*.test.js`
 - GitIgnore

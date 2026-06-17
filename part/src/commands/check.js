@@ -6,6 +6,8 @@ import { ArtefactProvider }
   from '../providers/artefact-provider.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
+import { toPosixPath }
+  from '../formatting.js';
 import { RuleRunner }
   from '../rule-runner.js';
 
@@ -356,12 +358,4 @@ function formatRow(
   return `| ${cells.map(
     (cell, index) => cell.padEnd(
       widths[index])).join(' | ')} |`;
-}
-
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

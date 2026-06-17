@@ -4,6 +4,8 @@ import { ArtefactProvider }
   from '../providers/artefact-provider.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
+import { toPosixPath }
+  from '../formatting.js';
 import { RuleRunner }
   from '../rule-runner.js';
 
@@ -12,6 +14,10 @@ import { RuleRunner }
  *   { import('./../environment.js')
  *       .Environment }
  *   Environment
+ * @typedef
+ *   { import('./../logging.js')
+ *       .Logger }
+ *   Logger
  */
 
 /**
@@ -29,23 +35,23 @@ export async function execInventory(
   const rootDirectory =
     environment.project;
 
-  const definitionsProvider =
+  const definitionProvider =
     new DefinitionProvider(
       logger,
       environment.definitions);
 
-  const artefacts =
+  const artefactProvider =
     new ArtefactProvider(
       logger,
       rootDirectory,
-      definitionsProvider);
+      definitionProvider);
 
   const items =
     await collectInventoryItems(
       logger,
       rootDirectory,
-      await definitionsProvider.getDefinitions(),
-      artefacts);
+      definitionProvider,
+      artefactProvider);
 
   const table =
     formatInventoryTable(items);
@@ -54,27 +60,27 @@ export async function execInventory(
     `${table}\n`);
 }
 
-export async function generateInventoryTable(
-  rootDirectory,
-  options = {})
-{
-  return execInventory(
-    rootDirectory,
-    options);
-}
-
+/**
+ * @param {Logger} logger
+ * @param {string} rootDirectory
+ * @param {DefinitionProvider} definitionProvider
+ * @param {ArtefactProvider} artefactProvider
+ */
 async function collectInventoryItems(
   logger,
   rootDirectory,
-  definitions,
-  artefacts)
+  definitionProvider,
+  artefactProvider)
 {
   const artefactIndex =
     new Map();
 
+  const definitions =
+    await definitionProvider.getDefinitions();
+
   for (const definition of definitions) {
     const definitionArtefacts =
-      await artefacts.getArtefacts(definition);
+      await artefactProvider.getArtefacts(definition);
 
     for (const artefact of definitionArtefacts) {
       const definitionPath =
@@ -93,12 +99,24 @@ async function collectInventoryItems(
           rulesOk: true,
         };
 
-      const artifactResult =
-        await inspectArtifact(
+      const ruleRunner =
+        new RuleRunner(
           logger,
-          rootDirectory,
+          definitionProvider,
+          artefactProvider);
+
+      const ruleResults =
+        await ruleRunner.runRules(
           definition,
           artefact);
+
+      const artifactResult =
+        {
+          file: artefact.relativePath,
+          definition: definition.name,
+          rulesOk: ruleResults.every(
+            (result) => result.result === 'Ok'),
+        };
 
       existingEntry.definitions.push(
         {
@@ -140,29 +158,6 @@ async function collectInventoryItems(
       right.file));
 
   return items;
-}
-
-async function inspectArtifact(
-  logger,
-  rootDirectory,
-  definition,
-  artefact)
-{
-  const ruleRunner =
-    new RuleRunner(
-      logger);
-
-  const ruleResults =
-    await ruleRunner.runRules(
-      definition,
-      artefact);
-
-  return {
-    file: artefact.relativePath,
-    definition: definition.name,
-    rulesOk: ruleResults.every(
-      (result) => result.result === 'Ok'),
-  };
 }
 
 function formatInventoryTable(
@@ -219,12 +214,4 @@ function formatRow(
   return `| ${cells.map(
     (cell, index) => cell.padEnd(
       widths[index])).join(' | ')} |`;
-}
-
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

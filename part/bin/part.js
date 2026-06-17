@@ -5,11 +5,15 @@ import { createEnvironment }
 import { runCli }
   from '../src/cli.js';
 
-const exitCode =
-  await runCli(
-    process.argv.slice(2),
-    createEnvironment(
-      { stdout: process.stdout,
-        stderr: process.stderr }));
+const environment =
+  createEnvironment(
+    { stdout: process.stdout,
+      stderr: process.stderr });
 
-process.exitCode = exitCode;
+await runCli(
+  process.argv.slice(2),
+  environment);
+
+process.exitCode = environment.exitCode;
+
+environment.logger.dispose();

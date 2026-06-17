@@ -83,6 +83,42 @@ test(
   });
 
 test(
+  'RQ132 cli accepts --project=value syntax',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    let project = '';
+    
+    environment.register(
+      execVersion,
+      async e => {
+        project = e.project;
+        return Promise.resolve(0);
+      });
+
+    await runCli(
+      [
+        'version',
+        '--project=artefacts',
+      ],
+      environment);
+
+    const projectPath =
+      path.resolve(
+        'artefacts');
+
+    assert.equal(
+      environment.project,
+      projectPath);
+
+    assert.equal(
+      project,
+      projectPath);
+  });
+
+test(
   'RQ131 cli initialises logger',
   async () =>
   {
@@ -113,7 +149,7 @@ test(
   });
 
 test(
-  'unknown options are rejected by the command parser',
+  'RQ101 unknown options are rejected by the command parser',
   async () =>
   {
     const environment =
@@ -137,7 +173,7 @@ test(
   });
 
 test(
-  'cli reports missing option values as command errors',
+  'RQ101 cli reports missing option values as command errors',
   async () => {
     const environment =
       createEnvironment();
@@ -157,7 +193,7 @@ test(
   });
 
 test(
-  'cli rejects unsupported long options',
+  'RQ101 cli rejects unsupported long options',
   async () => {
     const environment =
       createEnvironment();

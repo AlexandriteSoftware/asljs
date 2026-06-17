@@ -13,6 +13,7 @@ import pino
  * @property {(message: string) => void} warning
  * @property {(message: string) => void} warn
  * @property {(message: string) => void} error
+ * @property {() => void} dispose
  */
 
 /**
@@ -47,20 +48,22 @@ export function createLogger(
 
   if (options.file) {
     transport =
-      { target: 'pino/file',
-        options:
-          { destination: options.file,
-            mkdir: true } };
+      pino.transport(
+        { target: 'pino/file',
+          options:
+            { destination: options.file,
+              mkdir: true } });
   } else {
     transport =
-      { target: 'pino-pretty',
-        options: { colorize: true } };
+      pino.transport(
+        { target: 'pino-pretty',
+          options: { colorize: true } });
   }
 
   const logger =
     pino(
-      { level,
-        transport });
+      { level },
+      transport);
 
   /** @type {Logger} */
   const proxy =
@@ -73,7 +76,8 @@ export function createLogger(
       information: message => logger.info(message),
       warning: message => logger.warn(message),
       warn: message => logger.warn(message),
-      error: message => logger.error(message) };
+      error: message => logger.error(message),
+      dispose: () => transport.end() };
 
   return proxy;
 }

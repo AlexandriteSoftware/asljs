@@ -2,6 +2,8 @@ import path
   from 'node:path';
 import { readFile }
   from 'node:fs/promises';
+import { toPosixPath }
+  from '../formatting.js';
 import { extractHeading,
          parsePropertyValues }
   from './markdown-query.js';
@@ -167,8 +169,14 @@ export class ArtefactProvider
   }
 }
 
+/**
+ * @param {string} projectDirectory 
+ * @param {ArtefactDefinition} definition 
+ * @param {string} artefactPath 
+ * @returns {Artefact}
+ */
 async function buildArtefact(
-  rootDirectory,
+  projectDirectory,
   definition,
   artefactPath)
 {
@@ -178,10 +186,10 @@ async function buildArtefact(
       relativePath:
         toPosixPath(
           path.relative(
-            rootDirectory,
+            projectDirectory,
             artefactPath)),
       basePath:
-        rootDirectory,
+        projectDirectory,
       name:
         path.basename(
           artefactPath,
@@ -207,10 +215,10 @@ async function buildArtefact(
     relativePath:
       toPosixPath(
         path.relative(
-          rootDirectory,
+          projectDirectory,
           artefactPath)),
     basePath:
-      rootDirectory,
+      projectDirectory,
     name:
       path.basename(
         artefactPath,
@@ -223,16 +231,4 @@ async function buildArtefact(
     properties,
     ...properties
   };
-}
-
-/**
- * @param {string} value
- * @returns {string}
- */
-function toPosixPath(
-  value)
-{
-  return value.replaceAll(
-    '\\',
-    '/');
 }

@@ -4,6 +4,8 @@ RL10 - At least one test file has requirement ID in its content.
 
 import { readFile }
   from 'node:fs/promises';
+import path
+  from 'node:path';
 
 /**
  * @type { import('../../src/rule-validation-function.js')
@@ -13,8 +15,15 @@ export async function validate(
   artefact,
   context)
 {
-  context.logger.trace(
-    `Requirement_RL10.validate(${artefact.path})`);
+  const logger =
+    context.logger;
+
+  const fileName =
+    path.basename(
+      artefact.path);
+
+  const ctx =
+    `Requirement_RL10.validate(${fileName}}): `;
 
   const idMatch =
     artefact.name.match(/^(RQ\d+)/);
@@ -35,8 +44,14 @@ export async function validate(
       item => item.name === 'Unit Test File');
 
   if (!unitTestFileDefinition) {
+    const message =
+      'Unit Test File definition not found.';
+
+    logger.trace(
+      `${ctx}${message}`);
+
     throw new Error(
-      'Unit Test File definition not found.');
+      message);
   }
 
   const testFileArtefacts =
@@ -45,8 +60,15 @@ export async function validate(
         unitTestFileDefinition);
 
   const testFiles =
-    testFileArtefacts.map(
-      item => item.path);
+    testFileArtefacts
+      .map(
+        item => item.path);
+
+  logger.trace(
+    `${ctx}searching for requirement ID "${requirementId}" in test files.`);
+
+  logger.trace(
+    `${ctx}found ${testFiles.length} test file(s).`);
 
   for (const testFile of testFiles) {
     const content =

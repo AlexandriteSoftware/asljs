@@ -20,3 +20,9 @@ Options can appear in any order after the action.
 
 Some options can be flags, i.e. they do not have a value, and their presence
 indicates that the flag is set.
+
+When one of the following happens, the CLI stops with an error:
+
+- An unknown action is specified.
+- An unknown option is specified.
+- An option is specified without a value, when the option requires a value.

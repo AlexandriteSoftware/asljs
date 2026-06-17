@@ -12,12 +12,8 @@ import { readFile }
  *           .ruleValidationFunction }
  */
 export async function validate(
-  artefact,
-  context)
+  artefact)
 {
-  context.logger.trace(
-    `Article_RL11.validate(${artefact.path})`);
-
   const content =
     await readFile(
       artefact.path,
@@ -40,6 +36,7 @@ export async function validate(
     headingMatch[1].trim();
 
   if (actualHeading !== expectedHeading) {
-    throw new Error(`Article heading must be "${expectedHeading}".`);
+    throw new Error(
+      `Article heading must be "${expectedHeading}".`);
   }
 }
