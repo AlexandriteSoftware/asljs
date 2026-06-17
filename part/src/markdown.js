@@ -1,3 +1,14 @@
+/**
+ * @typedef {Object} Column
+ * @property {string} property
+ * @property {string} [name]
+ */
+
+/**
+ * @param {Column[]} columns 
+ * @param {Record<string, any>[]} objects
+ * @returns {string}
+ */
 export function renderObjectsToMarkdownTable(
   columns,
   objects)
@@ -70,6 +81,11 @@ export function renderObjectsToMarkdownTable(
   return lines.join('\n');
 }
 
+/**
+ * @param {any[]} cells 
+ * @param {number[]} widths
+ * @returns {string}
+ */
 function renderRow(
   cells,
   widths)

@@ -11,17 +11,5 @@ test(
 {
   assert.deepEqual(
     Object.keys(part).sort(),
-    [
-      'ArtefactProvider',
-      'DefinitionProvider',
-      'GitIgnore',
-      'execCheck',
-      'execDefinition',
-      'execDefinitions',
-      'execInit',
-      'execInventory',
-      'execVersion',
-      'runCli',
-      'updateRules'
-    ]);
+    [ 'runCli' ]);
 });

@@ -9,6 +9,18 @@ import { pathToFileURL }
 
 /**
  * @typedef
+ *   { import('./artefact.js')
+ *       .Artefact }
+ *   Artefact
+ * @typedef
+ *   { import('./artefact-definition.js')
+ *       .ArtefactDefinition }
+ *   ArtefactDefinition
+ * @typedef
+ *   { import('./artefact-definition.js')
+ *       .ArtefactDefinitionRule }
+ *   ArtefactDefinitionRule
+ * @typedef
  *   { import('./providers/artefact-provider.js')
  *       .ArtefactProvider }
  *   ArtefactProvider
@@ -39,6 +51,10 @@ export class RuleRunner
     this.artefactProvider = artefactProvider;
   }
 
+  /**
+   * @param {ArtefactDefinitionRule} rule
+   * @param {Artefact} artefact
+   */
   async runRule(
     rule,
     artefact)
@@ -82,12 +98,15 @@ export class RuleRunner
       artefact);
   }
 
+  /**
+   * @param {ArtefactDefinition} definition
+   * @param {Artefact} artefact
+   */
   async runRules(
     definition,
     artefact)
   {
-    const results =
-      [];
+    const results = [];
 
     for (const rule of definition.rules) {
       const result =
@@ -101,46 +120,52 @@ export class RuleRunner
     return results;
   }
 
+  /**
+   * @param {ArtefactDefinitionRule} rule
+   * @param {Artefact} artefact
+   */
   async runJavaScriptRule(
     rule,
     artefact)
   {
+    if (!rule.path) {
+      throw new Error(
+        `Missing rule file for ${rule.name}.`);
+    }
+
+    const importUrl =
+      pathToFileURL(
+        rule.path);
+
     try {
       const validatorModule =
         await import(
-          pathToFileURL(
-            rule.path).href);
+          importUrl.href);
 
       if (typeof validatorModule.validate !== 'function') {
-        return {
-          rule,
-          result: 'Fail',
-          message: 'Rule module must export validate.',
-        };
+        throw new Error(
+          'Rule module must export validate.');
       }
 
-      const outcome =
+      let result = null;
+
+      try {
         await validatorModule.validate(
           artefact,
-          {
-            logger: this.logger,
+          { logger: this.logger,
             definitions: this.definitionProvider,
-            artefacts: this.artefactProvider
-          });
-
-      if (outcome === false) {
-        return {
-          rule,
-          result: 'Fail',
-          message: rule.description,
-        };
+            artefacts: this.artefactProvider });
+      } catch (error) {
+        result =
+          error
+          ?? new Error('Unknown error');
       }
 
-      if (typeof outcome === 'string' && outcome.length > 0) {
+      if (result !== null) {
         return {
           rule,
           result: 'Fail',
-          message: outcome,
+          message: this.formatError(result)
         };
       }
 
@@ -159,17 +184,29 @@ export class RuleRunner
     }
   }
 
+  /**
+   * @param {ArtefactDefinitionRule} rule
+   * @param {Artefact} artefact
+   */
   async runExecutableRule(
     rule,
     artefact)
   {
+    if (!rule.path) {
+      throw new Error(
+        `Missing rule file for ${rule.name}.`);
+    }
+
+    const ruleFilePath =
+      rule.path;
+
     return new Promise((resolve) => {
       const child =
         spawn(
-          rule.path,
+          ruleFilePath,
           [artefact.path],
           {
-            cwd: artefact.baseDirectory,
+            cwd: path.dirname(ruleFilePath),
             env: process.env,
             stdio: ['pipe', 'pipe', 'pipe'],
           });
@@ -221,6 +258,9 @@ export class RuleRunner
     });
   }
 
+  /**
+   * @param {any} error
+   */
   formatError(error) {
     if (error instanceof Error) {
       return error.message.replaceAll(

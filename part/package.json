@@ -15,7 +15,6 @@
     "bin/**",
     "src/**",
     "README.md",
-    "REFERENCE.md",
     "LICENSE.md",
     "DEVELOPMENT.md"
   ],

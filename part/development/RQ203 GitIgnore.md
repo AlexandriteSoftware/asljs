@@ -13,9 +13,3 @@ It has the following methods:
 going up to the project root until it reaches the repository root (folder with
 the `.git` subfolder) or filesystem root. It caches collected `.gitignore`
 files.
-
-See also:
-
-- [RQ132 CLI Project parameter][1]
-
-[1]: <RQ132 CLI Project parameter.md>
