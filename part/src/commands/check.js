@@ -29,8 +29,16 @@ import { RuleRunner }
  */
 
 /**
+ * @typedef {Object} CheckCommandOptions
+ * @property {string} [pattern]
+ * @property {string[]} [checkDefinitions]
+ * @property {string[]} [checkRules]
+ * @property {boolean} [withPositives]
+ */
+
+/**
  * @param {Environment} environment 
- * @param {*} options 
+ * @param {Partial<CheckCommandOptions>} options 
  */
 export async function execCheck(
   environment,

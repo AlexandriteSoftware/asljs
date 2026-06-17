@@ -26,7 +26,6 @@ test(
     t.after(
       () => workspace.cleanup());
 
-
     workspace.mkdir(
       'artefacts/rules');
 
@@ -115,7 +114,7 @@ test(
       'part');
 
     workspace.writeText(
-      'Article.md',
+      'definitions/Article.md',
       `# Article
 
 Markdown article.
@@ -137,7 +136,7 @@ Definition file.
 
 ## Location
 
-- Files: ../definitions/**/*.md
+- Files: **/*.md
 
 ## Rules
 
@@ -145,7 +144,7 @@ Definition file.
 `);
 
     workspace.writeText(
-      'part/Article_RL10.js',
+      'definitions/rules/Article_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -165,8 +164,8 @@ Definition file.
 
     await execCheck(
       environment,
-      { target: 'definitions/Requirement.md',
-          withPositives: true });
+      { pattern: 'definitions/Requirement.md',
+        withPositives: true });
 
     assert.equal(
       environment.stderr.toString(),
@@ -254,10 +253,10 @@ Markdown article.
 
     await execCheck(
       environment,
-      { target: 'development/**/*.md',
-          checkDefinitions: ['Requirement'],
-          checkRules: ['Requirement_RL11'],
-          withPositives: true });
+      { pattern: 'development/**/*.md',
+        checkDefinitions: ['Requirement'],
+        checkRules: ['Requirement_RL11'],
+        withPositives: true });
 
     assert.equal(
       environment.stderr.toString(),

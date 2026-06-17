@@ -304,7 +304,10 @@ export class DefinitionProvider
         await readdir(
           directoryPath,
           { withFileTypes: true });
-    } catch {
+    } catch (error) {
+      this.logger.trace(
+        `DefinitionProvider.resolveRuleFile: failed to read directory ${directoryPath}. Exception: ${error}.`);
+
       return null;
     }
 
