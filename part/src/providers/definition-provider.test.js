@@ -11,11 +11,17 @@ import { TmpDir }
 import { DefinitionProvider }
   from './definition-provider.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -57,7 +63,7 @@ Hidden definition.
 
     const provider =
       new DefinitionProvider(
-        createLogger(),
+        logger,
         workspace.path);
 
     const definitions =
@@ -76,7 +82,8 @@ test(
   'RQ202: DefinitionProvider loads markdown definition metadata and structured rules',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -104,8 +111,8 @@ A todo item is a task that needs to be done.
 
 ## Location
 
-- Folders: Todo Items
-- Exclude: Todo Items/Templates
+- Pattern: \`Todo Items/**/*.md\`
+- Exclude: \`Todo Items/Templates/**/*.md\`
 - GitIgnore
 
 ## Rules
@@ -115,7 +122,7 @@ A todo item is a task that needs to be done.
 
     const definitionProvider =
       new DefinitionProvider(
-        createLogger(),
+        logger,
         workspace.path);
 
     const definition =
@@ -135,8 +142,8 @@ A todo item is a task that needs to be done.
     assert.deepEqual(
       definition.location,
       {
-        patterns: ['Todo Items'],
-        exclude: ['Todo Items/Templates'],
+        patterns: ['Todo Items/**/*.md'],
+        exclude: ['Todo Items/Templates/**/*.md'],
         filters: [{ name: 'GitIgnore' }],
       });
 
@@ -156,8 +163,7 @@ A todo item is a task that needs to be done.
         {
           id: 'R1',
           description: 'Due date must be in the future.',
-          filePath: 'rules/Todo Item_R1.js',
-          absoluteFilePath: path.join(
+          path: path.join(
             workspace.path,
             'rules',
             'Todo Item_R1.js'),
@@ -169,7 +175,8 @@ test(
   'RQ203: Definition returns null for markdown files that do not match the definition format',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -186,7 +193,7 @@ This file should not be treated as a definition.
 
     const definitionProvider =
       new DefinitionProvider(
-        createLogger(),
+        logger,
         workspace.path);
 
     const definition =

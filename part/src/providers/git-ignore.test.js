@@ -9,12 +9,18 @@ import { createLogger }
 import { GitIgnore }
   from './git-ignore.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
   async () =>
   {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     workspace.mkdir(
       'docs/drafts');

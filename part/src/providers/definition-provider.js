@@ -21,6 +21,10 @@ import { sliceNodes,
  *   { import('../artefact-definition.js')
  *       .ArtefactDefinition }
  *   ArtefactDefinition
+ * @typedef
+ *   { import('../artefact-definition.js')
+ *       .ArtefactDefinitionRule }
+ *   ArtefactDefinitionRule
  */
 
 const MARKDOWN_PARSER =
@@ -391,7 +395,7 @@ function parseRules(
 }
 
 /**
- * @returns {ArtefactDefinitionRule[]}
+ * @returns {Promise<ArtefactDefinitionRule[]>}
  */
 async function loadRules(
   ruleEntries,
@@ -408,9 +412,7 @@ async function loadRules(
         return {
           id: rule.id,
           description: rule.description,
-          path: resolvedRuleFile
-            ? resolvedRuleFile.filePath
-            : null
+          path: resolvedRuleFile?.path
         };
       }));
 }
@@ -422,69 +424,61 @@ async function resolveRuleFile(
   if (
     !options.rootPath
     || !options.definitionName
-    || !options.definitionPath) {
+    || !options.definitionPath)
+  {
     return null;
   }
 
-  const candidateDirectories =
-    [
-      path.join(
-        path.dirname(
-          options.definitionPath),
-        'rules'),
-      path.join(
-        options.rootPath,
-        'part'),
-    ];
+  const directoryPath =
+    path.join(
+      path.dirname(
+        options.definitionPath),
+      'rules');
 
-  const candidateBaseNames =
-    [
-      `${options.definitionName}_${ruleId}`
-    ];
+  const baseNames =
+    `${options.definitionName}_${ruleId}`;
 
-  for (const directoryPath of candidateDirectories) {
-    let entries;
+  let entries;
 
-    try {
-      entries = await readdir(
-        directoryPath,
-        {
-          withFileTypes: true,
-        });
-    }
-    catch {
+  try {
+    entries = await readdir(
+      directoryPath,
+      {
+        withFileTypes: true,
+      });
+  }
+  catch {
+    return null;
+  }
+
+  for (const entry of entries) {
+    if (!entry.isFile()) {
       continue;
     }
 
-    for (const entry of entries) {
-      if (!entry.isFile()) {
-        continue;
-      }
+    const entryBaseName =
+      path.basename(
+        entry.name,
+        path.extname(
+          entry.name));
 
-      const entryBaseName =
-        path.basename(
-          entry.name,
-          path.extname(
-            entry.name));
-
-      if (!candidateBaseNames.includes(entryBaseName)) {
-        continue;
-      }
-
-      const absoluteFilePath =
-        path.join(
-          directoryPath,
-          entry.name);
-
-      return {
-        absoluteFilePath,
-        filePath: toPosixPath(
-          path.relative(
-            path.dirname(
-              options.definitionPath),
-            absoluteFilePath)),
-      };
+    if (baseNames !== entryBaseName) {
+      continue;
     }
+
+    const absoluteFilePath =
+      path.join(
+        directoryPath,
+        entry.name);
+
+    return {
+      path: absoluteFilePath,
+      relativePath: toPosixPath(
+        path.relative(
+          path.dirname(
+            options.definitionPath),
+          absoluteFilePath)),
+    };
   }
 
   return null;

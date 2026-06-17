@@ -20,7 +20,8 @@ test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -109,7 +110,8 @@ test(
   'RQ205: ArtefactProvider returns all matching definitions for an artefact',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
