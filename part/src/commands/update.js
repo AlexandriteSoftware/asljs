@@ -2,8 +2,7 @@ import path
   from 'node:path';
 import { spawn }
   from 'node:child_process';
-import { mkdir,
-         readFile,
+import { readFile,
          writeFile }
   from 'node:fs/promises';
 import { DefinitionProvider }
@@ -144,23 +143,13 @@ export async function execUpdate(
         logger.trace(
           `requesting Copilot CLI to generate the rule file`);
 
-        const content =
+        const response =
           await runCopilotCli(
             logger,
             request);
 
-        logger.trace(
-          `writing new rule file: ${expectedFilePath}`);
-
-        await mkdir(
-          path.dirname(
-            expectedFilePath),
-          {
-            recursive: true,
-          });
-
         updates.push(
-          content);
+          response);
 
         continue;
       }
@@ -185,9 +174,11 @@ export async function execUpdate(
       const firstComment =
         extractFirstComment(currentContent);
 
-      if (commentMatchesRule(
-        firstComment,
-        rule)) {
+      if (
+        commentMatchesRule(
+          firstComment,
+          rule))
+      {
         continue;
       }
 
@@ -224,30 +215,22 @@ export async function execUpdate(
         continue;
       }
 
-      const updatedContent =
+      const response =
         await runCopilotCli(
           logger,
           request);
 
-      await writeFile(
-        currentFilePath,
-        ensureTrailingNewline(updatedContent),
-        'utf8');
-
       updates.push(
-        `Updated ${toPosixPath(
-          path.relative(
-            rootDir,
-            currentFilePath))}`);
+        response);
     }
   }
 
   const result =
     {
-    updates,
-    warnings,
-    prompts,
-  };
+      updates,
+      warnings,
+      prompts,
+    };
 
   if (result.updates.length === 0) {
     environment.stdout.write(
@@ -439,18 +422,21 @@ async function runConfiguredCopilotCli(
   logger,
   request)
 {
-  const command =
+  let command =
     process.env.PART_COPILOT_CLI_COMMAND?.trim();
 
-  if (command) {
-    return runShellCopilotCli(
-      logger,
-      command,
-      request);
+  if (!command) {
+    command = 
+      'copilot -p "" '
+      + '--allow-all-tools '
+      + '--allow-all-paths '
+      + '--no-ask-user '
+      + '--silent';
   }
 
-  return runDefaultCopilotCli(
+  return runCopilotCli(
     logger,
+    command,
     request);
 }
 
@@ -459,13 +445,13 @@ async function runConfiguredCopilotCli(
  * @param {string} command
  * @param {CopilotRequest} request 
  */
-async function runShellCopilotCli(
+async function runCopilotCli(
   logger,
   command,
   request)
 {
   logger.trace(
-    `runShellCopilotCli: ${command}`);
+    `runCopilotCli: ${command}`);
 
   return new Promise((resolve, reject) => {
     const child =
@@ -522,131 +508,6 @@ async function runShellCopilotCli(
 
     child.stdin.end();
   });
-}
-
-/**
- * @param {Logger} logger
- * @param {CopilotRequest} request 
- */
-async function runDefaultCopilotCli(
-  logger,
-  request)
-{
-  const attempts =
-    getDefaultCopilotCliInvocations(
-      request.prompt);
-
-  let lastError = null;
-
-  for (const attempt of attempts) {
-    try {
-      return await runExecutableCopilotCli(
-        attempt.command,
-        attempt.args,
-        request.rootDirectory);
-    } catch (error) {
-      if (!isMissingCommandError(error)) {
-        throw error;
-      }
-
-      lastError = error;
-    }
-  }
-
-  throw new Error(
-    'UpdateRules requires GitHub Copilot CLI in PATH (via `gh copilot` or `copilot`) or PART_COPILOT_CLI_COMMAND.',
-    { cause: lastError ?? undefined },
-  );
-}
-
-function buildDefaultCopilotArgs(
-  prompt)
-{
-  return [
-    '-p',
-    prompt,
-    '--allow-all-tools',
-    '--allow-all-paths',
-    '--no-ask-user',
-    '--silent',
-  ];
-}
-
-export function getDefaultCopilotCliInvocations(
-  prompt)
-{
-  return [
-    {
-      command: 'gh',
-      args: [
-        'copilot',
-        ...buildDefaultCopilotArgs(prompt),
-      ],
-    },
-    {
-      command: 'copilot',
-      args: buildDefaultCopilotArgs(prompt),
-    },
-  ];
-}
-
-async function runExecutableCopilotCli(
-  command,
-  args,
-  cwd)
-{
-  return new Promise((resolve, reject) => {
-    const child =
-      spawn(
-        command,
-        args,
-        {
-          cwd,
-          stdio: ['ignore', 'pipe', 'pipe'],
-        });
-
-    let stdout = '';
-    let stderr = '';
-
-    child.stdout.on(
-      'data',
-      (chunk) => {
-        stdout += String(chunk);
-      });
-
-    child.stderr.on(
-      'data',
-      (chunk) => {
-        stderr += String(chunk);
-      });
-
-    child.on(
-      'error',
-      reject);
-
-    child.on(
-      'close',
-      (code) => {
-        if (code !== 0) {
-          reject(
-            new Error(
-              stderr.trim()
-              || `Copilot CLI failed with exit code ${code}.`));
-
-          return;
-        }
-
-        resolve(stdout);
-      });
-  });
-}
-
-function isMissingCommandError(
-  error)
-{
-  return error instanceof Error
-    && 'code' in error
-    && error.code === 'ENOENT';
 }
 
 function extractFirstComment(
@@ -717,14 +578,6 @@ function normalizeWhitespace(
   return value.replace(
     /\s+/g,
     ' ').trim();
-}
-
-function ensureTrailingNewline(
-  value)
-{
-  return value.endsWith('\n')
-    ? value
-    : `${value}\n`;
 }
 
 function toPosixPath(
