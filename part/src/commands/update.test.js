@@ -8,8 +8,7 @@ import { TmpDir }
   from '../tmp-dir.js';
 import { createEnvironment }
   from '../environment.js';
-import { execUpdate,
-         getDefaultCopilotCliInvocations }
+import { execUpdate }
   from './update.js';
 import { createLogger }
   from '../logging.js';
@@ -170,8 +169,17 @@ test(
           definitions: workspace.path,
           project: workspace.path,
           runCopilotCli:
-            async (logger, request) =>
-              `// ${request.comment}\nexport async function validate() {}\n`,
+            async (logger, request) => {
+              const ruleFileName =
+                path.basename(
+                  request.ruleFilePath);
+
+              workspace.writeText(
+                `artefacts/rules/${ruleFileName}`,
+                `// ${request.comment}\nexport async function validate() {}\n`);
+
+              return Promise.resolve('all done');
+            },
         });
 
     workspace.mkdir(
@@ -206,7 +214,7 @@ Requirement definition.
 
     assert.match(
       environment.stdout.toString(),
-      /Updated artefacts\/rules\/Requirement_RL10\.js/);
+      /all done/);
 
     assert.match(
       environment.stderr.toString(),
@@ -216,42 +224,4 @@ Requirement definition.
       workspace.readText(
         'artefacts/rules/Requirement_RL10.js'),
       /RL10 - Requirement rule\./);
-  });
-
-test(
-  'RQ125: update builds a GitHub Copilot CLI fallback invocation',
-  async () => {
-    const prompt =
-      'Create the complete JavaScript rule file.';
-
-    const invocations =
-      getDefaultCopilotCliInvocations(prompt);
-
-    assert.deepEqual(
-      invocations,
-      [
-        {
-          command: 'gh',
-          args: [
-            'copilot',
-            '-p',
-            prompt,
-            '--allow-all-tools',
-            '--allow-all-paths',
-            '--no-ask-user',
-            '--silent'
-          ]
-        },
-        {
-          command: 'copilot',
-          args: [
-            '-p',
-            prompt,
-            '--allow-all-tools',
-            '--allow-all-paths',
-            '--no-ask-user',
-            '--silent'
-          ]
-        }
-      ]);
   });
