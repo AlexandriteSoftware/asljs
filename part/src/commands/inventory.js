@@ -72,38 +72,41 @@ async function collectInventoryItems(
   definitionProvider,
   artefactProvider)
 {
+  logger.trace(
+    `Inventory command: collecting items`);
+
   const artefactIndex =
     new Map();
 
   const definitions =
     await definitionProvider.getDefinitions();
 
+  const ruleRunner =
+    new RuleRunner(
+      logger,
+      definitionProvider,
+      artefactProvider);
+
+  logger.trace(
+    `Inventory command: collecting items for ${definitions.length} definitions`);
+
   for (const definition of definitions) {
+    logger.trace(
+      `Inventory command: collecting items for definition "${definition.name}"`);
+
     const definitionArtefacts =
       await artefactProvider.getArtefacts(definition);
 
+    logger.trace(
+      `Inventory command: collected ${definitionArtefacts.length} artefacts for definition "${definition.name}"`);
+
     for (const artefact of definitionArtefacts) {
-      const definitionPath =
-        path.resolve(
-          definition.path);
-
-      if (artefact.path === definitionPath) {
-        continue;
-      }
-
       const existingEntry =
         artefactIndex.get(
-          artefact.relativePath) ?? {
-          file: artefact.relativePath,
-          definitions: [],
-          rulesOk: true,
-        };
-
-      const ruleRunner =
-        new RuleRunner(
-          logger,
-          definitionProvider,
-          artefactProvider);
+          artefact.relativePath)
+        ?? { file: artefact.relativePath,
+             definitions: [],
+             rulesOk: true };
 
       const ruleResults =
         await ruleRunner.runRules(
@@ -111,23 +114,22 @@ async function collectInventoryItems(
           artefact);
 
       const artifactResult =
-        {
-          file: artefact.relativePath,
+        { file: artefact.relativePath,
           definition: definition.name,
-          rulesOk: ruleResults.every(
-            (result) => result.result === 'Ok'),
-        };
+          rulesOk:
+            ruleResults.every(
+              result => result.result === 'Ok') };
 
       existingEntry.definitions.push(
-        {
-          name: definition.name,
+        { name: definition.name,
           orderKey: toPosixPath(
             path.relative(
               rootDirectory,
-              definition.path)),
-        });
+              definition.path)) });
 
-      existingEntry.rulesOk = existingEntry.rulesOk && artifactResult.rulesOk;
+      existingEntry.rulesOk =
+        existingEntry.rulesOk
+        && artifactResult.rulesOk;
 
       artefactIndex.set(
         artefact.relativePath,
@@ -142,11 +144,13 @@ async function collectInventoryItems(
         file: entry.file,
         definitions: entry.definitions
           .sort(
-            (left, right) => left.orderKey.localeCompare(
-              right.orderKey) || left.name.localeCompare(
+            (left, right) =>
+              left.orderKey.localeCompare(
+                right.orderKey)
+              || left.name.localeCompare(
                 right.name))
           .map(
-            (definition) => definition.name)
+            definition => definition.name)
           .join(','),
         rules: entry.rulesOk
           ? 'Ok'
