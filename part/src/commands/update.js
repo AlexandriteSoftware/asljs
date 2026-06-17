@@ -2,8 +2,7 @@ import path
   from 'node:path';
 import { spawn }
   from 'node:child_process';
-import { readFile,
-         writeFile }
+import { readFile }
   from 'node:fs/promises';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
