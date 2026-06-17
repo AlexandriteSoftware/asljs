@@ -97,7 +97,7 @@ A statement about the system that must be true.
       /\| development\/features\/RQ102 Example\.md \| Requirement_RL10 \| development\/features\/RQ102 Example\.md is not referenced by any test\. \|/);
   });
 
-0 && test(
+test(
   'RQ123: check includes rules from all matching definitions for the same artefact',
   async t => {
     const workspace =
@@ -180,7 +180,7 @@ Definition file.
       /\|\s+definitions\/Requirement\.md\s+\| Artefact Definition_RL10\s+\| OK\s+\|/);
   });
 
-0 && test(
+test(
   'RQ123: check filters by definitions and rules',
   async t => {
     const workspace =
@@ -275,7 +275,7 @@ Markdown article.
       /Article_RL10/);
   });
 
-0 && test(
+test(
   'RQ123: check uses artefact locations when pattern is omitted and sorts by path then rule',
   async t => {
     const workspace =
@@ -363,7 +363,7 @@ A statement about the system that must be true.
       ]);
   });
 
-0 && test(
+test(
   'RQ123: check shows only failing rows by default and still returns non-zero',
   async t => {
     const workspace =
@@ -431,7 +431,7 @@ A statement about the system that must be true.
       /Requirement_RL11/);
   });
 
-0 && test(
+test(
   'RQ123: check with-positives shows passing and failing rows',
   async t => {
     const workspace =
