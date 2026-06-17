@@ -3,9 +3,9 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execInventory }
   from './inventory.js';
 import { execCheck }
@@ -74,7 +74,7 @@ I need to buy milk.
 `);
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execInventory(
@@ -142,7 +142,7 @@ A statement about the system that must be true.
       '# RQ101 Example\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execInventory(
@@ -216,7 +216,7 @@ Definition file.
       '# Requirement\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execInventory(
@@ -287,7 +287,7 @@ A todo item is a task that needs to be done.
 `);
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path,
           definition: workspace.resolve('definitions') });
 

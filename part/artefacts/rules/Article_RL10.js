@@ -5,9 +5,17 @@ RL10 - Article start with a level 1 heading.
 import { readFile }
   from 'node:fs/promises';
 
+/**
+ * @type { import('../../src/rule-validation-function.js')
+ *           .ruleValidationFunction }
+ */
 export async function validate(
-  artefact)
+  artefact,
+  context)
 {
+  context.logger.trace(
+    `Article_RL10.validate(${artefact.path})`);
+
   const content =
     await readFile(
       artefact.path,

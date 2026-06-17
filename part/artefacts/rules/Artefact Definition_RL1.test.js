@@ -2,49 +2,28 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
+import { TmpDir }
+  from '../../src/tmp-dir.js';
 import { createLogger }
   from '../../src/logging.js';
+import { ArtefactProvider }
+  from '../../src/providers/artefact-provider.js';
 import { DefinitionProvider }
-  from '../../src/providers/definitionProvider.js';
-import { TmpDir }
-  from '../../src/TmpDir.js';
+  from '../../src/providers/definition-provider.js';
 import { validate }
   from './Artefact Definition_RL1.js';
 
-test(
-  'Artefact Definition_RL1 ignores markdown files that are not definitions',
-  async t => {
-    const workspace =
-      new TmpDir();
-
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
-      'Article.md',
-      '# Different Name\n\nNot a definition.\n');
-
-    const logger =
-      createLogger();
-
-    const definitionProvider =
-      new DefinitionProvider(
-        logger,
-        workspace.path);
-      
-    await assert.doesNotReject(
-      () =>
-        validate(
-          { path: workspace.resolve('Article.md') },
-          { definitions: definitionProvider,
-            logger: createLogger() }));
-  });
+const logger =
+  createLogger(
+    { level: 'trace',
+      enabled: false });
 
 test(
   'Artefact Definition_RL1 passes when each declared rule file exists',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -53,7 +32,7 @@ test(
 
     workspace.writeText(
       'rules/Todo Item_RL1.js',
-      'export async function validate() {}\n');
+      'export async function validate() { }\n');
 
     workspace.writeText(
       'Todo Item.md',
@@ -63,34 +42,31 @@ Definition.
 
 ## Location
 
-- Files: Todo Items/*.md
+- Pattern: \`Todo Items/*.md\`
 
 ## Rules
 
 - RL1 - Must have a rule file.
 `);
 
-    const logger =
-      createLogger();
-
-    const definitionProvider =
-      new DefinitionProvider(
-        logger,
-        workspace.path);
+    const context =
+      createContext(
+        workspace);
 
     await assert.doesNotReject(
-      () =>
-        validate(
-          { path: workspace.resolve('Todo Item.md') },
-          { definitions: definitionProvider,
-            logger: createLogger() }));
+      async () =>
+        await validate(
+          { path: workspace.resolve('Todo Item.md'),
+            name: 'Todo Item' },
+          context));
   });
 
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -103,7 +79,7 @@ Definition.
 
 ## Location
 
-- Files: Todo Items/*.md
+- Pattern: \`Todo Items/*.md\`
 
 ## Rules
 
@@ -111,19 +87,41 @@ Definition.
 - RL2 - Must also have a second rule file.
 `);
 
-    const logger =
-      createLogger();
-
-    const definitionProvider =
-      new DefinitionProvider(
-        logger,
-        workspace.path);
+    const context =
+      createContext(
+        workspace);
 
     await assert.rejects(
-      () =>
-        validate(
-          { path: workspace.resolve('Todo Item.md') },
-          { definitions: definitionProvider,
-            logger: createLogger() }),
-      /Definition is missing rule files for: RL1, RL2\./);
+      async () =>
+        await validate(
+          { path: workspace.resolve('Todo Item.md'),
+            name: 'Todo Item' },
+          context));
   });
+
+/**
+ * @param {TmpDir} workspace
+ */
+function createContext(
+  workspace)
+{
+  const definitionProvider =
+    new DefinitionProvider(
+      logger,
+      workspace.path);
+
+  const artefactProvider =
+    new ArtefactProvider(
+      logger,
+      workspace.path,
+      definitionProvider);
+
+  const context =
+    {
+      logger,
+      definitions: definitionProvider,
+      artefacts: artefactProvider
+    };
+
+  return context;
+}

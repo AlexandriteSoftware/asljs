@@ -3,9 +3,9 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execDefinitions }
   from './definitions.js';
 
@@ -44,7 +44,7 @@ This top-level definition should be ignored by the Definitions parameter.
 `);
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path,
           definition: workspace.resolve('definitions') });
 

@@ -7,6 +7,9 @@ import path
 
 export class TmpDir
 {
+  /**
+   * @param {import('./logging.js').Logger} logger
+   */
   constructor(
     logger)
   {
@@ -20,12 +23,15 @@ export class TmpDir
 
     this.ctx = `TmpDir[${this.path}]`;
 
-    this.logger?.trace(
-      `${this.ctx}: created`);
+    this.logger.trace(
+      `${this.ctx}.constructor()`);
 
     this.deleted = false;
   }
 
+  /**
+   * @param {string[]} segments
+   */
   resolve(
     ...segments)
   {
@@ -43,10 +49,13 @@ export class TmpDir
       ...segments);
   }
 
+  /**
+   * @param {string} directoryPath
+   */
   mkdir(
     directoryPath)
   {
-    this.logger?.trace(
+    this.logger.trace(
       `${this.ctx}.mkdir(${directoryPath})`);
 
     const resolvedDirectoryPath =
@@ -58,11 +67,15 @@ export class TmpDir
       { recursive: true });
   }
 
+  /**
+   * @param {string} filePath
+   * @param {string} content
+   */
   writeText(
     filePath,
     content)
   {
-    this.logger?.trace(
+    this.logger.trace(
       `${this.ctx}.writeText(${filePath}, ...)`);
 
     const resolvedFilePath =
@@ -81,10 +94,13 @@ export class TmpDir
       'utf8');
   }
 
+  /**
+   * @param {string} filePath
+   */
   readText(
     filePath)
   {
-    this.logger?.trace(
+    this.logger.trace(
       `${this.ctx}.readText(${filePath})`);
 
     const resolvedFilePath =
@@ -96,10 +112,13 @@ export class TmpDir
       'utf8');
   }
 
+  /**
+   * @param {string} path
+   */
   stat(
     path)
   {
-    this.logger?.trace(
+    this.logger.trace(
       `${this.ctx}.stat(${path})`);
 
     const resolvedPath =
@@ -112,7 +131,7 @@ export class TmpDir
 
   cleanup()
   {
-    this.logger?.trace(
+    this.logger.trace(
       `${this.ctx}.cleanup()`);
 
     fs.rmSync(

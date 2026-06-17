@@ -1,7 +1,7 @@
 import path
   from 'path';
 import { DefinitionProvider }
-  from '../providers/definitionProvider.js';
+  from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown.js';
 

@@ -3,9 +3,9 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execDefinition }
   from './definition.js';
 
@@ -46,7 +46,7 @@ A statement about the system that must be true.
       'export async function validate() { }\n');
 
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     await execDefinition(
       environment,

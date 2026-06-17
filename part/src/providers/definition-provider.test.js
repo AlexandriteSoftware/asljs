@@ -7,9 +7,9 @@ import path
 import { createLogger }
   from '../logging.js';
 import { TmpDir }
-  from '../tmpDir.js';
+  from '../tmp-dir.js';
 import { DefinitionProvider }
-  from './definitionProvider.js';
+  from './definition-provider.js';
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',

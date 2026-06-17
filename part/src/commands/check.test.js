@@ -3,17 +3,25 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createLogger }
+  from '../../src/logging.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execCheck }
   from './check.js';
+
+const logger =
+  createLogger(
+    { level: 'trace',
+      enabled: false });
 
 test(
   'RQ123: check prints one row per matched file and rule',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -64,7 +72,7 @@ A statement about the system that must be true.
       '# RQ102 Example\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(
@@ -91,7 +99,8 @@ test(
   'RQ123: check includes rules from all matching definitions for the same artefact',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -145,7 +154,7 @@ Definition file.
       '# Requirement\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(
@@ -170,15 +179,15 @@ test(
   'RQ123: check filters by definitions and rules',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
 
 
     workspace.mkdir(
-      'artefacts',
-      'rules');
+      'artefacts/rules');
 
     workspace.mkdir(
       'development');
@@ -231,7 +240,7 @@ Markdown article.
       '# RQ101 Example\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(
@@ -262,22 +271,20 @@ test(
   'RQ123: check uses artefact locations when pattern is omitted and sorts by path then rule',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
 
     workspace.mkdir(
-      'artefacts',
-      'rules');
+      'artefacts/rules');
 
     workspace.mkdir(
-      'development',
-      'zeta');
+      'development/zeta');
 
     workspace.mkdir(
-      'development',
-      'alpha');
+      'development/alpha');
 
     workspace.writeText(
       'artefacts/Requirement.md',
@@ -312,7 +319,7 @@ A statement about the system that must be true.
       '# RQ100 Earlier\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(
@@ -349,15 +356,15 @@ test(
   'RQ123: check shows only failing rows by default and still returns non-zero',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
 
 
     workspace.mkdir(
-      'artefacts',
-      'rules');
+      'artefacts/rules');
 
     workspace.mkdir(
       'development');
@@ -391,7 +398,7 @@ A statement about the system that must be true.
       '# RQ101 Example\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(
@@ -414,15 +421,15 @@ test(
   'RQ123: check with-positives shows passing and failing rows',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
 
 
     workspace.mkdir(
-      'artefacts',
-      'rules');
+      'artefacts/rules');
 
     workspace.mkdir(
       'development');
@@ -456,7 +463,7 @@ A statement about the system that must be true.
       '# RQ101 Example\n');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path });
 
     await execCheck(

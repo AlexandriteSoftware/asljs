@@ -3,13 +3,13 @@ import test
 import assert
   from 'node:assert/strict';
 import { ArtefactProvider }
-  from './artefactProvider.js';
+  from './artefact-provider.js';
 import { DefinitionProvider }
-  from './definitionProvider.js';
+  from './definition-provider.js';
 import { createLogger }
   from '../logging.js';
 import { TmpDir }
-  from '../tmpDir.js';
+  from '../tmp-dir.js';
 
 const logger =
   createLogger(

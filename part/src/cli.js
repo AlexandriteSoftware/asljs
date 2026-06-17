@@ -2,6 +2,8 @@ import path
   from 'node:path';
 import { createLogger }
   from './logging.js';
+import { createEnvironment }
+  from './environment.js';
 import { Command }
   from 'commander';
 import { execInit }
@@ -19,10 +21,29 @@ import { execDefinition }
 import { execVersion }
   from './commands/version.js';
 
+/**
+ * @typedef
+ *   { import('./environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @param {string[]} args 
+ * @param {Environment?} environment 
+ * @returns {Promise<number>}
+ */
 export async function runCli(
   args,
-  environment)
+  environment = null)
 {
+  environment =
+    environment
+    ?? createEnvironment();
+
+  environment.logger.trace(
+    `CLI: args=${JSON.stringify(args)}`);
+
   const cli =
     createCli(
       environment);
@@ -37,13 +58,12 @@ export async function runCli(
       args,
       { from: 'user' });
 
-    return cli.exitCode ?? 0;
+    return 0;
   } catch (error) {
     if (
       writeCommanderError(
         environment,
         error,
-        args,
         cli))
     {
       return 1;
@@ -65,6 +85,9 @@ export async function runCli(
   }
 }
 
+/**
+ * @param {Environment} environment 
+ */
 function createCli(
   environment)
 {
@@ -104,22 +127,18 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
-        const loggerOptions =
-          { enabled: options.log,
-            level: options.loglevel,
-            file: options.logfile };
+        if (options.log) {
+          const loggerOptions =
+            { enabled: options.log,
+              level: options.loglevel,
+              file: options.logfile };
 
-        const logger =
-          createLogger(
-            loggerOptions);
+          const logger =
+            createLogger(
+              loggerOptions);
 
-        environment.logger = logger;
-
-        logger.trace(
-          `Initialised logger with ${JSON.stringify(loggerOptions)}`);
-
-        logger.info(
-          `Started app with ${JSON.stringify(options)}`);
+          environment.logger = logger;
+        }
 
         if (
           options.definitions !== undefined
@@ -148,7 +167,10 @@ function createCli(
           environment.project =
             environment.cwd;
         }
-      });      
+
+        environment.logger.trace(
+          `CLI post-hook: definitions=${environment.definitions}, project=${environment.project}`);
+      });
 
   cli.command('inventory')
     .description(
@@ -159,13 +181,8 @@ function createCli(
           environment.resolve(
             execInventory);
 
-        const result =
-          await method(
-            environment);
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment);
       });
 
   cli.command('definition')
@@ -179,14 +196,9 @@ function createCli(
           environment.resolve(
             execDefinition);
 
-        const result =
-          await method(
-            environment,
-            { target });
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment,
+          { target });
     });
 
   cli.command('definitions')
@@ -198,13 +210,8 @@ function createCli(
           environment.resolve(
             execDefinitions);
 
-        const result =
-          await method(
-            environment);
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment);
     });
 
   cli.command('init')
@@ -216,13 +223,8 @@ function createCli(
           environment.resolve(
             execInit);
 
-        const result =
-          await method(
-            environment);
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment);
       });
 
   cli.command('update')
@@ -237,14 +239,9 @@ function createCli(
           environment.resolve(
             execUpdate);
 
-        const result =
-          await method(
-            environment,
-            options);
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment,
+          options);
       });
 
   cli.command('check')
@@ -266,22 +263,17 @@ function createCli(
           environment.resolve(
             execCheck);
 
-        const result =
-          await method(
-            environment,
-            { pattern,
-              checkDefinitions:
-                splitCommaSeparatedOption(
-                  options.checkDefinitions),
-              checkRules:
-                splitCommaSeparatedOption(
-                  options.checkRules),
-              withPositives:
-                options.withPositives === true });
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment,
+          { pattern,
+            checkDefinitions:
+              splitCommaSeparatedOption(
+                options.checkDefinitions),
+            checkRules:
+              splitCommaSeparatedOption(
+                options.checkRules),
+            withPositives:
+              options.withPositives === true });
       });
 
   cli.command('version')
@@ -293,31 +285,38 @@ function createCli(
           environment.resolve(
             execVersion);
 
-        const result =
-          await method(
-            environment);
-
-        updateExitCode(
-          cli,
-          result);
+        await method(
+          environment);
       });
 
   return cli;
 }
 
+/**
+ * @param {Environment} environment
+ * @param {any} error
+ * @param {import('commander').Command} cli
+ * @returns {boolean}
+ */
 function writeCommanderError(
   environment,
   error,
-  args,
   cli)
 {
-  if (!(error instanceof Error)
-      || typeof error.code !== 'string')
+  if (!(error instanceof Error))
   {
     return false;
   }
 
-  if (error.code === 'commander.optionMissingArgument') {
+  const code =
+    (/** @type {any} */ (error)).code;
+
+  if (typeof code !== 'string')
+  {
+    return false;
+  }
+
+  if (code === 'commander.optionMissingArgument') {
     const optionName =
       extractOptionName(
         error.message);
@@ -328,7 +327,7 @@ function writeCommanderError(
     return true;
   }
 
-  if (error.code === 'commander.unknownOption') {
+  if (code === 'commander.unknownOption') {
     const optionName =
       extractOptionName(
         error.message);
@@ -339,12 +338,9 @@ function writeCommanderError(
     return true;
   }
 
-  if (error.code === 'commander.unknownCommand') {
-    const commandName =
-      args[0] ?? '';
-
+  if (code === 'commander.unknownCommand') {
     environment.stderr.write(
-      `Unknown command: ${commandName}\n`);
+      `Unknown command.\n`);
 
     cli.outputHelp(
       { error: true });
@@ -355,15 +351,26 @@ function writeCommanderError(
   return false;
 }
 
-function extractOptionName(message)
+/**
+ * @param {string} message 
+ * @returns {string}
+ */
+function extractOptionName(
+  message)
 {
   const match =
     /'(--[^ <']+)/.exec(message);
 
-  return match?.[1] ?? '--unknown';
+  return match?.[1]
+         ?? '--unknown';
 }
 
-function splitCommaSeparatedOption(value)
+/**
+ * @param {any} value 
+ * @returns {string[]}
+ */
+function splitCommaSeparatedOption(
+  value)
 {
   if (typeof value !== 'string'
       || value.trim() === '')
@@ -377,14 +384,4 @@ function splitCommaSeparatedOption(value)
       entry => entry.trim())
     .filter(
       entry => entry.length > 0);
-}
-
-function updateExitCode(
-  cli,
-  result = { })
-{
-  cli.exitCode =
-    result.hasFailures
-      ? 1
-      : 0;
 }

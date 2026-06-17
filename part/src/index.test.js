@@ -13,7 +13,6 @@ test(
     Object.keys(part).sort(),
     [
       'ArtefactProvider',
-      'Definition',
       'DefinitionProvider',
       'GitIgnore',
       'execCheck',

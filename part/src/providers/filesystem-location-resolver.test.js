@@ -5,11 +5,11 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
+  from '../tmp-dir.js';
 import { createLogger }
   from '../logging.js';
 import { FilesystemLocationResolver }
-  from './filesystemLocationResolver.js';
+  from './filesystem-location-resolver.js';
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',
@@ -83,7 +83,8 @@ test(
 function getTestTmpFolder()
 {
   const tmpDir =
-    new TmpDir();
+    new TmpDir(
+      createLogger());
   
   const files =
     [ 'f1.txt',
@@ -101,6 +102,11 @@ function getTestTmpFolder()
   return tmpDir;
 }
 
+/**
+ * @param {TmpDir} tmpDir 
+ * @param {string[]} resolvedFiles 
+ * @param {string[]} expectedFiles 
+ */
 function checkResolvedFiles(
   tmpDir,
   resolvedFiles,

@@ -1,7 +1,7 @@
 import path
   from 'node:path';
 import { DefinitionProvider }
-  from '../providers/definitionProvider.js';
+  from '../providers/definition-provider.js';
 
 export async function execDefinition(
   environment,

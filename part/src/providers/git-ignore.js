@@ -6,28 +6,53 @@ import { readFileSync,
 import ignore
   from 'ignore';
 
+/**
+ * @typedef
+ *   { import('../logging.js')
+ *       .Logger }
+ *   Logger
+ */
+
+/**
+ * @property {Logger} logger
+ * @property {Array<{ path: string, matcher: ignore.Ignore }> } matchers
+ * @property {Set<string>} visitedPaths
+ */
 export class GitIgnore
 {
+  /**
+   * @param {Logger} logger 
+   */
   constructor(
     logger)
   {
     this.logger = logger;
-    this.matchers = [];
+
+    this.matchers =
+      /** @type {Array<{ path: string, matcher: ignore.Ignore }>} */([]);
+
     this.visitedPaths = new Set();
   }
 
+  /**
+   * @param {string} targetPath 
+   * @returns {boolean}
+   */
   isIgnored(
     targetPath)
   {
+    if (!path.isAbsolute(targetPath)) {
+      throw new Error(
+        `Path must be absolute: ${targetPath}`);
+    }
+
     const isDirectory =
       targetPath.endsWith(
         path.sep);
 
     const normalisedPath =
       path.normalize(
-        path.resolve(
-          this.rootPath,
-          targetPath));
+        targetPath);
 
     if (isDirectory) {
       this.loadMatchers(
@@ -68,6 +93,10 @@ export class GitIgnore
     return false;
   }
 
+  /**
+   * @param {string[]} paths 
+   * @returns {string[]}
+   */
   filter(
     paths)
   {
@@ -76,20 +105,23 @@ export class GitIgnore
         !this.isIgnored(filePath));
   }
 
+  /**
+   * @param {string} directoryPath
+   */
   loadMatchers(
-    normalisedPath)
+    directoryPath)
   {
-    if (this.visitedPaths.has(normalisedPath)) {
+    if (this.visitedPaths.has(directoryPath)) {
       return;
     }
     
     this.visitedPaths
       .add(
-        normalisedPath);
+        directoryPath);
 
     const gitIgnorePath =
       path.join(
-        normalisedPath,
+        directoryPath,
         '.gitignore');
 
     let gitIgnoreExists = false;
@@ -98,7 +130,10 @@ export class GitIgnore
       statSync(gitIgnorePath);
       gitIgnoreExists = true;
     } catch (err) {
-      if (err.code !== 'ENOENT') {
+      const code =
+        (/** @type {NodeJS.ErrnoException} */(err)).code;
+      
+      if (code !== 'ENOENT') {
         throw err;
       }
     }
@@ -115,21 +150,25 @@ export class GitIgnore
             gitIgnoreContent);
 
       this.matchers.push(
-        { path: normalisedPath,
+        { path: directoryPath,
           matcher });
     }
 
     const parentPath =
       path.dirname(
-        normalisedPath);
+        directoryPath);
 
-    if (parentPath !== normalisedPath) {
+    if (parentPath !== directoryPath) {
       this.loadMatchers(
         parentPath);
     }
   }
 }
 
+/**
+ * @param {string} value 
+ * @returns {string}
+ */
 function toPosixPath(
   value)
 {

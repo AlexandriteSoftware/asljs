@@ -2,20 +2,48 @@ import path
   from 'node:path';
 import { readFile }
   from 'node:fs/promises';
-import { glob }
-  from 'glob';
 import { extractHeading,
          parsePropertyValues }
-  from './markdown.js';
+  from './markdown-query.js';
 import { FilesystemLocationResolver }
-  from './filesystemLocationResolver.js';
+  from './filesystem-location-resolver.js';
+
+/**
+ * @typedef
+ *   { import('../artefact.js')
+ *       .Artefact }
+ *   Artefact
+ * @typedef
+ *   { import('../artefact-definition.js')
+ *       .ArtefactDefinition }
+ *   ArtefactDefinition
+ * @typedef
+ *   { import('./definition-provider.js')
+ *       .DefinitionProvider }
+ *   DefinitionProvider
+ * @typedef
+ *   { import('../logging.js')
+ *       .Logger }
+ *   Logger
+ */
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
  * redundant file system operations.
+ *
+ * @property {Logger} logger
+ * @property {string} rootPath
+ * @property {WeakMap} cache
+ * @property {DefinitionProvider} definitionsProvider
+ * @property {FilesystemLocationResolver} locationResolver
  */
 export class ArtefactProvider
 {
+  /**
+   * @param {Logger} logger 
+   * @param {string} rootPath 
+   * @param {DefinitionProvider} definitionsProvider 
+   */
   constructor(
     logger,
     rootPath,
@@ -32,6 +60,10 @@ export class ArtefactProvider
         this.rootPath);
   }
 
+  /**
+   * @param {ArtefactDefinition} definition 
+   * @returns {Promise<Artefact[]>}
+   */
   async getArtefacts(
     definition)
   {
@@ -53,14 +85,19 @@ export class ArtefactProvider
     return artefacts;
   }
 
+  /**
+   * @param {string} artefactFilePath
+   * @param {ArtefactDefinition} definition
+   * @returns {Promise<boolean>}
+   */
   async isArtefactOfDefinition(
-    artefactPath,
+    artefactFilePath,
     definition)
   {
     const resolvedArtefactPath =
       path.resolve(
         this.rootPath,
-        artefactPath);
+        artefactFilePath);
 
     const artefacts =
       await this.getArtefacts(definition);
@@ -70,19 +107,24 @@ export class ArtefactProvider
         artefact.path === resolvedArtefactPath);
   }
 
+  /**
+   * @param {string} artefactFilePath
+   * @returns {Promise<ArtefactDefinition[]>}
+   */
   async getDefinitionsForArtefact(
-    artefactPath)
+    artefactFilePath)
   {
     const definitions =
       await this.definitionsProvider.getDefinitions();
 
-    const matchingDefinitions =
-      [];
+    const matchingDefinitions = [];
 
     for (const definition of definitions) {
-      if (await this.isArtefactOfDefinition(
-        artefactPath,
-        definition)) {
+      if (
+        await this.isArtefactOfDefinition(
+          artefactFilePath,
+          definition))
+      {
         matchingDefinitions.push(definition);
       }
     }
@@ -90,6 +132,10 @@ export class ArtefactProvider
     return matchingDefinitions;
   }
 
+  /**
+   * @param {ArtefactDefinition} definition 
+   * @returns {Promise<Artefact[]>}
+   */
   async loadArtefacts(
     definition)
   {
@@ -118,47 +164,6 @@ export class ArtefactProvider
           right.relativePath));
 
     return artefacts;
-  }
-
-  async listArtefactPaths(
-    rootDirectory,
-    definition)
-  {
-    const searchPatterns =
-      toSearchPatterns(
-        rootDirectory,
-        definition);
-
-    const ignorePatterns =
-      (definition.location.exclude ?? []).map(
-        excludePattern =>
-          resolveDefinitionLocationPath(
-            rootDirectory,
-            definition,
-            excludePattern));
-
-    const artefactPaths =
-      new Set();
-
-    for (const pattern of searchPatterns) {
-      const matches =
-        await glob(
-          pattern,
-          { absolute: true,
-            cwd: rootDirectory,
-            dot: true,
-            nodir: true,
-            ignore: ignorePatterns });
-
-      for (const match of matches) {
-        if (!this.gitIgnore.isIgnored(match)) {
-          artefactPaths.add(
-            path.resolve(match));
-        }
-      }
-    }
-
-    return Array.from(artefactPaths);
   }
 }
 
@@ -220,56 +225,10 @@ async function buildArtefact(
   };
 }
 
-function toSearchPatterns(
-  rootDirectory,
-  definition)
-{
-  const pattern =
-    resolveDefinitionLocationPath(
-      rootDirectory,
-      definition,
-      definition.location.pattern);
-
-  if (definition.location.type === 'Files') {
-    return [pattern];
-  }
-
-  return [`${trimTrailingSlash(pattern)}/**/*.md`];
-}
-
-function resolveDefinitionLocationPath(
-  rootDirectory,
-  definition,
-  locationPath)
-{
-  const resolvedPath =
-    path.resolve(
-      path.dirname(
-        definition.definitionPath),
-      locationPath);
-
-  const relativePath =
-    path.relative(
-      rootDirectory,
-      resolvedPath);
-
-  if (!relativePath.startsWith('..')
-      && !path.isAbsolute(relativePath))
-  {
-    return toPosixPath(relativePath);
-  }
-
-  return toPosixPath(resolvedPath);
-}
-
-function trimTrailingSlash(
-  value)
-{
-  return value.replace(
-    /[\\/]+$/,
-    '');
-}
-
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function toPosixPath(
   value)
 {

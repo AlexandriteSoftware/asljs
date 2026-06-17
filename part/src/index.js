@@ -2,16 +2,13 @@ export { runCli }
   from './cli.js';
 
 export { ArtefactProvider }
-  from './providers/artefactProvider.js';
-
-export { Definition }
-  from './definition.js';
+  from './providers/artefact-provider.js';
 
 export { DefinitionProvider }
-  from './providers/definitionProvider.js';
+  from './providers/definition-provider.js';
 
 export { GitIgnore }
-  from './providers/gitIgnore.js';
+  from './providers/git-ignore.js';
 
 export { execInit }
   from './commands/init.js';

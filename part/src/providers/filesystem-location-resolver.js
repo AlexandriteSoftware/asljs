@@ -1,7 +1,7 @@
 import path
   from 'node:path';
 import { GitIgnore }
-  from './gitIgnore.js';
+  from './git-ignore.js';
 import { glob }
   from 'glob';
 

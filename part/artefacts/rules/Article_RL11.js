@@ -7,6 +7,10 @@ import path
 import { readFile }
   from 'node:fs/promises';
 
+/**
+ * @type { import('../../src/rule-validation-function.js')
+ *           .ruleValidationFunction }
+ */
 export async function validate(
   artefact,
   context)

@@ -9,19 +9,25 @@ import { unified }
   from 'unified';
 import remarkParse
   from 'remark-parse';
-import { Definition }
-  from '../definition.js';
 import { GitIgnore }
-  from './gitIgnore.js';
+  from './git-ignore.js';
 import { sliceNodes,
          extractText,
          getSection }
-  from './markdown.js';
+  from './markdown-query.js';
+
+/**
+ * @typedef
+ *   { import('../artefact-definition.js')
+ *       .ArtefactDefinition }
+ *   ArtefactDefinition
+ */
 
 const MARKDOWN_PARSER =
   unified().use(remarkParse);
 
-export class DefinitionProvider {
+export class DefinitionProvider
+{
   constructor(
     logger,
     rootPath,
@@ -37,8 +43,7 @@ export class DefinitionProvider {
 
     this.gitIgnore =
       new GitIgnore(
-        this.logger,
-        this.rootPath);
+        this.logger);
 
     this.cache = null;
   }
@@ -49,7 +54,7 @@ export class DefinitionProvider {
     }
 
     this.logger.trace(
-      `scanning for definitions in ${this.definitionsPath}`);
+      `DefinitionProvider.getDefinitions(): scanning for definitions in ${this.definitionsPath}`);
 
     const markdownPaths =
       await glob(
@@ -87,31 +92,42 @@ export class DefinitionProvider {
     return definitions;
   }
 
-
+  /**
+   * @param {string} filePath
+   * @returns {Promise<ArtefactDefinition | null>}
+   */
   async loadDefinitionFromFile(
-    filePath) {
+    filePath)
+  {
+    this.logger.trace(
+      `DefinitionProvider.loadDefinitionFromFile: start with filePath=${filePath}`);
+
+    if (!path.isAbsolute(filePath)) {
+      throw new Error(
+        `'filePath' must be absolute: ${filePath}`);
+    }
+
     const content =
       await readFile(
         filePath,
         'utf8');
 
-    return DefinitionProvider.parseDefinitionFile(
+    return await this.parseDefinition(
       content,
-      {
-        rootPath: this.rootPath,
-        filePath,
-      });
+      { path: filePath });
   }
 
-  static async parseDefinitionFile(
+  /**
+   * @param {string} content 
+   * @param {{path: string}} context 
+   * @returns {Promise<ArtefactDefinition|null>}
+   */
+  async parseDefinition(
     content,
-    options = {})
+    context)
   {
-    const filePath =
-      options.filePath
-        ? path.resolve(
-          options.filePath)
-        : null;
+    this.logger.trace(
+      `DefinitionProvider.parseDefinitionFile: ..., context=${JSON.stringify(context)}`);
 
     const tree =
       MARKDOWN_PARSER.parse(content);
@@ -128,14 +144,15 @@ export class DefinitionProvider {
       extractText(heading);
 
     const expectedName =
-      filePath
-        ? path.basename(
-          filePath,
-          path.extname(filePath))
-        : null;
+      path.basename(
+        context.path,
+        path.extname(
+          context.path));
 
-    if (expectedName
-      && name !== expectedName) {
+    if (
+      expectedName
+      && name !== expectedName)
+    {
       return null;
     }
 
@@ -196,13 +213,13 @@ export class DefinitionProvider {
       await loadRules(
         ruleEntries,
         {
-          rootPath: options.rootPath,
-          definitionPath: filePath,
+          rootPath: this.rootPath,
+          definitionPath: context.path,
           definitionName: name
         });
 
-    return new Definition({
-      path: filePath,
+    return {
+      path: context.path,
       name,
       description,
       location,
@@ -216,8 +233,8 @@ export class DefinitionProvider {
       propertyDefinitions,
       ruleIds:
         rules.map(
-          rule => rule.id),
-    });
+          rule => rule.id)
+    };
   }
 }
 
@@ -373,27 +390,27 @@ function parseRules(
   return rules;
 }
 
+/**
+ * @returns {ArtefactDefinitionRule[]}
+ */
 async function loadRules(
   ruleEntries,
-  options)
+  context)
 {
   return Promise.all(
     ruleEntries.map(
-      async (ruleEntry) => {
+      async rule => {
         const resolvedRuleFile =
           await resolveRuleFile(
-            ruleEntry.id,
-            options);
+            rule.id,
+            context);
 
         return {
-          id: ruleEntry.id,
-          description: ruleEntry.description,
-          filePath: resolvedRuleFile
+          id: rule.id,
+          description: rule.description,
+          path: resolvedRuleFile
             ? resolvedRuleFile.filePath
-            : null,
-          absoluteFilePath: resolvedRuleFile
-            ? resolvedRuleFile.absoluteFilePath
-            : null,
+            : null
         };
       }));
 }

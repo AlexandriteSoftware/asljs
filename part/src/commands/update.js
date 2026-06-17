@@ -7,7 +7,7 @@ import { mkdir,
          writeFile }
   from 'node:fs/promises';
 import { DefinitionProvider }
-  from '../providers/definitionProvider.js';
+  from '../providers/definition-provider.js';
 
 export async function execUpdate(
   environment,

@@ -3,78 +3,69 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../../src/TmpDir.js';
-import { ArtefactProvider }
-  from '../../src/providers/artefactProvider.js';
-import { validate }
-  from './Article_RL10.js';
+  from '../../src/tmp-dir.js';
 import { createLogger }
   from '../../src/logging.js';
+import { validate }
+  from './Article_RL10.js';
 
-const ARTICLE_DEFINITION =
-{
-  location: {
-    type: 'Files',
-    pattern: '*.md',
-    exclude: ['README.md'],
-    gitIgnore: true,
-  },
-  propertyDefinitions: new Map(),
-  typeId: 'article',
-};
+const logger =
+  createLogger(
+    { level: 'trace',
+      enabled: false });
 
 test(
   'Article_RL10 passes when the article starts with a level 1 heading',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
 
-    const artefacts =
-      new ArtefactProvider(
-        createLogger(),
-        workspace.path);
-
     workspace.writeText(
       'Article.md',
-      '# Article\n\nBody.\n',
-      'utf8');
+      '# Article\n\nBody.\n');
+
+    /** @type any */
+    const context =
+      { logger };
 
     await assert.doesNotReject(
-      () =>
-        validate(
-          { path: workspace.resolve('Article.md') },
-          { artefacts,
-            definition: ARTICLE_DEFINITION,
-            rootDirectory: workspace.path }));
+      async () =>
+        await validate(
+          { path: workspace.resolve('Article.md'),
+            name: 'Article' },
+          context));
   });
 
 test(
   'Article_RL10 fails when the article does not start with a level 1 heading',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
-
-    const artefacts =
-      new ArtefactProvider(
-        createLogger(),
-        workspace.path);
 
     workspace.writeText(
       'Article.md',
       'Intro\n# Article\n');
 
     await assert.rejects(
-      () =>
-        validate(
-          { path: workspace.resolve('Article.md') },
-          { artefacts,
-            definition: ARTICLE_DEFINITION }),
+      async () =>
+        {
+          /** @type any */
+          const context =
+            { logger };
+
+          await validate(
+            { path: workspace.resolve('Article.md'),
+              name: 'Article' },
+            context);
+        },
       /Article must start with a level 1 heading\./,
     );
   });

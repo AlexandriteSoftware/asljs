@@ -1,6 +1,31 @@
 import pino
   from 'pino';
 
+/**
+ * @typedef Logger
+ * @property {string} level
+ * @property {boolean} enabled
+ * @property {string?} file
+ * @property {(message: string) => void} trace
+ * @property {(message: string) => void} debug
+ * @property {(message: string) => void} info
+ * @property {(message: string) => void} information
+ * @property {(message: string) => void} warning
+ * @property {(message: string) => void} warn
+ * @property {(message: string) => void} error
+ */
+
+/**
+ * @typedef LoggerOptions
+ * @property {string} level
+ * @property {boolean} enabled
+ * @property {string?} file
+ */
+
+/**
+ * @param {Partial<LoggerOptions>} options
+ * @returns {Logger}
+ */
 export function createLogger(
   options = { })
 {
@@ -37,10 +62,11 @@ export function createLogger(
       { level,
         transport });
 
+  /** @type {Logger} */
   const proxy =
-    { logLevel: level,
-      enabled: options.enabled,
-      file: options.file,
+    { level,
+      enabled: options.enabled === true,
+      file: options.file ?? null,
       trace: message => logger.trace(message),
       debug: message => logger.debug(message),
       info: message => logger.info(message),

@@ -1,9 +1,13 @@
 /*
-- RL1 - Each rule in the definition file should have a corresponding rule file
-  that implements it. The rule file should be named
-  `<DefinitionName>_<RuleId>.<extension>`, for example, `Todo Item_R1.js`.
+RL1 - Each rule in the definition file should have a corresponding rule file
+that implements it. The rule file should be named
+`<DefinitionName>_<RuleId>.<extension>`, for example, `Todo Item_R1.js`.
 */
 
+/**
+ * @type { import('../../src/rule-validation-function.js')
+ *           .ruleValidationFunction }
+ */
 export async function validate(
   artefact,
   context)
@@ -19,11 +23,11 @@ export async function validate(
   if (!definition) {
     return;
   }
-  
+
   const missingRuleIds =
     definition.rules
       .filter(
-        rule => !rule.absoluteFilePath)
+        rule => !rule.path)
       .map(
         rule => rule.id);
     

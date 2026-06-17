@@ -8,8 +8,8 @@ import path
   from 'node:path';
 import { runCli }
   from './cli.js';
-import { createTestEnvironment }
-  from './testEnvironment.js';
+import { createEnvironment }
+  from './environment.js';
 import { execVersion }
   from './commands/version.js';
 
@@ -26,7 +26,7 @@ test(
   async () =>
 {
   const environment =
-    createTestEnvironment();
+    createEnvironment();
 
   const exitCode =
     await runCli(
@@ -38,11 +38,11 @@ test(
     0);
 
   assert.equal(
-    environment.stdout.output,
+    environment.stdout.toString(),
     `${packageVersion}\n`);
 
   assert.equal(
-    environment.stderr.output,
+    environment.stderr.toString(),
     '');
 });
 
@@ -51,7 +51,7 @@ test(
   async () =>
   {
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     let definitions = '';
     
@@ -59,6 +59,7 @@ test(
       execVersion,
       async e => {
         definitions = e.definitions;
+        return Promise.resolve(0);
       });
 
     await runCli(
@@ -86,11 +87,12 @@ test(
   async () =>
   {
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     environment.register(
       execVersion,
       async () => {
+        return Promise.resolve(0);
       });
 
     await runCli(
@@ -102,7 +104,7 @@ test(
       environment);
 
     assert.equal(
-      environment.logger.logLevel,
+      environment.logger.level,
       'silent');
 
     assert.equal(
@@ -115,7 +117,7 @@ test(
   async () =>
   {
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     const exitCode =
       await runCli(
@@ -130,7 +132,7 @@ test(
       1);
 
     assert.match(
-      environment.stderr.output,
+      environment.stderr.toString(),
       /Unknown option: --unsupported/);
   });
 
@@ -138,7 +140,7 @@ test(
   'cli reports missing option values as command errors',
   async () => {
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     const missingValueExitCode =
       await runCli(
@@ -158,7 +160,7 @@ test(
   'cli rejects unsupported long options',
   async () => {
     const environment =
-      createTestEnvironment();
+      createEnvironment();
 
     const exitCode =
       await runCli(

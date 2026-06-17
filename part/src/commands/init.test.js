@@ -3,9 +3,9 @@ import assert
 import test
   from 'node:test';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execInit }
   from './init.js';
 
@@ -21,7 +21,7 @@ test(
     workspace.mkdir('definitions');
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.resolve('definitions') });
 

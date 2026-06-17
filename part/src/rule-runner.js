@@ -7,7 +7,28 @@ import { access }
 import { pathToFileURL }
   from 'node:url';
 
-export class RuleRunner {
+/**
+ * @typedef
+ *   { import('./providers/artefact-provider.js')
+ *       .ArtefactProvider }
+ *   ArtefactProvider
+ * @typedef
+ *   { import('./providers/definition-provider.js')
+ *       .DefinitionProvider }
+ *   DefinitionProvider
+ * @typedef
+ *   { import('./logging.js')
+ *       .Logger }
+ *   Logger
+ */
+
+export class RuleRunner
+{
+  /**
+   * @param {Logger} logger
+   * @param {DefinitionProvider} definitionProvider
+   * @param {ArtefactProvider} artefactProvider
+   */
   constructor(
     logger,
     definitionProvider,

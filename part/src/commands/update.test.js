@@ -3,9 +3,9 @@ import assert
 import test
   from 'node:test';
 import { TmpDir }
-  from '../tmpDir.js';
-import { createTestEnvironment }
-  from '../testEnvironment.js';
+  from '../tmp-dir.js';
+import { createEnvironment }
+  from '../environment.js';
 import { execUpdate,
          getDefaultCopilotCliInvocations }
   from './update.js';
@@ -32,7 +32,7 @@ test(
     let requestPrompt = '';
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         {
           cwd: workspace.path,
           logger,
@@ -94,7 +94,7 @@ test(
       t.name);
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         {
           cwd: workspace.path,
           logger,
@@ -154,11 +154,11 @@ test(
       () => workspace.cleanup());
 
     const environment =
-      createTestEnvironment(
+      createEnvironment(
         {
           cwd: workspace.path,
           runCopilotCli:
-            async (request) =>
+            async request =>
               `// ${request.expectedComment}\nexport async function validate() {}\n`,
         });
 
@@ -173,7 +173,7 @@ Requirement definition.
 
 ## Location
 
-- Files: ../development/**/RQ*.md
+- Pattern: \`../development/**/RQ*.md\`
 
 ## Rules
 
@@ -193,11 +193,11 @@ Requirement definition.
       environment);
 
     assert.match(
-      environment.stdout.output,
+      environment.stdout.toString(),
       /Updated artefacts\/rules\/Requirement_RL10\.js/);
 
     assert.match(
-      environment.stderr.output,
+      environment.stderr.toString(),
       /only JS rule files are supported for auto-update/);
 
     assert.match(

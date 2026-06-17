@@ -3,11 +3,11 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmpDir.js';
+  from '../tmp-dir.js';
 import { createLogger }
   from '../logging.js';
 import { GitIgnore }
-  from './gitIgnore.js';
+  from './git-ignore.js';
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
