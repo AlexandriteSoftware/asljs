@@ -11,6 +11,7 @@ import { createLogger }
  * @property {<T>(type: T, value: T) => void} register
  * @property {string} definitions
  * @property {string} project
+ * @property {(value: any) => Promise<string>} [runCopilotCli]
  */
 
 /**
