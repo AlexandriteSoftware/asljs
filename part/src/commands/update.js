@@ -9,6 +9,22 @@ import { mkdir,
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @typedef {Object} UpdateCommandOptions
+ * @property {boolean} [dryRun]
+ */
+
+/**
+ * @param {Environment} environment 
+ * @param {Partial<UpdateCommandOptions>} [options]
+ */
 export async function execUpdate(
   environment,
   options = { })
@@ -56,7 +72,7 @@ export async function execUpdate(
         `processing rule: ${definition.name}_${rule.id}`);
 
       const currentFilePath =
-        rule.absoluteFilePath;
+        rule.path;
 
       if (!currentFilePath) {
         logger.trace(

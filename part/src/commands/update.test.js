@@ -17,7 +17,7 @@ const logger =
     { level: 'trace',
       enabled: false });
 
-0 && test(
+test(
   'RQ125: update creates missing JS rule files via the Copilot runner',
   async t => {
     const workspace =
@@ -33,6 +33,8 @@ const logger =
       createEnvironment(
         {
           cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           logger,
           runCopilotCli:
             request => {
@@ -96,6 +98,8 @@ test(
       createEnvironment(
         {
           cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           logger,
           runCopilotCli: async () => {
             throw new Error('runCopilotCli should not be called during dry-run');
@@ -143,7 +147,7 @@ Requirement definition.
           'artefacts/rules/Requirement_RL10.js'));
   });
 
-0 && test(
+test(
   'RQ125: update refreshes stale JS comments and warns on non-JS rules',
   async t => {
     const workspace =
@@ -157,6 +161,8 @@ Requirement definition.
       createEnvironment(
         {
           cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           runCopilotCli:
             async request =>
               `// ${request.expectedComment}\nexport async function validate() {}\n`,
