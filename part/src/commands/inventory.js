@@ -7,26 +7,42 @@ import { DefinitionProvider }
 import { RuleRunner }
   from '../rule-runner.js';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @param {Environment} environment 
+ */
 export async function execInventory(
   environment)
 {
+  const logger =
+    environment.logger;
+
+  logger.trace(
+    `Inventory command: start`);
+
   const rootDirectory =
     environment.project;
 
   const definitionsProvider =
     new DefinitionProvider(
-      environment.logger,
+      logger,
       environment.definitions);
 
   const artefacts =
     new ArtefactProvider(
-      environment.logger,
+      logger,
       rootDirectory,
       definitionsProvider);
 
   const items =
     await collectInventoryItems(
-      environment.logger,
+      logger,
       rootDirectory,
       await definitionsProvider.getDefinitions(),
       artefacts);
@@ -194,6 +210,15 @@ function formatInventoryTable(
   }
 
   return lines.join('\n');
+}
+
+function formatRow(
+  cells,
+  widths)
+{
+  return `| ${cells.map(
+    (cell, index) => cell.padEnd(
+      widths[index])).join(' | ')} |`;
 }
 
 function toPosixPath(

@@ -4,16 +4,24 @@ import test
   from 'node:test';
 import { TmpDir }
   from '../tmp-dir.js';
+import { createLogger }
+  from '../logging.js';
 import { createEnvironment }
   from '../environment.js';
 import { execInit }
   from './init.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ124: init copies bootstrap artefact files into the definitions directory',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -22,27 +30,28 @@ test(
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path,
+        { logger,
+          cwd: workspace.path,
           definitions: workspace.resolve('definitions') });
 
     await execInit(
       environment);
 
     assert.match(
-      environment.stdout.output,
+      environment.stdout.toString(),
       /Initialized definitions directory:/);
 
     assert.equal(
-      environment.stderr.output,
+      environment.stderr.toString(),
       '');
 
     assert.match(
-      await workspace.readText(
+      workspace.readText(
         'definitions/Artefact Definition.md'),
       /# Artefact Definition/);
 
     assert.match(
-      await workspace.readText(
+      workspace.readText(
         'definitions/Rule File.md'),
       /# Rule File/);
 
@@ -52,7 +61,7 @@ test(
         .isDirectory());
 
     assert.match(
-      await workspace.readText(
+      workspace.readText(
         'definitions/Article.md'),
       /# Article/);
 

@@ -4,16 +4,24 @@ import assert
   from 'node:assert/strict';
 import { TmpDir }
   from '../tmp-dir.js';
+import { createLogger }
+  from '../logging.js';
 import { createEnvironment }
   from '../environment.js';
 import { execDefinitions }
   from './definitions.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ122: definitions lists definitions',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -45,8 +53,10 @@ This top-level definition should be ignored by the Definitions parameter.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path,
-          definition: workspace.resolve('definitions') });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.resolve('definitions'),
+          project: workspace.path });
 
     await execDefinitions(
       environment);

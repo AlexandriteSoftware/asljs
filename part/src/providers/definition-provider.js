@@ -214,12 +214,12 @@ export class DefinitionProvider
         ?? []);
 
     const rules =
-      await loadRules(
+      await this.loadRules(
         ruleEntries,
         {
           rootPath: this.rootPath,
           definitionPath: context.path,
-          definitionName: name
+          definition: name
         });
 
     return {
@@ -239,6 +239,106 @@ export class DefinitionProvider
         rules.map(
           rule => rule.id)
     };
+  }
+
+  /**
+   * @returns {Promise<ArtefactDefinitionRule[]>}
+   */
+  async loadRules(
+    ruleEntries,
+    context)
+  {
+    return Promise.all(
+      ruleEntries.map(
+        async ruleEntry => {
+          const resolvedRuleFile =
+            await this.resolveRuleFile(
+              ruleEntry.id,
+              context);
+          
+          /** @type {ArtefactDefinitionRule} */
+          const rule =
+            {
+              id: ruleEntry.id,
+              definition: context.definition,
+              name: `${context.definition}_${ruleEntry.id}`,
+              description: ruleEntry.description,
+              path: resolvedRuleFile?.path ?? null
+            };
+
+          return rule;
+        }));
+  }
+
+  async resolveRuleFile(
+    ruleId,
+    options)
+  {
+    this.logger.trace(
+      `DefinitionProvider.resolveRuleFile: ruleId=${ruleId}, options=${JSON.stringify(options)}`);
+
+    if (
+      !options.rootPath
+      || !options.definition
+      || !options.definitionPath)
+    {
+      return null;
+    }
+
+    const directoryPath =
+      path.join(
+        path.dirname(
+          options.definitionPath),
+        'rules');
+
+    const baseName =
+      `${options.definition}_${ruleId}`;
+
+    this.logger.trace(
+      `DefinitionProvider.resolveRuleFile: looking for rule file in ${directoryPath} with baseName=${baseName}`);
+
+    let entries;
+
+    try {
+      entries =
+        await readdir(
+          directoryPath,
+          { withFileTypes: true });
+    } catch {
+      return null;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isFile()) {
+        continue;
+      }
+
+      const entryBaseName =
+        path.basename(
+          entry.name,
+          path.extname(
+            entry.name));
+
+      if (baseName !== entryBaseName) {
+        continue;
+      }
+
+      const absoluteFilePath =
+        path.join(
+          directoryPath,
+          entry.name);
+
+      return {
+        path: absoluteFilePath,
+        relativePath: toPosixPath(
+          path.relative(
+            path.dirname(
+              options.definitionPath),
+            absoluteFilePath)),
+      };
+    }
+
+    return null;
   }
 }
 
@@ -392,96 +492,6 @@ function parseRules(
         });
 
   return rules;
-}
-
-/**
- * @returns {Promise<ArtefactDefinitionRule[]>}
- */
-async function loadRules(
-  ruleEntries,
-  context)
-{
-  return Promise.all(
-    ruleEntries.map(
-      async rule => {
-        const resolvedRuleFile =
-          await resolveRuleFile(
-            rule.id,
-            context);
-
-        return {
-          id: rule.id,
-          description: rule.description,
-          path: resolvedRuleFile?.path
-        };
-      }));
-}
-
-async function resolveRuleFile(
-  ruleId,
-  options)
-{
-  if (
-    !options.rootPath
-    || !options.definitionName
-    || !options.definitionPath)
-  {
-    return null;
-  }
-
-  const directoryPath =
-    path.join(
-      path.dirname(
-        options.definitionPath),
-      'rules');
-
-  const baseNames =
-    `${options.definitionName}_${ruleId}`;
-
-  let entries;
-
-  try {
-    entries = await readdir(
-      directoryPath,
-      {
-        withFileTypes: true,
-      });
-  }
-  catch {
-    return null;
-  }
-
-  for (const entry of entries) {
-    if (!entry.isFile()) {
-      continue;
-    }
-
-    const entryBaseName =
-      path.basename(
-        entry.name,
-        path.extname(
-          entry.name));
-
-    if (baseNames !== entryBaseName) {
-      continue;
-    }
-
-    const absoluteFilePath =
-      path.join(
-        directoryPath,
-        entry.name);
-
-    return {
-      path: absoluteFilePath,
-      relativePath: toPosixPath(
-        path.relative(
-          path.dirname(
-            options.definitionPath),
-          absoluteFilePath)),
-    };
-  }
-
-  return null;
 }
 
 function getListItemTexts(

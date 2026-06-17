@@ -73,7 +73,10 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment);
@@ -155,7 +158,10 @@ Definition file.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment,
@@ -241,7 +247,10 @@ Markdown article.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment,
@@ -320,7 +329,10 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment,
@@ -399,7 +411,10 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment);
@@ -464,7 +479,10 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       environment,

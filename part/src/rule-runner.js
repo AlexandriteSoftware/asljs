@@ -43,9 +43,10 @@ export class RuleRunner
     rule,
     artefact)
   {
-    if (
-      !rule.filePath
-      || !rule.absoluteFilePath)
+    this.logger.trace(
+      `RuleRunner.runRule: ${rule.name} for artefact ${artefact.path}`);
+
+    if (!rule.path)
     {
       return {
         rule,
@@ -56,7 +57,7 @@ export class RuleRunner
 
     try {
       await access(
-        rule.absoluteFilePath);
+        rule.path);
     }
     catch {
       return {
@@ -68,7 +69,7 @@ export class RuleRunner
 
     const ruleFileExtension =
       path.extname(
-        rule.absoluteFilePath);
+        rule.path);
 
     if (ruleFileExtension.toLowerCase() === '.js') {
       return this.runJavaScriptRule(
@@ -108,7 +109,7 @@ export class RuleRunner
       const validatorModule =
         await import(
           pathToFileURL(
-            rule.absoluteFilePath).href);
+            rule.path).href);
 
       if (typeof validatorModule.validate !== 'function') {
         return {
@@ -165,7 +166,7 @@ export class RuleRunner
     return new Promise((resolve) => {
       const child =
         spawn(
-          rule.absoluteFilePath,
+          rule.path,
           [artefact.path],
           {
             cwd: artefact.baseDirectory,

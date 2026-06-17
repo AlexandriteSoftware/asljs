@@ -4,6 +4,8 @@ import assert
   from 'node:assert/strict';
 import { TmpDir }
   from '../tmp-dir.js';
+import { createLogger }
+  from '../logging.js';
 import { createEnvironment }
   from '../environment.js';
 import { execInventory }
@@ -11,11 +13,17 @@ import { execInventory }
 import { execCheck }
   from './check.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ121: inventory reports artefacts in Todo Item example as OK',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -75,7 +83,10 @@ I need to buy milk.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          logger });
 
     await execInventory(
       environment);
@@ -83,7 +94,7 @@ I need to buy milk.
     if (environment.stdout.toString().includes('Fail')) {
       await execCheck(
         environment,
-        { target: 'Todo Items/Buy milk.md' });
+        { pattern: 'Todo Items/Buy milk.md' });
     }
 
     assert.equal(
@@ -107,7 +118,8 @@ test(
   'RQ121: inventory resolves artefact locations relative to the definition file',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -143,7 +155,10 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          logger });
 
     await execInventory(
       environment);
@@ -161,7 +176,8 @@ test(
   'RQ121: inventory lists all definitions applied to the same artefact',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -217,7 +233,10 @@ Definition file.
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          logger });
 
     await execInventory(
       environment);
@@ -235,7 +254,8 @@ test(
   'RQ121: inventory respects Definitions parameter and reports Fail when any rule fails',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -289,6 +309,8 @@ A todo item is a task that needs to be done.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           definition: workspace.resolve('definitions') });
 
     await execInventory(

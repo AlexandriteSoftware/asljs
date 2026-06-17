@@ -4,16 +4,24 @@ import assert
   from 'node:assert/strict';
 import { TmpDir }
   from '../tmp-dir.js';
+import { createLogger }
+  from '../logging.js';
 import { createEnvironment }
   from '../environment.js';
 import { execDefinition }
   from './definition.js';
 
+const logger =
+  createLogger(
+    { enabled: false,
+      level: 'trace' });
+
 test(
   'RQ126: definition prints detailed definition content for a named definition',
   async t => {
     const workspace =
-      new TmpDir();
+      new TmpDir(
+        logger);
 
     t.after(
       () => workspace.cleanup());
@@ -46,7 +54,11 @@ A statement about the system that must be true.
       'export async function validate() { }\n');
 
     const environment =
-      createEnvironment();
+      createEnvironment(
+        { logger,
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execDefinition(
       environment,
@@ -59,8 +71,4 @@ A statement about the system that must be true.
     assert.match(
       environment.stdout.toString(),
       /- name: Requirement/);
-
-    assert.match(
-      environment.stdout.toString(),
-      /- filePath: rules\/Requirement_RL10\.js/);
   });

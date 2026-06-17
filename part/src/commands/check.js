@@ -95,6 +95,9 @@ export async function execCheck(
   const definitionNamesForArtefact = { };
 
   if (options.pattern) {
+    logger.trace(
+      `Check command: using pattern=${options.pattern}`);
+
     const paths =
       await glob(
         options.pattern,
@@ -117,7 +120,11 @@ export async function execCheck(
       }
 
       artefacts.push(
-        { path: artefactPath });
+        { path: artefactPath,
+          name:
+            path.basename(
+              artefactPath,
+              path.extname(artefactPath)) });
 
       const artefactDefinitionNames =
         artefactDefinitions.map(
@@ -157,13 +164,21 @@ export async function execCheck(
     }
   }
 
+  logger.trace(
+    `Check command: found ${artefacts.length} artefact(s) to check`);
+
+  logger.trace(
+    `Check command: found ${selectedRules.length} rule(s) to apply`);
+
   const results = [];
 
   let hasFailures = false;
 
   const ruleRunner =
     new RuleRunner(
-      logger);
+      logger,
+      definitionProvider,
+      artefactProvider);
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {
@@ -182,11 +197,12 @@ export async function execCheck(
             artefact);
 
         const relativePath =
-          path.relative(
-            options.pattern
-              ? environment.cwd
-              : environment.project,
-            artefact.path);
+          toPosixPath(
+            path.relative(
+              options.pattern
+                ? environment.cwd
+                : environment.project,
+              artefact.path));
 
         const row =
           {
@@ -332,4 +348,12 @@ function formatRow(
   return `| ${cells.map(
     (cell, index) => cell.padEnd(
       widths[index])).join(' | ')} |`;
+}
+
+function toPosixPath(
+  value)
+{
+  return value.replaceAll(
+    '\\',
+    '/');
 }
