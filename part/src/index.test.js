@@ -11,5 +11,9 @@ test(
 {
   assert.deepEqual(
     Object.keys(part).sort(),
-    [ 'runCli' ]);
+    [ 'ArtefactProvider',
+      'DefinitionProvider',
+      'TmpDir',
+      'createLogger',     
+      'runCli' ]);
 });

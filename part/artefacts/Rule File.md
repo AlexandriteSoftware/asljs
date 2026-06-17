@@ -15,7 +15,7 @@ A rule file is a file that implements a rule for a definition.
 
 ## Location
 
-- Files: `rules/**/*.js`
+- Pattern: `rules/**/*.js`
 
 ## Rules
 

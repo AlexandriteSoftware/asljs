@@ -2,6 +2,17 @@ import { createLogger }
   from './logging.js';
 
 /**
+ * @typedef
+ *   { import('./logging.js')
+ *       .Logger }
+ *   Logger
+ * @typedef
+ *   { import('./commands/update.js')
+ *       .CopilotRequest }
+ *   CopilotRequest
+ */
+
+/**
  * @typedef {Object} Environment
  * @property {string} cwd
  * @property {WritableBuffer} stdout
@@ -11,7 +22,9 @@ import { createLogger }
  * @property {<T>(type: T, value: T) => void} register
  * @property {string} definitions
  * @property {string} project
- * @property {(value: any) => Promise<string>} [runCopilotCli]
+ * @property {(logger: Logger,
+ *             value: CopilotRequest)
+ *            => Promise<string>} [runCopilotCli]
  */
 
 /**

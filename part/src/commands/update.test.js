@@ -2,6 +2,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import path
+  from 'node:path';
 import { TmpDir }
   from '../tmp-dir.js';
 import { createEnvironment }
@@ -37,11 +39,19 @@ test(
           project: workspace.path,
           logger,
           runCopilotCli:
-            request => {
+            (logger, request) => {
               requestPrompt = request.prompt;
 
+              const ruleFileName =
+                path.basename(
+                  request.ruleFilePath);
+
+              workspace.writeText(
+                `artefacts/rules/${ruleFileName}`,
+                `// ${request.comment}\nexport async function validate() {}\n`);
+
               return Promise.resolve(
-                `/* ${request.expectedComment} */\nexport async function validate() {}\n`);
+                `all done`);
             }
         });
 
@@ -53,7 +63,7 @@ Requirement definition.
 
 ## Location
 
-- Files: ../development/**/RQ*.md
+- Pattern: \`../development/**/RQ*.md\`
 
 ## Rules
 
@@ -69,11 +79,11 @@ Requirement definition.
 
     assert.match(
       environment.stdout.toString(),
-      /Created artefacts\/rules\/Requirement_RL10\.js/);
+      /all done/);
 
     assert.match(
       requestPrompt,
-      /Write to standard output only the updated file content, no other text\./);
+      /Requirement_RL10/);
 
     assert.match(
       workspace.readText(
@@ -137,10 +147,6 @@ Requirement definition.
       environment.stdout.toString(),
       /--- CREATE artefacts\/rules\/Requirement_RL10\.js ---/);
 
-    assert.match(
-      environment.stdout.toString(),
-      /Write to standard output only the updated file content, no other text\./);
-
     assert.throws(
       () =>
         workspace.stat(
@@ -164,8 +170,8 @@ test(
           definitions: workspace.path,
           project: workspace.path,
           runCopilotCli:
-            async request =>
-              `// ${request.expectedComment}\nexport async function validate() {}\n`,
+            async (logger, request) =>
+              `// ${request.comment}\nexport async function validate() {}\n`,
         });
 
     workspace.mkdir(

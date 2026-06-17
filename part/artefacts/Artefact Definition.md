@@ -14,7 +14,7 @@ Artefact Definition is a markdown file, with the following content:
 
 ## Location
 
-- Files: `**/*.md`
+- Pattern: `**/*.md`
 
 ## Rules
 
