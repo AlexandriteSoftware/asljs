@@ -162,6 +162,8 @@ A todo item is a task that needs to be done.
       [
         {
           id: 'R1',
+          definition: 'Todo Item',
+          name: 'Todo Item_R1',
           description: 'Due date must be in the future.',
           path: path.join(
             workspace.path,
