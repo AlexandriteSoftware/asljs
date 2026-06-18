@@ -7,6 +7,17 @@ import { cp,
 import { fileURLToPath }
   from 'node:url';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ * @typedef
+ *   { import('./../logging.js')
+ *       .Logger }
+ *   Logger
+ */
+
 const MODULE_DIRECTORY =
   path.dirname(
     fileURLToPath(
@@ -17,12 +28,14 @@ const ARTEFACTS_DIRECTORY =
     MODULE_DIRECTORY,
     '../../artefacts');
 
+/**
+ * @param {Environment} environment 
+ */
 export async function execInit(
   environment)
 {
   const definitionsPath =
     environment.definitions;
-
 
   await mkdir(
     definitionsPath,

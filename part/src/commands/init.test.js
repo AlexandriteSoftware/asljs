@@ -57,16 +57,11 @@ test(
 
     assert.ok(
       workspace.stat(
-        'definitions/rules')
-        .isDirectory());
-
-    assert.match(
-      workspace.readText(
-        'definitions/Article.md'),
-      /# Article/);
+        'definitions/rules/Rule File_RL1.js')
+        .isFile());
 
     assert.ok(
       workspace.stat(
-        'definitions/rules/Article_RL10.js')
+        'definitions/rules/Artefact Definition_RL1.js')
         .isFile());
   });

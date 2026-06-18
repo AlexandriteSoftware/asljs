@@ -19,61 +19,50 @@ const logger =
       enabled: false });
 
 test(
-  'Artefact Definition_RL1 passes when each declared rule file exists',
-  async t => {
-    const workspace =
-      new TmpDir(
-        logger);
+  'Artefact Definition_RL1 checks declared rule file exists',
+  async context =>
+    checkDeclaredRulesTest(
+      context,
+      true));
 
-    t.after(
-      () => workspace.cleanup());
+test(
+  'Artefact Definition_RL1 fails when a declared rule file is missing',
+  async context =>
+    checkDeclaredRulesTest(
+      context,
+      false));
 
-    workspace.mkdir('rules');
+/**
+ * 
+ * @param {test.TestContext} testContext 
+ * @param {boolean} withRuleFiles 
+ */
+async function checkDeclaredRulesTest(
+  testContext,
+  withRuleFiles)
+{
+  const workspace =
+    new TmpDir(
+      logger);
 
+  testContext.after(
+    () => workspace.cleanup());
+
+  workspace.mkdir('rules');
+
+  if (withRuleFiles) {
     workspace.writeText(
       'rules/Todo Item_RL1.js',
       'export async function validate() { }\n');
 
     workspace.writeText(
-      'Todo Item.md',
-      `# Todo Item
+      'rules/Todo Item_RL2.js',
+      'export async function validate() { }\n');
+  }
 
-Definition.
-
-## Location
-
-- Pattern: \`Todo Items/*.md\`
-
-## Rules
-
-- RL1 - Must have a rule file.
-`);
-
-    const context =
-      createContext(
-        workspace);
-
-    await assert.doesNotReject(
-      async () =>
-        await validate(
-          { path: workspace.resolve('Todo Item.md'),
-            name: 'Todo Item' },
-          context));
-  });
-
-test(
-  'Artefact Definition_RL1 fails when a declared rule file is missing',
-  async t => {
-    const workspace =
-      new TmpDir(
-        logger);
-
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
-      'Todo Item.md',
-      `# Todo Item
+  workspace.writeText(
+    'Todo Item.md',
+    `# Todo Item
 
 Definition.
 
@@ -87,17 +76,26 @@ Definition.
 - RL2 - Must also have a second rule file.
 `);
 
-    const context =
-      createContext(
-        workspace);
+  const context =
+    createContext(
+      workspace);
 
+  const invocation =
+    validate(
+      { path: workspace.resolve('Todo Item.md'),
+          name: 'Todo Item',
+          basePath: workspace.path,
+          relativePath: 'Todo Item.md' },
+      context);
+
+  if (withRuleFiles) {
+    await assert.doesNotReject(
+      invocation);
+  } else {
     await assert.rejects(
-      async () =>
-        await validate(
-          { path: workspace.resolve('Todo Item.md'),
-            name: 'Todo Item' },
-          context));
-  });
+      invocation);
+  }
+}
 
 /**
  * @param {TmpDir} workspace
@@ -117,11 +115,9 @@ function createContext(
       definitionProvider);
 
   const context =
-    {
-      logger,
+    { logger,
       definitions: definitionProvider,
-      artefacts: artefactProvider
-    };
+      artefacts: artefactProvider };
 
   return context;
 }
