@@ -64,15 +64,26 @@ export async function execCheck(
   const definitions =
     await definitionProvider.getDefinitions();
 
+  logger.trace(
+    `Check command: found ${definitions.length} definitions`);
+
   const filteredDefinitions =
     filterDefinitions(
       definitions,
       options.checkDefinitions);
 
+  logger.trace(
+    `Check command: list of definitions after filtering ${
+      JSON.stringify(
+        filteredDefinitions.map(
+          definition => definition.name))
+    }`);
+
   const rules =
-    filteredDefinitions.flatMap(
-      definition =>
-        definition.rules);
+    filteredDefinitions
+      .flatMap(
+        definition =>
+          definition.rules);
 
   const selectedRules =
     filterRules(
@@ -91,7 +102,17 @@ export async function execCheck(
     filterDefinitions(
       filteredDefinitions,
       [...definitionsWithRules]);
-  
+
+  const selectedDefinitionNames =
+    selectedDefinitions.map(
+      definition => definition.name);
+
+  logger.trace(
+    `Check command: found ${
+      JSON.stringify(
+        selectedDefinitionNames)
+    } definitions`);
+
   const artefactProvider =
     new ArtefactProvider(
       logger,
@@ -200,40 +221,46 @@ export async function execCheck(
         artefactDefinitionNames.includes(
           rule.definition);
 
-      if (applicable) {
-        const ruleResult =
-          await ruleRunner.runRule(
-            rule,
-            artefact);
+      logger.trace(
+        `Check command: checking artefact "${artefact.path}" against rule "${rule.name}" (applicable=${applicable})`);
 
-        const relativePath =
-          toPosixPath(
-            path.relative(
-              options.pattern
-                ? environment.cwd
-                : environment.project,
-              artefact.path));
-
-        const row =
-          {
-            path: relativePath,
-            rule: `${rule.name}`,
-            passed: ruleResult.result === 'Ok',
-            result: ruleResult.result === 'Ok'
-              ? 'OK'
-              : ruleResult.message,
-          };
-
-        hasFailures =
-          hasFailures
-          || !row.passed;
-
-        if (!options.withPositives && row.passed) {
-          continue;
-        }
-
-        results.push(row);
+      if (!applicable) {
+        continue;
       }
+
+      const ruleResult =
+        await ruleRunner.runRule(
+          rule,
+          artefact);
+
+      const relativePath =
+        toPosixPath(
+          path.relative(
+            options.pattern
+              ? environment.cwd
+              : environment.project,
+            artefact.path));
+
+      const row =
+        { path: relativePath,
+          rule: `${rule.name}`,
+          passed: ruleResult.result === 'Ok',
+          result: ruleResult.result === 'Ok'
+            ? 'OK'
+            : ruleResult.message };
+
+      hasFailures =
+        hasFailures
+        || !row.passed;
+
+      if (
+        !options.withPositives
+        && row.passed)
+      {
+        continue;
+      }
+
+      results.push(row);
     }
   }
 

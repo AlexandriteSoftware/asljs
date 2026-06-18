@@ -1,3 +1,18 @@
+/**
+ * @typedef
+ *   { import('mdast')
+ *       .RootContent }
+ *   RootContent
+ * @typedef
+ *   { import('mdast')
+ *       .Node }
+ *   Node
+ */
+
+/**
+ * @param {string} content 
+ * @returns {string|null}
+ */
 export function extractHeading(
   content)
 {
@@ -52,7 +67,8 @@ export function extractSectionBody(
   return buffer.join('\n').trim();
 }
 
-export function parseLocationFolder(locationBody)
+export function parseLocationFolder(
+  locationBody)
 {
   const inlineCodeMatch =
     locationBody.match(/`([^`]+)`/);
@@ -89,9 +105,13 @@ export function parsePropertyDefinitions(
   return definitions;
 }
 
+/**
+ * @param {RootContent[]} nodes 
+ * @param {string} sectionName 
+ * @returns {RootContent[] | null}
+ */
 export function getSection(
   nodes,
-  content,
   sectionName)
 {
   const headingIndex =
@@ -119,14 +139,13 @@ export function getSection(
         ? undefined
         : nextHeadingIndex);
 
-  return {
-    nodes: sectionNodes,
-    raw: sliceNodes(
-      content,
-      sectionNodes),
-  };
+  return sectionNodes;
 }
 
+/**
+ * @param {Node} node
+ * @returns {string}
+ */
 export function extractText(
   node)
 {
@@ -134,16 +153,19 @@ export function extractText(
     return '';
   }
 
-  if (typeof node.value === 'string') {
-    return node.value;
+  const value =
+    (/** @type {any} */ (node)).value;
+
+  if (typeof value === 'string') {
+    return value;
   }
 
-  if (
-    Array.isArray(
-      node.children))
-  {
+  const children =
+    (/** @type {any} */ (node)).children;
+
+  if (Array.isArray(children)) {
     const text =
-      node.children
+      children
         .map(
           childNode =>
             extractText(childNode))
@@ -155,6 +177,11 @@ export function extractText(
   return '';
 }
 
+/**
+ * @param {String} content
+ * @param {RootContent[]} nodes
+ * @returns {string}
+ */
 export function sliceNodes(
   content,
   nodes)

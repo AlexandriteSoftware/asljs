@@ -123,7 +123,7 @@ Requirement definition.
 
 ## Location
 
-- Files: ../development/**/RQ*.md
+- Pattern: ../development/**/RQ*.md
 
 ## Rules
 

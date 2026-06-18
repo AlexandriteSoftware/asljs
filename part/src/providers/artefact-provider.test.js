@@ -45,7 +45,7 @@ Requirement.
 
 ## Location
 
-- Files: ../development/**/RQ*.md
+- Pattern: ../development/**/RQ*.md
 - GitIgnore
 `;
 
@@ -125,7 +125,7 @@ Article.
 
 ## Location
 
-- Files: ../docs/**/*.md
+- Pattern: ../docs/**/*.md
 `);
 
     workspace.writeText(
@@ -136,7 +136,7 @@ Specification.
 
 ## Location
 
-- Files: ../docs/specs/*.md
+- Pattern: ../docs/specs/*.md
 `);
 
   workspace.writeText(

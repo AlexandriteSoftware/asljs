@@ -13,12 +13,19 @@ import { toPosixPath }
   from '../formatting.js';
 import { GitIgnore }
   from './git-ignore.js';
-import { sliceNodes,
-         extractText,
+import { extractText,
          getSection }
   from './markdown-query.js';
 
 /**
+ * @typedef
+ *   { import('mdast')
+ *       .Root }
+ *   Root
+ * @typedef
+ *   { import('mdast')
+ *       .RootContent }
+ *   RootContent
  * @typedef
  *   { import('../artefact-definition.js')
  *       .ArtefactDefinition }
@@ -27,6 +34,23 @@ import { sliceNodes,
  *   { import('../artefact-definition.js')
  *       .ArtefactDefinitionRule }
  *   ArtefactDefinitionRule
+ * @typedef
+ *   { import('../artefact-definition.js')
+ *       .ArtefactDefinitionLocation }
+ *   ArtefactDefinitionLocation
+ * @typedef
+ *   { import('../logging.js')
+ *       .Logger }
+ *   Logger
+ * 
+ */
+
+/**
+ * @typedef {Object} DefinitionParsingContext
+ * @property {Logger} logger
+ * @property {string} path
+ * @property {string} name
+ * @property {string} content
  */
 
 const MARKDOWN_PARSER =
@@ -34,6 +58,11 @@ const MARKDOWN_PARSER =
 
 export class DefinitionProvider
 {
+  /**
+   * @param {Logger} logger 
+   * @param {string} rootPath 
+   * @param {string} definitionsPath 
+   */
   constructor(
     logger,
     rootPath,
@@ -65,12 +94,10 @@ export class DefinitionProvider
     const markdownPaths =
       await glob(
         '**/*.md',
-        {
-          absolute: true,
+        { absolute: true,
           cwd: this.definitionsPath,
           dot: true,
-          nodir: true,
-        });
+          nodir: true });
 
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
@@ -80,8 +107,7 @@ export class DefinitionProvider
     for (const markdownPath of visibleMarkdownPaths) {
       const definition =
         await this.loadDefinitionFromFile(
-          markdownPath,
-          { rootPath: this.rootPath });
+          markdownPath);
 
       if (definition) {
         definitions.push(definition);
@@ -113,120 +139,115 @@ export class DefinitionProvider
         `'filePath' must be absolute: ${filePath}`);
     }
 
+    const name =
+      path.basename(
+        filePath,
+        path.extname(
+          filePath));
+
     const content =
       await readFile(
         filePath,
         'utf8');
 
     return await this.parseDefinition(
-      content,
-      { path: filePath });
+      { logger: this.logger,
+        path: filePath,
+        name,
+        content });
   }
 
   /**
-   * @param {string} content 
-   * @param {{path: string}} context 
-   * @returns {Promise<ArtefactDefinition|null>}
+   * @param {Root} document
+   * @param {DefinitionParsingContext} context
    */
-  async parseDefinition(
-    content,
+  checkHeader(
+    document,
     context)
   {
-    this.logger.trace(
-      `DefinitionProvider.parseDefinitionFile: ..., context=${JSON.stringify(context)}`);
-
-    const tree =
-      MARKDOWN_PARSER.parse(content);
-
     const heading =
-      getFirstHeading(
-        tree.children);
+      getTopHeading(
+        document);
 
     if (!heading) {
-      return null;
+      return false;
     }
 
     const name =
       extractText(heading);
 
-    const expectedName =
-      path.basename(
-        context.path,
-        path.extname(
-          context.path));
+    if (name !== context.name) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * @param {DefinitionParsingContext} context 
+   * @returns {Promise<ArtefactDefinition|null>}
+   */
+  async parseDefinition(
+    context)
+  {
+    this.logger.trace(
+      `DefinitionProvider.parseDefinitionFile: ..., path=${context.path}`);
+
+    const document =
+      MARKDOWN_PARSER.parse(
+        context.content);
 
     if (
-      expectedName
-      && name !== expectedName)
+      !this.checkHeader(
+        document,
+        context))
     {
+      this.logger.trace(
+        `DefinitionProvider.parseDefinitionFile: header check failed for ${context.path}`);
+        
       return null;
     }
 
     const description =
       extractDescription(
-        content,
-        tree.children,
-        heading);
-
-    const locationSection =
-      getSection(
-        tree.children,
-        content,
-        'Location');
-
-    if (!locationSection) {
-      return null;
-    }
+        document,
+        context);
 
     const location =
       parseLocation(
-        locationSection.raw,
-        locationSection.nodes);
+        document);
 
     if (!location) {
+      this.logger.trace(
+        `DefinitionProvider.parseDefinitionFile: location parsing failed for ${context.path}`);
+
       return null;
     }
 
     const propertiesSection =
       getSection(
-        tree.children,
-        content,
+        document.children,
         'Properties');
 
     const propertyEntries =
       parseProperties(
-        propertiesSection?.nodes ?? []);
+        propertiesSection ?? []);
 
     const propertyDefinitions =
       new Map(
         propertyEntries.map(
           entry =>
-            [entry.normalizedLabel,
-            entry.propertyName]));
-
-    const rulesSection =
-      getSection(
-        tree.children,
-        content,
-        'Rules');
-
-    const ruleEntries =
-      parseRules(
-        rulesSection?.nodes
-        ?? []);
+            [ entry.normalizedLabel,
+              entry.propertyName ]));
 
     const rules =
-      await this.loadRules(
-        ruleEntries,
-        {
-          rootPath: this.rootPath,
-          definitionPath: context.path,
-          definition: name
-        });
+      await this.parseRules(
+        document,
+        context);
 
     return {
       path: context.path,
-      name,
+      name: context.name,
       description,
       location,
       properties:
@@ -244,45 +265,23 @@ export class DefinitionProvider
   }
 
   /**
-   * @returns {Promise<ArtefactDefinitionRule[]>}
+   * 
+   * @param {string} ruleId 
+   * @param {string} definition 
+   * @param {string} definitionPath 
+   * @returns {Promise<{path: string, relativePath: string} | null>}
    */
-  async loadRules(
-    ruleEntries,
-    context)
-  {
-    return Promise.all(
-      ruleEntries.map(
-        async ruleEntry => {
-          const resolvedRuleFile =
-            await this.resolveRuleFile(
-              ruleEntry.id,
-              context);
-          
-          /** @type {ArtefactDefinitionRule} */
-          const rule =
-            {
-              id: ruleEntry.id,
-              definition: context.definition,
-              name: `${context.definition}_${ruleEntry.id}`,
-              description: ruleEntry.description,
-              path: resolvedRuleFile?.path ?? null
-            };
-
-          return rule;
-        }));
-  }
-
   async resolveRuleFile(
     ruleId,
-    options)
+    definition,
+    definitionPath)
   {
     this.logger.trace(
-      `DefinitionProvider.resolveRuleFile: ruleId=${ruleId}, options=${JSON.stringify(options)}`);
+      `DefinitionProvider.resolveRuleFile: ruleId=${ruleId}, definition=${definition}, definitionPath=${definitionPath}`);
 
     if (
-      !options.rootPath
-      || !options.definition
-      || !options.definitionPath)
+      !definition
+      || !definitionPath)
     {
       return null;
     }
@@ -290,11 +289,11 @@ export class DefinitionProvider
     const directoryPath =
       path.join(
         path.dirname(
-          options.definitionPath),
+          definitionPath),
         'rules');
 
     const baseName =
-      `${options.definition}_${ruleId}`;
+      `${definition}_${ruleId}`;
 
     this.logger.trace(
       `DefinitionProvider.resolveRuleFile: looking for rule file in ${directoryPath} with baseName=${baseName}`);
@@ -335,131 +334,331 @@ export class DefinitionProvider
 
       return {
         path: absoluteFilePath,
-        relativePath: toPosixPath(
-          path.relative(
-            path.dirname(
-              options.definitionPath),
-            absoluteFilePath)),
+        relativePath:
+          toPosixPath(
+            path.relative(
+              path.dirname(
+                definitionPath),
+              absoluteFilePath)),
       };
     }
 
     return null;
   }
-}
 
-function getFirstHeading(
-  nodes)
-{
-  return nodes.find(
-    node =>
-      node.type === 'heading'
-      && node.depth === 1)
-    ?? null;
-}
+  /**
+   * @param {Root} document
+   * @param {DefinitionParsingContext} context
+   * @returns {Promise<ArtefactDefinitionRule[]>}
+   */
+  async parseRules(
+    document,
+    context)
+  {
+    context.logger.trace(
+      `DefinitionProvider.parseRules: parsing rules for ${context.path}`);
 
-function extractDescription(
-  content,
-  nodes,
-  heading)
-{
-  const headingIndex =
-    nodes.indexOf(heading);
+    /** @type {ArtefactDefinitionRule[]} */
+    const rules = [];
 
-  const nextHeadingIndex =
-    nodes.findIndex(
-      (node, index) =>
-        index > headingIndex
-        && node.type === 'heading');
+    /** @type {RootContent[]} */
+    const sectionNodes = [];
 
-  const sectionNodes =
-    nodes.slice(
-      headingIndex + 1,
-      nextHeadingIndex === -1
-        ? undefined
-        : nextHeadingIndex);
+    let inSection = false;
 
-  return sliceNodes(
-    content,
-    sectionNodes);
-}
+    for (const node of document.children) {
+      if (
+        inSection
+        && node.type === 'heading')
+      {
+        break;
+      }
 
-function parseLocation(
-  rawSection,
-  nodes)
-{
-  const listItems =
-    getListItemTexts(nodes);
-
-  if (listItems.length > 0) {
-    const location =
-    {
-      patterns: [],
-      exclude: [],
-      filters: [],
-    };
-
-    for (const itemText of listItems) {
-      const typeMatch =
-        itemText.match(
-          /^(Files|Folders|Pattern)\s*:\s*(.+)$/i);
-
-      if (typeMatch) {
-        location.patterns.push(
-          typeMatch[2].trim());
-
+      if (
+        node.type === 'heading'
+        && node.depth === 2
+        && extractText(node).toLowerCase() === 'rules')
+      {
+        inSection = true;
         continue;
       }
 
-      const excludeMatch =
-        itemText.match(
-          /^Exclude\s*:\s*(.+)$/i);
-
-      if (excludeMatch) {
-        location.exclude.push(
-          excludeMatch[1].trim());
-
-        continue;
-      }
-
-      if (/^GitIgnore$/i.test(itemText)) {
-        location.filters.push(
-          { name: 'GitIgnore' });
+      if (inSection) {
+        sectionNodes.push(node);
       }
     }
 
-    if (location.patterns.length > 0) {
-      return location;
+    if (sectionNodes.length === 0) {
+      context.logger.trace(
+        `DefinitionProvider.parseRules: no rules section found in ${context.path}`);
+
+      return rules;
+    }
+
+    const rulesList =
+      sectionNodes
+        .find(
+          node =>
+            node.type === 'list');
+
+    if (!rulesList) {
+      context.logger.trace(
+        `DefinitionProvider.parseRules: no list section found in ${context.path}`);
+
+      return rules;
+    }
+
+    const listItems =
+      rulesList.children
+        .filter(
+          item => item.type === 'listItem')
+        .map(
+          item =>
+            context.content
+              .substring(
+                item.position?.start.offset ?? 0,
+                item.position?.end.offset ?? 0)
+              .trim())
+        .filter(
+          itemText => itemText.length > 0);
+
+    if (listItems.length === 0) {
+      context.logger.trace(
+        `DefinitionProvider.parseRules: no list items found in ${context.path}`);
+
+      return rules;
+    }
+
+    for (const itemText of listItems) {
+      const match =
+        itemText.match(
+          /^-\s+([A-Z]+\d+)\s*(?:[:-]\s*)?/);
+          
+      if (!match) {
+        context.logger.trace(
+          `DefinitionProvider.parseRules: no match found for list item "${itemText}" in ${context.path}`);
+
+        continue;
+      }
+      
+      const id =
+        match[1];
+
+      const description =
+        itemText
+          .substring(
+            match[0].length)
+          .trim();
+
+      const name =
+        `${context.name}_${id}`;
+
+      const resolvedRuleFile =
+        await this.resolveRuleFile(
+          id,
+          context.name,
+          context.path);
+
+      rules.push(
+        { id,
+          definition: context.name,
+          name,
+          description,
+          path:
+            resolvedRuleFile?.path
+            ?? null });
+    }
+
+    return rules;
+  }
+}
+
+/**
+ * 
+ * @param {Root} document
+ * @returns {RootContent | null}
+ */
+function getTopHeading(
+  document)
+{
+  return document
+    .children
+    .find(
+      node =>
+        node.type === 'heading'
+        && node.depth === 1)
+      ?? null;
+}
+
+/**
+ * 
+ * @param {Root} document 
+ * @param {DefinitionParsingContext} context
+ * @returns {string}
+ */
+function extractDescription(
+  document,
+  context)
+{
+  const heading =
+    getTopHeading(document);
+
+  if (!heading) {
+    return '';
+  }
+
+  const startOffset =
+    heading.position?.end.offset
+    ?? 0;
+
+  const nextHeading =
+    document.children
+      .find(
+        node =>
+          node.type === 'heading'
+          && node.depth !== 1);
+
+  if (!nextHeading) {
+    return context.content
+      .substring(startOffset)
+      .trim();
+  }
+
+  const endOffset =
+    nextHeading.position?.start.offset
+    ?? context.content.length;
+
+  return context.content
+    .substring(
+      startOffset,
+      endOffset)
+    .trim();
+}
+
+/**
+ * @param {Root} document
+ * @returns {ArtefactDefinitionLocation|null}
+ */
+function parseLocation(
+  document)
+{
+  /** @type {RootContent[]} */
+  const sectionNodes = [];
+
+  let inSection = false;
+
+  for (const node of document.children) {
+    if (
+      inSection
+      && node.type === 'heading')
+    {
+      break;
+    }
+
+    if (
+      node.type === 'heading'
+      && node.depth === 2
+      && extractText(node).toLowerCase() === 'location')
+    {
+      inSection = true;
+      continue;
+    }
+
+    if (inSection) {
+      sectionNodes.push(node);
     }
   }
 
-  const inlineCodeMatch =
-    rawSection.match(/`([^`]+)`/);
-
-  if (!inlineCodeMatch) {
+  if (sectionNodes.length === 0) {
     return null;
   }
 
-  return {
-    type: /folder/i.test(rawSection)
-      ? 'Folders'
-      : 'Files',
-    pattern: inlineCodeMatch[1].trim(),
-    exclude: [],
-    gitIgnore: false,
-  };
+  const locationParametersList =
+    sectionNodes
+      .find(
+        node =>
+          node.type === 'list');
+
+  if (!locationParametersList) {
+    return null;
+  }
+
+  const listItems =
+    locationParametersList.children
+      .filter(
+        item => item.type === 'listItem')
+      .map(
+        item => extractText(item).trim())
+      .filter(
+        itemText => itemText.length > 0);
+
+  if (listItems.length === 0) {
+    return null;
+  }
+
+  /** @type {string[]} */
+  const patterns = [];
+
+  /** @type {string[]} */
+  const exclude = [];
+  
+  /** @type {any[]} */
+  const filters = [];
+
+  for (const itemText of listItems) {
+    const typeMatch =
+      itemText.match(
+        /^Pattern\s*:\s*(.+)$/i);
+
+    if (typeMatch) {
+      patterns.push(
+        typeMatch[1].trim());
+
+      continue;
+    }
+
+    const excludeMatch =
+      itemText.match(
+        /^Exclude\s*:\s*(.+)$/i);
+
+    if (excludeMatch) {
+      exclude.push(
+        excludeMatch[1].trim());
+
+      continue;
+    }
+
+    if (/^GitIgnore$/i.test(itemText)) {
+      filters.push(
+        { name: 'GitIgnore' });
+    }
+  }
+
+  /** @type {ArtefactDefinitionLocation} */
+  const location =
+    { patterns,
+      exclude,
+      filters };
+
+  return location;
 }
 
 function parseProperties(
-  nodes)
+  nodes,
+  content)
 {
-  return getListItemTexts(nodes)
+  return getListItemTexts(
+    nodes,
+    content)
     .map(
-      (itemText) => itemText.match(
-        /^(.*?)\s*(?::|-)\s+(.+)$/))
+      itemText =>
+        itemText.match(
+          /^(.*?)\s*(?::|-)\s+(.+)$/))
     .filter(
-      (match) => match !== null)
+      match =>
+        match !== null)
     .map(
-      (match) => {
+      match => {
         const label =
           match[1].trim();
 
@@ -471,46 +670,27 @@ function parseProperties(
       });
 }
 
-function parseRules(
-  nodes)
-{
-  const rules =
-    getListItemTexts(nodes)
-      .map(
-        text =>
-          text.match(
-            /^([A-Z]+\d+)\s*(?:[:-]\s*)?(.+)$/))
-      .filter(
-        match => match !== null)
-      .map(
-        match => {
-          const id =
-            match[1];
-
-          const description =
-            match[2].trim();
-
-          return {
-            id,
-            description
-          };
-        });
-
-  return rules;
-}
-
+/**
+ * @param {RootContent[]} nodes
+ * @returns {string[]}
+ */
 function getListItemTexts(
-  nodes)
+  nodes,
+  content)
 {
-  return nodes
-    .filter(
-      (node) => node.type === 'list')
-    .flatMap(
-      (node) => node.children)
-    .map(
-      (item) => extractText(item).trim())
-    .filter(
-      (text) => text.length > 0);
+  const listNode =
+    nodes.find(
+      node => node.type === 'list');
+
+  if (!listNode) {
+    return [];
+  }
+
+  const items =
+    listNode.children.map(
+      item => extractText(item).trim());
+
+  return items;
 }
 
 function toPropertyName(

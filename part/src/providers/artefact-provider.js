@@ -173,7 +173,7 @@ export class ArtefactProvider
  * @param {string} projectDirectory 
  * @param {ArtefactDefinition} definition 
  * @param {string} artefactPath 
- * @returns {Artefact}
+ * @returns {Promise<Artefact>}
  */
 async function buildArtefact(
   projectDirectory,

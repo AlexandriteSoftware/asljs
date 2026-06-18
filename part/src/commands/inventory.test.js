@@ -138,7 +138,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Files: ../development/**/RQ*.md
+- Pattern: ../development/**/RQ*.md
 
 ## Rules
 
@@ -190,7 +190,7 @@ Markdown article.
 
 ## Location
 
-- Files: **/*.md
+- Pattern: **/*.md
 
 ## Rules
 
@@ -205,7 +205,7 @@ Definition file.
 
 ## Location
 
-- Files: ../definitions/**/*.md
+- Pattern: ../definitions/**/*.md
 
 ## Rules
 

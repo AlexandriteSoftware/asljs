@@ -15,6 +15,7 @@ Artefact Definition is a markdown file, with the following content:
 ## Location
 
 - Pattern: `**/*.md`
+- GitIgnore
 
 ## Rules
 
