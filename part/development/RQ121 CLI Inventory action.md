@@ -1,8 +1,8 @@
 # RQ121 CLI Inventory action
 
-When CLI is invoked with Inventory action, it obtains a list of all definitions,
-then list of all artefacts, then applies rules to artefacts. Finally, it
-produces a report of all artefacts, with these columns:
+Inventory command enumerates all files and folders in the project folder and
+for each of them lists all artefact definitions that apply to it. The produced
+report includes these columns:
 
 - `Location` - file or folder path, relative to the working directory.
 - `Definitions` - comma-separated list of all definitions that apply to the
@@ -10,7 +10,8 @@ produces a report of all artefacts, with these columns:
 
 Parameters:
 
-- definitions - limit check to specific definitions, comma-separated list.
+- `--inventory-definitions=...` - limit check to specific definitions,
+  comma-separated list.
 
 See also:
 

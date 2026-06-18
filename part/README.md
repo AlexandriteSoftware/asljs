@@ -73,9 +73,9 @@ part init --definitions artefacts
 Example output:
 
 ```text
-| File                   | Definitions | Rules |
-| ---------------------- | ----------- | ----- |
-| Todo Items/Buy milk.md | Todo Item   | Ok    |
+| File                   | Definitions |
+| ---------------------- | ----------- |
+| Todo Items/Buy milk.md | Todo Item   |
 ```
 
 If you want to embed PART in your own tooling instead of shelling out, import

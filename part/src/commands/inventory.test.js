@@ -10,8 +10,6 @@ import { createEnvironment }
   from '../environment.js';
 import { execInventory }
   from './inventory.js';
-import { execCheck }
-  from './check.js';
 
 const logger =
   createLogger(
@@ -19,7 +17,7 @@ const logger =
       level: 'trace' });
 
 test(
-  'RQ121: inventory reports artefacts in Todo Item example as OK',
+  'RQ121: inventory enumerates artefacts in Todo Item example',
   async t => {
     const workspace =
       new TmpDir(
@@ -44,29 +42,6 @@ A todo item is a task that needs to be done.
 ## Location
 
 - Pattern: Todo Items/*.md
-
-## Rules
-
-- R1 Due date must be in the future.
-`);
-
-    workspace.writeText(
-      'rules/Todo Item_R1.js',
-      `import fsp from 'node:fs/promises';
-
-export async function validate(artefact)
-{
-  const dueDate =
-    new Date(
-      await fsp.readFile(artefact.path, 'utf-8')
-        .then(text => text.match(/- Due date: (.*)/)[1]));
-
-  const now = new Date();
-
-  if (dueDate <= now) {
-    throw new Error('Due date must be in the future.');
-  }
-}
 `);
 
     const futureYear =
@@ -91,12 +66,6 @@ I need to buy milk.
     await execInventory(
       environment);
 
-    if (environment.stdout.toString().includes('Fail')) {
-      await execCheck(
-        environment,
-        { pattern: 'Todo Items/Buy milk.md' });
-    }
-
     assert.equal(
       environment.stderr.toString(),
       '');
@@ -108,10 +77,6 @@ I need to buy milk.
     assert.match(
       environment.stdout.toString(),
       /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
-
-    assert.equal(
-      environment.stderr.toString(),
-      '');
   });
 
 test(
@@ -139,15 +104,7 @@ A statement about the system that must be true.
 ## Location
 
 - Pattern: ../development/**/RQ*.md
-
-## Rules
-
-- RL10 - Requirement rule.
 `);
-
-    workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
-      'export async function validate() {}\n');
 
     workspace.writeText(
       'development/RQ101 Example.md',
@@ -191,10 +148,6 @@ Markdown article.
 ## Location
 
 - Pattern: **/*.md
-
-## Rules
-
-- RL10 - Article rule.
 `);
 
     workspace.writeText(
@@ -206,19 +159,7 @@ Definition file.
 ## Location
 
 - Pattern: ../definitions/**/*.md
-
-## Rules
-
-- RL10 - Definition rule.
 `);
-
-    workspace.writeText(
-      'definitions/rules/Article_RL10.js',
-      'export async function validate() {}\n');
-
-    workspace.writeText(
-      'definitions/rules/Artefact Definition_RL10.js',
-      'export async function validate() {}\n');
 
     workspace.writeText(
       'definitions/Requirement.md',
@@ -244,7 +185,63 @@ Definition file.
   });
 
 test(
-  'RQ121: inventory respects Definitions parameter and reports Fail when any rule fails',
+  'RQ121: inventory lists artefacts for selected definitions',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
+
+    t.after(
+      () => workspace.cleanup());
+
+    workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Location
+
+- Pattern: **/*.md
+`);
+
+    workspace.writeText(
+      'definitions/Artefact Definition.md',
+      `# Artefact Definition
+
+Definition file.
+
+## Location
+
+- Pattern: ../definitions/**/*.md
+`);
+
+    workspace.writeText(
+      'definitions/Requirement.md',
+      '# Requirement\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          logger });
+
+    await execInventory(
+      environment,
+      { inventoryDefinitions: ['Article'] });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| definitions\/Requirement\.md\s+\| Article\s+\|/);
+  });
+
+test(
+  'RQ121: inventory respects Definitions parameter',
   async t => {
     const workspace =
       new TmpDir(
@@ -275,21 +272,6 @@ A todo item is a task that needs to be done.
 ## Location
 
 - Pattern: ../Todo Items/*.md
-
-## Rules
-
-- R1 Due date must be in the future.
-`);
-
-    workspace.writeText(
-      'part/TodoItem_R1.js',
-      `export function validate(todoItem) {
-  const now = new Date();
-  const dueDate = new Date(todoItem.dueDate);
-  if (dueDate <= now) {
-    throw new Error('Due date must be in the future.');
-  }
-}
 `);
 
     workspace.writeText(

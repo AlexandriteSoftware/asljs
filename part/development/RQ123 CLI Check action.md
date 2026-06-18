@@ -7,13 +7,14 @@ runs rules from all of those definitions.
 
 Parameters:
 
-- pattern - optional, positional parameter after the `check` command, e.g.
+- `<pattern>` - optional, positional parameter after the `check` command, e.g.
   `check src/**/*.js`
-- definitions - limit check to specific definitions, comma-separated list.
-- rules - limit check to specific rules (in format
+- `--check-definitions=...` - limit check to specific definitions,
+  comma-separated list.
+- `--check-rules=...` - limit check to specific rules (in format
   `<artefact definition>_<rule id>`), comma-separated list.
-- with-positives - flag, if set, show all rows including `OK`; otherwise only
-  failing rows are shown.
+- `--with-positives` - flag, if set, show all rows including `OK`; otherwise
+  only failing rows are shown.
 
 Check returns non-zero exit code if any of the rules fails for any of
 the artefacts.
