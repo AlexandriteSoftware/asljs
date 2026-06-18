@@ -9,6 +9,7 @@
   },
   "files": [
     "artefacts/rules/Artefact Definition_RL1.js",
+    "artefacts/rules/Rule File_RL1.js",
     "artefacts/Artefact Definition.md",
     "artefacts/Rule File.md",
     "bin/**",
