@@ -675,8 +675,7 @@ function parseProperties(
  * @returns {string[]}
  */
 function getListItemTexts(
-  nodes,
-  content)
+  nodes)
 {
   const listNode =
     nodes.find(
