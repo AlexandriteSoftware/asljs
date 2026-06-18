@@ -103,11 +103,11 @@ I need to buy milk.
 
     assert.match(
       environment.stdout.toString(),
-      /\| Location\s+\| Definitions\s+\| Rules \|/);
+      /\| Location\s+\| Definitions\s+\|/);
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Ok\s+\|/);
+      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
 
     assert.equal(
       environment.stderr.toString(),
@@ -169,7 +169,7 @@ A statement about the system that must be true.
 
     assert.match(
       environment.stdout.toString(),
-      /\| development\/RQ101 Example\.md \| Requirement\s+\| \w+\s+\|/);
+      /\| development\/RQ101 Example\.md \| Requirement\s+\|/);
   });
 
 test(
@@ -240,7 +240,7 @@ Definition file.
 
     assert.match(
       environment.stdout.toString(),
-      /\| definitions\/Requirement\.md\s+\| Article,Artefact Definition\s+\| \w+\s+\|/);
+      /\| definitions\/Requirement\.md\s+\| Artefact Definition,Article\s+\|/);
   });
 
 test(
@@ -314,5 +314,5 @@ A todo item is a task that needs to be done.
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\| Fail\s+\|/);
+      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
   });

@@ -5,7 +5,7 @@ import { toPosixPath }
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
-  from '../markdown.js';
+  from '../markdown-table.js';
 
 export async function execDefinitions(
   environment)

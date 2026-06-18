@@ -175,14 +175,20 @@ function createCli(
   cli.command('inventory')
     .description(
       'Scan the current folder and print artefact inventory')
+    .option(
+      '--inventory-definitions <definitions>',
+      'Comma-separated definition names to get inventory for')
     .action(
-      async () => {
+      async (options) => {
         const method =
           environment.resolve(
             execInventory);
 
         await method(
-          environment);
+          environment,
+          { inventoryDefinitions:
+              splitCommaSeparatedOption(
+                options.inventoryDefinitions) });
       });
 
   cli.command('definition')
@@ -250,10 +256,10 @@ function createCli(
     .argument('[pattern]')
     .option(
       '--check-definitions <definitions>',
-      'Comma-separated definition names to include')
+      'Comma-separated definition names to run checks for')
     .option(
       '--check-rules <rules>',
-      'Comma-separated rule names to include')
+      'Comma-separated rule names to check')
     .option(
       '--with-positives',
       'Show passing and failing check rows')
