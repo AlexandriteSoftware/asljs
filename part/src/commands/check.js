@@ -150,12 +150,15 @@ export async function execCheck(
         continue;
       }
 
-      artefacts.push(
-        { path: artefactPath,
-          name:
-            path.basename(
-              artefactPath,
-              path.extname(artefactPath)) });
+      const artefact =
+        await artefactProvider.tryGetArtefact(
+          artefactPath);
+
+      if (artefact === null) {
+        continue;
+      }
+
+      artefacts.push(artefact);
 
       const artefactDefinitionNames =
         artefactDefinitions.map(
@@ -171,7 +174,7 @@ export async function execCheck(
     for (const definition of selectedDefinitions) {
       const definitionArtefacts =
         await artefactProvider.getArtefacts(
-          definition);
+          [ definition ]);
 
       for (const artefact of definitionArtefacts) {
         const added =

@@ -6,6 +6,7 @@
  * @property {string} path
  * @property {string} basePath
  * @property {string} relativePath
+ * @property {string[]} definitions
  */
 
 export { };

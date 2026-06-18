@@ -4,9 +4,35 @@ import { GitIgnore }
   from './git-ignore.js';
 import { glob }
   from 'glob';
+import { minimatch }
+  from 'minimatch';  
+
+/**
+ * @typedef
+ *   { import('../location.js')
+ *       .Location }
+ *   Location
+ * @typedef
+ *   { import('../location.js')
+ *       .LocationFilter }
+ *   LocationFilter
+ * @typedef
+ *   { import('../logging.js')
+ *       .Logger }
+ *   Logger
+ */
+
+/**
+ * @typedef {Object} FilesystemLocationResolverFilter
+ * @property {string} name
+ */
 
 export class FilesystemLocationResolver
 {
+  /**
+   * @param {Logger} logger 
+   * @param {string} rootPath 
+   */
   constructor(
     logger,
     rootPath)
@@ -22,20 +48,30 @@ export class FilesystemLocationResolver
         this.logger);
   }
 
+  /**
+   * @param {string} basePath 
+   * @param {Location} location
+   */
   async resolve(
     basePath,
-    patterns,
-    excludePatterns = [],
-    filters = [])
+    location)
   {
+    const patterns =
+      location.patterns;
+
+    const exclude =
+      location.exclude || [];
+
+    const filters =
+      location.filters || [];
+
     this.logger.trace(
       `FilesystemLocationResolver.resolve(${
         JSON.stringify(basePath)
       }, ${
         JSON.stringify(patterns)
       }, ${
-        JSON.stringify(
-          excludePatterns)
+        JSON.stringify(exclude)
       }, ${
         JSON.stringify(filters)
       })`);
@@ -109,7 +145,7 @@ export class FilesystemLocationResolver
     }
 
     const rootExcludePatterns =
-      excludePatterns
+      exclude
         .filter(
           pattern => pattern.startsWith('/'))
         .map(
@@ -119,11 +155,9 @@ export class FilesystemLocationResolver
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          {
-            cwd: this.rootPath,
+          { cwd: this.rootPath,
             absolute: true,
-            nodir: filesOnly
-          });
+            nodir: filesOnly });
 
       for (const match of rootExcludeMatches) {
         matches.delete(match);
@@ -131,7 +165,7 @@ export class FilesystemLocationResolver
     }
 
     const basePathExcludePatterns =
-      excludePatterns
+      exclude
         .filter(
           pattern => !pattern.startsWith('/'));
 
@@ -139,11 +173,9 @@ export class FilesystemLocationResolver
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          {
-            cwd: normalisedBasePath,
+          { cwd: normalisedBasePath,
             absolute: true,
-            nodir: filesOnly
-          });
+            nodir: filesOnly });
 
       for (const match of basePathExcludeMatches) {
         matches.delete(match);
@@ -157,7 +189,7 @@ export class FilesystemLocationResolver
       switch (filter.name) {
         case 'GitIgnore':
           result =
-            await this.gitIgnore
+            this.gitIgnore
               .filter(
                 result);
           break;
@@ -176,4 +208,103 @@ export class FilesystemLocationResolver
 
     return result;
   }
+
+  /**
+   * @param {string} targetPath
+   * @param {string} basePath 
+   * @param {Location} location
+   */
+  async check(
+    targetPath,
+    basePath,
+    location)
+  {
+    const patterns =
+      location.patterns;
+
+    const exclude =
+      location.exclude || [];
+
+    const filters =
+      location.filters || [];
+
+    const normalisedTargetPath =
+      path.normalize(
+        path.resolve(targetPath));
+
+    const normalisedBasePath =
+      path.normalize(
+        path.resolve(basePath));
+
+    const relativeToRoot =
+      path.relative(
+        this.rootPath,
+        normalisedTargetPath);
+
+    const relativeToBase =
+      path.relative(
+        normalisedBasePath,
+        normalisedTargetPath);
+
+    const included =
+      patterns.some(
+        pattern =>
+        {
+          if (pattern.startsWith('/')) {
+            return minimatch(
+              relativeToRoot,
+              pattern.slice(1),
+              { dot: true });
+          }
+
+          return minimatch(
+            relativeToBase,
+            pattern,
+            { dot: true });
+        });
+
+    if (!included) {
+      return false;
+    }
+
+    const excluded =
+      exclude.some(
+        pattern =>
+        {
+          if (pattern.startsWith('/')) {
+            return minimatch(
+              relativeToRoot,
+              pattern.slice(1),
+              { dot: true });
+          }
+
+          return minimatch(
+            relativeToBase,
+            pattern,
+            { dot: true });
+        });
+
+    if (excluded) {
+      return false;
+    }
+
+    let result =
+      [ normalisedTargetPath ];
+
+    for (const filter of filters) {
+      switch (filter.name) {
+        case 'GitIgnore':
+          result =
+            this.gitIgnore
+              .filter(result);
+          break;
+
+        default:
+          throw new Error(
+            `Unknown filter: ${filter.name}`);
+      }
+    }
+
+    return result.length > 0;
+  }  
 }

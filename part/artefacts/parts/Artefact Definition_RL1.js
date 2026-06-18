@@ -6,7 +6,7 @@ that implements it. The rule file should be named
 
 /**
  * @type { import('../../src/rule-validation-function.js')
- *           .ruleValidationFunction }
+ *           .RuleValidationFunction }
  */
 export async function validate(
   artefact,

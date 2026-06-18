@@ -90,7 +90,7 @@ test(
       () => workspace.cleanup());
 
     workspace.mkdir(
-      'artefacts/rules');
+      'artefacts/parts');
 
     workspace.mkdir(
       'development');

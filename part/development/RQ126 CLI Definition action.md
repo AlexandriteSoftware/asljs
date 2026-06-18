@@ -19,12 +19,12 @@ Example:
     {
       "id": "RL1",
       "description": "This is rule 1.",
-      "filePath": "rules/MyDefinition_RL1.json"
+      "filePath": "parts/MyDefinition_RL1.json"
     },
     {
       "id": "RL2",
       "description": "This is rule 2.",
-      "filePath": "rules/MyDefinition_RL2.json"
+      "filePath": "parts/MyDefinition_RL2.json"
     }
   ]
 }

@@ -1,15 +1,8 @@
-// @ts-check
-
 /**
- * @typedef ArtefactDefinitionLocationFilter
- * @property {string} name
- */
-
-/**
- * @typedef ArtefactDefinitionLocation
- * @property {string[]} patterns
- * @property {string[]} exclude
- * @property {ArtefactDefinitionLocationFilter[]} filters
+ * @typedef
+ *   { import('./location.js')
+ *       .Location }
+ *   Location
  */
 
 /**
@@ -26,7 +19,7 @@
  * @property {string} path
  * @property {string} name
  * @property {string} description
- * @property {ArtefactDefinitionLocation} location
+ * @property {Location} location
  * @property {string} properties
  * @property {ArtefactDefinitionRule[]} rules
  * @property {string} propertyDefinitions

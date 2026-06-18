@@ -6,7 +6,7 @@ directory. It copies the following files and directories:
 
 - `Artefact Definition.md` - defines the format of the definition files.
 - `Rule File.md` - defines the format of the rule files.
-- `rules` - a directory for rule files.
+- `parts` - a directory for rule files.
 
 [1]: <../artefacts>
 [2]: <RQ111 CLI Definitions parameter.md>

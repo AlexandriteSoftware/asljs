@@ -9,7 +9,7 @@ import path
 
 /**
  * @type { import('../../src/rule-validation-function.js')
- *           .ruleValidationFunction }
+ *           .RuleValidationFunction }
  */
 export async function validate(
   artefact,
@@ -57,7 +57,7 @@ export async function validate(
   const testFileArtefacts =
     await context.artefacts
       .getArtefacts(
-        unitTestFileDefinition);
+        [ unitTestFileDefinition ]);
 
   const testFiles =
     testFileArtefacts

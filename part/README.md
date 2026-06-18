@@ -28,17 +28,34 @@ A task that needs to be done.
 - R1 - Due date must be in the future.
 ```
 
-Create a matching rule in `rules/Todo Item_R1.js`:
+Crate a data providing function in `parts/Todo Item.js`:
 
 ```js
-import fsp from 'node:fs/promises';
-
-export async function validate(artefact)
+export async function getData(artefact, context)
 {
+  const text =
+    await context
+      .markdownDocuments
+      .read(
+        artefact.path);
+
   const dueDate =
-    new Date(
-      await fsp.readFile(artefact, 'utf-8')
-        .then(text => text.match(/- Due date: (.*)/)[1]));
+    text.match(/- Due date: (.*)/)[1];
+
+  return { dueDate };
+}
+```
+
+Create a matching rule in `parts/Todo Item_R1.js`:
+
+```js
+export async function validate(artefact, context)
+{
+  const artefactData =
+    await context.artefactData.tryGetArtefactData(artefact);
+
+  const dueDate =
+    artefactData['Todo Item'].dueDate;
 
   const now = new Date();
 

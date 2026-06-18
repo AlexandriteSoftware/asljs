@@ -15,8 +15,8 @@ A rule file is a file that implements a rule for a definition.
 
 ## Location
 
-- Pattern: `rules/**/*.js`
-- Exclude: `rules/**/*.test.js`
+- Pattern: `parts/**/*_*.js`
+- Exclude: `parts/**/*.test.js`
 - GitIgnore
 
 ## Rules
@@ -35,7 +35,7 @@ Definition file:
   below.
 ```
 
-Rule file `rules/<Definition Name>_R1.js`:
+Rule file `parts/<Definition Name>_R1.js`:
 
 ```js
 /*

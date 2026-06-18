@@ -85,7 +85,8 @@ export async function execInventory(
       `Inventory command: collecting items for definition "${definition.name}"`);
 
     const definitionArtefacts =
-      await artefactProvider.getArtefacts(definition);
+      await artefactProvider.getArtefacts(
+        [ definition ]);
 
     logger.trace(
       `Inventory command: collected ${definitionArtefacts.length} artefacts for definition "${definition.name}"`);

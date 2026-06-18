@@ -5,17 +5,14 @@ import { glob }
 import { readdir,
          readFile }
   from 'node:fs/promises';
-import { unified }
-  from 'unified';
-import remarkParse
-  from 'remark-parse';
 import { toPosixPath }
   from '../formatting.js';
 import { GitIgnore }
   from './git-ignore.js';
 import { extractText,
-         getSection }
-  from './markdown-query.js';
+         getSection,
+         MarkdownDocumentProvider }
+  from './markdown-document-provider.js';
 
 /**
  * @typedef
@@ -35,14 +32,13 @@ import { extractText,
  *       .ArtefactDefinitionRule }
  *   ArtefactDefinitionRule
  * @typedef
- *   { import('../artefact-definition.js')
- *       .ArtefactDefinitionLocation }
- *   ArtefactDefinitionLocation
+ *   { import('../location.js')
+ *       .Location }
+ *   Location
  * @typedef
  *   { import('../logging.js')
  *       .Logger }
  *   Logger
- * 
  */
 
 /**
@@ -53,9 +49,9 @@ import { extractText,
  * @property {string} content
  */
 
-const MARKDOWN_PARSER =
-  unified().use(remarkParse);
-
+/**
+ * @property {string} partsDirectoryName
+ */
 export class DefinitionProvider
 {
   /**
@@ -71,6 +67,8 @@ export class DefinitionProvider
     this.logger = logger;
     this.rootPath = path.resolve(rootPath);
 
+    this.partsDirectoryName = 'parts';
+
     this.definitionsPath =
       path.resolve(
         this.rootPath,
@@ -81,6 +79,9 @@ export class DefinitionProvider
         this.logger);
 
     this.cache = null;
+
+    this.markdownDocumentProvider =
+      new MarkdownDocumentProvider();
   }
 
   async getDefinitions() {
@@ -194,8 +195,9 @@ export class DefinitionProvider
       `DefinitionProvider.parseDefinitionFile: ..., path=${context.path}`);
 
     const document =
-      MARKDOWN_PARSER.parse(
-        context.content);
+      this.markdownDocumentProvider
+        .parse(
+          context.content);
 
     if (
       !this.checkHeader(
@@ -290,7 +292,7 @@ export class DefinitionProvider
       path.join(
         path.dirname(
           definitionPath),
-        'rules');
+        'parts');
 
     const baseName =
       `${definition}_${ruleId}`;
@@ -537,7 +539,7 @@ function extractDescription(
 
 /**
  * @param {Root} document
- * @returns {ArtefactDefinitionLocation|null}
+ * @returns {Location|null}
  */
 function parseLocation(
   document)
@@ -634,7 +636,7 @@ function parseLocation(
     }
   }
 
-  /** @type {ArtefactDefinitionLocation} */
+  /** @type {Location} */
   const location =
     { patterns,
       exclude,

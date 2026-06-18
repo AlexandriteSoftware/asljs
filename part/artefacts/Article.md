@@ -10,5 +10,5 @@ Markdown article.
 
 ## Rules
 
-- RL10 - Article start with a level 1 heading.
-- RL11 - Top-level heading is the file name without extension.
+- RL10 - Article start with a level 1 heading, which is the file name without
+  extension.

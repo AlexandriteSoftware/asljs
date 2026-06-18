@@ -27,9 +27,6 @@ test(
       () => workspace.cleanup());
 
     workspace.mkdir(
-      'artefacts/rules');
-
-    workspace.mkdir(
       'development/features');
 
     workspace.writeText(
@@ -49,14 +46,14 @@ A statement about the system that must be true.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       `export async function validate(artefact) {
   throw new Error(artefact.relativePath + ' is not referenced by any test.');
 }
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.js',
+      'artefacts/parts/Requirement_RL11.js',
       `export async function validate() {
   return;
 }
@@ -108,9 +105,6 @@ test(
       () => workspace.cleanup());
 
     workspace.mkdir(
-      'definitions/rules');
-
-    workspace.mkdir(
       'part');
 
     workspace.writeText(
@@ -144,11 +138,11 @@ Definition file.
 `);
 
     workspace.writeText(
-      'definitions/rules/Article_RL10.js',
+      'definitions/parts/Article_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
-      'definitions/rules/Artefact Definition_RL10.js',
+      'definitions/parts/Artefact Definition_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -192,9 +186,6 @@ test(
 
 
     workspace.mkdir(
-      'artefacts/rules');
-
-    workspace.mkdir(
       'development');
 
     workspace.writeText(
@@ -229,15 +220,15 @@ Markdown article.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.js',
+      'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
-      'artefacts/rules/Article_RL10.js',
+      'artefacts/parts/Article_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -286,9 +277,6 @@ test(
       () => workspace.cleanup());
 
     workspace.mkdir(
-      'artefacts/rules');
-
-    workspace.mkdir(
       'development/zeta');
 
     workspace.mkdir(
@@ -311,11 +299,11 @@ A statement about the system that must be true.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.js',
+      'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -375,9 +363,6 @@ test(
 
 
     workspace.mkdir(
-      'artefacts/rules');
-
-    workspace.mkdir(
       'development');
 
     workspace.writeText(
@@ -397,11 +382,11 @@ A statement about the system that must be true.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       'export async function validate() { throw new Error(\'Failed.\'); }\n');
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.js',
+      'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
     workspace.writeText(
@@ -443,9 +428,6 @@ test(
 
 
     workspace.mkdir(
-      'artefacts/rules');
-
-    workspace.mkdir(
       'development');
 
     workspace.writeText(
@@ -465,11 +447,11 @@ A statement about the system that must be true.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       'export async function validate() { throw new Error(\'Failed.\'); }\n');
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.js',
+      'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
     workspace.writeText(

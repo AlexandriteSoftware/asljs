@@ -1,12 +1,7 @@
 import path
   from 'node:path';
-import { readFile }
-  from 'node:fs/promises';
 import { toPosixPath }
   from '../formatting.js';
-import { extractHeading,
-         parsePropertyValues }
-  from './markdown-query.js';
 import { FilesystemLocationResolver }
   from './filesystem-location-resolver.js';
 
@@ -35,7 +30,6 @@ import { FilesystemLocationResolver }
  *
  * @property {Logger} logger
  * @property {string} rootPath
- * @property {WeakMap} cache
  * @property {DefinitionProvider} definitionsProvider
  * @property {FilesystemLocationResolver} locationResolver
  */
@@ -53,7 +47,6 @@ export class ArtefactProvider
   {
     this.logger = logger;
     this.rootPath = path.resolve(rootPath);
-    this.cache = new WeakMap();
     this.definitionsProvider = definitionsProvider;
 
     this.locationResolver =
@@ -63,50 +56,116 @@ export class ArtefactProvider
   }
 
   /**
-   * @param {ArtefactDefinition} definition 
+   * @param {string} artefactPath
+   * @returns {Promise<Artefact?>}
+   */
+  async tryGetArtefact(
+    artefactPath)
+  {
+    this.logger.trace(
+      `ArtefactProvider.tryGetArtefact: ${artefactPath}`);
+
+    const artefactFullPath =
+      path.resolve(
+        this.rootPath,
+        artefactPath);
+
+    if (!path.isAbsolute(artefactPath)) {
+      this.logger.trace(
+        `ArtefactProvider.tryGetArtefact: ${artefactPath} is resolved to ${artefactFullPath}.`);
+    }
+
+    const definitions =
+      await this.getDefinitionsForArtefact(
+        artefactFullPath);
+
+    if (definitions.length === 0) {
+      this.logger.trace(
+        `ArtefactProvider.tryGetArtefact: ${artefactPath} is not matched by any artefact definition.`);
+
+      return null;
+    }
+
+    return await this.buildArtefact(
+      this.rootPath,
+      definitions,
+      artefactFullPath);
+  }
+
+  /**
+   * @param {ArtefactDefinition[]?} definitions
    * @returns {Promise<Artefact[]>}
    */
   async getArtefacts(
-    definition)
+    definitions = null)
   {
-    const cachedArtefacts =
-      this.cache.get(definition);
-
-    if (cachedArtefacts) {
-      return cachedArtefacts;
+    if (definitions === null) {
+      definitions =
+        await this.definitionsProvider.getDefinitions();
     }
 
-    const artefacts =
-      await this.loadArtefacts(
-        definition);
+    const artefactPaths =
+      new Set();
 
-    this.cache.set(
-      definition,
-      artefacts);
+    for (const definition of definitions) {
+      const paths =
+        await this.locationResolver
+          .resolve(
+            path.dirname(
+              definition.path),
+            definition.location);
+      
+      for (const artefactPath of paths) {
+        artefactPaths.add(artefactPath);
+      }
+    }
+
+    const artefacts = [];
+
+    for (const artefactPath of artefactPaths) {
+      const artefactDefinitions =
+        await this.getDefinitionsForArtefact(
+          artefactPath);
+
+      artefacts.push(
+        await this.buildArtefact(
+          this.rootPath,
+          artefactDefinitions,
+          artefactPath));
+    }
+
+    artefacts.sort(
+      (left, right) =>
+        left.relativePath.localeCompare(
+          right.relativePath));
 
     return artefacts;
   }
 
   /**
-   * @param {string} artefactFilePath
+   * @param {string} artefactPath
    * @param {ArtefactDefinition} definition
    * @returns {Promise<boolean>}
    */
   async isArtefactOfDefinition(
-    artefactFilePath,
+    artefactPath,
     definition)
   {
-    const resolvedArtefactPath =
-      path.resolve(
-        this.rootPath,
-        artefactFilePath);
+    const artafactFullPath =
+      path.normalize(
+        path.resolve(
+          this.rootPath,
+          artefactPath));
 
-    const artefacts =
-      await this.getArtefacts(definition);
-
-    return artefacts.some(
-      artefact =>
-        artefact.path === resolvedArtefactPath);
+    const match =
+      await this.locationResolver
+        .check(
+          artafactFullPath,
+          path.dirname(
+            definition.path),
+          definition.location);
+      
+    return match;
   }
 
   /**
@@ -135,52 +194,16 @@ export class ArtefactProvider
   }
 
   /**
-   * @param {ArtefactDefinition} definition 
-   * @returns {Promise<Artefact[]>}
+   * @param {string} projectDirectory 
+   * @param {ArtefactDefinition[]} definitions
+   * @param {string} artefactPath 
+   * @returns {Promise<Artefact>}
    */
-  async loadArtefacts(
-    definition)
+  async buildArtefact(
+    projectDirectory,
+    definitions,
+    artefactPath)
   {
-    const artefactPaths =
-      await this.locationResolver
-        .resolve(
-          path.dirname(
-            definition.path),
-          definition.location.patterns,
-          definition.location.exclude ?? [],
-          definition.location.filters ?? []);
-
-    const artefacts = [];
-
-    for (const artefactPath of artefactPaths) {
-      artefacts.push(
-        await buildArtefact(
-          this.rootPath,
-          definition,
-          artefactPath));
-    }
-
-    artefacts.sort(
-      (left, right) =>
-        left.relativePath.localeCompare(
-          right.relativePath));
-
-    return artefacts;
-  }
-}
-
-/**
- * @param {string} projectDirectory 
- * @param {ArtefactDefinition} definition 
- * @param {string} artefactPath 
- * @returns {Promise<Artefact>}
- */
-async function buildArtefact(
-  projectDirectory,
-  definition,
-  artefactPath)
-{
-  if (artefactPath.endsWith('.md') === false) {
     return {
       path: artefactPath,
       relativePath:
@@ -194,41 +217,10 @@ async function buildArtefact(
         path.basename(
           artefactPath,
           path.extname(artefactPath)),
+      definitions:
+        definitions
+          .map(
+            definition => definition.name)
     };
   }
-
-  const content =
-    await readFile(
-      artefactPath,
-      'utf8');
-
-  const propertyDefinitions =
-    definition.propertyDefinitions ?? new Map();
-
-  const properties =
-    parsePropertyValues(
-      content,
-      propertyDefinitions);
-
-  return {
-    path: artefactPath,
-    relativePath:
-      toPosixPath(
-        path.relative(
-          projectDirectory,
-          artefactPath)),
-    basePath:
-      projectDirectory,
-    name:
-      path.basename(
-        artefactPath,
-        path.extname(artefactPath)),
-    title:
-      extractHeading(content)
-      ?? path.basename(
-        artefactPath,
-        path.extname(artefactPath)),
-    properties,
-    ...properties
-  };
 }

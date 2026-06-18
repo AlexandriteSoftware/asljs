@@ -15,7 +15,7 @@ Public behavior at a glance:
 - definitions require a `Location` section to be valid
 - definition `Location` paths are resolved relative to the definition file
 - definitions can declare `Properties` and `Rules`
-- rules resolve from a sibling `rules/` directory
+- rules resolve from a sibling `parts/` directory
 - JavaScript rules receive `context.artefacts` as an `ArtefactProvider`
   rooted at the current repository
 - cli command `inventory` shows all matching definitions for each artefact
@@ -82,7 +82,7 @@ user-facing behavior changes.
 
 - Copies `Artefact Definition.md` and `Rule File.md` into the chosen
   definitions directory.
-- Ensures a sibling `rules/` directory exists in the chosen definitions
+- Ensures a sibling `parts/` directory exists in the chosen definitions
   directory.
 - Uses the current working directory by default and `--definitions <path>` when
   provided.
@@ -110,7 +110,7 @@ user-facing behavior changes.
 ### update-rules
 
 - Scans rules from discovered definitions in the chosen definitions directory.
-- Creates missing JavaScript rule files in a sibling `rules/` directory.
+- Creates missing JavaScript rule files in a sibling `parts/` directory.
 - Updates JavaScript rule files whose first comment no longer matches the rule
   text from the definition.
 - Skips non-JavaScript rule files and reports a warning for each skipped file.

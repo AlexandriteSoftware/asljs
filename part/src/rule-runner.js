@@ -6,6 +6,10 @@ import { access }
   from 'node:fs/promises';
 import { pathToFileURL }
   from 'node:url';
+import { MarkdownDocumentProvider }
+  from './providers/markdown-document-provider.js';
+import { ArtefactDataProvider }
+  from './providers/artefact-data-provider.js';
 
 /**
  * @typedef
@@ -28,6 +32,14 @@ import { pathToFileURL }
  *   { import('./providers/definition-provider.js')
  *       .DefinitionProvider }
  *   DefinitionProvider
+ * @typedef
+ *   { import('./rule-validation-function.js')
+ *       .RuleValidationFunction }
+ *   RuleValidationFunction
+ * @typedef
+ *   { import('./rule-validation-function.js')
+ *       .RuleValidationContext }
+ *   RuleValidationContext
  * @typedef
  *   { import('./logging.js')
  *       .Logger }
@@ -63,6 +75,14 @@ export class RuleRunner
 
     this.artefactProvider =
       artefactProvider;
+
+    this.markdownDocuments =
+      new MarkdownDocumentProvider();
+
+    this.artafactDataProvider =
+      new ArtefactDataProvider(
+        logger,
+        definitionProvider.definitionsPath);
   }
 
   /**
@@ -176,20 +196,27 @@ export class RuleRunner
         await import(
           importUrl.href);
 
-      if (typeof validatorModule.validate !== 'function') {
+      /** @type {RuleValidationFunction} */
+      const validateFunction =
+        validatorModule.validate;
+
+      if (typeof validateFunction !== 'function') {
         throw new Error(
           'Rule module must export validate.');
       }
 
       let result = null;
 
+      /** @type {RuleValidationContext} */
       const validationContext =
         { logger: this.logger,
           definitions: this.definitionProvider,
-          artefacts: this.artefactProvider };
+          artefacts: this.artefactProvider,
+          artefactData: this.artafactDataProvider,
+          markdownDocuments: this.markdownDocuments };
 
       try {
-        await validatorModule.validate(
+        await validateFunction(
           artefact,
           validationContext);
       } catch (error) {

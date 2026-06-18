@@ -26,9 +26,6 @@ test(
     t.after(
       () => workspace.cleanup());
 
-    workspace.mkdir(
-      'rules');
-
     workspace.writeText(
       'Requirement.md',
       `# Requirement
@@ -50,7 +47,7 @@ A statement about the system that must be true.
 `);
 
     workspace.writeText(
-      'rules/Requirement_RL10.js',
+      'parts/Requirement_RL10.js',
       'export async function validate() { }\n');
 
     const environment =

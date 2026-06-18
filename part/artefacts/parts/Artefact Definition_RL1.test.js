@@ -6,10 +6,8 @@ import { TmpDir }
   from '../../src/tmp-dir.js';
 import { createLogger }
   from '../../src/logging.js';
-import { ArtefactProvider }
-  from '../../src/providers/artefact-provider.js';
-import { DefinitionProvider }
-  from '../../src/providers/definition-provider.js';
+import { createRuleValidationContext }
+  from '../../src/rule-validation-function.js';
 import { validate }
   from './Artefact Definition_RL1.js';
 
@@ -48,15 +46,13 @@ async function checkDeclaredRulesTest(
   testContext.after(
     () => workspace.cleanup());
 
-  workspace.mkdir('rules');
-
   if (withRuleFiles) {
     workspace.writeText(
-      'rules/Todo Item_RL1.js',
+      'parts/Todo Item_RL1.js',
       'export async function validate() { }\n');
 
     workspace.writeText(
-      'rules/Todo Item_RL2.js',
+      'parts/Todo Item_RL2.js',
       'export async function validate() { }\n');
   }
 
@@ -76,16 +72,37 @@ Definition.
 - RL2 - Must also have a second rule file.
 `);
 
+  workspace.writeText(
+    'Artefact Definition.md',
+    `# Artefact Definition
+
+Definition.
+
+## Location
+
+- Pattern: \`/*.md\`
+
+## Rules
+
+- RL1 - Rule No. 1
+`);
+
   const context =
-    createContext(
-      workspace);
+    createRuleValidationContext(
+      logger,
+      workspace.path);
+
+  const artefact =
+    await context.artefacts.tryGetArtefact('Todo Item.md');
+
+  if (!artefact) {
+    throw new Error(
+      'Failed to load artefact for test.');
+  }
 
   const invocation =
     validate(
-      { path: workspace.resolve('Todo Item.md'),
-          name: 'Todo Item',
-          basePath: workspace.path,
-          relativePath: 'Todo Item.md' },
+      artefact,
       context);
 
   if (withRuleFiles) {
@@ -95,29 +112,4 @@ Definition.
     await assert.rejects(
       invocation);
   }
-}
-
-/**
- * @param {TmpDir} workspace
- */
-function createContext(
-  workspace)
-{
-  const definitionProvider =
-    new DefinitionProvider(
-      logger,
-      workspace.path);
-
-  const artefactProvider =
-    new ArtefactProvider(
-      logger,
-      workspace.path,
-      definitionProvider);
-
-  const context =
-    { logger,
-      definitions: definitionProvider,
-      artefacts: artefactProvider };
-
-  return context;
 }

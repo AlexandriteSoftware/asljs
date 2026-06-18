@@ -88,10 +88,8 @@ test(
     t.after(
       () => workspace.cleanup());
 
-    workspace.mkdir('rules');
-
     workspace.writeText(
-      'rules/Todo Item_R1.js',
+      'parts/Todo Item_R1.js',
       `export async function validate(artefact) {
   if (!artefact.dueDate || artefact.dueDate < '2030-01-01') {
     throw new Error('Due date must be in the future.');
@@ -167,7 +165,7 @@ A todo item is a task that needs to be done.
           description: 'Due date must be in the future.',
           path: path.join(
             workspace.path,
-            'rules',
+            'parts',
             'Todo Item_R1.js'),
         },
       ]);

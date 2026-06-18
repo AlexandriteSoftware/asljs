@@ -274,7 +274,7 @@ function getExpectedRuleFilePath(
   return path.join(
     path.dirname(
       definition.path),
-    'rules',
+    'parts',
     `${definition.name}_${rule.id}.js`,
   );
 }
@@ -303,7 +303,7 @@ ${rule.id} - ${rule.description}
 
 /**
  * @type { import('../../src/rule-validation-function.js')
- *           .ruleValidationFunction }
+ *           .RuleValidationFunction }
  */
 export async function validate(
   artefact,

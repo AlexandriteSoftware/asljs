@@ -24,7 +24,7 @@ const artefacts =
     repositoryPath);
 
 const ruleFiles =
-  await artefacts.getArtefacts(ruleFile);
+  await artefacts.getArtefacts([ ruleFile ]);
 ```
 
 ## Example: check whether an artefact matches a definition
@@ -42,7 +42,7 @@ const artefacts =
 
 const isRuleFile =
   await artefacts.isArtefactOfDefinition(
-    'rules/Rule File_RL1.js',
+    'parts/Rule File_RL1.js',
     ruleFile);
 ```
 
@@ -58,5 +58,5 @@ const artefacts =
 
 const definitionsForRuleFile =
   await artefacts.getDefinitionsForArtefact(
-    'rules/Rule File_RL1.js');
+    'parts/Rule File_RL1.js');
 ```

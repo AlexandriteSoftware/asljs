@@ -26,7 +26,7 @@ test(
       workspace,
       await resolver.resolve(
         workspace.path,
-        [ '**/*.txt' ]),
+        { patterns: [ '**/*.txt' ] }),
       [ 'f1.txt',
         'd1/f2.txt',
         'd1/d11/f3.txt',
@@ -51,7 +51,7 @@ test(
         path.join(
           workspace.path,
           'd1'),
-        [ '**/*.txt' ]),
+        { patterns: [ '**/*.txt' ] }),
       [ 'd1/f2.txt',
         'd1/d11/f3.txt' ]);
   });
@@ -72,7 +72,7 @@ test(
       workspace,
       await resolver.resolve(
         workspace.path,
-        [ '/**/*.txt' ]),
+        { patterns: [ '/**/*.txt' ] }),
       [ 'f1.txt',
         'd1/f2.txt',
         'd1/d11/f3.txt',

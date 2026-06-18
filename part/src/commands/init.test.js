@@ -57,11 +57,11 @@ test(
 
     assert.ok(
       workspace.stat(
-        'definitions/rules/Rule File_RL1.js')
+        'definitions/parts/Rule File_RL1.js')
         .isFile());
 
     assert.ok(
       workspace.stat(
-        'definitions/rules/Artefact Definition_RL1.js')
+        'definitions/parts/Artefact Definition_RL1.js')
         .isFile());
   });

@@ -1,4 +1,15 @@
+import { unified }
+  from 'unified';
+import remarkParse
+  from 'remark-parse';
+import { readFile }
+  from 'node:fs/promises';
+
 /**
+ * @typedef
+ *   { import('mdast')
+ *       .Root }
+ *   Root
  * @typedef
  *   { import('mdast')
  *       .RootContent }
@@ -8,6 +19,45 @@
  *       .Node }
  *   Node
  */
+
+const MARKDOWN_PARSER =
+  unified().use(remarkParse);
+
+
+export class MarkdownDocumentProvider
+{
+  /**
+   * @param {string} content
+   * @returns {Root}
+   */
+  parse(
+    content)
+  {
+    const document =
+      MARKDOWN_PARSER.parse(
+        content);
+        
+    return document;
+  }
+
+  /**
+   * @param {string} path
+   * @returns {Promise<Root>}
+   */
+  async load(
+    path)
+  {
+    const content =
+      await readFile(
+        path,
+        'utf8');
+
+    const document =
+      this.parse(content);
+
+    return document;
+  }
+}
 
 /**
  * @param {string} content 

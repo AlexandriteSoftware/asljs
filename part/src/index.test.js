@@ -13,7 +13,9 @@ test(
     Object.keys(part).sort(),
     [ 'ArtefactProvider',
       'DefinitionProvider',
+      'MarkdownDocumentProvider',
       'TmpDir',
-      'createLogger',     
+      'createLogger',
+      'createRuleValidationContext',
       'runCli' ]);
 });

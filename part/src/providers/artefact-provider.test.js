@@ -85,12 +85,13 @@ Requirement.
 
   const requirementArtefacts =
     await artefacts.getArtefacts(
-      requirementDefinition);
+      [ requirementDefinition ]);
 
   assert.deepEqual(
     requirementArtefacts
       .map(
-        artefact => artefact.relativePath)
+        artefact =>
+          artefact.relativePath)
       .sort(),
     ['development/visible/RQ101 Example.md']);
 

@@ -46,7 +46,7 @@ test(
                   request.ruleFilePath);
 
               workspace.writeText(
-                `artefacts/rules/${ruleFileName}`,
+                `artefacts/parts/${ruleFileName}`,
                 `// ${request.comment}\nexport async function validate() {}\n`);
 
               return Promise.resolve(
@@ -86,7 +86,7 @@ Requirement definition.
 
     assert.match(
       workspace.readText(
-        'artefacts/rules/Requirement_RL10.js'),
+        'artefacts/parts/Requirement_RL10.js'),
       /RL10 - Requirement rule\./);
   });
 
@@ -140,16 +140,16 @@ Requirement definition.
 
     assert.match(
       environment.stdout.toString(),
-      /Would create artefacts\/rules\/Requirement_RL10\.js/);
+      /Would create artefacts\/parts\/Requirement_RL10\.js/);
 
     assert.match(
       environment.stdout.toString(),
-      /--- CREATE artefacts\/rules\/Requirement_RL10\.js ---/);
+      /--- CREATE artefacts\/parts\/Requirement_RL10\.js ---/);
 
     assert.throws(
       () =>
         workspace.stat(
-          'artefacts/rules/Requirement_RL10.js'));
+          'artefacts/parts/Requirement_RL10.js'));
   });
 
 test(
@@ -175,15 +175,12 @@ test(
                   request.ruleFilePath);
 
               workspace.writeText(
-                `artefacts/rules/${ruleFileName}`,
+                `artefacts/parts/${ruleFileName}`,
                 `// ${request.comment}\nexport async function validate() {}\n`);
 
               return Promise.resolve('all done');
             },
         });
-
-    workspace.mkdir(
-      'artefacts/rules');
 
     workspace.writeText(
       'artefacts/Requirement.md',
@@ -202,11 +199,11 @@ Requirement definition.
 `);
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL10.js',
+      'artefacts/parts/Requirement_RL10.js',
       '// RL10 - Old rule text.\nexport async function validate() {}\n');
 
     workspace.writeText(
-      'artefacts/rules/Requirement_RL11.ps1',
+      'artefacts/parts/Requirement_RL11.ps1',
       'Write-Output test\n');
 
     await execUpdate(
@@ -222,6 +219,6 @@ Requirement definition.
 
     assert.match(
       workspace.readText(
-        'artefacts/rules/Requirement_RL10.js'),
+        'artefacts/parts/Requirement_RL10.js'),
       /RL10 - Requirement rule\./);
   });

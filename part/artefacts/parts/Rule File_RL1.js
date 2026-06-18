@@ -11,7 +11,7 @@ import path
 
 /**
  * @type { import('../../src/rule-validation-function.js')
- *           .ruleValidationFunction }
+ *           .RuleValidationFunction }
  */
 export async function validate(
   artefact,
