@@ -4,6 +4,8 @@ import { toPosixPath }
   from '../formatting.js';
 import { FilesystemLocationResolver }
   from './filesystem-location-resolver.js';
+import { getInstanceId }
+  from './../framework.js';
 
 /**
  * @typedef
@@ -45,7 +47,12 @@ export class ArtefactProvider
     rootPath,
     definitionsProvider)
   {
-    this.logger = logger;
+    this.logger =
+      logger.scope(
+        { instanceId:
+            getInstanceId(
+              'ArtefactProvider') });
+
     this.rootPath = path.resolve(rootPath);
     this.definitionsProvider = definitionsProvider;
 
@@ -63,7 +70,7 @@ export class ArtefactProvider
     artefactPath)
   {
     this.logger.trace(
-      `ArtefactProvider.tryGetArtefact: ${artefactPath}`);
+      `tryGetArtefact(${artefactPath})`);
 
     const artefactFullPath =
       path.resolve(
@@ -72,7 +79,7 @@ export class ArtefactProvider
 
     if (!path.isAbsolute(artefactPath)) {
       this.logger.trace(
-        `ArtefactProvider.tryGetArtefact: ${artefactPath} is resolved to ${artefactFullPath}.`);
+        `tryGetArtefact() { ${artefactPath} is resolved to ${artefactFullPath} }`);
     }
 
     const definitions =
@@ -81,7 +88,7 @@ export class ArtefactProvider
 
     if (definitions.length === 0) {
       this.logger.trace(
-        `ArtefactProvider.tryGetArtefact: ${artefactPath} is not matched by any artefact definition.`);
+        `tryGetArtefact() { ${artefactPath} is not matched by any artefact definition }`);
 
       return null;
     }
@@ -99,6 +106,23 @@ export class ArtefactProvider
   async getArtefacts(
     definitions = null)
   {
+    if (this.logger.level === 'trace') {
+      let definitionsList;
+
+      if (definitions === null) {
+        definitionsList = '';
+      } else {
+        definitionsList =
+          definitions
+            .map(
+              definition => definition.name)
+            .join(', ');
+      }
+
+      this.logger.trace(
+        `getArtefacts(${definitionsList})`);
+    }
+
     if (definitions === null) {
       definitions =
         await this.definitionsProvider.getDefinitions();

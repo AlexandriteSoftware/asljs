@@ -12,9 +12,10 @@ import { TmpDir }
   from '../tmp-dir.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',

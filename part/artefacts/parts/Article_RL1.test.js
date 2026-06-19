@@ -12,9 +12,10 @@ import { validate }
   from './Article_RL1.js';
 
 const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'Article_RL1 passes when the article starts with a level 1 heading',

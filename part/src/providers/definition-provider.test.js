@@ -12,9 +12,10 @@ import { DefinitionProvider }
   from './definition-provider.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
@@ -139,36 +140,21 @@ A todo item is a task that needs to be done.
 
     assert.deepEqual(
       definition.location,
-      {
-        patterns: ['Todo Items/**/*.md'],
-        exclude: ['Todo Items/Templates/**/*.md'],
-        filters: [{ name: 'GitIgnore' }],
-      });
-
-    assert.deepEqual(
-      definition.properties,
-      {
-        dueDate: 'when it needs to be done.',
-      });
-
-    assert.equal(
-      definition.ruleIds.length,
-      1);
+      { patterns: [ 'Todo Items/**/*.md' ],
+        exclude: [ 'Todo Items/Templates/**/*.md' ],
+        filters: [ { name: 'GitIgnore' } ] });
 
     assert.deepEqual(
       definition.rules,
-      [
-        {
-          id: 'R1',
+      [ { id: 'R1',
           definition: 'Todo Item',
           name: 'Todo Item_R1',
           description: 'Due date must be in the future.',
-          path: path.join(
-            workspace.path,
-            'parts',
-            'Todo Item_R1.js'),
-        },
-      ]);
+          path:
+            path.join(
+              workspace.path,
+              'parts',
+              'Todo Item_R1.js') } ]);
   });
 
 test(

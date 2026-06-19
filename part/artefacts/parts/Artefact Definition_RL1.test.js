@@ -12,9 +12,10 @@ import { validate }
   from './Artefact Definition_RL1.js';
 
 const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'Artefact Definition_RL1 checks declared rule file exists',

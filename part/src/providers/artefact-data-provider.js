@@ -6,6 +6,8 @@ import { pathToFileURL }
   from 'node:url';
 import { MarkdownDocumentProvider }
   from '../index.js';
+import { getInstanceId }
+  from './../framework.js';
 
 /**
  * @typedef
@@ -51,7 +53,12 @@ export class ArtefactDataProvider
     logger,
     definitionsPath)
   {
-    this.logger = logger;
+    this.logger =
+      logger.scope(
+        { instanceId:
+            getInstanceId(
+              'ArtefactDataProvider') });
+
     this.definitionsPath = definitionsPath;
 
     this.markdownDocuments =
@@ -67,6 +74,9 @@ export class ArtefactDataProvider
     artefact,
     definition)
   {
+    this.logger.trace(
+      `tryGetArtefactData(${artefact.relativePath}, ${definition})`);
+
     const dataProviderFilePath =
       path.join(
         this.definitionsPath,
@@ -90,7 +100,7 @@ export class ArtefactDataProvider
           importUrl.href);
     } catch (error) {
       this.logger.error(
-        `Failed to load data provider module for ${definition}: ${error}`);
+        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`);
 
       return null;
     }
@@ -115,7 +125,7 @@ export class ArtefactDataProvider
         context);
     } catch (error) {
       this.logger.error(
-        `Failed to get data for artefact ${artefact.relativePath}: ${error}`);
+        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`);
 
       return null;
     }

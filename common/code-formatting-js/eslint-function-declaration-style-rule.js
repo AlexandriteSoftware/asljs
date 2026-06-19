@@ -1,13 +1,41 @@
-export default {
-  meta: {
-    type: 'layout',
-    fixable: 'code',
-    schema: [],
-  },
+/**
+ * @typedef
+ *   { import('eslint')
+ *       .JSRuleDefinition }
+ *   JSRuleDefinition
+ * @typedef
+ *     { import('eslint')
+ *        .Rule.RuleListener }
+ *  RuleListener
+ * @typedef
+ *   { import('eslint')
+ *       .Rule.RuleContext }
+ *  RuleContext
+ * @typedef
+ *   { import('estree')
+ *       .FunctionDeclaration }
+ *   FunctionDeclaration
+ */
 
-  create(context) {
+/**
+ * @typedef {object} FormattingContext
+ * @property {string} newLine
+ */
+
+/** @type {JSRuleDefinition} */
+export default {
+  meta:
+    { type: 'layout',
+      fixable: 'code',
+      schema: [] },
+  create(
+    context)
+  {
+    /** @type {RuleListener} */
     return {
-      FunctionDeclaration(node) {
+      FunctionDeclaration(
+        node)
+      {
         const correctLayout =
           checkLayout(
             node,
@@ -49,6 +77,10 @@ export default {
 /**
  * Checks that function parameters are on separate lines and the opening brace
  * is on a new line.
+ * 
+ * @param {FunctionDeclaration} node
+ * @param {RuleContext} context
+ * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
   node,
@@ -68,10 +100,23 @@ function checkLayout(
       const currentParameter =
         parameters[index];
 
-      if (
-        previousParameter.loc.end.line
-        === currentParameter.loc.start.line
-      ) {
+      const previousParameterEndLine =
+        previousParameter.loc?.end.line;
+
+      if (previousParameterEndLine === undefined) {
+        // If we can't determine the line number, assume it's correct
+        return true;
+      }
+
+      const currentParameterStartLine =
+        currentParameter.loc?.start.line;
+
+      if (currentParameterStartLine === undefined) {
+        // If we can't determine the line number, assume it's correct
+        return true;
+      }
+
+      if (previousParameterEndLine === currentParameterStartLine) {
         return false;
       }
     }
@@ -82,16 +127,33 @@ function checkLayout(
       .getTokenBefore(
         node.body);
 
-  if (
-    closingParen
-    && closingParen.loc.end.line === node.body.loc.start.line
-  ) {
+  if (closingParen === null) {
+    // If we can't find the closing parenthesis, assume it's correct
+    return true;
+  }
+
+  const nodeBodyStartLine =
+    node.body.loc?.start.line;
+
+  if (nodeBodyStartLine === undefined) {
+    // If we can't determine the line number, assume it's correct
+    return true;
+  }
+
+  if (closingParen.loc.end.line === nodeBodyStartLine) {
     return false;
   }
 
   return true;
 }
 
+/**
+ * 
+ * @param {FunctionDeclaration} node 
+ * @param {RuleContext} context 
+ * @param {FormattingContext} formattingContext 
+ * @returns {string}
+ */
 function buildFunctionDeclaration(
   node,
   context,
@@ -135,9 +197,11 @@ function buildFunctionDeclaration(
     {
       code.push(
         `  ${parameters[index]}`);
+
       if (index < parameters.length - 1) {
         code.push(',');
       }
+
       if (index < parameters.length - 1) {
         code.push(
           formattingContext.newLine);

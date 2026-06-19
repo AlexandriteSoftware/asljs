@@ -4,16 +4,29 @@ import os
   from 'node:os';
 import path
   from 'node:path';
+import { getInstanceId }
+  from './framework.js';
+
+/**
+ * @typedef
+ *   { import('./logging.js')
+ *       .Logger}
+ * Logger
+ */
 
 export class TmpDir
 {
   /**
-   * @param {import('./logging.js').Logger} logger
+   * @param {Logger} logger
    */
   constructor(
     logger)
   {
-    this.logger = logger;
+    this.logger =
+      logger.scope(
+        { instanceId:
+            getInstanceId(
+              'TmpDir') });
 
     this.path =
       fs.mkdtempSync(
@@ -21,10 +34,8 @@ export class TmpDir
           os.tmpdir(),
           `part-test-`));
 
-    this.ctx = `TmpDir[${this.path}]`;
-
     this.logger.trace(
-      `${this.ctx}.constructor()`);
+      `constructor() { this.path=${this.path} }`);
 
     this.deleted = false;
   }
@@ -56,7 +67,7 @@ export class TmpDir
     directoryPath)
   {
     this.logger.trace(
-      `${this.ctx}.mkdir(${directoryPath})`);
+      `mkdir(${directoryPath})`);
 
     const resolvedDirectoryPath =
       this.resolve(
@@ -76,7 +87,7 @@ export class TmpDir
     content)
   {
     this.logger.trace(
-      `${this.ctx}.writeText(${filePath}, ...)`);
+      `writeText(${filePath}, ...)`);
 
     const resolvedFilePath =
       path.resolve(
@@ -101,7 +112,7 @@ export class TmpDir
     filePath)
   {
     this.logger.trace(
-      `${this.ctx}.readText(${filePath})`);
+      `readText(${filePath})`);
 
     const resolvedFilePath =
       this.resolve(
@@ -119,7 +130,7 @@ export class TmpDir
     path)
   {
     this.logger.trace(
-      `${this.ctx}.stat(${path})`);
+      `stat(${path})`);
 
     const resolvedPath =
       this.resolve(
@@ -132,7 +143,7 @@ export class TmpDir
   cleanup()
   {
     this.logger.trace(
-      `${this.ctx}.cleanup()`);
+      `cleanup()`);
 
     fs.rmSync(
       this.path,

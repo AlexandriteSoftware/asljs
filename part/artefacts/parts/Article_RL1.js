@@ -26,10 +26,12 @@ export async function validate(
       .parse(content);
 
   const heading =
-    document.children.find(
-      node =>
-        node.type === 'heading'
-        && node.depth === 1);
+    document.root
+      .children
+      .find(
+        node =>
+          node.type === 'heading'
+          && node.depth === 1);
 
   if (
     !heading

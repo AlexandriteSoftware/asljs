@@ -46,7 +46,7 @@ export async function validate(
     new Map();
 
   walk(
-    document,
+    document.root,
     node =>
     {
       if (node.type === 'definition') {
@@ -70,7 +70,7 @@ export async function validate(
   const resources = [];
 
   walk(
-    document,
+    document.root,
     node =>
     {
       if (node.type === 'link') {

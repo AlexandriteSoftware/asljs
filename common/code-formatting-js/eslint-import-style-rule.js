@@ -1,8 +1,66 @@
+/**
+ * @typedef
+ *   { import('eslint')
+ *       .JSRuleDefinition }
+ *   JSRuleDefinition
+ * @typedef
+ *     { import('eslint')
+ *        .Rule.RuleListener }
+ *  RuleListener
+ * @typedef
+ *   { import('eslint')
+ *       .Rule.RuleContext }
+ *  RuleContext
+ * @typedef
+ *   { import('estree')
+ *       .ImportDeclaration }
+ *   ImportDeclaration
+ * @typedef
+ *   { import('estree')
+ *       .ImportSpecifier }
+ *   ImportSpecifier
+ * @typedef
+ *   { import('estree')
+ *       .ImportDefaultSpecifier }
+ *   ImportDefaultSpecifier
+ * @typedef
+ *   { import('estree')
+ *       .ImportNamespaceSpecifier }
+ *   ImportNamespaceSpecifier
+ * @typedef
+ *   { import('estree')
+ *       .Identifier }
+ *   Identifier
+ * @typedef
+ *   { import('estree')
+ *       .Literal }
+ *   Literal
+ */
+
+/**
+ * @typedef
+ *   { ImportSpecifier
+ *     | ImportDefaultSpecifier
+ *     | ImportNamespaceSpecifier }
+ * Import
+ */
+
+/**
+ * @typedef {object} FormattingContext
+ * @property {string} newLine
+ */
+
+/** @type {JSRuleDefinition} */
 export default {
   meta: { fixable: 'code' },
-  create(context) {
+  create(
+    context)
+  {
+    /** @type {RuleListener} */
     return {
-      ImportDeclaration(node) {
+      ImportDeclaration(
+        node)
+      {
         const newLine =
           context.sourceCode.text.includes('\r\n')
             ? '\r\n'
@@ -39,6 +97,13 @@ export default {
   }
 };
 
+/**
+ * 
+ * @param {ImportDeclaration} node 
+ * @param {RuleContext} context 
+ * @param {FormattingContext} formattingContext 
+ * @returns {string}
+ */
 function formatImportNode(
   node,
   context,
@@ -52,13 +117,16 @@ function formatImportNode(
   } else {
     let index = 0;
     let first = true;
+
     while (index < node.specifiers.length) {
       if (first) {
         first = false;
       } else {
         code.push(',');
+
         code.push(
           formattingContext.newLine);
+
         code.push('       ');
       }
 
@@ -71,12 +139,14 @@ function formatImportNode(
         code.push(
           formatSpecifier(
             node.specifiers[index]));
+
         index++;
       } else {
         code.push(
           formatImportSpecifierGroup(
             importSpecifierGroup,
             formattingContext));
+
         index += importSpecifierGroup.length;
       }
     }
@@ -90,6 +160,12 @@ function formatImportNode(
   return code.join('');
 }
 
+/**
+ * 
+ * @param {Import[]} specifiers 
+ * @param {number} startAt 
+ * @returns {ImportSpecifier[]}
+ */
 function getImportSpecifierGroup(
   specifiers,
   startAt)
@@ -114,6 +190,12 @@ function getImportSpecifierGroup(
   return group;
 }
 
+/**
+ * 
+ * @param {ImportSpecifier[]} importSpecifierGroup 
+ * @param {FormattingContext} formattingContext 
+ * @returns {string}
+ */
 function formatImportSpecifierGroup(
   importSpecifierGroup,
   formattingContext)
@@ -122,23 +204,40 @@ function formatImportSpecifierGroup(
     [];
 
   let firstImportSpecifier = true;
+
   for (const specifier of importSpecifierGroup) {
     if (firstImportSpecifier) {
       firstImportSpecifier = false;
       code.push('{ ');
     } else {
       code.push(',');
+
       code.push(
         formattingContext.newLine);
+
       code.push('         ');
     }
 
-    if (specifier.imported.name === specifier.local.name) {
+    if (specifier.imported.type === 'Identifier') {
+      const importedIdentifier =
+        /** @type {Identifier} */ (specifier.imported);
+
+      if (importedIdentifier.name === specifier.local.name) {
+        code.push(
+          importedIdentifier.name);
+      } else {
+        code.push(
+          `${importedIdentifier.name} as ${specifier.local.name}`);
+      }
+    } else if (specifier.imported.type === 'Literal') {
+      const importedLiteral =
+        /** @type {Literal} */ (specifier.imported);
+      
       code.push(
-        specifier.imported.name);
+        `${importedLiteral.raw} as ${specifier.local.name}`);
     } else {
-      code.push(
-        `${specifier.imported.name} as ${specifier.local.name}`);
+      throw new Error(
+        `Unsupported import specifier type.`);
     }
   }
 
@@ -147,6 +246,11 @@ function formatImportSpecifierGroup(
   return code.join('');
 }
 
+/**
+ * @param {Literal} source 
+ * @param {FormattingContext} formattingContext 
+ * @returns {string}
+ */
 function formatSource(
   source,
   formattingContext)
@@ -160,6 +264,8 @@ function formatSource(
 /**
  * Formats `ImportDefaultSpecifier` and `ImportNamespaceSpecifier`.
  * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
+ * 
+ * @param {Import} specifier
  */
 function formatSpecifier(
   specifier)
@@ -171,6 +277,6 @@ function formatSpecifier(
       return `* as ${specifier.local.name}`;
     default:
       throw new Error(
-        `Unsupported import specifier type: ${specifier.type}`);
+        `Unsupported import specifier type.`);
   }
 }

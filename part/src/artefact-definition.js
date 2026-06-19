@@ -20,10 +20,7 @@
  * @property {string} name
  * @property {string} description
  * @property {Location} location
- * @property {string} properties
  * @property {ArtefactDefinitionRule[]} rules
- * @property {string} propertyDefinitions
- * @property {string} ruleIds
  */
 
 export { };

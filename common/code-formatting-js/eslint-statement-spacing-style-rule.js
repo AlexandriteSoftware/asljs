@@ -1,18 +1,52 @@
+/**
+ * @typedef
+ *   { import('eslint')
+ *       .JSRuleDefinition }
+ *   JSRuleDefinition
+ * @typedef
+ *   { import('eslint')
+ *       .SourceCode }
+ *   SourceCode
+ * @typedef
+ *     { import('eslint')
+ *        .Rule.RuleListener }
+ *  RuleListener
+ * @typedef
+ *   { import('eslint')
+ *       .Rule.RuleContext }
+ *  RuleContext
+ * @typedef
+ *   { import('@eslint/core')
+ *       .SourceRange }
+ *   SourceRange
+ * @typedef
+ *   { import('estree')
+ *       .Node }
+ *   Node
+ */
+
+/** @type {JSRuleDefinition} */
 export default {
   meta: {
     type: 'layout',
     fixable: 'whitespace',
     schema: [],
   },
-
-  create(context) {
+  create(
+    context)
+  {
+    /** @type {RuleListener} */
     return {
-      Program(node) {
+      Program(
+        node)
+      {
         checkStatements(
           node.body,
           context);
       },
-      BlockStatement(node) {
+      BlockStatement(
+        node)
+      {
         checkStatements(
           node.body,
           context);
@@ -23,6 +57,9 @@ export default {
 
 /**
  * Enforces a blank line between multiline statements.
+ * 
+ * @param {Node[]} statements
+ * @param {RuleContext} context
  */
 function checkStatements(
   statements,
@@ -43,8 +80,23 @@ function checkStatements(
     const statement =
       statements[index];
 
+    const statementRange =
+      statement.range;
+
+    if (statementRange === undefined) {
+      continue;
+    }
+
     const nextStatement =
       statements[index + 1];
+
+    const nextStatementRange =
+      nextStatement.range;
+
+
+    if (nextStatementRange === undefined) {
+      continue;
+    }
 
     if (
       !shouldSpace(
@@ -58,11 +110,14 @@ function checkStatements(
       {
         node: nextStatement,
         message: 'Add a blank line between statements.',
-        fix(fixer) {
+        fix(
+          fixer)
+        {
+          /** @type {SourceRange} */
           const range =
             [
-              statement.range[1],
-              nextStatement.range[0],
+              statementRange[1],
+              nextStatementRange[0],
             ];
 
           const nextStatementIndentation =
@@ -80,12 +135,18 @@ function checkStatements(
   }
 }
 
+/**
+ * @param {Node} statement 
+ * @param {Node} nextStatement 
+ * @returns {boolean}
+ */
 function shouldSpace(
   statement,
   nextStatement)
 {
-  if (statement.type === 'ImportDeclaration'
-      || nextStatement.type === 'ImportDeclaration')
+  if (
+    statement.type === 'ImportDeclaration'
+    || nextStatement.type === 'ImportDeclaration')
   {
     return false;
   }
@@ -98,27 +159,70 @@ function shouldSpace(
     return false;
   }
 
+  const nextStatementStartLine =
+    nextStatement.loc?.start.line;
+
+  if (nextStatementStartLine === undefined) {
+    return false;
+  }
+
+  const statementEndLine =
+    statement.loc?.end.line;
+
+  if (statementEndLine === undefined) {
+    return false;
+  }
+
   const linesBetween =
-    nextStatement.loc.start.line
-    - statement.loc.end.line;
+    nextStatementStartLine
+    - statementEndLine;
 
     return linesBetween < 2;
 }
 
+/**
+ * @param {Node} statement 
+ * @returns {boolean}
+ */
 function statementIsMultiline(
   statement)
 {
-  return statement.loc.start.line
-         < statement.loc.end.line;
+  const statementLocation =
+    statement.loc;
+
+  if (
+    statementLocation === undefined
+    || statementLocation === null)
+  {
+    return false;
+  }
+
+  return statementLocation.start.line
+         < statementLocation.end.line;
 }
 
+/**
+ * @param {SourceCode} sourceCode
+ * @param {Node} node
+ * @returns {string}
+ */
 function getIndentation(
   sourceCode,
   node)
 {
+  const nodeLocation =
+    node.loc;
+
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null)
+  {
+    return '';
+  }
+
   const line =
     sourceCode.lines[
-      node.loc.start.line - 1];
+      nodeLocation.start.line - 1];
 
   const match =
     /^[ \t]*/.exec(line);

@@ -12,9 +12,10 @@ import { execDefinitions }
   from './definitions.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ122: definitions lists definitions',

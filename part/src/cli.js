@@ -113,9 +113,6 @@ function createCli(
       '--logfile <path>',
       'Write logs to file')
     .option(
-      '--log',
-      'Enables logging')
-    .option(
       '--definitions <path>',
       'Path to artefact definitions directory. Defaults to the current working directory.')
     .option(
@@ -127,10 +124,9 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
-        if (options.log) {
+        if (options.loglevel) {
           const loggerOptions =
-            { enabled: options.log,
-              level: options.loglevel,
+            { level: options.loglevel,
               file: options.logfile };
 
           const logger =

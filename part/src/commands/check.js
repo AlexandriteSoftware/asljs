@@ -8,6 +8,8 @@ import { DefinitionProvider }
   from '../providers/definition-provider.js';
 import { toPosixPath }
   from '../formatting.js';
+import { renderObjectsToMarkdownTable }
+  from '../markdown-table.js';
 import { RuleRunner }
   from '../rule-runner.js';
 
@@ -49,7 +51,11 @@ export async function execCheck(
   const logger =
     environment.logger;
 
-  logger.trace(
+  const localLogger =
+    logger.scope(
+      { instanceId: 'execCheck' });
+
+  localLogger.trace(
     `Check command: start with ${JSON.stringify(options)}`);
 
   const rootDirectory =
@@ -64,7 +70,7 @@ export async function execCheck(
   const definitions =
     await definitionProvider.getDefinitions();
 
-  logger.trace(
+  localLogger.trace(
     `Check command: found ${definitions.length} definitions`);
 
   const filteredDefinitions =
@@ -72,7 +78,7 @@ export async function execCheck(
       definitions,
       options.checkDefinitions);
 
-  logger.trace(
+  localLogger.trace(
     `Check command: list of definitions after filtering ${
       JSON.stringify(
         filteredDefinitions.map(
@@ -107,7 +113,7 @@ export async function execCheck(
     selectedDefinitions.map(
       definition => definition.name);
 
-  logger.trace(
+  localLogger.trace(
     `Check command: found ${
       JSON.stringify(
         selectedDefinitionNames)
@@ -126,7 +132,7 @@ export async function execCheck(
   const definitionNamesForArtefact = { };
 
   if (options.pattern) {
-    logger.trace(
+    localLogger.trace(
       `Check command: using pattern=${options.pattern}`);
 
     const paths =
@@ -198,10 +204,10 @@ export async function execCheck(
     }
   }
 
-  logger.trace(
+  localLogger.trace(
     `Check command: found ${artefacts.length} artefact(s) to check`);
 
-  logger.trace(
+  localLogger.trace(
     `Check command: found ${selectedRules.length} rule(s) to apply`);
 
   const results = [];
@@ -224,7 +230,7 @@ export async function execCheck(
         artefactDefinitionNames.includes(
           rule.definition);
 
-      logger.trace(
+      localLogger.trace(
         `Check command: checking artefact "${artefact.path}" against rule "${rule.name}" (applicable=${applicable})`);
 
       if (!applicable) {
@@ -244,21 +250,24 @@ export async function execCheck(
               : environment.project,
             artefact.path));
 
+      const isOk =
+        ruleResult.result === 'Ok';
+
       const row =
-        { path: relativePath,
+        { location: relativePath,
           rule: `${rule.name}`,
-          passed: ruleResult.result === 'Ok',
-          result: ruleResult.result === 'Ok'
-            ? 'OK'
-            : ruleResult.message };
+          result:
+            isOk
+              ? 'OK'
+              : ruleResult.message };
 
       hasFailures =
         hasFailures
-        || !row.passed;
+        || !isOk;
 
       if (
         !options.withPositives
-        && row.passed)
+        && isOk)
       {
         continue;
       }
@@ -270,24 +279,28 @@ export async function execCheck(
   results.sort(
     (left, right) => {
       const pathCompare =
-        left.path.localeCompare(
-          right.path);
+        left.location.localeCompare(
+          right.location);
 
       if (pathCompare !== 0) {
         return pathCompare;
       }
 
-      return left.rule.localeCompare(
-        right.rule);
+      return left.rule
+        .localeCompare(
+          right.rule);
     });
 
-  environment.stdout.write(
-    formatCheckTable(
-      results));
+  const table =
+    renderObjectsToMarkdownTable(
+      [ { property: 'location', name: 'Location' },
+        { property: 'rule', name: 'Rule' },
+        { property: 'result', name: 'Result' } ],
+      results );
 
-  return {
-    hasFailures
-  };
+  environment.stdout
+    .write(
+      table);
 }
 
 /**
@@ -332,60 +345,4 @@ export function filterRules(
     rule =>
       allowedNames.has(
         rule.name));
-}
-
-export function formatCheckTable(
-  items)
-{
-  const rows =
-    items.map(
-      (item) => [item.path, item.rule, item.result]);
-
-  const headers =
-    ['Path', 'Rule', 'Result'];
-
-  const widths =
-    headers.map(
-      (header, index) => {
-        const cellWidths =
-          rows.map(
-            (row) => row[index].length);
-
-        return Math.max(
-          header.length,
-          ...cellWidths,
-          3);
-      });
-
-  const lines =
-    [];
-
-  lines.push(
-    formatRow(
-      headers,
-      widths));
-
-  lines.push(
-    formatRow(
-      widths.map(
-        (width) => '-'.repeat(width)),
-      widths));
-
-  for (const row of rows) {
-    lines.push(
-      formatRow(
-        row,
-        widths));
-  }
-
-  return lines.join('\n');
-}
-
-function formatRow(
-  cells,
-  widths)
-{
-  return `| ${cells.map(
-    (cell, index) => cell.padEnd(
-      widths[index])).join(' | ')} |`;
 }

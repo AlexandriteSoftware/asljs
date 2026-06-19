@@ -12,9 +12,10 @@ import { validate }
   from './Article_RL2.js';
 
 const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'Article_RL2 passes for existing local links and images',

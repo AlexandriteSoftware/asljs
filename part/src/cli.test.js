@@ -132,20 +132,13 @@ test(
       });
 
     await runCli(
-      [
-        'version',
-        '--log',
-        '--loglevel=silent',
-      ],
+      [ 'version',
+        '--loglevel=silent' ],
       environment);
 
     assert.equal(
       environment.logger.level,
       'silent');
-
-    assert.equal(
-      environment.logger.enabled,
-      true);
   });
 
 test(

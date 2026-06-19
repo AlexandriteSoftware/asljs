@@ -11,3 +11,21 @@ For `asljs-part`, the package is intentionally source-published JavaScript, so
 `typecheck`, `clean`, and `build` are lightweight package-local scripts that
 preserve the shared release workflow contract without introducing a TypeScript
 or transpilation step.
+
+## Testing
+
+Run all tests:
+
+```pwsh
+npm run test
+node --test
+```
+
+Run tests that match a pattern:
+
+```pwsh
+npm run test -- --test-name-pattern="Article_RL2"
+node --test --test-name-pattern="Article_RL2"
+```
+
+

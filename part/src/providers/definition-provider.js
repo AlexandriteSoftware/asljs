@@ -9,10 +9,10 @@ import { toPosixPath }
   from '../formatting.js';
 import { GitIgnore }
   from './git-ignore.js';
-import { extractText,
-         getSection,
-         MarkdownDocumentProvider }
+import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
+import { getInstanceId }
+  from './../framework.js';
 
 /**
  * @typedef
@@ -23,6 +23,10 @@ import { extractText,
  *   { import('mdast')
  *       .RootContent }
  *   RootContent
+ * @typedef
+ *   { import('../markdown-document.js')
+ *       .MarkdownDocument }
+ *   MarkdownDocument
  * @typedef
  *   { import('../artefact-definition.js')
  *       .ArtefactDefinition }
@@ -43,7 +47,6 @@ import { extractText,
 
 /**
  * @typedef {Object} DefinitionParsingContext
- * @property {Logger} logger
  * @property {string} path
  * @property {string} name
  * @property {string} content
@@ -64,7 +67,12 @@ export class DefinitionProvider
     rootPath,
     definitionsPath = rootPath)
   {
-    this.logger = logger;
+    this.logger =
+      logger.scope(
+        { instanceId:
+            getInstanceId(
+              'DefinitionProvider') });
+
     this.rootPath = path.resolve(rootPath);
 
     this.partsDirectoryName = 'parts';
@@ -85,12 +93,15 @@ export class DefinitionProvider
   }
 
   async getDefinitions() {
+    this.logger.trace(
+      `getDefinitions()`);
+
     if (this.cache) {
       return this.cache;
     }
 
     this.logger.trace(
-      `DefinitionProvider.getDefinitions(): scanning for definitions in ${this.definitionsPath}`);
+      `getDefinitions() { scanning for definitions in ${this.definitionsPath} }`);
 
     const markdownPaths =
       await glob(
@@ -133,7 +144,7 @@ export class DefinitionProvider
     filePath)
   {
     this.logger.trace(
-      `DefinitionProvider.loadDefinitionFromFile: start with filePath=${filePath}`);
+      `loadDefinitionFromFile(${filePath})`);
 
     if (!path.isAbsolute(filePath)) {
       throw new Error(
@@ -152,36 +163,9 @@ export class DefinitionProvider
         'utf8');
 
     return await this.parseDefinition(
-      { logger: this.logger,
-        path: filePath,
+      { path: filePath,
         name,
         content });
-  }
-
-  /**
-   * @param {Root} document
-   * @param {DefinitionParsingContext} context
-   */
-  checkHeader(
-    document,
-    context)
-  {
-    const heading =
-      getTopHeading(
-        document);
-
-    if (!heading) {
-      return false;
-    }
-
-    const name =
-      extractText(heading);
-
-    if (name !== context.name) {
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -192,78 +176,79 @@ export class DefinitionProvider
     context)
   {
     this.logger.trace(
-      `DefinitionProvider.parseDefinitionFile: ..., path=${context.path}`);
+      `parseDefinition({ name: ${context.name}, content: ...${context.content.length} chars })`);
 
     const document =
       this.markdownDocumentProvider
         .parse(
           context.content);
 
-    if (
-      !this.checkHeader(
-        document,
-        context))
+    const contextNameSectionNode =
+      document.getSectionNode(
+        context.name);
+
+    if (null === contextNameSectionNode
+      || contextNameSectionNode.depth !== 1)
     {
-      this.logger.trace(
-        `DefinitionProvider.parseDefinitionFile: header check failed for ${context.path}`);
+      if (this.logger.level === 'trace') {
+        const fileName =
+          path.basename(
+            context.path);
+
+        this.logger.trace(
+          `parseDefinitionFile() { no top-level '${context.name}' found in '${fileName}'}`);
+      }
         
       return null;
     }
 
     const description =
       extractDescription(
-        document,
+        document.root,
         context);
 
+    this.logger.trace(
+      `parseDefinition() { description is available }`);
+
     const location =
-      parseLocation(
+      this.parseLocation(
         document);
 
     if (!location) {
-      this.logger.trace(
-        `DefinitionProvider.parseDefinitionFile: location parsing failed for ${context.path}`);
+      if (this.logger.level === 'trace') {
+        const fileName =
+          path.basename(
+            context.path);
+
+        this.logger.trace(
+          `parseDefinitionFile() { no location found in '${fileName}'}`);
+      }
 
       return null;
     }
 
-    const propertiesSection =
-      getSection(
-        document.children,
-        'Properties');
-
-    const propertyEntries =
-      parseProperties(
-        propertiesSection ?? []);
-
-    const propertyDefinitions =
-      new Map(
-        propertyEntries.map(
-          entry =>
-            [ entry.normalizedLabel,
-              entry.propertyName ]));
+    this.logger.trace(
+      `parseDefinition() { location is available }`);
 
     const rules =
       await this.parseRules(
         document,
         context);
 
-    return {
-      path: context.path,
-      name: context.name,
-      description,
-      location,
-      properties:
-        Object.fromEntries(
-          propertyEntries.map(
-            entry =>
-              [entry.propertyName,
-              entry.description])),
-      rules,
-      propertyDefinitions,
-      ruleIds:
-        rules.map(
-          rule => rule.id)
-    };
+    this.logger.trace(
+      `parseDefinition() { rules are available }`);
+
+    const definition =
+      { path: context.path,
+        name: context.name,
+        description,
+        location,
+        rules };
+
+    this.logger.trace(
+      `parseDefinition() { returning definition for ${context.name} }`);
+
+    return definition;
   }
 
   /**
@@ -279,7 +264,7 @@ export class DefinitionProvider
     definitionPath)
   {
     this.logger.trace(
-      `DefinitionProvider.resolveRuleFile: ruleId=${ruleId}, definition=${definition}, definitionPath=${definitionPath}`);
+      `resolveRuleFile: ruleId=${ruleId}, definition=${definition}, definitionPath=${definitionPath}`);
 
     if (
       !definition
@@ -298,7 +283,7 @@ export class DefinitionProvider
       `${definition}_${ruleId}`;
 
     this.logger.trace(
-      `DefinitionProvider.resolveRuleFile: looking for rule file in ${directoryPath} with baseName=${baseName}`);
+      `resolveRuleFile: looking for rule file in ${directoryPath} with baseName=${baseName}`);
 
     let entries;
 
@@ -309,7 +294,7 @@ export class DefinitionProvider
           { withFileTypes: true });
     } catch (error) {
       this.logger.trace(
-        `DefinitionProvider.resolveRuleFile: failed to read directory ${directoryPath}. Exception: ${error}.`);
+        `resolveRuleFile: failed to read directory ${directoryPath}. Exception: ${error}.`);
 
       return null;
     }
@@ -349,7 +334,7 @@ export class DefinitionProvider
   }
 
   /**
-   * @param {Root} document
+   * @param {MarkdownDocument} document
    * @param {DefinitionParsingContext} context
    * @returns {Promise<ArtefactDefinitionRule[]>}
    */
@@ -357,63 +342,27 @@ export class DefinitionProvider
     document,
     context)
   {
-    context.logger.trace(
-      `DefinitionProvider.parseRules: parsing rules for ${context.path}`);
+    this.logger.trace(
+      `parseRules: parsing rules for ${context.path}`);
 
     /** @type {ArtefactDefinitionRule[]} */
     const rules = [];
 
-    /** @type {RootContent[]} */
-    const sectionNodes = [];
+    const rulesPrimaryListItems =
+      document.getSectionPrimaryListItems('Rules');
 
-    let inSection = false;
-
-    for (const node of document.children) {
-      if (
-        inSection
-        && node.type === 'heading')
-      {
-        break;
-      }
-
-      if (
-        node.type === 'heading'
-        && node.depth === 2
-        && extractText(node).toLowerCase() === 'rules')
-      {
-        inSection = true;
-        continue;
-      }
-
-      if (inSection) {
-        sectionNodes.push(node);
-      }
-    }
-
-    if (sectionNodes.length === 0) {
-      context.logger.trace(
-        `DefinitionProvider.parseRules: no rules section found in ${context.path}`);
-
-      return rules;
-    }
-
-    const rulesList =
-      sectionNodes
-        .find(
-          node =>
-            node.type === 'list');
-
-    if (!rulesList) {
-      context.logger.trace(
-        `DefinitionProvider.parseRules: no list section found in ${context.path}`);
+    if (
+      rulesPrimaryListItems === null
+      || rulesPrimaryListItems.length === 0)
+    {
+      this.logger.trace(
+        `parseRules: no rules section found in ${context.path}`);
 
       return rules;
     }
 
     const listItems =
-      rulesList.children
-        .filter(
-          item => item.type === 'listItem')
+      rulesPrimaryListItems
         .map(
           item =>
             context.content
@@ -425,8 +374,8 @@ export class DefinitionProvider
           itemText => itemText.length > 0);
 
     if (listItems.length === 0) {
-      context.logger.trace(
-        `DefinitionProvider.parseRules: no list items found in ${context.path}`);
+      this.logger.trace(
+        `parseRules: no list items found in ${context.path}`);
 
       return rules;
     }
@@ -437,8 +386,8 @@ export class DefinitionProvider
           /^-\s+([A-Z]+\d+)\s*(?:[:-]\s*)?/);
           
       if (!match) {
-        context.logger.trace(
-          `DefinitionProvider.parseRules: no match found for list item "${itemText}" in ${context.path}`);
+        this.logger.trace(
+          `parseRules: no match found for list item "${itemText}" in ${context.path}`);
 
         continue;
       }
@@ -472,6 +421,83 @@ export class DefinitionProvider
     }
 
     return rules;
+  }
+
+  /**
+   * @param {MarkdownDocument} document
+   * @returns {Location|null}
+   */
+  parseLocation(
+    document)
+  {
+    const locationParametersList =
+      document.getSectionPrimaryListItems('Location');
+
+    if (locationParametersList === null
+      || locationParametersList.length === 0)
+    {
+      this.logger.trace(
+        `parseLocation() { no location section found }`);
+
+      return null;
+    }
+
+    const listItems =
+      locationParametersList
+        .map(
+          item => document.getText(item).trim())
+        .filter(
+          itemText => itemText.length > 0);
+
+    if (listItems.length === 0) {
+      return null;
+    }
+
+    /** @type {string[]} */
+    const patterns = [];
+
+    /** @type {string[]} */
+    const exclude = [];
+    
+    /** @type {any[]} */
+    const filters = [];
+
+    for (const itemText of listItems) {
+      const typeMatch =
+        itemText.match(
+          /^Pattern\s*:\s*(.+)$/i);
+
+      if (typeMatch) {
+        patterns.push(
+          typeMatch[1].trim());
+
+        continue;
+      }
+
+      const excludeMatch =
+        itemText.match(
+          /^Exclude\s*:\s*(.+)$/i);
+
+      if (excludeMatch) {
+        exclude.push(
+          excludeMatch[1].trim());
+
+        continue;
+      }
+
+      if (/^GitIgnore$/i.test(itemText)) {
+        filters.push(
+          { name: 'GitIgnore' });
+      }
+    }
+
+    /** @type {Location} */
+    const location =
+      { patterns,
+        exclude,
+        filters };
+
+    return location;
   }
 }
 
@@ -535,189 +561,4 @@ function extractDescription(
       startOffset,
       endOffset)
     .trim();
-}
-
-/**
- * @param {Root} document
- * @returns {Location|null}
- */
-function parseLocation(
-  document)
-{
-  /** @type {RootContent[]} */
-  const sectionNodes = [];
-
-  let inSection = false;
-
-  for (const node of document.children) {
-    if (
-      inSection
-      && node.type === 'heading')
-    {
-      break;
-    }
-
-    if (
-      node.type === 'heading'
-      && node.depth === 2
-      && extractText(node).toLowerCase() === 'location')
-    {
-      inSection = true;
-      continue;
-    }
-
-    if (inSection) {
-      sectionNodes.push(node);
-    }
-  }
-
-  if (sectionNodes.length === 0) {
-    return null;
-  }
-
-  const locationParametersList =
-    sectionNodes
-      .find(
-        node =>
-          node.type === 'list');
-
-  if (!locationParametersList) {
-    return null;
-  }
-
-  const listItems =
-    locationParametersList.children
-      .filter(
-        item => item.type === 'listItem')
-      .map(
-        item => extractText(item).trim())
-      .filter(
-        itemText => itemText.length > 0);
-
-  if (listItems.length === 0) {
-    return null;
-  }
-
-  /** @type {string[]} */
-  const patterns = [];
-
-  /** @type {string[]} */
-  const exclude = [];
-  
-  /** @type {any[]} */
-  const filters = [];
-
-  for (const itemText of listItems) {
-    const typeMatch =
-      itemText.match(
-        /^Pattern\s*:\s*(.+)$/i);
-
-    if (typeMatch) {
-      patterns.push(
-        typeMatch[1].trim());
-
-      continue;
-    }
-
-    const excludeMatch =
-      itemText.match(
-        /^Exclude\s*:\s*(.+)$/i);
-
-    if (excludeMatch) {
-      exclude.push(
-        excludeMatch[1].trim());
-
-      continue;
-    }
-
-    if (/^GitIgnore$/i.test(itemText)) {
-      filters.push(
-        { name: 'GitIgnore' });
-    }
-  }
-
-  /** @type {Location} */
-  const location =
-    { patterns,
-      exclude,
-      filters };
-
-  return location;
-}
-
-function parseProperties(
-  nodes,
-  content)
-{
-  return getListItemTexts(
-    nodes,
-    content)
-    .map(
-      itemText =>
-        itemText.match(
-          /^(.*?)\s*(?::|-)\s+(.+)$/))
-    .filter(
-      match =>
-        match !== null)
-    .map(
-      match => {
-        const label =
-          match[1].trim();
-
-        return {
-          normalizedLabel: normalizeLabel(label),
-          propertyName: toPropertyName(label),
-          description: match[2].trim(),
-        };
-      });
-}
-
-/**
- * @param {RootContent[]} nodes
- * @returns {string[]}
- */
-function getListItemTexts(
-  nodes)
-{
-  const listNode =
-    nodes.find(
-      node => node.type === 'list');
-
-  if (!listNode) {
-    return [];
-  }
-
-  const items =
-    listNode.children.map(
-      item => extractText(item).trim());
-
-  return items;
-}
-
-function toPropertyName(
-  label)
-{
-  const parts =
-    label.match(
-      /[A-Za-z0-9]+/g) ?? [];
-
-  return parts
-    .map(
-      (part, index) => {
-        const lowerPart =
-          part.toLowerCase();
-
-        return index === 0
-          ? lowerPart
-          : lowerPart.charAt(0).toUpperCase() + lowerPart.slice(1);
-      })
-    .join('');
-}
-
-function normalizeLabel(
-  label)
-{
-  return label.trim().replace(
-    /\s+/g,
-    ' ').toLowerCase();
 }

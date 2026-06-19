@@ -1,13 +1,71 @@
+/**
+ * @typedef
+ *   { import('eslint')
+ *       .JSRuleDefinition }
+ *   JSRuleDefinition
+ * @typedef
+ *   { import('eslint')
+ *       .Rule.RuleListener }
+ *  RuleListener
+ * @typedef
+ *   { import('eslint')
+ *       .Rule.RuleContext }
+ *  RuleContext
+ * @typedef
+ *   { import('eslint')
+ *       .SourceCode }
+ *   SourceCode
+ * @typedef
+ *   { import('eslint')
+ *       .AST.Token }
+ *  Token
+ * @typedef
+ *   { import('estree')
+ *       .Expression }
+ *   Expression
+ * @typedef
+ *   { import('estree')
+ *       .SimpleCallExpression }
+ *   SimpleCallExpression
+ * @typedef
+ *   { import('estree')
+ *       .Node }
+ *   Node
+ * @typedef
+ *   { import('estree')
+ *       .SpreadElement }
+ *   SpreadElement
+ * @typedef
+ *   { import('estree')
+ *       .Identifier }
+ *   Identifier
+ * @typedef
+ *   { import('estree')
+ *       .Literal }
+ *   Literal
+ */
+
+/**
+ * @typedef {object} FormattingContext
+ * @property {string} newLine
+ */
+
 const LONG_IDENTIFIER_LENGTH = 15;
 
+/** @type {JSRuleDefinition} */
 export default {
   meta:
     { type: 'layout',
       fixable: 'code',
       schema: [] },
-  create(context) {
+  create(
+    context)
+  {
+    /** @type {RuleListener} */
     return {
-      CallExpression(node) {
+      CallExpression(
+        node)
+      {
         const correctLayout =
           checkLayout(
             node,
@@ -18,10 +76,11 @@ export default {
         }
 
         context.report(
-          {
-            node,
+          { node,
             message: 'Use asljs call expression style.',
-            fix(fixer) {
+            fix(
+              fixer)
+            {
               const sourceCode =
                 context.sourceCode;
 
@@ -44,9 +103,9 @@ export default {
                 replacement);
             }
           });
-      },
+      }
     };
-  },
+  }
 };
 
 /**
@@ -56,6 +115,10 @@ export default {
  *   - single variable or literal that is longer than 15 characters, or
  *   - expression that is not a single variable or literal.
  * - Multiple function call parameters are on separate lines
+ * 
+ * @param {SimpleCallExpression} node
+ * @param {RuleContext} context
+ * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
   node,
@@ -73,6 +136,10 @@ function checkLayout(
       node.callee,
       token => token.value === '(');
 
+  if (openingParenthesis === null) {
+    return true;
+  }
+
   const indent =
     getIndentation(
       context.sourceCode,
@@ -85,11 +152,18 @@ function checkLayout(
     const argument =
       argumentsList[0];
 
+    const argumentStartLine =
+      argument.loc?.start.line;
+
+    if (argumentStartLine === undefined) {
+      return true;
+    }
+
     const isShortParameter =
       argumentIsShortEnoughToStayOnSameLine(argument);
 
     if (isShortParameter
-        && openingParenthesis.loc.end.line === argument.loc.start.line)
+        && openingParenthesis.loc.end.line === argumentStartLine)
     {
         return true;
     }
@@ -112,15 +186,29 @@ function checkLayout(
     const argument =
       argumentsList[index];
 
+    const argumentStartLine =
+      argument.loc?.start.line;
+
+    if (argumentStartLine === undefined) {
+      return true;
+    }
+
     if (index === 0) {
-      if (openingParenthesis.loc.end.line === argument.loc.start.line) {
+      if (openingParenthesis.loc.end.line === argumentStartLine) {
         return false;
       }
     } else {
       const previousArgument =
         argumentsList[index - 1];
 
-      if (previousArgument.loc.end.line === argument.loc.start.line) {
+      const previousArgumentEndLine =
+        previousArgument.loc?.end.line;
+
+      if (previousArgumentEndLine === undefined) {
+        return true;
+      }
+
+      if (previousArgumentEndLine === argumentStartLine) {
         return false;
       }
     }
@@ -138,19 +226,42 @@ function checkLayout(
   return true;
 }
 
+/**
+ * @param {Expression|SpreadElement} argument 
+ * @returns {boolean}
+ */
 function argumentIsShortEnoughToStayOnSameLine(
   argument)
 {
   if (argument.type === 'Identifier') {
-    return argument.name.length < LONG_IDENTIFIER_LENGTH;
+    const identifier =
+      /** @type {Identifier} */ (argument);
+
+    return identifier.name.length < LONG_IDENTIFIER_LENGTH;
   }
 
   if (argument.type === 'Literal') {
-    return argument.raw.length < LONG_IDENTIFIER_LENGTH;
+    const literal =
+      /** @type {Literal} */ (argument);
+
+    const literalRawContent =
+      literal.raw;
+
+    if (literalRawContent === undefined) {
+      return false;
+    }
+
+    return literalRawContent.length < LONG_IDENTIFIER_LENGTH;
   }
 
   return false;
 }
+
+/**
+ * @param {SourceCode} sourceCode
+ * @param {SimpleCallExpression} node
+ * @param {FormattingContext} formattingContext
+ */
 
 function buildCallExpression(
   node,
@@ -161,6 +272,10 @@ function buildCallExpression(
     sourceCode.getTokenAfter(
       node.callee,
       token => token.value === '(');
+
+  if (openingParenthesis === null) {
+    return sourceCode.getText(node);
+  }
 
   const indent =
     getIndentation(
@@ -187,25 +302,32 @@ function buildCallExpression(
     const argumentText =
       sourceCode.getText(argument);
 
-    if (argumentIsShortEnoughToStayOnSameLine(argument)) {
-      if (openingParenthesis.loc.end.line !== argument.loc.start.line) {
+    const argumentStartLine =
+      argument.loc?.start.line;
+
+    if (argumentStartLine === undefined) {
+      code.push(argumentText);
+    } else {
+      if (argumentIsShortEnoughToStayOnSameLine(argument)) {
+        if (openingParenthesis.loc.end.line !== argumentStartLine) {
+          code.push(
+            formattingContext.newLine);
+
+          code.push(
+            requiredArgumentIndent);
+        }
+
+        code.push(
+          argumentText);
+      } else {
         code.push(
           formattingContext.newLine);
 
         code.push(
           requiredArgumentIndent);
+
+        code.push(argumentText);
       }
-
-      code.push(
-        argumentText);
-    } else {
-      code.push(
-        formattingContext.newLine);
-
-      code.push(
-        requiredArgumentIndent);
-
-      code.push(argumentText);
     }
   } else if (node.arguments.length > 1) {
     for (
@@ -238,12 +360,26 @@ function buildCallExpression(
   return code.join('');
 }
 
+/**
+ * @param {SourceCode} sourceCode
+ * @param {Token|Expression|SpreadElement} node
+ * @returns {string} indentation of the line where the node starts
+ */
 function getIndentation(
   sourceCode,
   node)
 {
+  const nodeLocation =
+    node.loc;
+
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null) {
+    return '';
+  }
+
   const line =
-    sourceCode.lines[node.loc.start.line - 1];
+    sourceCode.lines[nodeLocation.start.line - 1];
 
   const match =
     /^[ \t]*/.exec(line);

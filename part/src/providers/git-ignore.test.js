@@ -10,9 +10,10 @@ import { GitIgnore }
   from './git-ignore.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',

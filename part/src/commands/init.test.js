@@ -12,9 +12,10 @@ import { execInit }
   from './init.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ124: init copies bootstrap artefact files into the definitions directory',

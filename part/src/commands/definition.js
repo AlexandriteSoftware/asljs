@@ -10,10 +10,20 @@ import { DefinitionProvider }
  *   { import('./../environment.js')
  *       .Environment }
  *   Environment
+ * @typedef
+ *   { import('./../artefact-definition.js')
+ *       .ArtefactDefinition }
+ *   ArtefactDefinition
  */
 
 /**
- * @param {Environment} environment 
+ * @typedef {Object} DefinitionOptions
+ * @property {string} target
+ */
+
+/**
+ * @param {Environment} environment
+ * @param {DefinitionOptions} options
  */
 export async function execDefinition(
   environment,
@@ -43,6 +53,12 @@ export async function execDefinition(
     `${markdown}\n`);
 }
 
+/**
+ * @param {ArtefactDefinition[]} definitions 
+ * @param {string} rootDirectory 
+ * @param {string} target 
+ * @returns {ArtefactDefinition}
+ */
 function resolveDefinition(
   definitions,
   rootDirectory,
@@ -58,13 +74,15 @@ function resolveDefinition(
 
   const byPath =
     definitions.find(
-      (definition) => path.resolve(
-        definition.path) === absoluteTarget)
+      definition =>
+        path.resolve(
+          definition.path) === absoluteTarget)
     ?? definitions.find(
-      (definition) => toPosixPath(
-        path.relative(
-          rootDirectory,
-          definition.path)) === normalizedTarget,
+      definition =>
+        toPosixPath(
+          path.relative(
+            rootDirectory,
+            definition.path)) === normalizedTarget,
     );
 
   if (byPath) {
@@ -86,6 +104,11 @@ function resolveDefinition(
   throw new Error(`Definition not found: ${target}`);
 }
 
+/**
+ * @param {ArtefactDefinition} definition 
+ * @param {string} rootDirectory 
+ * @returns {string}
+ */
 function formatDefinitionDetails(
   definition,
   rootDirectory)
@@ -95,13 +118,12 @@ function formatDefinitionDetails(
       name: definition.name,
       description: definition.description,
       location: definition.location,
-      properties: definition.properties,
       rules: definition.rules.map(
         (rule) => ({
           id: rule.id,
           description: rule.description,
-          ...(rule.filePath
-            ? { filePath: rule.filePath }
+          ...(rule.path
+            ? { path: rule.path }
             : {}),
         })),
       path: toPosixPath(
@@ -111,6 +133,11 @@ function formatDefinitionDetails(
     });
 }
 
+/**
+ * @param {any} value 
+ * @param {number} indent 
+ * @returns {string}
+ */
 function serializeMarkdownList(
   value,
   indent = 0)
@@ -133,6 +160,12 @@ function serializeMarkdownList(
     .join('\n');
 }
 
+/**
+ * @param {string} key 
+ * @param {any} value
+ * @param {number} indent 
+ * @returns {string}
+ */
 function serializeObjectEntry(
   key,
   value,
@@ -153,6 +186,11 @@ function serializeObjectEntry(
   return `${prefix}- ${key}:\n${nested}`;
 }
 
+/**
+ * @param {any} value
+ * @param {number} indent 
+ * @returns {string}
+ */
 function serializeArrayEntry(
   value,
   indent)
@@ -186,8 +224,13 @@ function serializeArrayEntry(
   return `${prefix}-\n${nested}`;
 }
 
+/**
+ * @param {any} value
+ * @returns {boolean}
+ */
 function isScalar(
   value)
 {
-  return value === null || typeof value !== 'object';
+  return value === null
+         || typeof value !== 'object';
 }

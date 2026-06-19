@@ -12,9 +12,10 @@ import { execCheck }
   from './check.js';
 
 const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ123: check prints one row per matched file and rule',
@@ -83,7 +84,7 @@ A statement about the system that must be true.
 
     assert.match(
       environment.stdout.toString(),
-      /\| Path\s+\| Rule\s+\| Result\s+\|/);
+      /\| Location\s+\| Rule\s+\| Result\s+\|/);
 
     assert.match(
       environment.stdout.toString(),

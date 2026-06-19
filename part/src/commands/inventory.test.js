@@ -12,9 +12,10 @@ import { execInventory }
   from './inventory.js';
 
 const logger =
-  createLogger(
-    { enabled: false,
-      level: 'trace' });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ121: inventory enumerates artefacts in Todo Item example',

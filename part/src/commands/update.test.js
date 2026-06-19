@@ -14,9 +14,10 @@ import { createLogger }
   from '../logging.js';
 
 const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+  createLogger();
+
+test.after(
+  () => logger.dispose());
 
 test(
   'RQ125: update creates missing JS rule files via the Copilot runner',

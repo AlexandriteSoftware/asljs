@@ -2,8 +2,8 @@ import js
   from '@eslint/js';
 import tsParser
   from '@typescript-eslint/parser';
-import tsPlugin
-  from '@typescript-eslint/eslint-plugin';
+import tseslint
+  from 'typescript-eslint';
 import jsImportStyleRule
   from './common/code-formatting-js/eslint-import-style-rule.js';
 import jsFunctionDeclarationStyleRule
@@ -15,15 +15,22 @@ import jsVariableDeclarationStyleRule
 import jsStatementSpacingStyleRule
   from './common/code-formatting-js/eslint-statement-spacing-style-rule.js';
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
-  {
-    ignores: [
-      '**/dist/**',
-      '**/.tests/**',
-      'node_modules/**'
-    ]
-  },
+/**
+ * @typedef
+ *  { import('eslint')
+ *      .Linter.Config }
+ *   Config
+ */
+
+/** @type {Config} */
+const ignores =
+  { ignores:
+      [ '**/dist/**',
+        '**/.tests/**',
+        'node_modules/**' ] };
+
+/** @type {Config} */
+const typescriptConfig =
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -34,7 +41,7 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin
+      '@typescript-eslint': tseslint
     },
     rules: {
       indent: 'off',
@@ -98,7 +105,10 @@ export default [
         }
       ]
     }
-  },
+  };
+
+/** @type {Config} */
+const javascriptConfig =
   {
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {
@@ -168,5 +178,11 @@ export default [
       'asljs/variable-declaration-style': 'error',
       'asljs/statement-spacing': 'error'
     }
-  }
+  };
+
+/** @type {Config[]} */
+export default [
+  ignores,
+  typescriptConfig,
+  javascriptConfig
 ];
