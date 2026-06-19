@@ -21,6 +21,7 @@ import { MarkdownDocumentProvider }
 /**
  * @typedef RuleValidationContext
  * @property {Logger} logger
+ * @property {string} rootPath
  * @property {ArtefactProvider} artefacts
  * @property {ArtefactDataProvider} artefactData
  * @property {DefinitionProvider} definitions
@@ -36,34 +37,35 @@ import { MarkdownDocumentProvider }
 
 /**
  * @param {Logger} logger
- * @param {string} rootDirectoryPath
+ * @param {string} rootPath
  * @returns {RuleValidationContext}
  */
 export function createRuleValidationContext(
   logger,
-  rootDirectoryPath)
+  rootPath)
 {
   const definitionProvider =
     new DefinitionProvider(
       logger,
-      rootDirectoryPath);
+      rootPath);
 
   const artefactProvider =
     new ArtefactProvider(
       logger,
-      rootDirectoryPath,
+      rootPath,
       definitionProvider);
 
   const artefactDataProvider =
     new ArtefactDataProvider(
       logger,
-      rootDirectoryPath);
+      rootPath);
 
   const markdownDocumentProvider =
     new MarkdownDocumentProvider();
 
   const context =
     { logger,
+      rootPath,
       definitions: definitionProvider,
       artefacts: artefactProvider,
       artefactData: artefactDataProvider,

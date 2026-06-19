@@ -1,5 +1,5 @@
 /*
-RL10 - Article start with a level 1 heading, which is the file name without
+RL1 - Article start with a level 1 heading, which is the file name without
 extension.
 */
 

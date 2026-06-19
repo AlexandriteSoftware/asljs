@@ -35,8 +35,7 @@ test(
 
     const gitIgnore =
       new GitIgnore(
-        createLogger(),
-        workspace.path);
+        createLogger());
 
     const files =
       [ 'keep.md',
@@ -44,6 +43,7 @@ test(
         'docs/guide.md',
         'docs/drafts/draft.md' ];
 
+    /** @type { Record<string, string> } */
     const filePaths = { };
 
     for (const file of files) {

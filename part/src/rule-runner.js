@@ -83,6 +83,9 @@ export class RuleRunner
       new ArtefactDataProvider(
         logger,
         definitionProvider.definitionsPath);
+
+    this.rootPath =
+      artefactProvider.rootPath;
   }
 
   /**
@@ -210,6 +213,7 @@ export class RuleRunner
       /** @type {RuleValidationContext} */
       const validationContext =
         { logger: this.logger,
+          rootPath: this.rootPath,
           definitions: this.definitionProvider,
           artefacts: this.artefactProvider,
           artefactData: this.artafactDataProvider,

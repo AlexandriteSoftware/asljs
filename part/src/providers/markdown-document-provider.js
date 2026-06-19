@@ -286,7 +286,12 @@ export function parsePropertyValues(
   return properties;
 }
 
-export function parseRuleIds(rulesBody)
+/**
+ * @param {string} rulesBody 
+ * @returns {string[]}
+ */
+export function parseRuleIds(
+  rulesBody)
 {
   return Array.from(
     rulesBody.matchAll(
@@ -294,7 +299,12 @@ export function parseRuleIds(rulesBody)
     (match) => match[1]);
 }
 
-function toPropertyName(label)
+/**
+ * @param {string} label 
+ * @returns {string}
+ */
+function toPropertyName(
+  label)
 {
   const parts =
     label.match(
@@ -313,9 +323,17 @@ function toPropertyName(label)
     .join('');
 }
 
-function normalizeLabel(label)
+/**
+ * @param {string} label 
+ * @returns {string}
+ */
+function normalizeLabel(
+  label)
 {
-  return label.trim().replace(
-    /\s+/g,
-    ' ').toLowerCase();
+  return label
+    .trim()
+    .replace(
+      /\s+/g,
+      ' ')
+    .toLowerCase();
 }

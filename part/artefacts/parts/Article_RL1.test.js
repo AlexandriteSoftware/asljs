@@ -9,7 +9,7 @@ import { createLogger }
 import { createRuleValidationContext }
   from '../../src/rule-validation-function.js';
 import { validate }
-  from './Article_RL10.js';
+  from './Article_RL1.js';
 
 const logger =
   createLogger(
@@ -17,7 +17,7 @@ const logger =
       enabled: false });
 
 test(
-  'Article_RL10 passes when the article starts with a level 1 heading',
+  'Article_RL1 passes when the article starts with a level 1 heading',
   async t => {
     const workspace =
       new TmpDir(
@@ -28,7 +28,7 @@ test(
 
     workspace.writeText(
       'Article.md',
-      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL10 - RL10\n');
+      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
 
     workspace.writeText(
       'Article1.md',
@@ -55,7 +55,7 @@ test(
   });
 
 test(
-  'Article_RL10 fails when the article does not start with a level 1 heading',
+  'Article_RL1 fails when the article does not start with a level 1 heading',
   async t => {
     const workspace =
       new TmpDir(
@@ -66,7 +66,7 @@ test(
 
     workspace.writeText(
       'Article.md',
-      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL10 - RL10\n');
+      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
 
     workspace.writeText(
       'Article1.md',
@@ -97,7 +97,7 @@ test(
   });
 
 test(
-  'Article_RL10 fails when the top-level heading differs from the file name',
+  'Article_RL1 fails when the top-level heading differs from the file name',
   async t => {
     const workspace =
       new TmpDir(
@@ -108,7 +108,7 @@ test(
 
     workspace.writeText(
       'Article.md',
-      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL10 - RL10\n');
+      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
 
     workspace.writeText(
       'Article1.md',

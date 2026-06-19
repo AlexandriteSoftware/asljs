@@ -7,6 +7,16 @@ import { DefinitionProvider }
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @param {Environment} environment 
+ */
 export async function execDefinitions(
   environment)
 {

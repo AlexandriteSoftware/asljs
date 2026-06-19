@@ -5,6 +5,16 @@ import { toPosixPath }
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
 
+/**
+ * @typedef
+ *   { import('./../environment.js')
+ *       .Environment }
+ *   Environment
+ */
+
+/**
+ * @param {Environment} environment 
+ */
 export async function execDefinition(
   environment,
   options)
