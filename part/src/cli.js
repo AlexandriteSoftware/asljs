@@ -136,32 +136,54 @@ function createCli(
           environment.logger = logger;
         }
 
-        if (
-          options.definitions !== undefined
-          && options.definitions !== null
-          && options.definitions.trim() !== '')
-        {
+        const optDefinition =
+          filterStringOption(
+            options.definitions);
+
+        if (optDefinition !== '') {
           environment.definitions =
             path.normalize(
               path.resolve(
-                options.definitions));
+                optDefinition));
         } else {
-          environment.definitions =
-            environment.cwd;
+          const envDefinitions =
+            filterStringOption(
+              process.env.PART_DEFINITIONS);
+
+          if (envDefinitions !== '') {
+            environment.definitions =
+              path.normalize(
+                path.resolve(
+                  envDefinitions));
+          } else {
+            environment.definitions =
+              environment.cwd;
+          }
         }
 
-        if (
-          options.project !== undefined
-          && options.project !== null
-          && options.project.trim() !== '')
-        {
+        const optProject =
+          filterStringOption(
+            options.project);
+
+        if (optProject !== '') {
           environment.project =
             path.normalize(
               path.resolve(
-                options.project));
+                optProject));
         } else {
-          environment.project =
-            environment.cwd;
+          const envProject =
+            filterStringOption(
+              process.env.PART_PROJECT);
+
+          if (envProject !== '') {
+            environment.project =
+              path.normalize(
+                path.resolve(
+                  envProject));
+          } else {
+            environment.project =
+              environment.cwd;
+          }
         }
 
         environment.logger.trace(
@@ -386,4 +408,18 @@ function splitCommaSeparatedOption(
       entry => entry.trim())
     .filter(
       entry => entry.length > 0);
+}
+
+/**
+ * @param {any} value 
+ * @returns {string}
+ */
+function filterStringOption(
+  value)
+{
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value.trim();
 }

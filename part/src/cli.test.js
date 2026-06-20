@@ -204,3 +204,40 @@ test(
       environment.stderr.toString(),
       /Unknown option: --verbose/);
   });
+
+test(
+  'RQ112 cli reads definitions path from environment variable PART_DEFINITIONS',
+  async () => {
+    const environment =
+      createEnvironment();
+
+    process.env.PART_DEFINITIONS =
+      'artefacts';
+
+    await runCli(
+      [ 'version' ],
+      environment);
+
+    assert.equal(
+      environment.definitions,
+      path.resolve('artefacts'));
+  });
+
+test(
+  'RQ133 cli reads project path from environment variable PART_PROJECT',
+  async () => {
+    const environment =
+      createEnvironment();
+
+    process.env.PART_PROJECT =
+      'project';
+
+    await runCli(
+      [ 'version' ],
+      environment);
+
+    assert.equal(
+      environment.project,
+      path.resolve('project'));
+  });
+

@@ -83,13 +83,14 @@ export function createLogger(
         { target: 'pino-pretty',
           options:
             { messageFormat: '{instanceId}: {msg}',
-              ignore: 'pid,hostname,instanceId',
+              ignore: 'instanceId',
               colorize: true } });
   }
 
   const logger =
     pino(
-      { level: pinoLogLevel },
+      { base: null,
+        level: pinoLogLevel },
       transport);
 
   /** @type {RootLogger} */

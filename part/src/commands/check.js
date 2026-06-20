@@ -128,7 +128,12 @@ export async function execCheck(
   /** @type {Artefact[]} */
   const artefacts = [ ];
 
-  /** @type {Record<string, string[]>} */
+  /**
+   * List of definition names for each artefact path, limited to the requested
+   * definitions.
+   * 
+   * @type {Record<string, string[]>}
+   * */
   const definitionNamesForArtefact = { };
 
   if (options.pattern) {
@@ -146,16 +151,6 @@ export async function execCheck(
         });
 
     for (const artefactPath of paths) {
-      const artefactDefinitions =
-        await artefactProvider
-          .getDefinitionsForArtefact(
-            artefactPath);
-
-      if (artefactDefinitions.length === 0)
-      {
-        continue;
-      }
-
       const artefact =
         await artefactProvider.tryGetArtefact(
           artefactPath);
@@ -164,43 +159,35 @@ export async function execCheck(
         continue;
       }
 
+      const artefactSelectedDefinitions =
+        artefact.definitions
+          .filter(
+            definition =>
+              selectedDefinitionNames.includes(definition));      
+
+      if (artefactSelectedDefinitions.length === 0) {
+        continue;
+      }
+
+      definitionNamesForArtefact[artefact.path] =
+        artefactSelectedDefinitions;
+
       artefacts.push(artefact);
-
-      const artefactDefinitionNames =
-        artefactDefinitions.map(
-          definition => definition.name);
-
-      definitionNamesForArtefact[artefactPath] =
-        artefactDefinitionNames;
     }
   } else {
-    const artefactPaths =
-      new Set();
+    const definitionArtefacts =
+      await artefactProvider.getArtefacts(
+        selectedDefinitions);
 
-    for (const definition of selectedDefinitions) {
-      const definitionArtefacts =
-        await artefactProvider.getArtefacts(
-          [ definition ]);
+    artefacts.push(
+      ...definitionArtefacts);
 
-      for (const artefact of definitionArtefacts) {
-        const added =
-          artefactPaths.add(
-            artefact.path);
-
-        if (added) {
-          artefacts.push(
-            artefact);
-        }
-
-        const definitionNames =
-          definitionNamesForArtefact[artefact.path] || [];
-
-        definitionNames.push(
-          definition.name);
-          
-        definitionNamesForArtefact[artefact.path] =
-          definitionNames;
-      }
+    for (const artefact of artefacts) {
+      definitionNamesForArtefact[artefact.path] =
+        artefact.definitions
+          .filter(
+            definition =>
+              selectedDefinitionNames.includes(definition));
     }
   }
 
