@@ -1,4 +1,4 @@
-# eslint-function-declaration-style-rule
+# function-declaration
 
 Chops `FunctionDeclaration` parameters into multiple lines and moves the opening
 brace to a new line.

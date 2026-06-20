@@ -13,17 +13,19 @@ export async function addRuleTestsFromMarkdown(
   filePath,
   eslint)
 {
-  const baseName =
-    path.basename(
-      filePath,
-      path.extname(filePath));
+  const fileName =
+    path.basename(filePath);
 
   const testCases =
     await extractTests(filePath);
 
   for (const testCase of testCases) {
+    const sourceJson =
+      JSON.stringify(
+        testCase.source);
+
     test(
-      `${baseName}: markdown example: ${testCase.source}`,
+      `${fileName}: ${sourceJson}`,
       async () => {
         const [ result ] =
           await eslint.lintText(

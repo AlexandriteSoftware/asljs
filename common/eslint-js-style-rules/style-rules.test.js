@@ -1,17 +1,17 @@
 import { ESLint }
   from 'eslint';
 import { addRuleTestsFromMarkdown }
-  from './extractTests.js';
+  from './../extractTests.js';
 import importStyleRule
-  from './eslint-import-style-rule.js';
+  from './import.js';
 import functionDeclarationStyleRule
-  from './eslint-function-declaration-style-rule.js';
+  from './function-declaration.js';
 import callExpressionStyleRule
-  from './eslint-call-expression-style-rule.js';
+  from './call-expression.js';
 import variableDeclarationStyleRule
-  from './eslint-variable-declaration-style-rule.js';
+  from './variable-declaration.js';
 import statementSpacingStyleRule
-  from './eslint-statement-spacing-style-rule.js';
+  from './statement-spacing.js';
 
 const eslint =
   new ESLint(
@@ -42,5 +42,5 @@ const eslint =
     });
 
 await addRuleTestsFromMarkdown(
-  'eslint-style-rules.md',
+  'style-rules.md',
   eslint);

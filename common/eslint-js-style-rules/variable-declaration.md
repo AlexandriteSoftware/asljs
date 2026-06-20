@@ -1,4 +1,4 @@
-# eslint-variable-declaration-style-rule
+# variable-declaration
 
 ## Tests
 

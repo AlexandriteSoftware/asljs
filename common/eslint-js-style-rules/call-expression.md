@@ -1,4 +1,4 @@
-# eslint-call-expression-style-rule
+# call-expression
 
 ## Tests
 

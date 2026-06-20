@@ -1,4 +1,4 @@
-# eslint-statement-spacing-style-rule
+# statement-spacing
 
 ## Tests
 

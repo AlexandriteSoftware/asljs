@@ -5,20 +5,20 @@ import assert
 import { ESLint }
   from 'eslint';
 import { addRuleTestsFromMarkdown }
-  from './extractTests.js';
+  from '../extractTests.js';
 import rule
-  from './eslint-import-style-rule.js';
+  from './statement-spacing.js';
 
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
       fix: true,
       overrideConfig:
-        { plugins: { asljs: { rules: { 'import-style': rule } } },
-          rules: { 'asljs/import-style': 'error' } } });
+        { plugins: { asljs: { rules: { 'statement-spacing': rule } } },
+          rules: { 'asljs/statement-spacing': 'error' } } });
 
 test(
-  'markdown example: \\r\\n line endings',
+  'statement-spacing: \\r\\n line endings',
   async () => {
     const code =
       'import { readFile }\r\n  from \'node:fs/promises\';';
@@ -32,5 +32,5 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  'eslint-import-style-rule.md',
+  'statement-spacing.md',
   eslint);

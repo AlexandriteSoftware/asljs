@@ -5,32 +5,32 @@ import assert
 import { ESLint }
   from 'eslint';
 import { addRuleTestsFromMarkdown }
-  from './extractTests.js';
+  from '../extractTests.js';
 import rule
-  from './eslint-statement-spacing-style-rule.js';
+  from './variable-declaration.js';
 
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
       fix: true,
       overrideConfig:
-        { plugins: { asljs: { rules: { 'statement-spacing': rule } } },
-          rules: { 'asljs/statement-spacing': 'error' } } });
+        { plugins: { asljs: { rules: { 'variable-declaration-style': rule } } },
+          rules: { 'asljs/variable-declaration-style': 'error' } } });
 
 test(
-  'markdown example: \\r\\n line endings',
+  'variable-declaration: \\r\\n line endings',
   async () => {
     const code =
-      'import { readFile }\r\n  from \'node:fs/promises\';';
+      'const a = "12345678901234567890";\r\n';
 
     const [ result ] =
       await eslint.lintText(code);
 
     assert.strictEqual(
       result.output,
-      undefined);
+      'const a =\r\n  "12345678901234567890";\r\n');
   });
 
 await addRuleTestsFromMarkdown(
-  'eslint-statement-spacing-style-rule.md',
+  'variable-declaration.md',
   eslint);

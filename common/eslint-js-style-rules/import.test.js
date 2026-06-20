@@ -5,32 +5,32 @@ import assert
 import { ESLint }
   from 'eslint';
 import { addRuleTestsFromMarkdown }
-  from './extractTests.js';
+  from '../extractTests.js';
 import rule
-  from './eslint-variable-declaration-style-rule.js';
+  from './import.js';
 
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
       fix: true,
       overrideConfig:
-        { plugins: { asljs: { rules: { 'variable-declaration-style': rule } } },
-          rules: { 'asljs/variable-declaration-style': 'error' } } });
+        { plugins: { asljs: { rules: { 'import-style': rule } } },
+          rules: { 'asljs/import-style': 'error' } } });
 
 test(
-  'markdown example: \\r\\n line endings',
+  'import: \\r\\n line endings',
   async () => {
     const code =
-      'const a = "12345678901234567890";\r\n';
+      'import { readFile }\r\n  from \'node:fs/promises\';';
 
     const [ result ] =
       await eslint.lintText(code);
 
     assert.strictEqual(
       result.output,
-      'const a =\r\n  "12345678901234567890";\r\n');
+      undefined);
   });
 
 await addRuleTestsFromMarkdown(
-  'eslint-variable-declaration-style-rule.md',
+  'import.md',
   eslint);

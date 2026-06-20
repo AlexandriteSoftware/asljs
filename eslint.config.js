@@ -5,15 +5,15 @@ import tsParser
 import tseslint
   from 'typescript-eslint';
 import jsImportStyleRule
-  from './common/code-formatting-js/eslint-import-style-rule.js';
+  from './common/eslint-js-style-rules/import.js';
 import jsFunctionDeclarationStyleRule
-  from './common/code-formatting-js/eslint-function-declaration-style-rule.js';
+  from './common/eslint-js-style-rules/function-declaration.js';
 import jsCallExpressionStyleRule
-  from './common/code-formatting-js/eslint-call-expression-style-rule.js';
+  from './common/eslint-js-style-rules/call-expression.js';
 import jsVariableDeclarationStyleRule
-  from './common/code-formatting-js/eslint-variable-declaration-style-rule.js';
+  from './common/eslint-js-style-rules/variable-declaration.js';
 import jsStatementSpacingStyleRule
-  from './common/code-formatting-js/eslint-statement-spacing-style-rule.js';
+  from './common/eslint-js-style-rules/statement-spacing.js';
 
 /**
  * @typedef

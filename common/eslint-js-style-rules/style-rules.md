@@ -1,4 +1,4 @@
-# eslint-style-rules
+# style-rules
 
 ## Tests
 
