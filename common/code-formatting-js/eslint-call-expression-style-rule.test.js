@@ -18,7 +18,7 @@ const eslint =
           rules: { 'asljs/call-expression-style': 'error' } } });
 
 test(
-  'markdown example: \\r\\n line endings',
+  'eslint-call-expression-style-rule: markdown example: \\r\\n line endings',
   async () => {
     const code =
       'test(\r\n  a,\r\n  b);';

@@ -1,3 +1,5 @@
+import path
+  from 'node:path';
 import test
   from 'node:test';
 import assert
@@ -11,12 +13,17 @@ export async function addRuleTestsFromMarkdown(
   filePath,
   eslint)
 {
+  const baseName =
+    path.basename(
+      filePath,
+      path.extname(filePath));
+
   const testCases =
     await extractTests(filePath);
 
   for (const testCase of testCases) {
     test(
-      `markdown example: ${testCase.source}`,
+      `${baseName}: markdown example: ${testCase.source}`,
       async () => {
         const [ result ] =
           await eslint.lintText(

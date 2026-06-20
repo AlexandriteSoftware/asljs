@@ -80,12 +80,12 @@ export default {
         }
 
         context.report(
-          {
-            node,
+          { node,
             message:
               'Use asljs variable declaration style.',
-
-            fix(fixer) {
+            fix(
+              fixer)
+            {
               const sourceCode =
                 context.sourceCode;
 
@@ -238,6 +238,7 @@ function buildVariableDeclarator(
       node.id);
 
   code.push(idText);
+  code.push(' =');
 
   const nodeInit =
     node.init;
@@ -249,9 +250,6 @@ function buildVariableDeclarator(
     const initText =
       sourceCode.getText(
         nodeInit);
-
-    code.push(idText);
-    code.push(' =');
 
     if (
       initialiserIsShortEnoughToStayOnSameLine(
