@@ -136,15 +136,15 @@ function createCli(
           environment.logger = logger;
         }
 
-        const optDefinition =
+        const optDefinitions =
           filterStringOption(
             options.definitions);
 
-        if (optDefinition !== '') {
+        if (optDefinitions !== '') {
           environment.definitions =
             path.normalize(
               path.resolve(
-                optDefinition));
+                optDefinitions));
         } else {
           const envDefinitions =
             filterStringOption(
