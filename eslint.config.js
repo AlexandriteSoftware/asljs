@@ -14,6 +14,8 @@ import jsVariableDeclarationStyleRule
   from './common/eslint-js-style-rules/variable-declaration.js';
 import jsStatementSpacingStyleRule
   from './common/eslint-js-style-rules/statement-spacing.js';
+import tsImportStyleRule
+  from './common/eslint-ts-style-rules/import.js';
 
 /**
  * @typedef
@@ -41,7 +43,12 @@ const typescriptConfig =
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint
+      '@typescript-eslint': tseslint.plugin,
+      asljs: {
+        rules: {
+          'import-style': tsImportStyleRule
+        }
+      }
     },
     rules: {
       indent: 'off',
@@ -86,13 +93,6 @@ const typescriptConfig =
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {
-          prefer: 'type-imports',
-          fixStyle: 'inline-type-imports'
-        }
-      ],
       '@typescript-eslint/explicit-function-return-type': [
         'error',
         {
@@ -103,7 +103,8 @@ const typescriptConfig =
           allowHigherOrderFunctions: true,
           allowDirectConstAssertionInArrowFunctions: true
         }
-      ]
+      ],
+      'asljs/import-style': 'error'
     }
   };
 

@@ -1,13 +1,10 @@
-import {
-    asEventfulLike
-  } from 'asljs-eventful';
-import {
-    type ObservableWatchFn
-  } from './types.js';
-import {
-    functionTypeGuard,
-    isObject,
-  } from './guards.js';
+import { asEventfulLike }
+  from 'asljs-eventful';
+import { type ObservableWatchFn }
+  from './types.js';
+import { functionTypeGuard,
+         isObject }
+  from './guards.js';
 
 function splitPath(
     path: string
