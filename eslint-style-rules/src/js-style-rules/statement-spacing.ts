@@ -1,69 +1,56 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *   { import('eslint')
- *       .SourceCode }
- *   SourceCode
- * @typedef
- *     { import('eslint')
- *        .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('@eslint/core')
- *       .SourceRange }
- *   SourceRange
- * @typedef
- *   { import('estree')
- *       .Node }
- *   Node
- */
+import { type SourceCode,
+         type Rule,
+         type AST }
+  from 'eslint';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions,
+         type SourceRange }
+  from '@eslint/core';
+import { type Node,
+         type BlockStatement }
+  from 'estree';
 
-/** @type {JSRuleDefinition} */
-export default {
-  meta: {
-    type: 'layout',
-    fixable: 'whitespace',
-    schema: [],
-  },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      Program(
-        node)
-      {
-        checkStatements(
-          node.body,
-          context);
-      },
-      BlockStatement(
-        node)
-      {
-        checkStatements(
-          node.body,
-          context);
-      }
-    };
-  },
-};
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { type: 'layout',
+        fixable: 'whitespace',
+        schema: [] },
+        create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        { Program(
+              node: AST.Program
+            ): void
+          {
+            checkStatements(
+              node.body,
+              context);
+          },
+          BlockStatement(
+              node: BlockStatement
+            ): void
+          {
+            checkStatements(
+              node.body,
+              context);
+          }
+        };
+
+        return listener;
+    }
+  };
+
+export default ruleDefinition;
 
 /**
  * Enforces a blank line between multiline statements.
- * 
- * @param {Node[]} statements
- * @param {RuleContext} context
  */
 function checkStatements(
-  statements,
-  context)
+    statements: Node[],
+    context: Rule.RuleContext
+  ): void
 {
   const sourceCode =
     context.sourceCode;
@@ -111,10 +98,10 @@ function checkStatements(
         node: nextStatement,
         message: 'Add a blank line between statements.',
         fix(
-          fixer)
+            fixer: Rule.RuleFixer
+          ): Rule.Fix
         {
-          /** @type {SourceRange} */
-          const range =
+          const range: SourceRange =
             [
               statementRange[1],
               nextStatementRange[0],
@@ -135,14 +122,10 @@ function checkStatements(
   }
 }
 
-/**
- * @param {Node} statement 
- * @param {Node} nextStatement 
- * @returns {boolean}
- */
 function shouldSpace(
-  statement,
-  nextStatement)
+  statement: Node,
+  nextStatement: Node
+): boolean
 {
   if (
     statement.type === 'ImportDeclaration'
@@ -180,12 +163,9 @@ function shouldSpace(
     return linesBetween < 2;
 }
 
-/**
- * @param {Node} statement 
- * @returns {boolean}
- */
 function statementIsMultiline(
-  statement)
+    statement: Node)
+  : boolean
 {
   const statementLocation =
     statement.loc;
@@ -201,14 +181,10 @@ function statementIsMultiline(
          < statementLocation.end.line;
 }
 
-/**
- * @param {SourceCode} sourceCode
- * @param {Node} node
- * @returns {string}
- */
 function getIndentation(
-  sourceCode,
-  node)
+    sourceCode: SourceCode,
+    node: Node
+  ): string
 {
   const nodeLocation =
     node.loc;

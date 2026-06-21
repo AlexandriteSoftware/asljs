@@ -1,113 +1,86 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *     { import('eslint')
- *        .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('estree')
- *       .ImportDeclaration }
- *   ImportDeclaration
- * @typedef
- *   { import('estree')
- *       .ImportSpecifier }
- *   ImportSpecifier
- * @typedef
- *   { import('estree')
- *       .ImportDefaultSpecifier }
- *   ImportDefaultSpecifier
- * @typedef
- *   { import('estree')
- *       .ImportNamespaceSpecifier }
- *   ImportNamespaceSpecifier
- * @typedef
- *   { import('estree')
- *       .Identifier }
- *   Identifier
- * @typedef
- *   { import('estree')
- *       .Literal }
- *   Literal
- */
+import { type JSRuleDefinition,
+         type Rule }
+  from 'eslint';
+import { type ImportDeclaration,
+         type ImportSpecifier,
+         type ImportDefaultSpecifier,
+         type ImportNamespaceSpecifier,
+         type Identifier,
+         type Literal }
+  from 'estree';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions }
+  from '@eslint/core'
 
-/**
- * @typedef
- *   { ImportSpecifier
- *     | ImportDefaultSpecifier
- *     | ImportNamespaceSpecifier }
- * Import
- */
+type Import =
+  | ImportSpecifier
+  | ImportDefaultSpecifier
+  | ImportNamespaceSpecifier;
 
-/**
- * @typedef {object} FormattingContext
- * @property {string} newLine
- */
+interface FormattingContext {
+  newLine: string;
+}
 
-/** @type {JSRuleDefinition} */
-export default {
-  meta: { fixable: 'code' },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      ImportDeclaration(
-        node)
-      {
-        const newLine =
-          context.sourceCode.text.includes('\r\n')
-            ? '\r\n'
-            : '\n';
-
-        const formattingContext =
-          { newLine };
-
-        const sourceCode =
-          context.sourceCode.getText(node);
-
-        const replacement =
-          formatImportNode(
-            node,
-            context,
-            formattingContext);
-
-        if (sourceCode === replacement) {
-          return;
-        }
-
-        context.report(
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { fixable: 'code' },
+    create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        { ImportDeclaration(
+              node: ImportDeclaration
+            ): void
           {
-            node,
-            message: 'Use asljs import style.',
-            fix(fixer) {
-              return fixer.replaceText(
-                node,
-                replacement);
-            }
-          });
-      }
-    };
-  }
-};
+            const newLine =
+              context.sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-/**
- * 
- * @param {ImportDeclaration} node 
- * @param {RuleContext} context 
- * @param {FormattingContext} formattingContext 
- * @returns {string}
- */
+            const formattingContext =
+              { newLine };
+
+            const sourceCode =
+              context.sourceCode.getText(node);
+
+            const replacement =
+              formatImportNode(
+                node,
+                context,
+                formattingContext);
+
+            if (sourceCode === replacement) {
+              return;
+            }
+
+            context.report(
+              {
+                node,
+                message: 'Use asljs import style.',
+                fix(
+                    fixer: Rule.RuleFixer
+                  ): Rule.Fix
+                {
+                  return fixer.replaceText(
+                    node,
+                    replacement);
+                }
+              });
+          }
+        };
+
+      return listener;
+    }
+  };
+
+export default ruleDefinition;
+
 function formatImportNode(
-  node,
-  context,
-  formattingContext)
+    node: ImportDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     [ 'import ' ];
@@ -160,15 +133,10 @@ function formatImportNode(
   return code.join('');
 }
 
-/**
- * 
- * @param {Import[]} specifiers 
- * @param {number} startAt 
- * @returns {ImportSpecifier[]}
- */
 function getImportSpecifierGroup(
-  specifiers,
-  startAt)
+    specifiers: Import[],
+    startAt: number
+  ): ImportSpecifier[]
 {
   const group =
     [];
@@ -190,15 +158,10 @@ function getImportSpecifierGroup(
   return group;
 }
 
-/**
- * 
- * @param {ImportSpecifier[]} importSpecifierGroup 
- * @param {FormattingContext} formattingContext 
- * @returns {string}
- */
 function formatImportSpecifierGroup(
-  importSpecifierGroup,
-  formattingContext)
+    importSpecifierGroup: ImportSpecifier[],
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     [];
@@ -220,7 +183,7 @@ function formatImportSpecifierGroup(
 
     if (specifier.imported.type === 'Identifier') {
       const importedIdentifier =
-        /** @type {Identifier} */ (specifier.imported);
+        specifier.imported as Identifier;
 
       if (importedIdentifier.name === specifier.local.name) {
         code.push(
@@ -231,7 +194,7 @@ function formatImportSpecifierGroup(
       }
     } else if (specifier.imported.type === 'Literal') {
       const importedLiteral =
-        /** @type {Literal} */ (specifier.imported);
+        specifier.imported as Literal;
       
       code.push(
         `${importedLiteral.raw} as ${specifier.local.name}`);
@@ -246,14 +209,10 @@ function formatImportSpecifierGroup(
   return code.join('');
 }
 
-/**
- * @param {Literal} source 
- * @param {FormattingContext} formattingContext 
- * @returns {string}
- */
 function formatSource(
-  source,
-  formattingContext)
+    source: Literal,
+    formattingContext: FormattingContext
+  ): string
 {
   return formattingContext.newLine
     + '  from '
@@ -264,11 +223,10 @@ function formatSource(
 /**
  * Formats `ImportDefaultSpecifier` and `ImportNamespaceSpecifier`.
  * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
- * 
- * @param {Import} specifier
  */
 function formatSpecifier(
-  specifier)
+    specifier: Import
+  ): string
 {
   switch (specifier.type) {
     case 'ImportDefaultSpecifier':

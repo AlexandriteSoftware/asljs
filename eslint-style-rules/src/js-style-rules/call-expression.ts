@@ -1,112 +1,77 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('eslint')
- *       .SourceCode }
- *   SourceCode
- * @typedef
- *   { import('eslint')
- *       .AST.Token }
- *  Token
- * @typedef
- *   { import('estree')
- *       .Expression }
- *   Expression
- * @typedef
- *   { import('estree')
- *       .SimpleCallExpression }
- *   SimpleCallExpression
- * @typedef
- *   { import('estree')
- *       .Node }
- *   Node
- * @typedef
- *   { import('estree')
- *       .SpreadElement }
- *   SpreadElement
- * @typedef
- *   { import('estree')
- *       .Identifier }
- *   Identifier
- * @typedef
- *   { import('estree')
- *       .Literal }
- *   Literal
- */
+import { expressionIsShort }
+  from './functions/short-expression.js';
+import { type Rule,
+         type SourceCode,
+         type AST }
+  from 'eslint';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions }
+  from '@eslint/core'
+import { type SimpleCallExpression }
+  from 'estree';
 
-/**
- * @typedef {object} FormattingContext
- * @property {string} newLine
- */
+type FormattingContext =
+  { newLine: string };
 
-const LONG_IDENTIFIER_LENGTH = 15;
-
-/** @type {JSRuleDefinition} */
-export default {
-  meta:
-    { type: 'layout',
-      fixable: 'code',
-      schema: [] },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      CallExpression(
-        node)
-      {
-        const correctLayout =
-          checkLayout(
-            node,
-            context);
-
-        if (correctLayout) {
-          return;
-        }
-
-        context.report(
-          { node,
-            message: 'Use asljs call expression style.',
-            fix(
-              fixer)
-            {
-              const sourceCode =
-                context.sourceCode;
-
-              const newLine =
-                sourceCode.text.includes('\r\n')
-                  ? '\r\n'
-                  : '\n';
-
-              const formattingContext =
-                { newLine };
-
-              const replacement =
-                buildCallExpression(
-                  node,
-                  sourceCode,
-                  formattingContext);
-
-              return fixer.replaceText(
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        { CallExpression(
+              node: SimpleCallExpression
+            ): void
+          {
+            const correctLayout =
+              checkLayout(
                 node,
-                replacement);
+                context);
+
+            if (correctLayout) {
+              return;
             }
-          });
-      }
-    };
-  }
-};
+
+            context.report(
+              { node,
+                message: 'Use asljs call expression style.',
+                fix(
+                    fixer: Rule.RuleFixer
+                  ): Rule.Fix
+                {
+                  const sourceCode =
+                    context.sourceCode;
+
+                  const newLine =
+                    sourceCode.text.includes('\r\n')
+                      ? '\r\n'
+                      : '\n';
+
+                  const formattingContext =
+                    { newLine };
+
+                  const replacement =
+                    buildCallExpression(
+                      node,
+                      sourceCode,
+                      formattingContext);
+
+                  return fixer.replaceText(
+                    node,
+                    replacement);
+                }
+              });
+          } };
+
+      return listener;
+    }
+  };
+
+export default ruleDefinition;
 
 /**
  * Checks that:
@@ -121,8 +86,8 @@ export default {
  * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
-  node,
-  context)
+    node: SimpleCallExpression,
+  context: Rule.RuleContext)
 {
   const argumentsList =
     node.arguments;
@@ -160,7 +125,7 @@ function checkLayout(
     }
 
     const isShortParameter =
-      argumentIsShortEnoughToStayOnSameLine(argument);
+      expressionIsShort(argument);
 
     if (isShortParameter
         && openingParenthesis.loc.end.line === argumentStartLine)
@@ -171,7 +136,7 @@ function checkLayout(
     const argumentIndent =
       getIndentation(
         context.sourceCode,
-        argument);
+        argument as unknown as AST.Token);
 
     return requiredArgumentIndent === argumentIndent;
   }
@@ -216,7 +181,7 @@ function checkLayout(
     const argumentIndent =
       getIndentation(
         context.sourceCode,
-        argument);
+        argument as unknown as AST.Token);
 
     if (requiredArgumentIndent !== argumentIndent) {
       return false;
@@ -226,47 +191,10 @@ function checkLayout(
   return true;
 }
 
-/**
- * @param {Expression|SpreadElement} argument 
- * @returns {boolean}
- */
-function argumentIsShortEnoughToStayOnSameLine(
-  argument)
-{
-  if (argument.type === 'Identifier') {
-    const identifier =
-      /** @type {Identifier} */ (argument);
-
-    return identifier.name.length < LONG_IDENTIFIER_LENGTH;
-  }
-
-  if (argument.type === 'Literal') {
-    const literal =
-      /** @type {Literal} */ (argument);
-
-    const literalRawContent =
-      literal.raw;
-
-    if (literalRawContent === undefined) {
-      return false;
-    }
-
-    return literalRawContent.length < LONG_IDENTIFIER_LENGTH;
-  }
-
-  return false;
-}
-
-/**
- * @param {SourceCode} sourceCode
- * @param {SimpleCallExpression} node
- * @param {FormattingContext} formattingContext
- */
-
 function buildCallExpression(
-  node,
-  sourceCode,
-  formattingContext)
+  node: SimpleCallExpression,
+  sourceCode: SourceCode,
+  formattingContext: FormattingContext)
 {
   const openingParenthesis =
     sourceCode.getTokenAfter(
@@ -308,7 +236,7 @@ function buildCallExpression(
     if (argumentStartLine === undefined) {
       code.push(argumentText);
     } else {
-      if (argumentIsShortEnoughToStayOnSameLine(argument)) {
+      if (expressionIsShort(argument)) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
             formattingContext.newLine);
@@ -360,14 +288,10 @@ function buildCallExpression(
   return code.join('');
 }
 
-/**
- * @param {SourceCode} sourceCode
- * @param {Token|Expression|SpreadElement} node
- * @returns {string} indentation of the line where the node starts
- */
 function getIndentation(
-  sourceCode,
-  node)
+    sourceCode: SourceCode,
+    node: AST.Token
+  ): string
 {
   const nodeLocation =
     node.loc;

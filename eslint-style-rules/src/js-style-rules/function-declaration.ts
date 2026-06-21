@@ -1,98 +1,90 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *     { import('eslint')
- *        .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('estree')
- *       .FunctionDeclaration }
- *   FunctionDeclaration
- */
+import { type JSRuleDefinition,
+         type Rule }
+  from 'eslint';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions }
+  from '@eslint/core'
+import { type FunctionDeclaration }
+  from 'estree';
 
-/**
- * @typedef {object} FormattingContext
- * @property {string} newLine
- */
+type FormattingContext =
+  { newLine: string };
 
-/** @type {JSRuleDefinition} */
-export default {
-  meta:
-    { type: 'layout',
-      fixable: 'code',
-      schema: [] },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      FunctionDeclaration(
-        node)
-      {
-        const correctLayout =
-          checkLayout(
-            node,
-            context);
-
-        if (correctLayout) {
-          return;
-        }
-
-        context.report(
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        { FunctionDeclaration(
+              node: FunctionDeclaration
+            ): void
           {
-            node,
-            message: 'Use asljs function declaration style.',
-            fix(fixer) {
-              const newLine =
-                context.sourceCode.text.includes('\r\n')
-                  ? '\r\n'
-                  : '\n';
-
-              const formattingContext =
-                { newLine };
-
-              const replacement =
-                buildFunctionDeclaration(
-                  node,
-                  context,
-                  formattingContext);
-
-              return fixer.replaceText(
+            const correctLayout =
+              checkLayout(
                 node,
-                replacement);
-            },
-          });
-      }
-    };
-  },
-};
+                context);
+
+            if (correctLayout) {
+              return;
+            }
+
+            context.report(
+              {
+                node,
+                message: 'Use asljs function declaration style.',
+                fix(
+                    fixer: Rule.RuleFixer
+                  ): Rule.Fix
+                {  
+                  const newLine =
+                    context.sourceCode.text.includes('\r\n')
+                      ? '\r\n'
+                      : '\n';
+
+                  const formattingContext =
+                    { newLine };
+
+                  const replacement =
+                    buildFunctionDeclaration(
+                      node,
+                      context,
+                      formattingContext);
+
+                  return fixer.replaceText(
+                    node,
+                    replacement);
+                },
+              });
+          }
+        };
+
+      return listener;
+    },
+  };
+
+export default ruleDefinition;
 
 /**
  * Checks that function parameters are on separate lines and the opening brace
  * is on a new line.
- * 
- * @param {FunctionDeclaration} node
- * @param {RuleContext} context
- * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
-  node,
-  context)
+    node: FunctionDeclaration,
+    context: Rule.RuleContext
+  ): boolean
 {
   const parameters =
     node.params;
 
   if (parameters.length > 1) {
     for (let index = 1;
-          index < parameters.length;
-          index++)
+         index < parameters.length;
+         index++)
     {
       const previousParameter =
         parameters[index - 1];
@@ -147,17 +139,11 @@ function checkLayout(
   return true;
 }
 
-/**
- * 
- * @param {FunctionDeclaration} node 
- * @param {RuleContext} context 
- * @param {FormattingContext} formattingContext 
- * @returns {string}
- */
 function buildFunctionDeclaration(
-  node,
-  context,
-  formattingContext)
+    node: FunctionDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const name =
     node.id?.name ?? '';

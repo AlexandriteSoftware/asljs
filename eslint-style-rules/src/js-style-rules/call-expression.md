@@ -2,17 +2,23 @@
 
 ## Tests
 
+Simple expression does not change:
+
 ```js
 test();
 // ---
 test();
 ```
 
+Short single-parameter call does not require chopping:
+
 ```js
 test(a);
 // ---
 test(a);
 ```
+
+However, if it is already chopped, leave it as is:
 
 ```js
 test(
@@ -21,6 +27,8 @@ test(
 test(
   a);
 ```
+
+But check indentation of the chopped call:
 
 ```js
 test(
@@ -30,6 +38,8 @@ test(
   a);
 ```
 
+Two parameters require chopping:
+
 ```js
 test(a, b);
 // ---
@@ -37,6 +47,8 @@ test(
   a,
   b);
 ```
+
+And nested indentation should be preserved:
 
 ```js
   test(a, b);
@@ -46,19 +58,23 @@ test(
     b);
 ```
 
+Short literal strings do not require chopping:
+
 ```js
 test('ok');
 // ---
 test('ok');
 ```
 
+Any short expression (see `expressionIsShort()`) does not require chopping:
+
 ```js
-test(
-  'ok');
+test(new Set());
 // ---
-test(
-  'ok');
+test(new Set());
 ```
+
+More complex expressions require chopping. Like long literal strings:
 
 ```js
 test('12345678901234567890');
@@ -67,6 +83,26 @@ test(
   '12345678901234567890');
 ```
 
+Long string template literals:
+
+```js
+test(`12345678901234567890`);
+// ---
+test(
+  `12345678901234567890`);
+```
+
+Increments:
+
+```js
+test(a++);
+// ---
+test(
+  a++);
+```
+
+Nested calls require chopping:
+
 ```js
 test(test(test()));
 // ---
@@ -74,6 +110,8 @@ test(
   test(
     test()));
 ```
+
+This also:
 
 ```js
 test(
@@ -85,6 +123,9 @@ test(
     os.tmpdir(),
     'part-gitignore-'));
 ```
+
+Definitely, async arrow function is a complex one (new line before
+the parameter, the rest will be handled by other indentation rules):
 
 ```js
 test('test', async () => {
@@ -98,6 +139,8 @@ test(
 });
 ```
 
+Return statements:
+
 ```js
 function test() {
   return test(a, b);
@@ -110,6 +153,8 @@ function test() {
 }
 ```
 
+Await statements:
+
 ```js
 async function test() {
   await test(a, b);
@@ -121,6 +166,8 @@ async function test() {
     b);
 }
 ```
+
+And some other complex expressions:
 
 ```js
 test(another(a, b), another(c, d));

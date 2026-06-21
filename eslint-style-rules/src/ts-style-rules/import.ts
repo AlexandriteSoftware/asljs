@@ -1,113 +1,85 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *     { import('eslint')
- *        .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.ImportDeclaration }
- *   ImportDeclaration
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.ImportSpecifier }
- *   ImportSpecifier
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.ImportDefaultSpecifier }
- *   ImportDefaultSpecifier
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.ImportNamespaceSpecifier }
- *   ImportNamespaceSpecifier
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.Identifier }
- *   Identifier
- * @typedef
- *   { import('@typescript-eslint/types')
- *       .TSESTree.Literal }
- *   Literal
- */
+import { type JSRuleDefinition,
+         type Rule }
+  from 'eslint';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions }
+  from '@eslint/core';
+import { type ImportDeclaration,
+         type ImportSpecifier,
+         type ImportDefaultSpecifier,
+         type ImportNamespaceSpecifier,
+         type Literal }
+  from 'estree';  
+import { type TSESTree }
+  from '@typescript-eslint/types';
 
-/**
- * @typedef
- *   { ImportSpecifier
- *     | ImportDefaultSpecifier
- *     | ImportNamespaceSpecifier }
- * Import
- */
+type Import =
+  | ImportSpecifier
+  | ImportDefaultSpecifier
+  | ImportNamespaceSpecifier;
 
-/**
- * @typedef {object} FormattingContext
- * @property {string} newLine
- */
+interface FormattingContext {
+  newLine: string;
+}
 
-/** @type {JSRuleDefinition} */
-export default {
-  meta: { fixable: 'code' },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      ImportDeclaration(
-        node)
-      {
-        const newLine =
-          context.sourceCode.text.includes('\r\n')
-            ? '\r\n'
-            : '\n';
-
-        const formattingContext =
-          { newLine };
-
-        const sourceCode =
-          context.sourceCode.getText(node);
-
-        const replacement =
-          formatImportNode(
-            node,
-            context,
-            formattingContext);
-
-        if (sourceCode === replacement) {
-          return;
-        }
-
-        context.report(
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { fixable: 'code' },
+    create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        { ImportDeclaration(
+              node: ImportDeclaration
+            ): void
           {
-            node,
-            message: 'Use asljs import style.',
-            fix(fixer) {
-              return fixer.replaceText(
-                node,
-                replacement);
-            }
-          });
-      }
-    };
-  }
-};
+            const newLine =
+              context.sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-/**
- *
- * @param {ImportDeclaration} node
- * @param {RuleContext} context
- * @param {FormattingContext} formattingContext
- * @returns {string}
- */
+            const formattingContext =
+              { newLine };
+
+            const sourceCode =
+              context.sourceCode.getText(node);
+
+            const replacement =
+              formatImportNode(
+                node,
+                context,
+                formattingContext);
+
+            if (sourceCode === replacement) {
+              return;
+            }
+
+            context.report(
+              { node,
+                message: 'Use asljs import style.',
+                fix(
+                    fixer: Rule.RuleFixer
+                  ): Rule.Fix
+                {
+                  return fixer.replaceText(
+                    node,
+                    replacement);
+                } });
+          }
+        };
+
+      return listener;
+    }
+  };
+
+export default ruleDefinition;
+
 function formatImportNode(
-  node,
-  context,
-  formattingContext)
+    node: ImportDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     [ 'import ' ];
@@ -160,15 +132,10 @@ function formatImportNode(
   return code.join('');
 }
 
-/**
- *
- * @param {Import[]} specifiers
- * @param {number} startAt
- * @returns {ImportSpecifier[]}
- */
 function getImportSpecifierGroup(
-  specifiers,
-  startAt)
+    specifiers: Import[],
+    startAt: number
+  ): ImportSpecifier[]
 {
   const group = [];
 
@@ -189,15 +156,10 @@ function getImportSpecifierGroup(
   return group;
 }
 
-/**
- *
- * @param {ImportSpecifier[]} importSpecifierGroup
- * @param {FormattingContext} formattingContext
- * @returns {string}
- */
 function formatImportSpecifierGroup(
-  importSpecifierGroup,
-  formattingContext)
+    importSpecifierGroup: ImportSpecifier[],
+    formattingContext: FormattingContext
+  ): string
 {
   const code = [];
 
@@ -216,12 +178,20 @@ function formatImportSpecifierGroup(
       code.push('         ');
     }
 
-    if (
-      specifier.importKind === 'type'
-      || specifier.parent.importKind === 'type')
-    {
-      code.push(
-        'type ');
+    const importKind =
+      (specifier as { importKind?: string }).importKind;
+
+    const parent =
+      (specifier as { parent?: any }).parent;
+
+    if (importKind === 'type') {
+      if (
+        parent.type === 'ImportDeclaration'
+        && parent.importKind === 'type')
+      {
+        code.push(
+          'type ');
+      }
     }
 
     if (specifier.imported.type === 'Identifier') {
@@ -254,14 +224,10 @@ function formatImportSpecifierGroup(
   return code.join('');
 }
 
-/**
- * @param {Literal} source
- * @param {FormattingContext} formattingContext
- * @returns {string}
- */
 function formatSource(
-  source,
-  formattingContext)
+    source: Literal,
+    formattingContext: FormattingContext
+  ): string
 {
   return formattingContext.newLine
     + '  from '
@@ -272,11 +238,10 @@ function formatSource(
 /**
  * Formats `ImportDefaultSpecifier` and `ImportNamespaceSpecifier`.
  * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
- *
- * @param {Import} specifier
  */
 function formatSpecifier(
-  specifier)
+    specifier: Import
+  ): string
 {
   switch (specifier.type) {
     case 'ImportDefaultSpecifier':

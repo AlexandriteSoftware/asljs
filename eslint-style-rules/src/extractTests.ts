@@ -6,12 +6,16 @@ import assert
   from 'node:assert/strict';
 import { readFile }
   from 'node:fs/promises';
-import { marked }
+import { marked,
+         type Tokens }
   from 'marked';
+import { ESLint }
+  from 'eslint';
 
 export async function addRuleTestsFromMarkdown(
-  filePath,
-  eslint)
+    filePath: string,
+    eslint: ESLint
+  ): Promise<void>
 {
   const fileName =
     path.basename(filePath);
@@ -45,7 +49,8 @@ export async function addRuleTestsFromMarkdown(
 }
 
 export async function extractTests(
-  filePath)
+    filePath: string
+  ): Promise<{ source: string; expected: string; tags: string[] }[]>
 {
   const markdown =
     await readFile(
@@ -90,11 +95,11 @@ export async function extractTests(
       continue;
     }
 
-    const tags =
-      token.lang.split(/\s+/);
-
     const code =
-      tokens[index];
+      token as Tokens.Code;
+
+    const tags =
+      (code.lang ?? '').split(/\s+/);
 
     const parts =
       code.text.split(

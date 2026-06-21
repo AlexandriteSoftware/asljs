@@ -1,127 +1,96 @@
-/**
- * @typedef
- *   { import('eslint')
- *       .JSRuleDefinition }
- *   JSRuleDefinition
- * @typedef
- *     { import('eslint')
- *        .Rule.RuleListener }
- *  RuleListener
- * @typedef
- *   { import('eslint')
- *       .Rule.RuleContext }
- *  RuleContext
- * @typedef
- *   { import('eslint')
- *       .SourceCode }
- *   SourceCode
- * @typedef
- *   { import('estree')
- *       .Expression }
- *   Expression
- * @typedef
- *   { import('estree')
- *       .VariableDeclarator }
- *   VariableDeclarator
- * @typedef
- *   { import('estree')
- *       .Identifier }
- *   Identifier
- * @typedef
- *   { import('estree')
- *       .Literal }
- *   Literal
- * @typedef
- *   { import('estree')
- *       .ObjectExpression }
- *   ObjectExpression
- * @typedef
- *   { import('estree')
- *       .ArrayExpression }
- *   ArrayExpression
- * @typedef
- *   { import('estree')
- *       .UnaryExpression }
- *   UnaryExpression
- */
+import { type JSRuleDefinition,
+         type SourceCode,
+         type Rule,
+         type AST }
+  from 'eslint';
+import { type RuleDefinition,
+         type RuleDefinitionTypeOptions }
+  from '@eslint/core';
+import { type Expression,
+         type VariableDeclarator,
+         type Identifier,
+         type Literal,
+         type ObjectExpression,
+         type ArrayExpression,
+         type UnaryExpression }
+  from 'estree';
 
-/**
- * @typedef {object} FormattingContext
- * @property {string} newLine
- */
+interface FormattingContext {
+  newLine: string;
+}
 
 const LONG_IDENTIFIER_LENGTH = 15;
 
-/** @type {JSRuleDefinition} */
-export default {
-  meta:
-    { type: 'layout',
-      fixable: 'code',
-      schema: [] },
-  create(
-    context)
-  {
-    /** @type {RuleListener} */
-    return {
-      VariableDeclarator(
-        node)
-      {
-        if (!node.init) {
-          return;
-        }
+const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create(
+        context: Rule.RuleContext
+      ): Rule.RuleListener
+    {
+      const listener: Rule.RuleListener =
+        {
+          VariableDeclarator(
+              node: VariableDeclarator
+            ): void
+          {
+            if (!node.init) {
+              return;
+            }
 
-        const correctLayout =
-          checkLayout(
-            node,
-            context);
-
-        if (correctLayout) {
-          return;
-        }
-
-        context.report(
-          { node,
-            message:
-              'Use asljs variable declaration style.',
-            fix(
-              fixer)
-            {
-              const sourceCode =
-                context.sourceCode;
-
-              const newLine =
-                sourceCode.text.includes('\r\n')
-                  ? '\r\n'
-                  : '\n';
-
-              const formattingContext =
-                { newLine };
-
-              const replacement =
-                buildVariableDeclarator(
-                  node,
-                  sourceCode,
-                  formattingContext);
-
-              return fixer.replaceText(
+            const correctLayout =
+              checkLayout(
                 node,
-                replacement);
-            },
-          });
-      },
-    };
-  },
-};
+                context);
 
-/**
- * 
- * @param {VariableDeclarator} node 
- * @param {RuleContext} context 
- * @returns {boolean}
- */
+            if (correctLayout) {
+              return;
+            }
+
+            context.report(
+              { node,
+                message:
+                  'Use asljs variable declaration style.',
+                fix(
+                  fixer)
+                {
+                  const sourceCode =
+                    context.sourceCode;
+
+                  const newLine =
+                    sourceCode.text.includes('\r\n')
+                      ? '\r\n'
+                      : '\n';
+
+                  const formattingContext =
+                    { newLine };
+
+                  const replacement =
+                    buildVariableDeclarator(
+                      node,
+                      sourceCode,
+                      formattingContext);
+
+                  return fixer.replaceText(
+                    node,
+                    replacement);
+                },
+              });
+          }
+        };
+
+      return listener;
+    }
+  };
+
+export default ruleDefinition;
+
 function checkLayout(
-  node,
-  context)
+    node: VariableDeclarator,
+    context: Rule.RuleContext
+  ): boolean
 {
   const nodeInitialiser =
     node.init;
@@ -166,12 +135,9 @@ function checkLayout(
          < initialiserLocation.start.line;
 }
 
-/**
- * @param {Expression} initialiser
- * @returns {boolean}
- */
 function initialiserIsShortEnoughToStayOnSameLine(
-  initialiser)
+    initialiser: Expression
+  ): boolean
 {
   if (initialiser.type === 'Identifier') {
     const identifier =
@@ -226,9 +192,10 @@ function initialiserIsShortEnoughToStayOnSameLine(
  * @returns {string}
  */
 function buildVariableDeclarator(
-  node,
-  sourceCode,
-  formattingContext)
+    node: VariableDeclarator,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     [ ];
@@ -275,14 +242,10 @@ function buildVariableDeclarator(
   return code.join('');
 }
 
-/**
- * @param {SourceCode} sourceCode
- * @param {VariableDeclarator} node
- * @returns {string}
- */
 function getIndentation(
-  sourceCode,
-  node)
+  sourceCode: SourceCode,
+  node: VariableDeclarator
+): string
 {
   const nodeInit =
     node.init;

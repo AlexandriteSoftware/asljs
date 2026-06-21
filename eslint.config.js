@@ -5,17 +5,17 @@ import tsParser
 import tseslint
   from 'typescript-eslint';
 import jsImportStyleRule
-  from './common/eslint-js-style-rules/import.js';
+  from './eslint-style-rules/src/js-style-rules/import.js';
 import jsFunctionDeclarationStyleRule
-  from './common/eslint-js-style-rules/function-declaration.js';
+  from './eslint-style-rules/src/js-style-rules/function-declaration.js';
 import jsCallExpressionStyleRule
-  from './common/eslint-js-style-rules/call-expression.js';
+  from './eslint-style-rules/src/js-style-rules/call-expression.js';
 import jsVariableDeclarationStyleRule
-  from './common/eslint-js-style-rules/variable-declaration.js';
+  from './eslint-style-rules/src/js-style-rules/variable-declaration.js';
 import jsStatementSpacingStyleRule
-  from './common/eslint-js-style-rules/statement-spacing.js';
+  from './eslint-style-rules/src/js-style-rules/statement-spacing.js';
 import tsImportStyleRule
-  from './common/eslint-ts-style-rules/import.js';
+  from './eslint-style-rules/src/ts-style-rules/import.js';
 
 /**
  * @typedef
@@ -29,7 +29,7 @@ const ignores =
   { ignores:
       [ '**/dist/**',
         '**/.tests/**',
-        'node_modules/**' ] };
+        '**/node_modules/**' ] };
 
 /** @type {Config} */
 const typescriptConfig =

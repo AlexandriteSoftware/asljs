@@ -4,24 +4,27 @@ import assert
   from 'node:assert/strict';
 import { ESLint }
   from 'eslint';
+import tsParser
+  from '@typescript-eslint/parser';
 import { addRuleTestsFromMarkdown }
-  from './../extractTests.js';
+  from '../extractTests.js';
 import rule
-  from './function-declaration.js';
+  from './import.js';
 
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
       fix: true,
       overrideConfig:
-        { plugins: { asljs: { rules: { 'function-declaration-style': rule } } },
-          rules: { 'asljs/function-declaration-style': 'error' } } });
+        { languageOptions: { parser: tsParser },
+          plugins: { asljs: { rules: { 'import-style': rule } } },
+          rules: { 'asljs/import-style': 'error' } } });
 
 test(
-  'function-declaration: \\r\\n line endings',
+  'import: \\r\\n line endings',
   async () => {
     const code =
-      'function test(\r\n  param1,\r\n  param2)\r\n{\r\n}';
+      'import { readFile }\r\n  from \'node:fs/promises\';';
 
     const [ result ] =
       await eslint.lintText(code);
@@ -32,5 +35,5 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  'function-declaration.md',
+  'import.md',
   eslint);

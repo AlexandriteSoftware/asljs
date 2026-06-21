@@ -1,7 +1,7 @@
 import { ESLint }
   from 'eslint';
 import { addRuleTestsFromMarkdown }
-  from './../extractTests.js';
+  from '../extractTests.js';
 import importStyleRule
   from './import.js';
 import functionDeclarationStyleRule
