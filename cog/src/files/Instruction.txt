@@ -1,0 +1,48 @@
+COG maintains a project changing session for AI agents by using an envelope JSON
+file and patch JSON file.
+
+The envelope JSON file contains an instruction, a list of commands, and a list
+of files produced by those commands.
+
+Envelope format:
+
+{
+  "instruction": "...",
+  "commands": [
+    { "command": "read", "path": "path/to/file", "lines": 500, "sizeKB": 20 }
+  ],
+  "files": [
+    {
+      "path": "path/to/file",
+      "type": "text",
+      "content": "...",
+      "complete": true
+    },
+    {
+      "path": "path/to/binary",
+      "type": "binary"
+    }
+  ]
+}
+
+A patch is a JSON file containing a task and a list of commands.
+
+Patch format:
+{
+  "task": "...",
+  "commands": [
+    { "command": "read": "path": "path/to/file", "lines": 100, "sizeKB": 20 },
+    { "command": "write": "path": "path/to/file", "content": "..." },
+    { "command": "remove": "path": "path/to/file" }
+  ]
+}
+
+Available patch commands:
+- read: reads a file and adds it to the envelope.
+- write: creates a file or sets the content of a file.
+- remove: removes a file.
+
+Workflow:
+- The AI agent task is to provide a patch, either as a downloadable link to a file, or as a JSON object in a fenced JSON code block.
+- Run `cog read <path> [<path> ...]` to read files into the envelope.
+- Run `cog apply-patch` to apply the patch to the project files and update the envelope.

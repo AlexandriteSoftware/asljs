@@ -1,0 +1,50 @@
+{
+  "name": "asljs-cog",
+  "version": "0.1.0",
+  "description": "Context building library for AI agents.",
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "keywords": [
+    "ai",
+    "javascript",
+    "js"
+  ],
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "license": "MIT",
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "part": "bin/cog.js"
+  },
+  "scripts": {
+    "build": "npx tsc -p tsconfig.build.json",
+    "build:dist": "npx tsc -p tsconfig.dist.json",
+    "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
+    "test": "npm run build && node --test build/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "commander": "^15.0.0"
+  }
+}

@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "app-builder",
+    "cog",
     "components",
     "dali",
     "data-binding",
