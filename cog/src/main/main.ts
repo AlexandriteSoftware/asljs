@@ -1,3 +1,5 @@
+import { spawn }
+  from 'node:child_process';
 import { Command }
   from 'commander';
 import { dirname, join }
@@ -7,25 +9,28 @@ import { existsSync }
 import { mkdir,
          writeFile }
   from 'node:fs/promises';
-import { loadEnvelope,
+import { type Envelope,
+         type EnvelopeFile,
+         loadEnvelope,
          saveEnvelope }
-  from './model/envelope.js';
+  from '../model/envelope.js';
 import { BackupRollbackFeed,
          type RollbackFeed }
-  from './model/rollback.js';
+  from '../model/rollback.js';
 import { loadPatch }
-  from './model/patch.js';
+  from '../model/patch.js';
 import { Read, read }
-  from './commands/read.js';
+  from '../commands/read.js';
 import { Write, write }
-  from './commands/write.js';
+  from '../commands/write.js';
 import { Remove, remove }
-  from './commands/remove.js';
+  from '../commands/remove.js';
 
 interface MainOptions
 {
   envelopePath?: string;
   patchPath?: string;
+  patchVerifyCmd?: string;
 }
 
 interface NewEnvelope
@@ -112,6 +117,24 @@ export async function main(
 
   program
     .command(
+      'list')
+    .description(
+      'print a markdown table of envelope files')
+    .action(
+      async () => {
+        const options =
+          program.opts<{
+            envelope?: string;
+          }>();
+
+        await listCmd(
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope) });
+      });
+
+  program
+    .command(
       'update')
     .description(
       'refresh envelope files using their update commands')
@@ -151,8 +174,15 @@ export async function main(
       'apply-patch')
     .description(
       'apply the selected patch to the selected envelope')
+    .option(
+      '--patch-verify-cmd <command>',
+      'command used to verify the applied patch')
     .action(
-      async () => {
+      async (
+          applyPatchOptions: {
+            patchVerifyCmd?: string;
+          }
+        ) => {
         const options =
           program.opts<{
             envelope?: string;
@@ -165,14 +195,17 @@ export async function main(
                 options.envelope),
             patchPath:
               resolvePatchPath(
-                options.patch) });
+                options.patch),
+            patchVerifyCmd:
+              applyPatchOptions.patchVerifyCmd
+              ?? process.env.COG_PATCH_VERIFY_CMD });
       });
 
   program
     .action(
       () => {
         throw new Error(
-          'Usage: cog <read|update|restore|apply-patch> [args...]');
+          'Usage: cog <read|list|update|restore|apply-patch> [args...]');
       });
 
   await program.parseAsync(
@@ -329,6 +362,74 @@ function parsePositiveInteger(
   return parsed;
 }
 
+async function listCmd(
+    options: MainOptions = {}
+  ): Promise<void>
+{
+  const envelopePath =
+    resolveEnvelopePath(
+      options.envelopePath);
+
+  await ensureEnvelopeFile(
+    envelopePath);
+
+  const envelope =
+    await loadEnvelope(
+      envelopePath);
+
+  process.stdout.write(
+    formatFileList(
+      envelope));
+}
+
+export function formatFileList(
+    envelope: Envelope
+  ): string
+{
+  const lines =
+    [
+      '| Location | Complete | Type |',
+      '| --- | --- | --- |',
+      ...envelope.files
+        .map(
+          file =>
+            `| ${escapeMarkdownTableCell(
+              file.path)} | ${formatComplete(
+              file)} | ${escapeMarkdownTableCell(
+              file.type)} |`)
+    ];
+
+  return `${lines.join(
+    '\n')}\n`;
+}
+
+function formatComplete(
+    file: EnvelopeFile
+  ): string
+{
+  return file.complete === undefined
+    ? ''
+    : file.complete
+      ? 'yes'
+      : 'no';
+}
+
+function escapeMarkdownTableCell(
+    value: string
+  ): string
+{
+  return value
+    .replace(
+      /\\/g,
+      '\\\\')
+    .replace(
+      /\|/g,
+      '\\|')
+    .replace(
+      /\r?\n/g,
+      ' ');
+}
+
 async function updateCmd(
     options: MainOptions = {}
   ): Promise<void>
@@ -439,6 +540,9 @@ async function applyPatch(
         rollbackFeed);
     }
 
+    await verifyPatch(
+      options.patchVerifyCmd);
+
     await updateEnvelopeFiles(
       envelope);
 
@@ -480,6 +584,47 @@ async function applyPatchCommand(
     throw new Error(
       `Unknown patch command ${command.command}`);
   }
+}
+
+async function verifyPatch(
+    patchVerifyCmd?: string
+  ): Promise<void>
+{
+  if (patchVerifyCmd === undefined
+      || patchVerifyCmd.trim() === '') {
+    return;
+  }
+
+  const exitCode =
+    await runCommand(
+      patchVerifyCmd);
+
+  if (exitCode !== 0) {
+    throw new Error(
+      `Patch verify command failed with exit code ${exitCode}`);
+  }
+}
+
+async function runCommand(
+    command: string
+  ): Promise<number | null>
+{
+  return new Promise(
+    (resolve, reject) => {
+      const child =
+        spawn(
+          command,
+          { shell: true,
+            stdio: 'inherit' });
+
+      child.on(
+        'error',
+        reject);
+
+      child.on(
+        'close',
+        resolve);
+    });
 }
 
 function getRequiredEnv(

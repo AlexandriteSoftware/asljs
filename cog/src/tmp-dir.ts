@@ -4,15 +4,52 @@ import os
   from 'node:os';
 import path
   from 'node:path';
+import { Logger }
+  from './logger.js';
 
-export interface Logger
-{
-  scope: (
-    properties: Record<string, unknown>
-  ) => Logger;
-  trace: (...args: unknown[]) => void;
-}
+let instanceCounter = 0;
 
+/**
+ * Represents a temporary directory that is cleaned up when no longer needed.
+ * 
+ * Example: basic usage
+ * 
+ * ```ts
+ * const tmpDir = new TmpDir(logger);
+ * 
+ * tmpDir.writeText(
+ *   'example.txt',
+ *   'Hello, world!');
+ * 
+ * const content =
+ *   tmpDir.readText('example.txt');
+ * 
+ * // Outputs: Hello, world!
+ * console.log(content); 
+ * 
+ * // Cleans up the temporary directory
+ * tmpDir.cleanup();
+ * ```
+ * 
+ * Example: In tests
+ * 
+ * ```ts
+ * import test from 'node:test';
+ * 
+ * test(
+ *   'example test',
+ *   ctx => {
+ *     const tmpDir = new TmpDir(logger);
+ * 
+ *     test.after(
+ *       () => {
+ *         tmpDir.cleanup();
+ *       });
+ * 
+ *     ...
+ *   });
+ * ```
+ */
 export class TmpDir
 {
   readonly logger: Logger;
@@ -23,10 +60,12 @@ export class TmpDir
       logger: Logger
     )
   {
+    const instanceId =
+      `TmpDir(${instanceCounter++})`;
+
     this.logger =
       logger.scope(
-        { instanceId:
-            'TmpDir' });
+        { instanceId });
 
     this.path =
       fs.mkdtempSync(
@@ -35,29 +74,21 @@ export class TmpDir
           'cog-test-'));
 
     this.logger.trace(
-      `constructor() { this.path=${this.path} }`);
+      'constructor() { this.path=%s }',
+      this.path);
 
-    this.deleted =
-      false;
+    this.deleted = false;
   }
 
   resolve(
       ...segments: string[]
     ): string
   {
-    const segmentsAreValid =
-      segments.every(
-        item =>
-          !path.isAbsolute(
-            item));
+    this.logger.trace(
+      'resolve(%s)',
+      segments.join(', '));
 
-    if (!segmentsAreValid) {
-      throw new Error(
-        'All path segments must be relative');
-    }
-
-    return path.resolve(
-      this.path,
+    return this._resolve(
       ...segments);
   }
 
@@ -66,10 +97,11 @@ export class TmpDir
     ): void
   {
     this.logger.trace(
-      `mkdir(${directoryPath})`);
+      'mkdir(%s)',
+      directoryPath);
 
     const resolvedDirectoryPath =
-      this.resolve(
+      this._resolve(
         directoryPath);
 
     fs.mkdirSync(
@@ -83,10 +115,11 @@ export class TmpDir
     ): void
   {
     this.logger.trace(
-      `writeText(${filePath}, ...)`);
+      'writeText(%s, ...)',
+      filePath);
 
     const resolvedFilePath =
-      this.resolve(
+      this._resolve(
         filePath);
 
     fs.mkdirSync(
@@ -106,7 +139,8 @@ export class TmpDir
     ): void
   {
     this.logger.trace(
-      `write(${filePath}, ...)`);
+      'write(%s, ...)',
+      filePath);
 
     const resolvedFilePath =
       this.resolve(
@@ -127,10 +161,11 @@ export class TmpDir
     ): string
   {
     this.logger.trace(
-      `readText(${filePath})`);
+      'readText(%s)',
+      filePath);
 
     const resolvedFilePath =
-      this.resolve(
+      this._resolve(
         filePath);
 
     return fs.readFileSync(
@@ -143,10 +178,11 @@ export class TmpDir
     ): fs.Stats
   {
     this.logger.trace(
-      `stat(${filePath})`);
+      'stat(%s)',
+      filePath);
 
     const resolvedPath =
-      this.resolve(
+      this._resolve(
         filePath);
 
     return fs.statSync(
@@ -164,7 +200,64 @@ export class TmpDir
       { recursive: true,
         force: true });
 
-    this.deleted =
-      true;
+    this.deleted = true;
   }
+
+  isPathContained(
+      filePath: string
+    ): boolean
+  {
+    this.logger.trace(
+      'isPathContained(%s)',
+      filePath);
+
+    if (!path.isAbsolute(filePath)) {
+      throw new Error(
+        'filePath must be absolute');
+    }
+
+    const normalised =
+      path.normalize(
+        filePath);
+
+    if (normalised === filePath) {
+      return true;
+    }
+
+    if (
+      normalised.startsWith(
+        this.path + path.sep))
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  _resolve(
+      ...segments: string[]
+    ): string
+  {
+    const segmentsAreValid =
+      segments.every(
+        item =>
+          !path.isAbsolute(item));
+
+    if (!segmentsAreValid) {
+      throw new Error(
+        'All path segments must be relative');
+    }
+
+    const resolvedPath =
+      path.resolve(
+        this.path,
+        ...segments);
+
+    if (!this.isPathContained(resolvedPath)) {
+      throw new Error(
+        'Resolved path is outside of the temporary directory');
+    }
+
+    return resolvedPath;
+  }  
 }

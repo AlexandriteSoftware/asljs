@@ -27,6 +27,7 @@
     "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
     "lint": "",
     "lint:fix": "",
+    "verify-patch": "npm run build && npm run test",
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
     "prepublishOnly": "npm run build",
     "postpublish": "node ../toolkit.js tag-commit-with-release-id",

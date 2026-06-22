@@ -2,31 +2,6 @@
 
 This document is an implementation checklist for transforming the Milestone 1 COG CLI into the application described by `docs/Requirements.m2.md`.
 
-## Step 2b: Update `apply-patch` to be transactional and durable
-
-"apply-patch" should be transactional.
-
-On any failure during applying a patch, all changes must be rolled back and
-the previous state restored.
-
-To support this:
-
-- start applying by creating the `backup.json`.
-- apply patch first to the local files, saving previous file state in
-  `backup.json`.
-- save file state before updating the file.
-- when rollback, replay back updates from last to first.
-- when all successful, delete `backup.json`.
-
-After patching is complete, run update commands for the files in the envelope.
-
-If the process crashes or is killed, the next run of `apply-patch` should detect
-the `backup.json` and stop proceeding futher.
-
-Add `restore` command that restores the files from backup and removes `backup.json`.
-
-To complete backup user should just delete this file.
-
 ## Step 3: Add `--patch-verify-cmd` command line argument
 
 Add an `apply-patch`-specific `--patch-verify-cmd <command>` argument.
@@ -37,7 +12,7 @@ The verify command must be executed in the current working directory after patch
 
 If the command exits with code `0`, the patch is valid.
 
-If the command exits with any non-zero code, the patch is invalid and `apply-patch` must fail atomically.
+If the command exits with any non-zero code, the patch is invalid and `apply-patch` must fail.
 
 ## Step 4: Extend the envelope schema with metadata fields
 

@@ -31,6 +31,7 @@ cog <command> [args...]
 Available commands:
 
 - `read <path> [arguments]` reads matching files and adds them to the envelope.
+- `list` prints a markdown table of envelope files.
 - `update` refreshes envelope files using their stored update commands.
 - `restore` restores project files from backup.
 - `apply-patch` applies the current patch.
@@ -46,6 +47,11 @@ Options:
 - `--read-to-end` if file is a text file, read to the end. Default is false.
 - `--with-binary-b64` if file is a binary file, read it as base64. Default is false.
 - `--exclude <path>` excludes a file, folder, or glob pattern. Can be used more than once.
+
+### `list`
+
+Prints a markdown table of envelope files with columns `Location`, `Complete`,
+and `Type`.
 
 ### `update`
 
@@ -68,6 +74,11 @@ record its own rollback state before changing local files.
 If a command fails, COG rolls the feed back from last entry to first and removes
 `backup.json`. If `backup.json` already exists, the command stops so
 the previous interrupted patch can be restored or explicitly completed.
+
+`apply-patch` accepts `--patch-verify-cmd <command>`. The command runs in the
+current working directory after patch commands are applied and before the patch
+is accepted. It takes precedence over `COG_PATCH_VERIFY_CMD`. Exit code `0`
+accepts the patch; any non-zero exit code fails the patch and rolls back.
 
 After the patch succeeds, COG refreshes envelope files using their stored update
 commands.
@@ -143,23 +154,3 @@ import * as cog from 'asljs-cog';
 ```
 
 ## Development
-
-Build the package before publishing:
-
-```bash
-npm run build
-```
-
-Run tests:
-
-```bash
-npm test
-```
-
-Run type checking:
-
-```bash
-npm run typecheck
-```
-
-[#1]: https://github.com/AlexandriteSoftware/asljs

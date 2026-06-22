@@ -9,7 +9,7 @@ import { read }
 import { TmpDir }
   from '../tmp-dir.js';
 import { createLogger }
-  from '../logging.js';
+  from '../logger.js';
 import { type Envelope }
   from '../model/envelope.js';
 

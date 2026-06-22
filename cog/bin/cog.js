@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { main }
-  from '../dist/main.js';
+  from '../dist/main/main.js';
 
 main()
   .catch(

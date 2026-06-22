@@ -89,9 +89,13 @@ The command must:
 5. Let commands save rollback state before mutating local files.
 6. On any failure, restore backup entries from last to first, delete
    `backup.json`, and rethrow the error.
-7. After patching is complete, run update commands for files in the envelope.
-8. Save the envelope.
-9. Delete `backup.json`.
+7. Run the patch verification command, if configured.
+8. If verification fails, restore backup entries from last to first, delete
+   `backup.json`, and rethrow the error.
+9. After patching is complete and verified, run update commands for files in the
+   envelope.
+10. Save the envelope.
+11. Delete `backup.json`.
 
 ## CLI
 
@@ -99,10 +103,56 @@ The command must:
 
 - `read <path> [arguments]`
   reads matching files and adds them to the envelope.
+- `list`
+  prints a markdown table of envelope files with columns `Location`,
+  `Complete`, and `Type`.
 - `update`
   refreshes envelope files by running each file's stored update command.
 - `restore`
   restores files from `backup.json` and removes `backup.json`.
-- `apply-patch`
+- `apply-patch [--patch-verify-cmd <command>]`
   transactionally applies the patch. If `backup.json` exists, it stops before
-  applying anything.
+  applying anything. `--patch-verify-cmd` specifies the command used to verify
+  the applied patch and takes precedence over `COG_PATCH_VERIFY_CMD`.
+
+
+## Patch verification
+
+`apply-patch` supports an apply-patch-specific `--patch-verify-cmd <command>`
+argument.
+
+The verify command is selected in this order:
+
+1. `--patch-verify-cmd <command>`
+2. `COG_PATCH_VERIFY_CMD`
+3. no verification command
+
+The verify command runs in the current working directory after patch commands
+are applied and before the patch is accepted.
+
+If the command exits with code `0`, the patch is valid.
+
+If the command exits with any non-zero code, the patch is invalid and
+`apply-patch` must fail. Since verification happens before the patch is accepted,
+verification failure must use the normal transactional rollback path.
+
+
+## List command
+
+`list` prints the files currently stored in the envelope as a markdown table.
+
+The table columns are:
+
+- `Location` - the envelope file path.
+- `Complete` - `yes` when `complete` is `true`, `no` when `complete` is `false`,
+  and empty when `complete` is omitted.
+- `Type` - the envelope file type.
+
+Example output:
+
+```md
+| Location | Complete | Type |
+| --- | --- | --- |
+| src/index.ts | yes | text |
+| assets/logo.png |  | binary |
+```
