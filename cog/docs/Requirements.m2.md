@@ -3,198 +3,106 @@
 COG is a command line tool that maintains project changing session for
 AI agents.
 
-It operates by creating and maintaining an envelope file, and applying patches
-to it.
+It operates by creating and maintaining an envelope file, refreshing envelope
+file snapshots, and applying patches to project files.
 
 ## Envelope
 
-Envelope is a JSON file that contains a list of commands and a list of
-files, produced by these commands.
+Envelope is a JSON file that contains a list of files produced by read
+commands. It does not contain a command log.
 
-Envelope file is specified either by `COG_ENVELOPE_PATH` environment variable or
-by `--envelope` command line argument.
+## File update commands
 
-Envelope file has the following structure:
+Each file may have an `update` property. This property stores a read command
+that refreshes the file content.
+
+## Backup and rollback feed
+
+`apply-patch` uses `backup.json` in the envelope directory to make patch
+application transactional. The backup file is managed through a rollback feed.
+
+Backup format:
 
 ```json
-{ "id": "unique-id",
-  "date": "2024-06-01T12:00:00Z",
-  "instruction": "...",
-  "plan": "...",
-  "task": "...",
-  "commands":
-    [ { "command": "read",
-        "patterns": [ "path/to/file" ],
-        "lines": 100,
-        "sizeKB": 20 },
-      { "command": "read",
-        "path": "path/to/folder" } ],
-  "patch":
-    { "commands":
-        [ { "command": "read",
-            "patterns": [ "path/to/file" ],
-            "lines": 100,
-            "sizeKB": 20 },
-          { "command": "write",
-            "path": "path/to/folder",
-            "content": "..." } ],
-      "error": "error message" },
-  "files":
-    [ { "path": "path/to/file",
-        "type": "text",
-        "content": "...",
-        "complete": true },
-      { "path": "path/to/binary",
-        "type": "binary" } ] }
+{
+  "files": [
+    {
+      "path": "path/to/file",
+      "existed": true,
+      "content": "base64-encoded previous file content"
+    },
+    {
+      "path": "path/to/new-file",
+      "existed": false
+    }
+  ]
+}
 ```
 
-The `instruction` field is populated from the instruction file,
-[src/files/Instruction.txt][1].
+A file state is saved to backup before every update or removal. If the same file
+is updated multiple times, each previous state is appended. Rollback replays the
+backup from last to first.
 
-[1]: <../src/files/Instruction.txt>
+Rollback responsibility belongs to command modules:
+
+- Command functions accept a rollback feed.
+- Commands that mutate local files must save rollback state to the feed before
+  mutating files.
+- Each command file exports a rollback function for the command.
+- `read` rollback is a no-op because read does not mutate local project files.
+- `write` rollback restores the latest file state from the feed.
+- `remove` rollback restores the latest file state from the feed.
+
+`main.ts` owns rollback feed lifecycle and command dispatch only. It must not
+contain command-specific file backup logic.
+
+If the process crashes or is killed and `backup.json` remains, the next
+`apply-patch` must stop before applying anything. The user can run `restore` to
+restore the backup and remove `backup.json`, or manually delete `backup.json` to
+complete the backup without restoring.
 
 ## Patch
 
 Patch is a series of commands that are applied to the envelope.
 
-Patch file is specified either by `COG_PATCH_PATH` environment variable or by
-`--patch` command line argument.
-
 Commands:
 
-- `read`: reads files and add them to the envelope.
-- `write`: creates a file or sets content of a file
-- `remove`: removes a file
+- `read`: reads files and adds them to the envelope.
+- `write`: creates a file or sets content of a file.
+- `remove`: removes a file.
 - `replace`: replaces part of the file, specified by search, with new content,
   specified by replacement.
 - `exec`: executes a command and writes its output to file, adds this file to
-  the envelope and sync commands.
+  the envelope.
 - `task`: sets the task field in the envelope.
-
-When patch is applied, it is applied as a whole, and if any command fails,
-the patch is not applied.
-
-It is saved to the envelope file as "patch" field with an error message.
-
-```json
-{ "commands":
-  [ { "command": "read",
-      "patterns": [ "path/to/file" ],
-      "lines": 100,
-      "sizeKB": 20 },
-    { "command": "write",
-      "path": "path/to/folder",
-      "content": "..." } ] }
-```
 
 ## Applying patch
 
-`apply-patch` command applies the patch to the files, run checks, and either
-succeeds or fails.
+`apply-patch` command applies the patch transactionally.
 
-If it fails, it saves the patch with an error message to the envelope and
-restores the files.
+The command must:
 
-If it succeeds, it updates the files in the envelope and removes the patch from
-the envelope.
-
-Command to verify the patch is specified by `--patch-verify-cmd` command line
-argument or by `COG_PATCH_VERIFY_CMD` environment variable.
-
-The command is executed in the current working directory, and it should return
-0 if the patch is valid, and non-zero if the patch is invalid.
-
-## Instruction
-
-Instruction should describe the envelope and patch formats, available commands,
-workflow.
-
-Some key points to include in the instruction:
-
-- When the envelope contains a patch, this means that the application of the
-  patch failed. Before proceeding with the task, try to re-create a patch
-  that can be applied successfully.
+1. Stop if `backup.json` already exists.
+2. Create a rollback feed backed by `backup.json`.
+3. Apply patch commands to local files and the in-memory envelope.
+4. Pass the rollback feed to each command.
+5. Let commands save rollback state before mutating local files.
+6. On any failure, restore backup entries from last to first, delete
+   `backup.json`, and rethrow the error.
+7. After patching is complete, run update commands for files in the envelope.
+8. Save the envelope.
+9. Delete `backup.json`.
 
 ## CLI
 
-`--envelope <path>` sets the path to the envelope. Overwrites env variable
-`COG_ENVELOPE_PATH`. Creates envelope file if it does not exist.
-
-`--patch <path>` sets the path to the patch. Overwrites env variable
-`COG_PATCH_PATH`. Shows an error if the patch file does not exist.
-
 `<command>` is a command to execute. It can be one of the following:
 
-- `read <path> [--lines N] [--sizeKb M] [--read-to-end] [--with-binary-b64]`
-  adds a read command to the envelope. Path can be a file, folder or glob.
-- `apply-patch` tries to apply the patch to the envelope. It if is failed, it
-  saves the patch with an error message to the envelope.
-
-Read arguments:
-
-- `--lines N` if file is a text file, only read first N lines. Optional, default
-  is 150.
-- `--sizeKb M` if file is a text file, only read first M kilobytes. Optional,
-  default is 15.
-- `--read-to-end` if file is a text file, read to the end. Optional, default is
-  false.
-- `--with-binary-b64` if file is a binary file, read it as base64. Optional,
-  default is false.
-
-## Commands
-
-### Read
-
-This command reads files and adds them to the envelope.
-
-Example:
-
-```json
-{ "command": "read",
-  "patterns": [ "path/to/file" ] }
-```
-
-Each pattern can be a file, folder or glob. The relative paths are resolved
-relative to the current working directory.
-
-- If read pattern is a path to a single file and the file exists, add it.
-- If read pattern is a path to a missing file, throw an error.
-- If read pattern is a folder, remove existing envelope files under it, then add
-  all files under it.
-- If read pattern is a glob, remove matching envelope files, then add matching
-  filesystem files.
-
-Optional properties:
-
-- `lines` - if file is a text file, only read first N lines. If omitted, there
-  is no limit.
-- `sizeKb` - if file is a text file, only read first M kilobytes. If omitted,
-  there is no limit.
-- `withBinary` - if file is a binary file, read it as base64. If omitted, binary
-  files added without content. Optional, default is false.
-
-### Write
-
-This command creates a file or sets content of a file.
-
-### Remove
-
-This command removes a file.
-
-### Replace
-
-This command replaces part of the file, specified by search, with new content,
-specified by replacement.
-
-If there are multiple matches, the command fails.
-
-### Exec
-
-This command executes a command and writes its output to file, adds this file to
-the envelope and sync commands.
-
-### Task
-
-This command sets the task field in the envelope. It is to keep the continuity
-of the task in the envelope, so that the AI agent can continue the task from
-where it left off.
+- `read <path> [arguments]`
+  reads matching files and adds them to the envelope.
+- `update`
+  refreshes envelope files by running each file's stored update command.
+- `restore`
+  restores files from `backup.json` and removes `backup.json`.
+- `apply-patch`
+  transactionally applies the patch. If `backup.json` exists, it stops before
+  applying anything.

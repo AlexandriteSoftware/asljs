@@ -6,3 +6,4 @@ node_modules
 build/
 envelope.json
 patch.json
+backup.json

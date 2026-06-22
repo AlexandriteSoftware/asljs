@@ -5,6 +5,8 @@ import path
 import { type Envelope,
          type Command }
   from '../model/envelope.js';
+import { type RollbackFeed }
+  from '../model/rollback.js';
 
 export interface Write
   extends Command
@@ -15,9 +17,13 @@ export interface Write
 
 export async function write(
     envelope: Envelope,
-    command: Write
+    command: Write,
+    rollbackFeed?: RollbackFeed
   ): Promise<void>
 {
+  await rollbackFeed?.saveFileState(
+    command.path);
+
   await fs.mkdir(
     path.dirname(
       command.path),
@@ -27,8 +33,11 @@ export async function write(
     command.path,
     command.content,
     'utf-8');
+}
 
-  envelope.commands
-    .push(
-      command);
+export async function rollbackWrite(
+    rollbackFeed: RollbackFeed
+  ): Promise<void>
+{
+  await rollbackFeed.rollbackLast();
 }

@@ -4,10 +4,11 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
+import { type Read }
+  from '../commands/read.js';
 
 export interface Envelope {
   instruction: string;
-  commands: Command[];
   files: EnvelopeFile[];
 }
 
@@ -20,6 +21,7 @@ export interface EnvelopeFile {
   type: 'text' | 'binary';
   content?: string;
   complete?: boolean;
+  update?: Read;
 }
 
 export async function loadEnvelope(
@@ -39,6 +41,10 @@ export async function loadEnvelope(
     const envelope =
       json as Envelope;
 
+    if ('commands' in envelope) {
+      delete (envelope as unknown as { commands?: unknown }).commands;
+    }
+
     return envelope;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
@@ -48,7 +54,6 @@ export async function loadEnvelope(
     return {
       instruction:
         await loadInstruction(),
-      commands: [],
       files: []
     };
   }

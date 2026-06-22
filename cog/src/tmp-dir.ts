@@ -1,73 +1,170 @@
-import { mkdtemp, rm }
-  from 'node:fs/promises';
-import { tmpdir }
+import fs
+  from 'node:fs';
+import os
   from 'node:os';
-import { join }
+import path
   from 'node:path';
 
-export interface SilentLogger
+export interface Logger
 {
-  debug: (...args: unknown[]) => void;
-  error: (...args: unknown[]) => void;
-  info: (...args: unknown[]) => void;
-  log: (...args: unknown[]) => void;
-  warn: (...args: unknown[]) => void;
+  scope: (
+    properties: Record<string, unknown>
+  ) => Logger;
+  trace: (...args: unknown[]) => void;
 }
 
-export const silentLogger: SilentLogger =
-  { debug: () => {},
-    error: () => {},
-    info: () => {},
-    log: () => {},
-    warn: () => {} };
-
-export async function makeTmpDir(
-    logger: SilentLogger = silentLogger
-  ): Promise<string>
+export class TmpDir
 {
-  logger.debug(
-    'creating temporary test directory');
+  readonly logger: Logger;
+  readonly path: string;
+  deleted: boolean;
 
-  return await mkdtemp(
-    join(
-      tmpdir(),
-      'cog-test-'));
-}
+  constructor(
+      logger: Logger
+    )
+  {
+    this.logger =
+      logger.scope(
+        { instanceId:
+            'TmpDir' });
 
-export async function removeTmpDir(
-    path: string,
-    logger: SilentLogger = silentLogger
-  ): Promise<void>
-{
-  logger.debug(
-    'removing temporary test directory',
-    path);
+    this.path =
+      fs.mkdtempSync(
+        path.join(
+          os.tmpdir(),
+          'cog-test-'));
 
-  await rm(
-    path,
-    { recursive: true,
-      force: true });
-}
+    this.logger.trace(
+      `constructor() { this.path=${this.path} }`);
 
-export async function withTmpDir<T>(
-    callback: (
-      path: string,
-      logger: SilentLogger
-    ) => Promise<T> | T,
-    logger: SilentLogger = silentLogger
-  ): Promise<T>
-{
-  const path =
-    await makeTmpDir(
-      logger);
+    this.deleted =
+      false;
+  }
 
-  try {
-    return await callback(
-      path,
-      logger);
-  } finally {
-    await removeTmpDir(
-      path,
-      logger);
+  resolve(
+      ...segments: string[]
+    ): string
+  {
+    const segmentsAreValid =
+      segments.every(
+        item =>
+          !path.isAbsolute(
+            item));
+
+    if (!segmentsAreValid) {
+      throw new Error(
+        'All path segments must be relative');
+    }
+
+    return path.resolve(
+      this.path,
+      ...segments);
+  }
+
+  mkdir(
+      directoryPath: string
+    ): void
+  {
+    this.logger.trace(
+      `mkdir(${directoryPath})`);
+
+    const resolvedDirectoryPath =
+      this.resolve(
+        directoryPath);
+
+    fs.mkdirSync(
+      resolvedDirectoryPath,
+      { recursive: true });
+  }
+
+  writeText(
+      filePath: string,
+      content: string
+    ): void
+  {
+    this.logger.trace(
+      `writeText(${filePath}, ...)`);
+
+    const resolvedFilePath =
+      this.resolve(
+        filePath);
+
+    fs.mkdirSync(
+      path.dirname(
+        resolvedFilePath),
+      { recursive: true });
+
+    fs.writeFileSync(
+      resolvedFilePath,
+      content,
+      'utf8');
+  }
+
+  write(
+      filePath: string,
+      content: string | NodeJS.ArrayBufferView
+    ): void
+  {
+    this.logger.trace(
+      `write(${filePath}, ...)`);
+
+    const resolvedFilePath =
+      this.resolve(
+        filePath);
+
+    fs.mkdirSync(
+      path.dirname(
+        resolvedFilePath),
+      { recursive: true });
+
+    fs.writeFileSync(
+      resolvedFilePath,
+      content);
+  }
+
+  readText(
+      filePath: string
+    ): string
+  {
+    this.logger.trace(
+      `readText(${filePath})`);
+
+    const resolvedFilePath =
+      this.resolve(
+        filePath);
+
+    return fs.readFileSync(
+      resolvedFilePath,
+      'utf8');
+  }
+
+  stat(
+      filePath: string
+    ): fs.Stats
+  {
+    this.logger.trace(
+      `stat(${filePath})`);
+
+    const resolvedPath =
+      this.resolve(
+        filePath);
+
+    return fs.statSync(
+      resolvedPath);
+  }
+
+  cleanup(
+    ): void
+  {
+    this.logger.trace(
+      'cleanup()');
+
+    fs.rmSync(
+      this.path,
+      { recursive: true,
+        force: true });
+
+    this.deleted =
+      true;
   }
 }

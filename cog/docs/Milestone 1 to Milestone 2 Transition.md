@@ -2,42 +2,34 @@
 
 This document is an implementation checklist for transforming the Milestone 1 COG CLI into the application described by `docs/Requirements.m2.md`.
 
-## Step 1: Add `--envelope` command line argument
+## Step 2b: Update `apply-patch` to be transactional and durable
 
-Add a global `--envelope <path>` command line argument.
+"apply-patch" should be transactional.
 
-It specifies the path to the envelope JSON file and takes precedence over the `COG_ENVELOPE_PATH` environment variable when both are set.
+On any failure during applying a patch, all changes must be rolled back and
+the previous state restored.
 
-If neither `--envelope` nor `COG_ENVELOPE_PATH` is provided, keep the existing error behavior unless the current implementation already has a default path.
+To support this:
 
-When the selected envelope file does not exist, create a new envelope file at that path.
+- start applying by creating the `backup.json`.
+- apply patch first to the local files, saving previous file state in
+  `backup.json`.
+- save file state before updating the file.
+- when rollback, replay back updates from last to first.
+- when all successful, delete `backup.json`.
 
-Use "commander" npm package to implement the command line argument parsing.
+After patching is complete, run update commands for the files in the envelope.
 
-Create unit tests alongside the project files. E.g., for `main.ts` create file
-`main.test.ts`. Use standard Node.js `assert` for assertions.
+If the process crashes or is killed, the next run of `apply-patch` should detect
+the `backup.json` and stop proceeding futher.
 
-For tests, adapt the `tmp-dir.js` - make it ts, initialise with a silent logger.
+Add `restore` command that restores the files from backup and removes `backup.json`.
 
-## Step 2: Add `--patch` command line argument
-
-Add a global `--patch <path>` command line argument.
-
-It specifies the path to the patch JSON file and takes precedence over the `COG_PATCH_PATH` environment variable when both are set.
-
-Unlike the envelope path, the patch path must point to an existing file. If the selected patch file does not exist, show an error and do not apply anything.
-
-Update `apply-patch` to resolve the patch path from this precedence order:
-
-1. `--patch <path>`
-2. `COG_PATCH_PATH`
-3. existing fallback behavior, if any
-
-Add unit tests for this functionality, including precedence and missing-file behavior.
+To complete backup user should just delete this file.
 
 ## Step 3: Add `--patch-verify-cmd` command line argument
 
-Add a global or `apply-patch`-specific `--patch-verify-cmd <command>` argument.
+Add an `apply-patch`-specific `--patch-verify-cmd <command>` argument.
 
 It specifies the command used to verify an applied patch and takes precedence over the `COG_PATCH_VERIFY_CMD` environment variable.
 
@@ -87,24 +79,6 @@ Update the instruction text so it describes the Milestone 2 envelope and patch f
 - Atomic patch application.
 - Failed patch persistence in the envelope.
 - The rule that an existing `patch` field means the previous patch failed and should be repaired before continuing.
-
-## Step 6: Change read command records from `path` to `patterns`
-
-Replace the Milestone 1 read command record shape:
-
-```json
-{ "command": "read", "path": "path/to/file" }
-```
-
-with the Milestone 2 shape:
-
-```json
-{ "command": "read", "patterns": ["path/to/file"] }
-```
-
-Every read command stored in the envelope should use `patterns`.
-
-For backward compatibility, continue accepting old patch/envelope read commands that use `path`, but normalize them internally to `patterns`.
 
 ## Step 7: Expand `read` targets to files, folders, and globs
 

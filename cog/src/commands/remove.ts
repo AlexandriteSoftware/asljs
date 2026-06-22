@@ -3,6 +3,8 @@ import fs
 import { type Envelope,
          type Command }
   from '../model/envelope.js';
+import { type RollbackFeed }
+  from '../model/rollback.js';
 
 export interface Remove
   extends Command
@@ -12,16 +14,16 @@ export interface Remove
 
 export async function remove(
     envelope: Envelope,
-    command: Remove
+    command: Remove,
+    rollbackFeed?: RollbackFeed
   ): Promise<void>
 {
+  await rollbackFeed?.saveFileState(
+    command.path);
+
   await fs.rm(
     command.path,
     { force: true });
-
-  envelope.commands
-    .push(
-      command);
 
   const fileIndex =
     envelope.files
@@ -34,4 +36,11 @@ export async function remove(
       fileIndex,
       1);
   }
+}
+
+export async function rollbackRemove(
+    rollbackFeed: RollbackFeed
+  ): Promise<void>
+{
+  await rollbackFeed.rollbackLast();
 }

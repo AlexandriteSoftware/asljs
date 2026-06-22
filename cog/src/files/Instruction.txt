@@ -1,26 +1,32 @@
 COG maintains a project changing session for AI agents by using an envelope JSON
 file and patch JSON file.
 
-The envelope JSON file contains an instruction, a list of commands, and a list
-of files produced by those commands.
+The envelope JSON file contains an instruction and a list of files produced by
+read commands. It does not contain a command log.
+
+Each file may contain an `update` command. The update command refreshes that file
+content and is constructed from the read command that added the file by copying
+the file path to `pattern` and copying the other read options.
 
 Envelope format:
 
 {
   "instruction": "...",
-  "commands": [
-    { "command": "read", "path": "path/to/file", "lines": 500, "sizeKB": 20 }
-  ],
   "files": [
     {
       "path": "path/to/file",
       "type": "text",
       "content": "...",
-      "complete": true
-    },
-    {
-      "path": "path/to/binary",
-      "type": "binary"
+      "complete": true,
+      "update": {
+        "command": "read",
+        "pattern": "path/to/file",
+        "exclude": [],
+        "lines": 150,
+        "sizeKb": 15,
+        "readToEnd": false,
+        "withBinaryB64": false
+      }
     }
   ]
 }
@@ -31,18 +37,56 @@ Patch format:
 {
   "task": "...",
   "commands": [
-    { "command": "read": "path": "path/to/file", "lines": 100, "sizeKB": 20 },
-    { "command": "write": "path": "path/to/file", "content": "..." },
-    { "command": "remove": "path": "path/to/file" }
+    {
+      "command": "read",
+      "pattern": "path/to/file",
+      "exclude": [],
+      "lines": 100,
+      "sizeKb": 20
+    },
+    { "command": "write", "path": "path/to/file", "content": "..." },
+    { "command": "remove", "path": "path/to/file" }
   ]
 }
 
 Available patch commands:
-- read: reads a file and adds it to the envelope.
+- read: reads matching files and adds them to the envelope.
 - write: creates a file or sets the content of a file.
 - remove: removes a file.
 
+Each command module owns its rollback behavior:
+- Command functions accept an optional rollback feed.
+- Commands that change local files save previous file state to the feed before
+  changing files.
+- Each command module exports a rollback function for undoing the most recent
+  feed entry created by that command.
+- `read` does not change local project files, so its rollback is a no-op.
+
+CLI commands:
+- `cog read <path> [arguments]` reads files into the envelope.
+- `cog update` refreshes envelope files using their stored update commands.
+- `cog restore` restores files from `backup.json` and removes the backup file.
+- `cog apply-patch` applies the patch transactionally to the project files and
+  updates the envelope.
+
+`apply-patch` transaction rules:
+- Create `backup.json` in the envelope directory before changing files.
+- Stop if `backup.json` already exists. This means a previous patch may have
+  been interrupted. Run `cog restore` to restore, or delete `backup.json` to
+  complete the backup without restoring.
+- Pass the rollback feed to each patch command.
+- Commands save their own rollback state before mutating local files.
+- On failure, restore file states from `backup.json` from last to first, then
+  remove `backup.json`.
+- On success, refresh envelope files using stored update commands, save the
+  envelope, and delete `backup.json`.
+
 Workflow:
-- The AI agent task is to provide a patch, either as a downloadable link to a file, or as a JSON object in a fenced JSON code block.
-- Run `cog read <path> [<path> ...]` to read files into the envelope.
-- Run `cog apply-patch` to apply the patch to the project files and update the envelope.
+- The AI agent task is to provide a patch, either as a downloadable link to a
+  file, or as a JSON object in a fenced JSON code block.
+- Run `cog read <path> [arguments]` to read files into the envelope.
+- Run `cog update` to refresh files already stored in the envelope.
+- Run `cog apply-patch` to apply the patch to the project files and update the
+  envelope.
+- If patch application is interrupted and `backup.json` remains, run
+  `cog restore` or manually delete `backup.json`.

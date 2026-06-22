@@ -1,58 +1,23 @@
 import assert
   from 'node:assert/strict';
-import { readFile, writeFile }
+import { readFile }
   from 'node:fs/promises';
 import { existsSync }
   from 'node:fs';
-import { join }
-  from 'node:path';
 import test
   from 'node:test';
 import { main }
   from './main.js';
-import { withTmpDir }
+import { TmpDir }
   from './tmp-dir.js';
+import { createLogger }
+  from './logging.js';
 
-function withEnv(
-    updates: Record<string, string | undefined>,
-    action: () => void | Promise<void>
-  ): Promise<void>
-{
-  const previous =
-    new Map<string, string | undefined>();
+const logger =
+  createLogger();
 
-  for (const name of Object.keys(
-      updates)) {
-    previous.set(
-      name,
-      process.env[name]);
-
-    const value =
-      updates[name];
-
-    if (value === undefined) {
-      delete process.env[name];
-    } else {
-      process.env[name] =
-        value;
-    }
-  }
-
-  return Promise.resolve()
-    .then(
-      action)
-    .finally(
-      () => {
-        for (const [name, value] of previous) {
-          if (value === undefined) {
-            delete process.env[name];
-          } else {
-            process.env[name] =
-              value;
-          }
-        }
-      });
-}
+test.after(
+  () => logger.dispose());
 
 function argv(
     ...args: string[]
@@ -66,297 +31,319 @@ function argv(
 }
 
 test(
-  'importing main has no CLI side effects',
-  () => {
-    assert.equal(
-      process.exitCode,
-      undefined);
-  });
+  'apply-patch rolls back file writes through command rollback feed',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
 
-test(
-  'main reads files using --envelope before COG_ENVELOPE_PATH',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const cliEnvelopePath =
-          join(
-            dir,
-            'cli-envelope.json');
+    t.after(
+      () => workspace.cleanup());
 
-        const envEnvelopePath =
-          join(
-            dir,
-            'env-envelope.json');
+    const envelopePath =
+      workspace.resolve(
+        'envelope.json');
 
-        const filePath =
-          join(
-            dir,
-            'file.txt');
+    const patchPath =
+      workspace.resolve(
+        'patch.json');
 
-        await writeFile(
-          filePath,
-          'hello\n',
-          'utf8');
+    const filePath =
+      workspace.resolve(
+        'file.txt');
 
-        await withEnv(
-          { COG_ENVELOPE_PATH: envEnvelopePath },
-          async () => {
-            await main(
-              argv(
-                '--envelope',
-                cliEnvelopePath,
-                'read',
-                filePath));
-          });
+    workspace.writeText(
+      'file.txt',
+      'old\n');
 
-        assert.equal(
-          existsSync(
-            cliEnvelopePath),
-          true);
+    workspace.writeText(
+      'patch.json',
+      `${JSON.stringify(
+        { commands: [
+          { command: 'write',
+            path: filePath,
+            content: 'new\n' },
+          { command: 'unknown' }
+        ] },
+        null,
+        2)}\n`);
 
-        assert.equal(
-          existsSync(
-            envEnvelopePath),
-          false);
-      });
-  });
-
-test(
-  'main reads files using COG_ENVELOPE_PATH when --envelope is omitted',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'env-envelope.json');
-
-        const filePath =
-          join(
-            dir,
-            'file.txt');
-
-        await writeFile(
-          filePath,
-          'hello\n',
-          'utf8');
-
-        await withEnv(
-          { COG_ENVELOPE_PATH: envelopePath },
-          async () => {
-            await main(
-              argv(
-                'read',
-                filePath));
-          });
-
-        assert.equal(
-          existsSync(
-            envelopePath),
-          true);
-      });
-  });
-
-test(
-  'main keeps existing missing-envelope error behavior',
-  async () => {
-    await withEnv(
-      { COG_ENVELOPE_PATH: undefined },
-      async () => {
-        await assert.rejects(
-          () => main(
-            argv(
-              'read',
-              'file.txt')),
-          /COG_ENVELOPE_PATH is required/);
-      });
-  });
-
-test(
-  'apply-patch uses --patch before COG_PATCH_PATH',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'envelope.json');
-
-        const cliPatchPath =
-          join(
-            dir,
-            'cli-patch.json');
-
-        const envPatchPath =
-          join(
-            dir,
-            'env-patch.json');
-
-        await writeFile(
-          cliPatchPath,
-          '{"commands":[]}\n',
-          'utf8');
-
-        await writeFile(
-          envPatchPath,
-          '{"commands":[{"command":"unknown"}]}\n',
-          'utf8');
-
-        await withEnv(
-          { COG_PATCH_PATH: envPatchPath },
-          async () => {
-            await main(
-              argv(
-                '--envelope',
-                envelopePath,
-                '--patch',
-                cliPatchPath,
-                'apply-patch'));
-          });
-
-        assert.equal(
-          existsSync(
-            envelopePath),
-          true);
-      });
-  });
-
-test(
-  'apply-patch falls back to COG_PATCH_PATH',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'envelope.json');
-
-        const patchPath =
-          join(
-            dir,
-            'env-patch.json');
-
-        await writeFile(
+    await assert.rejects(
+      () => main(
+        argv(
+          '--envelope',
+          envelopePath,
+          '--patch',
           patchPath,
-          '{"commands":[]}\n',
-          'utf8');
+          'apply-patch')),
+      /Unknown patch command unknown/);
 
-        await withEnv(
-          { COG_PATCH_PATH: patchPath },
-          async () => {
-            await main(
-              argv(
-                '--envelope',
-                envelopePath,
-                'apply-patch'));
-          });
+    assert.equal(
+      workspace.readText(
+        'file.txt'),
+      'old\n');
 
-        assert.equal(
-          existsSync(
-            envelopePath),
-          true);
-      });
+    assert.equal(
+      existsSync(
+        workspace.resolve(
+          'backup.json')),
+      false);
   });
 
 test(
-  'apply-patch keeps existing missing-patch error behavior',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'envelope.json');
+  'apply-patch rolls repeated command rollback entries from last to first',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
 
-        await withEnv(
-          { COG_PATCH_PATH: undefined },
-          async () => {
-            await assert.rejects(
-              () => main(
-                argv(
-                  '--envelope',
-                  envelopePath,
-                  'apply-patch')),
-              /COG_PATCH_PATH is required/);
-          });
-      });
+    t.after(
+      () => workspace.cleanup());
+
+    const envelopePath =
+      workspace.resolve(
+        'envelope.json');
+
+    const patchPath =
+      workspace.resolve(
+        'patch.json');
+
+    const filePath =
+      workspace.resolve(
+        'file.txt');
+
+    workspace.writeText(
+      'file.txt',
+      'old\n');
+
+    workspace.writeText(
+      'patch.json',
+      `${JSON.stringify(
+        { commands: [
+          { command: 'write',
+            path: filePath,
+            content: 'middle\n' },
+          { command: 'write',
+            path: filePath,
+            content: 'new\n' },
+          { command: 'unknown' }
+        ] },
+        null,
+        2)}\n`);
+
+    await assert.rejects(
+      () => main(
+        argv(
+          '--envelope',
+          envelopePath,
+          '--patch',
+          patchPath,
+          'apply-patch')),
+      /Unknown patch command unknown/);
+
+    assert.equal(
+      workspace.readText(
+        'file.txt'),
+      'old\n');
   });
 
 test(
-  'apply-patch rejects a missing selected patch file',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'nested',
-            'envelope.json');
+  'apply-patch stops when backup.json exists',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
 
-        const patchPath =
-          join(
-            dir,
-            'missing-patch.json');
+    t.after(
+      () => workspace.cleanup());
 
-        await assert.rejects(
-          () => main(
-            argv(
-              '--envelope',
-              envelopePath,
-              '--patch',
-              patchPath,
-              'apply-patch')),
-          /Patch file does not exist:/);
+    const envelopePath =
+      workspace.resolve(
+        'envelope.json');
 
-        assert.equal(
-          existsSync(
-            envelopePath),
-          false);
-      });
+    const patchPath =
+      workspace.resolve(
+        'patch.json');
+
+    workspace.writeText(
+      'backup.json',
+      `${JSON.stringify(
+        { files: [] },
+        null,
+        2)}\n`);
+
+    workspace.writeText(
+      'patch.json',
+      `${JSON.stringify(
+        { commands: [] },
+        null,
+        2)}\n`);
+
+    await assert.rejects(
+      () => main(
+        argv(
+          '--envelope',
+          envelopePath,
+          '--patch',
+          patchPath,
+          'apply-patch')),
+      /backup\.json exists/);
   });
 
 test(
-  'apply-patch checks the CLI patch path exists before using COG_PATCH_PATH',
-  async () => {
-    await withTmpDir(
-      async dir => {
-        const envelopePath =
-          join(
-            dir,
-            'envelope.json');
+  'restore restores files from backup and removes backup.json',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
 
-        const cliPatchPath =
-          join(
-            dir,
-            'missing-cli-patch.json');
+    t.after(
+      () => workspace.cleanup());
 
-        const envPatchPath =
-          join(
-            dir,
-            'env-patch.json');
+    const envelopePath =
+      workspace.resolve(
+        'envelope.json');
 
-        await writeFile(
-          envPatchPath,
-          '{"commands":[]}\n',
-          'utf8');
+    const filePath =
+      workspace.resolve(
+        'file.txt');
 
-        await withEnv(
-          { COG_PATCH_PATH: envPatchPath },
-          async () => {
-            await assert.rejects(
-              () => main(
-                argv(
-                  '--envelope',
-                  envelopePath,
-                  '--patch',
-                  cliPatchPath,
-                  'apply-patch')),
-              /Patch file does not exist:/);
-          });
+    const createdPath =
+      workspace.resolve(
+        'created.txt');
 
-        assert.equal(
-          existsSync(
-            envelopePath),
-          false);
-      });
+    workspace.writeText(
+      'file.txt',
+      'changed\n');
+
+    workspace.writeText(
+      'created.txt',
+      'created\n');
+
+    workspace.writeText(
+      'backup.json',
+      `${JSON.stringify(
+        { files: [
+          { path: filePath,
+            existed: true,
+            content: Buffer.from(
+              'old\n')
+              .toString(
+                'base64') },
+          { path: createdPath,
+            existed: false }
+        ] },
+        null,
+        2)}\n`);
+
+    await main(
+      argv(
+        '--envelope',
+        envelopePath,
+        'restore'));
+
+    assert.equal(
+      workspace.readText(
+        'file.txt'),
+      'old\n');
+
+    assert.equal(
+      existsSync(
+        createdPath),
+      false);
+
+    assert.equal(
+      existsSync(
+        workspace.resolve(
+          'backup.json')),
+      false);
+  });
+
+test(
+  'apply-patch deletes backup and updates envelope files after success',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
+
+    t.after(
+      () => workspace.cleanup());
+
+    const envelopePath =
+      workspace.resolve(
+        'envelope.json');
+
+    const patchPath =
+      workspace.resolve(
+        'patch.json');
+
+    const filePath =
+      workspace.resolve(
+        'file.txt');
+
+    workspace.writeText(
+      'file.txt',
+      'old\n');
+
+    workspace.writeText(
+      'envelope.json',
+      `${JSON.stringify(
+        { instruction: '',
+          files: [
+            { path: filePath,
+              type: 'text',
+              content: 'old\n',
+              complete: true,
+              update: {
+                command: 'read',
+                pattern: filePath,
+                exclude: [],
+                lines: 150,
+                sizeKb: 15,
+                readToEnd: false,
+                withBinaryB64: false
+              } }
+          ] },
+        null,
+        2)}\n`);
+
+    workspace.writeText(
+      'patch.json',
+      `${JSON.stringify(
+        { commands: [
+          { command: 'write',
+            path: filePath,
+            content: 'new\n' }
+        ] },
+        null,
+        2)}\n`);
+
+    await main(
+      argv(
+        '--envelope',
+        envelopePath,
+        '--patch',
+        patchPath,
+        'apply-patch'));
+
+    const envelope =
+      JSON.parse(
+        await readFile(
+          envelopePath,
+          'utf8'));
+
+    assert.equal(
+      workspace.readText(
+        'file.txt'),
+      'new\n');
+
+    assert.equal(
+      envelope.files[0].content,
+      'new\n');
+
+    assert.equal(
+      existsSync(
+        workspace.resolve(
+          'backup.json')),
+      false);
   });
