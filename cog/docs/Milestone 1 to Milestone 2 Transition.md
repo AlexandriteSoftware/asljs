@@ -33,6 +33,8 @@ Update `apply-patch` to resolve the patch path from this precedence order:
 2. `COG_PATCH_PATH`
 3. existing fallback behavior, if any
 
+Add unit tests for this functionality, including precedence and missing-file behavior.
+
 ## Step 3: Add `--patch-verify-cmd` command line argument
 
 Add a global or `apply-patch`-specific `--patch-verify-cmd <command>` argument.

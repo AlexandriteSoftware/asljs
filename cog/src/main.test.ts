@@ -2,110 +2,288 @@ import assert
   from 'node:assert/strict';
 import { readFile, writeFile }
   from 'node:fs/promises';
+import { existsSync }
+  from 'node:fs';
 import { join }
   from 'node:path';
 import test
   from 'node:test';
-import { ensureEnvelopeFile,
-         getRequiredEnv,
-         resolveEnvelopePath }
+import { main }
   from './main.js';
 import { withTmpDir }
   from './tmp-dir.js';
 
-test(
-  'resolveEnvelopePath uses --envelope before COG_ENVELOPE_PATH',
-  () => {
-    const previous =
-      process.env.COG_ENVELOPE_PATH;
+function withEnv(
+    updates: Record<string, string | undefined>,
+    action: () => void | Promise<void>
+  ): Promise<void>
+{
+  const previous =
+    new Map<string, string | undefined>();
 
-    process.env.COG_ENVELOPE_PATH =
-      'env-envelope.json';
+  for (const name of Object.keys(
+      updates)) {
+    previous.set(
+      name,
+      process.env[name]);
 
-    try {
-      assert.equal(
-        resolveEnvelopePath(
-          'cli-envelope.json'),
-        'cli-envelope.json');
-    } finally {
-      if (previous === undefined) {
-        delete process.env.COG_ENVELOPE_PATH;
-      } else {
-        process.env.COG_ENVELOPE_PATH =
-          previous;
-      }
+    const value =
+      updates[name];
+
+    if (value === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] =
+        value;
     }
+  }
+
+  return Promise.resolve()
+    .then(
+      action)
+    .finally(
+      () => {
+        for (const [name, value] of previous) {
+          if (value === undefined) {
+            delete process.env[name];
+          } else {
+            process.env[name] =
+              value;
+          }
+        }
+      });
+}
+
+function argv(
+    ...args: string[]
+  ): string[]
+{
+  return [
+    'node',
+    'cog',
+    ...args
+  ];
+}
+
+test(
+  'importing main has no CLI side effects',
+  () => {
+    assert.equal(
+      process.exitCode,
+      undefined);
   });
 
 test(
-  'resolveEnvelopePath falls back to COG_ENVELOPE_PATH',
-  () => {
-    const previous =
-      process.env.COG_ENVELOPE_PATH;
+  'main reads files using --envelope before COG_ENVELOPE_PATH',
+  async () => {
+    await withTmpDir(
+      async dir => {
+        const cliEnvelopePath =
+          join(
+            dir,
+            'cli-envelope.json');
 
-    process.env.COG_ENVELOPE_PATH =
-      'env-envelope.json';
+        const envEnvelopePath =
+          join(
+            dir,
+            'env-envelope.json');
 
-    try {
-      assert.equal(
-        resolveEnvelopePath(),
-        'env-envelope.json');
-    } finally {
-      if (previous === undefined) {
-        delete process.env.COG_ENVELOPE_PATH;
-      } else {
-        process.env.COG_ENVELOPE_PATH =
-          previous;
-      }
-    }
+        const filePath =
+          join(
+            dir,
+            'file.txt');
+
+        await writeFile(
+          filePath,
+          'hello\n',
+          'utf8');
+
+        await withEnv(
+          { COG_ENVELOPE_PATH: envEnvelopePath },
+          async () => {
+            await main(
+              argv(
+                '--envelope',
+                cliEnvelopePath,
+                'read',
+                filePath));
+          });
+
+        assert.equal(
+          existsSync(
+            cliEnvelopePath),
+          true);
+
+        assert.equal(
+          existsSync(
+            envEnvelopePath),
+          false);
+      });
   });
 
 test(
-  'resolveEnvelopePath keeps existing missing-envelope error behavior',
-  () => {
-    const previous =
-      process.env.COG_ENVELOPE_PATH;
+  'main reads files using COG_ENVELOPE_PATH when --envelope is omitted',
+  async () => {
+    await withTmpDir(
+      async dir => {
+        const envelopePath =
+          join(
+            dir,
+            'env-envelope.json');
 
-    delete process.env.COG_ENVELOPE_PATH;
+        const filePath =
+          join(
+            dir,
+            'file.txt');
 
-    try {
-      assert.throws(
-        () => resolveEnvelopePath(),
-        /COG_ENVELOPE_PATH is required/);
-    } finally {
-      if (previous !== undefined) {
-        process.env.COG_ENVELOPE_PATH =
-          previous;
-      }
-    }
+        await writeFile(
+          filePath,
+          'hello\n',
+          'utf8');
+
+        await withEnv(
+          { COG_ENVELOPE_PATH: envelopePath },
+          async () => {
+            await main(
+              argv(
+                'read',
+                filePath));
+          });
+
+        assert.equal(
+          existsSync(
+            envelopePath),
+          true);
+      });
   });
 
 test(
-  'getRequiredEnv returns configured environment variable',
-  () => {
-    const previous =
-      process.env.COG_TEST_ENV;
-
-    process.env.COG_TEST_ENV =
-      'configured';
-
-    try {
-      assert.equal(
-        getRequiredEnv(
-          'COG_TEST_ENV'),
-        'configured');
-    } finally {
-      if (previous === undefined) {
-        delete process.env.COG_TEST_ENV;
-      } else {
-        process.env.COG_TEST_ENV =
-          previous;
-      }
-    }
+  'main keeps existing missing-envelope error behavior',
+  async () => {
+    await withEnv(
+      { COG_ENVELOPE_PATH: undefined },
+      async () => {
+        await assert.rejects(
+          () => main(
+            argv(
+              'read',
+              'file.txt')),
+          /COG_ENVELOPE_PATH is required/);
+      });
   });
 
 test(
-  'ensureEnvelopeFile creates a missing envelope file',
+  'apply-patch uses --patch before COG_PATCH_PATH',
+  async () => {
+    await withTmpDir(
+      async dir => {
+        const envelopePath =
+          join(
+            dir,
+            'envelope.json');
+
+        const cliPatchPath =
+          join(
+            dir,
+            'cli-patch.json');
+
+        const envPatchPath =
+          join(
+            dir,
+            'env-patch.json');
+
+        await writeFile(
+          cliPatchPath,
+          '{"commands":[]}\n',
+          'utf8');
+
+        await writeFile(
+          envPatchPath,
+          '{"commands":[{"command":"unknown"}]}\n',
+          'utf8');
+
+        await withEnv(
+          { COG_PATCH_PATH: envPatchPath },
+          async () => {
+            await main(
+              argv(
+                '--envelope',
+                envelopePath,
+                '--patch',
+                cliPatchPath,
+                'apply-patch'));
+          });
+
+        assert.equal(
+          existsSync(
+            envelopePath),
+          true);
+      });
+  });
+
+test(
+  'apply-patch falls back to COG_PATCH_PATH',
+  async () => {
+    await withTmpDir(
+      async dir => {
+        const envelopePath =
+          join(
+            dir,
+            'envelope.json');
+
+        const patchPath =
+          join(
+            dir,
+            'env-patch.json');
+
+        await writeFile(
+          patchPath,
+          '{"commands":[]}\n',
+          'utf8');
+
+        await withEnv(
+          { COG_PATCH_PATH: patchPath },
+          async () => {
+            await main(
+              argv(
+                '--envelope',
+                envelopePath,
+                'apply-patch'));
+          });
+
+        assert.equal(
+          existsSync(
+            envelopePath),
+          true);
+      });
+  });
+
+test(
+  'apply-patch keeps existing missing-patch error behavior',
+  async () => {
+    await withTmpDir(
+      async dir => {
+        const envelopePath =
+          join(
+            dir,
+            'envelope.json');
+
+        await withEnv(
+          { COG_PATCH_PATH: undefined },
+          async () => {
+            await assert.rejects(
+              () => main(
+                argv(
+                  '--envelope',
+                  envelopePath,
+                  'apply-patch')),
+              /COG_PATCH_PATH is required/);
+          });
+      });
+  });
+
+test(
+  'apply-patch rejects a missing selected patch file',
   async () => {
     await withTmpDir(
       async dir => {
@@ -115,25 +293,30 @@ test(
             'nested',
             'envelope.json');
 
-        await ensureEnvelopeFile(
-          envelopePath);
+        const patchPath =
+          join(
+            dir,
+            'missing-patch.json');
 
-        const envelope =
-          JSON.parse(
-            await readFile(
+        await assert.rejects(
+          () => main(
+            argv(
+              '--envelope',
               envelopePath,
-              'utf8'));
+              '--patch',
+              patchPath,
+              'apply-patch')),
+          /Patch file does not exist:/);
 
-        assert.deepEqual(
-          envelope,
-          { instruction: '',
-            commands: [],
-            files: [] });
+        assert.equal(
+          existsSync(
+            envelopePath),
+          false);
       });
   });
 
 test(
-  'ensureEnvelopeFile does not overwrite an existing envelope file',
+  'apply-patch checks the CLI patch path exists before using COG_PATCH_PATH',
   async () => {
     await withTmpDir(
       async dir => {
@@ -142,21 +325,38 @@ test(
             dir,
             'envelope.json');
 
-        const existing =
-          '{"instruction":"keep","commands":[1],"files":[2]}\n';
+        const cliPatchPath =
+          join(
+            dir,
+            'missing-cli-patch.json');
+
+        const envPatchPath =
+          join(
+            dir,
+            'env-patch.json');
 
         await writeFile(
-          envelopePath,
-          existing,
+          envPatchPath,
+          '{"commands":[]}\n',
           'utf8');
 
-        await ensureEnvelopeFile(
-          envelopePath);
+        await withEnv(
+          { COG_PATCH_PATH: envPatchPath },
+          async () => {
+            await assert.rejects(
+              () => main(
+                argv(
+                  '--envelope',
+                  envelopePath,
+                  '--patch',
+                  cliPatchPath,
+                  'apply-patch')),
+              /Patch file does not exist:/);
+          });
 
         assert.equal(
-          await readFile(
-            envelopePath,
-            'utf8'),
-          existing);
+          existsSync(
+            envelopePath),
+          false);
       });
   });

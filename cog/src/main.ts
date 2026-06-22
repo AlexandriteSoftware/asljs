@@ -31,53 +31,7 @@ interface NewEnvelope
   files: unknown[];
 }
 
-export function resolveEnvelopePath(
-    envelopePath?: string
-  ): string
-{
-  return envelopePath
-    ?? getRequiredEnv(
-      'COG_ENVELOPE_PATH');
-}
-
-export function resolvePatchPath(
-    patchPath?: string
-  ): string
-{
-  return patchPath
-    ?? getRequiredEnv(
-      'COG_PATCH_PATH');
-}
-
-export async function ensureEnvelopeFile(
-    envelopePath: string
-  ): Promise<void>
-{
-  if (existsSync(
-      envelopePath)) {
-    return;
-  }
-
-  await mkdir(
-    dirname(
-      envelopePath),
-    { recursive: true });
-
-  const envelope: NewEnvelope =
-    { instruction: '',
-      commands: [],
-      files: [] };
-
-  await writeFile(
-    envelopePath,
-    `${JSON.stringify(
-      envelope,
-      null,
-      2)}\n`,
-    'utf8');
-}
-
-export async function run(
+export async function main(
     argv = process.argv
   ): Promise<void>
 {
@@ -152,7 +106,64 @@ export async function run(
     argv);
 }
 
-export async function readCmd(
+function resolveEnvelopePath(
+    envelopePath?: string
+  ): string
+{
+  return envelopePath
+    ?? getRequiredEnv(
+      'COG_ENVELOPE_PATH');
+}
+
+function resolvePatchPath(
+    patchPath?: string
+  ): string
+{
+  return patchPath
+    ?? getRequiredEnv(
+      'COG_PATCH_PATH');
+}
+
+function ensurePatchFileExists(
+    patchPath: string
+  ): void
+{
+  if (!existsSync(
+      patchPath)) {
+    throw new Error(
+      `Patch file does not exist: ${patchPath}`);
+  }
+}
+
+async function ensureEnvelopeFile(
+    envelopePath: string
+  ): Promise<void>
+{
+  if (existsSync(
+      envelopePath)) {
+    return;
+  }
+
+  await mkdir(
+    dirname(
+      envelopePath),
+    { recursive: true });
+
+  const envelope: NewEnvelope =
+    { instruction: '',
+      commands: [],
+      files: [] };
+
+  await writeFile(
+    envelopePath,
+    `${JSON.stringify(
+      envelope,
+      null,
+      2)}\n`,
+    'utf8');
+}
+
+async function readCmd(
     args: string[],
     options: MainOptions = {}
   ): Promise<void>
@@ -185,7 +196,7 @@ export async function readCmd(
     envelopePath);
 }
 
-export async function applyPatch(
+async function applyPatch(
     options: MainOptions = {}
   ): Promise<void>
 {
@@ -196,6 +207,9 @@ export async function applyPatch(
   const patchPath =
     resolvePatchPath(
       options.patchPath);
+
+  ensurePatchFileExists(
+    patchPath);
 
   await ensureEnvelopeFile(
     envelopePath);
@@ -232,7 +246,7 @@ export async function applyPatch(
     envelopePath);
 }
 
-export function getRequiredEnv(
+function getRequiredEnv(
     name: string
   ): string
 {
@@ -246,14 +260,3 @@ export function getRequiredEnv(
 
   return value;
 }
-
-run()
-  .catch(
-    error => {
-      console.error(
-        error instanceof Error
-          ? error.message
-          : String(error));
-
-      process.exitCode = 1;
-    });
