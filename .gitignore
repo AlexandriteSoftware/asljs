@@ -4,3 +4,5 @@ dist/
 node_modules
 .aider*
 build/
+envelope.json
+patch.json
