@@ -13,6 +13,8 @@ import { LocationResolver }
   from '../location.js';
 import { createLogger }
   from '../logger.js';
+import { type ExecutionContext }
+  from '../main/types.js';
 
 const textDecoder =
   new TextDecoder(
@@ -49,7 +51,9 @@ interface ReadLimits
 
 export async function read(
     envelope: Envelope,
-    parameters: ReadParameters
+    parameters: ReadParameters,
+    _rollbackFeed?: RollbackFeed,
+    context?: ExecutionContext
   ): Promise<void>
 {
   if (!parameters.pattern) {
@@ -93,9 +97,15 @@ export async function read(
       envelope.files
         .push(
           file);
+
+      context?.console.writeLine(
+        `added ${target.path}`);
     } else {
       envelope.files[fileIndex] =
         file;
+
+      context?.console.writeLine(
+        `refreshed ${target.path}`);
     }
   }
 }

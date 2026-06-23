@@ -7,11 +7,13 @@ import { type Envelope,
 import { ensureEnvelopeFile,
          resolveEnvelopePath }
   from './env.js';
-import { type MainOptions }
+import { type ExecutionContext,
+         type MainOptions }
   from './types.js';
 
 export function configureListCommand(
-    program: Command
+    program: Command,
+    context: ExecutionContext
   ): void
 {
   program
@@ -27,6 +29,7 @@ export function configureListCommand(
           }>();
 
         await listCmd(
+          context,
           { envelopePath:
               resolveEnvelopePath(
                 options.envelope) });
@@ -34,6 +37,7 @@ export function configureListCommand(
 }
 
 async function listCmd(
+    context: ExecutionContext,
     options: MainOptions = {}
   ): Promise<void>
 {
@@ -48,9 +52,14 @@ async function listCmd(
     await loadEnvelope(
       envelopePath);
 
-  process.stdout.write(
-    formatFileList(
-      envelope));
+  for (const line of formatFileList(
+      envelope)
+      .trimEnd()
+      .split(
+        '\n')) {
+    context.console.writeLine(
+      line);
+  }
 }
 
 export function formatFileList(

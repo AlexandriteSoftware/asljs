@@ -5,6 +5,8 @@ import { type Envelope }
 import { type Command } from '../model/command.js';
 import { type RollbackFeed }
   from '../model/rollback.js';
+import { type ExecutionContext }
+  from '../main/types.js';
 
 export interface Remove
   extends Command
@@ -15,7 +17,8 @@ export interface Remove
 export async function remove(
     envelope: Envelope,
     command: Remove,
-    rollbackFeed?: RollbackFeed
+    rollbackFeed?: RollbackFeed,
+    context?: ExecutionContext
   ): Promise<void>
 {
   await rollbackFeed?.saveFileState(
@@ -35,6 +38,9 @@ export async function remove(
     envelope.files.splice(
       fileIndex,
       1);
+
+    context?.console.writeLine(
+      `removed ${command.path}`);
   }
 }
 

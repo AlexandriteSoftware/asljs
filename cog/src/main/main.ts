@@ -1,5 +1,9 @@
 import { Command }
   from 'commander';
+import { DefaultHostConsole }
+  from '../console.js';
+import { createLogger }
+  from '../logger.js';
 import { configureApplyPatchCommand }
   from './apply-patch.js';
 import { configureListCommand }
@@ -10,50 +14,71 @@ import { configureRestoreCommand }
   from './restore.js';
 import { configureUpdateCommand }
   from './update.js';
+import { type ExecutionContext }
+  from './types.js';
 
 export async function main(
     argv = process.argv
   ): Promise<void>
 {
-  const program =
-    new Command();
+  const logger =
+    createLogger();
 
-  program
-    .name(
-      'cog')
-    .allowExcessArguments(
-      false)
-    .exitOverride()
-    .option(
-      '--envelope <path>',
-      'path to the envelope JSON file')
-    .option(
-      '--patch <path>',
-      'path to the patch JSON file')
-    .showHelpAfterError();
+  const context: ExecutionContext =
+    { logger,
+      console:
+        new DefaultHostConsole(),
+      dispose:
+        () => logger.dispose() };
 
-  configureReadCommand(
-    program);
+  try {
+    const program =
+      new Command();
 
-  configureListCommand(
-    program);
+    program
+      .name(
+        'cog')
+      .allowExcessArguments(
+        false)
+      .exitOverride()
+      .option(
+        '--envelope <path>',
+        'path to the envelope JSON file')
+      .option(
+        '--patch <path>',
+        'path to the patch JSON file')
+      .showHelpAfterError();
 
-  configureUpdateCommand(
-    program);
+    configureReadCommand(
+      program,
+      context);
 
-  configureRestoreCommand(
-    program);
+    configureListCommand(
+      program,
+      context);
 
-  configureApplyPatchCommand(
-    program);
+    configureUpdateCommand(
+      program,
+      context);
 
-  program
-    .action(
-      () => {
-        throw new Error(
-          'Usage: cog <read|list|update|restore|apply-patch> [args...]');
-      });
+    configureRestoreCommand(
+      program,
+      context);
 
-  await program.parseAsync(
-    argv);
+    configureApplyPatchCommand(
+      program,
+      context);
+
+    program
+      .action(
+        () => {
+          throw new Error(
+            'Usage: cog <read|list|update|restore|apply-patch> [args...]');
+        });
+
+    await program.parseAsync(
+      argv);
+  } finally {
+    context.dispose?.();
+  }
 }

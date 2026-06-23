@@ -27,13 +27,15 @@ import { ensureEnvelopeFile,
          resolveEnvelopePath,
          resolvePatchPath }
   from './env.js';
-import { type MainOptions }
+import { type ExecutionContext,
+         type MainOptions }
   from './types.js';
 import { updateEnvelopeFiles }
   from './update.js';
 
 export function configureApplyPatchCommand(
-    program: Command
+    program: Command,
+    context: ExecutionContext
   ): void
 {
   program
@@ -57,6 +59,7 @@ export function configureApplyPatchCommand(
           }>();
 
         await applyPatch(
+          context,
           { envelopePath:
               resolveEnvelopePath(
                 options.envelope),
@@ -70,6 +73,7 @@ export function configureApplyPatchCommand(
 }
 
 async function applyPatch(
+    context: ExecutionContext,
     options: MainOptions = {}
   ): Promise<void>
 {
@@ -109,6 +113,7 @@ async function applyPatch(
 
     for (const command of patch.commands) {
       await applyPatchCommand(
+        context,
         envelope,
         command,
         rollbackFeed);
@@ -134,6 +139,7 @@ async function applyPatch(
 }
 
 async function applyPatchCommand(
+    context: ExecutionContext,
     envelope: Awaited<ReturnType<typeof loadEnvelope>>,
     command: { command: string },
     rollbackFeed: RollbackFeed
@@ -142,7 +148,9 @@ async function applyPatchCommand(
   if (command.command === 'read') {
     await read(
       envelope,
-      command as unknown as ReadParameters);
+      command as unknown as ReadParameters,
+      rollbackFeed,
+      context);
   } else if (command.command === 'write') {
     await write(
       envelope,
@@ -152,7 +160,8 @@ async function applyPatchCommand(
     await remove(
       envelope,
       command as unknown as Remove,
-      rollbackFeed);
+      rollbackFeed,
+      context);
   } else {
     throw new Error(
       `Unknown patch command ${command.command}`);

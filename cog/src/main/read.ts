@@ -8,7 +8,8 @@ import { read }
 import { ensureEnvelopeFile,
          resolveEnvelopePath }
   from './env.js';
-import { type MainOptions }
+import { type ExecutionContext,
+         type MainOptions }
   from './types.js';
 
 interface ReadCliOptions
@@ -21,7 +22,8 @@ interface ReadCliOptions
 }
 
 export function configureReadCommand(
-    program: Command
+    program: Command,
+    context: ExecutionContext
   ): void
 {
   program
@@ -63,6 +65,7 @@ export function configureReadCommand(
           }>();
 
         await readCmd(
+          context,
           path,
           readOptions,
           { envelopePath:
@@ -72,6 +75,7 @@ export function configureReadCommand(
 }
 
 async function readCmd(
+    context: ExecutionContext,
     pattern: string,
     readOptions: ReadCliOptions,
     options: MainOptions = {}
@@ -105,7 +109,9 @@ async function readCmd(
       readToEnd:
         readOptions.readToEnd ?? false,
       withBinaryB64:
-        readOptions.withBinaryB64 ?? false });
+        readOptions.withBinaryB64 ?? false },
+    undefined,
+    context);
 
   await saveEnvelope(
     envelope,

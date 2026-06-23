@@ -9,11 +9,13 @@ import { type ReadParameters,
 import { ensureEnvelopeFile,
          resolveEnvelopePath }
   from './env.js';
-import { type MainOptions }
+import { type ExecutionContext,
+         type MainOptions }
   from './types.js';
 
 export function configureUpdateCommand(
-    program: Command
+    program: Command,
+    context: ExecutionContext
   ): void
 {
   program
@@ -29,6 +31,7 @@ export function configureUpdateCommand(
           }>();
 
         await updateCmd(
+          context,
           { envelopePath:
               resolveEnvelopePath(
                 options.envelope) });
@@ -36,6 +39,7 @@ export function configureUpdateCommand(
 }
 
 async function updateCmd(
+    context: ExecutionContext,
     options: MainOptions = {}
   ): Promise<void>
 {
@@ -51,7 +55,8 @@ async function updateCmd(
       envelopePath);
 
   await updateEnvelopeFiles(
-    envelope);
+    envelope,
+    context);
 
   await saveEnvelope(
     envelope,
@@ -59,7 +64,8 @@ async function updateCmd(
 }
 
 export async function updateEnvelopeFiles(
-    envelope: Awaited<ReturnType<typeof loadEnvelope>>
+    envelope: Awaited<ReturnType<typeof loadEnvelope>>,
+    context?: ExecutionContext
   ): Promise<void>
 {
   const updateCommands =
@@ -75,5 +81,8 @@ export async function updateEnvelopeFiles(
     await read(
       envelope,
       command);
+
+    context?.console.writeLine(
+      `refreshed ${command.pattern}`);
   }
 }

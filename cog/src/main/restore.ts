@@ -8,11 +8,13 @@ import { resolveBackupPath }
   from './backup.js';
 import { resolveEnvelopePath }
   from './env.js';
-import { type MainOptions }
+import { type ExecutionContext,
+         type MainOptions }
   from './types.js';
 
 export function configureRestoreCommand(
-    program: Command
+    program: Command,
+    _context: ExecutionContext
   ): void
 {
   program
