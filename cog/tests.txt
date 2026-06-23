@@ -1,0 +1,127 @@
+
+> asljs-cog@0.1.2 verify-patch
+> npm run build && npm run test
+
+
+> asljs-cog@0.1.2 build
+> npx tsc -p tsconfig.build.json
+
+
+> asljs-cog@0.1.2 test
+> npm run build && node --test build/**/*.test.js
+
+
+> asljs-cog@0.1.2 build
+> npx tsc -p tsconfig.build.json
+
+[32m✔ read command requires pattern and does not accept the old path shape [90m(3.1125ms)[39m[39m
+[31m✖ read limits text by lines and size unless read-to-end is enabled [90m(41.0074ms)[39m[39m
+[31m✖ read includes complete text when readToEnd is true [90m(11.2345ms)[39m[39m
+[32m✔ read can include binary content as base64 [90m(13.7669ms)[39m[39m
+[31m✖ read expands folders and honors file, folder, and glob excludes [90m(27.5521ms)[39m[39m
+[32m✔ read expands glob patterns [90m(11.7199ms)[39m[39m
+[32m✔ RQ203: GitIgnore filters paths using root and nested .gitignore files [90m(20.7481ms)[39m[39m
+[32m✔ index exports main [90m(1.7768ms)[39m[39m
+[32m✔ RQ205: FilesystemLocationResolver resolvers files: relative, base = root [90m(69.2631ms)[39m[39m
+[32m✔ RQ205: FilesystemLocationResolver resolvers files: relative, base = d1 [90m(10.925ms)[39m[39m
+[32m✔ RQ205: FilesystemLocationResolver resolvers files: absolute [90m(11.3884ms)[39m[39m
+[32m✔ NullLogger has all levels disabled, except silent [90m(1.9353ms)[39m[39m
+[32m✔ apply-patch accepts a patch when --patch-verify-cmd exits with zero [90m(146.5715ms)[39m[39m
+[32m✔ apply-patch rolls back when --patch-verify-cmd exits non-zero [90m(120.4916ms)[39m[39m
+[32m✔ apply-patch uses COG_PATCH_VERIFY_CMD when --patch-verify-cmd is omitted [90m(121.4347ms)[39m[39m
+[32m✔ --patch-verify-cmd takes precedence over COG_PATCH_VERIFY_CMD [90m(106.2951ms)[39m[39m
+[32m✔ formatFileList returns markdown table of envelope files [90m(3.9789ms)[39m[39m
+[32m✔ formatFileList escapes markdown table cell separators [90m(0.5021ms)[39m[39m
+[32m✔ build\main\main.test.js [90m(159.2635ms)[39m[39m
+[32m✔ TmpDir creates a temporary directory [90m(3.6685ms)[39m[39m
+[32m✔ TmpDir resolves relative paths inside the workspace [90m(1.4389ms)[39m[39m
+[32m✔ TmpDir creates directories recursively [90m(3.0783ms)[39m[39m
+[32m✔ TmpDir writes and reads text files [90m(4.0804ms)[39m[39m
+[32m✔ TmpDir writes binary files [90m(5.2583ms)[39m[39m
+[32m✔ TmpDir stats files [90m(2.8109ms)[39m[39m
+[32m✔ TmpDir cleanup removes the workspace directory and marks it deleted [90m(2.2381ms)[39m[39m
+[34mℹ tests 26[39m
+[34mℹ suites 0[39m
+[34mℹ pass 23[39m
+[34mℹ fail 3[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 966.2054[39m
+
+[31m✖ failing tests:[39m
+
+test at build\commands\read.test.js:20:1
+[31m✖ read limits text by lines and size unless read-to-end is enabled [90m(41.0074ms)[39m[39m
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      command: 'read',
+      exclude: [],
+      lines: 2,
+  +   pattern: 'C:/Users/Alex/AppData/Local/Temp/cog-test-JIcOU9/file.txt',
+  -   pattern: 'C:\\Users\\Alex\\AppData\\Local\\Temp\\cog-test-JIcOU9\\file.txt',
+      readToEnd: false,
+      sizeKb: 1,
+      withBinaryB64: false
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Projects/asljs/cog/build/commands/read.test.js:33:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { command: 'read', pattern: 'C:/Users/Alex/AppData/Local/Temp/cog-test-JIcOU9/file.txt', exclude: [], lines: 2, sizeKb: 1, readToEnd: false, withBinaryB64: false },
+    expected: { command: 'read', pattern: 'C:\\Users\\Alex\\AppData\\Local\\Temp\\cog-test-JIcOU9\\file.txt', exclude: [], lines: 2, sizeKb: 1, readToEnd: false, withBinaryB64: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at build\commands\read.test.js:41:1
+[31m✖ read includes complete text when readToEnd is true [90m(11.2345ms)[39m[39m
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      command: 'read',
+      exclude: [],
+      lines: 1,
+  +   pattern: 'C:/Users/Alex/AppData/Local/Temp/cog-test-UmJmiB/file.txt',
+  -   pattern: 'C:\\Users\\Alex\\AppData\\Local\\Temp\\cog-test-UmJmiB\\file.txt',
+      readToEnd: true,
+      sizeKb: 1,
+      withBinaryB64: false
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Projects/asljs/cog/build/commands/read.test.js:54:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { command: 'read', pattern: 'C:/Users/Alex/AppData/Local/Temp/cog-test-UmJmiB/file.txt', exclude: [], lines: 1, sizeKb: 1, readToEnd: true, withBinaryB64: false },
+    expected: { command: 'read', pattern: 'C:\\Users\\Alex\\AppData\\Local\\Temp\\cog-test-UmJmiB\\file.txt', exclude: [], lines: 1, sizeKb: 1, readToEnd: true, withBinaryB64: false },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at build\commands\read.test.js:79:1
+[31m✖ read expands folders and honors file, folder, and glob excludes [90m(27.5521ms)[39m[39m
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'src/keep.ts'
+  - ]
+  
+      at TestContext.<anonymous> (file:///C:/Projects/asljs/cog/build/commands/read.test.js:99:16)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'src/keep.ts' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

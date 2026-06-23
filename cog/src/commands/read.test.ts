@@ -42,7 +42,7 @@ test(
   });
 
 test(
-  'read limits text by lines and size unless read-to-end is enabled',
+  'read treats pattern as a glob and reads an exact file match through LocationResolver',
   async t => {
     const workspace =
       new TmpDir(
@@ -157,9 +157,9 @@ test(
     workspace.write(
       'file.bin',
       Buffer.from([
-        0xff,
-        0x00,
-        0x01
+        0,
+        1,
+        255
       ]));
 
     const envelope =
@@ -177,7 +177,13 @@ test(
 
     assert.equal(
       envelope.files[0].content,
-      '/wAB');
+      Buffer.from([
+        0,
+        1,
+        255
+      ])
+        .toString(
+          'base64'));
 
     assert.equal(
       envelope.files[0].complete,
@@ -185,7 +191,7 @@ test(
   });
 
 test(
-  'read expands folders and honors file, folder, and glob excludes',
+  'read omits binary content when withBinaryB64 is false',
   async t => {
     const workspace =
       new TmpDir(
@@ -194,91 +200,151 @@ test(
     t.after(
       () => workspace.cleanup());
 
-    workspace.mkdir(
-      join(
-        'src',
-        'nested'));
+    const filePath =
+      workspace.resolve(
+        'file.bin');
 
-    workspace.mkdir(
-      join(
-        'src',
-        'skip-dir'));
+    workspace.write(
+      'file.bin',
+      Buffer.from([
+        0,
+        1,
+        255
+      ]));
+
+    const envelope =
+      emptyEnvelope();
+
+    await read(
+      envelope,
+      { command: 'read',
+        pattern: filePath });
+
+    assert.equal(
+      envelope.files[0].type,
+      'binary');
+
+    assert.equal(
+      envelope.files[0].content,
+      undefined);
+
+    assert.equal(
+      envelope.files[0].complete,
+      undefined);
+  });
+
+test(
+  'read treats folder paths as glob patterns and does not expand them specially',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
+
+    t.after(
+      () => workspace.cleanup());
 
     workspace.writeText(
       join(
         'src',
-        'keep.ts'),
-      'keep\n');
+        'one.txt'),
+      'one\n');
 
     workspace.writeText(
       join(
         'src',
-        'skip.tmp'),
-      'tmp\n');
+        'two.txt'),
+      'two\n');
+
+    const envelope =
+      emptyEnvelope();
+
+    await read(
+      envelope,
+      { command: 'read',
+        pattern:
+          workspace.resolve(
+            'src') });
+
+    assert.deepEqual(
+      envelope.files,
+      []);
+  });
+
+test(
+  'read uses LocationResolver glob matching and excludes',
+  async t => {
+    const workspace =
+      new TmpDir(
+        logger);
+
+    t.after(
+      () => workspace.cleanup());
+
+    workspace.writeText(
+      join(
+        'src',
+        'one.ts'),
+      'one\n');
+
+    workspace.writeText(
+      join(
+        'src',
+        'two.test.ts'),
+      'two\n');
 
     workspace.writeText(
       join(
         'src',
         'nested',
-        'skip.ts'),
-      'nested\n');
+        'three.ts'),
+      'three\n');
 
-    workspace.writeText(
-      join(
-        'src',
-        'skip-dir',
-        'file.ts'),
-      'dir\n');
+    const envelope =
+      emptyEnvelope();
 
-    const previousCwd =
-      process.cwd();
+    await read(
+      envelope,
+      { command: 'read',
+        pattern:
+          `${workspace.resolve(
+            'src')}/**/*.ts`,
+        exclude:
+          [`${workspace.resolve(
+            'src')}/**/*.test.ts`],
+        readToEnd: true });
 
-    process.chdir(
-      workspace.path);
-
-    try {
-      const envelope =
-        emptyEnvelope();
-
-      await read(
-        envelope,
-        { command: 'read',
-          pattern: 'src',
-          exclude: [
-            'src/skip.tmp',
-            'src/skip-dir',
-            'src/nested/*.ts'
-          ] });
-
-      assert.deepEqual(
-        envelope.files.map(
+    assert.deepEqual(
+      envelope.files
+        .map(
           file =>
-            file.path),
-        [
-          'src/keep.ts'
-        ]);
+            file.path)
+        .sort(),
+      [
+        workspace.resolve(
+          join(
+            'src',
+            'nested',
+            'three.ts')),
+        workspace.resolve(
+          join(
+            'src',
+            'one.ts'))
+      ].sort());
 
-      assert.deepEqual(
-        envelope.files[0].update,
-        { command: 'read',
-          pattern: 'src/keep.ts',
-          exclude: [
-            'src/skip.tmp',
-            'src/skip-dir',
-            'src/nested/*.ts'
-          ],
-          lines: 150,
-          sizeKb: 15,
-          readToEnd: false,
-          withBinaryB64: false });
-    } finally {
-      process.chdir(
-        previousCwd);
-    }
+    assert.deepEqual(
+      envelope.files
+        .map(
+          file =>
+            file.content)
+        .sort(),
+      [
+        'one\n',
+        'three\n'
+      ]);
   });
 
 test(
-  'read expands glob patterns',
+  'read updates existing envelope file for matched glob target',
   async t => {
     const workspace =
       new TmpDir(
@@ -287,55 +353,38 @@ test(
     t.after(
       () => workspace.cleanup());
 
-    workspace.mkdir(
-      'src');
+    const filePath =
+      workspace.resolve(
+        'file.txt');
 
     workspace.writeText(
-      join(
-        'src',
-        'a.ts'),
-      'a\n');
+      'file.txt',
+      'old\n');
+
+    const envelope =
+      emptyEnvelope();
+
+    await read(
+      envelope,
+      { command: 'read',
+        pattern: filePath,
+        readToEnd: true });
 
     workspace.writeText(
-      join(
-        'src',
-        'b.js'),
-      'b\n');
+      'file.txt',
+      'new\n');
 
-    const previousCwd =
-      process.cwd();
+    await read(
+      envelope,
+      { command: 'read',
+        pattern: filePath,
+        readToEnd: true });
 
-    process.chdir(
-      workspace.path);
+    assert.equal(
+      envelope.files.length,
+      1);
 
-    try {
-      const envelope =
-        emptyEnvelope();
-
-      await read(
-        envelope,
-        { command: 'read',
-          pattern: 'src/*.ts' });
-
-      assert.deepEqual(
-        envelope.files.map(
-          file =>
-            file.path),
-        [
-          'src/a.ts'
-        ]);
-
-      assert.deepEqual(
-        envelope.files[0].update,
-        { command: 'read',
-          pattern: 'src/a.ts',
-          exclude: [],
-          lines: 150,
-          sizeKb: 15,
-          readToEnd: false,
-          withBinaryB64: false });
-    } finally {
-      process.chdir(
-        previousCwd);
-    }
+    assert.equal(
+      envelope.files[0].content,
+      'new\n');
   });

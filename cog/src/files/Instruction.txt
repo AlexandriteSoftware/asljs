@@ -3,8 +3,8 @@ Read list of files from "files" property of the envelope JSON.
 Implement user's request by one of the following:
 
 - if problem is clear, and the patch is provided but the user reported issues
-  with the patch: recreate the patch from the envelope, do not create
-  incremental patches
+  with the patch: recreate the patch from the envelope. Do not create
+  incremental patches, include all changed.
 - if problem is clear, there is enough data, and solution is ready:
   create patch that modifies files and envelope
 - if problem is clear, but there is not enough data:
