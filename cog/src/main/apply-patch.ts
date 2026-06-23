@@ -2,9 +2,8 @@ import { spawn }
   from 'node:child_process';
 import { Command }
   from 'commander';
-import { loadEnvelope,
-         saveEnvelope }
-  from '../model/envelope.js';
+import { EnvelopeContainer }
+  from '../envelope/container.js';
 import { BackupRollbackFeed,
          type RollbackFeed }
   from '../model/rollback.js';
@@ -22,8 +21,7 @@ import { type Remove,
 import { ensureBackupFileDoesNotExist,
          resolveBackupPath }
   from './backup.js';
-import { ensureEnvelopeFile,
-         ensurePatchFileExists,
+import { ensurePatchFileExists,
          resolveEnvelopePath,
          resolvePatchPath }
   from './env.js';
@@ -32,6 +30,7 @@ import { type ExecutionContext,
   from './types.js';
 import { updateEnvelopeFiles }
   from './update.js';
+import { Envelope } from '../envelope/envelope.js';
 
 export function configureApplyPatchCommand(
     program: Command,
@@ -85,9 +84,6 @@ async function applyPatch(
     resolvePatchPath(
       options.patchPath);
 
-  await ensureEnvelopeFile(
-    envelopePath);
-
   const backupPath =
     resolveBackupPath(
       envelopePath);
@@ -102,15 +98,19 @@ async function applyPatch(
     await BackupRollbackFeed.create(
       backupPath);
 
+  const envelopeContainer =
+    new EnvelopeContainer(
+      context.logger);
+
+  const envelope =
+    await envelopeContainer.loadEnvelope(
+      envelopePath);
+
+  const patch =
+    await loadPatch(
+      patchPath);
+
   try {
-    const envelope =
-      await loadEnvelope(
-        envelopePath);
-
-    const patch =
-      await loadPatch(
-        patchPath);
-
     for (const command of patch.commands) {
       await applyPatchCommand(
         context,
@@ -125,9 +125,7 @@ async function applyPatch(
     await updateEnvelopeFiles(
       envelope);
 
-    await saveEnvelope(
-      envelope,
-      envelopePath);
+    await envelopeContainer.saveEnvelope(envelopePath);
 
     await rollbackFeed.delete();
   } catch (error) {
@@ -140,7 +138,7 @@ async function applyPatch(
 
 async function applyPatchCommand(
     context: ExecutionContext,
-    envelope: Awaited<ReturnType<typeof loadEnvelope>>,
+    envelope: Envelope,
     command: { command: string },
     rollbackFeed: RollbackFeed
   ): Promise<void>

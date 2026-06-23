@@ -1,16 +1,16 @@
 import { Command }
   from 'commander';
-import { loadEnvelope,
-         saveEnvelope }
-  from '../model/envelope.js';
-import { read }
+import { EnvelopeContainer }
+  from '../envelope/container.js';
+import { read, ReadParameters }
   from '../commands/read.js';
-import { ensureEnvelopeFile,
-         resolveEnvelopePath }
+import { resolveEnvelopePath }
   from './env.js';
 import { type ExecutionContext,
          type MainOptions }
   from './types.js';
+import { type Envelope }
+  from '../envelope/envelope.js';
 
 interface ReadCliOptions
 {
@@ -81,40 +81,70 @@ async function readCmd(
     options: MainOptions = {}
   ): Promise<void>
 {
+  const logger =
+    context.logger.scope(
+      { instanceId: 'readCmd()' });
+
   const envelopePath =
     resolveEnvelopePath(
       options.envelopePath);
 
-  await ensureEnvelopeFile(
-    envelopePath);
+  const normalisedPattern =
+    normaliseGlobPattern(
+      pattern);
 
-  const envelope =
-    await loadEnvelope(
-      envelopePath);
+  const normalisedExcludes =
+    readOptions.exclude?.map(
+      normaliseGlobPattern);
+
+  const envelopeContainer =
+    new EnvelopeContainer(
+      context.logger);
+
+  const envelopeLoaded =
+    await envelopeContainer.tryLoadEnvelope(
+      envelopePath)
+
+  let envelope: Envelope;
+  if (
+    envelopeLoaded
+    && envelopeContainer.envelope !== null)
+  {
+    envelope = envelopeContainer.envelope;
+  } else {
+    envelope =
+      await envelopeContainer.initializeEnvelope();
+  }
+
+  const parameters : ReadParameters =
+    { command: 'read',
+        pattern: normalisedPattern,
+        exclude:
+          normalisedExcludes ?? [],
+        lines:
+          parsePositiveInteger(
+            readOptions.lines,
+            'lines'),
+        sizeKb:
+          parsePositiveInteger(
+            readOptions.sizeKb,
+            'sizeKb'),
+        readToEnd:
+          readOptions.readToEnd ?? false,
+        withBinaryB64:
+          readOptions.withBinaryB64 ?? false };
+
+  logger.trace(
+    'calling read() with parameters: %o',
+    parameters);
 
   await read(
     envelope,
-    { command: 'read',
-      pattern,
-      exclude:
-        readOptions.exclude ?? [],
-      lines:
-        parsePositiveInteger(
-          readOptions.lines,
-          'lines'),
-      sizeKb:
-        parsePositiveInteger(
-          readOptions.sizeKb,
-          'sizeKb'),
-      readToEnd:
-        readOptions.readToEnd ?? false,
-      withBinaryB64:
-        readOptions.withBinaryB64 ?? false },
+    parameters,
     undefined,
     context);
 
-  await saveEnvelope(
-    envelope,
+  await envelopeContainer.saveEnvelope(
     envelopePath);
 }
 
@@ -148,4 +178,13 @@ function parsePositiveInteger(
   }
 
   return parsed;
+}
+
+function normaliseGlobPattern(
+    pattern: string
+  ): string
+{
+  return pattern.replace(
+    /\\/g,
+    '/');
 }

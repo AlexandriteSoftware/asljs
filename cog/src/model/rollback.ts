@@ -42,6 +42,11 @@ export class BackupRollbackFeed
     const backup: Backup =
       { files: [] };
 
+    await mkdir(
+      dirname(
+        backupPath),
+      { recursive: true });
+
     await writeFile(
       backupPath,
       `${JSON.stringify(

@@ -35,6 +35,14 @@ test(
       workspace.resolve(
         'envelope.json');
 
+    workspace.writeText(
+      'envelope.json',
+      JSON.stringify(
+        { instruction: '',
+          files: [] },
+        null,
+        2));
+
     const patchPath =
       workspace.resolve(
         'patch.json');
@@ -45,14 +53,14 @@ test(
 
     workspace.writeText(
       'patch.json',
-      `${JSON.stringify(
+      JSON.stringify(
         { commands: [
           { command: 'write',
             path: filePath,
             content: 'new\n' }
         ] },
         null,
-        2)}\n`);
+        2));
 
     await main(
       argv(
@@ -73,7 +81,7 @@ test(
     assert.equal(
       existsSync(
         workspace.resolve(
-          'backup.json')),
+          '.cog/backup.json')),
       false);
   });
 
@@ -90,6 +98,14 @@ test(
     const envelopePath =
       workspace.resolve(
         'envelope.json');
+
+    workspace.writeText(
+      'envelope.json',
+      JSON.stringify(
+        { instruction: '',
+          files: [] },
+        null,
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -135,7 +151,7 @@ test(
     assert.equal(
       existsSync(
         workspace.resolve(
-          'backup.json')),
+          '.cog/backup.json')),
       false);
   });
 
@@ -152,6 +168,14 @@ test(
     const envelopePath =
       workspace.resolve(
         'envelope.json');
+
+    workspace.writeText(
+      'envelope.json',
+      JSON.stringify(
+        { instruction: '',
+          files: [] },
+        null,
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -211,6 +235,14 @@ test(
     const envelopePath =
       workspace.resolve(
         'envelope.json');
+
+    workspace.writeText(
+      'envelope.json',
+      JSON.stringify(
+        { instruction: '',
+          files: [] },
+        null,
+        2));
 
     const patchPath =
       workspace.resolve(

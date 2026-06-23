@@ -4,7 +4,7 @@ import path
   from 'node:path';
 import { type Envelope,
          type EnvelopeFile }
-  from '../model/envelope.js';
+  from '../envelope/envelope.js';
 import { type Command as CommandParameters }
   from '../model/command.js';
 import { type RollbackFeed }
@@ -150,7 +150,9 @@ function getUpdateCommand(
   return {
     ...command,
     pattern:
-      target.path
+      target.path.replace(
+        /\\/g,
+        '/')
   };
 }
 

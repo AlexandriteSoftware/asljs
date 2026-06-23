@@ -11,7 +11,7 @@ import { TmpDir }
 import { createLogger }
   from '../logger.js';
 import { type Envelope }
-  from '../model/envelope.js';
+  from '../envelope/envelope.js';
 
 const logger =
   createLogger();
@@ -55,6 +55,11 @@ test(
       workspace.resolve(
         'file.txt');
 
+    const filePattern =
+      filePath.replace(
+        /\\/g,
+        '/');
+
     workspace.writeText(
       'file.txt',
       'one\ntwo\nthree\n');
@@ -65,7 +70,7 @@ test(
     await read(
       envelope,
       { command: 'read',
-        pattern: filePath,
+        pattern: filePattern,
         lines: 2,
         sizeKb: 1 });
 
@@ -84,7 +89,7 @@ test(
     assert.deepEqual(
       envelope.files[0].update,
       { command: 'read',
-        pattern: filePath,
+        pattern: filePattern,
         exclude: [],
         lines: 2,
         sizeKb: 1,
@@ -105,6 +110,11 @@ test(
     const filePath =
       workspace.resolve(
         'file.txt');
+
+    const filePattern =
+      filePath.replace(
+        /\\/g,
+        '/');
 
     workspace.writeText(
       'file.txt',
@@ -132,7 +142,7 @@ test(
     assert.deepEqual(
       envelope.files[0].update,
       { command: 'read',
-        pattern: filePath,
+        pattern: filePattern,
         exclude: [],
         lines: 1,
         sizeKb: 1,

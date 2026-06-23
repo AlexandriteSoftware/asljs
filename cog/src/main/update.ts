@@ -1,17 +1,16 @@
 import { Command }
   from 'commander';
-import { loadEnvelope,
-         saveEnvelope }
-  from '../model/envelope.js';
+import { EnvelopeContainer }
+  from '../envelope/container.js';
 import { type ReadParameters,
          read }
   from '../commands/read.js';
-import { ensureEnvelopeFile,
-         resolveEnvelopePath }
+import { resolveEnvelopePath }
   from './env.js';
 import { type ExecutionContext,
          type MainOptions }
   from './types.js';
+import { Envelope } from '../envelope/envelope.js';
 
 export function configureUpdateCommand(
     program: Command,
@@ -47,24 +46,24 @@ async function updateCmd(
     resolveEnvelopePath(
       options.envelopePath);
 
-  await ensureEnvelopeFile(
-    envelopePath);
+  const envelopeContainer =
+    new EnvelopeContainer(
+      context.logger);
 
   const envelope =
-    await loadEnvelope(
+    await envelopeContainer.loadEnvelope(
       envelopePath);
 
   await updateEnvelopeFiles(
     envelope,
     context);
 
-  await saveEnvelope(
-    envelope,
+  await envelopeContainer.saveEnvelope(
     envelopePath);
 }
 
 export async function updateEnvelopeFiles(
-    envelope: Awaited<ReturnType<typeof loadEnvelope>>,
+    envelope: Envelope,
     context?: ExecutionContext
   ): Promise<void>
 {

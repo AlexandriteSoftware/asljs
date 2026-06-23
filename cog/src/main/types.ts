@@ -16,9 +16,3 @@ export interface MainOptions
   patchPath?: string;
   patchVerifyCmd?: string;
 }
-
-export interface NewEnvelope
-{
-  instruction: string;
-  files: unknown[];
-}

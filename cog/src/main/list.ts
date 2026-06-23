@@ -1,15 +1,14 @@
 import { Command }
   from 'commander';
 import { type Envelope,
-         type EnvelopeFile,
-         loadEnvelope }
-  from '../model/envelope.js';
-import { ensureEnvelopeFile,
-         resolveEnvelopePath }
+         type EnvelopeFile }
+  from '../envelope/envelope.js';
+import { resolveEnvelopePath }
   from './env.js';
 import { type ExecutionContext,
          type MainOptions }
   from './types.js';
+import { EnvelopeContainer } from '../envelope/container.js';
 
 export function configureListCommand(
     program: Command,
@@ -45,11 +44,12 @@ async function listCmd(
     resolveEnvelopePath(
       options.envelopePath);
 
-  await ensureEnvelopeFile(
-    envelopePath);
+  const envelopeContainer =
+    new EnvelopeContainer(
+      context.logger);
 
   const envelope =
-    await loadEnvelope(
+    await envelopeContainer.loadEnvelope(
       envelopePath);
 
   for (const line of formatFileList(

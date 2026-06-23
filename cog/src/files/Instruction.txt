@@ -58,5 +58,5 @@ CLI commands:
 - `cog read <path> [arguments]` reads files into the envelope.
 - `cog update` refreshes envelope files using their stored update commands.
 - `cog restore` restores files from `backup.json` and removes the backup file.
-- `cog apply-patch` applies the patch transactionally to the project files and
-  updates the envelope.
+- `cog apply-patch` applies the patch to the project files and updates
+  the envelope.

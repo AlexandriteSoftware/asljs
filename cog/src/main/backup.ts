@@ -10,6 +10,7 @@ export function resolveBackupPath(
   return join(
     dirname(
       envelopePath),
+    '.cog',
     'backup.json');
 }
 
