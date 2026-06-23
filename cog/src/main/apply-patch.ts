@@ -10,7 +10,7 @@ import { BackupRollbackFeed,
   from '../model/rollback.js';
 import { loadPatch }
   from '../model/patch.js';
-import { type Read,
+import { type ReadParameters,
          read }
   from '../commands/read.js';
 import { type Write,
@@ -142,8 +142,7 @@ async function applyPatchCommand(
   if (command.command === 'read') {
     await read(
       envelope,
-      command as unknown as Read,
-      rollbackFeed);
+      command as unknown as ReadParameters);
   } else if (command.command === 'write') {
     await write(
       envelope,

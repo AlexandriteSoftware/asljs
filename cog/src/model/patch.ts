@@ -1,7 +1,6 @@
 import fs
   from 'node:fs/promises';
-import { Command }
-  from "./envelope.js";
+import { Command } from './command.js';
 
 export interface Patch {
   task: string;

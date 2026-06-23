@@ -4,7 +4,7 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import { Logger }
+import { type Logger }
   from './logger.js';
 
 let instanceCounter = 0;

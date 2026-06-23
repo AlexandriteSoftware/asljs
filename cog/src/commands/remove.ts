@@ -1,8 +1,8 @@
 import fs
   from 'node:fs/promises';
-import { type Envelope,
-         type Command }
+import { type Envelope }
   from '../model/envelope.js';
+import { type Command } from '../model/command.js';
 import { type RollbackFeed }
   from '../model/rollback.js';
 

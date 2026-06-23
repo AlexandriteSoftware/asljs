@@ -3,13 +3,13 @@
 COG is a command line tool that maintains project changing session for
 AI agents.
 
-It operates by creating and maintaining an envelope file, refreshing envelope
-file snapshots, and applying patches to project files.
+It operates by creating and maintaining an envelope file, and applying commands
+to project files and the envelope.
 
 ## Envelope
 
 Envelope is a JSON file that contains a list of files produced by read
-commands. It does not contain a command log.
+commands.
 
 ## File update commands
 
@@ -61,6 +61,9 @@ If the process crashes or is killed and `backup.json` remains, the next
 restore the backup and remove `backup.json`, or manually delete `backup.json` to
 complete the backup without restoring.
 
+When the patch fails because of verification failure, `apply-patch` must
+restore the backup and remove `backup.json`.
+
 ## Patch
 
 Patch is a series of commands that are applied to the envelope.
@@ -72,9 +75,7 @@ Commands:
 - `remove`: removes a file.
 - `replace`: replaces part of the file, specified by search, with new content,
   specified by replacement.
-- `exec`: executes a command and writes its output to file, adds this file to
-  the envelope.
-- `task`: sets the task field in the envelope.
+- `rename`: renames a file.
 
 ## Applying patch
 
@@ -115,7 +116,6 @@ The command must:
   applying anything. `--patch-verify-cmd` specifies the command used to verify
   the applied patch and takes precedence over `COG_PATCH_VERIFY_CMD`.
 
-
 ## Patch verification
 
 `apply-patch` supports an apply-patch-specific `--patch-verify-cmd <command>`
@@ -135,7 +135,6 @@ If the command exits with code `0`, the patch is valid.
 If the command exits with any non-zero code, the patch is invalid and
 `apply-patch` must fail. Since verification happens before the patch is accepted,
 verification failure must use the normal transactional rollback path.
-
 
 ## List command
 

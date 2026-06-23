@@ -1,6 +1,6 @@
 # cog
 
-> Part of [Alexandrite Software Library][#1] - a set of high-quality,
+> Part of [Alexandrite Software Library][1] - a set of high-quality,
 > performant JavaScript libraries for everyday use.
 
 Context-building library and CLI for AI agents that work with project files
@@ -9,6 +9,8 @@ through a structured envelope and patch workflow.
 COG helps an agent keep a changing project session explicit. It stores file
 snapshots in an envelope with per-file update commands, and applies structured
 patch commands back to the project.
+
+[1]: https://github.com/AlexandriteSoftware/asljs
 
 ## Installation
 
@@ -152,5 +154,3 @@ COG is published as an ES module package. Import package-root helpers from
 ```js
 import * as cog from 'asljs-cog';
 ```
-
-## Development

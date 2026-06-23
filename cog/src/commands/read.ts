@@ -1,11 +1,14 @@
 import fs
+  from 'node:fs';
+import fsp
   from 'node:fs/promises';
 import path
   from 'node:path';
 import { type Envelope,
-         type EnvelopeFile,
-         type Command }
+         type EnvelopeFile }
   from '../model/envelope.js';
+import { type Command as CommandParameters }
+  from '../model/command.js';
 import { type RollbackFeed }
   from '../model/rollback.js';
 
@@ -17,8 +20,8 @@ const textDecoder =
 const defaultLines = 150;
 const defaultSizeKb = 15;
 
-export interface Read
-  extends Command
+export interface ReadParameters
+  extends CommandParameters
 {
   pattern: string;
   exclude?: string[];
@@ -34,7 +37,7 @@ interface ReadTarget
   diskPath: string;
 }
 
-interface ReadOptions
+interface ReadLimits
 {
   lines: number;
   sizeKb: number;
@@ -44,23 +47,23 @@ interface ReadOptions
 
 export async function read(
     envelope: Envelope,
-    command: Read,
-    _rollbackFeed?: RollbackFeed
+    parameters: ReadParameters
   ): Promise<void>
 {
-  if (!command.pattern) {
+  if (!parameters.pattern) {
     throw new Error(
       'Read command pattern is required');
   }
 
-  const normalizedCommand =
-    normalizeCommand(
-      command);
+  const normalizedParameters =
+    normalizeReadParameters(
+      parameters);
 
   const targets =
     await getReadTargets(
-      normalizedCommand.pattern,
-      normalizedCommand.exclude ?? []);
+      normalizedParameters.pattern,
+      normalizedParameters.exclude
+      ?? []);
 
   for (const target of targets) {
     const file =
@@ -68,15 +71,15 @@ export async function read(
         target,
         getUpdateCommand(
           target,
-          normalizedCommand),
+          normalizedParameters),
         { lines:
-            normalizedCommand.lines ?? defaultLines,
+            normalizedParameters.lines ?? defaultLines,
           sizeKb:
-            normalizedCommand.sizeKb ?? defaultSizeKb,
+            normalizedParameters.sizeKb ?? defaultSizeKb,
           readToEnd:
-            normalizedCommand.readToEnd ?? false,
+            normalizedParameters.readToEnd ?? false,
           withBinaryB64:
-            normalizedCommand.withBinaryB64 ?? false });
+            normalizedParameters.withBinaryB64 ?? false });
 
     const fileIndex =
       envelope.files
@@ -101,31 +104,36 @@ export async function rollbackRead(
 {
 }
 
-function normalizeCommand(
-    command: Read
-  ): Read
+function normalizeReadParameters(
+    command: ReadParameters
+  ): ReadParameters
 {
   return {
     command: 'read',
     pattern:
       command.pattern,
     exclude:
-      command.exclude ?? [],
+      command.exclude
+      ?? [],
     lines:
-      command.lines ?? defaultLines,
+      command.lines
+      ?? defaultLines,
     sizeKb:
-      command.sizeKb ?? defaultSizeKb,
+      command.sizeKb
+      ?? defaultSizeKb,
     readToEnd:
-      command.readToEnd ?? false,
+      command.readToEnd
+      ?? false,
     withBinaryB64:
-      command.withBinaryB64 ?? false
+      command.withBinaryB64
+      ?? false
   };
 }
 
 function getUpdateCommand(
     target: ReadTarget,
-    command: Read
-  ): Read
+    command: ReadParameters
+  ): ReadParameters
 {
   return {
     ...command,
@@ -140,8 +148,7 @@ async function getReadTargets(
   ): Promise<ReadTarget[]>
 {
   const stat =
-    await statIfExists(
-      pattern);
+    await statIfExists(pattern);
 
   if (stat?.isFile()) {
     return isExcluded(
@@ -163,9 +170,8 @@ async function getReadTargets(
       excludes);
   }
 
-  if (!hasGlobMagic(
-      pattern)) {
-    await fs.stat(
+  if (!hasGlobMagic(pattern)) {
+    await fsp.stat(
       pattern);
   }
 
@@ -242,7 +248,7 @@ async function walkFiles(
   ): Promise<string[]>
 {
   const entries =
-    await fs.readdir(
+    await fsp.readdir(
       root,
       { withFileTypes: true });
 
@@ -271,11 +277,10 @@ async function walkFiles(
 
 async function statIfExists(
     filePath: string
-  ): Promise<Awaited<ReturnType<typeof fs.stat>> | undefined>
+  ): Promise<fs.Stats | undefined>
 {
   try {
-    return await fs.stat(
-      filePath);
+    return await fsp.stat(filePath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return undefined;
@@ -315,12 +320,12 @@ function isExcluded(
 
 async function getEnvelopeFile(
     target: ReadTarget,
-    update: Read,
-    options: ReadOptions
+    update: ReadParameters,
+    options: ReadLimits
   ): Promise<EnvelopeFile>
 {
   const data =
-    await fs.readFile(
+    await fsp.readFile(
       target.diskPath);
 
   let content: string;
@@ -374,7 +379,7 @@ async function getEnvelopeFile(
 
 function limitText(
     content: string,
-    options: ReadOptions
+    options: ReadLimits
   ): { content: string; complete: boolean }
 {
   if (options.readToEnd) {
@@ -439,8 +444,7 @@ function hasGlobMagic(
     pattern: string
   ): boolean
 {
-  return /[*?[\]{}]/.test(
-    pattern);
+  return /[*?[\]{}]/.test(pattern);
 }
 
 function globRoot(

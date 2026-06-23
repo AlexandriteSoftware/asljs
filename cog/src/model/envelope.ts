@@ -4,7 +4,7 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { type Read }
+import { type ReadParameters }
   from '../commands/read.js';
 
 export interface Envelope {
@@ -12,16 +12,12 @@ export interface Envelope {
   files: EnvelopeFile[];
 }
 
-export interface Command {
-  command: string;
-}
-
 export interface EnvelopeFile {
   path: string;
   type: 'text' | 'binary';
   content?: string;
   complete?: boolean;
-  update?: Read;
+  update?: ReadParameters;
 }
 
 export async function loadEnvelope(
@@ -40,10 +36,6 @@ export async function loadEnvelope(
 
     const envelope =
       json as Envelope;
-
-    if ('commands' in envelope) {
-      delete (envelope as unknown as { commands?: unknown }).commands;
-    }
 
     return envelope;
   } catch (error) {

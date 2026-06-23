@@ -3,7 +3,7 @@ import { Command }
 import { loadEnvelope,
          saveEnvelope }
   from '../model/envelope.js';
-import { type Read,
+import { type ReadParameters,
          read }
   from '../commands/read.js';
 import { ensureEnvelopeFile,
@@ -68,7 +68,7 @@ export async function updateEnvelopeFiles(
         file =>
           file.update)
       .filter(
-        (command): command is Read =>
+        (command): command is ReadParameters =>
           command !== undefined);
 
   for (const command of updateCommands) {
