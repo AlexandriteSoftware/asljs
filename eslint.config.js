@@ -5,17 +5,17 @@ import tsParser
 import tseslint
   from 'typescript-eslint';
 import jsImportStyleRule
-  from './eslint-style-rules/src/js-style-rules/import.js';
+  from './eslint-style-rules/dist/js-style-rules/import.js';
 import jsFunctionDeclarationStyleRule
-  from './eslint-style-rules/src/js-style-rules/function-declaration.js';
+  from './eslint-style-rules/dist/js-style-rules/function-declaration.js';
 import jsCallExpressionStyleRule
-  from './eslint-style-rules/src/js-style-rules/call-expression.js';
+  from './eslint-style-rules/dist/js-style-rules/call-expression.js';
 import jsVariableDeclarationStyleRule
-  from './eslint-style-rules/src/js-style-rules/variable-declaration.js';
+  from './eslint-style-rules/dist/js-style-rules/variable-declaration.js';
 import jsStatementSpacingStyleRule
-  from './eslint-style-rules/src/js-style-rules/statement-spacing.js';
+  from './eslint-style-rules/dist/js-style-rules/statement-spacing.js';
 import tsImportStyleRule
-  from './eslint-style-rules/src/ts-style-rules/import.js';
+  from './eslint-style-rules/dist/ts-style-rules/import.js';
 
 /**
  * @typedef

@@ -17,7 +17,8 @@ const logger =
 test.after(
   () => logger.dispose());
 
-const lineEndings = [ '\n', '\r\n' ];
+const lineEndings =
+  [ '\n', '\r\n' ];
 
 for (const lineEnding of lineEndings) {
   const lineEndingDescription =
