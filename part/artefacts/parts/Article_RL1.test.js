@@ -17,43 +17,73 @@ const logger =
 test.after(
   () => logger.dispose());
 
-test(
-  'Article_RL1 passes when the article starts with a level 1 heading',
-  async t => {
-    const workspace =
-      new TmpDir(
-        logger);
+const lineEndings = [ '\n', '\r\n' ];
 
-    t.after(
-      () => workspace.cleanup());
+for (const lineEnding of lineEndings) {
+  const lineEndingDescription =
+    lineEnding === '\n'
+      ? 'LF'
+      : 'CRLF';
 
-    workspace.writeText(
-      'Article.md',
-      '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
+  test(
+    'Article_RL1 passes when the article starts with a level 1 heading and '
+    + `the heading matches the file name (${lineEndingDescription})`,
+    async t => {
+      const workspace =
+        new TmpDir(
+          logger);
 
-    workspace.writeText(
-      'Article1.md',
-      '# Article1\n\nBody.\n');
+      t.after(
+        () => workspace.cleanup());
 
-    const context =
-      createRuleValidationContext(
-        logger,
-        workspace.path);
+      const articleLines =
+        [ '# Article',
+          '',
+          'Body.',
+          '',
+          '## Location',
+          '',
+          '- Pattern: `/*.md`',
+          '',
+          '## Rules',
+          '',
+          '- RL1 - RL1',
+          '' ];
 
-    const artefact =
-      await context.artefacts.tryGetArtefact('Article1.md');
+      workspace.writeText(
+        'Article.md',
+        articleLines.join(lineEnding));
 
-    if (!artefact) {
-      throw new Error(
-        'Failed to load artefact for test.');
-    }
+      const article1Lines =
+      [ '# Article1',
+        '',
+        'Body.',
+        '' ];
 
-    await assert.doesNotReject(
-      async () =>
-        await validate(
-          artefact,
-          context));
-  });
+      workspace.writeText(
+        'Article1.md',
+        article1Lines.join(lineEnding));
+
+      const context =
+        createRuleValidationContext(
+          logger,
+          workspace.path);
+
+      const artefact =
+        await context.artefacts.tryGetArtefact('Article1.md');
+
+      if (!artefact) {
+        throw new Error(
+          'Failed to load artefact for test.');
+      }
+
+      await assert.doesNotReject(
+        async () =>
+          await validate(
+            artefact,
+            context));
+    });
+}
 
 test(
   'Article_RL1 fails when the article does not start with a level 1 heading',

@@ -46,6 +46,9 @@ export async function execInit(
       ARTEFACTS_DIRECTORY);
 
   for (const entryName of artefactEntries) {
+    environment.stdout.write(
+      `Copying ${entryName}\n`);
+
     await cp(
       path.join(
         ARTEFACTS_DIRECTORY,
@@ -58,5 +61,5 @@ export async function execInit(
   }
 
   environment.stdout.write(
-    `Initialized definitions directory: ${definitionsPath}\n`);
+    `Initialised definitions directory: ${definitionsPath}\n`);
 }
