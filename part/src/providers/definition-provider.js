@@ -157,10 +157,15 @@ export class DefinitionProvider
         path.extname(
           filePath));
 
-    const content =
+    let content =
       await readFile(
         filePath,
         'utf8');
+
+    if (content.startsWith('\uFEFF')) {
+      content =
+        content.slice(1);
+    }
 
     return await this.parseDefinition(
       { path: filePath,

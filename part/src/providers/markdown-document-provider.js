@@ -35,10 +35,15 @@ export class MarkdownDocumentProvider
   async load(
     path)
   {
-    const content =
+    let content =
       await readFile(
         path,
         'utf8');
+
+    if (content.startsWith('\uFEFF')) {
+      content =
+        content.slice(1);
+    }
 
     const document =
       this.parse(content);

@@ -20,70 +20,82 @@ test.after(
 const lineEndings =
   [ '\n', '\r\n' ];
 
-for (const lineEnding of lineEndings) {
-  const lineEndingDescription =
-    lineEnding === '\n'
-      ? 'LF'
-      : 'CRLF';
+const prefixes =
+  [ '',
+    '\uFEFF' ];
 
-  test(
-    'Article_RL1 passes when the article starts with a level 1 heading and '
-    + `the heading matches the file name (${lineEndingDescription})`,
-    async t => {
-      const workspace =
-        new TmpDir(
-          logger);
+for (const prefix of prefixes) {
+  const prefixDescription =
+    prefix === ''
+      ? 'no BOM'
+      : 'BOM';
 
-      t.after(
-        () => workspace.cleanup());
+  for (const lineEnding of lineEndings) {
+    const lineEndingDescription =
+      lineEnding === '\n'
+        ? 'LF'
+        : 'CRLF';
 
-      const articleLines =
-        [ '# Article',
+    test(
+      'Article_RL1 passes when the article starts with '
+      + 'a level 1 heading and the heading matches the file name '
+      + `(${prefixDescription}, ${lineEndingDescription})`,
+      async t => {
+        const workspace =
+          new TmpDir(
+            logger);
+
+        t.after(
+          () => workspace.cleanup());
+
+        const articleLines =
+          [ `${prefix}# Article`,
+            '',
+            'Body.',
+            '',
+            '## Location',
+            '',
+            '- Pattern: `/*.md`',
+            '',
+            '## Rules',
+            '',
+            '- RL1 - RL1',
+            '' ];
+
+        workspace.writeText(
+          'Article.md',
+          articleLines.join(lineEnding));
+
+        const article1Lines =
+        [ `${prefix}# Article1`,
           '',
           'Body.',
-          '',
-          '## Location',
-          '',
-          '- Pattern: `/*.md`',
-          '',
-          '## Rules',
-          '',
-          '- RL1 - RL1',
           '' ];
 
-      workspace.writeText(
-        'Article.md',
-        articleLines.join(lineEnding));
+        workspace.writeText(
+          'Article1.md',
+          article1Lines.join(lineEnding));
 
-      const article1Lines =
-      [ '# Article1',
-        '',
-        'Body.',
-        '' ];
+        const context =
+          createRuleValidationContext(
+            logger,
+            workspace.path);
 
-      workspace.writeText(
-        'Article1.md',
-        article1Lines.join(lineEnding));
+        const artefact =
+          await context.artefacts.tryGetArtefact('Article1.md');
 
-      const context =
-        createRuleValidationContext(
-          logger,
-          workspace.path);
+        if (!artefact) {
+          throw new Error(
+            'Failed to load artefact for test.');
+        }
 
-      const artefact =
-        await context.artefacts.tryGetArtefact('Article1.md');
-
-      if (!artefact) {
-        throw new Error(
-          'Failed to load artefact for test.');
-      }
-
-      await assert.doesNotReject(
-        async () =>
-          await validate(
-            artefact,
-            context));
-    });
+        await assert.doesNotReject(
+          async () =>
+            await validate(
+              artefact,
+              context));
+      });
+  }
 }
 
 test(

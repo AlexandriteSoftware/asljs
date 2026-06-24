@@ -16,10 +16,15 @@ export async function validate(
   artefact,
   context)
 {
-  const content =
+  let content =
     await readFile(
       artefact.path,
       'utf8');
+
+  if (content.startsWith('\uFEFF')) {
+    content =
+      content.slice(1);
+  }
 
   const document =
     context.markdownDocuments
