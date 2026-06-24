@@ -1,6 +1,6 @@
 {
   "name": "asljs-part",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Project artefact tracing framework and CLI for markdown-defined project artefacts.",
   "type": "module",
   "main": "src/index.js",
