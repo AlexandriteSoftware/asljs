@@ -7,7 +7,7 @@ import assert
 import { readFile }
   from 'node:fs/promises';
 import { marked,
-         type Tokens }
+         Tokens }
   from 'marked';
 import { ESLint }
   from 'eslint';

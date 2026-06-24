@@ -1,18 +1,18 @@
-import { type JSRuleDefinition,
-         type SourceCode,
-         type Rule,
-         type AST }
+import { JSRuleDefinition,
+         SourceCode,
+         Rule,
+         AST }
   from 'eslint';
-import { type RuleDefinition,
-         type RuleDefinitionTypeOptions }
+import { RuleDefinition,
+         RuleDefinitionTypeOptions }
   from '@eslint/core';
-import { type Expression,
-         type VariableDeclarator,
-         type Identifier,
-         type Literal,
-         type ObjectExpression,
-         type ArrayExpression,
-         type UnaryExpression }
+import { Expression,
+         VariableDeclarator,
+         Identifier,
+         Literal,
+         ObjectExpression,
+         ArrayExpression,
+         UnaryExpression }
   from 'estree';
 
 interface FormattingContext {

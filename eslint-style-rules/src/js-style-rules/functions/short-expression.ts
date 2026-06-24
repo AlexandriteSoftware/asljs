@@ -1,12 +1,12 @@
-import { type Expression,
-         type SpreadElement,
-         type Identifier,
-         type Literal,
-         type UnaryExpression,
-         type ObjectExpression,
-         type ArrayExpression,
-         type TemplateLiteral,
-         type NewExpression}
+import { Expression,
+         SpreadElement,
+         Identifier,
+         Literal,
+         UnaryExpression,
+         ObjectExpression,
+         ArrayExpression,
+         TemplateLiteral,
+         NewExpression }
   from 'estree';
 
 const LONG_EXPRESSION_LENGTH = 15;

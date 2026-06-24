@@ -6,7 +6,7 @@ import * as espree
   from 'espree';
 import { expressionIsShort }
   from './short-expression.js';
-import { type Expression }
+import { Expression }
   from 'estree';
 
 function parseExpression(

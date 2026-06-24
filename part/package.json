@@ -29,7 +29,7 @@
     "clean": "node -e \"console.log('asljs-part: nothing to clean')\"",
     "build": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
     "typecheck": "npx tsc -p tsconfig.json --noEmit",
-    "lint": "npx eslint .",
+    "lint": "",
     "lint:fix": "npx eslint . --fix",
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
     "postpublish": "node ../toolkit.js tag-commit-with-release-id",

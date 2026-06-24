@@ -1,16 +1,16 @@
-import { type JSRuleDefinition,
-         type Rule }
+import { JSRuleDefinition,
+         Rule }
   from 'eslint';
-import { type ImportDeclaration,
-         type ImportSpecifier,
-         type ImportDefaultSpecifier,
-         type ImportNamespaceSpecifier,
-         type Identifier,
-         type Literal }
+import { ImportDeclaration,
+         ImportSpecifier,
+         ImportDefaultSpecifier,
+         ImportNamespaceSpecifier,
+         Identifier,
+         Literal }
   from 'estree';
-import { type RuleDefinition,
-         type RuleDefinitionTypeOptions }
-  from '@eslint/core'
+import { RuleDefinition,
+         RuleDefinitionTypeOptions }
+  from '@eslint/core';
 
 type Import =
   | ImportSpecifier

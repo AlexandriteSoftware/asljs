@@ -1,10 +1,10 @@
-import { type JSRuleDefinition,
-         type Rule }
+import { JSRuleDefinition,
+         Rule }
   from 'eslint';
-import { type RuleDefinition,
-         type RuleDefinitionTypeOptions }
-  from '@eslint/core'
-import { type FunctionDeclaration }
+import { RuleDefinition,
+         RuleDefinitionTypeOptions }
+  from '@eslint/core';
+import { FunctionDeclaration }
   from 'estree';
 
 type FormattingContext =

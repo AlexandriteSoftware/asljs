@@ -9,6 +9,7 @@
     "**/*.test.ts"
   ],
   "compilerOptions": {
+    "types": [ "node" ],
     "rootDir": "src",
     "outDir": "dist"
   }

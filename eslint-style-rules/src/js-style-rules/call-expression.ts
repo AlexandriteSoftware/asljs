@@ -1,13 +1,13 @@
 import { expressionIsShort }
   from './functions/short-expression.js';
-import { type Rule,
-         type SourceCode,
-         type AST }
+import { Rule,
+         SourceCode,
+         AST }
   from 'eslint';
-import { type RuleDefinition,
-         type RuleDefinitionTypeOptions }
-  from '@eslint/core'
-import { type SimpleCallExpression }
+import { RuleDefinition,
+         RuleDefinitionTypeOptions }
+  from '@eslint/core';
+import { SimpleCallExpression }
   from 'estree';
 
 type FormattingContext =
@@ -87,7 +87,8 @@ export default ruleDefinition;
  */
 function checkLayout(
     node: SimpleCallExpression,
-  context: Rule.RuleContext)
+    context: Rule.RuleContext
+  ): boolean
 {
   const argumentsList =
     node.arguments;
@@ -192,9 +193,10 @@ function checkLayout(
 }
 
 function buildCallExpression(
-  node: SimpleCallExpression,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext)
+    node: SimpleCallExpression,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const openingParenthesis =
     sourceCode.getTokenAfter(

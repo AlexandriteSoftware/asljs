@@ -1,13 +1,13 @@
-import { type SourceCode,
-         type Rule,
-         type AST }
+import { SourceCode,
+         Rule,
+         AST }
   from 'eslint';
-import { type RuleDefinition,
-         type RuleDefinitionTypeOptions,
-         type SourceRange }
+import { RuleDefinition,
+         RuleDefinitionTypeOptions,
+         SourceRange }
   from '@eslint/core';
-import { type Node,
-         type BlockStatement }
+import { Node,
+         BlockStatement }
   from 'estree';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
