@@ -40,7 +40,7 @@ test(
 
     assert.match(
       environment.stdout.toString(),
-      /Initialized definitions directory:/);
+      /Initialised definitions directory:/);
 
     assert.equal(
       environment.stderr.toString(),
