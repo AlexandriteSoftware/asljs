@@ -11,24 +11,23 @@
  */
 
 import fs
-  from 'node:fs';
+  from 'node:fs/promises';
 import path
   from 'node:path';
 import process
   from 'node:process';
 import console
   from 'node:console';
-import {
-    fileURLToPath,
-    pathToFileURL,
-  } from 'node:url';
-import {
-    execSync
-  } from 'node:child_process';
+import { fileURLToPath,
+         pathToFileURL }
+  from 'node:url';
+import { execSync }
+  from 'node:child_process';
 
 const ROOT_DIR =
   path.dirname(
-    fileURLToPath(import.meta.url));
+    fileURLToPath(
+      import.meta.url));
 
 const DEPENDENCY_FIELD_NAMES =
   [ 'dependencies',
@@ -36,29 +35,78 @@ const DEPENDENCY_FIELD_NAMES =
     'peerDependencies',
     'optionalDependencies' ];
 
+/**
+ * @typedef
+ *   { import('child_process')
+ *       .ExecSyncOptionsWithStringEncoding }
+ *   ExecSyncOptionsWithStringEncoding
+ */
+
+/**
+ * @param {string} command 
+ * @param {string} cwd 
+ * @returns {string}
+ */
 function runGit(
     command,
     cwd = ROOT_DIR
   )
 {
-  return execSync(
-    command,
+  /** @type {ExecSyncOptionsWithStringEncoding} */
+  const options =
     { cwd,
       stdio: [ 'ignore', 'pipe', 'pipe' ],
-      encoding: 'utf8' });
+      encoding: 'utf8' };
+
+  return execSync(
+    command,
+    options);
 }
 
+/**
+ * @param {string} command 
+ * @param {string} cwd 
+ * @returns {string}
+ */
 function runCommand(
     command,
-    cwd
+    cwd = null
   )
 {
-  execSync(
-    command,
+  cwd ??= process.cwd();
+
+  /** @type {ExecSyncOptionsWithStringEncoding} */
+  const options =
     { cwd,
-      stdio: 'inherit' });
+      stdio: 'inherit',
+      encoding: 'utf8' };
+
+  return execSync(
+    command,
+    options);
 }
 
+/**
+ * @param {string[]} commands
+ * @param {string} cwd 
+ * @returns {void}
+ */
+function runCommands(
+    commands,
+    cwd = null
+  )
+{
+  for (const command of commands) {
+    runCommand(
+      command,
+      cwd);
+  }
+}
+
+/**
+ * @param {string} filePath 
+ * @returns {unknown}
+ */
 function readJsonFile(
     filePath
   )
@@ -69,22 +117,37 @@ function readJsonFile(
       'utf8'));
 }
 
+/**
+ * @param {string} filePath 
+ * @param {unknown} value 
+ * @returns {void}
+ */
 function writeJsonFile(
     filePath,
     value
   )
 {
+  const text =
+    JSON.stringify(
+      value,
+      null,
+      2);
+
   fs.writeFileSync(
     filePath,
-    `${JSON.stringify(value, null, 2)}\n`,
+    `${text}\n`,
     'utf8');
 }
 
-function readTextFile(
+/**
+ * @param {string} filePath 
+ * @returns {Promise<string>}
+ */
+async function readTextFile(
     filePath
   )
 {
-  return fs.readFileSync(
+  return await fs.readFile(
     filePath,
     'utf8');
 }
@@ -119,7 +182,8 @@ function getWorkspacePackageDirs(
   const rootPackageJson =
     getRootPackageJson();
 
-  if (!Array.isArray(rootPackageJson.workspaces)) {
+  if (!Array.isArray(
+    rootPackageJson.workspaces)) {
     throw new Error(
       'Root package.json must define a workspaces array.');
   }
@@ -155,11 +219,14 @@ function getPackageInfo(
     getPackageJsonPath(packageDir);
 
   const packageJson =
-    readJsonFile(packageJsonPath);
+    readJsonFile(
+      packageJsonPath);
 
-  const name = packageJson.name;
+  const name =
+    packageJson.name;
 
-  const version = packageJson.version;
+  const version =
+    packageJson.version;
 
   if (typeof name !== 'string'
       || name.trim() === '')
@@ -204,21 +271,57 @@ function getReleaseTagId(
   return `${packageInfo.name}@${packageInfo.version}`;
 }
 
-function cleanDist(
+/**
+ * @param {string[]} args 
+ * @returns {Promise<void>}
+ */
+async function clean(
+    args
   )
 {
-  const distPath =
-    path.join(
-      process.cwd(),
-      'dist');
+  const pathsToClean =
+    args.length > 0
+      ? args
+      : [ 'dist', 'build' ];
 
-  fs.rmSync(
-    distPath,
-    { recursive: true,
-      force: true });
+  const cwd =
+    process.cwd();
 
-  console.log(
-    `Removed: ${distPath}`);
+  for (const pathToClean of pathsToClean) {
+    const fullPathToClean =
+      path.join(
+        cwd,
+        pathToClean);
+
+    if (!fullPathToClean.startsWith(cwd)) {
+      throw new Error(
+        `Refusing to clean outside of the current working directory: ${fullPathToClean}`);
+    }
+
+    try {
+      await fs.stat(
+        fullPathToClean);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+
+      continue;
+    }
+
+    await fs.rm(
+      fullPathToClean,
+      { recursive: true,
+        force: true });
+
+    const relativePathToClean =
+      path.relative(
+        cwd,
+        fullPathToClean);
+
+    console.log(
+      `[clean] removed ${relativePathToClean}`);
+  }
 }
 
 function ensureCleanWorkingFolder(
@@ -279,7 +382,8 @@ export function updateDependencyVersionRanges(
   let changed = false;
 
   for (const fieldName of DEPENDENCY_FIELD_NAMES) {
-    const dependencies = packageJson[fieldName];
+    const dependencies =
+      packageJson[fieldName];
 
     if (dependencies === undefined
         || dependencies === null)
@@ -298,7 +402,8 @@ export function updateDependencyVersionRanges(
       continue;
     }
 
-    const nextRange = `^${nextVersion}`;
+    const nextRange =
+      `^${nextVersion}`;
 
     if (dependencies[dependencyName] === nextRange) {
       continue;
@@ -374,19 +479,23 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
       currentPackageName
     )
   {
-    if (permanent.has(currentPackageName)) {
+    if (permanent.has(
+      currentPackageName)) {
       return;
     }
 
-    if (temporary.has(currentPackageName)) {
+    if (temporary.has(
+      currentPackageName)) {
       throw new Error(
         `Detected circular workspace dependency involving "${currentPackageName}".`);
     }
 
-    temporary.add(currentPackageName);
+    temporary.add(
+      currentPackageName);
 
     const dependencyNames =
-      dependencyGraph.get(currentPackageName)
+      dependencyGraph.get(
+        currentPackageName)
       ?? [];
 
     for (const dependencyName of dependencyNames) {
@@ -398,9 +507,11 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
       }
     }
 
-    temporary.delete(currentPackageName);
+    temporary.delete(
+      currentPackageName);
 
-    permanent.add(currentPackageName);
+    permanent.add(
+      currentPackageName);
   }
 
   visit(packageName);
@@ -423,9 +534,11 @@ function buildLocalDeps(
         ]));
 
   const packageInfo =
-    getPackageInfo(process.cwd());
+    getPackageInfo(
+      process.cwd());
 
-  if (!packageInfoByName.has(packageInfo.name)) {
+  if (!packageInfoByName.has(
+    packageInfo.name)) {
     throw new Error(
       `Current package "${packageInfo.name}" is not part of the root workspaces.`);
   }
@@ -505,7 +618,9 @@ function updateWorkspaceDependents(
     writeJsonFile(
       packageInfo.packageJsonPath,
       packageInfo.packageJson);
-    changedPackageJsonPaths.push(packageInfo.packageJsonPath);
+
+    changedPackageJsonPaths.push(
+      packageInfo.packageJsonPath);
   }
 
   return changedPackageJsonPaths;
@@ -518,9 +633,16 @@ function commitReleaseChanges(
 {
   const relativePaths =
     filePaths
-      .map(filePath => path.relative(ROOT_DIR, filePath))
-      .filter(filePath => filePath !== '')
-      .map(filePath => `"${filePath.replace(/\\/g, '/')}"`);
+      .map(
+        filePath => path.relative(
+          ROOT_DIR,
+          filePath))
+      .filter(
+        filePath => filePath !== '')
+      .map(
+        filePath => `"${filePath.replace(
+          /\\/g,
+          '/')}"`);
 
   if (relativePaths.length === 0) {
     throw new Error('No release files to commit.');
@@ -554,24 +676,26 @@ function releasePatch(
   ensureCleanWorkingFolder();
 
   const packageInfo =
-    getPackageInfo(process.cwd());
+    getPackageInfo(
+      process.cwd());
 
-  ensureReleaseTarget(packageInfo);
+  ensureReleaseTarget(
+    packageInfo);
 
-  runCommand('npm run typecheck', packageInfo.dir);
-  runCommand('npm run lint', packageInfo.dir);
-  runCommand('npm run test', packageInfo.dir);
-  runCommand('npm run clean', packageInfo.dir);
-  runCommand('npm run build', packageInfo.dir);
-  runCommand('npm version patch --no-git-tag-version', packageInfo.dir);
-
-  const releasedPackageInfo =
-    getPackageInfo(packageInfo.dir);
+  runCommands(
+    [ 'npm run clean',
+      'npm run typecheck',
+      'npm run lint',
+      'npm run build',
+      'npm run test',
+      'npm run clean',
+      'npm run build:dist',
+      'npm version patch --no-git-tag-version' ]);
 
   const changedDependencyPackageJsonPaths =
     updateWorkspaceDependents(
-      releasedPackageInfo.name,
-      releasedPackageInfo.version);
+      packageInfo.name,
+      packageInfo.version);
 
   const packageLockPath =
     path.join(
@@ -584,13 +708,13 @@ function releasePatch(
 
   runCommand(
     'npm publish --ignore-scripts',
-    releasedPackageInfo.dir);
+    packageInfo.dir);
 
   const releaseId =
-    `${releasedPackageInfo.name}@${releasedPackageInfo.version}`;
+    `${packageInfo.name}@${packageInfo.version}`;
 
   commitReleaseChanges(
-    [ releasedPackageInfo.packageJsonPath,
+    [ packageInfo.packageJsonPath,
       ...changedDependencyPackageJsonPaths,
       packageLockPath ],
     releaseId);
@@ -606,7 +730,9 @@ function normalizeHelpText(
 {
   return text
     .trim()
-    .replace(/\r\n/g, '\n');
+    .replace(
+      /\r\n/g,
+      '\n');
 }
 
 export function parseToolkitDocs(
@@ -614,7 +740,9 @@ export function parseToolkitDocs(
   )
 {
   const normalizedText =
-    markdownText.replace(/\r\n/g, '\n');
+    markdownText.replace(
+      /\r\n/g,
+      '\n');
 
   const lines =
     normalizedText.split('\n');
@@ -682,7 +810,9 @@ export function parseToolkitDocs(
     while (lineIndex < lines.length
            && !lines[lineIndex].startsWith('## '))
     {
-      helpLines.push(lines[lineIndex]);
+      helpLines.push(
+        lines[lineIndex]);
+
       lineIndex += 1;
     }
 
@@ -695,7 +825,8 @@ export function parseToolkitDocs(
         `toolkit.md expected help text for "${actionKey}".`);
     }
 
-    commands.push({ actionKey,
+    commands.push(
+      { actionKey,
                     actionSummary,
                     helpText });
   }
@@ -703,29 +834,12 @@ export function parseToolkitDocs(
   return commands;
 }
 
-function getCommandDocs(
+async function getCommandDocs(
   )
 {
   return parseToolkitDocs(
-    readTextFile(
+    await readTextFile(
       getToolkitDocsPath()));
-}
-
-function getCommands(
-  )
-{
-  return new Map([
-    [ 'clean-dist',
-      cleanDist ],
-    [ 'build-local-deps',
-      buildLocalDeps ],
-    [ 'ensure-clean-working-folder',
-      ensureCleanWorkingFolder ],
-    [ 'tag-commit-with-release-id',
-      tagCommitWithReleaseId ],
-    [ 'release-patch',
-      releasePatch ],
-  ]);
 }
 
 function getActionHelpText(
@@ -741,24 +855,40 @@ function getActionHelpText(
     .join('\n\n');
 }
 
-const action =
-  process.argv[2] ?? '';
-
 const commandDocs =
-  getCommandDocs();
+  await getCommandDocs();
 
 const actions =
-  getCommands();
+  new Map([
+    [ 'clean',
+      clean ],
+    [ 'build-local-deps',
+      buildLocalDeps ],
+    [ 'ensure-clean-working-folder',
+      ensureCleanWorkingFolder ],
+    [ 'tag-commit-with-release-id',
+      tagCommitWithReleaseId ],
+    [ 'release-patch',
+      releasePatch ],
+  ]);
 
-export function main(
+/**
+ * @param {string[]} args
+ * @returns {Promise<void>}
+ */
+export async function main(
+    args
   )
 {
-  if (action === ''
-      || action === 'help'
-      || action === '--help')
-  {
+  const action =
+    args[0] ?? '';
+
+  if (action === '') {
     console.log(
-      `Available actions:\n\n${getActionHelpText(commandDocs)}`);
+      'Available actions:\n\n');
+    
+    console.log(
+      getActionHelpText(commandDocs));
 
     process.exit(
       action === ''
@@ -776,17 +906,23 @@ export function main(
     process.exit(1);
   }
 
-  selectedAction();
+  await selectedAction(
+    args.slice(1));
 }
 
 if (process.argv[1]
-    && import.meta.url === pathToFileURL(process.argv[1]).href)
+    && import.meta.url === pathToFileURL(
+      process.argv[1]).href)
 {
   try {
-    main();
+    const args =
+      process.argv.slice(2);
+
+    await main(args);
   } catch (error) {
     console.error(
-      String(error?.message ?? error));
+      String(
+        error?.message ?? error));
 
     process.exit(1);
   }

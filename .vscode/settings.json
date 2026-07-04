@@ -12,7 +12,7 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
       "*.ts": "$(capture).js, $(capture).d.ts, $(capture).test.ts, $(capture).md, $(capture).test.md",
-      "*.js": "$(capture).js, $(capture).d.ts, $(capture).js.map, $(capture).d.ts.map, $(capture).md, $(capture).test.md",
+      "*.js": "$(capture).js, $(capture).d.ts, $(capture).test.js, $(capture).js.map, $(capture).d.ts.map, $(capture).md, $(capture).test.md",
       "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml"
   }
 }

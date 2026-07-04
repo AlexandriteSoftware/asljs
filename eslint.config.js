@@ -28,6 +28,7 @@ import tsImportStyleRule
 const ignores =
   { ignores:
       [ '**/dist/**',
+        '**/build/**',
         '**/.tests/**',
         '**/node_modules/**' ] };
 

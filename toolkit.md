@@ -1,11 +1,12 @@
 # toolkit
 
-## clean-dist
+## clean [path1 path2 ...]
 
-> Remove the current package dist folder.
+> Removes build artefacts in the current folder.
 
-Deletes the dist directory under the current working directory. Use this from a
-workspace package before rebuilding its publish output.
+Deletes the 'build' and 'dist' directories in the current working directory
+unless arguments are provided, in which case it deletes the specified
+folders and files instead. Ignores non-existent paths.
 
 ## build-local-deps
 
