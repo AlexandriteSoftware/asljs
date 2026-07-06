@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { createEnvironment }
@@ -19,18 +19,12 @@ test.after(
 
 test(
   'RQ122: definitions lists definitions',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'definitions');
-
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Todo Item.md',
       `# Todo Item
 
@@ -41,7 +35,7 @@ A todo item is a task that needs to be done.
 - Folders: Todo Items
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Item.md',
       `# Todo Item
 

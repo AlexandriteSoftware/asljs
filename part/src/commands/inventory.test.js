@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { createEnvironment }
@@ -19,18 +19,12 @@ test.after(
 
 test(
   'RQ121: inventory enumerates artefacts in Todo Item example',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'Todo Items');
-
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Item.md',
       `# Todo Item
 
@@ -48,7 +42,7 @@ A todo item is a task that needs to be done.
     const futureYear =
       new Date().getUTCFullYear() + 1;
 
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Items/Buy milk.md',
       `# Buy milk
 
@@ -82,21 +76,15 @@ I need to buy milk.
 
 test(
   'RQ121: inventory resolves artefact locations relative to the definition file',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
+    await workspace.mkdir(
       'artefacts/parts');
 
-    workspace.mkdir(
-      'development');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -107,7 +95,7 @@ A statement about the system that must be true.
 - Pattern: ../development/**/RQ*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/RQ101 Example.md',
       '# RQ101 Example\n');
 
@@ -132,15 +120,12 @@ A statement about the system that must be true.
 
 test(
   'RQ121: inventory lists all definitions applied to the same artefact',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       `# Article
 
@@ -151,7 +136,7 @@ Markdown article.
 - Pattern: **/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Artefact Definition.md',
       `# Artefact Definition
 
@@ -162,7 +147,7 @@ Definition file.
 - Pattern: ../definitions/**/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Requirement.md',
       '# Requirement\n');
 
@@ -187,15 +172,12 @@ Definition file.
 
 test(
   'RQ121: inventory lists artefacts for selected definitions',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       `# Article
 
@@ -206,7 +188,7 @@ Markdown article.
 - Pattern: **/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Artefact Definition.md',
       `# Artefact Definition
 
@@ -217,7 +199,7 @@ Definition file.
 - Pattern: ../definitions/**/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Requirement.md',
       '# Requirement\n');
 
@@ -243,24 +225,12 @@ Definition file.
 
 test(
   'RQ121: inventory respects Definitions parameter',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'definitions');
-
-    workspace.mkdir(
-      'Todo Items');
-
-    workspace.mkdir(
-      'part');
-
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Todo Item.md',
       `# Todo Item
 
@@ -275,7 +245,7 @@ A todo item is a task that needs to be done.
 - Pattern: ../Todo Items/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Items/Buy milk.md',
       `# Buy milk
 

@@ -14,9 +14,9 @@ Do not add or use a root-level release script.
 
 Release prerequisites:
 
-- typecheck passes (`npm -w $env:PKG_FOLDER run typecheck`)
-- lint passes (`npm -w $env:PKG_FOLDER run lint`)
-- tests pass (`npm -w $env:PKG_FOLDER test`)
+- typecheck passes (`npm -w <folder> run typecheck`)
+- lint passes (`npm -w <folder> run lint`)
+- tests pass (`npm -w <folder> run test`)
 - repository working folder is clean (`git status`)
 
 The `release:patch` command runs those prerequisites automatically before it

@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../../src/tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../../src/logging.js';
 import { createRuleValidationContext }
@@ -19,27 +19,24 @@ test.after(
 
 test(
   'Article_RL2 passes for existing local links and images',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Target.md',
       '# Target\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'image.png',
       '');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 
@@ -71,19 +68,16 @@ See [Target](./Target.md).
 
 test(
   'Article_RL2 fails when a local link does not exist',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 
@@ -115,19 +109,16 @@ See [Missing](./Missing.md).
 
 test(
   'Article_RL2 fails when a local image does not exist',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 
@@ -159,23 +150,20 @@ test(
 
 test(
   'Article_RL2 fails when a long inline link is used',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'very-long-file-name-that-exceeds-twenty-characters.md',
       '# Target\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 
@@ -207,23 +195,20 @@ test(
 
 test(
   'Article_RL2 allows a long reference link',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'very-long-file-name-that-exceeds-twenty-characters.md',
       '# Target\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 
@@ -255,23 +240,20 @@ test(
 
 test(
   'Article_RL2 resolves root-relative links from projectDirectoryPath',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL2 - RL2\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'docs/Target.md',
       '# Target\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       `# Article1
 

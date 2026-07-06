@@ -4,16 +4,21 @@
   "description": "Common packages and scripts for ASLJS projects.",
   "type": "module",
   "scripts": {
-    "clean": "node ./dist/toolkit.js clean",
+    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format": "npm run format:json",
+    "clean": "node ./dist/toolkit/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node --test build/**/*.test.js"
+    "test": "node --test build/**/*.test.js",
+    "all": "npm run build:dist && npm run clean && npm run build:dist && npm run format && npm run typecheck && npm run lint && npm run build && npm run test"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
-    "typescript": "^6.0.3"
+    "acorn": "^8.17.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1"
   }
 }

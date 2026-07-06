@@ -5,12 +5,12 @@ import test
 import { main }
   from './main.js';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logger.js';
 import { argv }
   from './test-helpers.js';
-import { type Envelope }
+import { Envelope }
   from '../envelope/envelope.js';
 
 const logger =
@@ -21,19 +21,16 @@ test.after(
 
 test(
   'read CLI normalises Windows path separators in stored update pattern',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const envelopePath =
       workspace.resolve(
         'envelope.json');
 
-    workspace.writeText(
+    await workspace.writeText(
       'docs/one.txt',
       'one\n');
 
@@ -55,7 +52,7 @@ test(
 
     const envelope =
       JSON.parse(
-        workspace.readText(
+        await workspace.readText(
           'envelope.json')) as Envelope;
 
     assert.equal(

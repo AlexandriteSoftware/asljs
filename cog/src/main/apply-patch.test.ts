@@ -7,7 +7,7 @@ import test
 import { main }
   from './main.js';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logger.js';
 import { argv,
@@ -23,19 +23,16 @@ test.after(
 
 test(
   'apply-patch accepts a patch when --patch-verify-cmd exits with zero',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const envelopePath =
       workspace.resolve(
         'envelope.json');
 
-    workspace.writeText(
+    await workspace.writeText(
       'envelope.json',
       JSON.stringify(
         { instruction: '',
@@ -51,7 +48,7 @@ test(
       workspace.resolve(
         'file.txt');
 
-    workspace.writeText(
+    await workspace.writeText(
       'patch.json',
       JSON.stringify(
         { commands: [
@@ -74,7 +71,7 @@ test(
           'process.exit(0)')));
 
     assert.equal(
-      workspace.readText(
+      await workspace.readText(
         'file.txt'),
       'new\n');
 
@@ -87,19 +84,16 @@ test(
 
 test(
   'apply-patch rolls back when --patch-verify-cmd exits non-zero',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const envelopePath =
       workspace.resolve(
         'envelope.json');
 
-    workspace.writeText(
+    await workspace.writeText(
       'envelope.json',
       JSON.stringify(
         { instruction: '',
@@ -115,11 +109,11 @@ test(
       workspace.resolve(
         'file.txt');
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'old\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'patch.json',
       `${JSON.stringify(
         { commands: [
@@ -144,7 +138,7 @@ test(
       /Patch verify command failed with exit code 7/);
 
     assert.equal(
-      workspace.readText(
+      await workspace.readText(
         'file.txt'),
       'old\n');
 
@@ -157,19 +151,16 @@ test(
 
 test(
   'apply-patch uses COG_PATCH_VERIFY_CMD when --patch-verify-cmd is omitted',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const envelopePath =
       workspace.resolve(
         'envelope.json');
 
-    workspace.writeText(
+    await workspace.writeText(
       'envelope.json',
       JSON.stringify(
         { instruction: '',
@@ -185,11 +176,11 @@ test(
       workspace.resolve(
         'file.txt');
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'old\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'patch.json',
       `${JSON.stringify(
         { commands: [
@@ -217,26 +208,23 @@ test(
       });
 
     assert.equal(
-      workspace.readText(
+      await workspace.readText(
         'file.txt'),
       'old\n');
   });
 
 test(
   '--patch-verify-cmd takes precedence over COG_PATCH_VERIFY_CMD',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const envelopePath =
       workspace.resolve(
         'envelope.json');
 
-    workspace.writeText(
+    await workspace.writeText(
       'envelope.json',
       JSON.stringify(
         { instruction: '',
@@ -252,7 +240,7 @@ test(
       workspace.resolve(
         'file.txt');
 
-    workspace.writeText(
+    await workspace.writeText(
       'patch.json',
       `${JSON.stringify(
         { commands: [
@@ -281,7 +269,7 @@ test(
       });
 
     assert.equal(
-      workspace.readText(
+      await workspace.readText(
         'file.txt'),
       'new\n');
   });

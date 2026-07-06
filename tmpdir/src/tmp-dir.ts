@@ -139,6 +139,32 @@ export class TmpDir
     return resolvedDirectoryPath;
   }
 
+  async write(
+      filePath: string,
+      content: Buffer
+    ): Promise<string>
+  {
+    this.#trace(
+      `write(${filePath}, ...)`);
+
+    this.#throwIfDisposed();
+
+    const resolvedFilePath =
+      this.resolve(
+        filePath);
+
+    await fsp.mkdir(
+      path.dirname(
+        resolvedFilePath),
+      { recursive: true });
+
+    await fsp.writeFile(
+      resolvedFilePath,
+      content);
+
+    return resolvedFilePath;
+  }  
+
   async writeText(
       filePath: string,
       content: string

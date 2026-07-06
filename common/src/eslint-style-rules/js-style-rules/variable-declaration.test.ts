@@ -8,6 +8,17 @@ import { addRuleTestsFromMarkdown }
   from '../extractTests.js';
 import rule
   from './variable-declaration.js';
+import { fileURLToPath }
+  from 'node:url';
+
+const SCRIPT_FILE_PATH =
+  fileURLToPath(
+    import.meta.url);
+
+const markdownTestsFilePath =
+  SCRIPT_FILE_PATH.replace(
+    /\.test\.ts$/,
+    '.md');
 
 const eslint =
   new ESLint(
@@ -32,5 +43,5 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  'variable-declaration.md',
+  markdownTestsFilePath,
   eslint);

@@ -3,10 +3,6 @@
 Alexandrite Software Libraries for JavaScript (asljs) provides essential
 utilities and functions to improve everyday development.
 
-Live demo:
-
-- [ASLJS App Builder][1]
-
 Libraries:
 
 - [components](components) - reusable web components.
@@ -30,8 +26,6 @@ Applications:
 
 - [app-builder](app-builder) - a demo application that uses the libraries to
   build a simple app with AI-assisted features.
-
-[1]: https://alexandritesoftware.github.io/asljs/app-builder/
 
 ## Architecture
 

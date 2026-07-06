@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../../src/tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../../src/logging.js';
 import { createRuleValidationContext }
@@ -40,13 +40,10 @@ for (const prefix of prefixes) {
       'Article_RL1 passes when the article starts with '
       + 'a level 1 heading and the heading matches the file name '
       + `(${prefixDescription}, ${lineEndingDescription})`,
-      async t => {
-        const workspace =
+      async () => {
+        await using workspace =
           new TmpDir(
             logger);
-
-        t.after(
-          () => workspace.cleanup());
 
         const articleLines =
           [ `${prefix}# Article`,
@@ -62,7 +59,7 @@ for (const prefix of prefixes) {
             '- RL1 - RL1',
             '' ];
 
-        workspace.writeText(
+        await workspace.writeText(
           'Article.md',
           articleLines.join(lineEnding));
 
@@ -72,7 +69,7 @@ for (const prefix of prefixes) {
           'Body.',
           '' ];
 
-        workspace.writeText(
+        await workspace.writeText(
           'Article1.md',
           article1Lines.join(lineEnding));
 
@@ -100,19 +97,16 @@ for (const prefix of prefixes) {
 
 test(
   'Article_RL1 fails when the article does not start with a level 1 heading',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       'Intro\n# Article1\n');
 
@@ -142,19 +136,16 @@ test(
 
 test(
   'Article_RL1 fails when the top-level heading differs from the file name',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Article.md',
       '# Article\n\nBody.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n- RL1 - RL1\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Article1.md',
       '# Different\n\nBody.\n');
 

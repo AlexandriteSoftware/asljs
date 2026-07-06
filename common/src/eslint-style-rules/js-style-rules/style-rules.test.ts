@@ -12,6 +12,17 @@ import variableDeclarationStyleRule
   from './variable-declaration.js';
 import statementSpacingStyleRule
   from './statement-spacing.js';
+import { fileURLToPath }
+  from 'node:url';
+
+const SCRIPT_FILE_PATH =
+  fileURLToPath(
+    import.meta.url);
+
+const markdownTestsFilePath =
+  SCRIPT_FILE_PATH.replace(
+    /\.test\.ts$/,
+    '.md');
 
 const eslint =
   new ESLint(
@@ -42,5 +53,5 @@ const eslint =
     });
 
 await addRuleTestsFromMarkdown(
-  'style-rules.md',
+  markdownTestsFilePath,
   eslint);

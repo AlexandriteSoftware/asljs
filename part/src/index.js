@@ -11,7 +11,7 @@ export { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 
 export { TmpDir }
-  from './tmp-dir.js';
+  from 'asljs-tmpdir';
 
 export { createLogger }
   from './logging.js'; 

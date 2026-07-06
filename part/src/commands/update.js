@@ -338,13 +338,10 @@ const logger =
 
 test(
   '${rule.name} ...',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
       ...
   });

@@ -3,7 +3,7 @@ import assert
 import test
   from 'node:test';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { createEnvironment }
@@ -19,15 +19,10 @@ test.after(
 
 test(
   'RQ124: init copies bootstrap artefact files into the definitions directory',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir('definitions');
 
     const environment =
       createEnvironment(
@@ -47,22 +42,26 @@ test(
       '');
 
     assert.match(
-      workspace.readText(
+      await workspace.readText(
         'definitions/Artefact Definition.md'),
       /# Artefact Definition/);
 
     assert.match(
-      workspace.readText(
+      await workspace.readText(
         'definitions/Rule File.md'),
       /# Rule File/);
 
-    assert.ok(
-      workspace.stat(
-        'definitions/parts/Rule File_RL1.js')
-        .isFile());
+    const ruleFile1Stat =
+      await workspace.stat(
+        'definitions/parts/Rule File_RL1.js');
 
     assert.ok(
-      workspace.stat(
-        'definitions/parts/Artefact Definition_RL1.js')
-        .isFile());
+      ruleFile1Stat.isFile());
+
+    const artefactDefinitionStat =
+      await workspace.stat(
+        'definitions/parts/Artefact Definition_RL1.js');
+
+    assert.ok(
+      artefactDefinitionStat.isFile());
   });

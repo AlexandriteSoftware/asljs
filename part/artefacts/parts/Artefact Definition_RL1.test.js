@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../../src/tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../../src/logging.js';
 import { createRuleValidationContext }
@@ -19,45 +19,38 @@ test.after(
 
 test(
   'Artefact Definition_RL1 checks declared rule file exists',
-  async context =>
-    checkDeclaredRulesTest(
-      context,
+  async () =>
+    await checkDeclaredRulesTest(
       true));
 
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
-  async context =>
-    checkDeclaredRulesTest(
-      context,
+  async () =>
+    await checkDeclaredRulesTest(
       false));
 
 /**
  * 
- * @param {test.TestContext} testContext 
  * @param {boolean} withRuleFiles 
  */
 async function checkDeclaredRulesTest(
-  testContext,
   withRuleFiles)
 {
-  const workspace =
+  await using workspace =
     new TmpDir(
       logger);
 
-  testContext.after(
-    () => workspace.cleanup());
-
   if (withRuleFiles) {
-    workspace.writeText(
+    await workspace.writeText(
       'parts/Todo Item_RL1.js',
       'export async function validate() { }\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'parts/Todo Item_RL2.js',
       'export async function validate() { }\n');
   }
 
-  workspace.writeText(
+  await workspace.writeText(
     'Todo Item.md',
     `# Todo Item
 
@@ -73,7 +66,7 @@ Definition.
 - RL2 - Must also have a second rule file.
 `);
 
-  workspace.writeText(
+  await workspace.writeText(
     'Artefact Definition.md',
     `# Artefact Definition
 

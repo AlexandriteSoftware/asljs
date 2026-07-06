@@ -17,19 +17,21 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "clean": "node ../common/dist/toolkit.js clean",
+    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format": "npm run format:json",
+    "clean": "node ../common/dist/toolkit/toolkit.js clean",
     "build": "npx tsc -p tsconfig.build.json",
     "build:dist": "npx tsc -p tsconfig.dist.json",
     "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
-    "guard:clean-git": "node ../common/dist/toolkit.js ensure-clean-working-folder",
+    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-folder",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
-    "postpublish": "node ../common/dist/toolkit.js tag-commit-with-release-id",
+    "postpublish": "node ../common/dist/toolkit/toolkit.js tag-commit-with-release-id",
     "test": "node --test build/**/*.test.js",
     "test:watch": "node --watch --test build/**/*.test.js",
-    "release:patch": "node ../common/dist/toolkit.js release-patch"
+    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
+    "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "keywords": [
     "tests",

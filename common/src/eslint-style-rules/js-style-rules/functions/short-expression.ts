@@ -5,9 +5,12 @@ import { Expression,
          UnaryExpression,
          ObjectExpression,
          ArrayExpression,
-         TemplateLiteral,
          NewExpression }
   from 'estree';
+import * as estree
+  from 'estree';
+import * as acorn
+  from 'acorn';
 
 const LONG_EXPRESSION_LENGTH = 15;
 
@@ -89,20 +92,43 @@ function getLength(
   }
 
   if (expression.type === 'TemplateLiteral') {
-    const templateLiteral =
-      expression as TemplateLiteral;
+    const acornTemplateLiteral =
+      expression as acorn.TemplateLiteral;
+
+    const start =
+      acornTemplateLiteral.start;
+
+    const end =
+      acornTemplateLiteral.end;
+
+    if (
+      start !== undefined
+      && end !== undefined
+    ) {
+      return end - start;
+    }
+    
+    const estreeTemplateLiteral =
+      expression as estree.TemplateLiteral;
+
+    const estreeLocation =
+      estreeTemplateLiteral.loc;
+
+    if (!estreeLocation) {
+      return null;
+    }
     
     const startLocation =
-      templateLiteral.loc?.start;
+      estreeLocation.start;
 
-    if (startLocation === undefined) {
+    if (!startLocation) {
       return null;
     }
 
     const endLocation =
-      templateLiteral.loc?.end;
+      estreeLocation.end;
 
-    if (endLocation === undefined) {
+    if (!endLocation) {
       return null;
     }
 

@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { createEnvironment }
@@ -19,15 +19,12 @@ test.after(
 
 test(
   'RQ126: definition prints detailed definition content for a named definition',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'Requirement.md',
       `# Requirement
 
@@ -47,7 +44,7 @@ A statement about the system that must be true.
 - RL11 - Requirement passes a second rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'parts/Requirement_RL10.js',
       'export async function validate() { }\n');
 

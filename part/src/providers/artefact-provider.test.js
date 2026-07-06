@@ -9,7 +9,7 @@ import { DefinitionProvider }
 import { createLogger }
   from '../logging.js';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 
 const logger =
   createLogger();
@@ -19,25 +19,10 @@ test.after(
 
 test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'artefacts');
-
-    workspace.mkdir(
-      'development');
-
-    workspace.mkdir(
-      'development/visible');
-
-    workspace.mkdir(
-      'development/hidden');
 
     const requriementDefinitionContent =
       `# Requirement
@@ -50,23 +35,23 @@ Requirement.
 - GitIgnore
 `;
 
-  workspace.writeText(
+  await workspace.writeText(
     'artefacts/Requirement.md',
     requriementDefinitionContent);
 
-  workspace.writeText(
+  await workspace.writeText(
     'development/.gitignore',
     'hidden');
 
-  workspace.writeText(
+  await workspace.writeText(
     'development/visible/RQ101 Example.md',
     '# RQ101 Example\n');
 
-  workspace.writeText(
+  await workspace.writeText(
     'development/hidden/RQ999 Hidden.md',
     '# RQ999 Hidden\n');
 
-  workspace.writeText(
+  await workspace.writeText(
     'development/hidden/RQ999 Hidden.md',
     '# RQ999 Hidden\n');
 
@@ -111,15 +96,12 @@ Requirement.
 
 test(
   'RQ205: ArtefactProvider returns all matching definitions for an artefact',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Article.md',
       `# Article
 
@@ -130,7 +112,7 @@ Article.
 - Pattern: ../docs/**/*.md
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Specification.md',
       `# Specification
 
@@ -141,7 +123,7 @@ Specification.
 - Pattern: ../docs/specs/*.md
 `);
 
-  workspace.writeText(
+  await workspace.writeText(
     'docs/specs/Example.md',
     '# Example\n');
 

@@ -2,6 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
+import { fileURLToPath }
+  from 'node:url';
 import { ESLint }
   from 'eslint';
 import tsParser
@@ -10,6 +12,15 @@ import { addRuleTestsFromMarkdown }
   from '../extractTests.js';
 import rule
   from './import.js';
+
+const SCRIPT_FILE_PATH =
+  fileURLToPath(
+    import.meta.url);
+
+const markdownTestsFilePath =
+  SCRIPT_FILE_PATH.replace(
+    /\.test\.ts$/,
+    '.md');
 
 const eslint =
   new ESLint(
@@ -35,5 +46,5 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  'import.md',
+  markdownTestsFilePath,
   eslint);

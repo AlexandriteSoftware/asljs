@@ -7,7 +7,7 @@ import path
 import { createLogger }
   from '../logging.js';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { DefinitionProvider }
   from './definition-provider.js';
 
@@ -19,21 +19,18 @@ test.after(
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
+    await workspace.mkdir('hidden');
 
-    workspace.mkdir('hidden');
-
-    workspace.writeText(
+    await workspace.writeText(
       '.gitignore',
       'hidden/\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Item.md',
       `# Todo Item
 
@@ -44,14 +41,14 @@ A todo item.
 - Folders: Todo Items
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'Notes.md',
       `# Notes
 
 This is not a PART definition.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'hidden/Hidden Item.md',
       `# Hidden Item
 
@@ -81,15 +78,12 @@ Hidden definition.
 
 test(
   'RQ202: DefinitionProvider loads markdown definition metadata and structured rules',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       'parts/Todo Item_R1.js',
       `export async function validate(artefact) {
   if (!artefact.dueDate || artefact.dueDate < '2030-01-01') {
@@ -98,7 +92,7 @@ test(
 }
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'Todo Item.md',
       `# Todo Item
 
@@ -159,18 +153,15 @@ A todo item is a task that needs to be done.
 
 test(
   'RQ203: Definition returns null for markdown files that do not match the definition format',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const definitionPath =
       'Todo Item.md';
 
-    workspace.writeText(
+    await workspace.writeText(
       definitionPath,
       `# Different Name
 

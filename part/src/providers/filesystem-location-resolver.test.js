@@ -5,7 +5,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { FilesystemLocationResolver }
@@ -14,8 +14,8 @@ import { FilesystemLocationResolver }
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new FilesystemLocationResolver(
@@ -37,8 +37,8 @@ test(
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = d1',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new FilesystemLocationResolver(
@@ -60,8 +60,8 @@ test(
 test(
   'RQ205: FilesystemLocationResolver resolvers files: absolute',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new FilesystemLocationResolver(
@@ -80,7 +80,7 @@ test(
         'd2/d21/f5.txt' ]);
   });
 
-function getTestTmpFolder()
+async function getTestTmpFolder()
 {
   const tmpDir =
     new TmpDir(
@@ -94,7 +94,7 @@ function getTestTmpFolder()
       'd2/d21/f5.txt' ];
 
   for (const file of files) {
-    tmpDir.writeText(
+    await tmpDir.writeText(
       file,
       file);
   }

@@ -21,19 +21,21 @@
     "cog": "bin/cog.js"
   },
   "scripts": {
-    "clean": "node -e \"console.log('asljs-cog: nothing to clean')\"",
+    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format": "npm run format:json",
+    "clean": "node ../common/dist/toolkit/toolkit.js clean",
     "build": "npx tsc -p tsconfig.build.json",
     "build:dist": "npx tsc -p tsconfig.dist.json",
     "typecheck": "npx tsc -p tsconfig.build.json --noEmit",
-    "lint": "",
-    "lint:fix": "",
-    "verify-patch": "npm run build && npm run test",
-    "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
-    "prepublishOnly": "npm run build",
-    "postpublish": "node ../toolkit.js tag-commit-with-release-id",
-    "test": "npm run build && node --test build/**/*.test.js",
-    "test:watch": "npm run build && node --watch --test build/**/*.test.js",
-    "release:patch": "node ../toolkit.js release-patch"
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix",
+    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-folder",
+    "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
+    "postpublish": "node ../common/dist/toolkit/toolkit.js tag-commit-with-release-id",
+    "test": "node --test build/**/*.test.js",
+    "test:watch": "node --watch --test build/**/*.test.js",
+    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
+    "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "keywords": [
     "ai",
@@ -58,6 +60,11 @@
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
+    "asljs-tmpdir": "^0.1.2",
+    "eslint": "^10.2.0",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.3"
   }
 }

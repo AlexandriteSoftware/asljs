@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../../src/logging.js';
 import { createEnvironment }
@@ -19,18 +19,12 @@ test.after(
 
 test(
   'RQ123: check prints one row per matched file and rule',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'development/features');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -46,25 +40,25 @@ A statement about the system that must be true.
 - RL11 - Requirement passes a second rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       `export async function validate(artefact) {
   throw new Error(artefact.relativePath + ' is not referenced by any test.');
 }
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.js',
       `export async function validate() {
   return;
 }
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/features/RQ101 Example.md',
       '# RQ101 Example\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/features/RQ102 Example.md',
       '# RQ102 Example\n');
 
@@ -97,18 +91,12 @@ A statement about the system that must be true.
 
 test(
   'RQ123: check includes rules from all matching definitions for the same artefact',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'part');
-
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Article.md',
       `# Article
 
@@ -123,7 +111,7 @@ Markdown article.
 - RL10 - Article rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Artefact Definition.md',
       `# Artefact Definition
 
@@ -138,15 +126,15 @@ Definition file.
 - RL10 - Definition rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/parts/Article_RL10.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/parts/Artefact Definition_RL10.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'definitions/Requirement.md',
       '# Requirement\n');
 
@@ -177,19 +165,12 @@ Definition file.
 
 test(
   'RQ123: check filters by definitions and rules',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-
-    workspace.mkdir(
-      'development');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -205,7 +186,7 @@ A statement about the system that must be true.
 - RL11 - Second requirement rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Article.md',
       `# Article
 
@@ -220,19 +201,19 @@ Markdown article.
 - RL10 - Article rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Article_RL10.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/RQ101 Example.md',
       '# RQ101 Example\n');
 
@@ -269,21 +250,12 @@ Markdown article.
 
 test(
   'RQ123: check uses artefact locations when pattern is omitted and sorts by path then rule',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.mkdir(
-      'development/zeta');
-
-    workspace.mkdir(
-      'development/alpha');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -299,19 +271,19 @@ A statement about the system that must be true.
 - RL11 - Second rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/zeta/RQ200 Later.md',
       '# RQ200 Later\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/alpha/RQ100 Earlier.md',
       '# RQ100 Earlier\n');
 
@@ -354,19 +326,12 @@ A statement about the system that must be true.
 
 test(
   'RQ123: check shows only failing rows by default and still returns non-zero',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-
-    workspace.mkdir(
-      'development');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -382,15 +347,15 @@ A statement about the system that must be true.
 - RL11 - Passing rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       'export async function validate() { throw new Error(\'Failed.\'); }\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/RQ101 Example.md',
       '# RQ101 Example\n');
 
@@ -419,19 +384,12 @@ A statement about the system that must be true.
 
 test(
   'RQ123: check with-positives shows passing and failing rows',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-
-    workspace.mkdir(
-      'development');
-
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -447,15 +405,15 @@ A statement about the system that must be true.
 - RL11 - Passing rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       'export async function validate() { throw new Error(\'Failed.\'); }\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.js',
       'export async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'development/RQ101 Example.md',
       '# RQ101 Example\n');
 

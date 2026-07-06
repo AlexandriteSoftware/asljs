@@ -7,10 +7,10 @@ import test
 import { read }
   from './read.js';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logger.js';
-import { type Envelope }
+import { Envelope }
   from '../envelope/envelope.js';
 
 const logger =
@@ -43,13 +43,10 @@ test(
 
 test(
   'read treats pattern as a glob and reads an exact file match through LocationResolver',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const filePath =
       workspace.resolve(
@@ -60,7 +57,7 @@ test(
         /\\/g,
         '/');
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'one\ntwo\nthree\n');
 
@@ -99,13 +96,10 @@ test(
 
 test(
   'read includes complete text when readToEnd is true',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const filePath =
       workspace.resolve(
@@ -116,7 +110,7 @@ test(
         /\\/g,
         '/');
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'one\ntwo\nthree\n');
 
@@ -152,13 +146,10 @@ test(
 
 test(
   'read can include binary content as base64',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const filePath =
       workspace.resolve(
@@ -202,13 +193,10 @@ test(
 
 test(
   'read omits binary content when withBinaryB64 is false',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const filePath =
       workspace.resolve(
@@ -245,21 +233,18 @@ test(
 
 test(
   'read treats folder paths as glob patterns and does not expand them specially',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       join(
         'src',
         'one.txt'),
       'one\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       join(
         'src',
         'two.txt'),
@@ -282,27 +267,24 @@ test(
 
 test(
   'read uses LocationResolver glob matching and excludes',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    t.after(
-      () => workspace.cleanup());
-
-    workspace.writeText(
+    await workspace.writeText(
       join(
         'src',
         'one.ts'),
       'one\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       join(
         'src',
         'two.test.ts'),
       'two\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       join(
         'src',
         'nested',
@@ -355,19 +337,16 @@ test(
 
 test(
   'read updates existing envelope file for matched glob target',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const filePath =
       workspace.resolve(
         'file.txt');
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'old\n');
 
@@ -380,7 +359,7 @@ test(
         pattern: filePath,
         readToEnd: true });
 
-    workspace.writeText(
+    await workspace.writeText(
       'file.txt',
       'new\n');
 

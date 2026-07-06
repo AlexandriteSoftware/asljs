@@ -5,7 +5,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from './tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from './logger.js';
 import { LocationResolver }
@@ -14,8 +14,8 @@ import { LocationResolver }
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new LocationResolver(
@@ -37,8 +37,8 @@ test(
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = d1',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new LocationResolver(
@@ -60,8 +60,8 @@ test(
 test(
   'RQ205: FilesystemLocationResolver resolvers files: absolute',
   async () => {
-    const workspace =
-      getTestTmpFolder();
+    await using workspace =
+      await getTestTmpFolder();
 
     const resolver =
       new LocationResolver(
@@ -80,7 +80,8 @@ test(
         'd2/d21/f5.txt' ]);
   });
 
-function getTestTmpFolder()
+async function getTestTmpFolder(
+  ): Promise<TmpDir>
 {
   const tmpDir =
     new TmpDir(
@@ -94,7 +95,7 @@ function getTestTmpFolder()
       'd2/d21/f5.txt' ];
 
   for (const file of files) {
-    tmpDir.writeText(
+    await tmpDir.writeText(
       file,
       file);
   }
@@ -103,9 +104,10 @@ function getTestTmpFolder()
 }
 
 function checkResolvedFiles(
-  tmpDir: TmpDir,
-  resolvedFiles: string[],
-  expectedFiles: string[])
+    tmpDir: TmpDir,
+    resolvedFiles: string[],
+    expectedFiles: string[]
+  ): void
 {
   const normalisedResolvedFiles =
     resolvedFiles

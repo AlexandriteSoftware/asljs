@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createLogger }
   from '../logging.js';
 import { GitIgnore }
@@ -17,20 +17,16 @@ test.after(
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
-  async () =>
-  {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
 
-    workspace.mkdir(
-      'docs/drafts');
-
-    workspace.writeText(
+    await workspace.writeText(
       '.gitignore',
       'ignored.md\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'docs/.gitignore',
       'drafts/\n');
 

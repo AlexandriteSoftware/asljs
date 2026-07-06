@@ -2,6 +2,8 @@ import js
   from '@eslint/js';
 import tsParser
   from '@typescript-eslint/parser';
+import { Linter }
+  from 'eslint';
 import tseslint
   from 'typescript-eslint';
 import jsImportStyleRule
@@ -17,23 +19,14 @@ import jsStatementSpacingStyleRule
 import tsImportStyleRule
   from './eslint-style-rules/ts-style-rules/import.js';
 
-/**
- * @typedef
- *  { import('eslint')
- *      .Linter.Config }
- *   Config
- */
-
-/** @type {Config} */
-const ignores =
+const ignores: Linter.Config =
   { ignores:
       [ '**/dist/**',
         '**/build/**',
         '**/.tests/**',
         '**/node_modules/**' ] };
 
-/** @type {Config} */
-const typescriptConfig =
+const typescriptConfig: Linter.Config =
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -109,8 +102,7 @@ const typescriptConfig =
     }
   };
 
-/** @type {Config} */
-const javascriptConfig =
+const javascriptConfig: Linter.Config =
   {
     files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {
@@ -182,9 +174,9 @@ const javascriptConfig =
     }
   };
 
-/** @type {Config[]} */
-export default [
-  ignores,
-  typescriptConfig,
-  javascriptConfig
-];
+const configs: Linter.Config[] =
+  [ ignores,
+    typescriptConfig,
+    javascriptConfig ];
+
+export default configs;

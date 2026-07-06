@@ -5,7 +5,7 @@ import test
 import path
   from 'node:path';
 import { TmpDir }
-  from '../tmp-dir.js';
+  from 'asljs-tmpdir';
 import { createEnvironment }
   from '../environment.js';
 import { execUpdate }
@@ -21,13 +21,10 @@ test.after(
 
 test(
   'RQ125: update creates missing JS rule files via the Copilot runner',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     let requestPrompt = '';
 
@@ -39,23 +36,22 @@ test(
           project: workspace.path,
           logger,
           runCopilotCli:
-            (logger, request) => {
+            async (logger, request) => {
               requestPrompt = request.prompt;
 
               const ruleFileName =
                 path.basename(
                   request.ruleFilePath);
 
-              workspace.writeText(
+              await workspace.writeText(
                 `artefacts/parts/${ruleFileName}`,
                 `// ${request.comment}\nexport async function validate() {}\n`);
 
-              return Promise.resolve(
-                `all done`);
+              return `all done`;
             }
         });
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -86,23 +82,17 @@ Requirement definition.
       /Requirement_RL10/);
 
     assert.match(
-      workspace.readText(
+      await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
       /RL10 - Requirement rule\./);
   });
 
 test(
   'RQ125: update dry-run prints prompts without invoking Copilot or writing files',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
-
-    logger.trace(
-      t.name);
 
     const environment =
       createEnvironment(
@@ -116,7 +106,7 @@ test(
           }
         });
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -147,21 +137,18 @@ Requirement definition.
       environment.stdout.toString(),
       /--- CREATE artefacts\/parts\/Requirement_RL10\.js ---/);
 
-    assert.throws(
-      () =>
-        workspace.stat(
+    assert.rejects(
+      async () =>
+        await workspace.stat(
           'artefacts/parts/Requirement_RL10.js'));
   });
 
 test(
   'RQ125: update refreshes stale JS comments and warns on non-JS rules',
-  async t => {
-    const workspace =
+  async () => {
+    await using workspace =
       new TmpDir(
         logger);
-
-    t.after(
-      () => workspace.cleanup());
 
     const environment =
       createEnvironment(
@@ -175,15 +162,15 @@ test(
                 path.basename(
                   request.ruleFilePath);
 
-              workspace.writeText(
+              await workspace.writeText(
                 `artefacts/parts/${ruleFileName}`,
                 `// ${request.comment}\nexport async function validate() {}\n`);
 
-              return Promise.resolve('all done');
+              return 'all done';
             },
         });
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/Requirement.md',
       `# Requirement
 
@@ -199,11 +186,11 @@ Requirement definition.
 - RL11 - External rule.
 `);
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
       '// RL10 - Old rule text.\nexport async function validate() {}\n');
 
-    workspace.writeText(
+    await workspace.writeText(
       'artefacts/parts/Requirement_RL11.ps1',
       'Write-Output test\n');
 
@@ -219,7 +206,7 @@ Requirement definition.
       /only JS rule files are supported for auto-update/);
 
     assert.match(
-      workspace.readText(
+      await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
       /RL10 - Requirement rule\./);
   });

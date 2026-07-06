@@ -65,5 +65,8 @@
     "remark-parse": "^11.0.0",
     "typescript-eslint": "^8.61.1",
     "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "asljs-tmpdir": "^0.1.2"
   }
 }
