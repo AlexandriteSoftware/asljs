@@ -6,7 +6,8 @@ import { readFile }
   from 'node:fs/promises';
 import { fileURLToPath }
   from 'node:url';
-import { dirname, join }
+import { dirname,
+         join }
   from 'node:path';
 
 const CURRENT_FILE_PATH =

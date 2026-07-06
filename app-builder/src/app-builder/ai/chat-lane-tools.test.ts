@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  type AiTools,
-} from './ai-tools.js';
-import {
-  createChatLaneTools,
-} from './chat-lane-tools.js';
+import { AiTools }
+  from './ai-tools.js';
+import { createChatLaneTools }
+  from './chat-lane-tools.js';
 
 function makeBaseTools(): AiTools {
   return {

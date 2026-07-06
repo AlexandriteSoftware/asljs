@@ -2,18 +2,16 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  type AiTools,
-  type ResponseFunctionCallOutput,
-} from './ai-tools.js';
-import {
-  generateApp,
-  listAvailableModels,
-  type AiResponsesTransport,
-  type AiModelsTransport,
-  DEFAULT_MODEL,
-  ToolStepLimitExceededError,
-} from './ai-repl.js';
+import { AiTools,
+         ResponseFunctionCallOutput }
+  from './ai-tools.js';
+import { generateApp,
+         listAvailableModels,
+         AiResponsesTransport,
+         AiModelsTransport,
+         DEFAULT_MODEL,
+         ToolStepLimitExceededError }
+  from './ai-repl.js';
 
 const TEST_TOOLS: AiTools =
   { listFileset: async () => [ 'index.html' ],

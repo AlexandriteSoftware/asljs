@@ -2,23 +2,21 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  JSDOM,
-} from 'jsdom';
-import {
-  configureButton,
-  configureSelect,
-  configureTextInput,
-  focusInnerControl,
-  mustElement,
-  readControlValue,
-  setButtonContent,
-  selectInnerTextControl,
-  writeControlValue,
-  type AppBuilderButtonElement,
-  type AppBuilderSelectElement,
-  type AppBuilderTextInputElement,
-} from './control-ui.js';
+import { JSDOM }
+  from 'jsdom';
+import { configureButton,
+         configureSelect,
+         configureTextInput,
+         focusInnerControl,
+         mustElement,
+         readControlValue,
+         setButtonContent,
+         selectInnerTextControl,
+         writeControlValue,
+         AppBuilderButtonElement,
+         AppBuilderSelectElement,
+         AppBuilderTextInputElement }
+  from './control-ui.js';
 
 test(
   'control-ui configures elements and reads control values',

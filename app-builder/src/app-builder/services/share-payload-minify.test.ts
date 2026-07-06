@@ -2,10 +2,9 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  minifySharePayload,
-  type SharePayloadMinifyLoader,
-} from './share-payload-minify.js';
+import { minifySharePayload,
+         SharePayloadMinifyLoader }
+  from './share-payload-minify.js';
 
 test(
   'minifySharePayload transforms JS and CSS files using provided transformer',

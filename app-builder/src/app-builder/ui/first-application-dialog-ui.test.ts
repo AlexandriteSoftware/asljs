@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  JSDOM,
-} from 'jsdom';
-import {
-  createFirstApplicationDialogUi,
-  renderFirstApplicationDialog,
-} from './first-application-dialog-ui.js';
+import { JSDOM }
+  from 'jsdom';
+import { createFirstApplicationDialogUi,
+         renderFirstApplicationDialog }
+  from './first-application-dialog-ui.js';
 
 async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();

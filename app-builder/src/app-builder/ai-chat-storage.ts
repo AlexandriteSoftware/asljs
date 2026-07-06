@@ -1,11 +1,9 @@
-import {
-    type AiChatSecretsAndSettingsProvider,
-    type AiChatSerializableState,
-    type AiChatStateStore,
-  } from 'asljs-components';
-import {
-    loadAppOpenAiApiKey,
-  } from './storage.js';
+import { AiChatSecretsAndSettingsProvider,
+         AiChatSerializableState,
+         AiChatStateStore }
+  from 'asljs-components';
+import { loadAppOpenAiApiKey }
+  from './storage.js';
 
 const chatStateStorageKeyPrefix =
   'asljs-app-builder:chat-state:';

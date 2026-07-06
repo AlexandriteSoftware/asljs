@@ -4,13 +4,12 @@ import assert
   from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
-import {
-  renderGeneratingButtonUi,
-  setChatProgressUi,
-  appendChatMessageUi,
-  renderChatChoicesUi,
-  clearChatChoicesUi,
-} from './chat-ui.js';
+import { renderGeneratingButtonUi,
+         setChatProgressUi,
+         appendChatMessageUi,
+         renderChatChoicesUi,
+         clearChatChoicesUi }
+  from './chat-ui.js';
 
 test(
   'chat UI helpers update button, progress, and message list',

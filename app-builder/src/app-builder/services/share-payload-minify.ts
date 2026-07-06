@@ -1,6 +1,5 @@
-import {
-  type ExportPayload,
-} from './export-import.js';
+import { ExportPayload }
+  from './export-import.js';
 
 export type SharePayloadMinifyLoader =
   'js'

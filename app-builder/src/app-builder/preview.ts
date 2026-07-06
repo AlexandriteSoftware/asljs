@@ -1,6 +1,5 @@
-import {
-    type GeneratedFile,
-  } from './types.js';
+import { GeneratedFile }
+  from './types.js';
 
 const EVAL_REQUEST_TYPE =
   'asljs-app-builder:eval-request';

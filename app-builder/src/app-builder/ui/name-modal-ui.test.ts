@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  JSDOM,
-} from 'jsdom';
-import {
-  createNameModalUi,
-  renderNameModal,
-} from './name-modal-ui.js';
+import { JSDOM }
+  from 'jsdom';
+import { createNameModalUi,
+         renderNameModal }
+  from './name-modal-ui.js';
 
 async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();

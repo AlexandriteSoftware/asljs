@@ -1,8 +1,7 @@
-import {
-  type AppRecord,
-  type AppAuthor,
-  type FileRecord,
-} from '../types.js';
+import { AppRecord,
+         AppAuthor,
+         FileRecord }
+  from '../types.js';
 
 export type ExportPayload =
   { id: string;

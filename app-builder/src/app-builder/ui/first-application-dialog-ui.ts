@@ -1,13 +1,12 @@
-import {
-  configureButton,
-  configureTextInput,
-  focusInnerControl,
-  mustElement,
-  readControlValue,
-  type AppBuilderButtonElement,
-  type AppBuilderTextInputElement,
-  writeControlValue,
-} from './control-ui.js';
+import { configureButton,
+         configureTextInput,
+         focusInnerControl,
+         mustElement,
+         readControlValue,
+         AppBuilderButtonElement,
+         AppBuilderTextInputElement,
+         writeControlValue }
+  from './control-ui.js';
 
 export function renderFirstApplicationDialog(): string {
   return `

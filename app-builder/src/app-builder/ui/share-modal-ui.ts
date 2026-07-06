@@ -1,8 +1,7 @@
-import {
-  configureButton,
-  mustElement,
-  type AppBuilderButtonElement,
-} from './control-ui.js';
+import { configureButton,
+         mustElement,
+         AppBuilderButtonElement }
+  from './control-ui.js';
 
 export function renderShareModal(): string {
   return `

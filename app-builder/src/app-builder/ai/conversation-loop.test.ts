@@ -2,11 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  README_SNAPSHOT_FILE,
-  buildConversationPrompt,
-  getConversationKickoffMessage,
-} from './conversation-loop.js';
+import { README_SNAPSHOT_FILE,
+         buildConversationPrompt,
+         getConversationKickoffMessage }
+  from './conversation-loop.js';
 
 test(
   'getConversationKickoffMessage asks to create when app has no files',

@@ -4,9 +4,8 @@ import assert
   from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
-import {
-  renderAppListUi,
-} from './app-list-ui.js';
+import { renderAppListUi }
+  from './app-list-ui.js';
 
 test(
   'renderAppListUi renders sorted apps and action options',

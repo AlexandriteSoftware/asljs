@@ -1,6 +1,5 @@
-import {
-  type FileRecord,
-} from './types.js';
+import { FileRecord }
+  from './types.js';
 
 export const README_FILE = 'README.md';
 export const PLAN_FILE = 'PLAN.md';

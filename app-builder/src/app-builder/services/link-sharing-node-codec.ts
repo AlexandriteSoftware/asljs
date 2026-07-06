@@ -1,16 +1,12 @@
-import {
-  transform,
-} from 'esbuild';
-import {
-  gzipSync,
-  gunzipSync,
-} from 'node:zlib';
-import {
-  runInNewContext,
-} from 'node:vm';
-import {
-  type TextCompressionCodec,
-} from './link-sharing.js';
+import { transform }
+  from 'esbuild';
+import { gzipSync,
+         gunzipSync }
+  from 'node:zlib';
+import { runInNewContext }
+  from 'node:vm';
+import { TextCompressionCodec }
+  from './link-sharing.js';
 
 export function createNodeEsbuildGzipBase64UrlCodec(): TextCompressionCodec {
   return {

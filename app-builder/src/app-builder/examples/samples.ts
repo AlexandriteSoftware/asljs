@@ -2,13 +2,11 @@ import todoSampleJson
   from './TODO-Sample.json?raw';
 import pdfParserJson
   from './PdfParser.json?raw';
-import {
-  type FileRecord,
-} from '../types.js';
-import {
-  parseImportedPayloadText,
-  type ImportedPayload,
-} from '../services/export-import.js';
+import { FileRecord }
+  from '../types.js';
+import { parseImportedPayloadText,
+         ImportedPayload }
+  from '../services/export-import.js';
 
 const SAMPLE_JSON_SOURCES = [
   todoSampleJson,

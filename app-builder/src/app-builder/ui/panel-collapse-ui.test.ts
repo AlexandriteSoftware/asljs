@@ -4,9 +4,8 @@ import assert
   from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
-import {
-  togglePanelUi,
-} from './panel-collapse-ui.js';
+import { togglePanelUi }
+  from './panel-collapse-ui.js';
 
 test(
   'togglePanelUi collapses panel and updates button state',

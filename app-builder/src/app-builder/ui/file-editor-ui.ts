@@ -1,14 +1,12 @@
-import {
-  createImageFileHandler,
-  createPdfFileHandler,
-  createTextEditorFileHandler,
-  type SelectItem,
-  type FileViewData,
-  type FileViewProvider,
-} from 'asljs-components';
-import {
-  readFileDataInfo,
-} from '../file-data.js';
+import { createImageFileHandler,
+         createPdfFileHandler,
+         createTextEditorFileHandler,
+         SelectItem,
+         FileViewData,
+         FileViewProvider }
+  from 'asljs-components';
+import { readFileDataInfo }
+  from '../file-data.js';
 
 export type FileListItem =
   { name: string;

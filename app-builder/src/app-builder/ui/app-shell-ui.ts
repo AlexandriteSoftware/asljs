@@ -1,18 +1,13 @@
-import {
-  renderNameModal,
-} from './name-modal-ui.js';
-import {
-  renderProjectSettingsModal,
-} from './project-settings-modal-ui.js';
-import {
-  renderSettingsModal,
-} from './settings-modal-ui.js';
-import {
-  renderShareModal,
-} from './share-modal-ui.js';
-import {
-  renderWorkspace,
-} from './workspace-ui.js';
+import { renderNameModal }
+  from './name-modal-ui.js';
+import { renderProjectSettingsModal }
+  from './project-settings-modal-ui.js';
+import { renderSettingsModal }
+  from './settings-modal-ui.js';
+import { renderShareModal }
+  from './share-modal-ui.js';
+import { renderWorkspace }
+  from './workspace-ui.js';
 
 export function renderAppBuilderShell(): void {
   const root =

@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  JSDOM,
-} from 'jsdom';
-import {
-  renderAppBuilderShell,
-} from './app-shell-ui.js';
+import { JSDOM }
+  from 'jsdom';
+import { renderAppBuilderShell }
+  from './app-shell-ui.js';
 
 test(
   'renderAppBuilderShell renders app regions and runtime element ids',

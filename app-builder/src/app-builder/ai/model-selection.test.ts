@@ -2,12 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  dedupeModels,
-  selectPreferredChatModel,
-  selectPreferredCodeModel,
-  shouldUseCodeGenerationModel,
-} from './model-selection.js';
+import { dedupeModels,
+         selectPreferredChatModel,
+         selectPreferredCodeModel,
+         shouldUseCodeGenerationModel }
+  from './model-selection.js';
 
 test(
   'selectPreferredChatModel prefers cheaper faster general-purpose variants',

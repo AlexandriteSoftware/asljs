@@ -2,10 +2,9 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  buildShareStatusMessage,
-  shouldExcludeNonApplicationFileFromShare,
-} from './share-ui.js';
+import { buildShareStatusMessage,
+         shouldExcludeNonApplicationFileFromShare }
+  from './share-ui.js';
 
 test(
   'shouldExcludeNonApplicationFileFromShare excludes tests and workflow artifacts',

@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  renderWorkspace,
-} from './workspace-ui.js';
+import { renderWorkspace }
+  from './workspace-ui.js';
 
 test(
   'renderWorkspace includes the core workspace controls and panels',

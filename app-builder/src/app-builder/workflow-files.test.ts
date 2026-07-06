@@ -2,14 +2,13 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  CHANGE_FILE,
-  PLAN_FILE,
-  README_FILE,
-  createDefaultWorkflowFiles,
-  ensureWorkflowFiles,
-  hasOnlyWorkflowFiles,
-} from './workflow-files.js';
+import { CHANGE_FILE,
+         PLAN_FILE,
+         README_FILE,
+         createDefaultWorkflowFiles,
+         ensureWorkflowFiles,
+         hasOnlyWorkflowFiles }
+  from './workflow-files.js';
 
 test(
   'createDefaultWorkflowFiles creates README PLAN and CHANGE in order',

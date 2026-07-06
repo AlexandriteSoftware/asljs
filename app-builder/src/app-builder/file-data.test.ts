@@ -2,10 +2,9 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  isImageMimeType,
-  readFileDataInfo,
-} from './file-data.js';
+import { isImageMimeType,
+         readFileDataInfo }
+  from './file-data.js';
 
 test(
   'readFileDataInfo parses base64 data urls',

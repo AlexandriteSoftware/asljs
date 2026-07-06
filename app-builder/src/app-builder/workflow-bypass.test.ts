@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  shouldBypassWorkflowCycle,
-} from './workflow-bypass.js';
+import { shouldBypassWorkflowCycle }
+  from './workflow-bypass.js';
 
 test(
   'shouldBypassWorkflowCycle detects direct file edits',

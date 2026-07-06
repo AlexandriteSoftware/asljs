@@ -2,16 +2,15 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  type AiToolFileRecord,
-  type AiTools,
-  OPENAI_TOOLS,
-  createAppRuntimeTools,
-  executeToolCall,
-  isResponseFunctionCall,
-  readCallId,
-  readFunctionName,
-} from './ai-tools.js';
+import { AiToolFileRecord,
+         AiTools,
+         OPENAI_TOOLS,
+         createAppRuntimeTools,
+         executeToolCall,
+         isResponseFunctionCall,
+         readCallId,
+         readFunctionName }
+  from './ai-tools.js';
 
 function makeFile(
     overrides?: Partial<AiToolFileRecord>

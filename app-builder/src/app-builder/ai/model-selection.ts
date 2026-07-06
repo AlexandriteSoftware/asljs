@@ -1,6 +1,5 @@
-import {
-  type ChatMessage,
-} from '../types.js';
+import { ChatMessage }
+  from '../types.js';
 
 export type AvailableAiModel =
   { id: string;

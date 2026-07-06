@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  JSDOM,
-} from 'jsdom';
-import {
-  createShareModalUi,
-  renderShareModal,
-} from './share-modal-ui.js';
+import { JSDOM }
+  from 'jsdom';
+import { createShareModalUi,
+         renderShareModal }
+  from './share-modal-ui.js';
 
 async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();

@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  createLinkSharingService,
-} from './link-sharing.js';
+import { createLinkSharingService }
+  from './link-sharing.js';
 
 test(
   'createLinkSharingService roundtrips payload via token',

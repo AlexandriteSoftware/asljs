@@ -1,9 +1,7 @@
-import {
-  type ChatMessage,
-} from '../types.js';
-import {
-  hasOnlyWorkflowFiles,
-} from '../workflow-files.js';
+import { ChatMessage }
+  from '../types.js';
+import { hasOnlyWorkflowFiles }
+  from '../workflow-files.js';
 
 export const README_SNAPSHOT_FILE = '.README.md';
 const MAX_TRANSCRIPT_MESSAGES = 10;

@@ -1,11 +1,9 @@
-import {
-    dbOpen,
-    dbRequestAsync,
-  } from 'asljs-dali';
-import {
-    type AppRecord,
-    type FileRecord,
-  } from './types.js';
+import { dbOpen,
+         dbRequestAsync }
+  from 'asljs-dali';
+import { AppRecord,
+         FileRecord }
+  from './types.js';
 
 const DB_NAME =
   'asljs-app-builder';

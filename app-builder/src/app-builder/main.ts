@@ -1,139 +1,112 @@
-import { state } from './state.js';
-import {
-  createAiChatModel,
-  OpenAiTransport,
-  type AiChatModel,
-  type AiChatKeySubmitDetail,
-  type AiChatOptions,
-} from 'asljs-components';
-import {
-  listApps,
-  saveApp,
-  deleteApp,
-  listFiles,
-  saveFile,
-  deleteFile,
-  replaceFiles,
-  loadAppOpenAiApiKey,
-  saveAppOpenAiApiKey,
-} from './storage.js';
-import {
-  generateApp,
-  listAvailableModels,
-  DEFAULT_MODEL,
-  DEFAULT_MAX_TOOL_STEPS,
-  GenerationStoppedError,
-  type AiModel,
-} from './ai/ai-repl.js';
-import {
-  GENERATION_SYSTEM_PROMPT,
-} from './ai/ai-instruction.js';
-import {
-  CHAT_SYSTEM_PROMPT,
-} from './ai/chat-instruction.js';
-import {
-  buildConversationPrompt,
-  getConversationKickoffMessage,
-} from './ai/conversation-loop.js';
-import {
-  renderPreview,
-  evaluateInPreview,
-  getPreviewDiagnostics,
-} from './preview.js';
-import {
-  type AppRecord,
-  type AppAuthor,
-  type Settings,
-} from './types.js';
-import {
-  createAppRuntimeTools,
-  executeToolCall,
-  OPENAI_TOOLS,
-} from './ai/ai-tools.js';
-import {
-  DEFAULT_CHAT_MODEL,
-  DEFAULT_CODE_MODEL,
-  dedupeModels,
-  type AvailableAiModel,
-} from './ai/model-selection.js';
-import {
-  renderAppListUi,
-} from './ui/app-list-ui.js';
-import {
-  type FileViewElement,
-  renderFileSelectUi,
-  renderFileContentUi,
-} from './ui/file-editor-ui.js';
-import {
-  createAppBuilderAiChatSecretsAndSettingsProvider,
-  createSessionStorageAiChatStateStore,
-} from './ai-chat-storage.js';
-import {
-  togglePanelUi,
-} from './ui/panel-collapse-ui.js';
-import {
-  buildSampleFiles,
-  getSampleById,
-  getSampleByName,
-} from './examples/samples.js';
-import {
-  createDefaultWorkflowFiles,
-  PLAN_FILE,
-  CHANGE_FILE,
-  ensureWorkflowFiles,
-} from './workflow-files.js';
-import {
-  buildChangeListFromPlan,
-  hasPendingPlanChanges,
-} from './generation-workflow.js';
-import {
-  createLinkSharingService,
-  createBrowserTextCompressionCodec,
-  type LinkSharingService,
-} from './services/link-sharing.js';
-import {
-  buildExportPayload as buildExportPayloadModel,
-  parseImportedPayloadText,
-  createImportPlan,
-  type ExportPayload,
-  type ImportedPayload,
-} from './services/export-import.js';
-import {
-  minifySharePayload,
-  type SharePayloadMinifyLoader,
-} from './services/share-payload-minify.js';
-import {
-  buildShareStatusMessage,
-  shouldExcludeNonApplicationFileFromShare,
-} from './services/share-ui.js';
-import {
-  renderAppBuilderShell,
-} from './ui/app-shell-ui.js';
-import {
-  createFirstApplicationDialogUi,
-} from './ui/first-application-dialog-ui.js';
-import {
-  createNameModalUi,
-} from './ui/name-modal-ui.js';
-import {
-  createProjectSettingsModalUi,
-} from './ui/project-settings-modal-ui.js';
-import {
-  createSettingsModalUi,
-} from './ui/settings-modal-ui.js';
-import {
-  createShareModalUi,
-} from './ui/share-modal-ui.js';
-import {
-  configureButton,
-  configureSelect,
-  mustElement,
-  readControlValue,
-  setButtonContent,
-  writeControlValue,
-  type AppBuilderButtonElement,
-  type AppBuilderSelectElement,
-} from './ui/control-ui.js';
+import { state }
+  from './state.js';
+import { createAiChatModel,
+         OpenAiTransport,
+         AiChatModel,
+         AiChatKeySubmitDetail,
+         AiChatOptions }
+  from 'asljs-components';
+import { listApps,
+         saveApp,
+         deleteApp,
+         listFiles,
+         saveFile,
+         deleteFile,
+         replaceFiles,
+         loadAppOpenAiApiKey,
+         saveAppOpenAiApiKey }
+  from './storage.js';
+import { generateApp,
+         listAvailableModels,
+         DEFAULT_MODEL,
+         DEFAULT_MAX_TOOL_STEPS,
+         GenerationStoppedError,
+         AiModel }
+  from './ai/ai-repl.js';
+import { GENERATION_SYSTEM_PROMPT }
+  from './ai/ai-instruction.js';
+import { CHAT_SYSTEM_PROMPT }
+  from './ai/chat-instruction.js';
+import { buildConversationPrompt,
+         getConversationKickoffMessage }
+  from './ai/conversation-loop.js';
+import { renderPreview,
+         evaluateInPreview,
+         getPreviewDiagnostics }
+  from './preview.js';
+import { AppRecord,
+         AppAuthor,
+         Settings }
+  from './types.js';
+import { createAppRuntimeTools,
+         executeToolCall,
+         OPENAI_TOOLS }
+  from './ai/ai-tools.js';
+import { DEFAULT_CHAT_MODEL,
+         DEFAULT_CODE_MODEL,
+         dedupeModels,
+         AvailableAiModel }
+  from './ai/model-selection.js';
+import { renderAppListUi }
+  from './ui/app-list-ui.js';
+import { FileViewElement,
+         renderFileSelectUi,
+         renderFileContentUi }
+  from './ui/file-editor-ui.js';
+import { createAppBuilderAiChatSecretsAndSettingsProvider,
+         createSessionStorageAiChatStateStore }
+  from './ai-chat-storage.js';
+import { togglePanelUi }
+  from './ui/panel-collapse-ui.js';
+import { buildSampleFiles,
+         getSampleById,
+         getSampleByName }
+  from './examples/samples.js';
+import { createDefaultWorkflowFiles,
+         PLAN_FILE,
+         CHANGE_FILE,
+         ensureWorkflowFiles }
+  from './workflow-files.js';
+import { buildChangeListFromPlan,
+         hasPendingPlanChanges }
+  from './generation-workflow.js';
+import { createLinkSharingService,
+         createBrowserTextCompressionCodec,
+         LinkSharingService }
+  from './services/link-sharing.js';
+import { buildExportPayload as buildExportPayloadModel,
+         parseImportedPayloadText,
+         createImportPlan,
+         ExportPayload,
+         ImportedPayload }
+  from './services/export-import.js';
+import { minifySharePayload,
+         SharePayloadMinifyLoader }
+  from './services/share-payload-minify.js';
+import { buildShareStatusMessage,
+         shouldExcludeNonApplicationFileFromShare }
+  from './services/share-ui.js';
+import { renderAppBuilderShell }
+  from './ui/app-shell-ui.js';
+import { createFirstApplicationDialogUi }
+  from './ui/first-application-dialog-ui.js';
+import { createNameModalUi }
+  from './ui/name-modal-ui.js';
+import { createProjectSettingsModalUi }
+  from './ui/project-settings-modal-ui.js';
+import { createSettingsModalUi }
+  from './ui/settings-modal-ui.js';
+import { createShareModalUi }
+  from './ui/share-modal-ui.js';
+import { configureButton,
+         configureSelect,
+         mustElement,
+         readControlValue,
+         setButtonContent,
+         writeControlValue,
+         AppBuilderButtonElement,
+         AppBuilderSelectElement }
+  from './ui/control-ui.js';
 import * as esbuildWasm
   from 'esbuild-wasm';
 import esbuildWasmUrl

@@ -2,10 +2,9 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  buildChangeListFromPlan,
-  hasPendingPlanChanges,
-} from './generation-workflow.js';
+import { buildChangeListFromPlan,
+         hasPendingPlanChanges }
+  from './generation-workflow.js';
 
 test(
   'hasPendingPlanChanges ignores the default empty PLAN placeholder',

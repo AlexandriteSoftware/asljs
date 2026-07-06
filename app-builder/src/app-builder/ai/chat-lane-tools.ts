@@ -1,6 +1,5 @@
-import {
-  type AiTools,
-} from './ai-tools.js';
+import { AiTools }
+  from './ai-tools.js';
 
 type ChatLaneOptions =
   { planFileName: string;

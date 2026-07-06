@@ -2,12 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  buildExportPayload,
-  parseImportedPayloadText,
-  createImportPlan,
-  type ImportedPayload,
-} from './export-import.js';
+import { buildExportPayload,
+         parseImportedPayloadText,
+         createImportPlan,
+         ImportedPayload }
+  from './export-import.js';
 
 test(
   'buildExportPayload returns id/name/files map only',

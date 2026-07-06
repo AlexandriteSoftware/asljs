@@ -1,6 +1,5 @@
-import {
-  type SelectItem,
-} from 'asljs-components';
+import { SelectItem }
+  from 'asljs-components';
 
 export type AppBuilderButtonElement =
   HTMLElement

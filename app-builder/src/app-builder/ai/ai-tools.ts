@@ -9,9 +9,8 @@ export type ResponseFunctionCallOutput =
     call_id: string;
     output: string; };
 
-import {
-  readFileDataInfo,
-} from '../file-data.js';
+import { readFileDataInfo }
+  from '../file-data.js';
 
 type AppTestCase =
   { name: string;

@@ -4,9 +4,8 @@ import assert
   from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
-import {
-  createSessionStorageAiChatStateStore,
-} from './ai-chat-storage.js';
+import { createSessionStorageAiChatStateStore }
+  from './ai-chat-storage.js';
 
 test(
   'session chat state store saves and loads serializable chat state',

@@ -4,10 +4,9 @@ import assert
   from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
-import type {
-  renderFileContentUi,
-  renderFileSelectUi,
-} from './file-editor-ui.js';
+import { renderFileContentUi,
+         renderFileSelectUi }
+  from './file-editor-ui.js';
 
 type FileEditorUiModule =
   { renderFileContentUi: typeof renderFileContentUi;

@@ -1,6 +1,5 @@
-import {
-  setButtonContent,
-} from './control-ui.js';
+import { setButtonContent }
+  from './control-ui.js';
 
 type ToggleButtonElement =
   HTMLElement

@@ -1,13 +1,12 @@
-import {
-    type AiTools,
-    type ResponseFunctionCall,
-    type ResponseFunctionCallOutput,
-    OPENAI_TOOLS,
-    executeToolCall,
-    isResponseFunctionCall,
-    readCallId,
-    readFunctionName
-  } from './ai-tools.js';
+import { AiTools,
+         ResponseFunctionCall,
+         ResponseFunctionCallOutput,
+         OPENAI_TOOLS,
+         executeToolCall,
+         isResponseFunctionCall,
+         readCallId,
+         readFunctionName }
+  from './ai-tools.js';
 
 const OPENAI_RESPONSES_URL =
   'https://api.openai.com/v1/responses';

@@ -1,15 +1,14 @@
-import {
-  configureButton,
-  configureSelect,
-  configureTextInput,
-  focusInnerControl,
-  mustElement,
-  readControlValue,
-  type AppBuilderButtonElement,
-  type AppBuilderSelectElement,
-  type AppBuilderTextInputElement,
-  writeControlValue,
-} from './control-ui.js';
+import { configureButton,
+         configureSelect,
+         configureTextInput,
+         focusInnerControl,
+         mustElement,
+         readControlValue,
+         AppBuilderButtonElement,
+         AppBuilderSelectElement,
+         AppBuilderTextInputElement,
+         writeControlValue }
+  from './control-ui.js';
 
 export function renderSettingsModal(): string {
   return `

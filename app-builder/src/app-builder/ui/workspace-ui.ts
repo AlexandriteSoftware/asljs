@@ -1,6 +1,5 @@
-import {
-  renderFirstApplicationDialog,
-} from './first-application-dialog-ui.js';
+import { renderFirstApplicationDialog }
+  from './first-application-dialog-ui.js';
 
 export function renderWorkspace(): string {
   return `

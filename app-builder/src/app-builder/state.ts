@@ -1,11 +1,9 @@
-import {
-    observable,
-  } from 'asljs-observable';
-import {
-    type AppRecord,
-    type ChatMessage,
-    type FileRecord,
-  } from './types.js';
+import { observable }
+  from 'asljs-observable';
+import { AppRecord,
+         ChatMessage,
+         FileRecord }
+  from './types.js';
 
 export type AppBuilderState =
   { apps: AppRecord[];

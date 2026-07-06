@@ -2,15 +2,12 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  listSamples,
-} from './samples.js';
-import {
-  createLinkSharingService,
-} from '../services/link-sharing.js';
-import {
-  createNodeEsbuildGzipBase64UrlCodec,
-} from '../services/link-sharing-node-codec.js';
+import { listSamples }
+  from './samples.js';
+import { createLinkSharingService }
+  from '../services/link-sharing.js';
+import { createNodeEsbuildGzipBase64UrlCodec }
+  from '../services/link-sharing-node-codec.js';
 
 test(
   'all samples can be encoded into share URLs and parsed back',
