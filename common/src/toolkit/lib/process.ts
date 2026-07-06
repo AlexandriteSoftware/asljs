@@ -19,7 +19,7 @@ export function start(
       encoding: 'utf8' };
 
   log(
-    'Executing command `%s` in directory `%s`.',
+    'Run `%s` in `%s`.',
     command,
     currentWorkingDir);
 
