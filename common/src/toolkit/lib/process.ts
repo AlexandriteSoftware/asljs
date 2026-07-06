@@ -15,7 +15,7 @@ export function start(
 
   const options: ExecSyncOptionsWithStringEncoding =
     { cwd: currentWorkingDir,
-      stdio: [ 'ignore', 'pipe', 'pipe' ],
+      stdio: 'inherit',
       encoding: 'utf8' };
 
   log(
