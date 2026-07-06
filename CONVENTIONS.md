@@ -5,11 +5,12 @@
 The following widely-accepted TypeScript practices apply here unless
 the exception is clearly documented.
 
-- Write type-safe code; avoid `any`.
+Anything enforcable by the TypeScript compiler or ESLint is assumed to be in
+the corresponding configuration file. This file is only for conventions that are
+not enforceable by tooling, or for additional guidance on code style.
+
 - Prefer `interface` for public API shapes; use `type` for unions, aliases, and
   computed types.
-- Prefer `const` over `let`; avoid `var`.
-- Use `===` / `!==` for equality.
 - Export only what consumers need; keep internals unexported.
 - Write deterministic, side-effect-free pure functions where possible.
 - Prefer `Map` and `Set` over plain objects for dynamic key/value storage.
@@ -30,43 +31,6 @@ the exception is clearly documented.
 
 - All packages use **ESM** (`"type": "module"` in `package.json`).
 - CommonJS (`require`, `module.exports`) is not used.
-- When import or export has multiple items, use **brace-block style**: one name
-  per double-indented line, with `} from` on a single-indented line:
-
-  ```ts
-  export {
-      foo,
-      bar,
-    } from './module.js';
-  ```
-
-  ```ts
-  import {
-      alpha,
-      beta,
-    } from './module.js';
-  ```
-
-- When import or export has one item, keep it on the same line with
-  export/import keyword and put `from` on a single-indented line:
-
-  ```ts
-  import path
-    from './path.js`;
-  ```
-
-- For type-only names, use the inline `type` keyword rather than a separate
-  `import type { … }` statement:
-
-  ```ts
-  import {
-      type Alpha,
-      beta,
-    } from './module.js';
-  ```
-
-- Always include the `.js` extension in local import paths (NodeNext
-  resolution).
 
 ### TypeScript compiler settings
 
@@ -101,10 +65,13 @@ the exception is clearly documented.
     second,
     third ]
 
-  for (let rowIndex = 0;
-       rowIndex < limit;
-       rowIndex++)
-  {
+  for (
+    let rowIndex = 0;
+    rowIndex < limit;
+    rowIndex++
+  ) {
+    // ...
+  }
 
   (
       context: MyContextObject,

@@ -13,20 +13,9 @@ Install dependencies from the repository root:
 npm ci
 ```
 
-The repo is an npm workspace monorepo. Packages live in:
-
-- `eventful`
-- `observable`
-- `machine`
-- `money`
-- `part`
-- `data-binding`
-- `components`
-- `dali`
-- `app-builder`
-
-Published libraries are validated and released independently. Do not assume a
-single repository-wide build, lint, test, or typecheck gate.
+The repo is an npm workspace monorepo. Published libraries are validated and
+released independently. Do not assume a single repository-wide build, lint,
+test, or typecheck gate.
 
 ## Fast Local Workflows
 
@@ -98,7 +87,7 @@ npm -w asljs-app-builder run build
 Use `dev` while iterating on UI behavior. Use `build` when validating emitted
 demo output or deployment behavior.
 
-## Working On One Package Quickly
+## Workflow
 
 Start from the package that owns the behavior.
 

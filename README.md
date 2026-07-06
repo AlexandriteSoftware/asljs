@@ -5,7 +5,7 @@ utilities and functions to improve everyday development.
 
 Live demo:
 
-- [ASLJS App Builder](https://alexandritesoftware.github.io/asljs/app-builder/)
+- [ASLJS App Builder][1]
 
 Libraries:
 
@@ -17,8 +17,21 @@ Libraries:
   control flow.
 - [money](money) - provides utilities for handling monetary values.
 - [observable](observable) - makes any object emit events on property changes.
+- [tmpdir](tmpdir) - provides temporary directory utilities for testing and
+  development.
+
+Tools:
+
+- [cog](cog) - AI agents context manager.
 - [part](part) - defines project artefacts in markdown and validates them with
   CLI rules.
+
+Applications:
+
+- [app-builder](app-builder) - a demo application that uses the libraries to
+  build a simple app with AI-assisted features.
+
+[1]: https://alexandritesoftware.github.io/asljs/app-builder/
 
 ## Architecture
 
@@ -55,57 +68,3 @@ graph TD
   eventful --> appbuilder
   observable --> appbuilder
 ```
-
-### Public API boundaries
-
-- `asljs-eventful`: Event helpers and base types are exported from the root
-  package.
-- `asljs-observable`: Observable wrappers, object base class, and types are
-  exported from the root package.
-- `asljs-data-binding`: `bindDataModel`, built-in pipe creation, and public
-  types are exported from the root package.
-- `asljs-components`: `AssistedInput`, `Button`, `ButtonAdd`, `ButtonDelete`,
-  `createBootstrapTheme`, `FileView`, `Keyboard`, `Letterpad`, `List`,
-  `Numpad`, `TextInput`, handler factories, theme helpers, and related types
-  are public; component internals are not.
-- `asljs-dali`: Table, live views, strategies, transactions, event-source,
-  and saga exports are public from the root package.
-- `asljs-machine`: The public surface is the `machine(...)` factory and its
-  declared types.
-- `asljs-money`: The public surface is the `money` factory plus `Money` and
-  `MoneyFactory` types.
-- `asljs-part`: The public surface is the package-root CLI/report helpers and
-  definition-discovery types.
-- `asljs-app-builder`: No library API. This is an app/demo package;
-  `src/app-builder/*` modules are internal.
-
-### Package roles
-
-| Package | Browser-only | Framework-agnostic | Demo/app package | Publishable library |
-| -------------------- | --- | --- | --- | --- |
-| `asljs-eventful`     | No  | Yes | No  | Yes |
-| `asljs-observable`   | No  | Yes | No  | Yes |
-| `asljs-data-binding` | Yes | Yes | No  | Yes |
-| `asljs-components`   | Yes | Yes | No  | Yes |
-| `asljs-dali`         | Yes | Yes | No  | Yes |
-| `asljs-machine`      | No  | Yes | No  | Yes |
-| `asljs-money`        | No  | Yes | No  | Yes |
-| `asljs-part`         | No  | Yes | No  | Yes |
-| `asljs-app-builder`  | Yes | No  | Yes | No  |
-
-### Placement guidance
-
-- Put generic event APIs in `eventful`.
-- Put change-tracking and path watching in `observable`.
-- Put DOM binding syntax and binding runtime behavior in `data-binding`.
-- Put browser UI components in `components`.
-- Put IndexedDB storage, live table views, and transaction helpers in `dali`.
-- Put control-flow state machines in `machine`.
-- Put monetary value and currency logic in `money`.
-- Put markdown-defined project artefact tracing, inventory, and rule checks in
-  `part`.
-- Put demo-specific or AI-assisted app behavior in `app-builder`.
-
-If a feature could live in more than one package, prefer the lowest-level
-package that can own it without taking on browser-specific or demo-specific
-concerns.

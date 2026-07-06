@@ -4,6 +4,10 @@
   "license": "MIT",
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
+  "scripts": {
+    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format": "npm run format:json"
+  },
   "workspaces": [
     "app-builder",
     "cog",
@@ -27,6 +31,8 @@
     "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "marked": "^18.0.5",
+    "pkg-types": "^2.3.1",
+    "prettier": "^3.9.4",
     "typescript": "^6.0.2"
   },
   "version": ""

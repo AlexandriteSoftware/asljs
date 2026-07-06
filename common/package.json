@@ -1,0 +1,19 @@
+{
+  "name": "asljs-common",
+  "version": "0.1.0",
+  "description": "Common packages and scripts for ASLJS projects.",
+  "type": "module",
+  "scripts": {
+    "clean": "node ./dist/toolkit.js clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "node --test build/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3"
+  }
+}

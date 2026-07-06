@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * Repository CLI toolkit for package release and maintenance tasks.
  *
@@ -21,13 +19,31 @@ import console
 import { fileURLToPath,
          pathToFileURL }
   from 'node:url';
-import { execSync }
+import { execSync,
+         ExecSyncOptionsWithStringEncoding }
   from 'node:child_process';
+import { readPackageJSON,
+         PackageJson }
+  from 'pkg-types';
 
+/**
+ * Path to the common package directory, which is supposed to be the parent of
+ * this script's directory, assuming the compiled script is located in
+ * common/dist.
+ */
+const PKG_COMMON_DIR =
+  path.dirname(
+    path.dirname(
+      fileURLToPath(
+        import.meta.url)));
+
+/**
+ * Path to the repository root directory, which is supposed to be the parent of
+ * the common package directory.
+ */
 const ROOT_DIR =
   path.dirname(
-    fileURLToPath(
-      import.meta.url));
+    PKG_COMMON_DIR);
 
 const DEPENDENCY_FIELD_NAMES =
   [ 'dependencies',
@@ -35,49 +51,17 @@ const DEPENDENCY_FIELD_NAMES =
     'peerDependencies',
     'optionalDependencies' ];
 
-/**
- * @typedef
- *   { import('child_process')
- *       .ExecSyncOptionsWithStringEncoding }
- *   ExecSyncOptionsWithStringEncoding
- */
-
-/**
- * @param {string} command 
- * @param {string} cwd 
- * @returns {string}
- */
-function runGit(
-    command,
-    cwd = ROOT_DIR
-  )
-{
-  /** @type {ExecSyncOptionsWithStringEncoding} */
-  const options =
-    { cwd,
-      stdio: [ 'ignore', 'pipe', 'pipe' ],
-      encoding: 'utf8' };
-
-  return execSync(
-    command,
-    options);
-}
-
-/**
- * @param {string} command 
- * @param {string} cwd 
- * @returns {string}
- */
 function runCommand(
-    command,
-    cwd = null
-  )
+    command: string,
+    cwd?: string
+  ): string
 {
-  cwd ??= process.cwd();
+  const currentWorkingDir =
+    cwd
+    ?? process.cwd();
 
-  /** @type {ExecSyncOptionsWithStringEncoding} */
-  const options =
-    { cwd,
+  const options: ExecSyncOptionsWithStringEncoding =
+    { cwd: currentWorkingDir,
       stdio: 'inherit',
       encoding: 'utf8' };
 
@@ -86,15 +70,10 @@ function runCommand(
     options);
 }
 
-/**
- * @param {string[]} commands
- * @param {string} cwd 
- * @returns {void}
- */
 function runCommands(
-    commands,
-    cwd = null
-  )
+    commands: string[],
+    cwd?: string
+  ): void
 {
   for (const command of commands) {
     runCommand(
@@ -103,29 +82,10 @@ function runCommands(
   }
 }
 
-/**
- * @param {string} filePath 
- * @returns {unknown}
- */
-function readJsonFile(
-    filePath
-  )
-{
-  return JSON.parse(
-    fs.readFileSync(
-      filePath,
-      'utf8'));
-}
-
-/**
- * @param {string} filePath 
- * @param {unknown} value 
- * @returns {void}
- */
-function writeJsonFile(
-    filePath,
-    value
-  )
+async function writeJsonFile(
+    filePath: string,
+    value: unknown
+  ): Promise<void>
 {
   const text =
     JSON.stringify(
@@ -133,66 +93,76 @@ function writeJsonFile(
       null,
       2);
 
-  fs.writeFileSync(
+  await fs.writeFile(
     filePath,
     `${text}\n`,
     'utf8');
 }
 
-/**
- * @param {string} filePath 
- * @returns {Promise<string>}
- */
 async function readTextFile(
-    filePath
-  )
+    filePath: string
+  ): Promise<string>
 {
   return await fs.readFile(
     filePath,
     'utf8');
 }
 
+function runGit(
+    command: string,
+    cwd?: string
+  ): string
+{
+  const currentWorkingDir =
+    cwd ?? process.cwd();
+
+  const options: ExecSyncOptionsWithStringEncoding =
+    { cwd: currentWorkingDir,
+      stdio: [ 'ignore', 'pipe', 'pipe' ],
+      encoding: 'utf8' };
+
+  return execSync(
+    command,
+    options);
+}
+
 function getPackageJsonPath(
-    packageDir
-  )
+    packageDir: string
+  ): string
 {
   return path.join(
     packageDir,
     'package.json');
 }
 
-function getRootPackageJson(
-  )
+async function getRootPackageJson(
+  ): Promise<PackageJson>
 {
-  return readJsonFile(
-    getPackageJsonPath(ROOT_DIR));
+  return await readPackageJSON(
+    getPackageJsonPath(
+      ROOT_DIR));
 }
 
-function getToolkitDocsPath(
-  )
-{
-  return path.join(
-    ROOT_DIR,
-    'toolkit.md');
-}
-
-function getWorkspacePackageDirs(
-  )
+async function getWorkspacePackageDirs(
+  ): Promise<string[]>
 {
   const rootPackageJson =
-    getRootPackageJson();
+    await getRootPackageJson();
 
-  if (!Array.isArray(
-    rootPackageJson.workspaces)) {
+  if (
+    !Array.isArray(
+      rootPackageJson.workspaces))
+  {
     throw new Error(
       'Root package.json must define a workspaces array.');
   }
 
   return rootPackageJson.workspaces.map(
     workspace => {
-      if (typeof workspace !== 'string'
-          || workspace.trim() === '')
-      {
+      if (
+        typeof workspace !== 'string'
+        || workspace.trim() === ''
+      ) {
         throw new Error(
           'Workspace entries must be non-empty strings.');
       }
@@ -203,23 +173,36 @@ function getWorkspacePackageDirs(
     });
 }
 
-function getWorkspacePackageInfos(
-  )
+async function getWorkspacePackages(
+  ): Promise<PackageJson[]>
 {
-  return getWorkspacePackageDirs().map(
-    packageDir =>
-      getPackageInfo(packageDir));
+  const packageDirs =
+    await getWorkspacePackageDirs();
+
+  const packageInfos: PackageJson[] = [];
+
+  for (const packageDir of packageDirs) {
+    const packageJson =
+      await getPackageJson(packageDir);
+
+    packageInfos.push(packageJson);
+  }
+
+  return packageInfos;
 }
 
-function getPackageInfo(
-    packageDir = process.cwd()
-  )
+async function getPackageJson(
+    packageDir?: string
+  ): Promise<PackageJson>
 {
+  packageDir ??= process.cwd();
+
   const packageJsonPath =
-    getPackageJsonPath(packageDir);
+    getPackageJsonPath(
+      packageDir);
 
   const packageJson =
-    readJsonFile(
+    await readPackageJSON(
       packageJsonPath);
 
   const name =
@@ -228,59 +211,43 @@ function getPackageInfo(
   const version =
     packageJson.version;
 
-  if (typeof name !== 'string'
-      || name.trim() === '')
-  {
+  if (
+    typeof name !== 'string'
+    || name.trim() === ''
+  ) {
     throw new Error(
       'package.json must define a non-empty string "name".');
   }
 
-  if (typeof version !== 'string'
-      || version.trim() === '')
-  {
+  if (
+    typeof version !== 'string'
+    || version.trim() === ''
+  ) {
     throw new Error(
       'package.json must define a non-empty string "version".');
   }
 
-  return {
-    dir: packageDir,
-    packageJsonPath,
-    packageJson,
-    name,
-    version,
-    private: packageJson.private === true,
-  };
+  return packageJson;
 }
 
-function getPackageNameAndVersionFromPackageJson(
-  )
+async function getReleaseTagId(
+    packageDir?: string
+  ): Promise<string>
 {
-  const packageInfo =
-    getPackageInfo();
+  packageDir ??= process.cwd();
 
-  return { name: packageInfo.name,
-           version: packageInfo.version };
-}
-
-function getReleaseTagId(
-  )
-{
   const packageInfo =
-    getPackageNameAndVersionFromPackageJson();
+    await getPackageJson(packageDir);
 
   return `${packageInfo.name}@${packageInfo.version}`;
 }
 
-/**
- * @param {string[]} args 
- * @returns {Promise<void>}
- */
 async function clean(
-    args
-  )
+    args?: string[]
+  ): Promise<void>
 {
   const pathsToClean =
-    args.length > 0
+    args && args.length > 0
       ? args
       : [ 'dist', 'build' ];
 
@@ -302,7 +269,7 @@ async function clean(
       await fs.stat(
         fullPathToClean);
     } catch (err) {
-      if (err.code !== 'ENOENT') {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw err;
       }
 
@@ -324,8 +291,9 @@ async function clean(
   }
 }
 
-function ensureCleanWorkingFolder(
-  )
+async function ensureCleanWorkingFolder(
+    args?: string[]
+  ): Promise<void>
 {
   const output =
     runGit(
@@ -342,8 +310,8 @@ function ensureCleanWorkingFolder(
 }
 
 function createReleaseTag(
-    releaseId,
-  )
+    releaseId: string,
+  ): void
 {
   const existingTag =
     runGit(
@@ -364,20 +332,22 @@ function createReleaseTag(
     `Created tag: ${releaseId}`);
 }
 
-function tagCommitWithReleaseId(
-  )
+async function tagCommitWithReleaseId(
+    args?: string[]
+  ): Promise<void>
 {
   const releaseId =
-    getReleaseTagId();
+    await getReleaseTagId();
 
-  createReleaseTag(releaseId);
+  createReleaseTag(
+    releaseId);
 }
 
 export function updateDependencyVersionRanges(
-    packageJson,
-    dependencyName,
-    nextVersion,
-  )
+    packageJson: PackageJson,
+    dependencyName: string,
+    nextVersion: string,
+  ): boolean
 {
   let changed = false;
 
@@ -418,65 +388,85 @@ export function updateDependencyVersionRanges(
 }
 
 function getLocalWorkspaceDependencyNameGraph(
-    workspacePackageInfos
-  )
+    workspacePackages: PackageJson[]
+  ): Map<string, string[]>
 {
-  const workspacePackageNames =
+  const workspacePackageNames: Set<string> =
     new Set(
-      workspacePackageInfos.map(
+      workspacePackages.map(
         packageInfo =>
-          packageInfo.name));
-
-  return new Map(
-    workspacePackageInfos.map(
-      packageInfo => {
-        const dependencies =
-          new Set();
-
-        for (const fieldName of DEPENDENCY_FIELD_NAMES) {
-          const fieldValue =
-            packageInfo.packageJson[fieldName];
-
-          if (!fieldValue
-              || typeof fieldValue !== 'object'
-              || Array.isArray(fieldValue))
           {
-            continue;
-          }
+            const name =
+              packageInfo.name;
 
-          for (const dependencyName of Object.keys(fieldValue)) {
-            if (dependencyName !== packageInfo.name
-                && workspacePackageNames.has(dependencyName))
+            ensureNonEmptyString(name);
+
+            return name;
+          }));
+
+  const map: Map<string, string[]> =
+    new Map(
+      workspacePackages.map(
+        packageInfo => {
+          const dependencies: Set<string> = new Set();
+
+          for (const fieldName of DEPENDENCY_FIELD_NAMES) {
+            const fieldValue =
+              packageInfo.packageJson[fieldName];
+
+            if (!fieldValue
+                || typeof fieldValue !== 'object'
+                || Array.isArray(fieldValue))
             {
-              dependencies.add(dependencyName);
+              continue;
+            }
+
+            for (const dependencyName of Object.keys(fieldValue)) {
+              if (
+                dependencyName !== packageInfo.name
+                && workspacePackageNames.has(dependencyName)
+              ) {
+                dependencies.add(dependencyName);
+              }
             }
           }
-        }
 
-        return [ packageInfo.name,
-                 [ ...dependencies ] ];
-      }));
+          const name =
+            packageInfo.name;
+
+          ensureNonEmptyString(name);
+
+          return [ name,
+                  [ ...dependencies ] ];
+        }));
+
+  return map;
+
+  function ensureNonEmptyString(
+      value: unknown
+    ): asserts value is string
+  {
+    if (typeof value !== 'string'
+        || value.trim() === '')
+    {
+      throw new Error(
+        'Expected a non-empty string, but got: ' + String(value));
+    }
+  }
 }
 
 export function resolveLocalWorkspaceDependencyBuildOrder(
-    packageName,
-    dependencyGraph
-  )
+    packageName: string,
+    dependencyGraph: Map<string, string[]>
+  ): string[]
 {
-  const permanent =
-    new Set();
-
-  const temporary =
-    new Set();
-
-  const buildOrder =
-    [];
-
-  const buildOrderSet =
-    new Set();
+  const permanent = new Set<string>();
+  const temporary = new Set<string>();
+  const buildOrder: string[] = [];
+  const buildOrderSet = new Set<string>();
 
   function visit(
-      currentPackageName
+      currentPackageName: string
     )
   {
     if (permanent.has(
@@ -519,26 +509,29 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
   return buildOrder;
 }
 
-function buildLocalDeps(
-  )
+async function buildLocalDeps(
+    args?: string[]
+  ): Promise<void>
 {
   const workspacePackageInfos =
-    getWorkspacePackageInfos();
+    await getWorkspacePackages();
 
   const packageInfoByName =
     new Map(
       workspacePackageInfos.map(
         packageInfo => [
-          packageInfo.name,
+          packageInfo.name || '',
           packageInfo,
         ]));
 
   const packageInfo =
-    getPackageInfo(
+    await getPackageJson(
       process.cwd());
 
-  if (!packageInfoByName.has(
-    packageInfo.name)) {
+  if (
+    !packageInfoByName.has(
+      packageInfo.name || '')
+  ) {
     throw new Error(
       `Current package "${packageInfo.name}" is not part of the root workspaces.`);
   }
@@ -549,7 +542,7 @@ function buildLocalDeps(
 
   const dependencyBuildOrder =
     resolveLocalWorkspaceDependencyBuildOrder(
-      packageInfo.name,
+      packageInfo.name || '',
       dependencyGraph);
 
   if (dependencyBuildOrder.length === 0) {
@@ -578,40 +571,36 @@ function buildLocalDeps(
 }
 
 function ensureReleaseTarget(
-    packageInfo
+    packageInfo: PackageJson
   )
 {
-  if (packageInfo.dir === ROOT_DIR) {
-    throw new Error(
-      'Release action must be run from a workspace package, not the repository root.');
-  }
-
   if (packageInfo.private) {
     throw new Error(
       `Refusing release: ${packageInfo.name} is private.`);
   }
 }
 
-function updateWorkspaceDependents(
-    releasedPackageName,
-    nextVersion
-  )
+async function updateWorkspaceDependents(
+    releasedPackageName: string,
+    nextVersion: string
+  ): Promise<string[]>
 {
   const changedPackageJsonPaths = [];
 
-  for (const packageDir of getWorkspacePackageDirs()) {
+  for (const packageDir of await getWorkspacePackageDirs()) {
     const packageInfo =
-      getPackageInfo(packageDir);
+      await getPackageJson(packageDir);
 
-    if (packageInfo.name === releasedPackageName) {
+    if (packageInfo.packageJson.name === releasedPackageName) {
       continue;
     }
 
-    if (!updateDependencyVersionRanges(
-      packageInfo.packageJson,
-      releasedPackageName,
-      nextVersion))
-    {
+    if (
+      !updateDependencyVersionRanges(
+        packageInfo.packageJson,
+        releasedPackageName,
+        nextVersion)
+    ) {
       continue;
     }
 
@@ -627,9 +616,9 @@ function updateWorkspaceDependents(
 }
 
 function commitReleaseChanges(
-    filePaths,
-    releaseId
-  )
+    filePaths: string[],
+    releaseId: string
+  ): void
 {
   const relativePaths =
     filePaths
@@ -658,8 +647,8 @@ function commitReleaseChanges(
 }
 
 function pushRelease(
-    releaseId
-  )
+    releaseId: string
+  ): void
 {
   runCommand(
     'git push',
@@ -670,17 +659,18 @@ function pushRelease(
     ROOT_DIR);
 }
 
-function releasePatch(
-  )
+async function releasePatch(
+    args?: string[]
+  ): Promise<void>
 {
-  ensureCleanWorkingFolder();
+  await ensureCleanWorkingFolder();
 
-  const packageInfo =
-    getPackageInfo(
+  const packageJson =
+    await getPackageJson(
       process.cwd());
 
   ensureReleaseTarget(
-    packageInfo);
+    packageJson);
 
   runCommands(
     [ 'npm run clean',
@@ -693,9 +683,9 @@ function releasePatch(
       'npm version patch --no-git-tag-version' ]);
 
   const changedDependencyPackageJsonPaths =
-    updateWorkspaceDependents(
-      packageInfo.name,
-      packageInfo.version);
+    await updateWorkspaceDependents(
+      packageJson.name!,
+      packageJson.version!);
 
   const packageLockPath =
     path.join(
@@ -708,13 +698,13 @@ function releasePatch(
 
   runCommand(
     'npm publish --ignore-scripts',
-    packageInfo.dir);
+    packageJson.dir);
 
   const releaseId =
-    `${packageInfo.name}@${packageInfo.version}`;
+    `${packageJson.name}@${packageJson.version}`;
 
   commitReleaseChanges(
-    [ packageInfo.packageJsonPath,
+    [ packageJson.packageJsonPath,
       ...changedDependencyPackageJsonPaths,
       packageLockPath ],
     releaseId);
@@ -725,8 +715,8 @@ function releasePatch(
 }
 
 function normalizeHelpText(
-    text
-  )
+    text: string
+  ): string
 {
   return text
     .trim()
@@ -735,9 +725,24 @@ function normalizeHelpText(
       '\n');
 }
 
+function getToolkitDocsPath(
+  ): string
+{
+  return path.join(
+    PKG_COMMON_DIR,
+    'docs',
+    'toolkit.md');
+}
+
+export interface CommandDoc {
+  actionKey: string;
+  actionSummary: string;
+  helpText: string;
+}
+
 export function parseToolkitDocs(
-    markdownText
-  )
+    markdownText: string
+  ): CommandDoc[]
 {
   const normalizedText =
     markdownText.replace(
@@ -827,15 +832,15 @@ export function parseToolkitDocs(
 
     commands.push(
       { actionKey,
-                    actionSummary,
-                    helpText });
+        actionSummary,
+        helpText });
   }
 
   return commands;
 }
 
 async function getCommandDocs(
-  )
+  ): Promise<CommandDoc[]>
 {
   return parseToolkitDocs(
     await readTextFile(
@@ -843,8 +848,8 @@ async function getCommandDocs(
 }
 
 function getActionHelpText(
-    commandDocs
-  )
+    commandDocs: CommandDoc[]
+  ): string
 {
   return commandDocs
     .map(
@@ -858,7 +863,7 @@ function getActionHelpText(
 const commandDocs =
   await getCommandDocs();
 
-const actions =
+const actions: Map<string, (args?: string[]) => Promise<void>> =
   new Map([
     [ 'clean',
       clean ],
@@ -872,13 +877,9 @@ const actions =
       releasePatch ],
   ]);
 
-/**
- * @param {string[]} args
- * @returns {Promise<void>}
- */
 export async function main(
-    args
-  )
+    args: string[]
+  ): Promise<void>
 {
   const action =
     args[0] ?? '';
@@ -901,29 +902,44 @@ export async function main(
 
   if (!selectedAction) {
     console.error(
-      `Unknown action: ${action}\n\nAvailable actions:\n\n${getActionHelpText(commandDocs)}`);
+      `Unknown action: ${action}`);
+
+    console.error(
+      `Available actions:\n\n${getActionHelpText(commandDocs)}`);
 
     process.exit(1);
   }
 
+  const actionArgs =
+    args.slice(1);
+
   await selectedAction(
-    args.slice(1));
+    actionArgs);
 }
 
-if (process.argv[1]
-    && import.meta.url === pathToFileURL(
-      process.argv[1]).href)
-{
-  try {
-    const args =
-      process.argv.slice(2);
+// checks that the script is being run directly, not imported
+if (process.argv[1]) {
+  const programArg =
+    process.argv[1];
 
-    await main(args);
-  } catch (error) {
-    console.error(
-      String(
-        error?.message ?? error));
+  const processArgvPath =
+    pathToFileURL(programArg).href;
+  
+  if (import.meta.url === processArgvPath) {
+    try {
+      const args =
+        process.argv.slice(2);
 
-    process.exit(1);
+      await main(args);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
+      console.error(message);
+
+      process.exit(1);
+    }
   }
 }
