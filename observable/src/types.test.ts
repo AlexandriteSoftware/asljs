@@ -2,14 +2,13 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    type Observable,
-    type ObservableGlobalOptions,
-    type ObservableOptions,
-    type ObservableTraceFn,
-    type ObservableWatchFn,
-  type WatchedValues,
-  } from './types.js';
+import { Observable,
+         ObservableGlobalOptions,
+         ObservableOptions,
+         ObservableTraceFn,
+         ObservableWatchFn,
+         WatchedValues }
+  from './types.js';
 
 const TEST_SUITE =
   'types';

@@ -5,13 +5,13 @@ import { start }
   from '../lib/process.js';
 
 export async function ensureCleanWorkingDirectory(
-    args?: string[]
   ): Promise<void>
 {
   const output =
     start(
       'git status --porcelain',
-      { cwd: ROOT_DIR });
+      { cwd: ROOT_DIR,
+        stdio: [ 'ignore', 'pipe', 'inherit' ] });
 
   if (
     typeof output === 'string'

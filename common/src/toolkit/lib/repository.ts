@@ -18,7 +18,8 @@ export function tagRepository(
       { cwd: ROOT_DIR,
         stdio: [ 'ignore', 'pipe', 'inherit' ] });
 
-  const gitTags = gatTagOutput.trim();
+  const gitTags =
+    gatTagOutput.trim();
 
   if (gitTags !== '') {
     throw new Error(

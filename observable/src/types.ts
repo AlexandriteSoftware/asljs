@@ -1,8 +1,7 @@
-import type {
-    EventMap,
-    Eventful,
-    EventfulFactory as DefaultEventfulFactory
-  } from 'asljs-eventful';
+import { EventMap,
+         Eventful,
+         EventfulFactory as DefaultEventfulFactory }
+  from 'asljs-eventful';
 
 export interface EventfulFactory {
   <T extends object | Function | undefined,

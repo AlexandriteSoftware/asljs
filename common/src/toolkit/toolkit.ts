@@ -25,8 +25,6 @@ import { releasePatch }
   from './commands/release-patch.js';
 import { tagReleaseRevision }
   from './commands/tag-release-revision.js';
-import { buildLocalDeps }
-  from './commands/build-local-deps.js';
 
 const commandDocs =
   await getCommandDocs();
@@ -35,8 +33,6 @@ const actions: Map<string, (args?: string[]) => Promise<void>> =
   new Map([
     [ 'clean',
       clean ],
-    [ 'build-local-deps',
-      buildLocalDeps ],
     [ 'ensure-clean-working-directory',
       ensureCleanWorkingDirectory ],
     [ 'tag-release-revision',

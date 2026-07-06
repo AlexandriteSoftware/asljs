@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    ObservableObject,
-  } from './observable-object.js';
+import { ObservableObject }
+  from './observable-object.js';
 
 const TEST_SUITE =
   'observable-object';

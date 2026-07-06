@@ -38,6 +38,7 @@
     "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
     "format": "npm run format:json",
     "clean": "node ../common/dist/toolkit/toolkit.js clean",
+    "prebuild": "node ../common/dist/toolkit/toolkit.js build-local-deps",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",

@@ -1,5 +1,3 @@
-import fs
-  from 'node:fs/promises';
 import path
   from 'node:path';
 import { readPackageJSON,
@@ -7,29 +5,6 @@ import { readPackageJSON,
   from 'pkg-types';
 import { ROOT_DIR }
   from '../api.js';
-
-export const DEPENDENCY_FIELD_NAMES =
-  [ 'dependencies',
-    'devDependencies',
-    'peerDependencies',
-    'optionalDependencies' ];
-
-export async function writeJsonFile(
-    filePath: string,
-    value: unknown
-  ): Promise<void>
-{
-  const text =
-    JSON.stringify(
-      value,
-      null,
-      2);
-
-  await fs.writeFile(
-    filePath,
-    `${text}\n`,
-    'utf8');
-}
 
 export function getPackageJsonPath(
     packageDir: string
@@ -78,27 +53,6 @@ export async function getWorkspacePackageDirs(
     });
 }
 
-export async function getWorkspacePackages(
-  ): Promise<PackageJson[]>
-{
-  const packageDirs =
-    await getWorkspacePackageDirs();
-
-  const packageInfos: PackageJson[] = [];
-
-  for (const packageDir of packageDirs) {
-    const packageJsonPath =
-      getPackageJsonPath(packageDir);
-
-    const packageJson =
-      await getPackageJson(packageJsonPath);
-
-    packageInfos.push(packageJson);
-  }
-
-  return packageInfos;
-}
-
 export async function getPackageJson(
     packageJsonPath: string
   ): Promise<PackageJson>
@@ -130,58 +84,4 @@ export async function getPackageJson(
   }
 
   return packageJson;
-}
-
-export function resolveLocalWorkspaceDependencyBuildOrder(
-    packageName: string,
-    dependencyGraph: Map<string, string[]>
-  ): string[]
-{
-  const permanent = new Set<string>();
-  const temporary = new Set<string>();
-  const buildOrder: string[] = [];
-  const buildOrderSet = new Set<string>();
-
-  function visit(
-      currentPackageName: string
-    ): void
-  {
-    if (permanent.has(
-      currentPackageName)) {
-      return;
-    }
-
-    if (temporary.has(
-      currentPackageName)) {
-      throw new Error(
-        `Detected circular workspace dependency involving "${currentPackageName}".`);
-    }
-
-    temporary.add(
-      currentPackageName);
-
-    const dependencyNames =
-      dependencyGraph.get(
-        currentPackageName)
-      ?? [];
-
-    for (const dependencyName of dependencyNames) {
-      visit(dependencyName);
-
-      if (!buildOrderSet.has(dependencyName)) {
-        buildOrderSet.add(dependencyName);
-        buildOrder.push(dependencyName);
-      }
-    }
-
-    temporary.delete(
-      currentPackageName);
-
-    permanent.add(
-      currentPackageName);
-  }
-
-  visit(packageName);
-
-  return buildOrder;
 }

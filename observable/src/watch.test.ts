@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    observable
-  } from './observable.js';
-import {
-    ObservableObject
-  } from './observable-object.js';
+import { observable }
+  from './observable.js';
+import { ObservableObject }
+  from './observable-object.js';
 
 const TEST_SUITE =
   'watch';

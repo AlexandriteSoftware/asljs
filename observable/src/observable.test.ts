@@ -1,16 +1,13 @@
-import {
-    eventful
-  } from 'asljs-eventful';
+import { eventful }
+  from 'asljs-eventful';
 import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    observable
-  } from './observable.js';
-import {
-    createTracer
-  } from './tracer.js';
+import { observable }
+  from './observable.js';
+import { createTracer }
+  from './tracer.js';
 
 const TEST_SUITE =
   'observable';

@@ -2,11 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    functionTypeGuard,
-    isFunction,
-    isObject,
-  } from './guards.js';
+import { functionTypeGuard,
+         isFunction,
+         isObject }
+  from './guards.js';
 
 const TEST_SUITE =
   'guards';

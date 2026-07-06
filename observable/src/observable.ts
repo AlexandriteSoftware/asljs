@@ -1,21 +1,17 @@
-import {
-    asEventfulLike,
-    eventful,
-    type EventfulLike,
-  } from 'asljs-eventful';
-import {
-    type ObservableOptions,
-    type ObservableFn
-  } from './types.js';
-import {
-    functionTypeGuard,
-    isFunction,
-    isObject,
-  } from './guards.js';
-import {
-    ensureWatchMethod,
-    watchImpl
-  } from './watch.js';
+import { asEventfulLike,
+         eventful,
+         EventfulLike }
+  from 'asljs-eventful';
+import { ObservableOptions,
+         ObservableFn }
+  from './types.js';
+import { functionTypeGuard,
+         isFunction,
+         isObject }
+  from './guards.js';
+import { ensureWatchMethod,
+         watchImpl }
+  from './watch.js';
 
 function hasOwn(
     object: object,

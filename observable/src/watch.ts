@@ -1,6 +1,6 @@
 import { asEventfulLike }
   from 'asljs-eventful';
-import { type ObservableWatchFn }
+import { ObservableWatchFn }
   from './types.js';
 import { functionTypeGuard,
          isObject }

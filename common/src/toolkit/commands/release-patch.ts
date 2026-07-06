@@ -1,14 +1,13 @@
+import path
+  from 'node:path';
 import { log,
          ROOT_DIR }
   from '../api.js';
 import { start,
          startSequence }
   from '../lib/process.js';
-import { DEPENDENCY_FIELD_NAMES,
-         getPackageJson,
-         getPackageJsonPath,
-         getWorkspacePackageDirs,
-         writeJsonFile }
+import { getPackageJson,
+         getPackageJsonPath }
   from '../lib/packages.js';
 import { ensureCleanWorkingDirectory }
   from './ensure-clean-working-directory.js';
@@ -18,9 +17,13 @@ import { tagRepository }
   from '../lib/repository.js';
 
 export async function releasePatch(
-    args?: string[]
   ): Promise<void>
 {
+  log(
+    'patch-release of the package `%s`...',
+    path.basename(
+      process.cwd()));
+
   await ensureCleanWorkingDirectory();
 
   const packageJsonPath =
@@ -31,7 +34,7 @@ export async function releasePatch(
     await getPackageJson(
       packageJsonPath);
 
-  ensureReleaseTarget(
+  verifyReleaseTarget(
     packageJson);
 
   startSequence(
@@ -44,20 +47,6 @@ export async function releasePatch(
       'npm run build:dist',
       'npm version patch --no-git-tag-version' ]);
 
-  const updatedPackageJson =
-    await getPackageJson(
-      packageJsonPath);
-
-  const name =
-    updatedPackageJson.name!;
-
-  const version =
-    updatedPackageJson.version!;
-
-  await updateWorkspaceDependents(
-    name,
-    version);
-
   start(
     'npm install --package-lock-only',
     { cwd: ROOT_DIR });
@@ -66,11 +55,8 @@ export async function releasePatch(
     'npm publish --ignore-scripts');
 
   const releaseId =
-    `${name}@${version}`;
-
-  log(
-    'Committing release changes for %s...',
-    releaseId);
+    await getReleaseTagId(
+      packageJsonPath);
 
   startSequence(
     [ `git add .`,
@@ -86,7 +72,7 @@ export async function releasePatch(
     ROOT_DIR);
 }
 
-function ensureReleaseTarget(
+function verifyReleaseTarget(
     packageJson: PackageJson
   ): void
 {
@@ -118,61 +104,6 @@ function ensureReleaseTarget(
   }
 }
 
-async function updateWorkspaceDependents(
-    releasedPackageName: string,
-    nextVersion: string
-  ): Promise<string[]>
-{
-  const changedPackageJsonPaths = [];
-
-  for (const packageDir of await getWorkspacePackageDirs()) {
-    const packageJsonFilePath =
-      getPackageJsonPath(
-        packageDir);
-
-    const packageLockJsonFilePath =
-      packageJsonFilePath.replace(
-        /package\.json$/i,
-        'package-lock.json');
-
-    const packageJson =
-      await getPackageJson(packageJsonFilePath);
-
-    const name =
-      packageJson.name;
-
-    if (
-      name === undefined
-      || name === null
-      || name.trim() === ''
-      || name === releasedPackageName
-    ) {
-      continue;
-    }
-
-    if (
-      !updateDependencyVersionRanges(
-        packageJson,
-        releasedPackageName,
-        nextVersion)
-    ) {
-      continue;
-    }
-
-    writeJsonFile(
-      packageJsonFilePath,
-      packageJson);
-
-    changedPackageJsonPaths.push(
-      packageJsonFilePath);
-
-    changedPackageJsonPaths.push(
-      packageLockJsonFilePath);
-  }
-
-  return changedPackageJsonPaths;
-}
-
 export async function getReleaseTagId(
     packageDir?: string
   ): Promise<string>
@@ -180,53 +111,8 @@ export async function getReleaseTagId(
   packageDir ??= process.cwd();
 
   const packageInfo =
-    await getPackageJson(packageDir);
+    await getPackageJson(
+      packageDir);
 
   return `${packageInfo.name}@${packageInfo.version}`;
-}
-
-export function updateDependencyVersionRanges(
-    packageJson: PackageJson,
-    dependencyName: string,
-    nextVersion: string,
-  ): boolean
-{
-  let changed = false;
-
-  for (const fieldName of DEPENDENCY_FIELD_NAMES) {
-    const dependencies =
-      packageJson[fieldName];
-
-    if (
-      dependencies === undefined
-      || dependencies === null)
-    {
-      continue;
-    }
-
-    if (
-      typeof dependencies !== 'object'
-      || Array.isArray(dependencies)
-    ) {
-      throw new Error(
-        `package.json field "${fieldName}" must be an object when present.`);
-    }
-
-    if (typeof dependencies[dependencyName] !== 'string') {
-      continue;
-    }
-
-    const nextRange =
-      `^${nextVersion}`;
-
-    if (dependencies[dependencyName] === nextRange) {
-      continue;
-    }
-
-    dependencies[dependencyName] = nextRange;
-
-    changed = true;
-  }
-
-  return changed;
 }

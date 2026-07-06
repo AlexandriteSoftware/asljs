@@ -25,7 +25,7 @@
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-folder",
+    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
     "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
     "test": "node --test build/**/*.test.js",

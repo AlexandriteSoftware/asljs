@@ -1,13 +1,10 @@
-import {
-    EventfulBase
-  } from 'asljs-eventful';
-import {
-    observable
-  } from './observable.js';
-import type {
-    ObservableEventsObject,
-    WatchedValues
-  } from './types.js';
+import { EventfulBase }
+  from 'asljs-eventful';
+import { observable }
+  from './observable.js';
+import { ObservableEventsObject,
+         WatchedValues }
+  from './types.js';
 
 export class ObservableObject<T extends object>
   extends EventfulBase<ObservableEventsObject<T>>

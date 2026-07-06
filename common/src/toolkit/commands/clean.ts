@@ -19,11 +19,16 @@ export async function clean(
 
   for (const pathToClean of pathsToClean) {
     const fullPathToClean =
-      path.join(
-        cwd,
-        pathToClean);
+      path.normalize(
+        path.resolve(
+          cwd,
+          pathToClean));
 
-    if (!fullPathToClean.startsWith(cwd)) {
+    const isPathToCleanInsideCwd =
+      fullPathToClean.startsWith(
+        cwd + path.sep);
+
+    if (!isPathToCleanInsideCwd) {
       throw new Error(
         `Refusing to clean outside of the current working directory: ${fullPathToClean}`);
     }
