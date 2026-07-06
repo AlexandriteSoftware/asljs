@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    Select,
-    SelectChangeDetail,
-  } from './select.js';
+import { JSDOM }
+  from 'jsdom';
+import { Select,
+         SelectChangeDetail }
+  from './select.js';
 
 let domRestore: (() => void) | null = null;
 let isSelectModuleLoaded = false;

@@ -2,15 +2,13 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    createImageFileHandler,
-    createPdfFileHandler,
-    createTextEditorFileHandler,
-    createTextFileHandler,
-  } from './file.js';
+import { JSDOM }
+  from 'jsdom';
+import { createImageFileHandler,
+         createPdfFileHandler,
+         createTextEditorFileHandler,
+         createTextFileHandler }
+  from './file.js';
 
 type FileViewElement =
   HTMLElement

@@ -1,29 +1,23 @@
-import {
-    bindDataModel,
-  } from 'asljs-data-binding';
-import {
-    observable,
-    type Observable,
-  } from 'asljs-observable';
-import {
-    LitElement,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    type ComponentModelDefinition,
-  } from './abstractions/model.js';
-import {
-    findThemeProvider,
-    getDefaultTheme,
-    resolveThemeTemplate,
-    THEME_CHANGED_EVENT_NAME,
-    type ComponentsTheme,
-    type ThemeProviderLike,
-  } from './themes/theme.js';
+import { bindDataModel }
+  from 'asljs-data-binding';
+import { observable,
+         Observable }
+  from 'asljs-observable';
+import { LitElement,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
+import { findThemeProvider,
+         getDefaultTheme,
+         resolveThemeTemplate,
+         THEME_CHANGED_EVENT_NAME,
+         ComponentsTheme,
+         ThemeProviderLike }
+  from './themes/theme.js';
 
 type TextInputSlotName =
   | 'template'

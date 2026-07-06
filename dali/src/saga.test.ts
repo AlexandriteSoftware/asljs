@@ -1,28 +1,27 @@
-import {
-    test,
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import 'fake-indexeddb/auto';
-import {
-    dbOpen,
-    eventSourceGetAll,
-    EventSourceConflictError,
-    EventSourceManager,
-    EventSourceProjectionManager,
-    eventSourceProjectionGet,
-    eventSourceProjectionSet,
-    eventSourceProjectionSetup,
-    eventSourceSetup,
-    IndexedDbEventSourceAdapter,
-    SagaManager,
-    sagaEntriesGetAll,
-    sagaGetAll,
-    sagaSetup,
-    Table,
-    type EventSourceAdapter,
-    type EventSourceTransaction,
-  } from './index.js';
+import { }
+  from 'fake-indexeddb/auto';
+import { dbOpen,
+         eventSourceGetAll,
+         EventSourceConflictError,
+         EventSourceManager,
+         EventSourceProjectionManager,
+         eventSourceProjectionGet,
+         eventSourceProjectionSet,
+         eventSourceProjectionSetup,
+         eventSourceSetup,
+         IndexedDbEventSourceAdapter,
+         SagaManager,
+         sagaEntriesGetAll,
+         sagaGetAll,
+         sagaSetup,
+         Table,
+         EventSourceAdapter,
+         EventSourceTransaction }
+  from './index.js';
 
 type Item =
   { id: string;

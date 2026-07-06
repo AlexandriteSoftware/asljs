@@ -1,13 +1,13 @@
-import {
-    LitElement,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import './button.js';
-import './text-input.js';
+import { LitElement,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { }
+  from './button.js';
+import { }
+  from './text-input.js';
 
 export interface AiChatKeySubmitDetail {
   key: string;

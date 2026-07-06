@@ -1,18 +1,16 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    keyAssert,
-    keyGet,
-    keyPathAssert,
-    keyPathValid,
-    keyValid,
-    keyValueAssert,
-    keyValueValid,
-    type KeyPath,
-  } from './keys.js';
+import { keyAssert,
+         keyGet,
+         keyPathAssert,
+         keyPathValid,
+         keyValid,
+         keyValueAssert,
+         keyValueValid,
+         KeyPath }
+  from './keys.js';
 
 const TEST_SUITE =
   'keys';

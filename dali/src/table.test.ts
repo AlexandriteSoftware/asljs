@@ -1,26 +1,25 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import 'fake-indexeddb/auto';
-import {
-    dbRequestAsync,
-    dbOpen,
-    IncrementTableVersionStrategy,
-    Table,
-    type TableBroadcastMessage,
-    type TableBroadcastService,
-    type TableDeleteStrategy,
-    TableVersionConflictError,
-    type TableEventsReceiver,
-    type TableObservedEvent,
-    type TableObservedReceiver,
-    txDone,
-    TxMode,
-    UuidSoftDeleteTableDeleteStrategy,
-    UuidTableVersionStrategy,
-  } from './index.js';
+import { }
+  from 'fake-indexeddb/auto';
+import { dbRequestAsync,
+         dbOpen,
+         IncrementTableVersionStrategy,
+         Table,
+         TableBroadcastMessage,
+         TableBroadcastService,
+         TableDeleteStrategy,
+         TableVersionConflictError,
+         TableEventsReceiver,
+         TableObservedEvent,
+         TableObservedReceiver,
+         txDone,
+         TxMode,
+         UuidSoftDeleteTableDeleteStrategy,
+         UuidTableVersionStrategy }
+  from './index.js';
 
 const TEST_SUITE =
   'table';

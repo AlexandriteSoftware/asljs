@@ -1,17 +1,14 @@
-import {
-    dbRequestAsync,
-  } from '../db.js';
-import {
-    txDone,
-    txReuseOrCreate,
-    TxMode,
-  } from '../transactions.js';
-import {
-    type SagaEntryRecord,
-    SAGA_ENTRIES_STORE_NAME,
-    SAGA_STORE_NAME,
-    type SagaTransactionRecord,
-  } from './types.js';
+import { dbRequestAsync }
+  from '../db.js';
+import { txDone,
+         txReuseOrCreate,
+         TxMode }
+  from '../transactions.js';
+import { SagaEntryRecord,
+         SAGA_ENTRIES_STORE_NAME,
+         SAGA_STORE_NAME,
+         SagaTransactionRecord }
+  from './types.js';
 
 export async function sagaGetAll(
     db: IDBDatabase,

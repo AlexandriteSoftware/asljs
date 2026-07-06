@@ -1,22 +1,17 @@
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    mergePipes
-  } from './pipes.js';
-import {
-    readModelPath
-  } from './read-model-path.js';
-import {
-    type BindDataModelOptions,
-    type DataModel,
-    type PipeFn,
-    type PipeSpec,
-    type ValueBindingSpec
-  } from './types.js';
-import {
-    writeBindingValue
-  } from './write-binding-value.js';
+import { observable }
+  from 'asljs-observable';
+import { mergePipes }
+  from './pipes.js';
+import { readModelPath }
+  from './read-model-path.js';
+import { BindDataModelOptions,
+         DataModel,
+         PipeFn,
+         PipeSpec,
+         ValueBindingSpec }
+  from './types.js';
+import { writeBindingValue }
+  from './write-binding-value.js';
 
 type CompiledPipe =
   { args: string[];

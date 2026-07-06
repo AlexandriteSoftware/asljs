@@ -26,18 +26,21 @@
     "part": "bin/part.js"
   },
   "scripts": {
+    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format": "npm run format:json",
     "clean": "node -e \"console.log('asljs-part: nothing to clean')\"",
     "build": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
     "build:dist": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
-    "typecheck": "npx tsc -p tsconfig.json --noEmit",
-    "lint": "",
-    "lint:fix": "npx eslint . --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-directory",
     "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
     "test": "node --test",
     "test:watch": "node --watch --test",
     "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",
-    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch"
+    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
+    "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "keywords": [
     "traceability",

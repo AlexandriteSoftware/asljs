@@ -1,6 +1,5 @@
-import {
-    type VersionStrategy
-  } from './version-strategy.js';
+import { VersionStrategy }
+  from './version-strategy.js';
 
 export class IncrementVersionStrategy<T extends Record<string, any>>
   implements VersionStrategy<T>

@@ -1,14 +1,13 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import 'fake-indexeddb/auto';
-import {
-    dbOpen,
-    LiveRecord,
-    Table,
-  } from './index.js';
+import { }
+  from 'fake-indexeddb/auto';
+import { dbOpen,
+         LiveRecord,
+         Table }
+  from './index.js';
 
 const TEST_SUITE =
   'LiveRecord';

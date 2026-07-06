@@ -10,8 +10,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
-    "test": "node ../toolkit.js build-local-deps && node --import tsx --test src/**/*.test.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "all": "npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
     "asljs-components": "^0.1.3",

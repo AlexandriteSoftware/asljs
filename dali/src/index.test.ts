@@ -2,12 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    Table,
-    dbOpen,
-    IncrementTableVersionStrategy,
-  UuidSoftDeleteTableDeleteStrategy,
-  } from './index.js';
+import { Table,
+         dbOpen,
+         IncrementTableVersionStrategy,
+         UuidSoftDeleteTableDeleteStrategy }
+  from './index.js';
 
 test(
   'index: exports table api',

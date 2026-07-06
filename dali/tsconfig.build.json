@@ -1,19 +1,9 @@
 {
   "extends": "../tsconfig.build.json",
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "test",
-    "dist",
-    "**/*.test.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
-    "lib": [
-      "ES2020",
-      "DOM"
-    ],
+    "lib": ["ES2025", "DOM"],
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "build"
   }
 }

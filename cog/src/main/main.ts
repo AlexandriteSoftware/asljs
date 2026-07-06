@@ -14,7 +14,7 @@ import { configureRestoreCommand }
   from './restore.js';
 import { configureUpdateCommand }
   from './update.js';
-import { type ExecutionContext }
+import { ExecutionContext }
   from './types.js';
 
 export async function main(

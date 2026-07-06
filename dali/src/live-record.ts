@@ -1,18 +1,14 @@
-import {
-    EventfulBase,
-  } from 'asljs-eventful';
-import {
-    observable,
-  } from 'asljs-observable';
-import {
-    type KeyPath,
-    keyAssert,
-    keyEqual,
-    keyGet,
-  } from './keys.js';
-import {
-    type TableEventsReceiver,
-  } from './table.js';
+import { EventfulBase }
+  from 'asljs-eventful';
+import { observable }
+  from 'asljs-observable';
+import { KeyPath,
+         keyAssert,
+         keyEqual,
+         keyGet }
+  from './keys.js';
+import { TableEventsReceiver }
+  from './table.js';
 
 /**
  * Payload emitted on `set:record` and `set` events.

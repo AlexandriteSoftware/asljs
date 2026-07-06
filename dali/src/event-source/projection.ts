@@ -1,20 +1,16 @@
-import {
-    dbRequestAsync,
-  } from '../db.js';
-import {
-    txDone,
-    txReuseOrCreate,
-    TxMode,
-  } from '../transactions.js';
-import {
-    type EventSourceProjection,
-    EVENT_SOURCE_PROJECTION_STORE_NAME,
-    type EventSourceTransaction,
-    EVENT_SOURCE_STORE_NAME,
-  } from './types.js';
-import {
-    type EventSourceManager,
-  } from './manager.js';
+import { dbRequestAsync }
+  from '../db.js';
+import { txDone,
+         txReuseOrCreate,
+         TxMode }
+  from '../transactions.js';
+import { EventSourceProjection,
+         EVENT_SOURCE_PROJECTION_STORE_NAME,
+         EventSourceTransaction,
+         EVENT_SOURCE_STORE_NAME }
+  from './types.js';
+import { EventSourceManager }
+  from './manager.js';
 
 export async function eventSourceGetAll(
     db: IDBDatabase,

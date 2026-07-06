@@ -1,30 +1,24 @@
-import {
-    LitElement,
-    html,
-    nothing
-  } from 'lit';
-import {
-    customElement,
-    property
-  } from 'lit/decorators.js';
-import {
-    type ComponentModelDefinition,
-  } from './abstractions/model.js';
-import {
-    bindDataModel
-  } from 'asljs-data-binding';
-import {
-    asEventfulLike,
-    type EventfulLike,
-  } from 'asljs-eventful';
-import {
-    findThemeProvider,
-    getDefaultTheme,
-    resolveThemeTemplate,
-    THEME_CHANGED_EVENT_NAME,
-    type ComponentsTheme,
-    type ThemeProviderLike,
-  } from './themes/theme.js';
+import { LitElement,
+         html,
+         nothing }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
+import { bindDataModel }
+  from 'asljs-data-binding';
+import { asEventfulLike,
+         EventfulLike }
+  from 'asljs-eventful';
+import { findThemeProvider,
+         getDefaultTheme,
+         resolveThemeTemplate,
+         THEME_CHANGED_EVENT_NAME,
+         ComponentsTheme,
+         ThemeProviderLike }
+  from './themes/theme.js';
 
 type ListSlotName =
   | 'container'

@@ -1,11 +1,9 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    coerceDisplayValue
-  } from './coerce-display-value.js';
+import { coerceDisplayValue }
+  from './coerce-display-value.js';
 
 const TEST_SUITE =
   'coerce-display-value';

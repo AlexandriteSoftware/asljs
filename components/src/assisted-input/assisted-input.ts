@@ -1,14 +1,11 @@
-import {
-    LitElement,
-    html,
-  } from 'lit';
-import {
-    property,
-  } from 'lit/decorators.js';
-import {
-    type ComponentModelDefinition,
-    type ComponentModelPropertyDefinition,
-  } from '../abstractions/model.js';
+import { LitElement,
+         html }
+  from 'lit';
+import { property }
+  from 'lit/decorators.js';
+import { ComponentModelDefinition,
+         ComponentModelPropertyDefinition }
+  from '../abstractions/model.js';
 
 export interface AssistedInputKeyDetail {
   key: string;

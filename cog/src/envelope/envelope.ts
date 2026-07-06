@@ -1,4 +1,4 @@
-import { type ReadParameters }
+import { ReadParameters }
   from '../commands/read.js';
 
 export interface Envelope {

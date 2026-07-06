@@ -1,11 +1,9 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    formatDate
-  } from './date-formatting.js';
+import { formatDate }
+  from './date-formatting.js';
 
 const TEST_SUITE =
   'date-formatting';

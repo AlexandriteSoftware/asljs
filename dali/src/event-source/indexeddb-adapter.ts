@@ -1,17 +1,14 @@
-import {
-    dbRequestAsync,
-  } from '../db.js';
-import {
-    txDone,
-    txReuseOrCreate,
-    TxMode,
-  } from '../transactions.js';
-import {
-    type EventSourceAdapter,
-    EventSourceConflictError,
-    EVENT_SOURCE_STORE_NAME,
-    type EventSourceTransaction,
-  } from './types.js';
+import { dbRequestAsync }
+  from '../db.js';
+import { txDone,
+         txReuseOrCreate,
+         TxMode }
+  from '../transactions.js';
+import { EventSourceAdapter,
+         EventSourceConflictError,
+         EVENT_SOURCE_STORE_NAME,
+         EventSourceTransaction }
+  from './types.js';
 
 async function storePeek(
     store: IDBObjectStore

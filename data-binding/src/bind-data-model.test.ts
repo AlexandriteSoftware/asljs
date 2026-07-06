@@ -1,17 +1,13 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    bindDataModel
-  } from './bind-data-model.js';
+import { JSDOM }
+  from 'jsdom';
+import { observable }
+  from 'asljs-observable';
+import { bindDataModel }
+  from './bind-data-model.js';
 
 const TEST_SUITE =
   'bind-data-model';

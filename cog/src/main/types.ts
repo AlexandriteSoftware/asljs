@@ -1,6 +1,6 @@
-import { type HostConsole }
+import { HostConsole }
   from '../console.js';
-import { type Logger }
+import { Logger }
   from '../logger.js';
 
 export interface ExecutionContext

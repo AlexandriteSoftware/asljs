@@ -1,39 +1,29 @@
-import {
-    EventfulBase
-  } from 'asljs-eventful';
-import {
-    dbRequestAsync
-  } from './db.js';
-import {
-    type KeyPath,
-    keyAssert,
-    keyGet,
-    keyPathAssert,
-  } from './keys.js';
-import {
-    type DeleteStrategy,
-  } from './delete-strategy.js';
-import {
-    VersionConflictError
-  } from './version-conflict-error.js';
-import {
-    type VersionStrategy
-  } from './version-strategy.js';
-import {
-    txDone,
-    txRead,
-    txWrite,
-  } from './transactions.js';
-import {
-    type TableBroadcastMessage,
-    type TableBroadcastService,
-  } from './table-broadcast-service.js';
-import {
-    LiveRecord,
-  } from './live-record.js';
-import {
-    LiveRecordSet,
-  } from './live-recordset.js';
+import { EventfulBase }
+  from 'asljs-eventful';
+import { dbRequestAsync }
+  from './db.js';
+import { KeyPath,
+         keyAssert,
+         keyGet,
+         keyPathAssert }
+  from './keys.js';
+import { DeleteStrategy }
+  from './delete-strategy.js';
+import { VersionConflictError }
+  from './version-conflict-error.js';
+import { VersionStrategy }
+  from './version-strategy.js';
+import { txDone,
+         txRead,
+         txWrite }
+  from './transactions.js';
+import { TableBroadcastMessage,
+         TableBroadcastService }
+  from './table-broadcast-service.js';
+import { LiveRecord }
+  from './live-record.js';
+import { LiveRecordSet }
+  from './live-recordset.js';
 
 export type {
     TableBroadcastMessage,

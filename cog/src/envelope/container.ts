@@ -6,7 +6,7 @@ import { fileURLToPath }
   from 'node:url';
 import { Logger }
   from '../logger.js';
-import { type Envelope }
+import { Envelope }
   from './envelope.js';
 
 export class EnvelopeContainer {

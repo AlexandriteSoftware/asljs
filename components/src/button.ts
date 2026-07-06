@@ -1,27 +1,22 @@
-import {
-    LitElement,
-    css,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    unsafeHTML,
-  } from 'lit/directives/unsafe-html.js';
-import {
-    type ComponentModelDefinition,
-  } from './abstractions/model.js';
-import {
-    findThemeProvider,
-    getDefaultTheme,
-    resolveThemeText,
-    THEME_CHANGED_EVENT_NAME,
-    type ButtonThemeDefinition,
-    type ComponentsTheme,
-    type ThemeProviderLike,
-  } from './themes/theme.js';
+import { LitElement,
+         css,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { unsafeHTML }
+  from 'lit/directives/unsafe-html.js';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
+import { findThemeProvider,
+         getDefaultTheme,
+         resolveThemeText,
+         THEME_CHANGED_EVENT_NAME,
+         ButtonThemeDefinition,
+         ComponentsTheme,
+         ThemeProviderLike }
+  from './themes/theme.js';
 
 export const ButtonModelDefinition: ComponentModelDefinition =
   { name: 'ButtonModelDefinition',

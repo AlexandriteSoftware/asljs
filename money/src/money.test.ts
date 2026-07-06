@@ -1,7 +1,9 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-
-import { money } from './index.js';
+import test
+  from 'node:test';
+import assert
+  from 'node:assert/strict';
+import { money }
+  from './index.js';
 
 test(
   'parse()',

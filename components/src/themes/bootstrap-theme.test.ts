@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    createBootstrapTheme,
-  } from './bootstrap-theme.js';
-import {
-    getComponentVariantList,
-  } from './theme.js';
+import { createBootstrapTheme }
+  from './bootstrap-theme.js';
+import { getComponentVariantList }
+  from './theme.js';
 
 test(
   'bootstrap-theme: returns bootstrap button icon defaults and text input templates',

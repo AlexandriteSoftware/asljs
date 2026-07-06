@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    TextInput,
-    TextInputChangeDetail,
-  } from './text-input.js';
+import { JSDOM }
+  from 'jsdom';
+import { TextInput,
+         TextInputChangeDetail }
+  from './text-input.js';
 
 let domRestore: (() => void) | null = null;
 let isTextInputModuleLoaded = false;

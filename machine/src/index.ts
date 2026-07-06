@@ -1,10 +1,8 @@
-import {
-    eventful,
-    type Eventful,
-  } from 'asljs-eventful';
-import {
-    observable,
-  } from 'asljs-observable';
+import { eventful,
+         Eventful }
+  from 'asljs-eventful';
+import { observable }
+  from 'asljs-observable';
 
 export interface MachineTransition
   extends Eventful

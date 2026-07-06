@@ -1,6 +1,7 @@
 import { existsSync }
   from 'node:fs';
-import { dirname, join }
+import { dirname,
+         join }
   from 'node:path';
 
 export function resolveBackupPath(

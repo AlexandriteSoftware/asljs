@@ -1,1 +1,2 @@
-export * from './table/version/increment-version-strategy.js';
+export *
+  from './table/version/increment-version-strategy.js';

@@ -1,11 +1,9 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    readModelPath
-  } from './read-model-path.js';
+import { readModelPath }
+  from './read-model-path.js';
 
 const TEST_SUITE =
   'read-model-path';

@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    Keyboard,
-  } from './keyboard.js';
+import { JSDOM }
+  from 'jsdom';
+import { Keyboard }
+  from './keyboard.js';
 
 let restoreDom: (() => void) | null = null;
 let isKeyboardModuleLoaded = false;

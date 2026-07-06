@@ -1,6 +1,7 @@
 import fs
   from 'node:fs/promises';
-import { Command } from './command.js';
+import { Command }
+  from './command.js';
 
 export interface Patch {
   task: string;

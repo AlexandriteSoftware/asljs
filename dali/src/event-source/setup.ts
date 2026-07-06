@@ -1,7 +1,6 @@
-import {
-    EVENT_SOURCE_PROJECTION_STORE_NAME,
-    EVENT_SOURCE_STORE_NAME,
-  } from './types.js';
+import { EVENT_SOURCE_PROJECTION_STORE_NAME,
+         EVENT_SOURCE_STORE_NAME }
+  from './types.js';
 
 export function eventSourceSetup(
     db: IDBDatabase,

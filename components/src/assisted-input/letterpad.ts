@@ -1,23 +1,18 @@
-import {
-    css,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    unsafeHTML,
-  } from 'lit/directives/unsafe-html.js';
-import {
-    AssistedInput,
-    AssistedInputModelProperties,
-    type AssistedInputButtonDefinition,
-    type AssistedInputKeyDetail,
-  } from './assisted-input.js';
-import {
-    type ComponentModelDefinition,
-  } from '../abstractions/model.js';
+import { css,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { unsafeHTML }
+  from 'lit/directives/unsafe-html.js';
+import { AssistedInput,
+         AssistedInputModelProperties,
+         AssistedInputButtonDefinition,
+         AssistedInputKeyDetail }
+  from './assisted-input.js';
+import { ComponentModelDefinition }
+  from '../abstractions/model.js';
 
 export type LetterpadKeyDetail =
   AssistedInputKeyDetail;

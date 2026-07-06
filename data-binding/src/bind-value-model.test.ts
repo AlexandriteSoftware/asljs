@@ -1,20 +1,15 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    bindValueModel
-  } from './bind-value-model.js';
-import {
-    type ValueBindingSpec
-  } from './types.js';
+import { JSDOM }
+  from 'jsdom';
+import { observable }
+  from 'asljs-observable';
+import { bindValueModel }
+  from './bind-value-model.js';
+import { ValueBindingSpec }
+  from './types.js';
 
 const TEST_SUITE =
   'bind-value-model';

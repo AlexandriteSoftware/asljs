@@ -1,29 +1,25 @@
-import {
-    LitElement,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    type Select,
-    type SelectChangeDetail,
-  } from './select.js';
-import {
-    type TextInput,
-    type TextInputChangeDetail,
-  } from './text-input.js';
-import {
-    type ComponentModelDefinition,
-    type ComponentModelPropertyDefinition,
-    type ComponentModelPropertyType,
-  } from './abstractions/model.js';
-import {
-    type ComponentsTheme,
-  } from './themes/theme.js';
-import './select.js';
-import './text-input.js';
+import { LitElement,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { Select,
+         SelectChangeDetail }
+  from './select.js';
+import { TextInput,
+         TextInputChangeDetail }
+  from './text-input.js';
+import { ComponentModelDefinition,
+         ComponentModelPropertyDefinition,
+         ComponentModelPropertyType }
+  from './abstractions/model.js';
+import { ComponentsTheme }
+  from './themes/theme.js';
+import { }
+  from './select.js';
+import { }
+  from './text-input.js';
 
 const BOOLEAN_ITEMS =
   [ { value: 'yes', label: 'Yes' },

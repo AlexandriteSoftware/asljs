@@ -5,7 +5,7 @@ import { readFileSync,
   from 'node:fs';
 import ignore
   from 'ignore';
-import { type Logger }
+import { Logger }
   from './logger.js';
 
 export class GitIgnore

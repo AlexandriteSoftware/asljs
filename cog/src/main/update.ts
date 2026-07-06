@@ -2,15 +2,16 @@ import { Command }
   from 'commander';
 import { EnvelopeContainer }
   from '../envelope/container.js';
-import { type ReadParameters,
+import { ReadParameters,
          read }
   from '../commands/read.js';
 import { resolveEnvelopePath }
   from './env.js';
-import { type ExecutionContext,
-         type MainOptions }
+import { ExecutionContext,
+         MainOptions }
   from './types.js';
-import { Envelope } from '../envelope/envelope.js';
+import { Envelope }
+  from '../envelope/envelope.js';
 
 export function configureUpdateCommand(
     program: Command,

@@ -2,13 +2,11 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-  bindDataModel,
-  createBuiltInPipes
-  } from './index.js';
+import { JSDOM }
+  from 'jsdom';
+import { bindDataModel,
+         createBuiltInPipes }
+  from './index.js';
 
 const TEST_SUITE =
   'index';

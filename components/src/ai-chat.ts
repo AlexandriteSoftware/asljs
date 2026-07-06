@@ -1,33 +1,29 @@
-import {
-    observable,
-  } from 'asljs-observable';
-import {
-    type EventMap,
-    type Eventful,
-  } from 'asljs-eventful';
-import {
-    LitElement,
-    html,
-    nothing,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    unsafeHTML,
-  } from 'lit/directives/unsafe-html.js';
-import {
-    type ComponentModelDefinition,
-  } from './abstractions/model.js';
-import {
-    findThemeProvider,
-    getDefaultTheme,
-    resolveThemeText,
-  } from './themes/theme.js';
-import './button.js';
-import './select.js';
-import './text-input.js';
+import { observable }
+  from 'asljs-observable';
+import { EventMap,
+         Eventful }
+  from 'asljs-eventful';
+import { LitElement,
+         html,
+         nothing }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { unsafeHTML }
+  from 'lit/directives/unsafe-html.js';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
+import { findThemeProvider,
+         getDefaultTheme,
+         resolveThemeText }
+  from './themes/theme.js';
+import { }
+  from './button.js';
+import { }
+  from './select.js';
+import { }
+  from './text-input.js';
 
 export const AiChatModelDefinition: ComponentModelDefinition =
   { name: 'AiChatModelDefinition',

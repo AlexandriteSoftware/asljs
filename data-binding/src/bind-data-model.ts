@@ -1,25 +1,19 @@
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    bindEventModel
-  } from './bind-event-model.js';
-import {
-    bindValueModel
-  } from './bind-value-model.js';
-import {
-    parseEventBindingExpression,
-    parseValueBindingExpression
-  } from './parse-data-model-binding.js';
-import {
-    readModelPath
-  } from './read-model-path.js';
-import {
-    type BindDataModelOptions,
-    type BindingSpec,
-    type BindingTarget,
-    type DataModel
-  } from './types.js';
+import { observable }
+  from 'asljs-observable';
+import { bindEventModel }
+  from './bind-event-model.js';
+import { bindValueModel }
+  from './bind-value-model.js';
+import { parseEventBindingExpression,
+         parseValueBindingExpression }
+  from './parse-data-model-binding.js';
+import { readModelPath }
+  from './read-model-path.js';
+import { BindDataModelOptions,
+         BindingSpec,
+         BindingTarget,
+         DataModel }
+  from './types.js';
 
 const CONTEXT_ATTR = 'data-bind-context';
 const BIND_PREFIX = 'data-bind-';

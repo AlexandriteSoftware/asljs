@@ -2,14 +2,15 @@ import { Command }
   from 'commander';
 import { EnvelopeContainer }
   from '../envelope/container.js';
-import { read, ReadParameters }
+import { read,
+         ReadParameters }
   from '../commands/read.js';
 import { resolveEnvelopePath }
   from './env.js';
-import { type ExecutionContext,
-         type MainOptions }
+import { ExecutionContext,
+         MainOptions }
   from './types.js';
-import { type Envelope }
+import { Envelope }
   from '../envelope/envelope.js';
 
 interface ReadCliOptions
@@ -103,7 +104,7 @@ async function readCmd(
 
   const envelopeLoaded =
     await envelopeContainer.tryLoadEnvelope(
-      envelopePath)
+      envelopePath);
 
   let envelope: Envelope;
   if (

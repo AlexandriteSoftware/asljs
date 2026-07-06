@@ -1,10 +1,8 @@
-import {
-    type ComponentsTheme,
-    THEME_CHANGED_EVENT_NAME,
-  } from './theme.js';
-import {
-    type ComponentModelDefinition,
-  } from '../abstractions/model.js';
+import { ComponentsTheme,
+         THEME_CHANGED_EVENT_NAME }
+  from './theme.js';
+import { ComponentModelDefinition }
+  from '../abstractions/model.js';
 
 export const ThemeProviderModelDefinition: ComponentModelDefinition =
   { name: 'ThemeProviderModelDefinition',

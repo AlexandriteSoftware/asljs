@@ -1,13 +1,10 @@
-import {
-    formatDate
-  } from './date-formatting.js';
-import {
-    coerceDisplayValue
-  } from './coerce-display-value.js';
-import {
-    type BindDataModelOptions,
-    type PipeFn
-  } from './types.js';
+import { formatDate }
+  from './date-formatting.js';
+import { coerceDisplayValue }
+  from './coerce-display-value.js';
+import { BindDataModelOptions,
+         PipeFn }
+  from './types.js';
 
 const DATE_STYLE_NAMES =
   new Set([ 'short', 'medium', 'long', 'full' ]);

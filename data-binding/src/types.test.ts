@@ -1,6 +1,5 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 
 const TEST_SUITE =
   'types';

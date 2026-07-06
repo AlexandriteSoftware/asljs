@@ -1,20 +1,15 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    bindEventModel
-  } from './bind-event-model.js';
-import {
-    type EventBindingSpec
-  } from './types.js';
+import { JSDOM }
+  from 'jsdom';
+import { observable }
+  from 'asljs-observable';
+import { bindEventModel }
+  from './bind-event-model.js';
+import { EventBindingSpec }
+  from './types.js';
 
 const TEST_SUITE =
   'bind-event-model';

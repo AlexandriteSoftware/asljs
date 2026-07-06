@@ -1,11 +1,12 @@
 import fs
   from 'node:fs/promises';
-import { type Envelope }
+import { Envelope }
   from '../envelope/envelope.js';
-import { type Command } from '../model/command.js';
-import { type RollbackFeed }
+import { Command }
+  from '../model/command.js';
+import { RollbackFeed }
   from '../model/rollback.js';
-import { type ExecutionContext }
+import { ExecutionContext }
   from '../main/types.js';
 
 export interface Remove

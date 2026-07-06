@@ -6,7 +6,7 @@ import { glob }
   from 'glob';
 import { minimatch }
   from 'minimatch';  
-import { type Logger }
+import { Logger }
   from './logger.js';
 
 export interface LocationFilter

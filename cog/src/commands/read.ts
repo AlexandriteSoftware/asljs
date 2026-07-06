@@ -2,18 +2,18 @@ import fsp
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { type Envelope,
-         type EnvelopeFile }
+import { Envelope,
+         EnvelopeFile }
   from '../envelope/envelope.js';
-import { type Command as CommandParameters }
+import { Command as CommandParameters }
   from '../model/command.js';
-import { type RollbackFeed }
+import { RollbackFeed }
   from '../model/rollback.js';
 import { LocationResolver }
   from '../location.js';
 import { createLogger }
   from '../logger.js';
-import { type ExecutionContext }
+import { ExecutionContext }
   from '../main/types.js';
 
 const textDecoder =

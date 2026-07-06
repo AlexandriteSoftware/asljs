@@ -1,9 +1,8 @@
-import {
-    type BindingTarget,
-    type EventBindingSpec,
-    type PipeSpec,
-    type ValueBindingSpec
-  } from './types.js';
+import { BindingTarget,
+         EventBindingSpec,
+         PipeSpec,
+         ValueBindingSpec }
+  from './types.js';
 
 /**
  * Parses a data-bind value expression.

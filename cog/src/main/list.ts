@@ -1,14 +1,15 @@
 import { Command }
   from 'commander';
-import { type Envelope,
-         type EnvelopeFile }
+import { Envelope,
+         EnvelopeFile }
   from '../envelope/envelope.js';
 import { resolveEnvelopePath }
   from './env.js';
-import { type ExecutionContext,
-         type MainOptions }
+import { ExecutionContext,
+         MainOptions }
   from './types.js';
-import { EnvelopeContainer } from '../envelope/container.js';
+import { EnvelopeContainer }
+  from '../envelope/container.js';
 
 export function configureListCommand(
     program: Command,

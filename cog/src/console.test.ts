@@ -3,7 +3,7 @@ import assert
 import test
   from 'node:test';
 import { DefaultHostConsole,
-         type HostConsole }
+         HostConsole }
   from './console.js';
 
 test(
@@ -17,8 +17,8 @@ test(
 
     process.stdout.write =
       ((chunk: string | Uint8Array) => {
-        output +=
-          typeof chunk === 'string'
+        output
+          += typeof chunk === 'string'
             ? chunk
             : Buffer.from(
               chunk)

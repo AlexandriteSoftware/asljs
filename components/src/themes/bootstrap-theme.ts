@@ -1,6 +1,5 @@
-import type {
-    ComponentsTheme,
-  } from './theme.js';
+import { ComponentsTheme }
+  from './theme.js';
 
 export function createBootstrapTheme(
   ): ComponentsTheme

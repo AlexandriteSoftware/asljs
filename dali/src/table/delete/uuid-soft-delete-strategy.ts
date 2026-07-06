@@ -1,6 +1,5 @@
-import {
-    type DeleteStrategy,
-  } from './delete-strategy.js';
+import { DeleteStrategy }
+  from './delete-strategy.js';
 
 type IndexQueryMapping =
   { index: string;

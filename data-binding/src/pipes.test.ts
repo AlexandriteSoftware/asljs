@@ -1,11 +1,9 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    mergePipes
-  } from './pipes.js';
+import { mergePipes }
+  from './pipes.js';
 
 const TEST_SUITE =
   'pipes';

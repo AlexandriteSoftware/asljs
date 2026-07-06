@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    machine,
-  } from './index.js';
+import { machine }
+  from './index.js';
 
 test(
   'index: exports machine factory',

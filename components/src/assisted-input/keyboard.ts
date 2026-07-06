@@ -1,19 +1,15 @@
-import {
-    css,
-    html,
-  } from 'lit';
-import {
-    customElement,
-  } from 'lit/decorators.js';
-import {
-    AssistedInput,
-    AssistedInputModelProperties,
-    type AssistedInputButtonDefinition,
-    type AssistedInputKeyDetail,
-  } from './assisted-input.js';
-import {
-    type ComponentModelDefinition,
-  } from '../abstractions/model.js';
+import { css,
+         html }
+  from 'lit';
+import { customElement }
+  from 'lit/decorators.js';
+import { AssistedInput,
+         AssistedInputModelProperties,
+         AssistedInputButtonDefinition,
+         AssistedInputKeyDetail }
+  from './assisted-input.js';
+import { ComponentModelDefinition }
+  from '../abstractions/model.js';
 
 export type KeyboardKeyDetail =
   AssistedInputKeyDetail;

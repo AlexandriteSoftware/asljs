@@ -1,9 +1,7 @@
-import {
-    coerceDisplayValue
-  } from './coerce-display-value.js';
-import {
-    type BindingTarget
-  } from './types.js';
+import { coerceDisplayValue }
+  from './coerce-display-value.js';
+import { BindingTarget }
+  from './types.js';
 
 
 /**

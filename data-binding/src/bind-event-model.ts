@@ -1,13 +1,10 @@
-import {
-    observable
-  } from 'asljs-observable';
-import {
-    readModelPath
-  } from './read-model-path.js';
-import {
-    type DataModel,
-    type EventBindingSpec
-  } from './types.js';
+import { observable }
+  from 'asljs-observable';
+import { readModelPath }
+  from './read-model-path.js';
+import { DataModel,
+         EventBindingSpec }
+  from './types.js';
 
 type ActionFn = (
     event: Event,

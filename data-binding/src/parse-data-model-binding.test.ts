@@ -1,12 +1,10 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-  parseEventBindingExpression,
-  parseValueBindingExpression
-  } from './parse-data-model-binding.js';
+import { parseEventBindingExpression,
+         parseValueBindingExpression }
+  from './parse-data-model-binding.js';
 
 const TEST_SUITE =
   'parse-data-bind-expression';

@@ -5,17 +5,17 @@ import { Command }
 import { EnvelopeContainer }
   from '../envelope/container.js';
 import { BackupRollbackFeed,
-         type RollbackFeed }
+         RollbackFeed }
   from '../model/rollback.js';
 import { loadPatch }
   from '../model/patch.js';
-import { type ReadParameters,
+import { ReadParameters,
          read }
   from '../commands/read.js';
-import { type Write,
+import { Write,
          write }
   from '../commands/write.js';
-import { type Remove,
+import { Remove,
          remove }
   from '../commands/remove.js';
 import { ensureBackupFileDoesNotExist,
@@ -25,12 +25,13 @@ import { ensurePatchFileExists,
          resolveEnvelopePath,
          resolvePatchPath }
   from './env.js';
-import { type ExecutionContext,
-         type MainOptions }
+import { ExecutionContext,
+         MainOptions }
   from './types.js';
 import { updateEnvelopeFiles }
   from './update.js';
-import { Envelope } from '../envelope/envelope.js';
+import { Envelope }
+  from '../envelope/envelope.js';
 
 export function configureApplyPatchCommand(
     program: Command,

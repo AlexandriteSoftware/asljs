@@ -1,14 +1,11 @@
-import {
-    LitElement,
-    html,
-  } from 'lit';
-import {
-    customElement,
-    property,
-  } from 'lit/decorators.js';
-import {
-    type ComponentModelDefinition,
-  } from './abstractions/model.js';
+import { LitElement,
+         html }
+  from 'lit';
+import { customElement,
+         property }
+  from 'lit/decorators.js';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
 
 export const FileViewModelDefinition: ComponentModelDefinition =
   { name: 'FileViewModelDefinition',

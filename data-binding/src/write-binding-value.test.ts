@@ -1,14 +1,11 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-    writeBindingValue
-  } from './write-binding-value.js';
+import { JSDOM }
+  from 'jsdom';
+import { writeBindingValue }
+  from './write-binding-value.js';
 
 const TEST_SUITE =
   'write-binding-value';

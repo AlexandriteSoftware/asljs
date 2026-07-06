@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    Numpad,
-  } from './numpad.js';
+import { JSDOM }
+  from 'jsdom';
+import { Numpad }
+  from './numpad.js';
 
 let restoreDom: (() => void) | null = null;
 let isNumpadModuleLoaded = false;

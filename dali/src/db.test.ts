@@ -1,18 +1,16 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import 'fake-indexeddb/auto';
-import {
-    dbDelete,
-    dbOpen,
-  } from './db.js';
-import {
-    TransactionStoreAccessError,
-    txReuseOrCreate,
-    TxMode,
-  } from './transactions.js';
+import { }
+  from 'fake-indexeddb/auto';
+import { dbDelete,
+         dbOpen }
+  from './db.js';
+import { TransactionStoreAccessError,
+         txReuseOrCreate,
+         TxMode }
+  from './transactions.js';
 
 const TEST_SUITE =
   'db';

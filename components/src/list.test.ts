@@ -1,14 +1,11 @@
-import {
-    test
-  } from 'node:test';
+import { test }
+  from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM
-  } from 'jsdom';
-import {
-    observable
-  } from 'asljs-observable';
+import { JSDOM }
+  from 'jsdom';
+import { observable }
+  from 'asljs-observable';
 
 let domRestore: (() => void) | null = null;
 let isComponentsLoaded = false;

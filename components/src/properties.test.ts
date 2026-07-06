@@ -2,21 +2,16 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    ComponentModelDefinition,
-  } from './abstractions/model.js';
-import type {
-    Button,
-  } from './button.js';
-import type {
-    Properties,
-  } from './properties.js';
-import type {
-    TextInput,
-  } from './text-input.js';
+import { JSDOM }
+  from 'jsdom';
+import { ComponentModelDefinition }
+  from './abstractions/model.js';
+import { Button }
+  from './button.js';
+import { Properties }
+  from './properties.js';
+import { TextInput }
+  from './text-input.js';
 
 let domRestore: (() => void) | null = null;
 let isPropertiesModuleLoaded = false;

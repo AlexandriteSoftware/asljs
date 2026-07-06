@@ -1,6 +1,5 @@
-import {
-    type DataModel
-  } from './types.js';
+import { DataModel }
+  from './types.js';
 
 export function readModelPath(
     model: DataModel,

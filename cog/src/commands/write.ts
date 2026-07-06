@@ -2,10 +2,11 @@ import fs
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { type Envelope }
+import { Envelope }
   from '../envelope/envelope.js';
-import { type Command } from '../model/command.js';
-import { type RollbackFeed }
+import { Command }
+  from '../model/command.js';
+import { RollbackFeed }
   from '../model/rollback.js';
 
 export interface Write

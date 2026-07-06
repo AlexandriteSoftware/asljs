@@ -1,16 +1,12 @@
-import {
-    EventfulBase,
-  } from 'asljs-eventful';
-import {
-    observable,
-  } from 'asljs-observable';
-import {
-    type KeyPath,
-    keyGet,
-  } from './keys.js';
-import {
-    type TableEventsReceiver,
-  } from './table.js';
+import { EventfulBase }
+  from 'asljs-eventful';
+import { observable }
+  from 'asljs-observable';
+import { KeyPath,
+         keyGet }
+  from './keys.js';
+import { TableEventsReceiver }
+  from './table.js';
 
 type PendingEvent<T> =
   | { type: 'add'; record: T }

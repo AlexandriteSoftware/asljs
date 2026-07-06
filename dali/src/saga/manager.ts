@@ -1,29 +1,23 @@
-import {
-    type Table,
-  } from '../table.js';
-import {
-    dbRequestAsync,
-  } from '../db.js';
-import {
-    keyGet,
-  } from '../keys.js';
-import {
-    txDone,
-    txReuseOrCreate,
-    TxMode,
-  } from '../transactions.js';
-import {
-    type EventSourceEvent,
-    type EventSourceManager,
-  } from '../event-source.js';
-import {
-    type SagaEntryRecord,
-    type SagaForwardOperation,
-    SAGA_ENTRIES_STORE_NAME,
-    SAGA_STORE_NAME,
-    type SagaTransactionRecord,
-    type SagaUndoOperation,
-  } from './types.js';
+import { Table }
+  from '../table.js';
+import { dbRequestAsync }
+  from '../db.js';
+import { keyGet }
+  from '../keys.js';
+import { txDone,
+         txReuseOrCreate,
+         TxMode }
+  from '../transactions.js';
+import { EventSourceEvent,
+         EventSourceManager }
+  from '../event-source.js';
+import { SagaEntryRecord,
+         SagaForwardOperation,
+         SAGA_ENTRIES_STORE_NAME,
+         SAGA_STORE_NAME,
+         SagaTransactionRecord,
+         SagaUndoOperation }
+  from './types.js';
 
 function nowIso(
   ): string

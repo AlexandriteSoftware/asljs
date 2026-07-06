@@ -2,15 +2,12 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    Button,
-  } from './button.js';
-import type {
-    ThemeProvider,
-  } from './themes/theme-provider.js';
+import { JSDOM }
+  from 'jsdom';
+import { Button }
+  from './button.js';
+import { ThemeProvider }
+  from './themes/theme-provider.js';
 
 let restoreDom: (() => void) | null = null;
 

@@ -1,7 +1,6 @@
-import {
-    SAGA_ENTRIES_STORE_NAME,
-    SAGA_STORE_NAME,
-  } from './types.js';
+import { SAGA_ENTRIES_STORE_NAME,
+         SAGA_STORE_NAME }
+  from './types.js';
 
 export function sagaSetup(
     db: IDBDatabase,

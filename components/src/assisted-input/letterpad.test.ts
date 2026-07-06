@@ -2,12 +2,10 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    JSDOM,
-  } from 'jsdom';
-import type {
-    Letterpad,
-  } from './letterpad.js';
+import { JSDOM }
+  from 'jsdom';
+import { Letterpad }
+  from './letterpad.js';
 
 let restoreDom: (() => void) | null = null;
 let isLetterpadModuleLoaded = false;
