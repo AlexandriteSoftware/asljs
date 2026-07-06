@@ -96,8 +96,11 @@ export async function getWorkspacePackages(
   const packageInfos: PackageJson[] = [];
 
   for (const packageDir of packageDirs) {
+    const packageJsonPath =
+      getPackageJsonPath(packageDir);
+
     const packageJson =
-      await getPackageJson(packageDir);
+      await getPackageJson(packageJsonPath);
 
     packageInfos.push(packageJson);
   }
@@ -106,13 +109,9 @@ export async function getWorkspacePackages(
 }
 
 export async function getPackageJson(
-    packageDir: string
+    packageJsonPath: string
   ): Promise<PackageJson>
 {
-  const packageJsonPath =
-    getPackageJsonPath(
-      packageDir);
-
   const packageJson =
     await readPackageJSON(
       packageJsonPath);

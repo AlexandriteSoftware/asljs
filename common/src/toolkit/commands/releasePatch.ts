@@ -128,8 +128,11 @@ async function updateWorkspaceDependents(
   const changedPackageJsonPaths = [];
 
   for (const packageDir of await getWorkspacePackageDirs()) {
+    const packageJsonFilePath =
+      getPackageJsonPath(packageDir);
+
     const packageJson =
-      await getPackageJson(packageDir);
+      await getPackageJson(packageJsonFilePath);
 
     const name =
       packageJson.name;
@@ -152,17 +155,12 @@ async function updateWorkspaceDependents(
       continue;
     }
 
-    const packageJsonPath =
-      path.join(
-        packageDir,
-        'package.json');
-
     writeJsonFile(
-      packageJsonPath,
+      packageJsonFilePath,
       packageJson);
 
     changedPackageJsonPaths.push(
-      packageJsonPath);
+      packageJsonFilePath);
   }
 
   return changedPackageJsonPaths;
@@ -279,16 +277,17 @@ export function updateDependencyVersionRanges(
     const dependencies =
       packageJson[fieldName];
 
-    if (dependencies === undefined
-        || dependencies === null)
+    if (
+      dependencies === undefined
+      || dependencies === null)
     {
       continue;
     }
 
     if (
       typeof dependencies !== 'object'
-      || Array.isArray(dependencies))
-    {
+      || Array.isArray(dependencies)
+    ) {
       throw new Error(
         `package.json field "${fieldName}" must be an object when present.`);
     }
