@@ -1,4 +1,5 @@
-import { ROOT_DIR }
+import { log,
+         ROOT_DIR }
   from '../api.js';
 import { start }
   from '../lib/process.js';
@@ -19,4 +20,8 @@ export async function ensureCleanWorkingDirectory(
     throw new Error(
       'Working directory has uncommitted or untracked changes.');
   }
+
+  log(
+    'Working directory `%s` is clean.',
+    ROOT_DIR);
 }
