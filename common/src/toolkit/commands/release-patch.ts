@@ -56,15 +56,9 @@ export async function releasePatch(
   const version =
     updatedPackageJson.version!;
 
-  const changedDependencyPackageJsonPaths =
-    await updateWorkspaceDependents(
-      name,
-      version);
-
-  const packageLockPath =
-    path.join(
-      ROOT_DIR,
-      'package-lock.json');
+  await updateWorkspaceDependents(
+    name,
+    version);
 
   start(
     'npm install --package-lock-only',
@@ -78,13 +72,20 @@ export async function releasePatch(
   const releaseId =
     `${name}@${version}`;
 
-  commitReleaseChanges(
-    [ packageJsonPath,
-      ...changedDependencyPackageJsonPaths,
-      packageLockPath ],
+  log(
+    'Committing release changes for %s...',
     releaseId);
 
-  tagRepository(releaseId);
+  start(
+    `git add .`,
+    ROOT_DIR);
+
+  start(
+    `git commit -m "releasing ${releaseId}"`,
+    ROOT_DIR);
+
+  tagRepository(
+    releaseId);
 
   start(
     'git push',
@@ -180,44 +181,6 @@ async function updateWorkspaceDependents(
   }
 
   return changedPackageJsonPaths;
-}
-
-function commitReleaseChanges(
-    filePaths: string[],
-    releaseId: string
-  ): void
-{
-  log(
-    'Committing release changes for %s...',
-    releaseId);
-
-  const relativePaths =
-    filePaths
-      .map(
-        filePath =>
-          path.relative(
-            ROOT_DIR,
-            filePath))
-      .filter(
-        filePath => filePath !== '')
-      .map(
-        filePath =>
-          `"${filePath.replace(
-            /\\/g,
-            '/')}"`);
-
-  if (relativePaths.length === 0) {
-    throw new Error(
-      'No release files to commit.');
-  }
-
-  start(
-    `git add -- ${relativePaths.join(' ')}`,
-    ROOT_DIR);
-
-  start(
-    `git commit -m "releasing ${releaseId}"`,
-    ROOT_DIR);
 }
 
 export async function getReleaseTagId(
