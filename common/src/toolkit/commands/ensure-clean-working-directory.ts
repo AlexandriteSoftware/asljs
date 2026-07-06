@@ -12,7 +12,10 @@ export async function ensureCleanWorkingDirectory(
       'git status --porcelain',
       ROOT_DIR);
 
-  if (output.trim() !== '') {
+  if (
+    typeof output === 'string'
+    && output.trim() !== ''
+  ) {
     throw new Error(
       'Working directory has uncommitted or untracked changes.');
   }
