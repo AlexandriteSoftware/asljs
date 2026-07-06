@@ -9,7 +9,7 @@ export async function ensureCleanWorkingDirectory(
 {
   const output =
     start(
-      'status --porcelain',
+      'git status --porcelain',
       ROOT_DIR);
 
   if (output.trim() !== '') {

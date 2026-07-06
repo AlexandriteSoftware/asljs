@@ -50,6 +50,7 @@ export async function clean(
         fullPathToClean);
 
     log(
-      `[clean] removed ${relativePathToClean}`);
+      '[clean] removed %s',
+      relativePathToClean);
   }
 }
