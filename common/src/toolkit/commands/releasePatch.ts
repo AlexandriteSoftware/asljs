@@ -154,13 +154,12 @@ async function updateWorkspaceDependents(
 
     const packageJsonPath =
       path.join(
-        ROOT_DIR,
-        name,
+        packageDir,
         'package.json');
 
     writeJsonFile(
       packageJsonPath,
-      packageJson.packageJson);
+      packageJson);
 
     changedPackageJsonPaths.push(
       packageJsonPath);
@@ -286,8 +285,9 @@ export function updateDependencyVersionRanges(
       continue;
     }
 
-    if (typeof dependencies !== 'object'
-        || Array.isArray(dependencies))
+    if (
+      typeof dependencies !== 'object'
+      || Array.isArray(dependencies))
     {
       throw new Error(
         `package.json field "${fieldName}" must be an object when present.`);
