@@ -35,28 +35,6 @@ export async function releasePatch(
   ensureReleaseTarget(
     packageJson);
 
-  const name =
-    packageJson.name;
-
-  if (
-    typeof name !== 'string'
-    || name.trim() === ''
-  ) {
-    throw new Error(
-      'package.json must define a non-empty string "name".');
-  }
-
-  const version =
-    packageJson.version;
-
-  if (
-    typeof version !== 'string'
-    || version.trim() === ''
-  ) {
-    throw new Error(
-      'package.json must define a non-empty string "version".');
-  }
-
   startSequence(
     [ 'npm run clean',
       'npm run typecheck',
@@ -66,6 +44,16 @@ export async function releasePatch(
       'npm run clean',
       'npm run build:dist',
       'npm version patch --no-git-tag-version' ]);
+
+  const updatedPackageJson =
+    await getPackageJson(
+      packageJsonPath);
+
+  const name =
+    updatedPackageJson.name!;
+
+  const version =
+    updatedPackageJson.version!;
 
   const changedDependencyPackageJsonPaths =
     await updateWorkspaceDependents(
@@ -83,7 +71,8 @@ export async function releasePatch(
 
   start(
     'npm publish --ignore-scripts',
-    packageJson.dir);
+    path.dirname(
+      packageJsonPath));
 
   const releaseId =
     `${name}@${version}`;
@@ -100,12 +89,34 @@ export async function releasePatch(
 }
 
 function ensureReleaseTarget(
-    packageInfo: PackageJson
+    packageJson: PackageJson
   ): void
 {
-  if (packageInfo.private) {
+  const name =
+    packageJson.name;
+
+  if (
+    typeof name !== 'string'
+    || name.trim() === ''
+  ) {
     throw new Error(
-      `Refusing release: ${packageInfo.name} is private.`);
+      'package.json must define a non-empty string "name".');
+  }
+
+  if (packageJson.private) {
+    throw new Error(
+      `Refusing release: ${packageJson.name} is private.`);
+  }
+
+  const version =
+    packageJson.version;
+
+  if (
+    typeof version !== 'string'
+    || version.trim() === ''
+  ) {
+    throw new Error(
+      'package.json must define a non-empty string "version".');
   }
 }
 
