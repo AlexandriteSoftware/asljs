@@ -1,6 +1,6 @@
 {
   "name": "asljs-tmpdir",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Disposable temporary directory helper for Node.js.",
   "type": "module",
   "main": "dist/index.js",
