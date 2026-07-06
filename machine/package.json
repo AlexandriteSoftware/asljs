@@ -52,7 +52,7 @@
     "release:patch": "node ../toolkit.js release-patch"
   },
   "dependencies": {
-    "asljs-eventful": "^0.4.9",
+    "asljs-eventful": "^0.4.10",
     "asljs-observable": "^0.5.4"
   }
 }
