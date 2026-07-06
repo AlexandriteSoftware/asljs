@@ -18,7 +18,8 @@
     "machine",
     "money",
     "observable",
-    "part"
+    "part",
+    "tmpdir"
   ],
   "devDependencies": {
     "@babel/generator": "^7.29.7",
