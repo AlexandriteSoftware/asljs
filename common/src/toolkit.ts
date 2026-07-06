@@ -467,7 +467,7 @@ export function resolveLocalWorkspaceDependencyBuildOrder(
 
   function visit(
       currentPackageName: string
-    )
+    ): void
   {
     if (permanent.has(
       currentPackageName)) {
@@ -572,7 +572,7 @@ async function buildLocalDeps(
 
 function ensureReleaseTarget(
     packageInfo: PackageJson
-  )
+  ): void
 {
   if (packageInfo.private) {
     throw new Error(
@@ -588,28 +588,42 @@ async function updateWorkspaceDependents(
   const changedPackageJsonPaths = [];
 
   for (const packageDir of await getWorkspacePackageDirs()) {
-    const packageInfo =
+    const packageJson =
       await getPackageJson(packageDir);
 
-    if (packageInfo.packageJson.name === releasedPackageName) {
+    const name =
+      packageJson.name;
+
+    if (
+      name === undefined
+      || name === null
+      || name.trim() === ''
+      || name === releasedPackageName
+    ) {
       continue;
     }
 
     if (
       !updateDependencyVersionRanges(
-        packageInfo.packageJson,
+        packageJson,
         releasedPackageName,
         nextVersion)
     ) {
       continue;
     }
 
+    const packageJsonPath =
+      path.join(
+        ROOT_DIR,
+        name,
+        'package.json');
+
     writeJsonFile(
-      packageInfo.packageJsonPath,
-      packageInfo.packageJson);
+      packageJsonPath,
+      packageJson.packageJson);
 
     changedPackageJsonPaths.push(
-      packageInfo.packageJsonPath);
+      packageJsonPath);
   }
 
   return changedPackageJsonPaths;
@@ -682,10 +696,32 @@ async function releasePatch(
       'npm run build:dist',
       'npm version patch --no-git-tag-version' ]);
 
+  const name =
+    packageJson.name;
+
+  if (
+    typeof name !== 'string'
+    || name.trim() === ''
+  ) {
+    throw new Error(
+      'package.json must define a non-empty string "name".');
+  }
+
+  const version =
+    packageJson.version;
+
+  if (
+    typeof version !== 'string'
+    || version.trim() === ''
+  ) {
+    throw new Error(
+      'package.json must define a non-empty string "version".');
+  }
+
   const changedDependencyPackageJsonPaths =
     await updateWorkspaceDependents(
-      packageJson.name!,
-      packageJson.version!);
+      name,
+      version);
 
   const packageLockPath =
     path.join(
