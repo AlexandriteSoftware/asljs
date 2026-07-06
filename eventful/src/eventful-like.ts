@@ -1,12 +1,9 @@
-import {
-    type EventName,
-    type Listener,
-  } from './types.js';
-
-import {
-    isFunction,
-    isObject,
-  } from './guards.js';
+import { EventName,
+         Listener }
+  from './types.js';
+import { isFunction,
+         isObject }
+  from './guards.js';
 
 export interface EventfulLike {
   on(

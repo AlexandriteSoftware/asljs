@@ -2,14 +2,12 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    eventful,
-  } from './eventful.js';
-import {
-    asEventfulLike,
-    type EventfulLike,
-    isEventfulLike
-  } from './eventful-like.js';
+import { eventful }
+  from './eventful.js';
+import { asEventfulLike,
+         EventfulLike,
+         isEventfulLike }
+  from './eventful-like.js';
 
 const TEST_SUITE =
   'eventful-like';

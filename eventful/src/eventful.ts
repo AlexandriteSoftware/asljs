@@ -1,21 +1,18 @@
-import {
-    ListenerError,
-    type ErrorFn,
-    type EventName,
-    type Eventful,
-    type EventfulFn,
-    type EventfulOptions,
-    type ListenerErrorArgs,
-    type TraceFn,
-  } from './types.js';
-
-import {
-    asFunction,
-    eventNameTypeGuard,
-    functionTypeGuard,
-    isFunction,
-    isObject,
-  } from './guards.js';
+import { ListenerError,
+         ErrorFn,
+         EventName,
+         Eventful,
+         EventfulFn,
+         EventfulOptions,
+         ListenerErrorArgs,
+         TraceFn }
+  from './types.js';
+import { asFunction,
+         eventNameTypeGuard,
+         functionTypeGuard,
+         isFunction,
+         isObject }
+  from './guards.js';
 
 const eventfulImpl =
   <T extends object | Function | undefined>(

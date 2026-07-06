@@ -1,11 +1,8 @@
 {
+  "extends": "./tsconfig.dist.json",
   "compilerOptions": {
-    "declaration": true,
-    "emitDeclarationOnly": false,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ESNext"
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "declaration": false
   }
 }

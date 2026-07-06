@@ -1,6 +1,5 @@
-import {
-    type EventName
-  } from './types.js';
+import { EventName }
+  from './types.js';
 
 export function eventNameTypeGuard(
   value: unknown

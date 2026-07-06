@@ -2,15 +2,12 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    eventful,
-  } from './eventful.js';
-import {
-    EventfulBase,
-  } from './eventful-base.js';
-import {
-    type Eventful,
-  } from './types.js';
+import { eventful }
+  from './eventful.js';
+import { EventfulBase }
+  from './eventful-base.js';
+import { Eventful }
+  from './types.js';
 
 const TEST_SUITE =
   'eventful';

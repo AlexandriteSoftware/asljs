@@ -1,12 +1,9 @@
-import {
-    eventful,
-  } from './eventful.js';
-
-import {
-    type EventMap,
-    type Eventful,
-    type EventfulOptions,
-  } from './types.js';
+import { eventful }
+  from './eventful.js';
+import { EventMap,
+         Eventful,
+         EventfulOptions }
+  from './types.js';
 
 export class EventfulBase<E extends EventMap = EventMap>
   implements Eventful<E>

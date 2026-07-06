@@ -2,9 +2,8 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import {
-    ListenerError,
-  } from './types.js';
+import { ListenerError }
+  from './types.js';
 
 const TEST_SUITE =
   'types';
