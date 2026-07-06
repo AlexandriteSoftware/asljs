@@ -1,6 +1,6 @@
 {
   "name": "asljs-part",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "Project artefact tracing framework and CLI for markdown-defined project artefacts.",
   "type": "module",
   "main": "src/index.js",
@@ -28,6 +28,7 @@
   "scripts": {
     "clean": "node -e \"console.log('asljs-part: nothing to clean')\"",
     "build": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
+    "build:dist": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
     "typecheck": "npx tsc -p tsconfig.json --noEmit",
     "lint": "",
     "lint:fix": "npx eslint . --fix",
