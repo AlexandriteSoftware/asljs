@@ -16,14 +16,14 @@ Resolves workspace-local package dependencies recursively from package.json
 dependency fields and runs `npm run build` for each dependency in dependency
 order.
 
-## ensure-clean-working-folder
+## ensure-clean-working-directory
 
-> Fail when the repository working tree is dirty.
+> Fail when the repository working directory has changes.
 
 Runs git status from the repository root and throws if there are uncommitted or
 untracked changes. Use this before publishing or tagging a release.
 
-## tag-commit-with-release-id
+## tag-release-revision
 
 > Create an annotated git tag from the current package name and version.
 

@@ -1,19 +1,19 @@
 import { ROOT_DIR }
   from '../api.js';
-import { startGit }
+import { start }
   from '../lib/process.js';
 
-export async function ensureCleanWorkingFolder(
+export async function ensureCleanWorkingDirectory(
     args?: string[]
   ): Promise<void>
 {
   const output =
-    startGit(
-      'git status --porcelain',
+    start(
+      'status --porcelain',
       ROOT_DIR);
 
   if (output.trim() !== '') {
     throw new Error(
-      'Refusing publish: working tree has uncommitted or untracked changes.');
+      'Working directory has uncommitted or untracked changes.');
   }
 }

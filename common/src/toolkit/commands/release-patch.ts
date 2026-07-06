@@ -4,7 +4,6 @@ import { log,
          ROOT_DIR }
   from '../api.js';
 import { start,
-         startGit,
          startSequence }
   from '../lib/process.js';
 import { DEPENDENCY_FIELD_NAMES,
@@ -13,16 +12,18 @@ import { DEPENDENCY_FIELD_NAMES,
          getWorkspacePackageDirs,
          writeJsonFile }
   from '../lib/packages.js';
-import { ensureCleanWorkingFolder }
-  from './ensureCleanWorkingFolder.js';
+import { ensureCleanWorkingDirectory }
+  from './ensure-clean-working-directory.js';
 import { PackageJson }
   from 'pkg-types';
+import { tagRepository }
+  from '../lib/repository.js';
 
 export async function releasePatch(
     args?: string[]
   ): Promise<void>
 {
-  await ensureCleanWorkingFolder();
+  await ensureCleanWorkingDirectory();
 
   const packageJsonPath =
     getPackageJsonPath(
@@ -83,9 +84,15 @@ export async function releasePatch(
       packageLockPath ],
     releaseId);
 
-  createReleaseTag(releaseId);
+  tagRepository(releaseId);
 
-  pushRelease(releaseId);
+  start(
+    'git push',
+    ROOT_DIR);
+
+  start(
+    `git push origin "${releaseId}"`,
+    ROOT_DIR);
 }
 
 function ensureReleaseTarget(
@@ -129,7 +136,13 @@ async function updateWorkspaceDependents(
 
   for (const packageDir of await getWorkspacePackageDirs()) {
     const packageJsonFilePath =
-      getPackageJsonPath(packageDir);
+      getPackageJsonPath(
+        packageDir);
+
+    const packageLockJsonFilePath =
+      packageJsonFilePath.replace(
+        /package\.json$/i,
+        'package-lock.json');
 
     const packageJson =
       await getPackageJson(packageJsonFilePath);
@@ -161,6 +174,9 @@ async function updateWorkspaceDependents(
 
     changedPackageJsonPaths.push(
       packageJsonFilePath);
+
+    changedPackageJsonPaths.push(
+      packageLockJsonFilePath);
   }
 
   return changedPackageJsonPaths;
@@ -172,7 +188,8 @@ function commitReleaseChanges(
   ): void
 {
   log(
-    `Committing release changes for ${releaseId}...`);
+    'Committing release changes for %s...',
+    releaseId);
 
   const relativePaths =
     filePaths
@@ -203,19 +220,6 @@ function commitReleaseChanges(
     ROOT_DIR);
 }
 
-function pushRelease(
-    releaseId: string
-  ): void
-{
-  start(
-    'git push',
-    ROOT_DIR);
-
-  start(
-    `git push origin "${releaseId}"`,
-    ROOT_DIR);
-}
-
 export async function getReleaseTagId(
     packageDir?: string
   ): Promise<string>
@@ -226,43 +230,6 @@ export async function getReleaseTagId(
     await getPackageJson(packageDir);
 
   return `${packageInfo.name}@${packageInfo.version}`;
-}
-
-function createReleaseTag(
-    releaseId: string,
-  ): void
-{
-  log(
-    `Creating release tag: ${releaseId}...`);
-
-  const existingTag =
-    startGit(
-      `git tag -l "${releaseId}"`,
-      ROOT_DIR)
-      .trim();
-
-  if (existingTag !== '') {
-    throw new Error(
-      `Tag already exists: ${releaseId}`);
-  }
-
-  startGit(
-    `git tag -a "${releaseId}" -m "${releaseId}"`,
-    ROOT_DIR);
-
-  log(
-    `Created tag: ${releaseId}`);
-}
-
-export async function tagCommitWithReleaseId(
-    args?: string[]
-  ): Promise<void>
-{
-  const releaseId =
-    await getReleaseTagId();
-
-  createReleaseTag(
-    releaseId);
 }
 
 export function updateDependencyVersionRanges(

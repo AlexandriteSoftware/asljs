@@ -1,6 +1,8 @@
 import { execSync,
          ExecSyncOptionsWithStringEncoding }
   from 'node:child_process';
+import { log }
+  from './../api.js';
 
 export function start(
     command: string,
@@ -15,6 +17,11 @@ export function start(
     { cwd: currentWorkingDir,
       stdio: 'inherit',
       encoding: 'utf8' };
+
+  log(
+    'Executing command `%s` in directory `%s`.',
+    command,
+    currentWorkingDir);
 
   return execSync(
     command,
@@ -31,22 +38,4 @@ export function startSequence(
       command,
       cwd);
   }
-}
-
-export function startGit(
-    command: string,
-    cwd?: string
-  ): string
-{
-  const currentWorkingDir =
-    cwd ?? process.cwd();
-
-  const options: ExecSyncOptionsWithStringEncoding =
-    { cwd: currentWorkingDir,
-      stdio: [ 'ignore', 'pipe', 'pipe' ],
-      encoding: 'utf8' };
-
-  return execSync(
-    command,
-    options);
 }

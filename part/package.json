@@ -32,7 +32,7 @@
     "lint": "",
     "lint:fix": "npx eslint . --fix",
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
-    "postpublish": "node ../toolkit.js tag-commit-with-release-id",
+    "postpublish": "node ../toolkit.js tag-release-revision",
     "test": "node --test",
     "test:watch": "node --watch --test",
     "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",

@@ -31,15 +31,6 @@ export async function writeJsonFile(
     'utf8');
 }
 
-export async function readTextFile(
-    filePath: string
-  ): Promise<string>
-{
-  return await fs.readFile(
-    filePath,
-    'utf8');
-}
-
 export function getPackageJsonPath(
     packageDir: string
   ): string

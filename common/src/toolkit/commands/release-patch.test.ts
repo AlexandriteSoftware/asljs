@@ -3,7 +3,7 @@ import test
 import assert
   from 'node:assert/strict';
 import { updateDependencyVersionRanges }
-  from './releasePatch.js';
+  from './release-patch.js';
 
 test(
   'updateDependencyVersionRanges rewrites internal dependency ranges to the new caret version',

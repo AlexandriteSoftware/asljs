@@ -44,7 +44,7 @@
     "guard:clean-git": "node ../toolkit.js ensure-clean-working-folder",
     "prepack": "npm run clean && npm run build",
     "prepublishOnly": "npm run prepack",
-    "postpublish": "node ../toolkit.js tag-commit-with-release-id",
+    "postpublish": "node ../toolkit.js tag-release-revision",
     "test": "npm run build:test && node --test dist/*.test.js",
     "test:watch": "npm run build:test && node --watch --test dist/*.test.js",
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",
