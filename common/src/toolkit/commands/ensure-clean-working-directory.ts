@@ -11,7 +11,7 @@ export async function ensureCleanWorkingDirectory(
   const output =
     start(
       'git status --porcelain',
-      ROOT_DIR);
+      { cwd: ROOT_DIR });
 
   if (
     typeof output === 'string'

@@ -54,7 +54,8 @@ export async function buildLocalDeps(
   }
 
   for (const dependencyName of dependencyBuildOrder) {
-    const dependencyPackageInfo = packageInfoByName.get(dependencyName);
+    const dependencyPackageInfo =
+      packageInfoByName.get(dependencyName);
 
     if (!dependencyPackageInfo) {
       throw new Error(
@@ -67,7 +68,7 @@ export async function buildLocalDeps(
 
     start(
       'npm run build',
-      dependencyPackageInfo.dir);
+      { cwd: dependencyPackageInfo.dir });
   }
 }
 

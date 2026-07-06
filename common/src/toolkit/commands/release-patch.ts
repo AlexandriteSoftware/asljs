@@ -1,5 +1,3 @@
-import path
-  from 'node:path';
 import { log,
          ROOT_DIR }
   from '../api.js';
@@ -62,12 +60,10 @@ export async function releasePatch(
 
   start(
     'npm install --package-lock-only',
-    ROOT_DIR);
+    { cwd: ROOT_DIR });
 
   start(
-    'npm publish --ignore-scripts',
-    path.dirname(
-      packageJsonPath));
+    'npm publish --ignore-scripts');
 
   const releaseId =
     `${name}@${version}`;
@@ -76,23 +72,17 @@ export async function releasePatch(
     'Committing release changes for %s...',
     releaseId);
 
-  start(
-    `git add .`,
-    ROOT_DIR);
-
-  start(
-    `git commit -m "releasing ${releaseId}"`,
+  startSequence(
+    [ `git add .`,
+      `git commit -m "releasing ${releaseId}"` ],
     ROOT_DIR);
 
   tagRepository(
     releaseId);
 
-  start(
-    'git push',
-    ROOT_DIR);
-
-  start(
-    `git push origin "${releaseId}"`,
+  startSequence(
+    [ 'git push',
+      `git push origin "${releaseId}"` ],
     ROOT_DIR);
 }
 

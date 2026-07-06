@@ -6,17 +6,19 @@ import { log }
 
 export function start(
     command: string,
-    cwd?: string
+    options: Partial<ExecSyncOptionsWithStringEncoding> = { }
   ): string
 {
   const currentWorkingDir =
-    cwd
+    options.cwd
     ?? process.cwd();
 
-  const options: ExecSyncOptionsWithStringEncoding =
-    { cwd: currentWorkingDir,
-      stdio: 'inherit',
-      encoding: 'utf8' };
+  const execOptions: ExecSyncOptionsWithStringEncoding =
+    Object.assign(
+      { cwd: currentWorkingDir,
+        stdio: 'inherit',
+        encoding: 'utf8' },
+      options);
 
   log(
     'Run `%s` in `%s`.',
@@ -25,7 +27,7 @@ export function start(
 
   return execSync(
     command,
-    options);
+    execOptions);
 }
 
 export function startSequence(
@@ -36,6 +38,6 @@ export function startSequence(
   for (const command of commands) {
     start(
       command,
-      cwd);
+      { cwd });
   }
 }

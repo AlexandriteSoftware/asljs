@@ -12,9 +12,11 @@ export function tagRepository(
     'Creating tag: %s',
     tag);
 
-  const gatTagOutput = start(
-    `git tag -l "${tag}"`,
-    ROOT_DIR);
+  const gatTagOutput =
+    start(
+      `git tag -l "${tag}"`,
+      { cwd: ROOT_DIR,
+        stdio: [ 'ignore', 'pipe', 'inherit' ] });
 
   const gitTags = gatTagOutput.trim();
 
@@ -25,7 +27,7 @@ export function tagRepository(
 
   start(
     `git tag -a "${tag}" -m "${tag}"`,
-    ROOT_DIR);
+    { cwd: ROOT_DIR });
 
   log(
     'Created tag: %s',
