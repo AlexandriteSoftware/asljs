@@ -1,4 +1,4 @@
-# eslint-import-style-rule
+# import
 
 This rule formats `ImportDeclaration` nodes.
 
@@ -92,6 +92,12 @@ import{}from'./empty.js';
 // ---
 import { }
   from './empty.js';
+```
+
+```js
+import from 'node:fs/promises';
+// ---
+import from 'node:fs/promises';
 ```
 
 ```js

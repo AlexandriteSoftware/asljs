@@ -17,11 +17,6 @@ const SCRIPT_FILE_PATH =
   fileURLToPath(
     import.meta.url);
 
-const markdownTestsFilePath =
-  SCRIPT_FILE_PATH.replace(
-    /\.test\.ts$/,
-    '.md');
-
 const eslint =
   new ESLint(
     { overrideConfigFile: true,
@@ -32,7 +27,7 @@ const eslint =
           rules: { 'asljs/import-style': 'error' } } });
 
 test(
-  'import: \\r\\n line endings',
+  'ts-style-rules/import: \\r\\n line endings',
   async () => {
     const code =
       'import { readFile }\r\n  from \'node:fs/promises\';';
@@ -46,5 +41,5 @@ test(
   });
 
 await addRuleTestsFromMarkdown(
-  markdownTestsFilePath,
+  SCRIPT_FILE_PATH,
   eslint);

@@ -18,12 +18,9 @@ import { findThemeProvider,
          getDefaultTheme,
          resolveThemeText }
   from './themes/theme.js';
-import { }
-  from './button.js';
-import { }
-  from './select.js';
-import { }
-  from './text-input.js';
+import './button.js';
+import './select.js';
+import './text-input.js';
 
 export const AiChatModelDefinition: ComponentModelDefinition =
   { name: 'AiChatModelDefinition',

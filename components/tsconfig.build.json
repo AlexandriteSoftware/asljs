@@ -2,6 +2,9 @@
   "extends": "../tsconfig.build.json",
   "include": ["**/*.ts"],
   "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "rootDir": "src",
     "outDir": "build"
   }

@@ -3,6 +3,9 @@
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "build", "**/*.test.ts"],
   "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "rootDir": "src",
     "outDir": "dist"
   }

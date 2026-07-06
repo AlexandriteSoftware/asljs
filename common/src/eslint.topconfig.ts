@@ -56,7 +56,6 @@ const typescriptConfig: Linter.Config =
       ],
       'prefer-const': 'error',
       'no-var': 'error',
-      'no-duplicate-imports': 'error',
       'function-call-argument-newline': ['error', 'consistent'],
       'nonblock-statement-body-position': [
         'error',

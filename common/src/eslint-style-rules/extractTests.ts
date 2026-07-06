@@ -1,27 +1,88 @@
+import fs
+  from 'node:fs/promises';
 import path
   from 'node:path';
 import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { readFile }
-  from 'node:fs/promises';
 import { marked,
          Tokens }
   from 'marked';
 import { ESLint }
   from 'eslint';
 
+async function findPackageRootDir(
+    dir: string
+  ): Promise<string>
+{
+  while (true) {
+    const packageJsonPath =
+      path.join(
+        dir,
+        'package.json');
+  
+    try {
+      await fs.access(
+        packageJsonPath,
+        fs.constants.F_OK);
+    } catch (err) {
+      const parentDir =
+        path.dirname(dir);
+
+      if (parentDir === dir) {
+        throw new Error(
+          `Could not find package.json in any parent directory of ${dir}`);
+      }
+
+      dir =
+        parentDir;
+
+      continue;
+    }
+
+    break;
+  }
+
+  return dir;
+}
+
 export async function addRuleTestsFromMarkdown(
     filePath: string,
     eslint: ESLint
   ): Promise<void>
 {
-  const fileName =
-    path.basename(filePath);
+  const packageRootDir =
+    await findPackageRootDir(
+      filePath);
+
+  const buildDir =
+    path.join(
+      packageRootDir,
+      'build');
+
+  const relativeFilePath =
+    path.relative(
+      buildDir,
+      filePath);
+
+  const relativeTestsFilePath =
+    relativeFilePath.replace(
+      /\.test\.(js|ts)$/,
+      '.md');
+  
+  const srcDir =
+    path.join(
+      packageRootDir,
+      'src');
+
+  const testsFilePath =
+    path.join(
+      srcDir,
+      relativeTestsFilePath);
 
   const testCases =
-    await extractTests(filePath);
+    await extractTests(testsFilePath);
 
   for (const testCase of testCases) {
     const sourceJson =
@@ -29,7 +90,7 @@ export async function addRuleTestsFromMarkdown(
         testCase.source);
 
     test(
-      `${fileName}: ${sourceJson}`,
+      `${relativeTestsFilePath}: ${sourceJson}`,
       async () => {
         const [ result ] =
           await eslint.lintText(
@@ -53,7 +114,7 @@ export async function extractTests(
   ): Promise<{ source: string; expected: string; tags: string[] }[]>
 {
   const markdown =
-    await readFile(
+    await fs.readFile(
       filePath,
       'utf8');
   

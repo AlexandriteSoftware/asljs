@@ -1,16 +1,15 @@
-import { JSRuleDefinition,
-         Rule }
+import { Rule }
   from 'eslint';
+import { RuleDefinition,
+         RuleDefinitionTypeOptions }
+  from '@eslint/core';
 import { ImportDeclaration,
          ImportSpecifier,
          ImportDefaultSpecifier,
          ImportNamespaceSpecifier,
-         Identifier,
-         Literal }
+         Literal,
+         Identifier }
   from 'estree';
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
 
 type Import =
   | ImportSpecifier
@@ -55,8 +54,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
             }
 
             context.report(
-              {
-                node,
+              { node,
                 message: 'Use asljs import style.',
                 fix(
                     fixer: Rule.RuleFixer
@@ -65,8 +63,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
                   return fixer.replaceText(
                     node,
                     replacement);
-                }
-              });
+                } });
           }
         };
 
@@ -86,7 +83,60 @@ function formatImportNode(
     [ 'import ' ];
 
   if (node.specifiers.length === 0) {
-    code.push('{ }');
+    const nodeRange =
+      node.range;
+
+    const sourceRange =
+      node.source.range;
+
+    if (
+      nodeRange
+      && sourceRange
+    ) {
+      const importPart =
+        context.sourceCode.text.slice(
+          nodeRange[0],
+          sourceRange[0]);
+
+      if (/^\s*import\s*$/.test(importPart)) {
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else if (/^\s*import[\r\n\s]+from\s*$/.test(importPart)) {
+        code.push(
+          formattingContext.newLine);
+        code.push('  from ');
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else if (/^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)) {
+        code.push('{ }');
+        code.push(
+          formattingContext.newLine);
+        code.push('  from ');
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else {
+        code.push(
+          formattingContext.newLine);
+
+        code.push(
+          formatSource(
+            node.source,
+            formattingContext));
+      }
+    } else {
+      code.push('{ }');
+
+      code.push(
+        formatSource(
+          node.source,
+          formattingContext));
+    }
   } else {
     let index = 0;
     let first = true;
@@ -123,12 +173,12 @@ function formatImportNode(
         index += importSpecifierGroup.length;
       }
     }
-  }
 
-  code.push(
-    formatSource(
-      node.source,
-      formattingContext));
+    code.push(
+      formatSource(
+        node.source,
+        formattingContext));
+  }
 
   return code.join('');
 }
@@ -138,8 +188,7 @@ function getImportSpecifierGroup(
     startAt: number
   ): ImportSpecifier[]
 {
-  const group =
-    [];
+  const group = [];
 
   for (let index = startAt;
        index < specifiers.length;
@@ -163,8 +212,7 @@ function formatImportSpecifierGroup(
     formattingContext: FormattingContext
   ): string
 {
-  const code =
-    [];
+  const code = [];
 
   let firstImportSpecifier = true;
 
@@ -195,7 +243,7 @@ function formatImportSpecifierGroup(
     } else if (specifier.imported.type === 'Literal') {
       const importedLiteral =
         specifier.imported as Literal;
-      
+
       code.push(
         `${importedLiteral.raw} as ${specifier.local.name}`);
     } else {
@@ -231,8 +279,10 @@ function formatSpecifier(
   switch (specifier.type) {
     case 'ImportDefaultSpecifier':
       return specifier.local.name;
+
     case 'ImportNamespaceSpecifier':
       return `* as ${specifier.local.name}`;
+
     default:
       throw new Error(
         `Unsupported import specifier type.`);

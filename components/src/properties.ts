@@ -4,11 +4,8 @@ import { LitElement,
 import { customElement,
          property }
   from 'lit/decorators.js';
-import { Select,
-         SelectChangeDetail }
-  from './select.js';
-import { TextInput,
-         TextInputChangeDetail }
+import { type TextInput,
+         type TextInputChangeDetail }
   from './text-input.js';
 import { ComponentModelDefinition,
          ComponentModelPropertyDefinition,
@@ -16,10 +13,11 @@ import { ComponentModelDefinition,
   from './abstractions/model.js';
 import { ComponentsTheme }
   from './themes/theme.js';
-import { }
+import { type Select,
+         type SelectChangeDetail }
   from './select.js';
-import { }
-  from './text-input.js';
+import './select.js';
+import './text-input.js';
 
 const BOOLEAN_ITEMS =
   [ { value: 'yes', label: 'Yes' },

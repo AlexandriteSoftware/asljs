@@ -19,11 +19,6 @@ const SCRIPT_FILE_PATH =
   fileURLToPath(
     import.meta.url);
 
-const markdownTestsFilePath =
-  SCRIPT_FILE_PATH.replace(
-    /\.test\.ts$/,
-    '.md');
-
 const eslint =
   new ESLint(
     {
@@ -53,5 +48,5 @@ const eslint =
     });
 
 await addRuleTestsFromMarkdown(
-  markdownTestsFilePath,
+  SCRIPT_FILE_PATH,
   eslint);

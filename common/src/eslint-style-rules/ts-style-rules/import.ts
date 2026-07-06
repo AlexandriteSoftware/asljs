@@ -1,5 +1,4 @@
-import { JSRuleDefinition,
-         Rule }
+import { Rule }
   from 'eslint';
 import { RuleDefinition,
          RuleDefinitionTypeOptions }
@@ -8,10 +7,9 @@ import { ImportDeclaration,
          ImportSpecifier,
          ImportDefaultSpecifier,
          ImportNamespaceSpecifier,
-         Literal }
-  from 'estree';  
-import { TSESTree }
-  from '@typescript-eslint/types';
+         Literal,
+         Identifier }
+  from 'estree';
 
 type Import =
   | ImportSpecifier
@@ -85,7 +83,60 @@ function formatImportNode(
     [ 'import ' ];
 
   if (node.specifiers.length === 0) {
-    code.push('{ }');
+    const nodeRange =
+      node.range;
+
+    const sourceRange =
+      node.source.range;
+
+    if (
+      nodeRange
+      && sourceRange
+    ) {
+      const importPart =
+        context.sourceCode.text.slice(
+          nodeRange[0],
+          sourceRange[0]);
+
+      if (/^\s*import\s*$/.test(importPart)) {
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else if (/^\s*import[\r\n\s]+from\s*$/.test(importPart)) {
+        code.push(
+          formattingContext.newLine);
+        code.push('  from ');
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else if (/^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)) {
+        code.push('{ }');
+        code.push(
+          formattingContext.newLine);
+        code.push('  from ');
+        code.push(
+          node.source?.raw
+          || '');
+        code.push(';');
+      } else {
+        code.push(
+          formattingContext.newLine);
+
+        code.push(
+          formatSource(
+            node.source,
+            formattingContext));
+      }
+    } else {
+      code.push('{ }');
+
+      code.push(
+        formatSource(
+          node.source,
+          formattingContext));
+    }
   } else {
     let index = 0;
     let first = true;
@@ -122,12 +173,12 @@ function formatImportNode(
         index += importSpecifierGroup.length;
       }
     }
-  }
 
-  code.push(
-    formatSource(
-      node.source,
-      formattingContext));
+    code.push(
+      formatSource(
+        node.source,
+        formattingContext));
+  }
 
   return code.join('');
 }
@@ -184,20 +235,19 @@ function formatImportSpecifierGroup(
     const parent =
       (specifier as { parent?: any }).parent;
 
-    if (importKind === 'type') {
-      if (
-        parent.type === 'ImportDeclaration'
-        && parent.importKind === 'type')
-      {
-        code.push(
-          'type ');
-      }
+    const isType =
+      importKind === 'type'
+      || (parent?.type === 'ImportDeclaration'
+          && parent.importKind === 'type');
+
+    if (isType) {
+      code.push(
+        'type ');
     }
 
     if (specifier.imported.type === 'Identifier') {
       const importedIdentifier =
-        /** @type {Identifier} */ (
-          specifier.imported);
+        specifier.imported as Identifier;
 
       if (importedIdentifier.name === specifier.local.name) {
         code.push(
@@ -208,8 +258,7 @@ function formatImportSpecifierGroup(
       }
     } else if (specifier.imported.type === 'Literal') {
       const importedLiteral =
-        /** @type {Literal} */ (
-          specifier.imported);
+        specifier.imported as Literal;
 
       code.push(
         `${importedLiteral.raw} as ${specifier.local.name}`);

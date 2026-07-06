@@ -15,39 +15,39 @@ This rule formats `ImportDeclaration` nodes.
 
 ```ts
 import { readFile }
-  from 'node:fs/promises';
+  from 'normal';
 // ---
 import { readFile }
-  from 'node:fs/promises';
+  from 'normal';
 ```
 
 ```ts
-import{readFile}from'node:fs/promises';
+import{readFile}from'liner';
 // ---
 import { readFile }
-  from 'node:fs/promises';
+  from 'liner';
 ```
 
 ```ts
-import{readFile,writeFile}from'node:fs/promises';
+import{readFile,writeFile}from'double-liner';
 // ---
 import { readFile,
          writeFile }
-  from 'node:fs/promises';
+  from 'double-liner';
 ```
 
 ```ts
-import{readFile as rf}from'node:fs/promises';
+import{readFile as rf}from'as-liner';
 // ---
 import { readFile as rf }
-  from 'node:fs/promises';
+  from 'as-liner';
 ```
 
 ```ts
-import path from'node:path';
+import path from'all-liner';
 // ---
 import path
-  from 'node:path';
+  from 'all-liner';
 ```
 
 ```ts
@@ -95,6 +95,12 @@ import { }
 ```
 
 ```ts
+import './direct.js';
+// ---
+import './direct.js';
+```
+
+```ts
 import{readFile}from'node:fs/promises';
 import{writeFile}from'node:fs/promises';
 // ---
@@ -105,10 +111,10 @@ import { writeFile }
 ```
 
 ```ts
-import type { writeFile } from'node:fs/promises';
+import type { writeFile } from'import-type';
 // ---
 import { type writeFile }
-  from 'node:fs/promises';
+  from 'import-type';
 ```
 
 ```ts
