@@ -1,8 +1,8 @@
 # Unit Test File
 
-File with JS unit tests.
+File with TypeScript unit tests.
 
 ## Location
 
-- Pattern: `/**/*.test.js`
+- Pattern: `/**/*.test.ts`
 - GitIgnore

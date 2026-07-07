@@ -1,6 +1,6 @@
 /*
 RL1 - Article start with a level 1 heading, which is the file name without
-extension.
+extension. Exceptions: when the file name is all caps (e.g., `README.md`).
 */
 
 import path
@@ -16,6 +16,16 @@ export async function validate(
   artefact,
   context)
 {
+  const fileName =
+    path.basename(
+      artefact.path,
+      '.md');
+
+  if (/^[A-Z]+$/.test(fileName)) {
+    // This is a special file, e.g. README.md, LICENSE.md, etc.
+    return;
+  }
+    
   let content =
     await readFile(
       artefact.path,
