@@ -25,7 +25,7 @@ export async function validate(
       artefact.path);
 
   const ctx =
-    `Rule File_RL1.validate(${fileName}}): `;
+    `Rule File_RL1.validate(${fileName}): `;
 
   const match =
     artefact.name.match(

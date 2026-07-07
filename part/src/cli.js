@@ -372,6 +372,13 @@ function writeCommanderError(
     return true;
   }
 
+  if (code === 'commander.help') {
+    cli.outputHelp(
+      { error: true });
+
+    return true;
+  }
+
   return false;
 }
 
