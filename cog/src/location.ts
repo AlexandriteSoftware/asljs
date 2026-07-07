@@ -43,8 +43,9 @@ export class LocationResolver
   }
 
   async resolve(
-    basePath: string,
-    location: Location)
+      basePath: string,
+      location: Location
+    ): Promise<string[]>
   {
     const patterns =
       location.patterns;
@@ -201,9 +202,10 @@ export class LocationResolver
   }
 
   async check(
-    targetPath: string,
-    basePath: string,
-    location: Location)
+      targetPath: string,
+      basePath: string,
+      location: Location
+    ): Promise<boolean>
   {
     const patterns =
       location.patterns;

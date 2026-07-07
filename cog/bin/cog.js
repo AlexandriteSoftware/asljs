@@ -3,6 +3,8 @@
 import { main }
   from '../dist/main/main.js';
 
+/* global console, process */
+
 main()
   .catch(
     error => {

@@ -12,7 +12,7 @@
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node --test build/**/*.test.js",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
     "all": "npm run build:dist && npm run clean && npm run build:dist && npm run format && npm run typecheck && npm run lint && npm run build && npm run test"
   },
   "devDependencies": {

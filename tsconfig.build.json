@@ -3,6 +3,8 @@
   "compilerOptions": {
     "lib": ["ESNext"],
     "types": ["node"],
-    "declaration": false
+    "declaration": false,
+    "sourceMap": true,
+    "inlineSources": true
   }
 }
