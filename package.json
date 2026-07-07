@@ -8,8 +8,8 @@
     "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
     "format": "npm run format:json",
     "check-packages": "npm outdated",
-    "all": "npm -w components run all && npm -w dali run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all",
-    "all:fix": "npm -w app-builder run all && npm -w cog run all"
+    "all": "npm -w cog run all && npm -w components run all && npm -w dali run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all",
+    "all:fix": "npm -w app-builder run all"
   },
   "workspaces": [
     "app-builder",

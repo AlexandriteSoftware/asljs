@@ -155,7 +155,7 @@ test(
       workspace.resolve(
         'file.bin');
 
-    workspace.write(
+    await workspace.write(
       'file.bin',
       Buffer.from([
         0,
@@ -202,7 +202,7 @@ test(
       workspace.resolve(
         'file.bin');
 
-    workspace.write(
+    await workspace.write(
       'file.bin',
       Buffer.from([
         0,
