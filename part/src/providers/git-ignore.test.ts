@@ -40,8 +40,7 @@ test(
         'docs/guide.md',
         'docs/drafts/draft.md' ];
 
-    /** @type { Record<string, string> } */
-    const filePaths = { };
+    const filePaths: Record<string, string> = { };
 
     for (const file of files) {
       filePaths[file] =

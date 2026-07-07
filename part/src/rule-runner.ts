@@ -10,53 +10,41 @@ import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 import { ArtefactDataProvider }
   from './providers/artefact-data-provider.js';
+import { Artefact }
+  from './artefact.js';
+import { ArtefactDefinition }
+  from './artefact-definition.js';
+import { ArtefactDefinitionRule }
+  from './artefact-definition.js';
+import { ArtefactProvider }
+  from './providers/artefact-provider.js';
+import { DefinitionProvider }
+  from './providers/definition-provider.js';
+import { RuleValidationFunction,
+         RuleValidationContext }
+  from './rule-validation-function.js';
+import { Logger }
+  from './logging.js';
 
-/**
- * @typedef
- *   { import('./artefact.js')
- *       .Artefact }
- *   Artefact
- * @typedef
- *   { import('./artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('./artefact-definition.js')
- *       .ArtefactDefinitionRule }
- *   ArtefactDefinitionRule
- * @typedef
- *   { import('./providers/artefact-provider.js')
- *       .ArtefactProvider }
- *   ArtefactProvider
- * @typedef
- *   { import('./providers/definition-provider.js')
- *       .DefinitionProvider }
- *   DefinitionProvider
- * @typedef
- *   { import('./rule-validation-function.js')
- *       .RuleValidationFunction }
- *   RuleValidationFunction
- * @typedef
- *   { import('./rule-validation-function.js')
- *       .RuleValidationContext }
- *   RuleValidationContext
- * @typedef
- *   { import('./logging.js')
- *       .Logger }
- *   Logger
- */
+export interface RuleRunResult {
+  rule: ArtefactDefinitionRule;
+  result: 'Ok' | 'Fail';
+  message: string;
+}
 
 export class RuleRunner
 {
-  /**
-   * @param {Logger} logger
-   * @param {DefinitionProvider} definitionProvider
-   * @param {ArtefactProvider} artefactProvider
-   */
+  private logger: Logger;
+  private definitionProvider: DefinitionProvider;
+  private artefactProvider: ArtefactProvider;
+  private markdownDocuments: MarkdownDocumentProvider;
+  private artafactDataProvider: ArtefactDataProvider;
+  private rootPath: string;
+
   constructor(
-    logger,
-    definitionProvider,
-    artefactProvider)
+    logger: Logger,
+    definitionProvider: DefinitionProvider,
+    artefactProvider: ArtefactProvider)
   {
     this.logger = logger;
 
@@ -88,13 +76,10 @@ export class RuleRunner
       artefactProvider.rootPath;
   }
 
-  /**
-   * @param {ArtefactDefinitionRule} rule
-   * @param {Artefact} artefact
-   */
   async runRule(
-    rule,
-    artefact)
+      rule: ArtefactDefinitionRule,
+      artefact: Artefact
+    ): Promise<RuleRunResult>
   {
     const ctx =
       `RuleRunner.runRule(${rule.name}, ${artefact.name}): `;
@@ -155,15 +140,12 @@ export class RuleRunner
     return result;
   }
 
-  /**
-   * @param {ArtefactDefinition} definition
-   * @param {Artefact} artefact
-   */
   async runRules(
-    definition,
-    artefact)
+      definition: ArtefactDefinition,
+      artefact: Artefact
+    ): Promise<RuleRunResult[]>
   {
-    const results = [];
+    const results: RuleRunResult[] = [];
 
     for (const rule of definition.rules) {
       const result =
@@ -177,13 +159,10 @@ export class RuleRunner
     return results;
   }
 
-  /**
-   * @param {ArtefactDefinitionRule} rule
-   * @param {Artefact} artefact
-   */
   async runJavaScriptRule(
-    rule,
-    artefact)
+      rule: ArtefactDefinitionRule,
+      artefact: Artefact
+    ): Promise<RuleRunResult>
   {
     if (!rule.path) {
       throw new Error(
@@ -199,8 +178,7 @@ export class RuleRunner
         await import(
           importUrl.href);
 
-      /** @type {RuleValidationFunction} */
-      const validateFunction =
+      const validateFunction: RuleValidationFunction =
         validatorModule.validate;
 
       if (typeof validateFunction !== 'function') {
@@ -210,8 +188,7 @@ export class RuleRunner
 
       let result = null;
 
-      /** @type {RuleValidationContext} */
-      const validationContext =
+      const validationContext: RuleValidationContext =
         { logger: this.logger,
           rootPath: this.rootPath,
           definitions: this.definitionProvider,
@@ -252,13 +229,10 @@ export class RuleRunner
     }
   }
 
-  /**
-   * @param {ArtefactDefinitionRule} rule
-   * @param {Artefact} artefact
-   */
   async runExecutableRule(
-    rule,
-    artefact)
+      rule: ArtefactDefinitionRule,
+      artefact: Artefact
+    ): Promise<RuleRunResult>
   {
     if (!rule.path) {
       throw new Error(
@@ -326,10 +300,10 @@ export class RuleRunner
     });
   }
 
-  /**
-   * @param {any} error
-   */
-  formatError(error) {
+  formatError(
+      error: any
+    ): string
+  {
     if (error instanceof Error) {
       return error.message.replaceAll(
         '\n',

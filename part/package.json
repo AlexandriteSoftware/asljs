@@ -3,9 +3,13 @@
   "version": "0.1.31",
   "description": "Project artefact tracing framework and CLI for markdown-defined project artefacts.",
   "type": "module",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "artefacts/parts/Artefact Definition_RL1.js",
@@ -28,17 +32,17 @@
   "scripts": {
     "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
     "format": "npm run format:json",
-    "clean": "node -e \"console.log('asljs-part: nothing to clean')\"",
-    "build": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
-    "build:dist": "node -e \"console.log('asljs-part: no build step for JS source package')\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "node ../common/dist/toolkit/toolkit.js clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-directory",
+    "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
     "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
-    "test": "node --test",
-    "test:watch": "node --watch --test",
-    "coverage": "NODE_V8_COVERAGE=.coverage node --test && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",
+    "test": "node --test --enable-source-maps build/**/*.test.js artefacts/**/*.test.js",
+    "test:watch": "node --watch --test build/**/*.test.js",
     "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
     "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
@@ -71,6 +75,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
-    "asljs-tmpdir": "^0.1.9"
+    "asljs-tmpdir": "^0.1.9",
+    "eslint": "^10.6.0"
   }
 }

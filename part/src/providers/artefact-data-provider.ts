@@ -8,50 +8,32 @@ import { MarkdownDocumentProvider }
   from '../index.js';
 import { getInstanceId }
   from './../framework.js';
-
-/**
- * @typedef
- *   { import('../artefact.js')
- *       .Artefact }
- *   Artefact
- * @typedef
- *   { import('../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('./definition-provider.js')
- *       .DefinitionProvider }
- *   DefinitionProvider
- * @typedef
- *   { import('../artefact-data-providing-function.js')
- *       .ArtefactDataProvidingFunction }
- *   ArtefactDataProvidingFunction
- * @typedef
- *   { import('../artefact-data-providing-function.js')
- *       .ArtefactDataProvidingContext }
- *   ArtefactDataProvidingContext
- * @typedef
- *   { import('../logging.js')
- *       .Logger }
- *   Logger
- */
+import { Artefact }
+  from '../artefact.js';
+import { ArtefactDefinition }
+  from '../artefact-definition.js';
+import { DefinitionProvider }
+  from './definition-provider.js';
+import { ArtefactDataProvidingFunction,
+         ArtefactDataProvidingContext }
+  from '../artefact-data-providing-function.js';
+import { Logger }
+  from '../logging.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
  * redundant file system operations.
- *
- * @property {Logger} logger
- * @property {string} definitionsPath
  */
 export class ArtefactDataProvider
 {
-  /**
-   * @param {Logger} logger
-   * @param {string} definitionsPath
-   */
+  private logger: Logger;
+  private definitionsPath: string;
+  private markdownDocuments: MarkdownDocumentProvider;
+
   constructor(
-    logger,
-    definitionsPath)
+      logger: Logger,
+      definitionsPath: string
+    )
   {
     this.logger =
       logger.scope(
@@ -65,14 +47,10 @@ export class ArtefactDataProvider
       new MarkdownDocumentProvider();
   }
 
-  /**
-   * @param {Artefact} artefact
-   * @param {string} definition
-   * @returns {Promise<any>}
-   */
   async tryGetArtefactData(
-    artefact,
-    definition)
+      artefact: Artefact,
+      definition: string
+    ): Promise<any>
   {
     this.logger.trace(
       `tryGetArtefactData(${artefact.relativePath}, ${definition})`);
@@ -105,8 +83,7 @@ export class ArtefactDataProvider
       return null;
     }
 
-    /** @type {ArtefactDataProvidingFunction} */
-    const getDataFunction =
+    const getDataFunction: ArtefactDataProvidingFunction =
       dataProviderModule.getData;
 
     if (typeof getDataFunction !== 'function') {
@@ -114,8 +91,7 @@ export class ArtefactDataProvider
         'Data provider module must export getData.');
     }
 
-    /** @type {ArtefactDataProvidingContext} */
-    const context =
+    const context: ArtefactDataProvidingContext =
       { logger: this.logger,
         markdownDocuments: this.markdownDocuments };
 

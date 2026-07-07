@@ -8,56 +8,38 @@ import { toPosixPath }
   from '../formatting.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
+import { Logger }
+  from './../logging.js';
+import { Environment }
+  from './../environment.js';
+import { ArtefactDefinition }
+  from './../artefact-definition.js';
+import { ArtefactDefinitionRule }
+  from './../artefact-definition.js';
+import { Artefact }
+  from './../artefact.js';
 
-/**
- * @typedef
- *   { import('./../logging.js')
- *       .Logger }
- *   Logger
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- * @typedef
- *   { import('./../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('./../artefact-definition.js')
- *       .ArtefactDefinitionRule }
- *   ArtefactDefinitionRule
- * @typedef
- *   { import('./../artefact.js')
- *       .Artefact }
- *   Artefact
- */
+export interface CopilotRequest {
+  mode: 'create' | 'update';
+  definition: string;
+  definitionPath: string;
+  rule: string;
+  ruleId: string;
+  ruleFilePath: string;
+  comment: string;
+  currentContent: string | null;
+  prompt: string;
+  rootDirectory: string;
+}
 
-/**
- * @typedef {Object} CopilotRequest
- * @property {'create'|'update'} mode 
- * @property {string} definition
- * @property {string} definitionPath 
- * @property {string} rule 
- * @property {string} ruleId
- * @property {string} ruleFilePath
- * @property {string} comment
- * @property {string|null} currentContent 
- * @property {string} prompt
- * @property {string} rootDirectory 
- */
+export interface UpdateCommandOptions {
+  dryRun?: boolean;
+}
 
-/**
- * @typedef {Object} UpdateCommandOptions
- * @property {boolean} [dryRun]
- */
-
-/**
- * @param {Environment} environment 
- * @param {Partial<UpdateCommandOptions>} [options]
- */
 export async function execUpdate(
-  environment,
-  options = { })
+    environment: Environment,
+    options: Partial<UpdateCommandOptions> = { }
+  ): Promise<void>
 {
   const logger =
     environment.logger;
@@ -108,8 +90,7 @@ export async function execUpdate(
             definition,
             rule);
 
-        /** @type {CopilotRequest} */
-        const request =
+        const request: CopilotRequest =
           {
             mode: 'create',
             rootDirectory: rootDir,
@@ -183,8 +164,7 @@ export async function execUpdate(
         continue;
       }
 
-        /** @type {CopilotRequest} */
-        const request =
+        const request: CopilotRequest =
           {
             mode: 'update',
             rootDirectory: rootDir,
@@ -262,14 +242,10 @@ export async function execUpdate(
   }
 }
 
-/**
- * @param {ArtefactDefinition} definition 
- * @param {ArtefactDefinitionRule} rule 
- * @returns {string}
- */
 function getExpectedRuleFilePath(
-  definition,
-  rule)
+    definition: ArtefactDefinition,
+    rule: ArtefactDefinitionRule
+  ): string
 {
   return path.join(
     path.dirname(
@@ -279,20 +255,13 @@ function getExpectedRuleFilePath(
   );
 }
 
-/**
- * @param {'create' | 'update'} mode 
- * @param {ArtefactDefinition} definition 
- * @param {ArtefactDefinitionRule} rule 
- * @param {string} targetFilePath 
- * @param {string?} currentContent 
- * @returns 
- */
 function buildPrompt(
-  mode,
-  definition,
-  rule,
-  targetFilePath,
-  currentContent)
+    mode: 'create' | 'update',
+    definition: ArtefactDefinition,
+    rule: ArtefactDefinitionRule,
+    targetFilePath: string,
+    currentContent: string | null
+  ): string
 {
   const template =
     `
@@ -417,13 +386,10 @@ implementation. Run test cases to ensure the rule implementation is correct.`;
          + commonPrompt;
 }
 
-/**
- * @param {Logger} logger 
- * @param {CopilotRequest} request 
- */
 async function runConfiguredCopilotCli(
-  logger,
-  request)
+    logger: Logger,
+    request: CopilotRequest
+  ): Promise<string>
 {
   let command =
     process.env.PART_COPILOT_CLI_COMMAND?.trim();
@@ -443,82 +409,80 @@ async function runConfiguredCopilotCli(
     request);
 }
 
-/**
- * @param {Logger} logger
- * @param {string} command
- * @param {CopilotRequest} request 
- */
 async function runCopilotCli(
-  logger,
-  command,
-  request)
+    logger: Logger,
+    command: string,
+    request: CopilotRequest
+  ): Promise<string>
 {
   logger.trace(
     `runCopilotCli: ${command}`);
 
-  return new Promise((resolve, reject) => {
-    const child =
-      spawn(
-        command,
-        {
-          cwd: request.rootDirectory,
-          shell: true,
-          stdio: ['pipe', 'pipe', 'pipe'],
+  return new Promise<string>(
+    (
+        resolve: (value: string) => void,
+        reject: (reason: any) => void
+      ): void =>
+    {
+      const child =
+        spawn(
+          command,
+          {
+            cwd: request.rootDirectory,
+            shell: true,
+            stdio: ['pipe', 'pipe', 'pipe'],
+          });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on(
+        'data',
+        chunk => {
+          logger.trace(
+            String(chunk));
+
+          stdout += String(chunk);
         });
 
-    let stdout = '';
-    let stderr = '';
+      child.stderr.on(
+        'data',
+        chunk => {
+          logger.trace(
+            String(chunk));
 
-    child.stdout.on(
-      'data',
-      chunk => {
-        logger.trace(
-          String(chunk));
+          stderr += String(chunk);
+        });
 
-        stdout += String(chunk);
-      });
+      child.on(
+        'error',
+        reject);
 
-    child.stderr.on(
-      'data',
-      chunk => {
-        logger.trace(
-          String(chunk));
+      child.on(
+        'close',
+        code => {
+          if (code !== 0) {
+            reject(
+              new Error(
+                stderr.trim()
+                || `Copilot CLI failed with exit code ${code}.`));
 
-        stderr += String(chunk);
-      });
+            return;
+          }
 
-    child.on(
-      'error',
-      reject);
+          resolve(stdout);
+        });
 
-    child.on(
-      'close',
-      code => {
-        if (code !== 0) {
-          reject(
-            new Error(
-              stderr.trim()
-              || `Copilot CLI failed with exit code ${code}.`));
+      child.stdin.write(
+        request.prompt);
 
-          return;
-        }
-
-        resolve(stdout);
-      });
-
-    child.stdin.write(
-      request.prompt);
-
-    child.stdin.end();
-  });
+      child.stdin.end();
+    });
 }
 
-/**
- * @param {string} content 
- * @returns {string}
- */
 function extractFirstComment(
-  content)
+    content: string
+  ): string
 {
   const openingCommentIndex =
     content.indexOf('/*');
@@ -542,14 +506,10 @@ function extractFirstComment(
   return commentText;
 }
 
-/**
- * @param {string} firstComment 
- * @param {ArtefactDefinitionRule} rule 
- * @returns {boolean}
- */
 function commentMatchesRule(
-  firstComment,
-  rule)
+    firstComment: string,
+    rule: ArtefactDefinitionRule
+  ): boolean
 {
   if (
     firstComment === null
@@ -568,22 +528,16 @@ function commentMatchesRule(
   return actualNormalisedComment === expectedNormalisedComment;
 }
 
-/**
- * @param {ArtefactDefinitionRule} rule 
- * @returns {string}
- */
 function formatRuleComment(
-  rule)
+    rule: ArtefactDefinitionRule
+  ): string
 {
   return `${rule.id} - ${rule.description}`;
 }
 
-/**
- * @param {string} value 
- * @returns {string}
- */
 function normaliseText(
-  value)
+    value: string
+  ): string
 {
   const normalised =
     value

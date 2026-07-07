@@ -5,7 +5,7 @@ import assert
 import { TmpDir }
   from 'asljs-tmpdir';
 import { createLogger }
-  from '../../src/logging.js';
+  from '../logging.js';
 import { createEnvironment }
   from '../environment.js';
 import { execCheck }

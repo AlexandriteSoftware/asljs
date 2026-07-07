@@ -13,59 +13,41 @@ import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
 import { getInstanceId }
   from './../framework.js';
+import { Root }
+  from 'mdast';
+import { RootContent }
+  from 'mdast';
+import { MarkdownDocument }
+  from '../markdown-document.js';
+import { ArtefactDefinition,
+         ArtefactDefinitionRule }
+  from '../artefact-definition.js';
+import { Location }
+  from '../location.js';
+import { Logger }
+  from '../logging.js';
 
-/**
- * @typedef
- *   { import('mdast')
- *       .Root }
- *   Root
- * @typedef
- *   { import('mdast')
- *       .RootContent }
- *   RootContent
- * @typedef
- *   { import('../markdown-document.js')
- *       .MarkdownDocument }
- *   MarkdownDocument
- * @typedef
- *   { import('../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('../artefact-definition.js')
- *       .ArtefactDefinitionRule }
- *   ArtefactDefinitionRule
- * @typedef
- *   { import('../location.js')
- *       .Location }
- *   Location
- * @typedef
- *   { import('../logging.js')
- *       .Logger }
- *   Logger
- */
+interface DefinitionParsingContext {
+  path: string;
+  name: string;
+  content: string;
+}
 
-/**
- * @typedef {Object} DefinitionParsingContext
- * @property {string} path
- * @property {string} name
- * @property {string} content
- */
-
-/**
- * @property {string} partsDirectoryName
- */
 export class DefinitionProvider
 {
-  /**
-   * @param {Logger} logger 
-   * @param {string} rootPath 
-   * @param {string} definitionsPath 
-   */
+  private partsDirectoryName: string;
+  private logger: Logger;
+  private rootPath: string;
+  private gitIgnore: GitIgnore;
+  private cache: ArtefactDefinition[] | null;
+  private markdownDocumentProvider: MarkdownDocumentProvider;
+
+  public definitionsPath: string;
+
   constructor(
-    logger,
-    rootPath,
-    definitionsPath = rootPath)
+    logger: Logger,
+    rootPath: string,
+    definitionsPath: string = rootPath)
   {
     this.logger =
       logger.scope(
@@ -92,7 +74,9 @@ export class DefinitionProvider
       new MarkdownDocumentProvider();
   }
 
-  async getDefinitions() {
+  async getDefinitions(
+    ): Promise<ArtefactDefinition[]>
+{
     this.logger.trace(
       `getDefinitions()`);
 
@@ -136,12 +120,9 @@ export class DefinitionProvider
     return definitions;
   }
 
-  /**
-   * @param {string} filePath
-   * @returns {Promise<ArtefactDefinition | null>}
-   */
   async loadDefinitionFromFile(
-    filePath)
+      filePath: string
+    ): Promise<ArtefactDefinition | null>
   {
     this.logger.trace(
       `loadDefinitionFromFile(${filePath})`);
@@ -173,12 +154,9 @@ export class DefinitionProvider
         content });
   }
 
-  /**
-   * @param {DefinitionParsingContext} context 
-   * @returns {Promise<ArtefactDefinition|null>}
-   */
   async parseDefinition(
-    context)
+      context: DefinitionParsingContext
+    ): Promise<ArtefactDefinition | null>
   {
     this.logger.trace(
       `parseDefinition({ name: ${context.name}, content: ...${context.content.length} chars })`);
@@ -256,17 +234,11 @@ export class DefinitionProvider
     return definition;
   }
 
-  /**
-   * 
-   * @param {string} ruleId 
-   * @param {string} definition 
-   * @param {string} definitionPath 
-   * @returns {Promise<{path: string, relativePath: string} | null>}
-   */
   async resolveRuleFile(
-    ruleId,
-    definition,
-    definitionPath)
+      ruleId: string,
+      definition: string,
+      definitionPath: string
+    ): Promise<{ path: string; relativePath: string; } | null>
   {
     this.logger.trace(
       `resolveRuleFile: ruleId=${ruleId}, definition=${definition}, definitionPath=${definitionPath}`);
@@ -338,20 +310,15 @@ export class DefinitionProvider
     return null;
   }
 
-  /**
-   * @param {MarkdownDocument} document
-   * @param {DefinitionParsingContext} context
-   * @returns {Promise<ArtefactDefinitionRule[]>}
-   */
   async parseRules(
-    document,
-    context)
+      document: MarkdownDocument,
+      context: DefinitionParsingContext
+    ): Promise<ArtefactDefinitionRule[]>
   {
     this.logger.trace(
       `parseRules: parsing rules for ${context.path}`);
 
-    /** @type {ArtefactDefinitionRule[]} */
-    const rules = [];
+    const rules: ArtefactDefinitionRule[] = [];
 
     const rulesPrimaryListItems =
       document.getSectionPrimaryListItems('Rules');
@@ -420,20 +387,14 @@ export class DefinitionProvider
           definition: context.name,
           name,
           description,
-          path:
-            resolvedRuleFile?.path
-            ?? null });
+          path: resolvedRuleFile?.path });
     }
 
     return rules;
   }
-
-  /**
-   * @param {MarkdownDocument} document
-   * @returns {Location|null}
-   */
   parseLocation(
-    document)
+      document: MarkdownDocument
+    ): Location | null
   {
     const locationParametersList =
       document.getSectionPrimaryListItems('Location');
@@ -458,14 +419,11 @@ export class DefinitionProvider
       return null;
     }
 
-    /** @type {string[]} */
-    const patterns = [];
+    const patterns: string[] = [];
 
-    /** @type {string[]} */
-    const exclude = [];
+    const exclude: string[] = [];
     
-    /** @type {any[]} */
-    const filters = [];
+    const filters: any[] = [];
 
     for (const itemText of listItems) {
       const typeMatch =
@@ -496,8 +454,7 @@ export class DefinitionProvider
       }
     }
 
-    /** @type {Location} */
-    const location =
+    const location: Location =
       { patterns,
         exclude,
         filters };
@@ -506,13 +463,9 @@ export class DefinitionProvider
   }
 }
 
-/**
- * 
- * @param {Root} document
- * @returns {RootContent | null}
- */
 function getTopHeading(
-  document)
+    document: Root
+  ): RootContent | null
 {
   return document
     .children
@@ -523,15 +476,10 @@ function getTopHeading(
       ?? null;
 }
 
-/**
- * 
- * @param {Root} document 
- * @param {DefinitionParsingContext} context
- * @returns {string}
- */
 function extractDescription(
-  document,
-  context)
+    document: Root,
+    context: DefinitionParsingContext
+  ): string
 {
   const heading =
     getTopHeading(document);

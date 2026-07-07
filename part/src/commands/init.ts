@@ -6,17 +6,10 @@ import { cp,
   from 'node:fs/promises';
 import { fileURLToPath }
   from 'node:url';
-
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- * @typedef
- *   { import('./../logging.js')
- *       .Logger }
- *   Logger
- */
+import { Environment }
+  from './../environment.js';
+import { Logger }
+  from './../logging.js';
 
 const MODULE_DIRECTORY =
   path.dirname(
@@ -28,11 +21,9 @@ const ARTEFACTS_DIRECTORY =
     MODULE_DIRECTORY,
     '../../artefacts');
 
-/**
- * @param {Environment} environment 
- */
 export async function execInit(
-  environment)
+    environment: Environment
+  ): Promise<void>
 {
   const definitionsPath =
     environment.definitions;

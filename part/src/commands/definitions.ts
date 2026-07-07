@@ -6,19 +6,12 @@ import { DefinitionProvider }
   from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
+import { Environment }
+  from './../environment.js';
 
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- */
-
-/**
- * @param {Environment} environment 
- */
 export async function execDefinitions(
-  environment)
+    environment: Environment
+  ): Promise<void>
 {
   const rootDirectory =
     environment.project;

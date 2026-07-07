@@ -1,18 +1,11 @@
 import { createRequire }
   from 'node:module';
+import { Environment }
+  from '../environment.js';
 
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- */
-
-/**
- * @param {Environment} environment
- */
 export function execVersion(
-  environment)
+    environment: Environment
+  ): Promise<number>
 {
   const packageVersion =
     (() => {

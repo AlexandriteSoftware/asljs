@@ -1,30 +1,26 @@
 import pino
   from 'pino';
 
-/**
- * @typedef Logger
- * @property {string} level
- * @property {(message: string) => void} trace
- * @property {(message: string) => void} debug
- * @property {(message: string) => void} info
- * @property {(message: string) => void} information
- * @property {(message: string) => void} warning
- * @property {(message: string) => void} warn
- * @property {(message: string) => void} error
- * @property {(context: Record<string, any>) => Logger} scope
- */
+export interface Logger {
+  level: string;
+  trace(message: string): void;
+  debug(message: string): void;
+  info(message: string): void;
+  information(message: string): void;
+  warning(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
+  scope(context: Record<string, any>): Logger;
+}
 
-/**
- * @typedef {Logger & {
- *   dispose: () => void
- * }} RootLogger
- */
+export interface RootLogger extends Logger {
+  dispose(): void;
+}
 
-/**
- * @typedef LoggerOptions
- * @property {string} level
- * @property {string?} file
- */
+export interface LoggerOptions {
+  level: string;
+  file?: string | null;
+}
 
 /**
  * Creates a logger instance with the specified options.
@@ -37,12 +33,10 @@ import pino
  * - `PART_LOG_LEVEL`: The logging level (e.g., 'silent', 'trace', 'debug',
  *   'info', ...).
  * - `PART_LOG_FILE`: The file path to write logs to (if specified).
- * 
- * @param {Partial<LoggerOptions>} options
- * @returns {RootLogger}
  */
 export function createLogger(
-  options = { })
+    options: Partial<LoggerOptions> = { }
+  ): RootLogger
 {
   const level =
     options.level
@@ -93,8 +87,7 @@ export function createLogger(
         level: pinoLogLevel },
       transport);
 
-  /** @type {RootLogger} */
-  const proxy =
+  const proxy: RootLogger =
     { level,
       trace: message => logger.trace(message),
       debug: message => logger.debug(message),
@@ -113,17 +106,12 @@ export function createLogger(
   return proxy;
 }
 
-/**
- * @param {pino.Logger} logger
- * @param {string} level
- * @returns {Logger}
- */
 function createLoggerFromPinoLogger(
-  logger,
-  level)
+    logger: pino.Logger,
+    level: string
+  ): Logger
 {
-  /** @type {Logger} */
-  const proxy =
+  const proxy: Logger =
     { level,
       trace: message => logger.trace(message),
       debug: message => logger.debug(message),
@@ -141,10 +129,10 @@ function createLoggerFromPinoLogger(
   return proxy;
 }
 
-function createSilentLogger()
+function createSilentLogger(
+  ): RootLogger
 {
-  /** @type {RootLogger} */
-  const proxy =
+  const proxy: RootLogger =
     { level: 'silent',
       trace: () => { },
       debug: () => { },

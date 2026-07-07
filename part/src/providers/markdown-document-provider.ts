@@ -12,12 +12,9 @@ const MARKDOWN_PARSER =
 
 export class MarkdownDocumentProvider
 {
-  /**
-   * @param {string} content
-   * @returns {MarkdownDocument}
-   */
   parse(
-    content)
+      content: string
+    ): MarkdownDocument
   {
     const document =
       MARKDOWN_PARSER.parse(
@@ -28,12 +25,9 @@ export class MarkdownDocumentProvider
       document);
   }
 
-  /**
-   * @param {string} path
-   * @returns {Promise<MarkdownDocument>}
-   */
   async load(
-    path)
+    path: string
+  ): Promise<MarkdownDocument>
   {
     let content =
       await readFile(

@@ -2,7 +2,8 @@ import path
   from 'node:path';
 import { createLogger }
   from './logging.js';
-import { createEnvironment }
+import { createEnvironment,
+         Environment }
   from './environment.js';
 import { Command }
   from 'commander';
@@ -21,21 +22,10 @@ import { execDefinition }
 import { execVersion }
   from './commands/version.js';
 
-/**
- * @typedef
- *   { import('./environment.js')
- *       .Environment }
- *   Environment
- */
-
-/**
- * @param {string[]} args 
- * @param {Environment?} environment 
- * @returns {Promise<number>}
- */
 export async function runCli(
-  args,
-  environment = null)
+    args: string[],
+    environment: Environment | null = null
+): Promise<number>
 {
   environment =
     environment
@@ -85,11 +75,9 @@ export async function runCli(
   }
 }
 
-/**
- * @param {Environment} environment 
- */
 function createCli(
-  environment)
+    environment: Environment
+  ): Command
 {
   const cli =
     new Command();
@@ -316,27 +304,20 @@ function createCli(
   return cli;
 }
 
-/**
- * @param {Environment} environment
- * @param {any} error
- * @param {import('commander').Command} cli
- * @returns {boolean}
- */
 function writeCommanderError(
-  environment,
-  error,
-  cli)
+  environment: Environment,
+  error: any,
+  cli: Command
+): boolean
 {
-  if (!(error instanceof Error))
-  {
+  if (!(error instanceof Error)) {
     return false;
   }
 
   const code =
-    (/** @type {any} */ (error)).code;
+    (error as Error & { code?: string }).code;
 
-  if (typeof code !== 'string')
-  {
+  if (typeof code !== 'string') {
     return false;
   }
 
@@ -382,12 +363,9 @@ function writeCommanderError(
   return false;
 }
 
-/**
- * @param {string} message 
- * @returns {string}
- */
 function extractOptionName(
-  message)
+    message: string
+  ): string
 {
   const match =
     /'(--[^ <']+)/.exec(message);
@@ -396,12 +374,9 @@ function extractOptionName(
          ?? '--unknown';
 }
 
-/**
- * @param {any} value 
- * @returns {string[]}
- */
 function splitCommaSeparatedOption(
-  value)
+    value: unknown
+  ): string[]
 {
   if (typeof value !== 'string'
       || value.trim() === '')
@@ -417,12 +392,9 @@ function splitCommaSeparatedOption(
       entry => entry.length > 0);
 }
 
-/**
- * @param {any} value 
- * @returns {string}
- */
 function filterStringOption(
-  value)
+    value: unknown
+  ): string
 {
   if (typeof value !== 'string') {
     return '';

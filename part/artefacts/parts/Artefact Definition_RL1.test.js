@@ -4,10 +4,9 @@ import assert
   from 'node:assert/strict';
 import { TmpDir }
   from 'asljs-tmpdir';
-import { createLogger }
-  from '../../src/logging.js';
-import { createRuleValidationContext }
-  from '../../src/rule-validation-function.js';
+import { createLogger,
+         createRuleValidationContext }
+  from 'asljs-part';
 import { validate }
   from './Artefact Definition_RL1.js';
 

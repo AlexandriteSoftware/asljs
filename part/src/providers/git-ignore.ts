@@ -7,41 +7,27 @@ import ignore
   from 'ignore';
 import { toPosixPath }
   from '../formatting.js';
+import { Logger }
+  from '../logging.js';
 
-/**
- * @typedef
- *   { import('../logging.js')
- *       .Logger }
- *   Logger
- */
-
-/**
- * @property {Logger} logger
- * @property {Array<{ path: string, matcher: ignore.Ignore }> } matchers
- * @property {Set<string>} visitedPaths
- */
 export class GitIgnore
 {
-  /**
-   * @param {Logger} logger 
-   */
+  private logger: Logger;
+  private matchers: Array<{ path: string, matcher: ignore.Ignore }>;
+  private visitedPaths: Set<string>;
+
   constructor(
-    logger)
+      logger: Logger
+    )
   {
     this.logger = logger;
-
-    this.matchers =
-      /** @type {Array<{ path: string, matcher: ignore.Ignore }>} */([]);
-
+    this.matchers = [ ];
     this.visitedPaths = new Set();
   }
 
-  /**
-   * @param {string} targetPath 
-   * @returns {boolean}
-   */
   isIgnored(
-    targetPath)
+      targetPath: string
+    ): boolean
   {
     if (!path.isAbsolute(targetPath)) {
       throw new Error(
@@ -95,23 +81,18 @@ export class GitIgnore
     return false;
   }
 
-  /**
-   * @param {string[]} paths 
-   * @returns {string[]}
-   */
   filter(
-    paths)
+      paths: string[]
+    ): string[]
   {
     return paths.filter(
       filePath =>
         !this.isIgnored(filePath));
   }
 
-  /**
-   * @param {string} directoryPath
-   */
   loadMatchers(
-    directoryPath)
+      directoryPath: string
+    ): void
   {
     if (this.visitedPaths.has(directoryPath)) {
       return;
@@ -133,8 +114,8 @@ export class GitIgnore
       gitIgnoreExists = true;
     } catch (err) {
       const code =
-        (/** @type {NodeJS.ErrnoException} */(err)).code;
-      
+        (err as NodeJS.ErrnoException).code;
+
       if (code !== 'ENOENT') {
         throw err;
       }

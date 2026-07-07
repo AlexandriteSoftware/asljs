@@ -6,46 +6,31 @@ import { FilesystemLocationResolver }
   from './filesystem-location-resolver.js';
 import { getInstanceId }
   from './../framework.js';
-
-/**
- * @typedef
- *   { import('../artefact.js')
- *       .Artefact }
- *   Artefact
- * @typedef
- *   { import('../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('./definition-provider.js')
- *       .DefinitionProvider }
- *   DefinitionProvider
- * @typedef
- *   { import('../logging.js')
- *       .Logger }
- *   Logger
- */
+import { Artefact }
+  from '../artefact.js';
+import { ArtefactDefinition }
+  from '../artefact-definition.js';
+import { DefinitionProvider }
+  from './definition-provider.js';
+import { Logger }
+  from '../logging.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
  * redundant file system operations.
- *
- * @property {Logger} logger
- * @property {string} rootPath
- * @property {DefinitionProvider} definitionsProvider
- * @property {FilesystemLocationResolver} locationResolver
  */
 export class ArtefactProvider
 {
-  /**
-   * @param {Logger} logger 
-   * @param {string} rootPath 
-   * @param {DefinitionProvider} definitionsProvider 
-   */
+  private logger: Logger;
+  private definitionsProvider: DefinitionProvider;
+  private locationResolver: FilesystemLocationResolver;
+
+  public rootPath: string;
+
   constructor(
-    logger,
-    rootPath,
-    definitionsProvider)
+    logger: Logger,
+    rootPath: string,
+    definitionsProvider: DefinitionProvider)
   {
     this.logger =
       logger.scope(
@@ -62,12 +47,9 @@ export class ArtefactProvider
         this.rootPath);
   }
 
-  /**
-   * @param {string} artefactPath
-   * @returns {Promise<Artefact?>}
-   */
   async tryGetArtefact(
-    artefactPath)
+      artefactPath: string
+    ): Promise<Artefact | null>
   {
     this.logger.trace(
       `tryGetArtefact(${artefactPath})`);
@@ -99,24 +81,21 @@ export class ArtefactProvider
       artefactFullPath);
   }
 
-  /**
-   * @param {ArtefactDefinition[]?} definitions
-   * @returns {Promise<Artefact[]>}
-   */
   async getArtefacts(
-    definitions = null)
+      definitions?: ArtefactDefinition[]
+    ): Promise<Artefact[]>
   {
     if (this.logger.level === 'trace') {
       let definitionsList;
 
-      if (definitions === null) {
-        definitionsList = '';
-      } else {
+      if (definitions) {
         definitionsList =
           definitions
             .map(
               definition => definition.name)
             .join(', ');
+      } else {
+        definitionsList = '';
       }
 
       this.logger.trace(
@@ -128,10 +107,9 @@ export class ArtefactProvider
         await this.definitionsProvider.getDefinitions();
     }
 
-    const artefactPaths =
-      new Set();
+    const artefactPaths = new Set<string>();
 
-    for (const definition of definitions) {
+    for (const definition of definitions || []) {
       const paths =
         await this.locationResolver
           .resolve(
@@ -166,14 +144,10 @@ export class ArtefactProvider
     return artefacts;
   }
 
-  /**
-   * @param {string} artefactPath
-   * @param {ArtefactDefinition} definition
-   * @returns {Promise<boolean>}
-   */
   async isArtefactOfDefinition(
-    artefactPath,
-    definition)
+      artefactPath: string,
+      definition: ArtefactDefinition
+    ): Promise<boolean>
   {
     const artafactFullPath =
       path.normalize(
@@ -192,12 +166,9 @@ export class ArtefactProvider
     return match;
   }
 
-  /**
-   * @param {string} artefactFilePath
-   * @returns {Promise<ArtefactDefinition[]>}
-   */
   async getDefinitionsForArtefact(
-    artefactFilePath)
+      artefactFilePath: string
+    ): Promise<ArtefactDefinition[]>
   {
     const definitions =
       await this.definitionsProvider.getDefinitions();
@@ -217,34 +188,30 @@ export class ArtefactProvider
     return matchingDefinitions;
   }
 
-  /**
-   * @param {string} projectDirectory 
-   * @param {ArtefactDefinition[]} definitions
-   * @param {string} artefactPath 
-   * @returns {Promise<Artefact>}
-   */
   async buildArtefact(
-    projectDirectory,
-    definitions,
-    artefactPath)
+      projectDirectory: string,
+      definitions: ArtefactDefinition[],
+      artefactPath: string
+    ): Promise<Artefact>
   {
-    return {
-      path: artefactPath,
-      relativePath:
-        toPosixPath(
-          path.relative(
-            projectDirectory,
-            artefactPath)),
-      basePath:
-        projectDirectory,
-      name:
-        path.basename(
-          artefactPath,
-          path.extname(artefactPath)),
-      definitions:
-        definitions
-          .map(
-            definition => definition.name)
-    };
+    const artefact: Artefact =
+      { path: artefactPath,
+        relativePath:
+          toPosixPath(
+            path.relative(
+              projectDirectory,
+              artefactPath)),
+        basePath:
+          projectDirectory,
+        name:
+          path.basename(
+            artefactPath,
+            path.extname(artefactPath)),
+        definitions:
+          definitions
+            .map(
+              definition => definition.name) };
+
+    return artefact;
   }
 }

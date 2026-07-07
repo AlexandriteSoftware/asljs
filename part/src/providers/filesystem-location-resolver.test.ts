@@ -80,7 +80,8 @@ test(
         'd2/d21/f5.txt' ]);
   });
 
-async function getTestTmpFolder()
+async function getTestTmpFolder(
+  ): Promise<TmpDir>
 {
   const tmpDir =
     new TmpDir(
@@ -102,15 +103,11 @@ async function getTestTmpFolder()
   return tmpDir;
 }
 
-/**
- * @param {TmpDir} tmpDir 
- * @param {string[]} resolvedFiles 
- * @param {string[]} expectedFiles 
- */
 function checkResolvedFiles(
-  tmpDir,
-  resolvedFiles,
-  expectedFiles)
+    tmpDir: TmpDir,
+    resolvedFiles: string[],
+    expectedFiles: string[]
+  ): void
 {
   const normalisedResolvedFiles =
     resolvedFiles

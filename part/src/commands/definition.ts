@@ -4,30 +4,19 @@ import { toPosixPath }
   from '../formatting.js';
 import { DefinitionProvider }
   from '../providers/definition-provider.js';
+import { Environment }
+  from './../environment.js';
+import { ArtefactDefinition }
+  from './../artefact-definition.js';
 
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- * @typedef
- *   { import('./../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- */
+export interface DefinitionOptions {
+  target: string;
+}
 
-/**
- * @typedef {Object} DefinitionOptions
- * @property {string} target
- */
-
-/**
- * @param {Environment} environment
- * @param {DefinitionOptions} options
- */
 export async function execDefinition(
-  environment,
-  options)
+    environment: Environment,
+    options: DefinitionOptions
+  ): Promise<void>
 {
   const rootDirectory =
     environment.project;
@@ -53,16 +42,11 @@ export async function execDefinition(
     `${markdown}\n`);
 }
 
-/**
- * @param {ArtefactDefinition[]} definitions 
- * @param {string} rootDirectory 
- * @param {string} target 
- * @returns {ArtefactDefinition}
- */
 function resolveDefinition(
-  definitions,
-  rootDirectory,
-  target)
+    definitions: ArtefactDefinition[],
+    rootDirectory: string,
+    target: string
+  ): ArtefactDefinition
 {
   const normalizedTarget =
     toPosixPath(target);
@@ -104,14 +88,10 @@ function resolveDefinition(
   throw new Error(`Definition not found: ${target}`);
 }
 
-/**
- * @param {ArtefactDefinition} definition 
- * @param {string} rootDirectory 
- * @returns {string}
- */
 function formatDefinitionDetails(
-  definition,
-  rootDirectory)
+    definition: ArtefactDefinition,
+    rootDirectory: string
+  ): string
 {
   return serializeMarkdownList(
     {
@@ -133,14 +113,10 @@ function formatDefinitionDetails(
     });
 }
 
-/**
- * @param {any} value 
- * @param {number} indent 
- * @returns {string}
- */
 function serializeMarkdownList(
-  value,
-  indent = 0)
+    value: any,
+    indent: number = 0
+  ): string
 {
   if (Array.isArray(value)) {
     return value
@@ -160,16 +136,11 @@ function serializeMarkdownList(
     .join('\n');
 }
 
-/**
- * @param {string} key 
- * @param {any} value
- * @param {number} indent 
- * @returns {string}
- */
 function serializeObjectEntry(
-  key,
-  value,
-  indent)
+    key: string,
+    value: any,
+    indent: number
+  ): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -186,14 +157,10 @@ function serializeObjectEntry(
   return `${prefix}- ${key}:\n${nested}`;
 }
 
-/**
- * @param {any} value
- * @param {number} indent 
- * @returns {string}
- */
 function serializeArrayEntry(
-  value,
-  indent)
+    value: any,
+    indent: number
+  ): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -224,12 +191,9 @@ function serializeArrayEntry(
   return `${prefix}-\n${nested}`;
 }
 
-/**
- * @param {any} value
- * @returns {boolean}
- */
 function isScalar(
-  value)
+    value: any
+  ): boolean
 {
   return value === null
          || typeof value !== 'object';

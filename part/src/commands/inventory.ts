@@ -4,36 +4,22 @@ import { DefinitionProvider }
   from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
+import { Environment }
+  from './../environment.js';
 
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- * @typedef
- *   { import('./../logging.js')
- *       .Logger }
- *   Logger
- */
+interface InventoryCommandOptions {
+  inventoryDefinitions?: string[];
+}
 
-/**
- * @typedef {Object} InventoryCommandOptions
- * @property {string[]} [inventoryDefinitions]
- */
+interface InventoryItem {
+  location: string;
+  definitions: string;
+}
 
-/**
- * @typedef {Object} InventoryItem
- * @property {string} location
- * @property {string} definitions
- */
-
-/**
- * @param {Environment} environment 
- * @param {Partial<InventoryCommandOptions>} options 
- */
 export async function execInventory(
-  environment,
-  options = { })
+    environment: Environment,
+    options: Partial<InventoryCommandOptions> = { }
+  ): Promise<void>
 {
   const logger =
     environment.logger;
@@ -74,11 +60,8 @@ export async function execInventory(
         inventoryDefinitions.includes(
           definition.name));
 
-  /**
-   * @type {Map<string, { location: string, definitions: string[] }>}
-   */
   const artefactIndex =
-    new Map();
+    new Map<string, { location: string; definitions: string[]; }>();
 
   for (const definition of filteredDefinitions) {
     logger.trace(
@@ -118,8 +101,7 @@ export async function execInventory(
     }
   }
 
-  /** @type {InventoryItem[]} */
-  const items =
+  const items: InventoryItem[] =
     Array.from(
       artefactIndex.values(),
       entry => {

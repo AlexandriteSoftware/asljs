@@ -6,43 +6,30 @@ import { DefinitionProvider }
   from './providers/definition-provider.js';
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
+import { Artefact }
+  from './artefact.js';
+import { Logger }
+  from './logging.js';
 
-/**
- * @typedef
- *   { import('./artefact.js')
- *       .Artefact }
- *   Artefact
- * @typedef
- *   { import('./logging.js')
- *       .Logger }
- *   Logger
- */
+export interface RuleValidationContext {
+  logger: Logger;
+  rootPath: string;
+  artefacts: ArtefactProvider;
+  artefactData: ArtefactDataProvider;
+  definitions: DefinitionProvider;
+  markdownDocuments: MarkdownDocumentProvider;
+}
 
-/**
- * @typedef RuleValidationContext
- * @property {Logger} logger
- * @property {string} rootPath
- * @property {ArtefactProvider} artefacts
- * @property {ArtefactDataProvider} artefactData
- * @property {DefinitionProvider} definitions
- * @property {MarkdownDocumentProvider} markdownDocuments
- */
+export type RuleValidationFunction =
+  (
+    artefact: Artefact,
+    context: RuleValidationContext
+  ) => Promise<void>;
 
-/**
- * @typedef
- *  { (artefact: Artefact,
- *     context: RuleValidationContext)
- *    => Promise<void> } RuleValidationFunction
- */
-
-/**
- * @param {Logger} logger
- * @param {string} rootPath
- * @returns {RuleValidationContext}
- */
 export function createRuleValidationContext(
-  logger,
-  rootPath)
+    logger: Logger,
+    rootPath: string
+  ): RuleValidationContext
 {
   const definitionProvider =
     new DefinitionProvider(
@@ -63,7 +50,7 @@ export function createRuleValidationContext(
   const markdownDocumentProvider =
     new MarkdownDocumentProvider();
 
-  const context =
+  const context: RuleValidationContext =
     { logger,
       rootPath,
       definitions: definitionProvider,

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { createEnvironment }
-  from './../src/environment.js';
+  from './../dist/environment.js';
 import { runCli }
-  from '../src/cli.js';
+  from '../dist/cli.js';
 
 const environment =
   createEnvironment(

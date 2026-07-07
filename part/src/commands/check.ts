@@ -12,41 +12,25 @@ import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { RuleRunner }
   from '../rule-runner.js';
+import { Environment }
+  from '../environment.js';
+import { ArtefactDefinition,
+         ArtefactDefinitionRule }
+  from '../artefact-definition.js';
+import { Artefact }
+  from '../artefact.js';
 
-/**
- * @typedef
- *   { import('./../environment.js')
- *       .Environment }
- *   Environment
- * @typedef
- *   { import('./../artefact-definition.js')
- *       .ArtefactDefinition }
- *   ArtefactDefinition
- * @typedef
- *   { import('./../artefact-definition.js')
- *       .ArtefactDefinitionRule }
- *   ArtefactDefinitionRule
- * @typedef
- *   { import('./../artefact.js')
- *       .Artefact }
- *   Artefact
- */
+export interface CheckCommandOptions {
+  pattern?: string;
+  checkDefinitions?: string[];
+  checkRules?: string[];
+  withPositives?: boolean;
+}
 
-/**
- * @typedef {Object} CheckCommandOptions
- * @property {string} [pattern]
- * @property {string[]} [checkDefinitions]
- * @property {string[]} [checkRules]
- * @property {boolean} [withPositives]
- */
-
-/**
- * @param {Environment} environment 
- * @param {Partial<CheckCommandOptions>} options 
- */
 export async function execCheck(
-  environment,
-  options = { })
+    environment: Environment,
+    options: Partial<CheckCommandOptions> = { }
+  ): Promise<void>
 {
   const logger =
     environment.logger;
@@ -96,8 +80,7 @@ export async function execCheck(
       rules,
       options.checkRules);
 
-  const definitionsWithRules =
-    new Set();
+  const definitionsWithRules = new Set<string>();
 
   for (const rule of selectedRules) {
     definitionsWithRules.add(
@@ -125,16 +108,13 @@ export async function execCheck(
       rootDirectory,
       definitionProvider);
 
-  /** @type {Artefact[]} */
-  const artefacts = [ ];
+  const artefacts: Artefact[] = [ ];
 
   /**
    * List of definition names for each artefact path, limited to the requested
    * definitions.
-   * 
-   * @type {Record<string, string[]>}
-   * */
-  const definitionNamesForArtefact = { };
+   */
+  const definitionNamesForArtefact: Record<string, string[]> = { };
 
   if (options.pattern) {
     localLogger.trace(
@@ -290,14 +270,10 @@ export async function execCheck(
       table);
 }
 
-/**
- * @param {ArtefactDefinition[]} definitions 
- * @param {string[]} definitionNames 
- * @returns {ArtefactDefinition[]}
- */
 export function filterDefinitions(
-  definitions,
-  definitionNames = [])
+    definitions: ArtefactDefinition[],
+    definitionNames: string[] = []
+  ): ArtefactDefinition[]
 {
   if (definitionNames.length === 0) {
     return definitions;
@@ -312,14 +288,10 @@ export function filterDefinitions(
         definition.name));
 }
 
-/**
- * @param {ArtefactDefinitionRule[]} rules 
- * @param {string[]} ruleNames 
- * @returns {ArtefactDefinitionRule[]}
- */
 export function filterRules(
-  rules,
-  ruleNames = [])
+    rules: ArtefactDefinitionRule[],
+    ruleNames: string[] = []
+  ): ArtefactDefinitionRule[]
 {
   if (ruleNames.length === 0) {
     return rules;

@@ -1,17 +1,12 @@
-/**
- * @typedef {Object} Column
- * @property {string} property
- * @property {string} [name]
- */
+export interface Column {
+  property: string;
+  name?: string;
+}
 
-/**
- * @param {Column[]} columns 
- * @param {Record<string, any>[]} objects
- * @returns {string}
- */
 export function renderObjectsToMarkdownTable(
-  columns,
-  objects)
+    columns: Column[],
+    objects: Record<string, any>[]
+  ): string
 {
   const minWidth = 3;
 
@@ -81,14 +76,10 @@ export function renderObjectsToMarkdownTable(
   return lines.join('\n');
 }
 
-/**
- * @param {any[]} cells 
- * @param {number[]} widths
- * @returns {string}
- */
 function renderRow(
-  cells,
-  widths)
+    cells: any[],
+    widths: number[]
+  ): string
 {
   const md =
     [];

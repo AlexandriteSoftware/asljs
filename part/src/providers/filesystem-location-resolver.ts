@@ -6,36 +6,26 @@ import { glob }
   from 'glob';
 import { minimatch }
   from 'minimatch';  
+import { Location }
+  from '../location.js';
+import { LocationFilter }
+  from '../location.js';
+import { Logger }
+  from '../logging.js';
 
-/**
- * @typedef
- *   { import('../location.js')
- *       .Location }
- *   Location
- * @typedef
- *   { import('../location.js')
- *       .LocationFilter }
- *   LocationFilter
- * @typedef
- *   { import('../logging.js')
- *       .Logger }
- *   Logger
- */
-
-/**
- * @typedef {Object} FilesystemLocationResolverFilter
- * @property {string} name
- */
+interface FilesystemLocationResolverFilter {
+  name: string;
+}
 
 export class FilesystemLocationResolver
 {
-  /**
-   * @param {Logger} logger 
-   * @param {string} rootPath 
-   */
+  private logger: Logger;
+  private rootPath: string;
+  private gitIgnore: GitIgnore;
+
   constructor(
-    logger,
-    rootPath)
+    logger: Logger,
+    rootPath: string)
   {
     this.logger = logger;
 
@@ -48,13 +38,10 @@ export class FilesystemLocationResolver
         this.logger);
   }
 
-  /**
-   * @param {string} basePath 
-   * @param {Location} location
-   */
   async resolve(
-    basePath,
-    location)
+      basePath: string,
+      location: Location
+    ): Promise<string[]>
   {
     const patterns =
       location.patterns;
@@ -96,8 +83,7 @@ export class FilesystemLocationResolver
         `Patterns must be either all files or all directories`);
     }
 
-    const matches =
-      new Set();
+    const matches = new Set<string>();
 
     const rootPathPatterns =
       patterns
@@ -209,15 +195,11 @@ export class FilesystemLocationResolver
     return result;
   }
 
-  /**
-   * @param {string} targetPath
-   * @param {string} basePath 
-   * @param {Location} location
-   */
   async check(
-    targetPath,
-    basePath,
-    location)
+      targetPath: string,
+      basePath: string,
+      location: Location
+    ): Promise<boolean>
   {
     const patterns =
       location.patterns;

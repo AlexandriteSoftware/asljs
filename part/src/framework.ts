@@ -1,11 +1,8 @@
 let instanceId = 1;
 
-/**
- * @param {string} className
- * @return {string}
- */
 export function getInstanceId(
-  className)
+    className: string
+  ): string
 {
   const id =
     `${className}[${instanceId}]`;

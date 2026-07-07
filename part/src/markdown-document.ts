@@ -1,46 +1,25 @@
-/**
- * @typedef
- *   { import('mdast')
- *       .Root }
- *   Root
- * @typedef
- *   { import('mdast')
- *       .RootContent }
- *   RootContent
- * @typedef
- *   { import('mdast')
- *       .Node }
- *   Node
- * @typedef
- *   { import('mdast')
- *       .Heading }
- *   Heading
- * @typedef
- *   { import('mdast')
- *       .List }
- *   List
- */
+import { Root,
+         Node,
+         Heading,
+         List }
+  from 'mdast';
 
 export class MarkdownDocument
 {
-  /**
-   * @param {string} content
-   * @param {Root} root
-   */
+  public content: string;
+  public root: Root;
+
   constructor(
-    content,
-    root)
+    content: string,
+    root: Root)
   {
     this.content = content;
     this.root = root;
   }
 
-  /**
-   * @param {string} sectionHeadingMarkup 
-   * @returns {Heading|null}
-   */
   getSectionNode(
-    sectionHeadingMarkup)
+      sectionHeadingMarkup: string
+    ): Heading | null
   {
     for (const node of this.root.children) {
       if (node.type !== 'heading') {
@@ -61,15 +40,11 @@ export class MarkdownDocument
     return null;
   }
 
-  /**
-   * @param {string} sectionHeadingMarkup 
-   * @returns {Node[]|null}
-   */
   getSectionNodes(
-    sectionHeadingMarkup)
+      sectionHeadingMarkup: string
+    ): Node[] | null
   {
-    /** @type {Node[]} */
-    const sectionNodes = [];
+    const sectionNodes: Node[] = [];
 
     let inSection = false;
 
@@ -80,7 +55,7 @@ export class MarkdownDocument
           break;
         }
 
-        const headingNode = /** @type {Heading} */ (node);
+        const headingNode = node as Heading;
 
         const markup =
           this.getMarkup(
@@ -110,12 +85,9 @@ export class MarkdownDocument
     return sectionNodes;
   }
 
-  /**
-   * @param {string} sectionHeadingMarkup 
-   * @returns {Node[]|null}
-   */
   getSectionPrimaryListItems(
-    sectionHeadingMarkup)
+      sectionHeadingMarkup: string
+    ): Node[] | null
   {
     const sectionNodes =
       this.getSectionNodes(
@@ -138,7 +110,7 @@ export class MarkdownDocument
     }
 
     const firstList =
-      /** @type {List} */ (firstListNode);
+      firstListNode as List;
 
     const listItems =
       firstList.children;
@@ -146,12 +118,9 @@ export class MarkdownDocument
     return listItems;
   }
 
-  /**
-   * @param {Node|Node[]} node 
-   * @returns {string}
-   */
   getMarkup(
-    node)
+      node: Node | Node[]
+    ): string
   {
     if (!node) {
       return '';
@@ -193,12 +162,9 @@ export class MarkdownDocument
       endOffset);
   }
 
-  /**
-   * @param {Node|Node[]} nodes
-   * @returns {string}
-   */
   getText(
-    nodes)
+      nodes: Node | Node[]
+    ): string
   {
     if (!nodes) {
       return '';
@@ -216,17 +182,17 @@ export class MarkdownDocument
     }
 
     const node =
-      /** @type {Node} */ (nodes);
+      nodes as Node;
 
     const value =
-      (/** @type {any} */ (node)).value;
+      (node as any).value;
 
     if (typeof value === 'string') {
       return value;
     }
 
     const children =
-      (/** @type {any} */ (node)).children;
+      (node as any).children;
 
     if (Array.isArray(children)) {
       const text =

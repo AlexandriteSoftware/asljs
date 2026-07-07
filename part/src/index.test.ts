@@ -3,7 +3,7 @@ import assert
 import test
   from 'node:test';
 import * as part
-  from 'asljs-part';
+  from './index.js';
 
 test(
   'package root exposes the supported public API',
