@@ -41,10 +41,10 @@ export async function releasePatch(
     [ 'npm run clean',
       'npm run typecheck',
       'npm run lint',
+      'npm run build:dist',
       'npm run build',
       'npm run test',
       'npm run clean',
-      'npm run build:dist',
       'npm version patch --no-git-tag-version' ]);
 
   start(
