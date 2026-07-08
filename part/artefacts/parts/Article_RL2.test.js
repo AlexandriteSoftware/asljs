@@ -53,6 +53,7 @@ See [Target](./Target.md).
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -91,6 +92,7 @@ See [Missing](./Missing.md).
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -131,6 +133,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -175,6 +178,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -221,6 +225,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -263,6 +268,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =

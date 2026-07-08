@@ -1,5 +1,5 @@
 import { Artefact }
-  from './artefact.js';
+  from './model/artefact.js';
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 import { Logger }

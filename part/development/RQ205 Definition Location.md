@@ -2,6 +2,10 @@
 
 Artefact definition defines location of the artefacts in the `Location` section.
 
+There may be multiple locations defined in the `Location` section.
+Each location is defined by a `Pattern` and optional `Exclude` and special
+filters.
+
 Example:
 
 ```markdown
@@ -9,6 +13,12 @@ Example:
 
 - Pattern: `../**/*.md`
 - Exclude: `../**/README.md`
+- Exclude: `../**/AGENTS.md`
+- GitIgnore
+
+- Pattern: `/**/*.md`
+- Exclude: `/**/README.md`
+- Exclude: `/**/AGENTS.md`
 - GitIgnore
 ```
 
@@ -24,18 +34,17 @@ pattern is either relative to the artefact definition file or absolute,
 calculated from the project root. Absolute patterns starts with `/`, e.g.
 `/src/**/*.js`. Folder patterns should end with `/`, e.g. `src/`.
 
-Project root is either the current working directory or directory specified by
-the `--project` CLI option.
+For defining project location see [RQ132] and [RQ133].
 
-Definition location is represented in code with the following structure:
+Definition location is defined in [model/location.ts][2] as follows:
 
-```js
-{ patterns: string[],
+```ts
+{ pattern: string,
   exclude?: string[],
   filters?: object[] }
 ```
 
-Special filters are represented as objects with at least a `name` property, e.g.
+Filters are represented as objects with at least a `name` property, e.g.
 `{ name: 'GitIgnore' }`. Other properties of the filter object depend on
 the filter type.
 
@@ -48,3 +57,6 @@ See also:
 - [RQ203 GitIgnore][1]
 
 [1]: <RQ203 GitIgnore.md>
+[2]: <../src/model/location.ts>
+[RQ132]: <RQ132 CLI Project parameter.md>
+[RQ133]: <RQ133 CLI Project environment variable.md>

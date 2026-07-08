@@ -10,7 +10,7 @@ import { ArtefactDefinitionProvider }
 import { Logger }
   from '../logging/logging.js';
 import { ArtefactDefinitionRule }
-  from '../artefact-definition.js';
+  from '../model/artefact-definition-rule.js';
 
 export class ArtefactDefinitionRuleProvider
 {
@@ -37,7 +37,7 @@ export class ArtefactDefinitionRuleProvider
       ruleId);
 
     const definitionObj =
-      await this.definitions.tryGetDefinition(definition);
+      await this.definitions.findDefinition(definition);
 
     if (!definitionObj) {
       throw new Error(

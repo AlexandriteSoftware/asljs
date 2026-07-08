@@ -6,12 +6,20 @@ import { readFile }
   from 'node:fs/promises';
 import { MarkdownDocument }
   from '../markdown-document.js';
+import { Logger }
+  from '../logging/logging.js';
 
 const MARKDOWN_PARSER =
   unified().use(remarkParse);
 
 export class MarkdownDocumentProvider
 {
+  constructor(
+      private readonly logger: Logger
+    )
+  {
+  }
+
   parse(
       content: string
     ): MarkdownDocument

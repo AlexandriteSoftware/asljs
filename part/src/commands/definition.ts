@@ -7,7 +7,7 @@ import { ArtefactDefinitionProvider }
 import { Environment }
   from './../environment.js';
 import { ArtefactDefinition }
-  from './../artefact-definition.js';
+  from '../model/artefact-definition.js';
 
 export interface DefinitionOptions {
   target: string;
@@ -93,7 +93,7 @@ function formatDefinitionDetails(
   return serializeMarkdownList(
     { name: definition.name,
       description: definition.description,
-      location: definition.location,
+      location: definition.locations,
       rules:
         definition.rules.map(
           rule =>

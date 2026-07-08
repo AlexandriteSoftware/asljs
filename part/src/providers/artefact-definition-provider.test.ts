@@ -1,21 +1,18 @@
-import test,
-       { after }
+import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import path
-  from 'node:path';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
-import { ArtefactDefinitionProvider }
-  from './artefact-definition-provider.js';
 import { tmpDirFactory }
   from '../tmpDir.js';
+import { providersFactory }
+  from './providers.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
+test.after(
   () => {
     loggerProvider.dispose();
   });
@@ -65,13 +62,14 @@ Hidden definition.
 - Folders: Hidden Items
 `);
 
-    const provider =
-      new ArtefactDefinitionProvider(
-        loggerProvider.getLogger('DefinitionProvider'),
+    const { artefactDefinitionProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
     const definitions =
-      await provider.getDefinitions();
+      await artefactDefinitionProvider.getDefinitions();
 
     assert.equal(
       definitions.length,
@@ -118,13 +116,14 @@ A todo item is a task that needs to be done.
 - R1 Due date must be in the future.
 `);
 
-    const definitionProvider =
-      new ArtefactDefinitionProvider(
-        loggerProvider.getLogger('DefinitionProvider'),
+    const { artefactDefinitionProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
     const definition =
-      await definitionProvider.loadDefinitionFromFile(
+      await artefactDefinitionProvider.fromFile(
         workspace.resolve('Todo Item.md'));
 
     assert.ok(definition);
@@ -138,10 +137,10 @@ A todo item is a task that needs to be done.
       'A todo item is a task that needs to be done.');
 
     assert.deepEqual(
-      definition.location,
-      { patterns: [ 'Todo Items/**/*.md' ],
-        exclude: [ 'Todo Items/Templates/**/*.md' ],
-        filters: [ { name: 'GitIgnore' } ] });
+      definition.locations,
+      [ { pattern: 'Todo Items/**/*.md',
+          exclude: [ 'Todo Items/Templates/**/*.md' ],
+          filters: [ { name: 'GitIgnore' } ] } ]);
 
     assert.deepEqual(
       definition.rules,
@@ -152,7 +151,7 @@ A todo item is a task that needs to be done.
   });
 
 test(
-  'RQ203: Definition returns null for markdown files that do not match the definition format',
+  'RQ203: fromFile throws when content does not match the definition format',
   async () => {
     await using workspace =
       tmpDir();
@@ -167,16 +166,17 @@ test(
 This file should not be treated as a definition.
 `);
 
-    const definitionProvider =
-      new ArtefactDefinitionProvider(
-        loggerProvider.getLogger('DefinitionProvider'),
+    const providers =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
-    const definition =
-      await definitionProvider.loadDefinitionFromFile(
-        workspace.resolve(definitionPath));
+    const provider =
+      providers.artefactDefinitionProvider;
 
-    assert.equal(
-      definition,
-      null);
+    assert.rejects(
+      async () =>
+        await provider.fromFile(
+          workspace.resolve(definitionPath)));
   });

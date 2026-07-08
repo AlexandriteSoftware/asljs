@@ -13,9 +13,9 @@ import { Logger }
 import { Environment }
   from './../environment.js';
 import { ArtefactDefinition }
-  from './../artefact-definition.js';
+  from '../model/artefact-definition.js';
 import { ArtefactDefinitionRule }
-  from './../artefact-definition.js';
+  from '../model/artefact-definition-rule.js';
 import { ArtefactDefinitionRuleProvider }
   from '../providers/artefact-definition-rule-provider.js';
 
@@ -48,10 +48,7 @@ export async function execUpdate(
     environment.project;
 
   const definitionProvider =
-    new ArtefactDefinitionProvider(
-      logger,
-      rootDir,
-      environment.definitions);
+    environment.getArtefactDefinitionProvider();
 
   const definitions =
     await definitionProvider.getDefinitions();

@@ -9,10 +9,10 @@ import { TmpDir }
   from 'asljs-tmpdir';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
-import { FilesystemLocationResolver }
-  from './filesystem-location-resolver.js';
 import { tmpDirFactory }
   from '../tmpDir.js';
+import { providersFactory }
+  from './providers.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -32,17 +32,17 @@ test(
     await using workspace =
       await getTestTmpFolder();
 
-    const resolver =
-      new FilesystemLocationResolver(
-        loggerProvider.getLogger(
-          'FilesystemLocationResolver'),
+    const { filesystemLocationResolver } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
     checkResolvedFiles(
       workspace,
-      await resolver.resolve(
+      await filesystemLocationResolver.resolve(
         workspace.path,
-        { patterns: [ '**/*.txt' ] }),
+        [ { pattern: '**/*.txt' } ]),
       [ 'f1.txt',
         'd1/f2.txt',
         'd1/d11/f3.txt',
@@ -56,19 +56,19 @@ test(
     await using workspace =
       await getTestTmpFolder();
 
-    const resolver =
-      new FilesystemLocationResolver(
-        loggerProvider.getLogger(
-          'FilesystemLocationResolver'),
+    const { filesystemLocationResolver } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
     checkResolvedFiles(
       workspace,
-      await resolver.resolve(
+      await filesystemLocationResolver.resolve(
         path.join(
           workspace.path,
           'd1'),
-        { patterns: [ '**/*.txt' ] }),
+        [ { pattern: '**/*.txt' } ]),
       [ 'd1/f2.txt',
         'd1/d11/f3.txt' ]);
   });
@@ -80,17 +80,17 @@ test(
     await using workspace =
       await getTestTmpFolder();
 
-    const resolver =
-      new FilesystemLocationResolver(
-        loggerProvider.getLogger(
-          'FilesystemLocationResolver'),
+    const { filesystemLocationResolver } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
         workspace.path);
 
     checkResolvedFiles(
       workspace,
-      await resolver.resolve(
+      await filesystemLocationResolver.resolve(
         workspace.path,
-        { patterns: [ '/**/*.txt' ] }),
+        [ { pattern: '/**/*.txt' } ]),
       [ 'f1.txt',
         'd1/f2.txt',
         'd1/d11/f3.txt',

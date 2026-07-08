@@ -4,12 +4,10 @@ import { toPosixPath }
   from '../formatting.js';
 import { FilesystemLocationResolver }
   from './filesystem-location-resolver.js';
-import { getInstanceId }
-  from './../framework.js';
 import { Artefact }
-  from '../artefact.js';
+  from '../model/artefact.js';
 import { ArtefactDefinition }
-  from '../artefact-definition.js';
+  from '../model/artefact-definition.js';
 import { ArtefactDefinitionProvider }
   from './artefact-definition-provider.js';
 import { Logger }
@@ -21,25 +19,23 @@ import { Logger }
  */
 export class ArtefactProvider
 {
-  private logger: Logger;
-  private definitionsProvider: ArtefactDefinitionProvider;
   private locationResolver: FilesystemLocationResolver;
 
-  public rootPath: string;
-
   constructor(
-    logger: Logger,
-    rootPath: string,
-    definitionsProvider: ArtefactDefinitionProvider)
+      private readonly logger: Logger,
+      private readonly artefactDefinitionProvider: ArtefactDefinitionProvider,
+      private readonly projectPath: string
+    )
   {
-    this.logger = logger;
-    this.rootPath = path.resolve(rootPath);
-    this.definitionsProvider = definitionsProvider;
+    if (!path.isAbsolute(projectPath)) {
+      throw new Error(
+        `'projectPath' must be absolute: ${projectPath}`);
+    }
 
     this.locationResolver =
       new FilesystemLocationResolver(
         this.logger,
-        this.rootPath);
+        this.projectPath);
   }
 
   async tryGetArtefact(
@@ -47,12 +43,12 @@ export class ArtefactProvider
     ): Promise<Artefact | null>
   {
     this.logger.trace(
-      'tryGetArtefact(%s)',
+      'tryGetArtefact() { %s }',
       artefactPath);
 
     const artefactFullPath =
       path.resolve(
-        this.rootPath,
+        this.projectPath,
         artefactPath);
 
     if (!path.isAbsolute(artefactPath)) {
@@ -75,7 +71,7 @@ export class ArtefactProvider
     }
 
     return await this.buildArtefact(
-      this.rootPath,
+      this.projectPath,
       definitions,
       artefactFullPath);
   }
@@ -91,7 +87,8 @@ export class ArtefactProvider
         definitionsList =
           definitions
             .map(
-              definition => definition.name)
+              definition =>
+                definition.name)
             .join(', ');
       } else {
         definitionsList = '';
@@ -104,7 +101,7 @@ export class ArtefactProvider
 
     if (definitions === null) {
       definitions =
-        await this.definitionsProvider.getDefinitions();
+        await this.artefactDefinitionProvider.getDefinitions();
     }
 
     const artefactPaths = new Set<string>();
@@ -115,7 +112,7 @@ export class ArtefactProvider
           .resolve(
             path.dirname(
               definition.path),
-            definition.location);
+            definition.locations);
       
       for (const artefactPath of paths) {
         artefactPaths.add(artefactPath);
@@ -131,7 +128,7 @@ export class ArtefactProvider
 
       artefacts.push(
         await this.buildArtefact(
-          this.rootPath,
+          this.projectPath,
           artefactDefinitions,
           artefactPath));
     }
@@ -149,19 +146,19 @@ export class ArtefactProvider
       definition: ArtefactDefinition
     ): Promise<boolean>
   {
-    const artafactFullPath =
+    const artifactFullPath =
       path.normalize(
         path.resolve(
-          this.rootPath,
+          this.projectPath,
           artefactPath));
 
     const match =
       await this.locationResolver
         .check(
-          artafactFullPath,
+          artifactFullPath,
           path.dirname(
             definition.path),
-          definition.location);
+          definition.locations);
       
     return match;
   }
@@ -171,7 +168,7 @@ export class ArtefactProvider
     ): Promise<ArtefactDefinition[]>
   {
     const definitions =
-      await this.definitionsProvider.getDefinitions();
+      await this.artefactDefinitionProvider.getDefinitions();
 
     const matchingDefinitions = [];
 

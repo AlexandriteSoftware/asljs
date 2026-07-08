@@ -80,6 +80,7 @@ for (const prefix of prefixes) {
         const context =
           createRuleValidationContext(
             loggerProvider,
+            workspace.path,
             workspace.path);
 
         const artefact =
@@ -116,6 +117,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =
@@ -154,6 +156,7 @@ test(
     const context =
       createRuleValidationContext(
         loggerProvider,
+        workspace.path,
         workspace.path);
 
     const artefact =

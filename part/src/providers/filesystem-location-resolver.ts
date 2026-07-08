@@ -7,7 +7,7 @@ import { glob }
 import { minimatch }
   from 'minimatch';  
 import { Location }
-  from '../location.js';
+  from '../model/location.js';
 import { Logger }
   from '../logging/logging.js';
 
@@ -38,11 +38,37 @@ export class FilesystemLocationResolver
 
   async resolve(
       basePath: string,
+      locations: Location[]
+    ): Promise<string[]>
+  {
+    const results: string[] = [ ];
+
+    for (const location of locations) {
+      const resolved =
+        await this.resolveLocation(
+          basePath,
+          location);
+      results.push(
+        ...resolved);
+    }
+
+    const uniqueResults =
+      [...new Set(results)];
+
+    uniqueResults.sort(
+      (a, b) =>
+        a.localeCompare(b));
+
+    return uniqueResults;
+  }
+
+  async resolveLocation(
+      basePath: string,
       location: Location
     ): Promise<string[]>
   {
-    const patterns =
-      location.patterns;
+    const pattern =
+      location.pattern;
 
     const exclude =
       location.exclude || [];
@@ -60,12 +86,10 @@ export class FilesystemLocationResolver
         path.resolve(basePath));
 
     const filesOnly =
-      patterns.every(
-        pattern => !pattern.endsWith('/'));
+      !pattern.endsWith('/');
     
     const directoriesOnly =
-      patterns.every(
-        pattern => pattern.endsWith('/'));
+      pattern.endsWith('/');
 
     if (
       !filesOnly
@@ -78,7 +102,7 @@ export class FilesystemLocationResolver
     const matches = new Set<string>();
 
     const rootPathPatterns =
-      patterns
+      [ pattern ]
         .filter(
           pattern => pattern.startsWith('/'))
         .map(
@@ -100,7 +124,7 @@ export class FilesystemLocationResolver
     }
 
     const basePathPatterns =
-      patterns
+      [ pattern ]
         .filter(
           pattern => !pattern.startsWith('/'));
 
@@ -193,11 +217,32 @@ export class FilesystemLocationResolver
   async check(
       targetPath: string,
       basePath: string,
+      locations: Location[]
+    ): Promise<boolean>
+  {
+    for (const location of locations) {
+      const match =
+        await this.checkLocation(
+          targetPath,
+          basePath,
+          location);
+
+      if (match) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async checkLocation(
+      targetPath: string,
+      basePath: string,
       location: Location
     ): Promise<boolean>
   {
     const patterns =
-      location.patterns;
+      location.pattern;
 
     const exclude =
       location.exclude || [];
@@ -224,7 +269,7 @@ export class FilesystemLocationResolver
         normalisedTargetPath);
 
     const included =
-      patterns.some(
+      [ patterns ].some(
         pattern =>
         {
           if (pattern.startsWith('/')) {

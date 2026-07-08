@@ -11,11 +11,11 @@ import { MarkdownDocumentProvider }
 import { ArtefactDataProvider }
   from './providers/artefact-data-provider.js';
 import { Artefact }
-  from './artefact.js';
+  from './model/artefact.js';
 import { ArtefactDefinition }
-  from './artefact-definition.js';
+  from './model/artefact-definition.js';
 import { ArtefactDefinitionRule }
-  from './artefact-definition.js';
+  from './model/artefact-definition-rule.js';
 import { ArtefactProvider }
   from './providers/artefact-provider.js';
 import { ArtefactDefinitionProvider }
@@ -27,6 +27,8 @@ import { Logger }
   from './logging/logging.js';
 import { ArtefactDefinitionRuleProvider }
   from './providers/artefact-definition-rule-provider.js';
+import { Providers }
+  from './providers/providers.js';
 
 export interface RuleRunResult {
   rule: ArtefactDefinitionRule;
@@ -36,52 +38,10 @@ export interface RuleRunResult {
 
 export class RuleRunner
 {
-  private logger: Logger;
-  private definitionProvider: ArtefactDefinitionProvider;
-  private artefactProvider: ArtefactProvider;
-  private markdownDocuments: MarkdownDocumentProvider;
-  private artefactDataProvider: ArtefactDataProvider;
-  private artefactDefinitionRuleProvider: ArtefactDefinitionRuleProvider;
-  private rootPath: string;
-
   constructor(
-    logger: Logger,
-    definitionProvider: ArtefactDefinitionProvider,
-    artefactProvider: ArtefactProvider)
+    private readonly logger: Logger,
+    private readonly providers: Providers)
   {
-    this.logger = logger;
-
-    if (definitionProvider === undefined) {
-      throw new Error(
-        'Missing definition provider.');
-    }
-
-    this.definitionProvider =
-      definitionProvider;
-
-    if (artefactProvider === undefined) {
-      throw new Error(
-        'Missing artefact provider.');
-    }
-
-    this.artefactProvider =
-      artefactProvider;
-
-    this.markdownDocuments =
-      new MarkdownDocumentProvider();
-
-    this.artefactDataProvider =
-      new ArtefactDataProvider(
-        logger,
-        definitionProvider.definitionsPath);
-
-    this.rootPath =
-      artefactProvider.rootPath;
-
-    this.artefactDefinitionRuleProvider =
-      new ArtefactDefinitionRuleProvider(
-        logger,
-        definitionProvider);
   }
 
   async runRule(
@@ -215,12 +175,12 @@ export class RuleRunner
 
       const validationContext: RuleValidationContext =
         { logger: this.logger,
-          rootPath: this.rootPath,
-          definitions: this.definitionProvider,
-          artefacts: this.artefactProvider,
-          artefactData: this.artefactDataProvider,
-          markdownDocuments: this.markdownDocuments,
-          rules: this.artefactDefinitionRuleProvider,};
+          rootPath: this.providers.projectPath,
+          definitions: this.providers.artefactDefinitionProvider,
+          artefacts: this.providers.artefactProvider,
+          artefactData: this.providers.artefactDataProvider,
+          markdownDocuments: this.providers.markdownDocumentProvider,
+          rules: this.providers.artefactDefinitionRuleProvider,};
 
       try {
         await validateFunction(
@@ -348,14 +308,17 @@ export class RuleRunner
     ): Promise<{ path: string; relativePath: string; } | null>
   {
     const definition =
-      await this.definitionProvider.tryGetDefinition(
-        rule.definition);
+      await this.providers
+        .artefactDefinitionProvider
+        .findDefinition(
+          rule.definition);
 
     if (!definition) {
       return null;
     }
 
-    return await this.artefactDefinitionRuleProvider
+    return await this.providers
+      .artefactDefinitionRuleProvider
       .resolveRuleFile(
         rule.id,
         definition.name,

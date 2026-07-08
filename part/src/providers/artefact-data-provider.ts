@@ -7,7 +7,7 @@ import { pathToFileURL }
 import { MarkdownDocumentProvider }
   from '../index.js';
 import { Artefact }
-  from '../artefact.js';
+  from '../model/artefact.js';
 import { ArtefactDataProvidingFunction,
          ArtefactDataProvidingContext }
   from '../artefact-data-providing-function.js';
@@ -20,21 +20,16 @@ import { Logger }
  */
 export class ArtefactDataProvider
 {
-  private logger: Logger;
-  private definitionsPath: string;
-  private markdownDocuments: MarkdownDocumentProvider;
-
   constructor(
-      logger: Logger,
-      definitionsPath: string
+      private readonly logger: Logger,
+      private readonly markdownDocumentProvider: MarkdownDocumentProvider,
+      private readonly definitionsPath: string
     )
   {
-    this.logger = logger;
-
-    this.definitionsPath = definitionsPath;
-
-    this.markdownDocuments =
-      new MarkdownDocumentProvider();
+    if (!path.isAbsolute(definitionsPath)) {
+      throw new Error(
+        `'definitionsPath' must be absolute: ${definitionsPath}`);
+    }
   }
 
   async tryGetArtefactData(
@@ -85,7 +80,7 @@ export class ArtefactDataProvider
 
     const context: ArtefactDataProvidingContext =
       { logger: this.logger,
-        markdownDocuments: this.markdownDocuments };
+        markdownDocuments: this.markdownDocumentProvider };
 
     try {
       return await getDataFunction(

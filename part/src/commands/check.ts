@@ -12,13 +12,16 @@ import { RuleRunner }
   from '../rule-runner.js';
 import { Environment }
   from '../environment.js';
-import { ArtefactDefinition,
-         ArtefactDefinitionRule }
-  from '../artefact-definition.js';
+import { ArtefactDefinition }
+  from '../model/artefact-definition.js';
+import { ArtefactDefinitionRule }
+  from '../model/artefact-definition-rule.js';
 import { Artefact }
-  from '../artefact.js';
+  from '../model/artefact.js';
 import { Logger }
   from '../logging/logging.js';
+import { providersFactory }
+  from '../providers/providers.js';
 
 export interface CheckCommandOptions {
   pattern?: string;
@@ -37,11 +40,14 @@ export async function execCheck(
     'Check command: start with %s',
     JSON.stringify(options));
 
-  const rootDirectory =
-    environment.project;
+  const providers =
+    providersFactory(
+      environment.loggerProvider,
+      environment.project,
+      environment.definitions);
 
   const definitionProvider =
-    environment.getArtefactDefinitionProvider();
+    providers.artefactDefinitionProvider;
 
   const definitions =
     await definitionProvider.getDefinitions();
@@ -94,10 +100,7 @@ export async function execCheck(
       selectedDefinitionNames));
 
   const artefactProvider =
-    new ArtefactProvider(
-      logger,
-      rootDirectory,
-      definitionProvider);
+    environment.getArtefactProvider();
 
   const artefacts: Artefact[] = [ ];
 
@@ -178,8 +181,7 @@ export async function execCheck(
   const ruleRunner =
     new RuleRunner(
       logger,
-      definitionProvider,
-      artefactProvider);
+      providers);
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {

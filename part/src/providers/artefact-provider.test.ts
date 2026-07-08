@@ -1,21 +1,18 @@
-import test,
-       { after }
+import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { ArtefactProvider }
-  from './artefact-provider.js';
-import { ArtefactDefinitionProvider }
-  from './artefact-definition-provider.js';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
 import { tmpDirFactory }
   from '../tmpDir.js';
+import { providersFactory }
+  from './providers.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
+test.after(
   () => {
     loggerProvider.dispose();
   });
@@ -61,22 +58,18 @@ Requirement.
     'development/hidden/RQ999 Hidden.md',
     '# RQ999 Hidden\n');
 
-  const definitionsProvider =
-    new ArtefactDefinitionProvider(
-      loggerProvider.getLogger('DefinitionProvider'),
+  const { artefactDefinitionProvider,
+          artefactProvider } =
+    providersFactory(
+      loggerProvider,
+      workspace.path,
       workspace.path);
 
-  const [requirementDefinition] =
-    await definitionsProvider.getDefinitions();
+  const [ requirementDefinition ] =
+    await artefactDefinitionProvider.getDefinitions();
   
-  const artefacts =
-    new ArtefactProvider(
-      loggerProvider.getLogger('ArtefactProvider'),
-      workspace.path,
-      definitionsProvider);
-
   const requirementArtefacts =
-    await artefacts.getArtefacts(
+    await artefactProvider.getArtefacts(
       [ requirementDefinition ]);
 
   assert.deepEqual(
@@ -85,16 +78,16 @@ Requirement.
         artefact =>
           artefact.relativePath)
       .sort(),
-    ['development/visible/RQ101 Example.md']);
+    [ 'development/visible/RQ101 Example.md' ]);
 
   assert.equal(
-    await artefacts.isArtefactOfDefinition(
+    await artefactProvider.isArtefactOfDefinition(
       'development/visible/RQ101 Example.md',
       requirementDefinition),
     true);
 
   assert.equal(
-    await artefacts.isArtefactOfDefinition(
+    await artefactProvider.isArtefactOfDefinition(
       'development/hidden/RQ999 Hidden.md',
       requirementDefinition),
     false);
@@ -132,19 +125,14 @@ Specification.
     'docs/specs/Example.md',
     '# Example\n');
 
-  const definitions =
-    new ArtefactDefinitionProvider(
-      loggerProvider.getLogger('DefinitionProvider'),
+  const { artefactProvider } =
+    providersFactory(
+      loggerProvider,
+      workspace.path,
       workspace.path);
 
-  const artefacts =
-    new ArtefactProvider(
-      loggerProvider.getLogger('ArtefactProvider'),
-      workspace.path,
-      definitions);
-
   const matchingDefinitions =
-    await artefacts.getDefinitionsForArtefact(
+    await artefactProvider.getDefinitionsForArtefact(
       'docs/specs/Example.md');
 
   assert.deepEqual(

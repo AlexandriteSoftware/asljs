@@ -6,8 +6,15 @@ import { Logger }
 import { CodeGenerationRequest }
   from './commands/update.js';
 import { ArtefactProvider,
-         DefinitionProvider }
+         DefinitionProvider,
+         MarkdownDocumentProvider }
   from './index.js';
+import { GitIgnore }
+  from './providers/git-ignore.js';
+import { ArtefactDefinitionProvider }
+  from './providers/artefact-definition-provider.js';
+import { providersFactory }
+  from './providers/providers.js';
 
 export interface Environment
 {
@@ -86,23 +93,25 @@ export function createEnvironment(
         function (
           ): DefinitionProvider
         {
-          return new DefinitionProvider(
-            this.loggerProvider
-              .getLogger(
-                'DefinitionProvider'),
-            this.project,
-            this.definitions);
+          const providers =
+            providersFactory(
+              this.loggerProvider,
+              this.definitions,
+              this.project);
+
+          return providers.artefactDefinitionProvider;
         },
       getArtefactProvider:
         function (
           ): ArtefactProvider
         {
-          return new ArtefactProvider(
-            this.loggerProvider
-              .getLogger(
-                'ArtefactProvider'),
-            this.project,
-            this.getArtefactDefinitionProvider());
+          const providers =
+            providersFactory(
+              this.loggerProvider,
+              this.definitions,
+              this.project);
+
+          return providers.artefactProvider;
         },
       onDispose:
         action =>

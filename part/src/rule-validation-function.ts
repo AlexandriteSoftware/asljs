@@ -9,10 +9,12 @@ import { ArtefactDefinitionProvider }
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 import { Artefact }
-  from './artefact.js';
+  from './model/artefact.js';
 import { Logger,
          LoggerProvider }
   from './logging/logging.js';
+import { providersFactory }
+  from './providers/providers.js';
 
 export interface RuleValidationContext {
   logger: Logger;
@@ -32,36 +34,34 @@ export type RuleValidationFunction =
 
 export function createRuleValidationContext(
     loggerProvider: LoggerProvider,
-    rootPath: string
+    projectPath: string,
+    definitionsPath: string
   ): RuleValidationContext
 {
+  const providers =
+    providersFactory(
+      loggerProvider,
+      projectPath,
+      definitionsPath);
+
   const artefactDefinitionProvider =
-    new ArtefactDefinitionProvider(
-      loggerProvider.getLogger('DefinitionProvider'),
-      rootPath);
+    providers.artefactDefinitionProvider;
 
   const artefactDefinitionRuleProvider =
-    new ArtefactDefinitionRuleProvider(
-      loggerProvider.getLogger('ArtefactDefinitionRuleProvider'),
-      artefactDefinitionProvider);
+    providers.artefactDefinitionRuleProvider;
 
   const artefactProvider =
-    new ArtefactProvider(
-      loggerProvider.getLogger('ArtefactProvider'),
-      rootPath,
-      artefactDefinitionProvider);
+    providers.artefactProvider;
 
   const artefactDataProvider =
-    new ArtefactDataProvider(
-      loggerProvider.getLogger('ArtefactDataProvider'),
-      rootPath);
+    providers.artefactDataProvider;
 
   const markdownDocumentProvider =
-    new MarkdownDocumentProvider();
+    providers.markdownDocumentProvider;
 
   const context: RuleValidationContext =
     { logger: loggerProvider.getLogger('RuleValidationContext'),
-      rootPath,
+      rootPath: projectPath,
       definitions: artefactDefinitionProvider,
       artefacts: artefactProvider,
       artefactData: artefactDataProvider,

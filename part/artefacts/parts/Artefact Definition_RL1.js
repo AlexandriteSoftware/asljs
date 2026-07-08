@@ -14,7 +14,7 @@ export async function validate(
 {
   const definition =
     await context.definitions
-      .loadDefinitionFromFile(
+      .fromFile(
         artefact.path);
   
   if (!definition) {

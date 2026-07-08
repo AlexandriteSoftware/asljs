@@ -87,6 +87,7 @@ Definition.
   const context =
     createRuleValidationContext(
       loggerProvider,
+      workspace.path,
       workspace.path);
 
   const artefact =
