@@ -15,7 +15,7 @@ test(
       'DefinitionProvider',
       'MarkdownDocumentProvider',
       'TmpDir',
-      'createLogger',
+      'createPinoLoggerProvider',
       'createRuleValidationContext',
       'runCli' ]);
 });

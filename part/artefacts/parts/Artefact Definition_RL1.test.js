@@ -1,32 +1,37 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger,
+import { createPinoLoggerProvider,
          createRuleValidationContext }
   from 'asljs-part';
+import { tmpDirFactory }
+  from './testing/tmpDir.js';
 import { validate }
   from './Artefact Definition_RL1.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'Artefact Definition_RL1 checks declared rule file exists',
   async () =>
-    await checkDeclaredRulesTest(
-      true));
+    await checkDeclaredRulesTest(true));
 
 test(
   'Artefact Definition_RL1 fails when a declared rule file is missing',
   async () =>
-    await checkDeclaredRulesTest(
-      false));
+    await checkDeclaredRulesTest(false));
 
 /**
  * 
@@ -36,8 +41,7 @@ async function checkDeclaredRulesTest(
   withRuleFiles)
 {
   await using workspace =
-    new TmpDir(
-      logger);
+    tmpDir();
 
   if (withRuleFiles) {
     await workspace.writeText(
@@ -82,7 +86,7 @@ Definition.
 
   const context =
     createRuleValidationContext(
-      logger,
+      loggerProvider,
       workspace.path);
 
   const artefact =

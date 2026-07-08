@@ -2,21 +2,25 @@ import { ArtefactDataProvider }
   from './providers/artefact-data-provider.js';
 import { ArtefactProvider }
   from './providers/artefact-provider.js';
-import { DefinitionProvider }
-  from './providers/definition-provider.js';
+import { ArtefactDefinitionRuleProvider }
+  from './providers/artefact-definition-rule-provider.js';
+import { ArtefactDefinitionProvider }
+  from './providers/artefact-definition-provider.js';
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 import { Artefact }
   from './artefact.js';
-import { Logger }
-  from './logging.js';
+import { Logger,
+         LoggerProvider }
+  from './logging/logging.js';
 
 export interface RuleValidationContext {
   logger: Logger;
   rootPath: string;
   artefacts: ArtefactProvider;
   artefactData: ArtefactDataProvider;
-  definitions: DefinitionProvider;
+  definitions: ArtefactDefinitionProvider;
+  rules: ArtefactDefinitionRuleProvider;
   markdownDocuments: MarkdownDocumentProvider;
 }
 
@@ -27,36 +31,42 @@ export type RuleValidationFunction =
   ) => Promise<void>;
 
 export function createRuleValidationContext(
-    logger: Logger,
+    loggerProvider: LoggerProvider,
     rootPath: string
   ): RuleValidationContext
 {
-  const definitionProvider =
-    new DefinitionProvider(
-      logger,
+  const artefactDefinitionProvider =
+    new ArtefactDefinitionProvider(
+      loggerProvider.getLogger('DefinitionProvider'),
       rootPath);
+
+  const artefactDefinitionRuleProvider =
+    new ArtefactDefinitionRuleProvider(
+      loggerProvider.getLogger('ArtefactDefinitionRuleProvider'),
+      artefactDefinitionProvider);
 
   const artefactProvider =
     new ArtefactProvider(
-      logger,
+      loggerProvider.getLogger('ArtefactProvider'),
       rootPath,
-      definitionProvider);
+      artefactDefinitionProvider);
 
   const artefactDataProvider =
     new ArtefactDataProvider(
-      logger,
+      loggerProvider.getLogger('ArtefactDataProvider'),
       rootPath);
 
   const markdownDocumentProvider =
     new MarkdownDocumentProvider();
 
   const context: RuleValidationContext =
-    { logger,
+    { logger: loggerProvider.getLogger('RuleValidationContext'),
       rootPath,
-      definitions: definitionProvider,
+      definitions: artefactDefinitionProvider,
       artefacts: artefactProvider,
       artefactData: artefactDataProvider,
-      markdownDocuments: markdownDocumentProvider };
+      markdownDocuments: markdownDocumentProvider,
+      rules: artefactDefinitionRuleProvider };
 
   return context;
 }

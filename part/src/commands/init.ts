@@ -9,7 +9,7 @@ import { fileURLToPath }
 import { Environment }
   from './../environment.js';
 import { Logger }
-  from './../logging.js';
+  from '../logging/logging.js';
 
 const MODULE_DIRECTORY =
   path.dirname(

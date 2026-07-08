@@ -2,8 +2,6 @@ import path
   from 'path';
 import { toPosixPath }
   from '../formatting.js';
-import { DefinitionProvider }
-  from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { Environment }
@@ -17,10 +15,7 @@ export async function execDefinitions(
     environment.project;
 
   const definitionProvider =
-    new DefinitionProvider(
-      environment.logger,
-      rootDirectory,
-      environment.definitions);
+    environment.getArtefactDefinitionProvider();
 
   const definitions =
     await definitionProvider.getDefinitions();

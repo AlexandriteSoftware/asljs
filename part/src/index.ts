@@ -4,8 +4,8 @@ export { runCli }
 export { ArtefactProvider }
   from './providers/artefact-provider.js';
 
-export { DefinitionProvider }
-  from './providers/definition-provider.js';
+export { ArtefactDefinitionProvider as DefinitionProvider }
+  from './providers/artefact-definition-provider.js';
 
 export { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
@@ -13,8 +13,8 @@ export { MarkdownDocumentProvider }
 export { TmpDir }
   from 'asljs-tmpdir';
 
-export { createLogger }
-  from './logging.js'; 
+export { createPinoLoggerProvider }
+  from './logging/pino.js'; 
 
 export { createRuleValidationContext }
   from './rule-validation-function.js';

@@ -12,11 +12,10 @@
     }
   },
   "files": [
-    "artefacts/parts/Artefact Definition_RL1.js",
-    "artefacts/parts/Artefact Definition.js",
-    "artefacts/parts/Article_RL1.js",
-    "artefacts/parts/Article_RL2.js",
-    "artefacts/parts/Rule File_RL1.js",
+    "artefacts/parts/testing/*.js",
+    "artefacts/parts/Artefact Definition*.js",
+    "artefacts/parts/Article*.js",
+    "artefacts/parts/Rule File*.js",
     "artefacts/Artefact Definition.md",
     "artefacts/Article.md",
     "artefacts/Rule File.md",

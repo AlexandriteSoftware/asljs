@@ -21,7 +21,7 @@ Example:
 ```js
 const definitionProvider =
   new DefinitionProvider(
-    createLogger(),
+    logger,
     projectPath,
     definitionsPath);
 

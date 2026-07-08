@@ -1,15 +1,30 @@
 import path
   from 'node:path';
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
 import { TmpDir }
   from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { FilesystemLocationResolver }
   from './filesystem-location-resolver.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
+
+const loggerProvider =
+  createPinoLoggerProvider();
+
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',
@@ -19,7 +34,8 @@ test(
 
     const resolver =
       new FilesystemLocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'FilesystemLocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -42,7 +58,8 @@ test(
 
     const resolver =
       new FilesystemLocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'FilesystemLocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -65,7 +82,8 @@ test(
 
     const resolver =
       new FilesystemLocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'FilesystemLocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -83,9 +101,8 @@ test(
 async function getTestTmpFolder(
   ): Promise<TmpDir>
 {
-  const tmpDir =
-    new TmpDir(
-      createLogger());
+  const workspace =
+    tmpDir();
   
   const files =
     [ 'f1.txt',
@@ -95,12 +112,12 @@ async function getTestTmpFolder(
       'd2/d21/f5.txt' ];
 
   for (const file of files) {
-    await tmpDir.writeText(
+    await workspace.writeText(
       file,
       file);
   }
 
-  return tmpDir;
+  return workspace;
 }
 
 function checkResolvedFiles(

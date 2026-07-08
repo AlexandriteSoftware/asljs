@@ -1,20 +1,27 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger,
+import { tmpDirFactory }
+  from './testing/tmpDir.js';
+import { createPinoLoggerProvider,
          createRuleValidationContext }
   from 'asljs-part';
 import { validate }
   from './Article_RL1.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 const lineEndings =
   [ '\n', '\r\n' ];
@@ -36,13 +43,11 @@ for (const prefix of prefixes) {
         : 'CRLF';
 
     test(
-      'Article_RL1 passes when the article starts with '
-      + 'a level 1 heading and the heading matches the file name '
-      + `(${prefixDescription}, ${lineEndingDescription})`,
+      'Article_RL1: article starts with Heading1, heading matches '
+      + `the file name (${prefixDescription}, ${lineEndingDescription})`,
       async () => {
         await using workspace =
-          new TmpDir(
-            logger);
+          tmpDir();
 
         const articleLines =
           [ `${prefix}# Article`,
@@ -74,7 +79,7 @@ for (const prefix of prefixes) {
 
         const context =
           createRuleValidationContext(
-            logger,
+            loggerProvider,
             workspace.path);
 
         const artefact =
@@ -95,11 +100,10 @@ for (const prefix of prefixes) {
 }
 
 test(
-  'Article_RL1 fails when the article does not start with a level 1 heading',
+  'Article_RL1: fails when the article does not start with Heading1',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -111,7 +115,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -134,11 +138,10 @@ test(
   });
 
 test(
-  'Article_RL1 fails when the top-level heading differs from the file name',
+  'Article_RL1: fails when the top-level heading is not a file name',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -150,7 +153,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =

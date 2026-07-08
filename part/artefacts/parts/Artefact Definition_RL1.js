@@ -21,13 +21,24 @@ export async function validate(
     return;
   }
 
-  const missingRuleIds =
-    definition.rules
-      .filter(
-        rule => !rule.path)
-      .map(
-        rule => rule.id);
-    
+  /** @type {string[]} */
+  const missingRuleIds = [];
+
+  for (const rule of definition.rules) {
+    const ruleFile =
+      await context.rules
+        .resolveRuleFile(
+          rule.id,
+          definition.name,
+          definition.path);
+
+    if (!ruleFile) {
+      missingRuleIds
+        .push(
+          rule.id);
+    }
+  }
+
   if (missingRuleIds.length === 0) {
     return;
   }

@@ -127,7 +127,9 @@ test(
 
     environment.register(
       execVersion,
-      async () => {
+      async (
+        ): Promise<number> =>
+      {
         return Promise.resolve(0);
       });
 
@@ -137,7 +139,7 @@ test(
       environment);
 
     assert.equal(
-      environment.logger.level,
+      environment.loggerProvider.getLogger().level,
       'silent');
   });
 

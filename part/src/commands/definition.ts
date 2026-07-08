@@ -2,8 +2,8 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
-import { DefinitionProvider }
-  from '../providers/definition-provider.js';
+import { ArtefactDefinitionProvider }
+  from '../providers/artefact-definition-provider.js';
 import { Environment }
   from './../environment.js';
 import { ArtefactDefinition }
@@ -22,10 +22,7 @@ export async function execDefinition(
     environment.project;
 
   const definitionProvider =
-    new DefinitionProvider(
-      environment.logger,
-      rootDirectory,
-      environment.definitions);
+    environment.getArtefactDefinitionProvider();
 
   const definitions =
     await definitionProvider.getDefinitions();
@@ -94,23 +91,19 @@ function formatDefinitionDetails(
   ): string
 {
   return serializeMarkdownList(
-    {
-      name: definition.name,
+    { name: definition.name,
       description: definition.description,
       location: definition.location,
-      rules: definition.rules.map(
-        (rule) => ({
-          id: rule.id,
-          description: rule.description,
-          ...(rule.path
-            ? { path: rule.path }
-            : {}),
-        })),
-      path: toPosixPath(
-        path.relative(
-          rootDirectory,
-          definition.path)),
-    });
+      rules:
+        definition.rules.map(
+          rule =>
+            ({ id: rule.id,
+              description: rule.description })),
+      path:
+        toPosixPath(
+          path.relative(
+            rootDirectory,
+            definition.path)) });
 }
 
 function serializeMarkdownList(

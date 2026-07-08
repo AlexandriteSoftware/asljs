@@ -1,28 +1,34 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
 import path
   from 'node:path';
-import { createLogger }
-  from '../logging.js';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { DefinitionProvider }
-  from './definition-provider.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
+import { ArtefactDefinitionProvider }
+  from './artefact-definition-provider.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.mkdir('hidden');
 
@@ -60,8 +66,8 @@ Hidden definition.
 `);
 
     const provider =
-      new DefinitionProvider(
-        logger,
+      new ArtefactDefinitionProvider(
+        loggerProvider.getLogger('DefinitionProvider'),
         workspace.path);
 
     const definitions =
@@ -80,8 +86,7 @@ test(
   'RQ202: DefinitionProvider loads markdown definition metadata and structured rules',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'parts/Todo Item_R1.js',
@@ -114,8 +119,8 @@ A todo item is a task that needs to be done.
 `);
 
     const definitionProvider =
-      new DefinitionProvider(
-        logger,
+      new ArtefactDefinitionProvider(
+        loggerProvider.getLogger('DefinitionProvider'),
         workspace.path);
 
     const definition =
@@ -143,20 +148,14 @@ A todo item is a task that needs to be done.
       [ { id: 'R1',
           definition: 'Todo Item',
           name: 'Todo Item_R1',
-          description: 'Due date must be in the future.',
-          path:
-            path.join(
-              workspace.path,
-              'parts',
-              'Todo Item_R1.js') } ]);
+          description: 'Due date must be in the future.' } ]);
   });
 
 test(
   'RQ203: Definition returns null for markdown files that do not match the definition format',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     const definitionPath =
       'Todo Item.md';
@@ -169,8 +168,8 @@ This file should not be treated as a definition.
 `);
 
     const definitionProvider =
-      new DefinitionProvider(
-        logger,
+      new ArtefactDefinitionProvider(
+        loggerProvider.getLogger('DefinitionProvider'),
         workspace.path);
 
     const definition =

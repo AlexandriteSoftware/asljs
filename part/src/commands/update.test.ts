@@ -1,30 +1,41 @@
 import assert
   from 'node:assert/strict';
-import test
+import test,
+       { after }
   from 'node:test';
 import path
   from 'node:path';
-import { TmpDir }
-  from 'asljs-tmpdir';
 import { createEnvironment }
   from '../environment.js';
 import { execUpdate }
   from './update.js';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
+
+const execUpdateLogger =
+  loggerProvider
+    .getLogger(
+      'execUpdate');
 
 test(
   'RQ125: update creates missing JS rule files via the Copilot runner',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     let requestPrompt = '';
 
@@ -34,7 +45,7 @@ test(
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger,
+          loggerProvider,
           runCopilotCli:
             async (logger, request) => {
               requestPrompt = request.prompt;
@@ -67,6 +78,7 @@ Requirement definition.
 `);
 
     await execUpdate(
+      execUpdateLogger,
       environment);
 
     assert.equal(
@@ -84,15 +96,14 @@ Requirement definition.
     assert.match(
       await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
-      /RL10 - Requirement rule\./);
+      /RL10: Requirement rule\./);
   });
 
 test(
   'RQ125: update dry-run prints prompts without invoking Copilot or writing files',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     const environment =
       createEnvironment(
@@ -100,7 +111,7 @@ test(
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger,
+          loggerProvider,
           runCopilotCli: async () => {
             throw new Error('runCopilotCli should not be called during dry-run');
           }
@@ -122,6 +133,7 @@ Requirement definition.
 `);
 
     await execUpdate(
+      execUpdateLogger,
       environment,
       { dryRun: true });
 
@@ -147,8 +159,7 @@ test(
   'RQ125: update refreshes stale JS comments and warns on non-JS rules',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     const environment =
       createEnvironment(
@@ -188,13 +199,14 @@ Requirement definition.
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
-      '// RL10 - Old rule text.\nexport async function validate() {}\n');
+      '// RL10: Old rule text.\nexport async function validate() {}\n');
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL11.ps1',
       'Write-Output test\n');
 
     await execUpdate(
+      execUpdateLogger,
       environment);
 
     assert.match(
@@ -203,10 +215,10 @@ Requirement definition.
 
     assert.match(
       environment.stderr.toString(),
-      /only JS rule files are supported for auto-update/);
+      /only JS rule files can be auto-updated/);
 
     assert.match(
       await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
-      /RL10 - Requirement rule\./);
+      /RL10: Requirement rule\./);
   });

@@ -1,28 +1,34 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
 import { execDefinition }
   from './definition.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ126: definition prints detailed definition content for a named definition',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Requirement.md',
@@ -50,7 +56,7 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });

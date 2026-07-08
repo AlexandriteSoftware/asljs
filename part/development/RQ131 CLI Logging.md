@@ -17,11 +17,6 @@ The log levels are as follows, in order of increasing severity:
   the execution.
 - `error` - includes information about errors that occurred during execution.
 
-Aliases for log levels:
-
-- `information` can be specified as `info`
-- `warning` can be specified as `warn`
-
 Logs can be redirected to a file using the `--logfile` parameter, which
 specifies the path to the log file.
 
@@ -36,7 +31,7 @@ The logging API is similar to other logging frameworks:
 ```js
 logger.trace('This is a trace log');
 logger.debug('This is a debug log');
-logger.info('This is an information log');
-logger.warn('This is a warning log');
+logger.information('This is an information log');
+logger.warning('This is a warning log');
 logger.error('This is an error log');
 ```

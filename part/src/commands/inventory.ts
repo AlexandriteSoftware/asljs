@@ -1,11 +1,9 @@
-import { ArtefactProvider }
-  from '../providers/artefact-provider.js';
-import { DefinitionProvider }
-  from '../providers/definition-provider.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { Environment }
   from './../environment.js';
+import { Logger }
+  from '../logging/logging.js';
 
 interface InventoryCommandOptions {
   inventoryDefinitions?: string[];
@@ -17,29 +15,19 @@ interface InventoryItem {
 }
 
 export async function execInventory(
+    logger: Logger,
     environment: Environment,
     options: Partial<InventoryCommandOptions> = { }
   ): Promise<void>
 {
-  const logger =
-    environment.logger;
-
   logger.trace(
-    `Inventory command: start`);
-
-  const rootDirectory =
-    environment.project;
+    'Inventory command: start');
 
   const definitionProvider =
-    new DefinitionProvider(
-      logger,
-      environment.definitions);
+    environment.getArtefactDefinitionProvider();
 
   const artefactProvider =
-    new ArtefactProvider(
-      logger,
-      rootDirectory,
-      definitionProvider);
+    environment.getArtefactProvider();
 
   const definitions =
     await definitionProvider.getDefinitions();
@@ -65,14 +53,17 @@ export async function execInventory(
 
   for (const definition of filteredDefinitions) {
     logger.trace(
-      `Inventory command: collecting items for definition "${definition.name}"`);
+      'Inventory command: collecting items for definition "%s"',
+      definition.name);
 
     const definitionArtefacts =
       await artefactProvider.getArtefacts(
         [ definition ]);
 
     logger.trace(
-      `Inventory command: collected ${definitionArtefacts.length} artefacts for definition "${definition.name}"`);
+      'Inventory command: collected %d artefacts for definition "%s"',
+      definitionArtefacts.length,
+      definition.name);
 
     for (const artefact of definitionArtefacts) {
       const existingEntry =

@@ -1,32 +1,38 @@
 import assert
   from 'node:assert/strict';
-import test
+import test,
+       { after }
   from 'node:test';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
 import { execInit }
   from './init.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ124: init copies bootstrap artefact files into the definitions directory',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.resolve('definitions') });
 

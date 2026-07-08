@@ -6,20 +6,20 @@ import { readFile }
   from 'node:fs/promises';
 import { toPosixPath }
   from '../formatting.js';
-import { DefinitionProvider }
-  from '../providers/definition-provider.js';
+import { ArtefactDefinitionProvider }
+  from '../providers/artefact-definition-provider.js';
 import { Logger }
-  from './../logging.js';
+  from '../logging/logging.js';
 import { Environment }
   from './../environment.js';
 import { ArtefactDefinition }
   from './../artefact-definition.js';
 import { ArtefactDefinitionRule }
   from './../artefact-definition.js';
-import { Artefact }
-  from './../artefact.js';
+import { ArtefactDefinitionRuleProvider }
+  from '../providers/artefact-definition-rule-provider.js';
 
-export interface CopilotRequest {
+export interface CodeGenerationRequest {
   mode: 'create' | 'update';
   definition: string;
   definitionPath: string;
@@ -33,31 +33,33 @@ export interface CopilotRequest {
 }
 
 export interface UpdateCommandOptions {
-  dryRun?: boolean;
+  dryRun: boolean;
 }
 
 export async function execUpdate(
+    logger: Logger,
     environment: Environment,
     options: Partial<UpdateCommandOptions> = { }
   ): Promise<void>
 {
-  const logger =
-    environment.logger;
-
-  logger.trace(
-    'execUpdate: start');
+  logger.trace('start');
 
   const rootDir =
     environment.project;
 
-  const provider =
-    new DefinitionProvider(
+  const definitionProvider =
+    new ArtefactDefinitionProvider(
       logger,
       rootDir,
       environment.definitions);
 
   const definitions =
-    await provider.getDefinitions();
+    await definitionProvider.getDefinitions();
+
+  const ruleProvider =
+    new ArtefactDefinitionRuleProvider(
+      logger,
+      definitionProvider);
 
   const runCopilotCli =
     environment.runCopilotCli
@@ -71,35 +73,46 @@ export async function execUpdate(
   const prompts = [ ];
 
   for (const definition of definitions) {
-    logger.trace(
-      `processing definition: ${definition.name}`);
+    logger.trace( 
+      'processing definition: %s',
+      definition.name);
 
     for (const rule of definition.rules) {
+      const ruleId =
+        `${definition.name}_${rule.id}`;
+
       logger.trace(
-        `processing rule: ${definition.name}_${rule.id}`);
+        'processing rule: %s',
+        ruleId);
+
+      const ruleFile =
+        await ruleProvider.resolveRuleFile(
+          rule.id,
+          definition.name,
+          definition.path);
 
       const currentFilePath =
-        rule.path;
+        ruleFile?.path;
 
       if (!currentFilePath) {
         logger.trace(
-          `rule file does not exist: ${definition.name}_${rule.id}`);
+          'rule file does not exist: %s',
+          ruleId);
 
         const expectedFilePath =
           getExpectedRuleFilePath(
             definition,
             rule);
 
-        const request: CopilotRequest =
-          {
-            mode: 'create',
+        const request: CodeGenerationRequest =
+          { mode: 'create',
             rootDirectory: rootDir,
             ruleFilePath: expectedFilePath,
             definition: definition.name,
             definitionPath: definition.path,
             ruleId: rule.id,
             rule: rule.description,
-            comment: formatRuleComment(rule),
+            comment: ruleProvider.formatRuleComment(rule),
             currentContent: null,
             prompt:
               buildPrompt(
@@ -123,7 +136,7 @@ export async function execUpdate(
         }
 
         logger.trace(
-          `requesting Copilot CLI to generate the rule file`);
+          'requesting generation of the rule file');
 
         const response =
           await runCopilotCli(
@@ -142,7 +155,7 @@ export async function execUpdate(
           `Skipping ${toPosixPath(
             path.relative(
               rootDir,
-              currentFilePath))}: only JS rule files are supported for auto-update.`,
+              currentFilePath))}: only JS rule files can be auto-updated.`,
         );
 
         continue;
@@ -154,17 +167,17 @@ export async function execUpdate(
           'utf8');
 
       const firstComment =
-        extractFirstComment(currentContent);
+        ruleProvider.extractFirstComment(currentContent);
 
       if (
-        commentMatchesRule(
+        ruleProvider.commentMatchesRule(
           firstComment,
           rule))
       {
         continue;
       }
 
-        const request: CopilotRequest =
+        const request: CodeGenerationRequest =
           {
             mode: 'update',
             rootDirectory: rootDir,
@@ -173,7 +186,7 @@ export async function execUpdate(
             definitionPath: definition.path,
             ruleId: rule.id,
             rule: rule.description,
-            comment: formatRuleComment(rule),
+            comment: ruleProvider.formatRuleComment(rule),
             currentContent: currentContent,
             prompt:
               buildPrompt(
@@ -388,7 +401,7 @@ implementation. Run test cases to ensure the rule implementation is correct.`;
 
 async function runConfiguredCopilotCli(
     logger: Logger,
-    request: CopilotRequest
+    request: CodeGenerationRequest
   ): Promise<string>
 {
   let command =
@@ -412,11 +425,12 @@ async function runConfiguredCopilotCli(
 async function runCopilotCli(
     logger: Logger,
     command: string,
-    request: CopilotRequest
+    request: CodeGenerationRequest
   ): Promise<string>
 {
   logger.trace(
-    `runCopilotCli: ${command}`);
+    'runCopilotCli: %s',
+    command);
 
   return new Promise<string>(
     (
@@ -480,75 +494,3 @@ async function runCopilotCli(
     });
 }
 
-function extractFirstComment(
-    content: string
-  ): string
-{
-  const openingCommentIndex =
-    content.indexOf('/*');
-
-  if (openingCommentIndex === -1)
-    return '';
-
-  const closingCommentIndex =
-    content.indexOf(
-      '*/',
-      openingCommentIndex + 2);
-    
-  if (closingCommentIndex === -1)
-    return '';
-
-  const commentText =
-    content.substring(
-      openingCommentIndex,
-      closingCommentIndex + 2);
-
-  return commentText;
-}
-
-function commentMatchesRule(
-    firstComment: string,
-    rule: ArtefactDefinitionRule
-  ): boolean
-{
-  if (
-    firstComment === null
-    || firstComment === ''
-  ) {
-    return false;
-  }
-
-  const actualNormalisedComment =
-    normaliseText(firstComment);
-
-  const expectedNormalisedComment =
-    normaliseText(
-      formatRuleComment(rule));
-
-  return actualNormalisedComment === expectedNormalisedComment;
-}
-
-function formatRuleComment(
-    rule: ArtefactDefinitionRule
-  ): string
-{
-  return `${rule.id} - ${rule.description}`;
-}
-
-function normaliseText(
-    value: string
-  ): string
-{
-  const normalised =
-    value
-      .replace(
-        /\r?\n/g,
-        ' ')
-      .replace(
-        /\s+/g,
-        ' ')
-      .toUpperCase()
-      .trim();
-
-  return normalised;
-}

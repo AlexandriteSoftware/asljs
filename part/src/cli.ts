@@ -1,7 +1,7 @@
 import path
   from 'node:path';
-import { createLogger }
-  from './logging.js';
+import { LoggerOptions }
+  from './logging/logging.js';
 import { createEnvironment,
          Environment }
   from './environment.js';
@@ -21,18 +21,20 @@ import { execDefinition }
   from './commands/definition.js';
 import { execVersion }
   from './commands/version.js';
+import { createPinoLoggerProvider }
+  from './logging/pino.js';
 
 export async function runCli(
     args: string[],
     environment: Environment | null = null
 ): Promise<number>
 {
+  const ownEnvironment =
+    !environment;
+
   environment =
     environment
     ?? createEnvironment();
-
-  environment.logger.trace(
-    `CLI: args=${JSON.stringify(args)}`);
 
   const cli =
     createCli(
@@ -54,8 +56,8 @@ export async function runCli(
       writeCommanderError(
         environment,
         error,
-        cli))
-    {
+        cli)
+    ) {
       return 1;
     }
 
@@ -72,6 +74,10 @@ export async function runCli(
       `${message}\n`);
 
     return 1;
+  } finally {
+    if (ownEnvironment) {
+      environment.dispose();
+    }
   }
 }
 
@@ -112,17 +118,28 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
+        let loggerOptions: LoggerOptions =
+          { level: 'silent' };
+
         if (options.loglevel) {
-          const loggerOptions =
+          loggerOptions =
             { level: options.loglevel,
               file: options.logfile };
-
-          const logger =
-            createLogger(
-              loggerOptions);
-
-          environment.logger = logger;
         }
+
+        const rootLogger =
+          createPinoLoggerProvider(
+            loggerOptions);
+
+        environment.onDispose(
+          (): void =>
+          {
+            rootLogger.dispose();
+          });
+
+        environment.loggerProvider =
+          createPinoLoggerProvider(
+            loggerOptions);
 
         const optDefinitions =
           filterStringOption(
@@ -173,9 +190,6 @@ function createCli(
               environment.cwd;
           }
         }
-
-        environment.logger.trace(
-          `CLI post-hook: definitions=${environment.definitions}, project=${environment.project}`);
       });
 
   cli.command('inventory')
@@ -190,7 +204,14 @@ function createCli(
           environment.resolve(
             execInventory);
 
+        const logger =
+          environment
+            .loggerProvider
+            .getLogger(
+              'execInventory');
+
         await method(
+          logger,
           environment,
           { inventoryDefinitions:
               splitCommaSeparatedOption(
@@ -251,7 +272,14 @@ function createCli(
           environment.resolve(
             execUpdate);
 
+        const logger =
+          environment
+            .loggerProvider
+            .getLogger(
+              'execUpdate');
+
         await method(
+          logger,
           environment,
           options);
       });
@@ -275,7 +303,14 @@ function createCli(
           environment.resolve(
             execCheck);
 
+        const logger =
+          environment
+            .loggerProvider
+            .getLogger(
+              'execCheck');
+
         await method(
+          logger,
           environment,
           { pattern,
             checkDefinitions:
@@ -323,29 +358,42 @@ function writeCommanderError(
 
   if (code === 'commander.optionMissingArgument') {
     const optionName =
-      extractOptionName(
+      tryExtractOptionName(
         error.message);
 
-    environment.stderr.write(
-      `Option ${optionName} requires a value.\n`);
+    const text =
+      optionName
+      ? `Option ${optionName} requires a value.`
+      : 'Option requires a value.';
+
+    environment.stderr
+      .write(
+        `${text}\n`);
 
     return true;
   }
 
   if (code === 'commander.unknownOption') {
     const optionName =
-      extractOptionName(
+      tryExtractOptionName(
         error.message);
 
-    environment.stderr.write(
-      `Unknown option: ${optionName}\n`);
+    const text =
+      optionName
+      ? `Unknown option: ${optionName}.`
+      : 'Unknown option.';
+
+    environment.stderr
+      .write(
+        `${text}\n`);
 
     return true;
   }
 
   if (code === 'commander.unknownCommand') {
-    environment.stderr.write(
-      `Unknown command.\n`);
+    environment.stderr
+      .write(
+        `Unknown command.\n`);
 
     cli.outputHelp(
       { error: true });
@@ -363,24 +411,49 @@ function writeCommanderError(
   return false;
 }
 
-function extractOptionName(
+function tryExtractOptionName(
     message: string
-  ): string
+  ): string | null
 {
   const match =
     /'(--[^ <']+)/.exec(message);
 
-  return match?.[1]
-         ?? '--unknown';
+  if (
+    !match
+    || match.length < 2
+  ) {
+    return null;
+  }
+
+  const group =
+    match[1];
+
+  if (!group) {
+    return null;
+  }
+
+  const trimmed =
+    group.trim();
+  
+  if (trimmed === '') {
+    return null;
+  }
+
+  return trimmed;
 }
 
+/**
+ * Convert a comma-separated option value into an array of trimmed strings,
+ * ignoring empty entries.
+ */
 function splitCommaSeparatedOption(
     value: unknown
   ): string[]
 {
-  if (typeof value !== 'string'
-      || value.trim() === '')
-  {
+  if (
+    typeof value !== 'string'
+    || value.trim() === ''
+  ) {
     return [];
   }
 
@@ -392,6 +465,10 @@ function splitCommaSeparatedOption(
       entry => entry.length > 0);
 }
 
+/**
+ * Normalise option value, by trimming whitespace and returning an empty string
+ * for non-string values.
+ */
 function filterStringOption(
     value: unknown
   ): string

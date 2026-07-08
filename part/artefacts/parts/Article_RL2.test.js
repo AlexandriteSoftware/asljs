@@ -1,27 +1,33 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger,
+import { tmpDirFactory }
+  from './testing/tmpDir.js';
+import { createPinoLoggerProvider,
          createRuleValidationContext }
   from 'asljs-part';
 import { validate }
   from './Article_RL2.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'Article_RL2 passes for existing local links and images',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -46,7 +52,7 @@ See [Target](./Target.md).
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -69,8 +75,7 @@ test(
   'Article_RL2 fails when a local link does not exist',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -85,7 +90,7 @@ See [Missing](./Missing.md).
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -110,8 +115,7 @@ test(
   'Article_RL2 fails when a local image does not exist',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -126,7 +130,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -151,8 +155,7 @@ test(
   'Article_RL2 fails when a long inline link is used',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -171,7 +174,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -196,8 +199,7 @@ test(
   'Article_RL2 allows a long reference link',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -218,7 +220,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =
@@ -241,8 +243,7 @@ test(
   'Article_RL2 resolves root-relative links from projectDirectoryPath',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -261,7 +262,7 @@ test(
 
     const context =
       createRuleValidationContext(
-        logger,
+        loggerProvider,
         workspace.path);
 
     const artefact =

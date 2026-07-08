@@ -6,19 +6,13 @@ import { pathToFileURL }
   from 'node:url';
 import { MarkdownDocumentProvider }
   from '../index.js';
-import { getInstanceId }
-  from './../framework.js';
 import { Artefact }
   from '../artefact.js';
-import { ArtefactDefinition }
-  from '../artefact-definition.js';
-import { DefinitionProvider }
-  from './definition-provider.js';
 import { ArtefactDataProvidingFunction,
          ArtefactDataProvidingContext }
   from '../artefact-data-providing-function.js';
 import { Logger }
-  from '../logging.js';
+  from '../logging/logging.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -35,11 +29,7 @@ export class ArtefactDataProvider
       definitionsPath: string
     )
   {
-    this.logger =
-      logger.scope(
-        { instanceId:
-            getInstanceId(
-              'ArtefactDataProvider') });
+    this.logger = logger;
 
     this.definitionsPath = definitionsPath;
 
@@ -53,7 +43,9 @@ export class ArtefactDataProvider
     ): Promise<any>
   {
     this.logger.trace(
-      `tryGetArtefactData(${artefact.relativePath}, ${definition})`);
+      'tryGetArtefactData(%s, %s)',
+      artefact.relativePath,
+      definition);
 
     const dataProviderFilePath =
       path.join(

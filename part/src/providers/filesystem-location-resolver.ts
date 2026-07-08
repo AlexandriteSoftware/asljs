@@ -8,10 +8,8 @@ import { minimatch }
   from 'minimatch';  
 import { Location }
   from '../location.js';
-import { LocationFilter }
-  from '../location.js';
 import { Logger }
-  from '../logging.js';
+  from '../logging/logging.js';
 
 interface FilesystemLocationResolverFilter {
   name: string;
@@ -53,15 +51,9 @@ export class FilesystemLocationResolver
       location.filters || [];
 
     this.logger.trace(
-      `FilesystemLocationResolver.resolve(${
-        JSON.stringify(basePath)
-      }, ${
-        JSON.stringify(patterns)
-      }, ${
-        JSON.stringify(exclude)
-      }, ${
-        JSON.stringify(filters)
-      })`);
+      'FilesystemLocationResolver.resolve(%s, %s)',
+      basePath,
+      JSON.stringify(location));
 
     const normalisedBasePath =
       path.normalize(
@@ -123,7 +115,9 @@ export class FilesystemLocationResolver
           });
 
       this.logger.trace(
-        `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`);
+        'FilesystemLocationResolver.resolve() => %d in %s',
+        basePathMatches.length,
+        normalisedBasePath);
 
       for (const match of basePathMatches) {
         matches.add(match);
@@ -190,7 +184,8 @@ export class FilesystemLocationResolver
         a.localeCompare(b));
 
     this.logger.trace(
-      `FilesystemLocationResolver.resolve() => ${result.length} matches`);
+      'FilesystemLocationResolver.resolve() => %d matches',
+      result.length);
 
     return result;
   }

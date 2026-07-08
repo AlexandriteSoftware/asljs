@@ -1,28 +1,34 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
 import { ArtefactProvider }
   from './artefact-provider.js';
-import { DefinitionProvider }
-  from './definition-provider.js';
-import { createLogger }
-  from '../logging.js';
-import { TmpDir }
-  from 'asljs-tmpdir';
+import { ArtefactDefinitionProvider }
+  from './artefact-definition-provider.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ204: ArtefactProvider returns gitignore-filtered artefacts for a definition',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     const requriementDefinitionContent =
       `# Requirement
@@ -56,8 +62,8 @@ Requirement.
     '# RQ999 Hidden\n');
 
   const definitionsProvider =
-    new DefinitionProvider(
-      logger,
+    new ArtefactDefinitionProvider(
+      loggerProvider.getLogger('DefinitionProvider'),
       workspace.path);
 
   const [requirementDefinition] =
@@ -65,7 +71,7 @@ Requirement.
   
   const artefacts =
     new ArtefactProvider(
-      logger,
+      loggerProvider.getLogger('ArtefactProvider'),
       workspace.path,
       definitionsProvider);
 
@@ -98,8 +104,7 @@ test(
   'RQ205: ArtefactProvider returns all matching definitions for an artefact',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Article.md',
@@ -128,13 +133,13 @@ Specification.
     '# Example\n');
 
   const definitions =
-    new DefinitionProvider(
-      logger,
+    new ArtefactDefinitionProvider(
+      loggerProvider.getLogger('DefinitionProvider'),
       workspace.path);
 
   const artefacts =
     new ArtefactProvider(
-      logger,
+      loggerProvider.getLogger('ArtefactProvider'),
       workspace.path,
       definitions);
 

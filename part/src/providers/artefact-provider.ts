@@ -10,10 +10,10 @@ import { Artefact }
   from '../artefact.js';
 import { ArtefactDefinition }
   from '../artefact-definition.js';
-import { DefinitionProvider }
-  from './definition-provider.js';
+import { ArtefactDefinitionProvider }
+  from './artefact-definition-provider.js';
 import { Logger }
-  from '../logging.js';
+  from '../logging/logging.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -22,7 +22,7 @@ import { Logger }
 export class ArtefactProvider
 {
   private logger: Logger;
-  private definitionsProvider: DefinitionProvider;
+  private definitionsProvider: ArtefactDefinitionProvider;
   private locationResolver: FilesystemLocationResolver;
 
   public rootPath: string;
@@ -30,14 +30,9 @@ export class ArtefactProvider
   constructor(
     logger: Logger,
     rootPath: string,
-    definitionsProvider: DefinitionProvider)
+    definitionsProvider: ArtefactDefinitionProvider)
   {
-    this.logger =
-      logger.scope(
-        { instanceId:
-            getInstanceId(
-              'ArtefactProvider') });
-
+    this.logger = logger;
     this.rootPath = path.resolve(rootPath);
     this.definitionsProvider = definitionsProvider;
 
@@ -52,7 +47,8 @@ export class ArtefactProvider
     ): Promise<Artefact | null>
   {
     this.logger.trace(
-      `tryGetArtefact(${artefactPath})`);
+      'tryGetArtefact(%s)',
+      artefactPath);
 
     const artefactFullPath =
       path.resolve(
@@ -61,7 +57,9 @@ export class ArtefactProvider
 
     if (!path.isAbsolute(artefactPath)) {
       this.logger.trace(
-        `tryGetArtefact() { ${artefactPath} is resolved to ${artefactFullPath} }`);
+        'tryGetArtefact() { %s is resolved to %s }',
+        artefactPath,
+        artefactFullPath);
     }
 
     const definitions =
@@ -70,7 +68,8 @@ export class ArtefactProvider
 
     if (definitions.length === 0) {
       this.logger.trace(
-        `tryGetArtefact() { ${artefactPath} is not matched by any artefact definition }`);
+        'tryGetArtefact() { %s is not matched by any artefact definition }',
+        artefactPath);
 
       return null;
     }
@@ -99,7 +98,8 @@ export class ArtefactProvider
       }
 
       this.logger.trace(
-        `getArtefacts(${definitionsList})`);
+        'getArtefacts(%s)',
+        definitionsList);
     }
 
     if (definitions === null) {

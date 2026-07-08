@@ -1,28 +1,38 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
 import { execInventory }
   from './inventory.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
+
+const execInventoryLogger =
+  loggerProvider.getLogger(
+    'execInventory');
 
 test(
   'RQ121: inventory enumerates artefacts in Todo Item example',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Todo Item.md',
@@ -56,9 +66,10 @@ I need to buy milk.
         { cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger });
+          loggerProvider });
 
     await execInventory(
+      execInventoryLogger,
       environment);
 
     assert.equal(
@@ -78,8 +89,7 @@ test(
   'RQ121: inventory resolves artefact locations relative to the definition file',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.mkdir(
       'artefacts/parts');
@@ -104,9 +114,10 @@ A statement about the system that must be true.
         { cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger });
+          loggerProvider });
 
     await execInventory(
+      execInventoryLogger,
       environment);
 
     assert.equal(
@@ -122,8 +133,7 @@ test(
   'RQ121: inventory lists all definitions applied to the same artefact',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -156,9 +166,10 @@ Definition file.
         { cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger });
+          loggerProvider });
 
     await execInventory(
+      execInventoryLogger,
       environment);
 
     assert.equal(
@@ -174,8 +185,7 @@ test(
   'RQ121: inventory lists artefacts for selected definitions',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'Article.md',
@@ -208,9 +218,10 @@ Definition file.
         { cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path,
-          logger });
+          loggerProvider });
 
     await execInventory(
+      execInventoryLogger,
       environment,
       { inventoryDefinitions: ['Article'] });
 
@@ -227,8 +238,7 @@ test(
   'RQ121: inventory respects Definitions parameter',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'definitions/Todo Item.md',
@@ -259,6 +269,7 @@ A todo item is a task that needs to be done.
           project: workspace.path });
 
     await execInventory(
+      execInventoryLogger,
       environment);
 
     assert.equal(

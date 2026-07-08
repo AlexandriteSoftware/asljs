@@ -1,28 +1,34 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
 import { execDefinitions }
   from './definitions.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ122: definitions lists definitions',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'definitions/Todo Item.md',
@@ -48,7 +54,7 @@ This top-level definition should be ignored by the Definitions parameter.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.resolve('definitions'),
           project: workspace.path });

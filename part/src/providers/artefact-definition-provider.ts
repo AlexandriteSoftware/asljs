@@ -2,17 +2,12 @@ import path
   from 'node:path';
 import { glob }
   from 'glob';
-import { readdir,
-         readFile }
+import { readFile }
   from 'node:fs/promises';
-import { toPosixPath }
-  from '../formatting.js';
 import { GitIgnore }
   from './git-ignore.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
-import { getInstanceId }
-  from './../framework.js';
 import { Root }
   from 'mdast';
 import { RootContent }
@@ -25,7 +20,7 @@ import { ArtefactDefinition,
 import { Location }
   from '../location.js';
 import { Logger }
-  from '../logging.js';
+  from '../logging/logging.js';
 
 interface DefinitionParsingContext {
   path: string;
@@ -33,7 +28,7 @@ interface DefinitionParsingContext {
   content: string;
 }
 
-export class DefinitionProvider
+export class ArtefactDefinitionProvider
 {
   private partsDirectoryName: string;
   private logger: Logger;
@@ -49,13 +44,10 @@ export class DefinitionProvider
     rootPath: string,
     definitionsPath: string = rootPath)
   {
-    this.logger =
-      logger.scope(
-        { instanceId:
-            getInstanceId(
-              'DefinitionProvider') });
+    this.logger = logger;
 
-    this.rootPath = path.resolve(rootPath);
+    this.rootPath =
+      path.resolve(rootPath);
 
     this.partsDirectoryName = 'parts';
 
@@ -74,18 +66,37 @@ export class DefinitionProvider
       new MarkdownDocumentProvider();
   }
 
+  async tryGetDefinition(
+      definitionName: string
+    ): Promise<ArtefactDefinition | null>
+  {
+    this.logger.trace(
+      'tryGetDefinition(%s)',
+      definitionName);
+
+    const definitions =
+      await this.getDefinitions();
+
+    const definition =
+      definitions.find(def => def.name === definitionName)
+      || null;
+
+    return definition;
+  }
+
   async getDefinitions(
     ): Promise<ArtefactDefinition[]>
 {
     this.logger.trace(
-      `getDefinitions()`);
+      'getDefinitions()');
 
     if (this.cache) {
       return this.cache;
     }
 
     this.logger.trace(
-      `getDefinitions() { scanning for definitions in ${this.definitionsPath} }`);
+      'getDefinitions() { scanning for definitions in %s }',
+      this.definitionsPath);
 
     const markdownPaths =
       await glob(
@@ -125,7 +136,8 @@ export class DefinitionProvider
     ): Promise<ArtefactDefinition | null>
   {
     this.logger.trace(
-      `loadDefinitionFromFile(${filePath})`);
+      'loadDefinitionFromFile(%s)',
+      filePath);
 
     if (!path.isAbsolute(filePath)) {
       throw new Error(
@@ -159,7 +171,9 @@ export class DefinitionProvider
     ): Promise<ArtefactDefinition | null>
   {
     this.logger.trace(
-      `parseDefinition({ name: ${context.name}, content: ...${context.content.length} chars })`);
+      'parseDefinition({ name: %s, content: ...%d chars })',
+      context.name,
+      context.content.length);
 
     const document =
       this.markdownDocumentProvider
@@ -179,7 +193,9 @@ export class DefinitionProvider
             context.path);
 
         this.logger.trace(
-          `parseDefinitionFile() { no top-level '${context.name}' found in '${fileName}'}`);
+          'parseDefinitionFile() { no top-level %s found in %s }',
+          context.name,
+          fileName);
       }
         
       return null;
@@ -191,7 +207,7 @@ export class DefinitionProvider
         context);
 
     this.logger.trace(
-      `parseDefinition() { description is available }`);
+      'parseDefinition() { description is available }');
 
     const location =
       this.parseLocation(
@@ -204,14 +220,15 @@ export class DefinitionProvider
             context.path);
 
         this.logger.trace(
-          `parseDefinitionFile() { no location found in '${fileName}'}`);
+          'parseDefinitionFile() { no location found in %s }',
+          fileName);
       }
 
       return null;
     }
 
     this.logger.trace(
-      `parseDefinition() { location is available }`);
+      'parseDefinition() { location is available }');
 
     const rules =
       await this.parseRules(
@@ -219,7 +236,7 @@ export class DefinitionProvider
         context);
 
     this.logger.trace(
-      `parseDefinition() { rules are available }`);
+      'parseDefinition() { rules are available }');
 
     const definition =
       { path: context.path,
@@ -229,85 +246,10 @@ export class DefinitionProvider
         rules };
 
     this.logger.trace(
-      `parseDefinition() { returning definition for ${context.name} }`);
+      'parseDefinition() { returning definition for %s }',
+      context.name);
 
     return definition;
-  }
-
-  async resolveRuleFile(
-      ruleId: string,
-      definition: string,
-      definitionPath: string
-    ): Promise<{ path: string; relativePath: string; } | null>
-  {
-    this.logger.trace(
-      `resolveRuleFile: ruleId=${ruleId}, definition=${definition}, definitionPath=${definitionPath}`);
-
-    if (
-      !definition
-      || !definitionPath)
-    {
-      return null;
-    }
-
-    const directoryPath =
-      path.join(
-        path.dirname(
-          definitionPath),
-        'parts');
-
-    const baseName =
-      `${definition}_${ruleId}`;
-
-    this.logger.trace(
-      `resolveRuleFile: looking for rule file in ${directoryPath} with baseName=${baseName}`);
-
-    let entries;
-
-    try {
-      entries =
-        await readdir(
-          directoryPath,
-          { withFileTypes: true });
-    } catch (error) {
-      this.logger.trace(
-        `resolveRuleFile: failed to read directory ${directoryPath}. Exception: ${error}.`);
-
-      return null;
-    }
-
-    for (const entry of entries) {
-      if (!entry.isFile()) {
-        continue;
-      }
-
-      const entryBaseName =
-        path.basename(
-          entry.name,
-          path.extname(
-            entry.name));
-
-      if (baseName !== entryBaseName) {
-        continue;
-      }
-
-      const absoluteFilePath =
-        path.join(
-          directoryPath,
-          entry.name);
-
-      return {
-        path: absoluteFilePath,
-        relativePath:
-          toPosixPath(
-            path.relative(
-              path.dirname(
-                definitionPath),
-              absoluteFilePath)),
-      };
-    }
-
-    return null;
   }
 
   async parseRules(
@@ -316,7 +258,8 @@ export class DefinitionProvider
     ): Promise<ArtefactDefinitionRule[]>
   {
     this.logger.trace(
-      `parseRules: parsing rules for ${context.path}`);
+      'parseRules: parsing rules for %s',
+      context.path);
 
     const rules: ArtefactDefinitionRule[] = [];
 
@@ -328,7 +271,8 @@ export class DefinitionProvider
       || rulesPrimaryListItems.length === 0)
     {
       this.logger.trace(
-        `parseRules: no rules section found in ${context.path}`);
+        'parseRules: no rules section found in %s',
+        context.path);
 
       return rules;
     }
@@ -347,7 +291,8 @@ export class DefinitionProvider
 
     if (listItems.length === 0) {
       this.logger.trace(
-        `parseRules: no list items found in ${context.path}`);
+        'parseRules: no list items found in %s',
+        context.path);
 
       return rules;
     }
@@ -359,7 +304,9 @@ export class DefinitionProvider
           
       if (!match) {
         this.logger.trace(
-          `parseRules: no match found for list item "${itemText}" in ${context.path}`);
+          'parseRules: no match found for list item "%s" in %s',
+          itemText,
+          context.path);
 
         continue;
       }
@@ -376,22 +323,16 @@ export class DefinitionProvider
       const name =
         `${context.name}_${id}`;
 
-      const resolvedRuleFile =
-        await this.resolveRuleFile(
-          id,
-          context.name,
-          context.path);
-
       rules.push(
         { id,
           definition: context.name,
           name,
-          description,
-          path: resolvedRuleFile?.path });
+          description });
     }
 
     return rules;
   }
+
   parseLocation(
       document: MarkdownDocument
     ): Location | null
@@ -403,7 +344,7 @@ export class DefinitionProvider
       || locationParametersList.length === 0)
     {
       this.logger.trace(
-        `parseLocation() { no location section found }`);
+        'parseLocation() { no location section found }');
 
       return null;
     }

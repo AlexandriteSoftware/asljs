@@ -4,8 +4,6 @@ import { glob }
   from 'glob/raw';
 import { ArtefactProvider }
   from '../providers/artefact-provider.js';
-import { DefinitionProvider }
-  from '../providers/definition-provider.js';
 import { toPosixPath }
   from '../formatting.js';
 import { renderObjectsToMarkdownTable }
@@ -19,6 +17,8 @@ import { ArtefactDefinition,
   from '../artefact-definition.js';
 import { Artefact }
   from '../artefact.js';
+import { Logger }
+  from '../logging/logging.js';
 
 export interface CheckCommandOptions {
   pattern?: string;
@@ -28,46 +28,38 @@ export interface CheckCommandOptions {
 }
 
 export async function execCheck(
+    logger: Logger,
     environment: Environment,
     options: Partial<CheckCommandOptions> = { }
   ): Promise<void>
 {
-  const logger =
-    environment.logger;
-
-  const localLogger =
-    logger.scope(
-      { instanceId: 'execCheck' });
-
-  localLogger.trace(
-    `Check command: start with ${JSON.stringify(options)}`);
+  logger.trace(
+    'Check command: start with %s',
+    JSON.stringify(options));
 
   const rootDirectory =
     environment.project;
 
   const definitionProvider =
-    new DefinitionProvider(
-      logger,
-      rootDirectory,
-      environment.definitions);
+    environment.getArtefactDefinitionProvider();
 
   const definitions =
     await definitionProvider.getDefinitions();
 
-  localLogger.trace(
-    `Check command: found ${definitions.length} definitions`);
+  logger.trace(
+    'Check command: found %d definitions',
+    definitions.length);
 
   const filteredDefinitions =
     filterDefinitions(
       definitions,
       options.checkDefinitions);
 
-  localLogger.trace(
-    `Check command: list of definitions after filtering ${
-      JSON.stringify(
-        filteredDefinitions.map(
-          definition => definition.name))
-    }`);
+  logger.trace(
+    'Check command: list of definitions after filtering %s',
+    JSON.stringify(
+      filteredDefinitions.map(
+        definition => definition.name)));
 
   const rules =
     filteredDefinitions
@@ -96,11 +88,10 @@ export async function execCheck(
     selectedDefinitions.map(
       definition => definition.name);
 
-  localLogger.trace(
-    `Check command: found ${
-      JSON.stringify(
-        selectedDefinitionNames)
-    } definitions`);
+  logger.trace(
+    'Check command: found %s definitions',
+    JSON.stringify(
+      selectedDefinitionNames));
 
   const artefactProvider =
     new ArtefactProvider(
@@ -117,8 +108,9 @@ export async function execCheck(
   const definitionNamesForArtefact: Record<string, string[]> = { };
 
   if (options.pattern) {
-    localLogger.trace(
-      `Check command: using pattern=${options.pattern}`);
+    logger.trace(
+      'Check command: using pattern=%s',
+      options.pattern);
 
     const paths =
       await glob(
@@ -171,11 +163,13 @@ export async function execCheck(
     }
   }
 
-  localLogger.trace(
-    `Check command: found ${artefacts.length} artefact(s) to check`);
+  logger.trace(
+    'Check command: found %d artefact(s) to check',
+    artefacts.length);
 
-  localLogger.trace(
-    `Check command: found ${selectedRules.length} rule(s) to apply`);
+  logger.trace(
+    'Check command: found %d rule(s) to apply',
+    selectedRules.length);
 
   const results = [];
 
@@ -197,8 +191,11 @@ export async function execCheck(
         artefactDefinitionNames.includes(
           rule.definition);
 
-      localLogger.trace(
-        `Check command: checking artefact "${artefact.path}" against rule "${rule.name}" (applicable=${applicable})`);
+      logger.trace(
+        'Check command: checking artefact "%s" against rule "%s" (applicable=%s)',
+        artefact.path,
+        rule.name,
+        applicable);
 
       if (!applicable) {
         continue;

@@ -1,25 +1,58 @@
-import { createLogger }
-  from './logging.js';
-import { Logger,
-         RootLogger }
-  from './logging.js';
-import { CopilotRequest }
+import { LoggerProvider,
+         NullLoggerProvider }
+  from './logging/logging.js';
+import { Logger }
+  from './logging/logging.js';
+import { CodeGenerationRequest }
   from './commands/update.js';
+import { ArtefactProvider,
+         DefinitionProvider }
+  from './index.js';
 
-export interface Environment {
+export interface Environment
+{
   cwd: string;
+
   stdout: WritableBuffer;
+
   stderr: WritableBuffer;
-  logger: RootLogger;
+
+  loggerProvider: LoggerProvider;
+
   resolve: <T>(type: T) => T;
+
   register: <T>(type: T, value: T) => void;
+
+  /**
+   * Path to the directory containing the artefact definitions.
+   */
   definitions: string;
+
+  /**
+   * Path to the directory containing the artefacts.
+   */
   project: string;
-  runCopilotCli?: (
+
+  getArtefactDefinitionProvider:
+    () => DefinitionProvider;
+
+  getArtefactProvider:
+    () => ArtefactProvider;
+
+  runCopilotCli?:
+    (
       logger: Logger,
-      value: CopilotRequest
+      value: CodeGenerationRequest
     ) => Promise<string>;
+
   exitCode?: number;
+
+  onDispose:
+    (
+      action: () => void
+    ) => void;
+
+  dispose: () => void;
 }
 
 export function createEnvironment(
@@ -31,12 +64,13 @@ export function createEnvironment(
 
   const registry = new Map();
 
+  const disposeActions: (() => void)[] = [ ];
+
   const baseEnvironment: Environment =
-    {
-      cwd,
+    { cwd,
       stdout: createInMemoryWritableBuffer(),
       stderr: createInMemoryWritableBuffer(),
-      logger: createLogger(),
+      loggerProvider: new NullLoggerProvider(),
       resolve:
         type =>
           registry.get(type)
@@ -47,8 +81,38 @@ export function createEnvironment(
             type,
             value),
       definitions: cwd,
-      project: cwd
-    };
+      project: cwd,
+      getArtefactDefinitionProvider:
+        function (
+          ): DefinitionProvider
+        {
+          return new DefinitionProvider(
+            this.loggerProvider
+              .getLogger(
+                'DefinitionProvider'),
+            this.project,
+            this.definitions);
+        },
+      getArtefactProvider:
+        function (
+          ): ArtefactProvider
+        {
+          return new ArtefactProvider(
+            this.loggerProvider
+              .getLogger(
+                'ArtefactProvider'),
+            this.project,
+            this.getArtefactDefinitionProvider());
+        },
+      onDispose:
+        action =>
+          disposeActions.push(action),
+      dispose:
+        () => {
+          for (const action of disposeActions) {
+            action();
+          }
+        } };
 
   const constructedEnvironment: Environment =
     Object.assign(

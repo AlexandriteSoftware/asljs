@@ -1,28 +1,34 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
 import { execCheck }
   from './check.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ123: check prints one row per matched file and rule',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -64,12 +70,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment);
 
     assert.equal(
@@ -93,8 +100,7 @@ test(
   'RQ123: check includes rules from all matching definitions for the same artefact',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'definitions/Article.md',
@@ -140,12 +146,13 @@ Definition file.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment,
       { pattern: 'definitions/Requirement.md',
         withPositives: true });
@@ -167,8 +174,7 @@ test(
   'RQ123: check filters by definitions and rules',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -219,12 +225,13 @@ Markdown article.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment,
       { pattern: 'development/**/*.md',
         checkDefinitions: ['Requirement'],
@@ -252,8 +259,7 @@ test(
   'RQ123: check uses artefact locations when pattern is omitted and sorts by path then rule',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -289,12 +295,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment,
       { withPositives: true,
         checkDefinitions: ['Requirement'] });
@@ -328,8 +335,7 @@ test(
   'RQ123: check shows only failing rows by default and still returns non-zero',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -361,12 +367,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment);
 
     assert.equal(
@@ -386,8 +393,7 @@ test(
   'RQ123: check with-positives shows passing and failing rows',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -419,12 +425,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { logger,
+        { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
           project: workspace.path });
 
     await execCheck(
+      loggerProvider.getLogger('execCheck'),
       environment,
       { withPositives: true });
 

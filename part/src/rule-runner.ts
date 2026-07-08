@@ -18,13 +18,15 @@ import { ArtefactDefinitionRule }
   from './artefact-definition.js';
 import { ArtefactProvider }
   from './providers/artefact-provider.js';
-import { DefinitionProvider }
-  from './providers/definition-provider.js';
+import { ArtefactDefinitionProvider }
+  from './providers/artefact-definition-provider.js';
 import { RuleValidationFunction,
          RuleValidationContext }
   from './rule-validation-function.js';
 import { Logger }
-  from './logging.js';
+  from './logging/logging.js';
+import { ArtefactDefinitionRuleProvider }
+  from './providers/artefact-definition-rule-provider.js';
 
 export interface RuleRunResult {
   rule: ArtefactDefinitionRule;
@@ -35,15 +37,16 @@ export interface RuleRunResult {
 export class RuleRunner
 {
   private logger: Logger;
-  private definitionProvider: DefinitionProvider;
+  private definitionProvider: ArtefactDefinitionProvider;
   private artefactProvider: ArtefactProvider;
   private markdownDocuments: MarkdownDocumentProvider;
-  private artafactDataProvider: ArtefactDataProvider;
+  private artefactDataProvider: ArtefactDataProvider;
+  private artefactDefinitionRuleProvider: ArtefactDefinitionRuleProvider;
   private rootPath: string;
 
   constructor(
     logger: Logger,
-    definitionProvider: DefinitionProvider,
+    definitionProvider: ArtefactDefinitionProvider,
     artefactProvider: ArtefactProvider)
   {
     this.logger = logger;
@@ -67,13 +70,18 @@ export class RuleRunner
     this.markdownDocuments =
       new MarkdownDocumentProvider();
 
-    this.artafactDataProvider =
+    this.artefactDataProvider =
       new ArtefactDataProvider(
         logger,
         definitionProvider.definitionsPath);
 
     this.rootPath =
       artefactProvider.rootPath;
+
+    this.artefactDefinitionRuleProvider =
+      new ArtefactDefinitionRuleProvider(
+        logger,
+        definitionProvider);
   }
 
   async runRule(
@@ -81,16 +89,24 @@ export class RuleRunner
       artefact: Artefact
     ): Promise<RuleRunResult>
   {
-    const ctx =
-      `RuleRunner.runRule(${rule.name}, ${artefact.name}): `;
-
     this.logger.trace(
-      `${ctx}${rule.name} for artefact ${artefact.path}`);
+      'runRule(%s, %s) { start }',
+      rule.name,
+      artefact.name);
 
-    if (!rule.path)
+    const ruleFile =
+      await this.resolveRuleFile(
+        rule);
+
+    const rulePath =
+      ruleFile?.path;
+
+    if (!rulePath)
     {
       this.logger.trace(
-        `${ctx}rule file is missing`);
+        'runRule(%s, %s): rule file is missing',
+        rule.name,
+        artefact.name);
 
       return {
         rule,
@@ -101,11 +117,13 @@ export class RuleRunner
 
     try {
       await access(
-        rule.path);
+        rulePath);
     }
     catch {
       this.logger.trace(
-        `${ctx}cannot access rule file`);
+        'runRule(%s, %s): cannot access rule file',
+        rule.name,
+        artefact.name);
 
       return {
         rule,
@@ -116,7 +134,7 @@ export class RuleRunner
 
     const ruleFileExtension =
       path.extname(
-        rule.path);
+        rulePath);
 
     let result;
 
@@ -134,7 +152,10 @@ export class RuleRunner
 
     if (result.result === 'Fail') {
       this.logger.trace(
-        `${ctx}${result.message}`);
+        'runRule(%s, %s): %s',
+        rule.name,
+        artefact.name,
+        result.message);
     }
 
     return result;
@@ -164,14 +185,18 @@ export class RuleRunner
       artefact: Artefact
     ): Promise<RuleRunResult>
   {
-    if (!rule.path) {
+    const ruleFile =
+      await this.resolveRuleFile(
+        rule);
+
+    if (!ruleFile?.path) {
       throw new Error(
         `Missing rule file for ${rule.name}.`);
     }
 
     const importUrl =
       pathToFileURL(
-        rule.path);
+        ruleFile?.path);
 
     try {
       const validatorModule =
@@ -193,8 +218,9 @@ export class RuleRunner
           rootPath: this.rootPath,
           definitions: this.definitionProvider,
           artefacts: this.artefactProvider,
-          artefactData: this.artafactDataProvider,
-          markdownDocuments: this.markdownDocuments };
+          artefactData: this.artefactDataProvider,
+          markdownDocuments: this.markdownDocuments,
+          rules: this.artefactDefinitionRuleProvider,};
 
       try {
         await validateFunction(
@@ -234,13 +260,17 @@ export class RuleRunner
       artefact: Artefact
     ): Promise<RuleRunResult>
   {
-    if (!rule.path) {
+    const ruleFile =
+      await this.resolveRuleFile(
+        rule);
+
+    if (!ruleFile?.path) {
       throw new Error(
         `Missing rule file for ${rule.name}.`);
     }
 
     const ruleFilePath =
-      rule.path;
+      ruleFile.path;
 
     return new Promise((resolve) => {
       const child =
@@ -311,5 +341,24 @@ export class RuleRunner
     }
 
     return String(error);
+  }
+
+  private async resolveRuleFile(
+      rule: ArtefactDefinitionRule
+    ): Promise<{ path: string; relativePath: string; } | null>
+  {
+    const definition =
+      await this.definitionProvider.tryGetDefinition(
+        rule.definition);
+
+    if (!definition) {
+      return null;
+    }
+
+    return await this.artefactDefinitionRuleProvider
+      .resolveRuleFile(
+        rule.id,
+        definition.name,
+        definition.path);
   }
 }

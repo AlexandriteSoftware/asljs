@@ -1,26 +1,32 @@
-import test
+import test,
+       { after }
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logging.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { GitIgnore }
   from './git-ignore.js';
+import { tmpDirFactory }
+  from '../tmpDir.js';
 
-const logger =
-  createLogger();
+const loggerProvider =
+  createPinoLoggerProvider();
 
-test.after(
-  () => logger.dispose());
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
     await workspace.writeText(
       '.gitignore',
@@ -32,7 +38,7 @@ test(
 
     const gitIgnore =
       new GitIgnore(
-        createLogger());
+        loggerProvider.getLogger('GitIgnore'));
 
     const files =
       [ 'keep.md',
