@@ -19,11 +19,11 @@
     "artefacts/Artefact Definition.md",
     "artefacts/Article.md",
     "artefacts/Rule File.md",
+    "dist/**",
     "bin/**",
     "src/**",
     "README.md",
-    "LICENSE.md",
-    "DEVELOPMENT.md"
+    "LICENSE.md"
   ],
   "bin": {
     "part": "bin/part.js"
