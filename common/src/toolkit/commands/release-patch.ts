@@ -44,7 +44,6 @@ export async function releasePatch(
       'npm run build:dist',
       'npm run build',
       'npm run test',
-      'npm run clean',
       'npm version patch --no-git-tag-version' ]);
 
   start(
