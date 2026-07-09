@@ -41,7 +41,6 @@
     "prepack": "npm run clean && npm run build:dist && npm run build && npm run test && npm run guard:clean-git",
     "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
     "test": "node --test --enable-source-maps build/**/*.test.js artefacts/**/*.test.js",
-    "test:watch": "node --watch --test build/**/*.test.js",
     "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
     "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
