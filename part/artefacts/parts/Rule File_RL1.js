@@ -6,8 +6,6 @@ the rule description exactly as it is in the definition file. See the example
 below.
 */
 
-import { readFile }
-  from 'node:fs/promises';
 import path
   from 'node:path';
 
