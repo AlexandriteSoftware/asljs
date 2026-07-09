@@ -1,7 +1,8 @@
 /**
  * Project artefact.
  */
-export interface Artefact {
+export interface Artefact
+{
   /**
    * Artefact's name. Usually the name of the artefact file without extension.
    */

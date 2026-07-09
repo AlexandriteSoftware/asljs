@@ -22,26 +22,32 @@ A rule file is a file that implements a rule for a definition.
 
 ## Rules
 
-- RL1 - the first comment in the JS rule file should be multiline and include
-  the rule description exactly as it is in the definition file. See the example
-  below.
+### RL1
+
+The first comment in the JS rule file should be multiline and include
+the rule description exactly as it is in the definition file. See the example
+below.
 
 ## Example
 
 Definition file:
 
 ```markdown
-- RL1 - the first comment in the JS rule file should be multiline and include
-  the rule description exactly as it is in the definition file. See the example
-  below.
+### RL1
+
+The first comment in the JS rule file should be multiline and include
+the rule description exactly as it is in the definition file. See the example
+below.
 ```
 
 Rule file `parts/<Definition Name>_R1.js`:
 
 ```js
 /*
-- RL1 - the first comment in the JS rule file should be multiline and include
-  the rule description exactly as it is in the definition file. See the example
-  below.
+### RL1
+
+The first comment in the JS rule file should be multiline and include
+the rule description exactly as it is in the definition file. See the example
+below.
 */
 ```

@@ -76,7 +76,7 @@ export async function runCli(
     return 1;
   } finally {
     if (ownEnvironment) {
-      environment.dispose();
+      await environment.dispose();
     }
   }
 }
@@ -101,8 +101,7 @@ function createCli(
       error => { throw error; })
     .option(
       '--loglevel <level>',
-      'Log level: trace, debug, information, warning, error',
-      'information')
+      'Log level: trace, debug, information, warning, error')
     .option(
       '--logfile <path>',
       'Write logs to file')
@@ -118,28 +117,32 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
-        let loggerOptions: LoggerOptions =
-          { level: 'silent' };
+        const loggerOptions: Partial<LoggerOptions> =
+          { envVarPrefix: 'PART_LOG_' };
 
         if (options.loglevel) {
-          loggerOptions =
-            { level: options.loglevel,
-              file: options.logfile };
+          loggerOptions.level =
+            options.loglevel;
         }
 
-        const rootLogger =
+        if (options.logfile) {
+          loggerOptions.file =
+            options.logfile;
+        }
+        
+        const loggerProvider =
           createPinoLoggerProvider(
             loggerOptions);
 
         environment.onDispose(
-          (): void =>
+          async (
+            ): Promise<void> =>
           {
-            rootLogger.dispose();
+            await loggerProvider.dispose();
           });
 
         environment.loggerProvider =
-          createPinoLoggerProvider(
-            loggerOptions);
+          loggerProvider;
 
         const optDefinitions =
           filterStringOption(

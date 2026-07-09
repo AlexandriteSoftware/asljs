@@ -14,11 +14,11 @@ export async function execDefinitions(
   const rootDirectory =
     environment.project;
 
-  const definitionProvider =
-    environment.getArtefactDefinitionProvider();
+  const { artefactDefinitionProvider } =
+    environment.getProviders();
 
   const definitions =
-    await definitionProvider.getDefinitions();
+    await artefactDefinitionProvider.getDefinitions();
 
   const objects =
     definitions.map(

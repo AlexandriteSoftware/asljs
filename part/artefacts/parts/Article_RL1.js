@@ -1,5 +1,7 @@
 /*
-RL1 - Article start with a level 1 heading, which is the file name without
+### RL1
+
+Article start with a level 1 heading, which is the file name without
 extension. Exceptions: when the file name is all caps (e.g., `README.md`).
 */
 

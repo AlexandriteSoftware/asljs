@@ -40,17 +40,11 @@ export async function execCheck(
     'Check command: start with %s',
     JSON.stringify(options));
 
-  const providers =
-    providersFactory(
-      environment.loggerProvider,
-      environment.project,
-      environment.definitions);
-
-  const definitionProvider =
-    providers.artefactDefinitionProvider;
+  const { artefactDefinitionProvider } =
+    environment.getProviders();
 
   const definitions =
-    await definitionProvider.getDefinitions();
+    await artefactDefinitionProvider.getDefinitions();
 
   logger.trace(
     'Check command: found %d definitions',
@@ -100,7 +94,7 @@ export async function execCheck(
       selectedDefinitionNames));
 
   const artefactProvider =
-    environment.getArtefactProvider();
+    environment.getProviders().artefactProvider;
 
   const artefacts: Artefact[] = [ ];
 
@@ -181,7 +175,7 @@ export async function execCheck(
   const ruleRunner =
     new RuleRunner(
       logger,
-      providers);
+      (environment.getProviders()));
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {

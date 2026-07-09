@@ -12,7 +12,7 @@ import { execUpdate }
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -47,7 +47,7 @@ test(
           project: workspace.path,
           loggerProvider,
           runCopilotCli:
-            async (logger, request) => {
+            async (_, request) => {
               requestPrompt = request.prompt;
 
               const ruleFileName =
@@ -56,7 +56,7 @@ test(
 
               await workspace.writeText(
                 `artefacts/parts/${ruleFileName}`,
-                `// ${request.comment}\nexport async function validate() {}\n`);
+                `${request.comment}\n\nexport async function validate() {}\n`);
 
               return `all done`;
             }
@@ -74,7 +74,9 @@ Requirement definition.
 
 ## Rules
 
-- RL10 - Requirement rule.
+### RL10
+
+Requirement rule.
 `);
 
     await execUpdate(
@@ -96,7 +98,7 @@ Requirement definition.
     assert.match(
       await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
-      /RL10: Requirement rule\./);
+      /### RL10\n\nRequirement rule\./);
   });
 
 test(
@@ -129,7 +131,9 @@ Requirement definition.
 
 ## Rules
 
-- RL10 - Requirement rule.
+### RL10
+
+Requirement rule.
 `);
 
     await execUpdate(
@@ -168,14 +172,14 @@ test(
           definitions: workspace.path,
           project: workspace.path,
           runCopilotCli:
-            async (logger, request) => {
+            async (_, request) => {
               const ruleFileName =
                 path.basename(
                   request.ruleFilePath);
 
               await workspace.writeText(
                 `artefacts/parts/${ruleFileName}`,
-                `// ${request.comment}\nexport async function validate() {}\n`);
+                `${request.comment}\n\nexport async function validate() {}\n`);
 
               return 'all done';
             },
@@ -193,13 +197,18 @@ Requirement definition.
 
 ## Rules
 
-- RL10 - Requirement rule.
-- RL11 - External rule.
+### RL10
+
+Requirement rule.
+
+### RL11
+
+External rule.
 `);
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
-      '// RL10: Old rule text.\nexport async function validate() {}\n');
+      '/**\n### RL10\n\nOld rule text.\n*/\n\nexport async function validate() {}\n');
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL11.ps1',
@@ -214,11 +223,7 @@ Requirement definition.
       /all done/);
 
     assert.match(
-      environment.stderr.toString(),
-      /only JS rule files can be auto-updated/);
-
-    assert.match(
       await workspace.readText(
         'artefacts/parts/Requirement_RL10.js'),
-      /RL10: Requirement rule\./);
+      /### RL10\n\nRequirement rule\./);
   });

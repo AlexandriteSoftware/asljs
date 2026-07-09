@@ -6,7 +6,8 @@ import { Location }
 /**
  * Artefact definition.
  */
-export interface ArtefactDefinition {
+export interface ArtefactDefinition
+{
   /**
    * Artefact definition full path.
    */

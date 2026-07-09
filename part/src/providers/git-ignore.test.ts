@@ -8,7 +8,7 @@ import { createPinoLoggerProvider }
 import { GitIgnore }
   from './git-ignore.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 
 const loggerProvider =
   createPinoLoggerProvider();

@@ -278,7 +278,7 @@ export class RuleRunner
           const message =
             code === 0
               ? ''
-              : stderr.trim() || rule.description;
+              : stderr.trim() || rule.content;
 
           resolve(
             {

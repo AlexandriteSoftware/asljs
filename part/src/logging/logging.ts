@@ -5,10 +5,10 @@ export interface LoggerProvider
     ): Logger;
 
   dispose(
-    ): void;
+    ): Promise<void>;
 
-  [Symbol.dispose](
-    ): void;
+  [Symbol.asyncDispose](
+    ): Promise<void>;
 }
 
 export interface Logger
@@ -48,7 +48,8 @@ export interface Logger
 export interface LoggerOptions
 {
   level: string;
-  file?: string | null;
+  file?: string;
+  envVarPrefix?: string;
 }
 
 export class NullLogger
@@ -107,14 +108,14 @@ export class NullLoggerProvider
   }
 
   dispose(
-    ): void
-  {
-    // nop
+    ): Promise<void>
+  { 
+    return Promise.resolve();
   }
 
-  [Symbol.dispose](
-    ): void
+  [Symbol.asyncDispose](
+    ): Promise<void>
   {
-    this.dispose();
+    return this.dispose();
   }
 }

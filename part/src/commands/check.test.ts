@@ -10,7 +10,7 @@ import { createEnvironment }
 import { execCheck }
   from './check.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -42,8 +42,13 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - At least one test file has requirement ID in its content.
-- RL11 - Requirement passes a second rule.
+### RL10
+
+At least one test file has requirement ID in its content.
+
+### RL11
+
+Requirement passes a second rule.
 `);
 
     await workspace.writeText(
@@ -114,7 +119,9 @@ Markdown article.
 
 ## Rules
 
-- RL10 - Article rule.
+### RL10
+
+Article rule.
 `);
 
     await workspace.writeText(
@@ -129,7 +136,9 @@ Definition file.
 
 ## Rules
 
-- RL10 - Definition rule.
+### RL10
+
+Definition rule.
 `);
 
     await workspace.writeText(
@@ -188,8 +197,13 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - Requirement rule.
-- RL11 - Second requirement rule.
+### RL10
+
+Requirement rule.
+
+### RL11
+
+Second requirement rule.
 `);
 
     await workspace.writeText(
@@ -204,7 +218,9 @@ Markdown article.
 
 ## Rules
 
-- RL10 - Article rule.
+### RL10
+
+Article rule.
 `);
 
     await workspace.writeText(
@@ -273,8 +289,13 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - First rule.
-- RL11 - Second rule.
+### RL10
+
+First rule.
+
+### RL11
+
+Second rule.
 `);
 
     await workspace.writeText(
@@ -349,8 +370,13 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - Failing rule.
-- RL11 - Passing rule.
+### RL10
+
+Failing rule.
+
+### RL11
+
+Passing rule.
 `);
 
     await workspace.writeText(
@@ -407,8 +433,13 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - Failing rule.
-- RL11 - Passing rule.
+### RL10
+
+Failing rule.
+
+### RL11
+
+Passing rule.
 `);
 
     await workspace.writeText(

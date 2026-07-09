@@ -1,5 +1,7 @@
 /*
-RL10 - At least one test file has requirement ID in its content.
+### RL10
+
+At least one test file has requirement ID in its content.
 */
 
 import { readFile }

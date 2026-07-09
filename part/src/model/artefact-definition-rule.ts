@@ -1,8 +1,8 @@
 /**
  * Artefact definition rule.
  */
-
-export interface ArtefactDefinitionRule {
+export interface ArtefactDefinitionRule
+{
   /**
    * An identifier, uniquely and invariably identifying the artefact definition
    * rule among other rules.
@@ -22,11 +22,16 @@ export interface ArtefactDefinitionRule {
   definition: string;
 
   /**
+   * A title of the artefact definition rule. Usually, the the section heading.
+   */
+  heading: string;
+
+  /**
    * A description of the artefact definition rule.
    *
    * @remarks
    * Usually, the list item or section in the artefact definition file that
    * defines the rule.
    */
-  description: string;
+  content: string;
 }

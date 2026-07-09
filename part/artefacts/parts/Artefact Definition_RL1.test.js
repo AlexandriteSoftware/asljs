@@ -65,8 +65,13 @@ Definition.
 
 ## Rules
 
-- RL1 - Must have a rule file.
-- RL2 - Must also have a second rule file.
+### RL1
+
+Must have a rule file.
+
+### RL2
+
+Must also have a second rule file.
 `);
 
   await workspace.writeText(

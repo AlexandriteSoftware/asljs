@@ -22,9 +22,14 @@ export function createPinoLoggerProvider(
     options: Partial<LoggerOptions> = { }
   ): LoggerProvider
 {
+  const envVarPrefix =
+    options.envVarPrefix
+    ?? process.env.ASLJS_LOG_ENV_VAR_PREFIX
+    ?? 'ASLJS_LOG_';
+
   const level =
     options.level
-    ?? process.env.ASLJS_LOG_LEVEL
+    ?? process.env[`${envVarPrefix}LEVEL`]
     ?? 'silent';
 
   if (level === 'silent') {
@@ -33,52 +38,13 @@ export function createPinoLoggerProvider(
 
   const file =
     options.file
-    ?? process.env.ASLJS_LOG_FILE
-    ?? null;
+    ?? process.env[`${envVarPrefix}FILE`]
+    ?? undefined;
   
-  let pinoLogLevel;
-
-  if (level === 'information') {
-    pinoLogLevel = 'info';
-  } else if (level === 'warning') {
-    pinoLogLevel = 'warn';
-  } else {
-    pinoLogLevel = level;
-  }
-
-  let transport = null;
-
-  if (file) {
-    transport =
-      pino.transport(
-        { target: 'pino/file',
-          options:
-            { destination: file,
-              mkdir: true } });
-  } else {
-    transport =
-      pino.transport(
-        { target: 'pino-pretty',
-          options:
-            { messageFormat: '{context}: {msg}',
-              ignore: 'context',
-              colorize: true } });
-  }
-
-  const logger =
-    pino(
-      { base: null,
-        level: pinoLogLevel },
-      transport);
-
   const loggerProvider =
     new PinoLoggerProvider(
-      logger,
-      level,
-      (): void =>
-      {
-        transport.end();
-      });
+      { level,
+        file });
 
   return loggerProvider;
 }
@@ -88,17 +54,54 @@ class PinoLoggerProvider
 {
   readonly #logger: pino.Logger;
   readonly #level: string;
-  readonly #dispose: () => void;
+  readonly #transport: ReturnType<typeof pino.transport>;
 
   constructor(
-      logger: pino.Logger,
-      level: string,
-      dispose: () => void
+      options: Partial<LoggerOptions>
     )
   {
-    this.#logger = logger;
+    const level =
+      options.level
+      ?? 'silent';
+
     this.#level = level;
-    this.#dispose = dispose;
+
+    const file =
+      options.file
+      ?? null;
+
+    let pinoLogLevel;
+
+    if (level === 'information') {
+      pinoLogLevel = 'info';
+    } else if (level === 'warning') {
+      pinoLogLevel = 'warn';
+    } else {
+      pinoLogLevel = level;
+    }
+
+    if (file) {
+      this.#transport =
+        pino.transport(
+          { target: 'pino/file',
+            options:
+              { destination: file,
+                mkdir: true } });
+    } else {
+      this.#transport =
+        pino.transport(
+          { target: 'pino-pretty',
+            options:
+              { messageFormat: '{context}: {msg}',
+                ignore: 'context',
+                colorize: true } });
+    }
+
+    this.#logger =
+      pino(
+        { base: null,
+          level: pinoLogLevel },
+        this.#transport);
   }
 
   getLogger(
@@ -121,15 +124,18 @@ class PinoLoggerProvider
   }
 
   dispose(
-    ): void
+    ): Promise<void>
   {
-    this.#dispose();
+    this.#transport.flushSync();
+    this.#transport.end();
+
+    return Promise.resolve();
   }
 
-  [Symbol.dispose](
-    ): void
+  [Symbol.asyncDispose](
+    ): Promise<void>
   {
-    this.dispose();
+    return this.dispose();
   }
 }
 

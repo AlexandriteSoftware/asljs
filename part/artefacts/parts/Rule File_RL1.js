@@ -1,5 +1,7 @@
 /*
-RL1 - the first comment in the JS rule file should be multiline and include
+### RL1
+
+The first comment in the JS rule file should be multiline and include
 the rule description exactly as it is in the definition file. See the example
 below.
 */
@@ -41,13 +43,9 @@ export async function validate(
   const ruleId =
     match[2];
 
-  const definitions =
-    await context.definitions
-      .getDefinitions();
-
   const ruleDefinition =
-    definitions.find(
-      item => item.name === definitionName);
+    await context.definitions
+      .getDefinition(definitionName);
 
   if (!ruleDefinition) {
     return logAndThrowError(
@@ -63,47 +61,14 @@ export async function validate(
       `Rule "${ruleId}" not found in definition "${definitionName}".`);
   }
 
-  const content =
-    await readFile(
-      artefact.path,
-      'utf8');
+  const inSync =
+    await context.rules.isRuleInSync(
+      ruleDefinition.name,
+      rule.id);
 
-  const firstCommentStartIndex =
-    content.indexOf('/*');
-
-  if (firstCommentStartIndex === -1) {
+  if (!inSync) {
     return logAndThrowError(
-      'No comment found at the start of the file.');
-  }
-
-  const firstCommentEndIndex =
-    content.indexOf(
-      '*/',
-      firstCommentStartIndex + 2);
-
-  if (firstCommentEndIndex === -1) {
-    return logAndThrowError(
-      'No closing comment found for the first comment.');
-  }
-
-  const firstCommentContent =
-    content
-      .substring(
-        firstCommentStartIndex + 2,
-        firstCommentEndIndex)
-      .trim();
-
-  const normalizedFirstCommentContent =
-    normalizeText(
-      firstCommentContent);
-
-  const normalizedRuleDescription =
-    normalizeText(
-      `${rule.id} - ${rule.description}`);
-
-  if (normalizedFirstCommentContent !== normalizedRuleDescription) {
-    return logAndThrowError(
-      `First comment does not match rule description. Expected: "${rule.id} - ${rule.description}", Found: "${firstCommentContent}".`);
+      `Rule script is not in sync with the definition rule.`);
   }
 
   return;
@@ -119,22 +84,5 @@ export async function validate(
 
     throw new Error(
       message);
-  }
-
-  /**
-   * @param {string} text 
-   */
-  function normalizeText(
-    text)
-  {
-    return text
-      .replace(
-        /\r?\n/g,
-        ' ')
-      .replace(
-        /\s+/g,
-        ' ')
-      .trim()
-      .toUpperCase();
   }
 }

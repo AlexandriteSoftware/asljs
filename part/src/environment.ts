@@ -5,15 +5,8 @@ import { Logger }
   from './logging/logging.js';
 import { CodeGenerationRequest }
   from './commands/update.js';
-import { ArtefactProvider,
-         DefinitionProvider,
-         MarkdownDocumentProvider }
-  from './index.js';
-import { GitIgnore }
-  from './providers/git-ignore.js';
-import { ArtefactDefinitionProvider }
-  from './providers/artefact-definition-provider.js';
-import { providersFactory }
+import { Providers,
+         providersFactory }
   from './providers/providers.js';
 
 export interface Environment
@@ -40,11 +33,8 @@ export interface Environment
    */
   project: string;
 
-  getArtefactDefinitionProvider:
-    () => DefinitionProvider;
-
-  getArtefactProvider:
-    () => ArtefactProvider;
+  getProviders:
+    () => Providers;
 
   runCopilotCli?:
     (
@@ -56,10 +46,10 @@ export interface Environment
 
   onDispose:
     (
-      action: () => void
+      action: () => Promise<void>
     ) => void;
 
-  dispose: () => void;
+  dispose: () => Promise<void>;
 }
 
 export function createEnvironment(
@@ -71,7 +61,7 @@ export function createEnvironment(
 
   const registry = new Map();
 
-  const disposeActions: (() => void)[] = [ ];
+  const disposeActions: (() => Promise<void>)[] = [ ];
 
   const baseEnvironment: Environment =
     { cwd,
@@ -89,37 +79,22 @@ export function createEnvironment(
             value),
       definitions: cwd,
       project: cwd,
-      getArtefactDefinitionProvider:
+      getProviders:
         function (
-          ): DefinitionProvider
+          ): Providers
         {
-          const providers =
-            providersFactory(
-              this.loggerProvider,
-              this.definitions,
-              this.project);
-
-          return providers.artefactDefinitionProvider;
-        },
-      getArtefactProvider:
-        function (
-          ): ArtefactProvider
-        {
-          const providers =
-            providersFactory(
-              this.loggerProvider,
-              this.definitions,
-              this.project);
-
-          return providers.artefactProvider;
+          return providersFactory(
+            this.loggerProvider,
+            this.project,
+            this.definitions);
         },
       onDispose:
         action =>
           disposeActions.push(action),
       dispose:
-        () => {
+        async () => {
           for (const action of disposeActions) {
-            action();
+            await action();
           }
         } };
 

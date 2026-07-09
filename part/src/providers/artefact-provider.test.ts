@@ -5,7 +5,7 @@ import assert
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 import { providersFactory }
   from './providers.js';
 

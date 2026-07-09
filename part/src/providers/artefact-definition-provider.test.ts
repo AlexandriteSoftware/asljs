@@ -5,9 +5,12 @@ import assert
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 import { providersFactory }
   from './providers.js';
+import { ArtefactDefinitionRule,
+         Location }
+  from '../model/types.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -20,6 +23,33 @@ test.after(
 const tmpDir =
   tmpDirFactory(
     loggerProvider);
+
+test(
+  'RQ201: tryParse parses definition with no locations',
+  async (
+    ): Promise<void> =>
+  {
+    await using workspace =
+      tmpDir();
+
+    const { artefactDefinitionProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        workspace.path);
+
+    const definition =
+      artefactDefinitionProvider.tryParse(
+        `# Todo Item
+
+A todo item.
+
+## Location
+`,
+        { path: workspace.resolve('Todo Item.md') });
+
+    assert.ok(definition);
+  });
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
@@ -81,7 +111,7 @@ Hidden definition.
   });
 
 test(
-  'RQ202: DefinitionProvider loads markdown definition metadata and structured rules',
+  'RQ202: DefinitionProvider loads definition from markdown',
   async () => {
     await using workspace =
       tmpDir();
@@ -113,7 +143,9 @@ A todo item is a task that needs to be done.
 
 ## Rules
 
-- R1 Due date must be in the future.
+### R1
+
+Due date must be in the future.
 `);
 
     const { artefactDefinitionProvider } =
@@ -136,18 +168,25 @@ A todo item is a task that needs to be done.
       definition.description,
       'A todo item is a task that needs to be done.');
 
-    assert.deepEqual(
-      definition.locations,
+    const expectedLocations: Location[] =
       [ { pattern: 'Todo Items/**/*.md',
           exclude: [ 'Todo Items/Templates/**/*.md' ],
-          filters: [ { name: 'GitIgnore' } ] } ]);
+          filters: [ { name: 'GitIgnore' } ] } ];
 
     assert.deepEqual(
-      definition.rules,
+      definition.locations,
+      expectedLocations);
+
+    const expectedRules: ArtefactDefinitionRule[] =
       [ { id: 'R1',
           definition: 'Todo Item',
           name: 'Todo Item_R1',
-          description: 'Due date must be in the future.' } ]);
+          heading: 'R1',
+          content: '### R1\n\nDue date must be in the future.' } ];
+
+    assert.deepEqual(
+      definition.rules,
+      expectedRules);
   });
 
 test(

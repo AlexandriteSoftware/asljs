@@ -5,7 +5,7 @@ import remarkParse
 import { readFile }
   from 'node:fs/promises';
 import { MarkdownDocument }
-  from '../markdown-document.js';
+  from '../model/markdown-document.js';
 import { Logger }
   from '../logging/logging.js';
 
@@ -27,10 +27,12 @@ export class MarkdownDocumentProvider
     const document =
       MARKDOWN_PARSER.parse(
         content);
-        
-    return new MarkdownDocument(
-      content,
-      document);
+
+    const markdownDocument: MarkdownDocument =
+      { content,
+        root: document };
+
+    return markdownDocument;
   }
 
   async load(

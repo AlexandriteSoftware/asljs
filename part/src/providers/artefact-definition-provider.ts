@@ -8,28 +8,24 @@ import { GitIgnore }
   from './git-ignore.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
-import { Root }
-  from 'mdast';
-import { RootContent }
+import { List,
+         Node }
   from 'mdast';
 import { MarkdownDocument }
-  from '../markdown-document.js';
+  from '../model/markdown-document.js';
 import { ArtefactDefinition,
          ArtefactDefinitionRule,
          Location }
   from '../model/types.js';
 import { Logger }
   from '../logging/logging.js';
+import { getSections,
+         getText,
+         Section }
+  from '../markdown-document-queries.js';
 
 export interface DefinitionParsingContext {
   path: string;
-}
-
-interface SectionParsingContext
-  extends DefinitionParsingContext
-{
-  name: string;
-  content: string;
 }
 
 export class ArtefactDefinitionProvider
@@ -240,49 +236,115 @@ export class ArtefactDefinitionProvider
         .parse(
           content);
 
-    const contextNameSectionNode =
-      document.getSectionNode(
-        name);
+    const sections =
+      getSections(
+        document);
 
+    if (sections.length === 0) {
+      this.logger.trace(
+        'tryParse(...): no sections found in %s',
+        context.path);
+
+      return;
+    }
+
+    const firstSection =
+      sections[0];
+      
     if (
-      null === contextNameSectionNode
-      || contextNameSectionNode.depth !== 1
+      firstSection.level !== 1
+      || firstSection.heading !== name
     ) {
       this.logger.trace(
         'tryParse(...): top-level heading "%s" not found in %s',
         name,
         context.path);
+
+      return;
+    }
+
+    const description =
+      firstSection.content.markup;
+
+    const locationSection =
+      sections
+        .find(
+          section =>
+            section.heading === 'Location');
+      
+    if (!locationSection) {
+      this.logger.trace(
+        'tryParse(...): no location section found in %s',
+        context.path);
       
       return;
     }
 
-    const sectionParsingContext: SectionParsingContext =
-      { ...context,
-        name,
-        content };
-
-    const description =
-      extractDescription(
-        document.root,
-        sectionParsingContext);
-
     const locations =
       this.#parseLocations(
         document,
-        sectionParsingContext);
+        locationSection.nodes);
 
     if (!locations) {
-      this.logger.trace(
+      this.logger.warning(
         'tryParse(...): no locations found in %s',
         context.path);
 
       return;
     }
 
-    const rules =
-      this.#parseRules(
-        document,
-        sectionParsingContext);
+    const ruleSections: Section[] = [];
+
+    let collect = false;
+
+    for (const section of sections) {
+      if (section.heading === 'Rules') {
+        collect = true;
+        continue;
+      }
+      if (collect) {
+        if (section.level === 3) {
+          ruleSections.push(section);
+        } else {
+          break;
+        }
+      }
+    }
+
+    const rules: ArtefactDefinitionRule[] = [];
+
+    for (const ruleSection of ruleSections) {
+      const ruleIdMatch =
+        ruleSection.heading.match(
+          /^([A-Z]+\d+)/);
+
+      if (!ruleIdMatch) {
+        this.logger.warning(
+          'tryParse(...): invalid rule heading "%s" in %s',
+          ruleSection.heading,
+          context.path);
+
+        continue;
+      }
+
+      const ruleId =
+        ruleIdMatch[1];
+
+      const ruleName =
+        `${name}_${ruleId}`;
+      
+      const ruleDescription =
+        ruleSection.markup;
+        
+      const rule: ArtefactDefinitionRule =
+        { id: ruleId,
+          definition: name,
+          name: ruleName,
+          heading: ruleSection.heading,
+          content: ruleDescription };
+      
+      rules.push(rule);
+    }
 
     const definition =
       { path: context.path,
@@ -300,210 +362,83 @@ export class ArtefactDefinitionProvider
     return definition;
   }
 
-  #parseRules(
-      document: MarkdownDocument,
-      context: SectionParsingContext
-    ): ArtefactDefinitionRule[]
-  {
-    this.logger.trace(
-      '#parseRules(...) { parsing rules for %s }',
-      context.path);
-
-    const rules: ArtefactDefinitionRule[] = [];
-
-    const rulesPrimaryListItems =
-      document.getSectionPrimaryListItems('Rules');
-
-    if (
-      rulesPrimaryListItems === null
-      || rulesPrimaryListItems.length === 0)
-    {
-      this.logger.trace(
-        '#parseRules(...) { no rules section found in %s }',
-        context.path);
-
-      return rules;
-    }
-
-    const listItems =
-      rulesPrimaryListItems
-        .map(
-          item =>
-            context.content
-              .substring(
-                item.position?.start.offset ?? 0,
-                item.position?.end.offset ?? 0)
-              .trim())
-        .filter(
-          itemText => itemText.length > 0);
-
-    if (listItems.length === 0) {
-      this.logger.trace(
-        '#parseRules(...) { no list items found in %s }',
-        context.path);
-
-      return rules;
-    }
-
-    for (const itemText of listItems) {
-      const match =
-        itemText.match(
-          /^-\s+([A-Z]+\d+)\s*(?:[:-]\s*)?/);
-          
-      if (!match) {
-        this.logger.trace(
-          '#parseRules(...) { no match found for list item "%s" in %s }',
-          itemText,
-          context.path);
-
-        continue;
-      }
-      
-      const id =
-        match[1];
-
-      const description =
-        itemText
-          .substring(
-            match[0].length)
-          .trim();
-
-      const name =
-        `${context.name}_${id}`;
-
-      rules.push(
-        { id,
-          definition: context.name,
-          name,
-          description });
-    }
-
-    return rules;
-  }
-
   #parseLocations(
       document: MarkdownDocument,
-      context: SectionParsingContext
+      nodes: Node[]
     ): Location[] | undefined
   {
-    const locationParametersList =
-      document.getSectionPrimaryListItems('Location');
-
-    if (locationParametersList === null
-      || locationParametersList.length === 0)
-    {
-      this.logger.trace(
-        '#parseLocation() { no location section found }');
-
-      return;
-    }
-
-    const listItems =
-      locationParametersList
-        .map(
-          item => document.getText(item).trim())
+    const locationLists =
+      nodes
         .filter(
-          itemText => itemText.length > 0);
+          node =>
+            node.type === 'list')
+        .map(
+          node =>
+            node as List);
 
-    if (listItems.length === 0) {
-      return [];
-    }
+    const locations: Location[] = [];
 
-    let pattern: string = '';
+    for (const locationList of locationLists) {
+      const listItems =
+        locationList.children
+          .map(
+            item =>
+              getText(
+                  document,
+                  item)
+                .trim())
+          .filter(
+            itemText => itemText.length > 0);
 
-    const exclude: string[] = [];
-    
-    const filters: any[] = [];
-
-    for (const itemText of listItems) {
-      const typeMatch =
-        itemText.match(
-          /^Pattern\s*:\s*(.+)$/i);
-
-      if (typeMatch) {
-        pattern =
-          typeMatch[1].trim();
-
+      if (listItems.length === 0) {
         continue;
       }
 
-      const excludeMatch =
-        itemText.match(
-          /^Exclude\s*:\s*(.+)$/i);
+      let pattern: string = '';
 
-      if (excludeMatch) {
-        exclude.push(
-          excludeMatch[1].trim());
+      const exclude: string[] = [];
+      
+      const filters: any[] = [];
 
-        continue;
+      for (const itemText of listItems) {
+        const typeMatch =
+          itemText.match(
+            /^Pattern\s*:\s*(.+)$/i);
+
+        if (typeMatch) {
+          pattern =
+            typeMatch[1].trim();
+
+          continue;
+        }
+
+        const excludeMatch =
+          itemText.match(
+            /^Exclude\s*:\s*(.+)$/i);
+
+        if (excludeMatch) {
+          exclude.push(
+            excludeMatch[1].trim());
+
+          continue;
+        }
+
+        if (/^GitIgnore$/i.test(itemText)) {
+          filters.push(
+            { name: 'GitIgnore' });
+        }
       }
 
-      if (/^GitIgnore$/i.test(itemText)) {
-        filters.push(
-          { name: 'GitIgnore' });
-      }
+      const location: Location =
+        { pattern,
+          exclude,
+          filters };
+
+      locations.push(location);
     }
 
-    const location: Location =
-      { pattern,
-        exclude,
-        filters };
-
-    return [ location ];
+    return locations;
   }
-}
-
-function getTopHeading(
-    document: Root
-  ): RootContent | null
-{
-  return document
-    .children
-    .find(
-      node =>
-        node.type === 'heading'
-        && node.depth === 1)
-      ?? null;
-}
-
-function extractDescription(
-    document: Root,
-    context: SectionParsingContext
-  ): string
-{
-  const heading =
-    getTopHeading(document);
-
-  if (!heading) {
-    return '';
-  }
-
-  const startOffset =
-    heading.position?.end.offset
-    ?? 0;
-
-  const nextHeading =
-    document.children
-      .find(
-        node =>
-          node.type === 'heading'
-          && node.depth !== 1);
-
-  if (!nextHeading) {
-    return context.content
-      .substring(startOffset)
-      .trim();
-  }
-
-  const endOffset =
-    nextHeading.position?.start.offset
-    ?? context.content.length;
-
-  return context.content
-    .substring(
-      startOffset,
-      endOffset)
-    .trim();
 }
 
 function sortDefinitionsByName(

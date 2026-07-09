@@ -23,14 +23,12 @@ export async function execInventory(
   logger.trace(
     'Inventory command: start');
 
-  const definitionProvider =
-    environment.getArtefactDefinitionProvider();
-
-  const artefactProvider =
-    environment.getArtefactProvider();
+  const { artefactDefinitionProvider,
+          artefactProvider } =
+    environment.getProviders();
 
   const definitions =
-    await definitionProvider.getDefinitions();
+    await artefactDefinitionProvider.getDefinitions();
 
   const definitionNames =
     definitions.map(

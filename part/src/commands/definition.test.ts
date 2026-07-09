@@ -10,7 +10,7 @@ import { createEnvironment }
 import { execDefinition }
   from './definition.js';
 import { tmpDirFactory }
-  from '../tmpDir.js';
+  from '../testing/tmpDir.js';
 
 const loggerProvider =
   createPinoLoggerProvider();

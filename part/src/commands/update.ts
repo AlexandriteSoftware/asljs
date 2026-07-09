@@ -47,16 +47,16 @@ export async function execUpdate(
   const rootDir =
     environment.project;
 
-  const definitionProvider =
-    environment.getArtefactDefinitionProvider();
+  const { artefactDefinitionProvider } =
+    environment.getProviders();
 
   const definitions =
-    await definitionProvider.getDefinitions();
+    await artefactDefinitionProvider.getDefinitions();
 
   const ruleProvider =
     new ArtefactDefinitionRuleProvider(
       logger,
-      definitionProvider);
+      artefactDefinitionProvider);
 
   const runCopilotCli =
     environment.runCopilotCli
@@ -108,7 +108,7 @@ export async function execUpdate(
             definition: definition.name,
             definitionPath: definition.path,
             ruleId: rule.id,
-            rule: rule.description,
+            rule: rule.content,
             comment: ruleProvider.formatRuleComment(rule),
             currentContent: null,
             prompt:
@@ -182,7 +182,7 @@ export async function execUpdate(
             definition: definition.name,
             definitionPath: definition.path,
             ruleId: rule.id,
-            rule: rule.description,
+            rule: rule.content,
             comment: ruleProvider.formatRuleComment(rule),
             currentContent: currentContent,
             prompt:
@@ -277,7 +277,7 @@ function buildPrompt(
     `
 \`\`\`js
 /*
-${rule.id} - ${rule.description}
+${rule.id} - ${rule.content}
 */
 
 /**
@@ -365,7 +365,7 @@ ${template}
 
 Rule:
 
-${rule.description}
+${rule.content}
 
 Alongside it, at path ${testFilePath}, create a test file that tests the rule
 implementation. Run test cases to ensure the rule implementation is correct.`;
@@ -385,7 +385,7 @@ ${template}
 
 Rule:
 
-${rule.description}
+${rule.content}
 
 Either create or update a test file ${testFilePath} that tests the rule
 implementation. Run test cases to ensure the rule implementation is correct.`;

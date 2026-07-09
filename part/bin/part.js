@@ -16,4 +16,4 @@ await runCli(
 
 process.exitCode = environment.exitCode;
 
-environment.logger.dispose();
+await environment.dispose();

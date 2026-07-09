@@ -12,6 +12,8 @@ import { Logger }
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 
+const PARTS_DIRECTORY_NAME = 'parts';
+
 export class ArtefactDefinitionRuleProvider
 {
   private logger: Logger;
@@ -57,8 +59,8 @@ export class ArtefactDefinitionRuleProvider
 
     const ruleJsFilePath =
       path.join(
-        definitionObj.path,
-        'parts',
+        path.dirname(definitionObj.path),
+        PARTS_DIRECTORY_NAME,
         `${definition}_${ruleId}.js`);
 
     let isRuleJsFileExists: boolean;
@@ -72,9 +74,10 @@ export class ArtefactDefinitionRuleProvider
 
     if (!isRuleJsFileExists) {
       this.logger.trace(
-        'isRuleInSync(%s, %s) { Rule JS file does not exist }',
+        'isRuleInSync(%s, %s) { Rule JS file %s does not exist }',
         definition,
-        ruleId);
+        ruleId,
+        ruleJsFilePath);
       
       return false;
     }
@@ -88,9 +91,18 @@ export class ArtefactDefinitionRuleProvider
       this.extractFirstComment(
         ruleJsFileContent);
 
-    return this.commentMatchesRule(
-      firstComment,
-      rule);
+    const result =
+      this.commentMatchesRule(
+        firstComment,
+        rule);
+    
+    this.logger.trace(
+      'isRuleInSync(%s, %s) { returning %s }',
+      definition,
+      ruleId,
+      result);
+
+    return result;
   }
 
   async resolveRuleFile(
@@ -124,7 +136,7 @@ export class ArtefactDefinitionRuleProvider
       path.join(
         path.dirname(
           definitionPath),
-        'parts');
+        PARTS_DIRECTORY_NAME);
 
     const baseName =
       `${definition}_${ruleId}`;
@@ -188,7 +200,7 @@ export class ArtefactDefinitionRuleProvider
       rule: ArtefactDefinitionRule
     ): string
   {
-    return `${rule.id}: ${rule.description}`;
+    return `/*\n${rule.content}\n*/`;
   }
 
   extractFirstComment(

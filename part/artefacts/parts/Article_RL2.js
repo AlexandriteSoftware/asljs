@@ -1,5 +1,7 @@
 /*
-RL2 - Links to local resources must point to existing locations (files or
+### RL2
+
+Links to local resources must point to existing locations (files or
 directories). Links that are longer than 20 characters must be a reference
 link.
 */

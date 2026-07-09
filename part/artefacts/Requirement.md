@@ -14,4 +14,6 @@ A statement about the system that must be true.
 
 ## Rules
 
-- RL10 - At least one test file has requirement ID in its content.
+### RL10
+
+At least one test file has requirement ID in its content.

@@ -2,7 +2,7 @@ import { TmpDir,
          TmpDirOptions }
   from 'asljs-tmpdir';
 import { LoggerProvider }
-  from './logging/logging.js';
+  from '../logging/logging.js';
 
 export function tmpDirFactory(
     loggerProvider: LoggerProvider

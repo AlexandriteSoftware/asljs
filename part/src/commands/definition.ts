@@ -21,11 +21,11 @@ export async function execDefinition(
   const rootDirectory =
     environment.project;
 
-  const definitionProvider =
-    environment.getArtefactDefinitionProvider();
+  const { artefactDefinitionProvider } =
+    environment.getProviders();
 
   const definitions =
-    await definitionProvider.getDefinitions();
+    await artefactDefinitionProvider.getDefinitions();
 
   const markdown =
     formatDefinitionDetails(
@@ -98,7 +98,7 @@ function formatDefinitionDetails(
         definition.rules.map(
           rule =>
             ({ id: rule.id,
-              description: rule.description })),
+              description: rule.content })),
       path:
         toPosixPath(
           path.relative(
