@@ -39,6 +39,10 @@ export class MarkdownDocumentProvider
     path: string
   ): Promise<MarkdownDocument>
   {
+    this.logger.trace(
+      'load(...) { %s }',
+      path);
+
     let content =
       await readFile(
         path,

@@ -1,7 +1,5 @@
 import path
   from 'node:path';
-import { LoggerOptions }
-  from './logging/logging.js';
 import { createEnvironment,
          Environment }
   from './environment.js';
@@ -21,7 +19,8 @@ import { execDefinition }
   from './commands/definition.js';
 import { execVersion }
   from './commands/version.js';
-import { createPinoLoggerProvider }
+import { createPinoLoggerProvider,
+         LoggerOptions }
   from './logging/pino.js';
 
 export async function runCli(

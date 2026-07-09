@@ -47,7 +47,7 @@ test(
 });
 
 test(
-  'RQ111 cli accepts --definitions=value syntax',
+  'RQ111: cli accepts --definitions=value syntax',
   async () =>
   {
     const environment =
@@ -83,7 +83,7 @@ test(
   });
 
 test(
-  'RQ132 cli accepts --project=value syntax',
+  'RQ132: cli accepts --project=value syntax',
   async () =>
   {
     const environment =
@@ -119,7 +119,7 @@ test(
   });
 
 test(
-  'RQ131 cli initialises logger',
+  'RQ131: cli initialises logger',
   async () =>
   {
     const environment =
@@ -144,7 +144,7 @@ test(
   });
 
 test(
-  'RQ101 unknown options are rejected by the command parser',
+  'RQ101: unknown options are rejected by the command parser',
   async () =>
   {
     const environment =
@@ -168,7 +168,7 @@ test(
   });
 
 test(
-  'RQ101 cli reports missing option values as command errors',
+  'RQ101: cli reports missing option values as command errors',
   async () => {
     const environment =
       createEnvironment();
@@ -188,7 +188,7 @@ test(
   });
 
 test(
-  'RQ101 cli rejects unsupported long options',
+  'RQ101: cli rejects unsupported long options',
   async () => {
     const environment =
       createEnvironment();
@@ -208,7 +208,7 @@ test(
   });
 
 test(
-  'RQ112 cli reads definitions path from environment variable PART_DEFINITIONS',
+  'RQ112: cli reads definitions path from environment variable PART_DEFINITIONS',
   async () => {
     const environment =
       createEnvironment();
@@ -226,7 +226,7 @@ test(
   });
 
 test(
-  'RQ133 cli reads project path from environment variable PART_PROJECT',
+  'RQ133: cli reads project path from environment variable PART_PROJECT',
   async () => {
     const environment =
       createEnvironment();

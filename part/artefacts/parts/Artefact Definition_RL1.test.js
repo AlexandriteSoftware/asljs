@@ -24,12 +24,12 @@ const tmpDir =
     loggerProvider);
 
 test(
-  'Artefact Definition_RL1 checks declared rule file exists',
+  'Artefact Definition_RL1: checks declared rule file exists',
   async () =>
     await checkDeclaredRulesTest(true));
 
 test(
-  'Artefact Definition_RL1 fails when a declared rule file is missing',
+  'Artefact Definition_RL1: fails when a declared rule file is missing',
   async () =>
     await checkDeclaredRulesTest(false));
 

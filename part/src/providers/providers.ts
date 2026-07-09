@@ -2,7 +2,8 @@ import { LoggerProvider }
   from '../logging/logging.js';
 import { ArtefactDataProvider }
   from './artefact-data-provider.js';
-import { ArtefactDefinitionProvider }
+import { ArtefactDefinitionProvider,
+         ArtefactDefinitionProviderImpl }
   from './artefact-definition-provider.js';
 import { ArtefactDefinitionRuleProvider }
   from './artefact-definition-rule-provider.js';
@@ -56,7 +57,7 @@ export function providersFactory(
         'MarkdownDocumentProvider'));
 
   const artefactDefinitionProvider =
-    new ArtefactDefinitionProvider(
+    new ArtefactDefinitionProviderImpl(
       artefactDefinitionProviderLogger,
       gitIgnore,
       markdownDocumentProvider,

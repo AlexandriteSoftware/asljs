@@ -12,7 +12,6 @@ test(
   assert.deepEqual(
     Object.keys(part).sort(),
     [ 'ArtefactProvider',
-      'DefinitionProvider',
       'MarkdownDocumentProvider',
       'TmpDir',
       'createPinoLoggerProvider',

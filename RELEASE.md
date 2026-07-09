@@ -1,14 +1,12 @@
-# Release
+# RELEASE
 
 Each package is released separately, from the repository root.
 
-Use the package-local release command for publishable packages:
+Use the workspace release command for publishable packages:
 
 ```pwsh
 npm -w eventful run release:patch
 ```
-
-Do not add or use a root-level release script.
 
 `app-builder` is not released with this flow.
 

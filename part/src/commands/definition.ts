@@ -2,8 +2,6 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
-import { ArtefactDefinitionProvider }
-  from '../providers/artefact-definition-provider.js';
 import { Environment }
   from './../environment.js';
 import { ArtefactDefinition }

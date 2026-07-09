@@ -24,7 +24,7 @@ const tmpDir =
     loggerProvider);
 
 test(
-  'Article_RL2 passes for existing local links and images',
+  'Article_RL2: passes for existing local links and images',
   async () => {
     await using workspace =
       tmpDir();
@@ -73,7 +73,7 @@ See [Target](./Target.md).
   });
 
 test(
-  'Article_RL2 fails when a local link does not exist',
+  'Article_RL2: fails when a local link does not exist',
   async () => {
     await using workspace =
       tmpDir();
@@ -114,7 +114,7 @@ See [Missing](./Missing.md).
   });
 
 test(
-  'Article_RL2 fails when a local image does not exist',
+  'Article_RL2: fails when a local image does not exist',
   async () => {
     await using workspace =
       tmpDir();
@@ -155,7 +155,7 @@ test(
   });
 
 test(
-  'Article_RL2 fails when a long inline link is used',
+  'Article_RL2: fails when a long inline link is used',
   async () => {
     await using workspace =
       tmpDir();
@@ -200,7 +200,7 @@ test(
   });
 
 test(
-  'Article_RL2 allows a long reference link',
+  'Article_RL2: allows a long reference link',
   async () => {
     await using workspace =
       tmpDir();
@@ -245,7 +245,7 @@ test(
   });
 
 test(
-  'Article_RL2 resolves root-relative links from projectDirectoryPath',
+  'Article_RL2: resolves root-relative links from projectDirectoryPath',
   async () => {
     await using workspace =
       tmpDir();

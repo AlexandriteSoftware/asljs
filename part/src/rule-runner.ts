@@ -6,27 +6,17 @@ import { access }
   from 'node:fs/promises';
 import { pathToFileURL }
   from 'node:url';
-import { MarkdownDocumentProvider }
-  from './providers/markdown-document-provider.js';
-import { ArtefactDataProvider }
-  from './providers/artefact-data-provider.js';
 import { Artefact }
   from './model/artefact.js';
 import { ArtefactDefinition }
   from './model/artefact-definition.js';
 import { ArtefactDefinitionRule }
   from './model/artefact-definition-rule.js';
-import { ArtefactProvider }
-  from './providers/artefact-provider.js';
-import { ArtefactDefinitionProvider }
-  from './providers/artefact-definition-provider.js';
 import { RuleValidationFunction,
          RuleValidationContext }
   from './rule-validation-function.js';
 import { Logger }
   from './logging/logging.js';
-import { ArtefactDefinitionRuleProvider }
-  from './providers/artefact-definition-rule-provider.js';
 import { Providers }
   from './providers/providers.js';
 

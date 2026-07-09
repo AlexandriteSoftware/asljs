@@ -8,9 +8,10 @@ import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }
   from './providers.js';
-import { ArtefactDefinitionRule,
-         Location }
-  from '../model/types.js';
+import { Location }
+  from '../model/location.js';
+import { ArtefactDefinitionRule }
+  from '../model/artefact-definition-rule.js';
 
 const loggerProvider =
   createPinoLoggerProvider();

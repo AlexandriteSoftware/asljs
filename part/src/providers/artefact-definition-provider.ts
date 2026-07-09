@@ -13,22 +13,73 @@ import { List,
   from 'mdast';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
-import { ArtefactDefinition,
-         ArtefactDefinitionRule,
-         Location }
-  from '../model/types.js';
 import { Logger }
   from '../logging/logging.js';
 import { getSections,
          getText,
          Section }
   from '../markdown-document-queries.js';
+import { ArtefactDefinition }
+  from '../model/artefact-definition.js';
+import { ArtefactDefinitionRule }
+  from '../model/artefact-definition-rule.js';
+import { Location }
+  from '../model/location.js';
 
-export interface DefinitionParsingContext {
+export interface DefinitionFileParsingContext
+{
+  /**
+   * Absolute path to the definition file being parsed. Relative paths in
+   * the artefact definition will be resolved from this path.
+   */
   path: string;
 }
 
-export class ArtefactDefinitionProvider
+export interface ArtefactDefinitionProvider
+{
+  /**
+   * Finds an artefact definition by name. Returns undefined if not found.
+   */
+  findDefinition(
+      definitionName: string
+    ): Promise<ArtefactDefinition | undefined>;
+
+  /**
+   * Gets an artefact definition by name. Throws an error if not found.
+   */
+  getDefinition(
+      definitionName: string
+    ): Promise<ArtefactDefinition>;
+
+  /**
+   * Gets all artefact definitions.
+   */
+  getDefinitions(
+    ): Promise<ArtefactDefinition[]>;
+
+  /**
+   * Loads an artefact definition from a file. The file must be a Markdown file
+   * with the correct structure. Throws an error if the file cannot be parsed.
+   * The file path must be absolute.
+   */
+  fromFile(
+      filePath: string
+    ): Promise<ArtefactDefinition>;
+
+  /**
+   * Tries to parse an artefact definition from a Markdown document. Returns
+   * undefined if the document cannot be parsed. The context provides the path
+   * to the definition file being parsed, which is used to resolve relative
+   * paths in the artefact definition.
+   */
+  tryParse(
+      content: string,
+      context: DefinitionFileParsingContext
+    ): ArtefactDefinition | undefined;
+}
+
+export class ArtefactDefinitionProviderImpl
+  implements ArtefactDefinitionProvider
 {
   private cache: ArtefactDefinition[] | null = null;
 
@@ -217,7 +268,7 @@ export class ArtefactDefinitionProvider
 
   tryParse(
       content: string,
-      context: DefinitionParsingContext
+      context: DefinitionFileParsingContext
     ): ArtefactDefinition | undefined
   {
     this.logger.trace(

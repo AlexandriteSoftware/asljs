@@ -1,10 +1,17 @@
 import pino
   from 'pino';
 import { Logger,
-         LoggerOptions,
-         LoggerProvider,
-         NullLoggerProvider }
+         LoggerProvider }
   from './logging.js';
+import { NullLoggerProvider }
+  from './null.js';
+
+export interface LoggerOptions
+{
+  level: string;
+  file?: string;
+  envVarPrefix?: string;
+}
 
 /**
  * Creates a logger instance with the specified options.

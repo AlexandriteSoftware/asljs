@@ -4,7 +4,7 @@ export { runCli }
 export { ArtefactProvider }
   from './providers/artefact-provider.js';
 
-export { ArtefactDefinitionProvider as DefinitionProvider }
+export { ArtefactDefinitionProvider }
   from './providers/artefact-definition-provider.js';
 
 export { MarkdownDocumentProvider }

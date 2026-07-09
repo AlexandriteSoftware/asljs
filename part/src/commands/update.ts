@@ -6,8 +6,6 @@ import { readFile }
   from 'node:fs/promises';
 import { toPosixPath }
   from '../formatting.js';
-import { ArtefactDefinitionProvider }
-  from '../providers/artefact-definition-provider.js';
 import { Logger }
   from '../logging/logging.js';
 import { Environment }

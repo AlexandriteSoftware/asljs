@@ -1,5 +1,4 @@
-import { LoggerProvider,
-         NullLoggerProvider }
+import { LoggerProvider }
   from './logging/logging.js';
 import { Logger }
   from './logging/logging.js';
@@ -8,6 +7,8 @@ import { CodeGenerationRequest }
 import { Providers,
          providersFactory }
   from './providers/providers.js';
+import { NullLoggerProvider }
+  from './logging/null.js';
 
 export interface Environment
 {
