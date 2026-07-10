@@ -2,7 +2,7 @@ import test
   from 'node:test';
 import assert
   from 'node:assert';
-import fsp
+import fs
   from 'node:fs/promises';
 import os
   from 'node:os';
@@ -13,9 +13,11 @@ import { TmpDir }
 
 test(
   'constructor creates unique temporary directories',
-  async () => {
+  async (
+    ): Promise<void> =>
+  {
     const baseTmpDir =
-      await fsp.mkdtemp(
+      await fs.mkdtemp(
         path.join(
           os.tmpdir(),
           'asljs-tmpdir-test-'));
@@ -31,8 +33,8 @@ test(
       for (
         let i = 0;
         i < 10;
-        i++)
-      {
+        i++
+      ) {
         const tmpDir =
           new TmpDir(options);
 
@@ -52,11 +54,11 @@ test(
 
         await assert.doesNotReject(
           async () =>
-            await fsp.access(
+            await fs.access(
               tmpDir.path));
       }
     } finally {
-      await fsp.rm(
+      await fs.rm(
         baseTmpDir,
         { recursive: true,
           force: true });
@@ -65,7 +67,9 @@ test(
 
 test(
   'helpers create subdirectories and files inside the temporary directory',
-  async () => {
+  async (
+    ): Promise<void> =>
+  {
     using tmpDir =
       new TmpDir();
 
@@ -107,7 +111,9 @@ test(
 
 test(
   'cleanup removes the temporary directory',
-  async () => {
+  async (
+    ): Promise<void> =>
+  {
     const tmpDir =
       new TmpDir();
 
@@ -122,16 +128,24 @@ test(
 
     await assert.rejects(
       async () => {
-        await fsp.access(tmpDirectoryPath);
-        await fsp.stat(tmpDirectoryPath);
+        await fs.access(
+          tmpDirectoryPath);
+      });
+
+    await assert.rejects(
+      async () => {
+        await fs.stat(
+          tmpDirectoryPath);
       });
   });
 
 test(
   'path helpers reject attempts to escape the temporary directory',
-  async () => {
+  async (
+    ): Promise<void> =>
+  {
     const parentDirectoryPath =
-      await fsp.mkdtemp(
+      await fs.mkdtemp(
         path.join(
           os.tmpdir(),
           'asljs-tmpdir-escape-'));
@@ -148,27 +162,90 @@ test(
 
     try {
       assert.throws(
-        () => tmpDir.resolve(
-          '..',
-          'escaped.txt'));
+        () =>
+          tmpDir.resolve(
+            '..',
+            'escaped.txt'));
 
       await assert.rejects(
-        async () => await tmpDir.mkdir(
-          '../escaped-dir'));
+        async () =>
+          await tmpDir.mkdir(
+            '../escaped-dir'));
 
       await assert.rejects(
-        async () => await tmpDir.writeText(
-          '../escaped.txt',
-          'bad path'));
+        async () =>
+          await tmpDir.writeText(
+            '../escaped.txt',
+            'bad path'));
 
       await assert.rejects(
-        async () => await fsp.access(escapedFilePath));
+        async () =>
+          await fs.access(
+            escapedFilePath));
     } finally {
       await tmpDir.cleanup();
-      await fsp.rm(
+
+      await fs.rm(
         parentDirectoryPath,
         { recursive: true,
           force: true });
     }
   });
 
+test(
+  'using statement cleans the temporary directory',
+  async (
+    ): Promise<void> =>
+  {
+    const factory =
+      async (
+        ): Promise<string> =>
+    {
+      using tmpDir =
+          new TmpDir();
+
+      await tmpDir.writeText(
+        'content.txt',
+        '');
+
+      return tmpDir.path;
+    };
+
+    const tmpDirPath =
+      await factory();
+
+    await assert.rejects(
+      async () => {
+        await fs.access(
+          tmpDirPath);
+      });
+  });
+
+test(
+  'await using statement cleans the temporary directory',
+  async (
+    ): Promise<void> =>
+  {
+    const factory =
+      async (
+        ): Promise<string> =>
+    {
+      await using tmpDir =
+          new TmpDir();
+
+      await tmpDir.writeText(
+        'content.txt',
+        '');
+
+      return tmpDir.path;
+    };
+
+    const tmpDirPath =
+      await factory();
+
+    await assert.rejects(
+      async () => {
+        await fs.access(
+          tmpDirPath);
+      });
+  });

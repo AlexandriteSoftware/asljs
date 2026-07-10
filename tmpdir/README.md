@@ -32,7 +32,7 @@ NPM Package: [asljs-tmpdir][21]
 import { TmpDir }
   from 'asljs-tmpdir';
 
-using const tmpDir =
+using tmpDir =
   new TmpDir();
 
 // optional, writeText will create a path
