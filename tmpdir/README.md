@@ -35,10 +35,6 @@ import { TmpDir }
 using tmpDir =
   new TmpDir();
 
-// optional, writeText will create a path
-// to the file if it doesn't exist
-await tmpDir.mkdir('example');
-
 await tmpDir.writeText(
   'example/file.txt',
   'Hello, world!');
@@ -50,6 +46,42 @@ console.log(
 // the temporary directory and its contents
 // will be automatically deleted at the end of
 // the using block
+```
+
+### Custom tracing handler
+
+```js
+import { TmpDir,
+         formatMessage }
+  from 'asljs-tmpdir';
+
+using tmpDir =
+  new TmpDir(
+    { trace:
+        (message, ...params) =>
+          console.log(
+            formatMessage(
+              message,
+              ...params)) });
+
+await tmpDir.writeText(
+  'example/file.txt',
+  'Hello, world!');
+```
+
+### Strict error handling
+
+Failing to clean up is not a critical error so the default behavior is to log
+a warning to the console. Replacing the error handler makes it more strict.
+
+```js
+import { TmpDir,
+         tmpDirThrowErrorFunction }
+  from 'asljs-tmpdir';
+
+using tmpDir =
+  new TmpDir(
+    { error: tmpDirThrowErrorFunction });
 ```
 
 ## License

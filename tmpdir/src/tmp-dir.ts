@@ -21,29 +21,50 @@ export interface TmpDirOptions {
   keep: boolean
 }
 
+export function formatMessage(
+    message: string,
+    ...params: any[]
+  ): string
+{
+  return message.replace(
+    /%[sdo]/g,
+    m => {
+      const param = params.shift();
+      if (param === undefined) {
+        switch (m) {
+          case '%s':
+            return String(param);
+          case '%d':
+            return String(Number(param));
+          case '%o':
+            return JSON.stringify(param);
+        }
+        return m;
+      }
+      return param;
+    });
+}
+
 export function tmpDirConsoleLogFunction(
     message: string,
     ...params: any[]
   ): void
 {
   console.error(
-    message.replace(
-      /%[sdo]/g,
-      m => {
-        const param = params.shift();
-        if (param === undefined) {
-          switch (m) {
-            case '%s':
-              return String(param);
-            case '%d':
-              return String(Number(param));
-            case '%o':
-              return JSON.stringify(param);
-          }
-          return m;
-        }
-        return param;
-      }));
+    formatMessage(
+      message,
+      ...params));
+}
+
+export function tmpDirThrowErrorFunction(
+    message: string,
+    ...params: any[]
+  ): void
+{
+  throw new Error(
+    formatMessage(
+      message,
+      ...params));
 }
 
 export class TmpDir

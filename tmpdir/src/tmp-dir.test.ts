@@ -8,7 +8,9 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import { TmpDir }
+import { TmpDir,
+         formatMessage,
+         type TmpDirLogFunction }
   from './tmp-dir.js';
 
 test(
@@ -248,4 +250,36 @@ test(
         await fs.access(
           tmpDirPath);
       });
+  });
+
+test(
+  'TmpDir traces calls to its methods',
+  async (
+    ): Promise<void> =>
+  {
+    const traceMessages: string[] = [];
+
+    const traceHandler: TmpDirLogFunction =
+      (
+          message: string,
+          ...params: any[]
+        ): void =>
+      {
+        const text =
+          formatMessage(
+            message,
+            ...params);
+        
+        traceMessages.push(text);
+      };
+
+    using tmpDir =
+      new TmpDir(
+        { trace: traceHandler });
+    
+    await tmpDir.writeText(
+      'content.txt',
+      '');
+
+    assert.ok(traceMessages.length > 0);
   });
