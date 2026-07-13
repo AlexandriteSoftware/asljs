@@ -39,9 +39,9 @@ export async function releasePatch(
 
   startSequence(
     [ 'npm run clean',
+      'npm run build:dist',
       'npm run typecheck',
       'npm run lint',
-      'npm run build:dist',
       'npm run build',
       'npm run test',
       'npm version patch --no-git-tag-version' ]);

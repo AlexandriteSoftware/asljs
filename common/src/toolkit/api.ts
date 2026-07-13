@@ -38,18 +38,23 @@ export function log(
     message.replace(
       /%[sdo]/g,
       m => {
-        const param = params.shift();
+        const param =
+          params.shift();
+
         if (param === undefined) {
           switch (m) {
             case '%s':
               return String(param);
             case '%d':
-              return String(Number(param));
+              return String(
+                Number(param));
             case '%o':
               return JSON.stringify(param);
           }
+
           return m;
         }
+
         return param;
       }));
 }

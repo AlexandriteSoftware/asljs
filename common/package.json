@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "node --test --enable-source-maps build/**/*.test.js",
-    "all": "npm run build:dist && npm run clean && npm run build:dist && npm run format && npm run typecheck && npm run lint && npm run build && npm run test"
+    "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run build && npm run test"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",

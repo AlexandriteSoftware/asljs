@@ -6,8 +6,8 @@ import { start }
 
 
 export function tagRepository(
-  tag: string
-): void {
+  tag: string): void
+{
   log(
     'Creating tag: %s',
     tag);

@@ -17,7 +17,7 @@ export async function getCommandDocs(
   const content =
     await fs.readFile(
       getToolkitDocsPath(),
-        'utf8');
+      'utf8');
 
   return parseToolkitDocs(content);
 }
