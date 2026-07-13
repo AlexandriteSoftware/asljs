@@ -1,25 +1,27 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
+import { ArtefactDefinitionRule }
+  from '../model/artefact-definition-rule.js';
+import { Location }
+  from '../model/location.js';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }
   from './providers.js';
-import { Location }
-  from '../model/location.js';
-import { ArtefactDefinitionRule }
-  from '../model/artefact-definition-rule.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
 test.after(
-  () => {
+  () =>
+  {
     loggerProvider.dispose();
-  });
+  }
+);
 
 const tmpDir =
   tmpDirFactory(
@@ -27,8 +29,7 @@ const tmpDir =
 
 test(
   'RQ201: tryParse parses definition with no locations',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     await using workspace =
       tmpDir();
@@ -50,11 +51,13 @@ A todo item.
         { path: workspace.resolve('Todo Item.md') });
 
     assert.ok(definition);
-  });
+  }
+);
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -62,7 +65,8 @@ test(
 
     await workspace.writeText(
       '.gitignore',
-      'hidden/\n');
+      'hidden/\n'
+    );
 
     await workspace.writeText(
       'Todo Item.md',
@@ -73,14 +77,16 @@ A todo item.
 ## Location
 
 - Folders: Todo Items
-`);
+`
+    );
 
     await workspace.writeText(
       'Notes.md',
       `# Notes
 
 This is not a PART definition.
-`);
+`
+    );
 
     await workspace.writeText(
       'hidden/Hidden Item.md',
@@ -91,7 +97,8 @@ Hidden definition.
 ## Location
 
 - Folders: Hidden Items
-`);
+`
+    );
 
     const { artefactDefinitionProvider } =
       providersFactory(
@@ -104,16 +111,20 @@ Hidden definition.
 
     assert.equal(
       definitions.length,
-      1);
+      1
+    );
 
     assert.equal(
       definitions[0].name,
-      'Todo Item');
-  });
+      'Todo Item'
+    );
+  }
+);
 
 test(
   'RQ202: DefinitionProvider loads definition from markdown',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -124,7 +135,8 @@ test(
     throw new Error('Due date must be in the future.');
   }
 }
-`);
+`
+    );
 
     await workspace.writeText(
       'Todo Item.md',
@@ -147,7 +159,8 @@ A todo item is a task that needs to be done.
 ### R1
 
 Due date must be in the future.
-`);
+`
+    );
 
     const { artefactDefinitionProvider } =
       providersFactory(
@@ -163,48 +176,58 @@ Due date must be in the future.
 
     assert.equal(
       definition.name,
-      'Todo Item');
+      'Todo Item'
+    );
 
     assert.equal(
       definition.description,
-      'A todo item is a task that needs to be done.');
+      'A todo item is a task that needs to be done.'
+    );
 
     const expectedLocations: Location[] =
-      [ { pattern: 'Todo Items/**/*.md',
-          exclude: [ 'Todo Items/Templates/**/*.md' ],
-          filters: [ { name: 'GitIgnore' } ] } ];
+      [{
+      pattern: 'Todo Items/**/*.md',
+      exclude: ['Todo Items/Templates/**/*.md'],
+      filters: [{ name: 'GitIgnore' }]
+    }];
 
     assert.deepEqual(
       definition.locations,
-      expectedLocations);
+      expectedLocations
+    );
 
     const expectedRules: ArtefactDefinitionRule[] =
-      [ { id: 'R1',
-          definition: 'Todo Item',
-          name: 'Todo Item_R1',
-          heading: 'R1',
-          content: '### R1\n\nDue date must be in the future.' } ];
+      [{
+      id: 'R1',
+      definition: 'Todo Item',
+      name: 'Todo Item_R1',
+      heading: 'R1',
+      content: '### R1\n\nDue date must be in the future.'
+    }];
 
     assert.deepEqual(
       definition.rules,
-      expectedRules);
-  });
+      expectedRules
+    );
+  }
+);
 
 test(
   'RQ203: fromFile throws when content does not match the definition format',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
-    const definitionPath =
-      'Todo Item.md';
+    const definitionPath = 'Todo Item.md';
 
     await workspace.writeText(
       definitionPath,
       `# Different Name
 
 This file should not be treated as a definition.
-`);
+`
+    );
 
     const providers =
       providersFactory(
@@ -218,5 +241,8 @@ This file should not be treated as a definition.
     assert.rejects(
       async () =>
         await provider.fromFile(
-          workspace.resolve(definitionPath)));
-  });
+          workspace.resolve(definitionPath)
+        )
+    );
+  }
+);

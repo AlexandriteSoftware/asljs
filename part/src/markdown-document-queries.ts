@@ -1,6 +1,6 @@
-import { Root,
+import { Heading,
          Node,
-         Heading }
+         Root }
   from 'mdast';
 import { MarkdownDocument }
   from './model/markdown-document.js';
@@ -21,22 +21,23 @@ export interface Section
 }
 
 export function getSections(
-    document: MarkdownDocument
-  ): Section[]
+  document: MarkdownDocument
+): Section[]
 {
   const sections: Section[] = [];
 
   let currentSection: Section =
-    { heading: '',
-      level: 0,
-      nodes: [ ],
-      markup: '',
-      content:
-        { nodes: [ ],
-          markup: '' } };
+    {
+    heading: '',
+    level: 0,
+    nodes: [],
+    markup: '',
+    content: { nodes: [], markup: '' }
+  };
 
   sections.push(
-    currentSection);
+    currentSection
+  );
 
   for (const node of document.root.children) {
     if (node.type !== 'heading') {
@@ -57,7 +58,8 @@ export function getSections(
     if (sections.length > 0) {
       updateMarkupForSection(
         document,
-        sections[sections.length - 1]);
+        sections[sections.length - 1]
+      );
     }
 
     const markup =
@@ -66,13 +68,13 @@ export function getSections(
         node.children);
 
     const newSection: Section =
-      { heading: markup,
-        level: (node as Heading).depth,
-        nodes: [ node ],
-        markup: '',
-        content:
-          { nodes: [ ],
-            markup: '' } };
+      {
+      heading: markup,
+      level: (node as Heading).depth,
+      nodes: [node],
+      markup: '',
+      content: { nodes: [], markup: '' }
+    };
 
     sections.push(newSection);
 
@@ -82,15 +84,16 @@ export function getSections(
   if (sections.length > 0) {
     updateMarkupForSection(
       document,
-      sections[sections.length - 1]);
+      sections[sections.length - 1]
+    );
   }
 
   return sections;
 
   function updateMarkupForSection(
-      document: MarkdownDocument,
-      section: Section
-    ): void
+    document: MarkdownDocument,
+    section: Section
+  ): void
   {
     const sectionMarkup =
       getMarkup(
@@ -104,15 +107,14 @@ export function getSections(
         document,
         section.content.nodes);
 
-    section.content.markup =
-      contentMarkup;
+    section.content.markup = contentMarkup;
   }
 }
 
 export function getSectionNode(
-    document: MarkdownDocument,
-    sectionHeadingMarkup: string
-  ): Heading | null
+  document: MarkdownDocument,
+  sectionHeadingMarkup: string
+): Heading | null
 {
   for (const node of document.root.children) {
     if (node.type !== 'heading') {
@@ -139,9 +141,9 @@ export function getSectionNode(
  * the section is not found.
  */
 export function getSectionNodes(
-    document: MarkdownDocument,
-    sectionHeadingMarkup: string
-  ): Node[] | null
+  document: MarkdownDocument,
+  sectionHeadingMarkup: string
+): Node[] | null
 {
   const sectionNodes: Node[] = [];
 
@@ -154,7 +156,8 @@ export function getSectionNodes(
         break;
       }
 
-      const headingNode = node as Heading;
+      const headingNode =
+        node as Heading;
 
       const markup =
         getMarkup(
@@ -186,9 +189,9 @@ export function getSectionNodes(
 }
 
 export function getMarkup(
-    document: MarkdownDocument,
-    node: Node | Node[]
-  ): string
+  document: MarkdownDocument,
+  node: Node | Node[]
+): string
 {
   if (!node) {
     return '';
@@ -196,8 +199,8 @@ export function getMarkup(
 
   if (
     Array.isArray(node)
-    && node.length === 0)
-  {
+    && node.length === 0
+  ) {
     return '';
   }
 
@@ -227,13 +230,14 @@ export function getMarkup(
 
   return document.content.slice(
     startOffset,
-    endOffset);
+    endOffset
+  );
 }
 
 export function getText(
-    document: MarkdownDocument,
-    nodes: Node | Node[]
-  ): string
+  document: MarkdownDocument,
+  nodes: Node | Node[]
+): string
 {
   if (!nodes) {
     return '';
@@ -242,12 +246,14 @@ export function getText(
   if (Array.isArray(nodes)) {
     const text =
       nodes
-        .map(
-          node =>
-            getText(
-              document,
-              node))
-        .join('');
+      .map(
+        (node) =>
+          getText(
+            document,
+            node
+          )
+      )
+      .join('');
 
     return text;
   }
@@ -268,13 +274,15 @@ export function getText(
   if (Array.isArray(children)) {
     const text =
       children
-        .map(
-          childNode =>
-            getText(
-              document,
-              childNode))
-        .join('');
-    
+      .map(
+        (childNode) =>
+          getText(
+            document,
+            childNode
+          )
+      )
+      .join('');
+
     return text;
   }
 

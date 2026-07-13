@@ -4,15 +4,15 @@ import path
   from 'node:path';
 import { pathToFileURL }
   from 'node:url';
+import { ArtefactDataProvidingContext,
+         ArtefactDataProvidingFunction }
+  from '../artefact-data-providing-function.js';
 import { MarkdownDocumentProvider }
   from '../index.js';
-import { Artefact }
-  from '../model/artefact.js';
-import { ArtefactDataProvidingFunction,
-         ArtefactDataProvidingContext }
-  from '../artefact-data-providing-function.js';
 import { Logger }
   from '../logging/logging.js';
+import { Artefact }
+  from '../model/artefact.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -21,26 +21,32 @@ import { Logger }
 export class ArtefactDataProvider
 {
   constructor(
-      private readonly logger: Logger,
-      private readonly markdownDocumentProvider: MarkdownDocumentProvider,
-      private readonly definitionsPath: string
-    )
+    private readonly logger: Logger,
+    private readonly markdownDocumentProvider: MarkdownDocumentProvider,
+    private readonly definitionsPath: string
+  )
   {
-    if (!path.isAbsolute(definitionsPath)) {
+    if (
+      !path.isAbsolute(
+        definitionsPath
+      )
+    ) {
       throw new Error(
-        `'definitionsPath' must be absolute: ${definitionsPath}`);
+        `'definitionsPath' must be absolute: ${definitionsPath}`
+      );
     }
   }
 
   async tryGetArtefactData(
-      artefact: Artefact,
-      definition: string
-    ): Promise<any>
+    artefact: Artefact,
+    definition: string
+  ): Promise<any>
   {
     this.logger.trace(
       'tryGetArtefactData(%s, %s)',
       artefact.relativePath,
-      definition);
+      definition
+    );
 
     const dataProviderFilePath =
       path.join(
@@ -48,8 +54,11 @@ export class ArtefactDataProvider
         'parts',
         definition + '.js');
 
-    if (!(await fs.stat(
-      dataProviderFilePath)).isFile()) {
+    if (
+      !(await fs.stat(
+        dataProviderFilePath
+      )).isFile()
+    ) {
       return null;
     }
 
@@ -60,12 +69,13 @@ export class ArtefactDataProvider
     let dataProviderModule;
 
     try {
-      dataProviderModule =
-        await import(
-          importUrl.href);
+      dataProviderModule = await import(
+        importUrl.href
+      );
     } catch (error) {
       this.logger.error(
-        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`);
+        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`
+      );
 
       return null;
     }
@@ -75,20 +85,25 @@ export class ArtefactDataProvider
 
     if (typeof getDataFunction !== 'function') {
       throw new Error(
-        'Data provider module must export getData.');
+        'Data provider module must export getData.'
+      );
     }
 
     const context: ArtefactDataProvidingContext =
-      { logger: this.logger,
-        markdownDocuments: this.markdownDocumentProvider };
+      {
+      logger: this.logger,
+      markdownDocuments: this.markdownDocumentProvider
+    };
 
     try {
       return await getDataFunction(
         artefact,
-        context);
+        context
+      );
     } catch (error) {
       this.logger.error(
-        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`);
+        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`
+      );
 
       return null;
     }

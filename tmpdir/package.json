@@ -17,7 +17,7 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format": "npm run format:json",
     "clean": "node ../common/dist/toolkit/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
@@ -55,7 +55,6 @@
     "@typescript-eslint/eslint-plugin": "^8.63.0",
     "@typescript-eslint/parser": "^8.63.0",
     "eslint": "^10.6.0",
-    "prettier": "^3.9.4",
     "typescript": "^6.0.3"
   }
 }

@@ -2,16 +2,16 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
-import { FilesystemLocationResolver }
-  from './filesystem-location-resolver.js';
-import { Artefact }
-  from '../model/artefact.js';
-import { ArtefactDefinition }
-  from '../model/artefact-definition.js';
-import { ArtefactDefinitionProvider }
-  from './artefact-definition-provider.js';
 import { Logger }
   from '../logging/logging.js';
+import { ArtefactDefinition }
+  from '../model/artefact-definition.js';
+import { Artefact }
+  from '../model/artefact.js';
+import { ArtefactDefinitionProvider }
+  from './artefact-definition-provider.js';
+import { FilesystemLocationResolver }
+  from './filesystem-location-resolver.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -22,29 +22,31 @@ export class ArtefactProvider
   private locationResolver: FilesystemLocationResolver;
 
   constructor(
-      private readonly logger: Logger,
-      private readonly artefactDefinitionProvider: ArtefactDefinitionProvider,
-      private readonly projectPath: string
-    )
+    private readonly logger: Logger,
+    private readonly artefactDefinitionProvider: ArtefactDefinitionProvider,
+    private readonly projectPath: string
+  )
   {
     if (!path.isAbsolute(projectPath)) {
       throw new Error(
-        `'projectPath' must be absolute: ${projectPath}`);
+        `'projectPath' must be absolute: ${projectPath}`
+      );
     }
 
-    this.locationResolver =
-      new FilesystemLocationResolver(
-        this.logger,
-        this.projectPath);
+    this.locationResolver = new FilesystemLocationResolver(
+      this.logger,
+      this.projectPath
+    );
   }
 
   async tryGetArtefact(
-      artefactPath: string
-    ): Promise<Artefact | null>
+    artefactPath: string
+  ): Promise<Artefact | null>
   {
     this.logger.trace(
       'tryGetArtefact() { %s }',
-      artefactPath);
+      artefactPath
+    );
 
     const artefactFullPath =
       path.resolve(
@@ -55,7 +57,8 @@ export class ArtefactProvider
       this.logger.trace(
         'tryGetArtefact() { %s is resolved to %s }',
         artefactPath,
-        artefactFullPath);
+        artefactFullPath
+      );
     }
 
     const definitions =
@@ -65,7 +68,8 @@ export class ArtefactProvider
     if (definitions.length === 0) {
       this.logger.trace(
         'tryGetArtefact() { %s is not matched by any artefact definition }',
-        artefactPath);
+        artefactPath
+      );
 
       return null;
     }
@@ -73,47 +77,50 @@ export class ArtefactProvider
     return await this.buildArtefact(
       this.projectPath,
       definitions,
-      artefactFullPath);
+      artefactFullPath
+    );
   }
 
   async getArtefacts(
-      definitions?: ArtefactDefinition[]
-    ): Promise<Artefact[]>
+    definitions?: ArtefactDefinition[]
+  ): Promise<Artefact[]>
   {
     if (this.logger.level === 'trace') {
       let definitionsList;
 
       if (definitions) {
-        definitionsList =
-          definitions
-            .map(
-              definition =>
-                definition.name)
-            .join(', ');
+        definitionsList = definitions
+          .map(
+            (definition) => definition.name
+          )
+          .join(', ');
       } else {
         definitionsList = '';
       }
 
       this.logger.trace(
         'getArtefacts(%s)',
-        definitionsList);
+        definitionsList
+      );
     }
 
     if (definitions === null) {
-      definitions =
-        await this.artefactDefinitionProvider.getDefinitions();
+      definitions = await this.artefactDefinitionProvider.getDefinitions();
     }
 
-    const artefactPaths = new Set<string>();
+    const artefactPaths =
+      new Set<string>();
 
     for (const definition of definitions || []) {
       const paths =
         await this.locationResolver
-          .resolve(
-            path.dirname(
-              definition.path),
-            definition.locations);
-      
+        .resolve(
+          path.dirname(
+            definition.path
+          ),
+          definition.locations
+        );
+
       for (const artefactPath of paths) {
         artefactPaths.add(artefactPath);
       }
@@ -130,21 +137,25 @@ export class ArtefactProvider
         await this.buildArtefact(
           this.projectPath,
           artefactDefinitions,
-          artefactPath));
+          artefactPath
+        )
+      );
     }
 
     artefacts.sort(
       (left, right) =>
         left.relativePath.localeCompare(
-          right.relativePath));
+          right.relativePath
+        )
+    );
 
     return artefacts;
   }
 
   async isArtefactOfDefinition(
-      artefactPath: string,
-      definition: ArtefactDefinition
-    ): Promise<boolean>
+    artefactPath: string,
+    definition: ArtefactDefinition
+  ): Promise<boolean>
   {
     const artifactFullPath =
       path.normalize(
@@ -154,18 +165,20 @@ export class ArtefactProvider
 
     const match =
       await this.locationResolver
-        .check(
-          artifactFullPath,
-          path.dirname(
-            definition.path),
-          definition.locations);
-      
+      .check(
+        artifactFullPath,
+        path.dirname(
+          definition.path
+        ),
+        definition.locations
+      );
+
     return match;
   }
 
   async getDefinitionsForArtefact(
-      artefactFilePath: string
-    ): Promise<ArtefactDefinition[]>
+    artefactFilePath: string
+  ): Promise<ArtefactDefinition[]>
   {
     const definitions =
       await this.artefactDefinitionProvider.getDefinitions();
@@ -176,8 +189,9 @@ export class ArtefactProvider
       if (
         await this.isArtefactOfDefinition(
           artefactFilePath,
-          definition))
-      {
+          definition
+        )
+      ) {
         matchingDefinitions.push(definition);
       }
     }
@@ -186,28 +200,30 @@ export class ArtefactProvider
   }
 
   async buildArtefact(
-      projectDirectory: string,
-      definitions: ArtefactDefinition[],
-      artefactPath: string
-    ): Promise<Artefact>
+    projectDirectory: string,
+    definitions: ArtefactDefinition[],
+    artefactPath: string
+  ): Promise<Artefact>
   {
     const artefact: Artefact =
-      { path: artefactPath,
-        relativePath:
-          toPosixPath(
-            path.relative(
-              projectDirectory,
-              artefactPath)),
-        basePath:
+      {
+      path: artefactPath,
+      relativePath: toPosixPath(
+        path.relative(
           projectDirectory,
-        name:
-          path.basename(
-            artefactPath,
-            path.extname(artefactPath)),
-        definitions:
-          definitions
-            .map(
-              definition => definition.name) };
+          artefactPath
+        )
+      ),
+      basePath: projectDirectory,
+      name: path.basename(
+        artefactPath,
+        path.extname(artefactPath)
+      ),
+      definitions: definitions
+        .map(
+          (definition) => definition.name
+        )
+    };
 
     return artefact;
   }

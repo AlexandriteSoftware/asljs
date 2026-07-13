@@ -1,13 +1,13 @@
-import { unified }
-  from 'unified';
-import remarkParse
-  from 'remark-parse';
 import { readFile }
   from 'node:fs/promises';
-import { MarkdownDocument }
-  from '../model/markdown-document.js';
+import remarkParse
+  from 'remark-parse';
+import { unified }
+  from 'unified';
 import { Logger }
   from '../logging/logging.js';
+import { MarkdownDocument }
+  from '../model/markdown-document.js';
 
 const MARKDOWN_PARSER =
   unified().use(remarkParse);
@@ -15,22 +15,21 @@ const MARKDOWN_PARSER =
 export class MarkdownDocumentProvider
 {
   constructor(
-      private readonly logger: Logger
-    )
+    private readonly logger: Logger
+  )
   {
   }
 
   parse(
-      content: string
-    ): MarkdownDocument
+    content: string
+  ): MarkdownDocument
   {
     const document =
       MARKDOWN_PARSER.parse(
         content);
 
     const markdownDocument: MarkdownDocument =
-      { content,
-        root: document };
+      { content, root: document };
 
     return markdownDocument;
   }
@@ -41,7 +40,8 @@ export class MarkdownDocumentProvider
   {
     this.logger.trace(
       'load(...) { %s }',
-      path);
+      path
+    );
 
     let content =
       await readFile(
@@ -49,8 +49,7 @@ export class MarkdownDocumentProvider
         'utf8');
 
     if (content.startsWith('\uFEFF')) {
-      content =
-        content.slice(1);
+      content = content.slice(1);
     }
 
     const document =

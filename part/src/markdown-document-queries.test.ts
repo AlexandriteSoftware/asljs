@@ -1,18 +1,18 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
-import { unified }
-  from 'unified';
+import test
+  from 'node:test';
 import remarkParse
   from 'remark-parse';
+import { unified }
+  from 'unified';
 import { createPinoLoggerProvider }
   from './logging/pino.js';
-import { MarkdownDocument }
-  from './model/markdown-document.js';
 import { getMarkup,
          getSections }
   from './markdown-document-queries.js';
+import { MarkdownDocument }
+  from './model/markdown-document.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -21,13 +21,16 @@ const MARKDOWN_PARSER =
   unified().use(remarkParse);
 
 test.after(
-  () => {
+  () =>
+  {
     loggerProvider.dispose();
-  });
+  }
+);
 
 test(
   'getMarkup returns markup from a markdown document #1',
-  async () => {
+  async () =>
+  {
     const document =
       parse(
         `# Heading 1`);
@@ -39,12 +42,15 @@ test(
 
     assert.equal(
       markup,
-      '# Heading 1');
-  });
+      '# Heading 1'
+    );
+  }
+);
 
 test(
   'getMarkup returns markup from a markdown document #2',
-  async () => {
+  async () =>
+  {
     const document =
       parse(
         `# Heading 1
@@ -58,12 +64,15 @@ test`);
 
     assert.equal(
       markup,
-      'test');
-  });
+      'test'
+    );
+  }
+);
 
 test(
   'getMarkup returns markup from a markdown document #3',
-  async () => {
+  async () =>
+  {
     const content =
       `# Heading 1
 
@@ -79,13 +88,15 @@ test`;
 
     assert.equal(
       markup,
-      content);
-  });
-
+      content
+    );
+  }
+);
 
 test(
   'getSections returns sections from a markdown document #1',
-  async () => {
+  async () =>
+  {
     const content =
       `# Heading 1`;
 
@@ -99,20 +110,25 @@ test(
 
     assert.equal(
       sections[0].heading,
-      'Heading 1');
+      'Heading 1'
+    );
 
     assert.equal(
       sections[0].level,
-      1);
+      1
+    );
 
     assert.equal(
       sections[0].markup,
-      content);
-  });
+      content
+    );
+  }
+);
 
 test(
   'getSections returns sections from a markdown document #2',
-  async () => {
+  async () =>
+  {
     const content =
       `# Heading 1
 
@@ -128,29 +144,31 @@ text`;
 
     assert.equal(
       sections[0].heading,
-      'Heading 1');
+      'Heading 1'
+    );
 
     assert.equal(
       sections[0].level,
-      1);
+      1
+    );
 
     assert.equal(
       sections[0].markup,
-      content);
-  });
-
+      content
+    );
+  }
+);
 
 function parse(
-    content: string
-  ): MarkdownDocument
+  content: string
+): MarkdownDocument
 {
   const document =
     MARKDOWN_PARSER.parse(
       content);
 
   const markdownDocument: MarkdownDocument =
-    { content,
-      root: document };
+    { content, root: document };
 
   return markdownDocument;
 }

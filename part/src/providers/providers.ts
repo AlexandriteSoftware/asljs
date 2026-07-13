@@ -31,16 +31,18 @@ export interface Providers
 }
 
 export function providersFactory(
-    loggerProvider: LoggerProvider,
-    projectPath: string,
-    definitionsPath: string
-  ): Providers
+  loggerProvider: LoggerProvider,
+  projectPath: string,
+  definitionsPath: string
+): Providers
 {
   const filesystemLocationResolver =
     new FilesystemLocationResolver(
-      loggerProvider.getLogger(
-        'FilesystemLocationResolver'),
-      projectPath);
+    loggerProvider.getLogger(
+      'FilesystemLocationResolver'
+    ),
+    projectPath
+  );
 
   const artefactDefinitionProviderLogger =
     loggerProvider.getLogger(
@@ -48,37 +50,51 @@ export function providersFactory(
 
   const gitIgnore =
     new GitIgnore(
-      loggerProvider.getLogger(
-        'GitIgnore'));
+    loggerProvider.getLogger(
+      'GitIgnore'
+    )
+  );
 
   const markdownDocumentProvider =
     new MarkdownDocumentProvider(
-      loggerProvider.getLogger(
-        'MarkdownDocumentProvider'));
+    loggerProvider.getLogger(
+      'MarkdownDocumentProvider'
+    )
+  );
 
   const artefactDefinitionProvider =
     new ArtefactDefinitionProviderImpl(
-      artefactDefinitionProviderLogger,
-      gitIgnore,
-      markdownDocumentProvider,
-      definitionsPath);
+    artefactDefinitionProviderLogger,
+    gitIgnore,
+    markdownDocumentProvider,
+    definitionsPath
+  );
 
   const artefactProvider =
     new ArtefactProvider(
-      loggerProvider.getLogger('ArtefactProvider'),
-      artefactDefinitionProvider,
-      projectPath);
+    loggerProvider.getLogger(
+      'ArtefactProvider'
+    ),
+    artefactDefinitionProvider,
+    projectPath
+  );
 
   const artefactDataProvider =
     new ArtefactDataProvider(
-      loggerProvider.getLogger('ArtefactDataProvider'),
-      markdownDocumentProvider,
-      definitionsPath);
+    loggerProvider.getLogger(
+      'ArtefactDataProvider'
+    ),
+    markdownDocumentProvider,
+    definitionsPath
+  );
 
   const artefactDefinitionRuleProvider =
     new ArtefactDefinitionRuleProvider(
-      loggerProvider.getLogger('ArtefactDefinitionRuleProvider'),
-      artefactDefinitionProvider);
+    loggerProvider.getLogger(
+      'ArtefactDefinitionRuleProvider'
+    ),
+    artefactDefinitionProvider
+  );
 
   return {
     projectPath,

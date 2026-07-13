@@ -21,7 +21,7 @@
     "cog": "bin/cog.js"
   },
   "scripts": {
-    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format": "npm run format:json",
     "clean": "node ../common/dist/toolkit/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
@@ -65,7 +65,6 @@
     "@typescript-eslint/parser": "^8.63.0",
     "asljs-tmpdir": "^0.1.9",
     "eslint": "^10.6.0",
-    "prettier": "^3.9.4",
     "typescript": "^6.0.3"
   }
 }

@@ -21,7 +21,7 @@ export interface ArtefactDefinition
 
   /**
    * Artefact definition description.
-   * 
+   *
    * @remarks
    * The description is usually the content of the first section of the artefact
    * definition file.

@@ -1,94 +1,106 @@
-export interface Column {
+export interface Column
+{
   property: string;
   name?: string;
 }
 
 export function renderObjectsToMarkdownTable(
-    columns: Column[],
-    objects: Record<string, any>[]
-  ): string
+  columns: Column[],
+  objects: Record<string, any>[]
+): string
 {
   const minWidth = 3;
 
   const properties =
     columns.map(
-      column =>
-        typeof column === 'string'
-          ? column
-          : column.property);
+      (column) =>
+      typeof column === 'string'
+        ? column
+        : column.property);
 
   const headers =
     columns.map(
-      column =>
-        typeof column === 'string'
-          ? column
-          : (column.name
-             ?? column.property));
+      (column) =>
+      typeof column === 'string'
+        ? column
+        : (column.name
+          ?? column.property));
 
   const widths =
     properties.map(
-      property => {
-        const columnWidths =
-          objects.map(
-            row => {
-              const text =
-                String(
-                  row[property]);
+      (property) =>
+    {
+      const columnWidths =
+        objects.map(
+          (row) =>
+        {
+          const text =
+            String(
+              row[property]);
 
-              return text.length;
-            });
+          return text.length;
+        });
 
-        columnWidths.push(
-          property.length);
+      columnWidths.push(
+        property.length
+      );
 
-        columnWidths.push(
-          minWidth);
+      columnWidths.push(
+        minWidth
+      );
 
-        return Math.max(
-          ...columnWidths);
-      });
+      return Math.max(
+        ...columnWidths
+      );
+    });
 
-  const lines =
-    [];
+  const lines = [];
 
   lines.push(
     renderRow(
       headers,
-      widths));
+      widths
+    )
+  );
 
   lines.push(
     renderRow(
       widths.map(
-        width =>
-          '-'.repeat(width)),
-      widths));
+        (width) => '-'.repeat(width)
+      ),
+      widths
+    )
+  );
 
   for (const obj of objects) {
     lines.push(
       renderRow(
         properties.map(
-          property =>
+          (property) =>
             String(
-              obj[property])),
-        widths));
+              obj[property]
+            )
+        ),
+        widths
+      )
+    );
   }
 
   return lines.join('\n');
 }
 
 function renderRow(
-    cells: any[],
-    widths: number[]
-  ): string
+  cells: any[],
+  widths: number[]
+): string
 {
-  const md =
-    [];
-  
+  const md = [];
+
   for (
     let index = 0;
     index < cells.length;
-    index++)
-  {
+    index++
+  ) {
     const cell =
       cells[index];
 
@@ -96,7 +108,8 @@ function renderRow(
       widths[index];
 
     md.push(
-      cell.padEnd(width));
+      cell.padEnd(width)
+    );
   }
 
   return `| ${md.join(' | ')} |`;

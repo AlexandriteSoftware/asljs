@@ -1,0 +1,74 @@
+{
+  "name": "asljs-sfmt",
+  "version": "0.1.0",
+  "description": "A command line tool for formatting JavaScript and TypeScript according to the Alexandrite Software Library style guide.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "bin/**",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "bin": {
+    "sfmt": "bin/sfmt.js"
+  },
+  "scripts": {
+    "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
+    "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "node ./bin/sfmt.js \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "clean": "node ../common/dist/toolkit/toolkit.js clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-directory",
+    "prepack": "npm run clean && npm run build:dist && npm run build && npm run test && npm run guard:clean-git",
+    "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
+    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
+    "all": "npm run clean && npm run build:dist && npm run format && npm run typecheck && npm run lint && npm run build && npm run test"
+  },
+  "keywords": [
+    "traceability",
+    "artefacts",
+    "requirements",
+    "markdown",
+    "cli"
+  ],
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/parser": "^8.63.0",
+    "commander": "^15.0.0",
+    "glob": "^13.0.6",
+    "ignore": "^7.0.5",
+    "minimatch": "^10.2.5",
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3",
+    "typescript-eslint": "^8.63.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/typescript-estree": "^8.63.0",
+    "asljs-tmpdir": "^0.1.9",
+    "eslint": "^10.6.0"
+  }
+}

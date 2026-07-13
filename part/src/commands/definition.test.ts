@@ -1,24 +1,26 @@
+import assert
+  from 'node:assert/strict';
 import test,
        { after }
   from 'node:test';
-import assert
-  from 'node:assert/strict';
-import { createPinoLoggerProvider }
-  from '../logging/pino.js';
 import { createEnvironment }
   from '../environment.js';
-import { execDefinition }
-  from './definition.js';
+import { createPinoLoggerProvider }
+  from '../logging/pino.js';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
+import { execDefinition }
+  from './definition.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
 after(
-  () => {
+  () =>
+  {
     loggerProvider.dispose();
-  });
+  }
+);
 
 const tmpDir =
   tmpDirFactory(
@@ -26,7 +28,8 @@ const tmpDir =
 
 test(
   'RQ126: definition prints detailed definition content for a named definition',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -48,28 +51,36 @@ A statement about the system that must be true.
 
 - RL10 - At least one test file has requirement ID in its content.
 - RL11 - Requirement passes a second rule.
-`);
+`
+    );
 
     await workspace.writeText(
       'parts/Requirement_RL10.js',
-      'export async function validate() { }\n');
+      'export async function validate() { }\n'
+    );
 
     const environment =
       createEnvironment(
-        { loggerProvider,
-          cwd: workspace.path,
-          definitions: workspace.path,
-          project: workspace.path });
+        {
+        loggerProvider,
+        cwd: workspace.path,
+        definitions: workspace.path,
+        project: workspace.path
+      });
 
     await execDefinition(
       environment,
-      { target: 'Requirement' });
+      { target: 'Requirement' }
+    );
 
     assert.equal(
       environment.stderr.toString(),
-      '');
+      ''
+    );
 
     assert.match(
       environment.stdout.toString(),
-      /- name: Requirement/);
-  });
+      /- name: Requirement/
+    );
+  }
+);

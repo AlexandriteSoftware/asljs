@@ -1,10 +1,10 @@
-import path
-  from 'node:path';
+import ignore
+  from 'ignore';
 import { readFileSync,
          statSync }
   from 'node:fs';
-import ignore
-  from 'ignore';
+import path
+  from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
@@ -13,25 +13,26 @@ import { Logger }
 export class GitIgnore
 {
   private logger: Logger;
-  private matchers: Array<{ path: string, matcher: ignore.Ignore }>;
+  private matchers: Array<{ path: string; matcher: ignore.Ignore; }>;
   private visitedPaths: Set<string>;
 
   constructor(
-      logger: Logger
-    )
+    logger: Logger
+  )
   {
     this.logger = logger;
-    this.matchers = [ ];
+    this.matchers = [];
     this.visitedPaths = new Set();
   }
 
   isIgnored(
-      targetPath: string
-    ): boolean
+    targetPath: string
+  ): boolean
   {
     if (!path.isAbsolute(targetPath)) {
       throw new Error(
-        `Path must be absolute: ${targetPath}`);
+        `Path must be absolute: ${targetPath}`
+      );
     }
 
     const isDirectory =
@@ -44,11 +45,14 @@ export class GitIgnore
 
     if (isDirectory) {
       this.loadMatchers(
-        normalisedPath);
+        normalisedPath
+      );
     } else {
       this.loadMatchers(
         path.dirname(
-          normalisedPath));
+          normalisedPath
+        )
+      );
     }
 
     for (const matcher of this.matchers) {
@@ -58,22 +62,23 @@ export class GitIgnore
             matcher.path,
             normalisedPath));
 
-      if (relativePath === ''
-          || relativePath.startsWith('../'))
-      {
+      if (
+        relativePath === ''
+        || relativePath.startsWith('../')
+      ) {
         continue;
       }
 
-    const testRelativePath =
-      isDirectory
+      const testRelativePath =
+        isDirectory
         ? relativePath + '/'
         : relativePath;
 
-
       if (
         matcher.matcher.ignores(
-          testRelativePath))
-      {
+          testRelativePath
+        )
+      ) {
         return true;
       }
     }
@@ -82,25 +87,26 @@ export class GitIgnore
   }
 
   filter(
-      paths: string[]
-    ): string[]
+    paths: string[]
+  ): string[]
   {
     return paths.filter(
-      filePath =>
-        !this.isIgnored(filePath));
+      (filePath) => !this.isIgnored(filePath)
+    );
   }
 
   loadMatchers(
-      directoryPath: string
-    ): void
+    directoryPath: string
+  ): void
   {
     if (this.visitedPaths.has(directoryPath)) {
       return;
     }
-    
+
     this.visitedPaths
       .add(
-        directoryPath);
+        directoryPath
+      );
 
     const gitIgnorePath =
       path.join(
@@ -129,12 +135,13 @@ export class GitIgnore
 
       const matcher =
         ignore()
-          .add(
-            gitIgnoreContent);
+        .add(
+          gitIgnoreContent
+        );
 
       this.matchers.push(
-        { path: directoryPath,
-          matcher });
+        { path: directoryPath, matcher }
+      );
     }
 
     const parentPath =
@@ -143,7 +150,8 @@ export class GitIgnore
 
     if (parentPath !== directoryPath) {
       this.loadMatchers(
-        parentPath);
+        parentPath
+      );
     }
   }
 }

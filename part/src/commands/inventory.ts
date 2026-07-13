@@ -1,67 +1,76 @@
-import { renderObjectsToMarkdownTable }
-  from '../markdown-table.js';
 import { Environment }
   from './../environment.js';
 import { Logger }
   from '../logging/logging.js';
+import { renderObjectsToMarkdownTable }
+  from '../markdown-table.js';
 
-interface InventoryCommandOptions {
+interface InventoryCommandOptions
+{
   inventoryDefinitions?: string[];
 }
 
-interface InventoryItem {
+interface InventoryItem
+{
   location: string;
   definitions: string;
 }
 
 export async function execInventory(
-    logger: Logger,
-    environment: Environment,
-    options: Partial<InventoryCommandOptions> = { }
-  ): Promise<void>
+  logger: Logger,
+  environment: Environment,
+  options: Partial<InventoryCommandOptions> = {}
+): Promise<void>
 {
   logger.trace(
-    'Inventory command: start');
+    'Inventory command: start'
+  );
 
-  const { artefactDefinitionProvider,
-          artefactProvider } =
-    environment.getProviders();
+  const { artefactDefinitionProvider, artefactProvider } =
+    environment
+    .getProviders();
 
   const definitions =
     await artefactDefinitionProvider.getDefinitions();
 
   const definitionNames =
     definitions.map(
-      definition => definition.name);
+      (definition) => definition.name);
 
   const inventoryDefinitions =
     options.inventoryDefinitions === undefined
-    || options.inventoryDefinitions.length === 0
-      ? definitionNames
-      : options.inventoryDefinitions;
+      || options.inventoryDefinitions.length === 0
+    ? definitionNames
+    : options.inventoryDefinitions;
 
   const filteredDefinitions =
     definitions.filter(
-      definition =>
-        inventoryDefinitions.includes(
-          definition.name));
+      (definition) =>
+      inventoryDefinitions.includes(
+        definition.name
+      ));
 
   const artefactIndex =
-    new Map<string, { location: string; definitions: string[]; }>();
+    new Map<
+    string,
+    { location: string; definitions: string[]; }
+  >();
 
   for (const definition of filteredDefinitions) {
     logger.trace(
       'Inventory command: collecting items for definition "%s"',
-      definition.name);
+      definition.name
+    );
 
     const definitionArtefacts =
       await artefactProvider.getArtefacts(
-        [ definition ]);
+        [definition]);
 
     logger.trace(
       'Inventory command: collected %d artefacts for definition "%s"',
       definitionArtefacts.length,
-      definition.name);
+      definition.name
+    );
 
     for (const artefact of definitionArtefacts) {
       const existingEntry =
@@ -71,46 +80,53 @@ export async function execInventory(
       let entry;
 
       if (existingEntry === undefined) {
-        entry = { location: artefact.relativePath,
-                  definitions: [ ] };
+        entry = { location: artefact.relativePath, definitions: [] };
       } else {
         entry = existingEntry;
       }
 
       entry.definitions.push(
-        definition.name);
+        definition.name
+      );
 
       entry.definitions.sort(
-        (left, right) =>
-          left.localeCompare(right));
+        (left, right) => left.localeCompare(right)
+      );
 
       artefactIndex.set(
         artefact.relativePath,
-        entry);
+        entry
+      );
     }
   }
 
   const items: InventoryItem[] =
     Array.from(
       artefactIndex.values(),
-      entry => {
-        return { location:
-                   entry.location,
-                 definitions:
-                   entry.definitions.join(',') };
-      });
+      (entry) =>
+    {
+      return {
+        location: entry.location,
+        definitions: entry.definitions.join(',')
+      };
+    });
 
   items.sort(
     (left, right) =>
       left.location.localeCompare(
-        right.location));
+        right.location
+      )
+  );
 
   const table =
     renderObjectsToMarkdownTable(
-      [ { property: 'location', name: 'Location' },
-        { property: 'definitions', name: 'Definitions' } ],
+      [{ property: 'location', name: 'Location' }, {
+      property: 'definitions',
+      name: 'Definitions'
+    }],
       items);
 
   environment.stdout.write(
-    `${table}\n`);
+    `${table}\n`
+  );
 }

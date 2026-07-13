@@ -1,6 +1,6 @@
 export function toPosixPath(
-    path: string
-  ): string
+  path: string
+): string
 {
   const posixPath =
     path.replaceAll(

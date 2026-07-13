@@ -1,4 +1,4 @@
-import eslintConfig
-  from './common/dist/eslint.topconfig.js';
+import { eslintTopConfig }
+  from './sfmt/dist/index.js';
 
-export default eslintConfig;
+export default eslintTopConfig;

@@ -1,20 +1,21 @@
 import path
   from 'node:path';
-import { toPosixPath }
-  from '../formatting.js';
 import { Environment }
   from './../environment.js';
+import { toPosixPath }
+  from '../formatting.js';
 import { ArtefactDefinition }
   from '../model/artefact-definition.js';
 
-export interface DefinitionOptions {
+export interface DefinitionOptions
+{
   target: string;
 }
 
 export async function execDefinition(
-    environment: Environment,
-    options: DefinitionOptions
-  ): Promise<void>
+  environment: Environment,
+  options: DefinitionOptions
+): Promise<void>
 {
   const rootDirectory =
     environment.project;
@@ -34,14 +35,15 @@ export async function execDefinition(
       rootDirectory);
 
   environment.stdout.write(
-    `${markdown}\n`);
+    `${markdown}\n`
+  );
 }
 
 function resolveDefinition(
-    definitions: ArtefactDefinition[],
-    rootDirectory: string,
-    target: string
-  ): ArtefactDefinition
+  definitions: ArtefactDefinition[],
+  rootDirectory: string,
+  target: string
+): ArtefactDefinition
 {
   const normalizedTarget =
     toPosixPath(target);
@@ -53,15 +55,18 @@ function resolveDefinition(
 
   const byPath =
     definitions.find(
-      definition =>
-        path.resolve(
-          definition.path) === absoluteTarget)
+      (definition) =>
+      path.resolve(
+        definition.path
+      ) === absoluteTarget)
     ?? definitions.find(
-      definition =>
+      (definition) =>
         toPosixPath(
           path.relative(
             rootDirectory,
-            definition.path)) === normalizedTarget,
+            definition.path
+          )
+        ) === normalizedTarget
     );
 
   if (byPath) {
@@ -84,54 +89,62 @@ function resolveDefinition(
 }
 
 function formatDefinitionDetails(
-    definition: ArtefactDefinition,
-    rootDirectory: string
-  ): string
+  definition: ArtefactDefinition,
+  rootDirectory: string
+): string
 {
   return serializeMarkdownList(
-    { name: definition.name,
+    {
+      name: definition.name,
       description: definition.description,
       location: definition.locations,
-      rules:
-        definition.rules.map(
-          rule =>
-            ({ id: rule.id,
-              description: rule.content })),
-      path:
-        toPosixPath(
-          path.relative(
-            rootDirectory,
-            definition.path)) });
+      rules: definition.rules.map(
+        (rule) => ({ id: rule.id, description: rule.content })
+      ),
+      path: toPosixPath(
+        path.relative(
+          rootDirectory,
+          definition.path
+        )
+      )
+    }
+  );
 }
 
 function serializeMarkdownList(
-    value: any,
-    indent: number = 0
-  ): string
+  value: any,
+  indent: number = 0
+): string
 {
   if (Array.isArray(value)) {
     return value
       .map(
-        (entry) => serializeArrayEntry(
-          entry,
-          indent))
+        (entry) =>
+          serializeArrayEntry(
+            entry,
+            indent
+          )
+      )
       .join('\n');
   }
 
   return Object.entries(value)
     .map(
-      ([key, entry]) => serializeObjectEntry(
-        key,
-        entry,
-        indent))
+      ([key, entry]) =>
+        serializeObjectEntry(
+          key,
+          entry,
+          indent
+        )
+    )
     .join('\n');
 }
 
 function serializeObjectEntry(
-    key: string,
-    value: any,
-    indent: number
-  ): string
+  key: string,
+  value: any,
+  indent: number
+): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -149,9 +162,9 @@ function serializeObjectEntry(
 }
 
 function serializeArrayEntry(
-    value: any,
-    indent: number
-  ): string
+  value: any,
+  indent: number
+): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -163,29 +176,34 @@ function serializeArrayEntry(
   if (Array.isArray(value)) {
     const nested =
       value.map(
-        (entry) => serializeArrayEntry(
+        (entry) =>
+        serializeArrayEntry(
           entry,
-          indent + 2)).join('\n');
+          indent + 2
+        )).join('\n');
 
     return `${prefix}-\n${nested}`;
   }
 
   const nested =
     Object.entries(value)
-      .map(
-        ([key, entry]) => serializeObjectEntry(
+    .map(
+      ([key, entry]) =>
+        serializeObjectEntry(
           key,
           entry,
-          indent + 2))
-      .join('\n');
+          indent + 2
+        )
+    )
+    .join('\n');
 
   return `${prefix}-\n${nested}`;
 }
 
 function isScalar(
-    value: any
-  ): boolean
+  value: any
+): boolean
 {
   return value === null
-         || typeof value !== 'object';
+    || typeof value !== 'object';
 }

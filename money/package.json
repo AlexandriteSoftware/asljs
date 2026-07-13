@@ -17,7 +17,7 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "format:json": "prettier --write --no-error-on-unmatched-pattern \"*.json\"",
+    "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format": "npm run format:json",
     "clean": "node ../common/dist/toolkit/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",

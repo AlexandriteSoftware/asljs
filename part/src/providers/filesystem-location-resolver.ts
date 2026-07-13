@@ -1,17 +1,18 @@
-import path
-  from 'node:path';
-import { GitIgnore }
-  from './git-ignore.js';
 import { glob }
   from 'glob';
 import { minimatch }
-  from 'minimatch';  
-import { Location }
-  from '../model/location.js';
+  from 'minimatch';
+import path
+  from 'node:path';
 import { Logger }
   from '../logging/logging.js';
+import { Location }
+  from '../model/location.js';
+import { GitIgnore }
+  from './git-ignore.js';
 
-interface FilesystemLocationResolverFilter {
+interface FilesystemLocationResolverFilter
+{
   name: string;
 }
 
@@ -23,49 +24,52 @@ export class FilesystemLocationResolver
 
   constructor(
     logger: Logger,
-    rootPath: string)
+    rootPath: string
+  )
   {
     this.logger = logger;
 
-    this.rootPath =
-      path.normalize(
-        path.resolve(rootPath));
+    this.rootPath = path.normalize(
+      path.resolve(rootPath)
+    );
 
-    this.gitIgnore =
-      new GitIgnore(
-        this.logger);
+    this.gitIgnore = new GitIgnore(
+      this.logger
+    );
   }
 
   async resolve(
-      basePath: string,
-      locations: Location[]
-    ): Promise<string[]>
+    basePath: string,
+    locations: Location[]
+  ): Promise<string[]>
   {
-    const results: string[] = [ ];
+    const results: string[] = [];
 
     for (const location of locations) {
       const resolved =
         await this.resolveLocation(
           basePath,
           location);
+
       results.push(
-        ...resolved);
+        ...resolved
+      );
     }
 
     const uniqueResults =
       [...new Set(results)];
 
     uniqueResults.sort(
-      (a, b) =>
-        a.localeCompare(b));
+      (a, b) => a.localeCompare(b)
+    );
 
     return uniqueResults;
   }
 
   async resolveLocation(
-      basePath: string,
-      location: Location
-    ): Promise<string[]>
+    basePath: string,
+    location: Location
+  ): Promise<string[]>
   {
     const pattern =
       location.pattern;
@@ -79,7 +83,8 @@ export class FilesystemLocationResolver
     this.logger.trace(
       'FilesystemLocationResolver.resolve(%s, %s)',
       basePath,
-      JSON.stringify(location));
+      JSON.stringify(location)
+    );
 
     const normalisedBasePath =
       path.normalize(
@@ -87,36 +92,40 @@ export class FilesystemLocationResolver
 
     const filesOnly =
       !pattern.endsWith('/');
-    
+
     const directoriesOnly =
       pattern.endsWith('/');
 
     if (
       !filesOnly
-      && !directoriesOnly)
-    {
+      && !directoriesOnly
+    ) {
       throw new Error(
-        `Patterns must be either all files or all directories`);
+        `Patterns must be either all files or all directories`
+      );
     }
 
-    const matches = new Set<string>();
+    const matches =
+      new Set<string>();
 
     const rootPathPatterns =
-      [ pattern ]
-        .filter(
-          pattern => pattern.startsWith('/'))
-        .map(
-          pattern => pattern.slice(1));
-    
+      [pattern]
+      .filter(
+        (pattern) => pattern.startsWith('/')
+      )
+      .map(
+        (pattern) => pattern.slice(1)
+      );
+
     if (rootPathPatterns.length > 0) {
       const rootPathMatches =
         await glob(
           rootPathPatterns,
           {
-            cwd: this.rootPath,
-            absolute: true,
-            nodir: filesOnly
-          });
+          cwd: this.rootPath,
+          absolute: true,
+          nodir: filesOnly
+        });
 
       for (const match of rootPathMatches) {
         matches.add(match);
@@ -124,24 +133,26 @@ export class FilesystemLocationResolver
     }
 
     const basePathPatterns =
-      [ pattern ]
-        .filter(
-          pattern => !pattern.startsWith('/'));
+      [pattern]
+      .filter(
+        (pattern) => !pattern.startsWith('/')
+      );
 
     if (basePathPatterns.length > 0) {
       const basePathMatches =
         await glob(
           basePathPatterns,
           {
-            cwd: normalisedBasePath,
-            absolute: true,
-            nodir: filesOnly
-          });
+          cwd: normalisedBasePath,
+          absolute: true,
+          nodir: filesOnly
+        });
 
       this.logger.trace(
         'FilesystemLocationResolver.resolve() => %d in %s',
         basePathMatches.length,
-        normalisedBasePath);
+        normalisedBasePath
+      );
 
       for (const match of basePathMatches) {
         matches.add(match);
@@ -150,18 +161,18 @@ export class FilesystemLocationResolver
 
     const rootExcludePatterns =
       exclude
-        .filter(
-          pattern => pattern.startsWith('/'))
-        .map(
-          pattern => pattern.slice(1));
+      .filter(
+        (pattern) => pattern.startsWith('/')
+      )
+      .map(
+        (pattern) => pattern.slice(1)
+      );
 
     if (rootExcludePatterns.length > 0) {
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd: this.rootPath,
-            absolute: true,
-            nodir: filesOnly });
+          { cwd: this.rootPath, absolute: true, nodir: filesOnly });
 
       for (const match of rootExcludeMatches) {
         matches.delete(match);
@@ -170,16 +181,15 @@ export class FilesystemLocationResolver
 
     const basePathExcludePatterns =
       exclude
-        .filter(
-          pattern => !pattern.startsWith('/'));
+      .filter(
+        (pattern) => !pattern.startsWith('/')
+      );
 
     if (basePathExcludePatterns.length > 0) {
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd: normalisedBasePath,
-            absolute: true,
-            nodir: filesOnly });
+          { cwd: normalisedBasePath, absolute: true, nodir: filesOnly });
 
       for (const match of basePathExcludeMatches) {
         matches.delete(match);
@@ -192,33 +202,35 @@ export class FilesystemLocationResolver
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result =
-            this.gitIgnore
-              .filter(
-                result);
+          result = this.gitIgnore
+            .filter(
+              result
+            );
           break;
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`);
+            `Unknown filter: ${filter.name}`
+          );
       }
     }
 
     result.sort(
-      (a, b) =>
-        a.localeCompare(b));
+      (a, b) => a.localeCompare(b)
+    );
 
     this.logger.trace(
       'FilesystemLocationResolver.resolve() => %d matches',
-      result.length);
+      result.length
+    );
 
     return result;
   }
 
   async check(
-      targetPath: string,
-      basePath: string,
-      locations: Location[]
-    ): Promise<boolean>
+    targetPath: string,
+    basePath: string,
+    locations: Location[]
+  ): Promise<boolean>
   {
     for (const location of locations) {
       const match =
@@ -236,10 +248,10 @@ export class FilesystemLocationResolver
   }
 
   async checkLocation(
-      targetPath: string,
-      basePath: string,
-      location: Location
-    ): Promise<boolean>
+    targetPath: string,
+    basePath: string,
+    location: Location
+  ): Promise<boolean>
   {
     const patterns =
       location.pattern;
@@ -269,21 +281,23 @@ export class FilesystemLocationResolver
         normalisedTargetPath);
 
     const included =
-      [ patterns ].some(
-        pattern =>
-        {
-          if (pattern.startsWith('/')) {
-            return minimatch(
-              relativeToRoot,
-              pattern.slice(1),
-              { dot: true });
-          }
-
+      [patterns].some(
+        (pattern) =>
+      {
+        if (pattern.startsWith('/')) {
           return minimatch(
-            relativeToBase,
-            pattern,
-            { dot: true });
-        });
+            relativeToRoot,
+            pattern.slice(1),
+            { dot: true }
+          );
+        }
+
+        return minimatch(
+          relativeToBase,
+          pattern,
+          { dot: true }
+        );
+      });
 
     if (!included) {
       return false;
@@ -291,42 +305,44 @@ export class FilesystemLocationResolver
 
     const excluded =
       exclude.some(
-        pattern =>
-        {
-          if (pattern.startsWith('/')) {
-            return minimatch(
-              relativeToRoot,
-              pattern.slice(1),
-              { dot: true });
-          }
-
+        (pattern) =>
+      {
+        if (pattern.startsWith('/')) {
           return minimatch(
-            relativeToBase,
-            pattern,
-            { dot: true });
-        });
+            relativeToRoot,
+            pattern.slice(1),
+            { dot: true }
+          );
+        }
+
+        return minimatch(
+          relativeToBase,
+          pattern,
+          { dot: true }
+        );
+      });
 
     if (excluded) {
       return false;
     }
 
     let result =
-      [ normalisedTargetPath ];
+      [normalisedTargetPath];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result =
-            this.gitIgnore
-              .filter(result);
+          result = this.gitIgnore
+            .filter(result);
           break;
 
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`);
+            `Unknown filter: ${filter.name}`
+          );
       }
     }
 
     return result.length > 0;
-  }  
+  }
 }

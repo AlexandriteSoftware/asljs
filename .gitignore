@@ -1,8 +1,8 @@
 .npmrc
 .tests
-dist/
+dist
 node_modules
 .aider*
-build/
+build
 .cog
 *.tgz

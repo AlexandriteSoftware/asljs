@@ -1,9 +1,9 @@
-import path
-  from 'node:path';
 import { cp,
          mkdir,
          readdir }
   from 'node:fs/promises';
+import path
+  from 'node:path';
 import { fileURLToPath }
   from 'node:url';
 import { Environment }
@@ -22,15 +22,16 @@ const ARTEFACTS_DIRECTORY =
     '../../artefacts');
 
 export async function execInit(
-    environment: Environment
-  ): Promise<void>
+  environment: Environment
+): Promise<void>
 {
   const definitionsPath =
     environment.definitions;
 
   await mkdir(
     definitionsPath,
-    { recursive: true });
+    { recursive: true }
+  );
 
   const artefactEntries =
     await readdir(
@@ -38,19 +39,23 @@ export async function execInit(
 
   for (const entryName of artefactEntries) {
     environment.stdout.write(
-      `Copying ${entryName}\n`);
+      `Copying ${entryName}\n`
+    );
 
     await cp(
       path.join(
         ARTEFACTS_DIRECTORY,
-        entryName),
+        entryName
+      ),
       path.join(
         definitionsPath,
-        entryName),
-      { recursive: true,
-        force: true });
+        entryName
+      ),
+      { recursive: true, force: true }
+    );
   }
 
   environment.stdout.write(
-    `Initialised definitions directory: ${definitionsPath}\n`);
+    `Initialised definitions directory: ${definitionsPath}\n`
+  );
 }

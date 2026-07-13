@@ -25,7 +25,7 @@ export interface Artefact
 
   /**
    * Definition names, this artefact matches. See [ArtefactDefinition][1].
-   * 
+   *
    * [1]: ./artefact-definition.ts
    */
   definitions: string[];

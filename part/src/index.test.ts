@@ -8,13 +8,17 @@ import * as part
 test(
   'package root exposes the supported public API',
   () =>
-{
-  assert.deepEqual(
-    Object.keys(part).sort(),
-    [ 'ArtefactProvider',
-      'MarkdownDocumentProvider',
-      'TmpDir',
-      'createPinoLoggerProvider',
-      'createRuleValidationContext',
-      'runCli' ]);
-});
+  {
+    assert.deepEqual(
+      Object.keys(part).sort(),
+      [
+        'ArtefactProvider',
+        'MarkdownDocumentProvider',
+        'TmpDir',
+        'createPinoLoggerProvider',
+        'createRuleValidationContext',
+        'runCli'
+      ]
+    );
+  }
+);

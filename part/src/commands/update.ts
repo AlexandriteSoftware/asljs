@@ -1,23 +1,24 @@
-import path
-  from 'node:path';
 import { spawn }
   from 'node:child_process';
 import { readFile }
   from 'node:fs/promises';
+import path
+  from 'node:path';
+import { Environment }
+  from './../environment.js';
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
   from '../logging/logging.js';
-import { Environment }
-  from './../environment.js';
-import { ArtefactDefinition }
-  from '../model/artefact-definition.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
+import { ArtefactDefinition }
+  from '../model/artefact-definition.js';
 import { ArtefactDefinitionRuleProvider }
   from '../providers/artefact-definition-rule-provider.js';
 
-export interface CodeGenerationRequest {
+export interface CodeGenerationRequest
+{
   mode: 'create' | 'update';
   definition: string;
   definitionPath: string;
@@ -30,15 +31,16 @@ export interface CodeGenerationRequest {
   rootDirectory: string;
 }
 
-export interface UpdateCommandOptions {
+export interface UpdateCommandOptions
+{
   dryRun: boolean;
 }
 
 export async function execUpdate(
-    logger: Logger,
-    environment: Environment,
-    options: Partial<UpdateCommandOptions> = { }
-  ): Promise<void>
+  logger: Logger,
+  environment: Environment,
+  options: Partial<UpdateCommandOptions> = {}
+): Promise<void>
 {
   logger.trace('start');
 
@@ -53,8 +55,9 @@ export async function execUpdate(
 
   const ruleProvider =
     new ArtefactDefinitionRuleProvider(
-      logger,
-      artefactDefinitionProvider);
+    logger,
+    artefactDefinitionProvider
+  );
 
   const runCopilotCli =
     environment.runCopilotCli
@@ -63,14 +66,15 @@ export async function execUpdate(
   const dryRun =
     options.dryRun === true;
 
-  const updates = [ ];
-  const warnings = [ ];
-  const prompts = [ ];
+  const updates = [];
+  const warnings = [];
+  const prompts = [];
 
   for (const definition of definitions) {
-    logger.trace( 
+    logger.trace(
       'processing definition: %s',
-      definition.name);
+      definition.name
+    );
 
     for (const rule of definition.rules) {
       const ruleId =
@@ -78,7 +82,8 @@ export async function execUpdate(
 
       logger.trace(
         'processing rule: %s',
-        ruleId);
+        ruleId
+      );
 
       const ruleFile =
         await ruleProvider.resolveRuleFile(
@@ -92,7 +97,8 @@ export async function execUpdate(
       if (!currentFilePath) {
         logger.trace(
           'rule file does not exist: %s',
-          ruleId);
+          ruleId
+        );
 
         const expectedFilePath =
           getExpectedRuleFilePath(
@@ -100,38 +106,45 @@ export async function execUpdate(
             rule);
 
         const request: CodeGenerationRequest =
-          { mode: 'create',
-            rootDirectory: rootDir,
-            ruleFilePath: expectedFilePath,
-            definition: definition.name,
-            definitionPath: definition.path,
-            ruleId: rule.id,
-            rule: rule.content,
-            comment: ruleProvider.formatRuleComment(rule),
-            currentContent: null,
-            prompt:
-              buildPrompt(
-                'create',
-                definition,
-                rule,
-                expectedFilePath,
-                null)
-          };
+          {
+          mode: 'create',
+          rootDirectory: rootDir,
+          ruleFilePath: expectedFilePath,
+          definition: definition.name,
+          definitionPath: definition.path,
+          ruleId: rule.id,
+          rule: rule.content,
+          comment: ruleProvider.formatRuleComment(rule),
+          currentContent: null,
+          prompt: buildPrompt(
+            'create',
+            definition,
+            rule,
+            expectedFilePath,
+            null
+          )
+        };
 
         if (dryRun) {
           prompts.push(request);
 
           updates.push(
-            `Would create ${toPosixPath(
-              path.relative(
-                rootDir,
-                expectedFilePath))}`);
+            `Would create ${
+              toPosixPath(
+                path.relative(
+                  rootDir,
+                  expectedFilePath
+                )
+              )
+            }`
+          );
 
           continue;
         }
 
         logger.trace(
-          'requesting generation of the rule file');
+          'requesting generation of the rule file'
+        );
 
         const response =
           await runCopilotCli(
@@ -139,18 +152,26 @@ export async function execUpdate(
             request);
 
         updates.push(
-          response);
+          response
+        );
 
         continue;
       }
 
-      if (path.extname(
-        currentFilePath).toLowerCase() !== '.js') {
+      if (
+        path.extname(
+          currentFilePath
+        ).toLowerCase() !== '.js'
+      ) {
         warnings.push(
-          `Skipping ${toPosixPath(
-            path.relative(
-              rootDir,
-              currentFilePath))}: only JS rule files can be auto-updated.`,
+          `Skipping ${
+            toPosixPath(
+              path.relative(
+                rootDir,
+                currentFilePath
+              )
+            )
+          }: only JS rule files can be auto-updated.`
         );
 
         continue;
@@ -167,39 +188,45 @@ export async function execUpdate(
       if (
         ruleProvider.commentMatchesRule(
           firstComment,
-          rule))
-      {
+          rule
+        )
+      ) {
         continue;
       }
 
-        const request: CodeGenerationRequest =
-          {
-            mode: 'update',
-            rootDirectory: rootDir,
-            ruleFilePath: currentFilePath,
-            definition: definition.name,
-            definitionPath: definition.path,
-            ruleId: rule.id,
-            rule: rule.content,
-            comment: ruleProvider.formatRuleComment(rule),
-            currentContent: currentContent,
-            prompt:
-              buildPrompt(
-                'update',
-                definition,
-                rule,
-                currentFilePath,
-                currentContent)
-          };
+      const request: CodeGenerationRequest =
+        {
+        mode: 'update',
+        rootDirectory: rootDir,
+        ruleFilePath: currentFilePath,
+        definition: definition.name,
+        definitionPath: definition.path,
+        ruleId: rule.id,
+        rule: rule.content,
+        comment: ruleProvider.formatRuleComment(rule),
+        currentContent: currentContent,
+        prompt: buildPrompt(
+          'update',
+          definition,
+          rule,
+          currentFilePath,
+          currentContent
+        )
+      };
 
       if (dryRun) {
         prompts.push(request);
 
         updates.push(
-          `Would update ${toPosixPath(
-            path.relative(
-              rootDir,
-              currentFilePath))}`);
+          `Would update ${
+            toPosixPath(
+              path.relative(
+                rootDir,
+                currentFilePath
+              )
+            )
+          }`
+        );
 
         continue;
       }
@@ -210,66 +237,77 @@ export async function execUpdate(
           request);
 
       updates.push(
-        response);
+        response
+      );
     }
   }
 
   const result =
     {
-      updates,
-      warnings,
-      prompts,
-    };
+    updates,
+    warnings,
+    prompts
+  };
 
   if (result.updates.length === 0) {
     environment.stdout.write(
-      'No rule updates were needed.\n');
+      'No rule updates were needed.\n'
+    );
   }
 
   for (const update of result.updates) {
     environment.stdout.write(
-      `${update}\n`);
+      `${update}\n`
+    );
   }
 
   for (const warning of result.warnings) {
     environment.stderr.write(
-      `${warning}\n`);
+      `${warning}\n`
+    );
   }
 
   if (options.dryRun) {
     for (const prompt of result.prompts) {
       environment.stdout.write(
-        `\n--- ${prompt.mode.toUpperCase()} ${toPosixPath(
-          path.relative(
-            environment.project,
-            prompt.ruleFilePath))} ---\n`);
+        `\n--- ${prompt.mode.toUpperCase()} ${
+          toPosixPath(
+            path.relative(
+              environment.project,
+              prompt.ruleFilePath
+            )
+          )
+        } ---\n`
+      );
 
       environment.stdout.write(
-        `${prompt.prompt}\n`);
+        `${prompt.prompt}\n`
+      );
     }
   }
 }
 
 function getExpectedRuleFilePath(
-    definition: ArtefactDefinition,
-    rule: ArtefactDefinitionRule
-  ): string
+  definition: ArtefactDefinition,
+  rule: ArtefactDefinitionRule
+): string
 {
   return path.join(
     path.dirname(
-      definition.path),
+      definition.path
+    ),
     'parts',
-    `${definition.name}_${rule.id}.js`,
+    `${definition.name}_${rule.id}.js`
   );
 }
 
 function buildPrompt(
-    mode: 'create' | 'update',
-    definition: ArtefactDefinition,
-    rule: ArtefactDefinitionRule,
-    targetFilePath: string,
-    currentContent: string | null
-  ): string
+  mode: 'create' | 'update',
+  definition: ArtefactDefinition,
+  rule: ArtefactDefinitionRule,
+  targetFilePath: string,
+  currentContent: string | null
+): string
 {
   const template =
     `
@@ -390,21 +428,20 @@ implementation. Run test cases to ensure the rule implementation is correct.`;
   }
 
   return instruction
-         + '\n\n'
-         + commonPrompt;
+    + '\n\n'
+    + commonPrompt;
 }
 
 async function runConfiguredCopilotCli(
-    logger: Logger,
-    request: CodeGenerationRequest
-  ): Promise<string>
+  logger: Logger,
+  request: CodeGenerationRequest
+): Promise<string>
 {
   let command =
     process.env.PART_COPILOT_CLI_COMMAND?.trim();
 
   if (!command) {
-    command = 
-      'copilot -p "" '
+    command = 'copilot -p "" '
       + '--allow-all-tools '
       + '--allow-all-paths '
       + '--no-ask-user '
@@ -414,78 +451,92 @@ async function runConfiguredCopilotCli(
   return runCopilotCli(
     logger,
     command,
-    request);
+    request
+  );
 }
 
 async function runCopilotCli(
-    logger: Logger,
-    command: string,
-    request: CodeGenerationRequest
-  ): Promise<string>
+  logger: Logger,
+  command: string,
+  request: CodeGenerationRequest
+): Promise<string>
 {
   logger.trace(
     'runCopilotCli: %s',
-    command);
+    command
+  );
 
   return new Promise<string>(
     (
-        resolve: (value: string) => void,
-        reject: (reason: any) => void
-      ): void =>
+      resolve: (value: string) => void,
+      reject: (reason: any) => void
+    ): void =>
     {
       const child =
         spawn(
           command,
           {
-            cwd: request.rootDirectory,
-            shell: true,
-            stdio: ['pipe', 'pipe', 'pipe'],
-          });
+          cwd: request.rootDirectory,
+          shell: true,
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
 
       let stdout = '';
       let stderr = '';
 
       child.stdout.on(
         'data',
-        chunk => {
+        (chunk) =>
+        {
           logger.trace(
-            String(chunk));
+            String(chunk)
+          );
 
           stdout += String(chunk);
-        });
+        }
+      );
 
       child.stderr.on(
         'data',
-        chunk => {
+        (chunk) =>
+        {
           logger.trace(
-            String(chunk));
+            String(chunk)
+          );
 
           stderr += String(chunk);
-        });
+        }
+      );
 
       child.on(
         'error',
-        reject);
+        reject
+      );
 
       child.on(
         'close',
-        code => {
+        (code) =>
+        {
           if (code !== 0) {
             reject(
               new Error(
                 stderr.trim()
-                || `Copilot CLI failed with exit code ${code}.`));
+                  || `Copilot CLI failed with exit code ${code}.`
+              )
+            );
 
             return;
           }
 
           resolve(stdout);
-        });
+        }
+      );
 
       child.stdin.write(
-        request.prompt);
+        request.prompt
+      );
 
       child.stdin.end();
-    });
+    }
+  );
 }
-

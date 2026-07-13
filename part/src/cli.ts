@@ -1,38 +1,38 @@
+import { Command }
+  from 'commander';
 import path
   from 'node:path';
+import { execCheck }
+  from './commands/check.js';
+import { execConfig }
+  from './commands/config.js';
+import { execDefinition }
+  from './commands/definition.js';
+import { execDefinitions }
+  from './commands/definitions.js';
+import { execInit }
+  from './commands/init.js';
+import { execInventory }
+  from './commands/inventory.js';
+import { execUpdate }
+  from './commands/update.js';
+import { execVersion }
+  from './commands/version.js';
 import { createEnvironment,
          Environment }
   from './environment.js';
-import { Command }
-  from 'commander';
-import { execInit }
-  from './commands/init.js';
-import { execUpdate }
-  from './commands/update.js';
-import { execInventory }
-  from './commands/inventory.js';
-import { execDefinitions }
-  from './commands/definitions.js';
-import { execCheck }
-  from './commands/check.js';
-import { execDefinition }
-  from './commands/definition.js';
-import { execVersion }
-  from './commands/version.js';
 import { createPinoLoggerProvider,
          LoggerOptions }
   from './logging/pino.js';
 
 export async function runCli(
-    args: string[],
-    environment: Environment | null = null
+  args: string[],
+  environment: Environment | null = null
 ): Promise<number>
 {
-  const ownEnvironment =
-    !environment;
+  const ownEnvironment = !environment;
 
-  environment =
-    environment
+  environment = environment
     ?? createEnvironment();
 
   const cli =
@@ -47,7 +47,8 @@ export async function runCli(
   try {
     await cli.parseAsync(
       args,
-      { from: 'user' });
+      { from: 'user' }
+    );
 
     return 0;
   } catch (error) {
@@ -55,7 +56,8 @@ export async function runCli(
       writeCommanderError(
         environment,
         error,
-        cli)
+        cli
+      )
     ) {
       return 1;
     }
@@ -70,7 +72,8 @@ export async function runCli(
     }
 
     environment.stderr.write(
-      `${message}\n`);
+      `${message}\n`
+    );
 
     return 1;
   } finally {
@@ -81,90 +84,104 @@ export async function runCli(
 }
 
 function createCli(
-    environment: Environment
-  ): Command
+  environment: Environment
+): Command
 {
   const cli =
     new Command();
 
   cli.name('part')
     .description(
-      '`part` is a project artefact tracing tool.')
+      '`part` is a project artefact tracing tool.'
+    )
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
-      { writeOut: value => environment.stdout.write(value),
-        writeErr: value => environment.stderr.write(value),
-        outputError: () => { } })
+      {
+        writeOut: (value) => environment.stdout.write(value),
+        writeErr: (value) => environment.stderr.write(value),
+        outputError: () =>
+        {}
+      }
+    )
     .exitOverride(
-      error => { throw error; })
+      (error) =>
+      {
+        throw error;
+      }
+    )
     .option(
       '--loglevel <level>',
-      'Log level: trace, debug, information, warning, error')
+      'Log level: trace, debug, information, warning, error'
+    )
     .option(
       '--logfile <path>',
-      'Write logs to file')
+      'Write logs to file'
+    )
     .option(
       '--definitions <path>',
-      'Path to artefact definitions directory. Defaults to the current working directory.')
+      'Path to artefact definitions directory. Defaults to the current working directory.'
+    )
     .option(
       '--project <path>',
-      'Path to artefact directory. Defaults to the current working directory.')
+      'Path to artefact directory. Defaults to the current working directory.'
+    )
     .hook(
       'preAction',
-      (_, actionCommand) => {
+      (_, actionCommand) =>
+      {
         const options =
           actionCommand.optsWithGlobals();
 
         const loggerOptions: Partial<LoggerOptions> =
-          { envVarPrefix: 'PART_LOG_' };
+          {
+          envVarPrefix: 'PART_LOG_'
+        };
 
         if (options.loglevel) {
-          loggerOptions.level =
-            options.loglevel;
+          loggerOptions.level = options.loglevel;
         }
 
         if (options.logfile) {
-          loggerOptions.file =
-            options.logfile;
+          loggerOptions.file = options.logfile;
         }
-        
+
         const loggerProvider =
           createPinoLoggerProvider(
             loggerOptions);
 
         environment.onDispose(
-          async (
-            ): Promise<void> =>
+          async (): Promise<void> =>
           {
             await loggerProvider.dispose();
-          });
+          }
+        );
 
-        environment.loggerProvider =
-          loggerProvider;
+        environment.loggerProvider = loggerProvider;
 
         const optDefinitions =
           filterStringOption(
             options.definitions);
 
         if (optDefinitions !== '') {
-          environment.definitions =
-            path.normalize(
-              path.resolve(
-                optDefinitions));
+          environment.definitions = path.normalize(
+            path.resolve(
+              optDefinitions
+            )
+          );
         } else {
           const envDefinitions =
             filterStringOption(
               process.env.PART_DEFINITIONS);
 
           if (envDefinitions !== '') {
-            environment.definitions =
-              path.normalize(
-                path.resolve(
-                  envDefinitions));
+            environment.definitions = path.normalize(
+              path.resolve(
+                envDefinitions
+              )
+            );
           } else {
-            environment.definitions =
-              environment.cwd;
+            environment.definitions = environment.cwd;
           }
         }
 
@@ -173,170 +190,229 @@ function createCli(
             options.project);
 
         if (optProject !== '') {
-          environment.project =
-            path.normalize(
-              path.resolve(
-                optProject));
+          environment.project = path.normalize(
+            path.resolve(
+              optProject
+            )
+          );
         } else {
           const envProject =
             filterStringOption(
               process.env.PART_PROJECT);
 
           if (envProject !== '') {
-            environment.project =
-              path.normalize(
-                path.resolve(
-                  envProject));
+            environment.project = path.normalize(
+              path.resolve(
+                envProject
+              )
+            );
           } else {
-            environment.project =
-              environment.cwd;
+            environment.project = environment.cwd;
           }
         }
-      });
+      }
+    );
 
   cli.command('inventory')
     .description(
-      'Scan the current folder and print artefact inventory')
+      'Scan the current folder and print artefact inventory'
+    )
     .option(
       '--inventory-definitions <definitions>',
-      'Comma-separated definition names to get inventory for')
+      'Comma-separated definition names to get inventory for'
+    )
     .action(
-      async (options) => {
+      async (options) =>
+      {
         const method =
           environment.resolve(
             execInventory);
 
         const logger =
           environment
-            .loggerProvider
-            .getLogger(
-              'execInventory');
+          .loggerProvider
+          .getLogger(
+            'execInventory'
+          );
 
         await method(
           logger,
           environment,
-          { inventoryDefinitions:
-              splitCommaSeparatedOption(
-                options.inventoryDefinitions) });
-      });
+          {
+            inventoryDefinitions: splitCommaSeparatedOption(
+              options.inventoryDefinitions
+            )
+          }
+        );
+      }
+    );
 
   cli.command('definition')
     .description(
-      'List definitions and their locations')
+      'List definitions and their locations'
+    )
     .argument(
-      'target')
+      'target'
+    )
     .action(
-      async target => {
+      async (target) =>
+      {
         const method =
           environment.resolve(
             execDefinition);
 
         await method(
           environment,
-          { target });
-    });
+          { target }
+        );
+      }
+    );
 
   cli.command('definitions')
     .description(
-      'List definitions and their locations')
+      'List definitions and their locations'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const method =
           environment.resolve(
             execDefinitions);
 
         await method(
-          environment);
-    });
+          environment
+        );
+      }
+    );
 
   cli.command('init')
     .description(
-      'Initialize an artefact definitions directory')
+      'Initialize an artefact definitions directory'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const method =
           environment.resolve(
             execInit);
 
         await method(
-          environment);
-      });
+          environment
+        );
+      }
+    );
 
   cli.command('update')
     .description(
-      'Create or refresh JS rule files from artefact definitions')
+      'Create or refresh JS rule files from artefact definitions'
+    )
     .option(
       '--dry-run',
-      'Print Copilot prompts without running them or writing files')
+      'Print Copilot prompts without running them or writing files'
+    )
     .action(
-      async (options) => {
+      async (options) =>
+      {
         const method =
           environment.resolve(
             execUpdate);
 
         const logger =
           environment
-            .loggerProvider
-            .getLogger(
-              'execUpdate');
+          .loggerProvider
+          .getLogger(
+            'execUpdate'
+          );
 
         await method(
           logger,
           environment,
-          options);
-      });
+          options
+        );
+      }
+    );
 
   cli.command('check')
     .description(
-      'Run rules for artefacts matching a pattern')
+      'Run rules for artefacts matching a pattern'
+    )
     .argument('[pattern]')
     .option(
       '--check-definitions <definitions>',
-      'Comma-separated definition names to run checks for')
+      'Comma-separated definition names to run checks for'
+    )
     .option(
       '--check-rules <rules>',
-      'Comma-separated rule names to check')
+      'Comma-separated rule names to check'
+    )
     .option(
       '--with-positives',
-      'Show passing and failing check rows')
+      'Show passing and failing check rows'
+    )
     .action(
-      async (pattern, options) => {
+      async (pattern, options) =>
+      {
         const method =
           environment.resolve(
             execCheck);
 
         const logger =
           environment
-            .loggerProvider
-            .getLogger(
-              'execCheck');
+          .loggerProvider
+          .getLogger(
+            'execCheck'
+          );
 
         await method(
           logger,
           environment,
-          { pattern,
-            checkDefinitions:
-              splitCommaSeparatedOption(
-                options.checkDefinitions),
-            checkRules:
-              splitCommaSeparatedOption(
-                options.checkRules),
-            withPositives:
-              options.withPositives === true });
-      });
+          {
+            pattern,
+            checkDefinitions: splitCommaSeparatedOption(
+              options.checkDefinitions
+            ),
+            checkRules: splitCommaSeparatedOption(
+              options.checkRules
+            ),
+            withPositives: options.withPositives === true
+          }
+        );
+      }
+    );
 
   cli.command('version')
     .description(
-      'Print the current package version')
+      'Print the current package version'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const method =
           environment.resolve(
             execVersion);
 
         await method(
-          environment);
-      });
+          environment
+        );
+      }
+    );
+
+  cli.command('config')
+    .description(
+      'Print the configuration'
+    )
+    .action(
+      async () =>
+      {
+        const method =
+          environment.resolve(
+            execConfig);
+
+        await method(
+          environment
+        );
+      }
+    );
 
   return cli;
 }
@@ -352,7 +428,7 @@ function writeCommanderError(
   }
 
   const code =
-    (error as Error & { code?: string }).code;
+    (error as Error & { code?: string; }).code;
 
   if (typeof code !== 'string') {
     return false;
@@ -370,7 +446,8 @@ function writeCommanderError(
 
     environment.stderr
       .write(
-        `${text}\n`);
+        `${text}\n`
+      );
 
     return true;
   }
@@ -387,7 +464,8 @@ function writeCommanderError(
 
     environment.stderr
       .write(
-        `${text}\n`);
+        `${text}\n`
+      );
 
     return true;
   }
@@ -395,17 +473,20 @@ function writeCommanderError(
   if (code === 'commander.unknownCommand') {
     environment.stderr
       .write(
-        `Unknown command.\n`);
+        `Unknown command.\n`
+      );
 
     cli.outputHelp(
-      { error: true });
+      { error: true }
+    );
 
     return true;
   }
 
   if (code === 'commander.help') {
     cli.outputHelp(
-      { error: true });
+      { error: true }
+    );
 
     return true;
   }
@@ -414,8 +495,8 @@ function writeCommanderError(
 }
 
 function tryExtractOptionName(
-    message: string
-  ): string | null
+  message: string
+): string | null
 {
   const match =
     /'(--[^ <']+)/.exec(message);
@@ -436,7 +517,7 @@ function tryExtractOptionName(
 
   const trimmed =
     group.trim();
-  
+
   if (trimmed === '') {
     return null;
   }
@@ -449,8 +530,8 @@ function tryExtractOptionName(
  * ignoring empty entries.
  */
 function splitCommaSeparatedOption(
-    value: unknown
-  ): string[]
+  value: unknown
+): string[]
 {
   if (
     typeof value !== 'string'
@@ -462,9 +543,11 @@ function splitCommaSeparatedOption(
   return value
     .split(',')
     .map(
-      entry => entry.trim())
+      (entry) => entry.trim()
+    )
     .filter(
-      entry => entry.length > 0);
+      (entry) => entry.length > 0
+    );
 }
 
 /**
@@ -472,8 +555,8 @@ function splitCommaSeparatedOption(
  * for non-string values.
  */
 function filterStringOption(
-    value: unknown
-  ): string
+  value: unknown
+): string
 {
   if (typeof value !== 'string') {
     return '';

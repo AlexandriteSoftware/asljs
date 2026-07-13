@@ -1,14 +1,15 @@
+import { Logger }
+  from './logging/logging.js';
 import { Artefact }
   from './model/artefact.js';
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
-import { Logger }
-  from './logging/logging.js';
 
 /**
  * Provides an execution context for the artefact data providing function.
  */
-export interface ArtefactDataProvidingContext {
+export interface ArtefactDataProvidingContext
+{
   logger: Logger;
   markdownDocuments: MarkdownDocumentProvider;
 }
@@ -16,8 +17,7 @@ export interface ArtefactDataProvidingContext {
 /**
  * Provides a data object for a given artefact.
  */
-export type ArtefactDataProvidingFunction =
-  (
-    artefact: Artefact,
-    context: ArtefactDataProvidingContext
-  ) => Promise<Record<string, unknown>>;
+export type ArtefactDataProvidingFunction = (
+  artefact: Artefact,
+  context: ArtefactDataProvidingContext
+) => Promise<Record<string, unknown>>;

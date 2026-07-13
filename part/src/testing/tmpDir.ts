@@ -5,28 +5,31 @@ import { LoggerProvider }
   from '../logging/logging.js';
 
 export function tmpDirFactory(
-    loggerProvider: LoggerProvider
-  ): () => TmpDir
+  loggerProvider: LoggerProvider
+): () => TmpDir
 {
-  return () => {
+  return () =>
+  {
     const tmpDirLogger =
       loggerProvider.getLogger('TmpDir');
 
     const error =
       tmpDirLogger.error
-        .bind(
-          tmpDirLogger);
+      .bind(
+        tmpDirLogger
+      );
 
     const trace =
       tmpDirLogger.trace
-        .bind(
-          tmpDirLogger);
+      .bind(
+        tmpDirLogger
+      );
 
     const tmpDirOptions: Partial<TmpDirOptions> =
-      { error,
-        trace };
+      { error, trace };
 
     return new TmpDir(
-      tmpDirOptions);
+      tmpDirOptions
+    );
   };
 }

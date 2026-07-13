@@ -2,70 +2,58 @@ import { Logger,
          LoggerProvider }
   from './logging.js';
 
-export class NullLogger
-  implements Logger
+export class NullLogger implements Logger
 {
   level = 'silent';
 
   isLevelEnabled(
-      level: string
-    ): boolean
+    level: string
+  ): boolean
   {
     return level === 'silent';
   }
 
-  trace(
-    ): void
+  trace(): void
   {
   }
 
-  debug(
-    ): void
+  debug(): void
   {
   }
 
-  information(
-    ): void
+  information(): void
   {
   }
 
-  warning(
-    ): void
+  warning(): void
   {
   }
 
-  error(
-    ): void
+  error(): void
   {
   }
 
-  scope(
-    ): Logger
+  scope(): Logger
   {
     return new NullLogger();
   }
 }
 
-export class NullLoggerProvider
-  implements LoggerProvider
+export class NullLoggerProvider implements LoggerProvider
 {
-  readonly #logger: Logger =
-    new NullLogger();
+  readonly #logger: Logger = new NullLogger();
 
-  getLogger(
-    ): Logger
+  getLogger(): Logger
   {
     return this.#logger;
   }
 
-  dispose(
-    ): Promise<void>
-  { 
+  dispose(): Promise<void>
+  {
     return Promise.resolve();
   }
 
-  [Symbol.asyncDispose](
-    ): Promise<void>
+  [Symbol.asyncDispose](): Promise<void>
   {
     return this.dispose();
   }

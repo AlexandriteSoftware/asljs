@@ -1,30 +1,30 @@
-import path
-  from 'node:path';
 import { glob }
   from 'glob';
-import { readFile }
-  from 'node:fs/promises';
-import { GitIgnore }
-  from './git-ignore.js';
-import { MarkdownDocumentProvider }
-  from './markdown-document-provider.js';
 import { List,
          Node }
   from 'mdast';
-import { MarkdownDocument }
-  from '../model/markdown-document.js';
+import { readFile }
+  from 'node:fs/promises';
+import path
+  from 'node:path';
 import { Logger }
   from '../logging/logging.js';
 import { getSections,
          getText,
          Section }
   from '../markdown-document-queries.js';
-import { ArtefactDefinition }
-  from '../model/artefact-definition.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
+import { ArtefactDefinition }
+  from '../model/artefact-definition.js';
 import { Location }
   from '../model/location.js';
+import { MarkdownDocument }
+  from '../model/markdown-document.js';
+import { GitIgnore }
+  from './git-ignore.js';
+import { MarkdownDocumentProvider }
+  from './markdown-document-provider.js';
 
 export interface DefinitionFileParsingContext
 {
@@ -41,21 +41,20 @@ export interface ArtefactDefinitionProvider
    * Finds an artefact definition by name. Returns undefined if not found.
    */
   findDefinition(
-      definitionName: string
-    ): Promise<ArtefactDefinition | undefined>;
+    definitionName: string
+  ): Promise<ArtefactDefinition | undefined>;
 
   /**
    * Gets an artefact definition by name. Throws an error if not found.
    */
   getDefinition(
-      definitionName: string
-    ): Promise<ArtefactDefinition>;
+    definitionName: string
+  ): Promise<ArtefactDefinition>;
 
   /**
    * Gets all artefact definitions.
    */
-  getDefinitions(
-    ): Promise<ArtefactDefinition[]>;
+  getDefinitions(): Promise<ArtefactDefinition[]>;
 
   /**
    * Loads an artefact definition from a file. The file must be a Markdown file
@@ -63,8 +62,8 @@ export interface ArtefactDefinitionProvider
    * The file path must be absolute.
    */
   fromFile(
-      filePath: string
-    ): Promise<ArtefactDefinition>;
+    filePath: string
+  ): Promise<ArtefactDefinition>;
 
   /**
    * Tries to parse an artefact definition from a Markdown document. Returns
@@ -73,9 +72,9 @@ export interface ArtefactDefinitionProvider
    * paths in the artefact definition.
    */
   tryParse(
-      content: string,
-      context: DefinitionFileParsingContext
-    ): ArtefactDefinition | undefined;
+    content: string,
+    context: DefinitionFileParsingContext
+  ): ArtefactDefinition | undefined;
 }
 
 export class ArtefactDefinitionProviderImpl
@@ -84,111 +83,119 @@ export class ArtefactDefinitionProviderImpl
   private cache: ArtefactDefinition[] | null = null;
 
   constructor(
-      private readonly logger: Logger,
-      private readonly gitIgnore: GitIgnore,
-      private readonly markdownDocumentProvider: MarkdownDocumentProvider,
-      private readonly definitionsPath: string
-    )
+    private readonly logger: Logger,
+    private readonly gitIgnore: GitIgnore,
+    private readonly markdownDocumentProvider: MarkdownDocumentProvider,
+    private readonly definitionsPath: string
+  )
   {
-    if (!path.isAbsolute(definitionsPath)) {
+    if (
+      !path.isAbsolute(
+        definitionsPath
+      )
+    ) {
       throw new Error(
-        `'definitionsPath' must be absolute: ${definitionsPath}`);
+        `'definitionsPath' must be absolute: ${definitionsPath}`
+      );
     }
   }
 
   async findDefinition(
-      definitionName: string
-    ): Promise<ArtefactDefinition | undefined>
+    definitionName: string
+  ): Promise<ArtefactDefinition | undefined>
   {
     this.logger.trace(
       'findDefinition() { %s }',
-      definitionName);
+      definitionName
+    );
 
     const definitions =
       await this.#getDefinitions();
 
     const definition =
       definitions
-        .find(
-          item =>
-            item.name === definitionName);
+      .find(
+        (item) => item.name === definitionName
+      );
 
     const definitionFoundStatus =
       definition
-        ? 'found'
-        : 'not found';
-        
+      ? 'found'
+      : 'not found';
+
     this.logger.trace(
       'findDefinition() { %s => %s }',
       definitionName,
-      definitionFoundStatus);
+      definitionFoundStatus
+    );
 
     return definition;
   }
 
   async getDefinition(
-      definitionName: string
-    ): Promise<ArtefactDefinition>
+    definitionName: string
+  ): Promise<ArtefactDefinition>
   {
     this.logger.trace(
       'getDefinition() { %s }',
-      definitionName);
+      definitionName
+    );
 
     const definitions =
       await this.#getDefinitions();
 
     const definition =
       definitions
-        .find(
-          item =>
-            item.name === definitionName);
+      .find(
+        (item) => item.name === definitionName
+      );
 
     if (!definition) {
       throw new Error(
-        `Definition "${definitionName}" not found in ${this.definitionsPath}`);
+        `Definition "${definitionName}" not found in ${this.definitionsPath}`
+      );
     }
 
     this.logger.trace(
       'getDefinition() { return definition %s }',
-      definitionName);
+      definitionName
+    );
 
     return definition;
   }
 
-  async getDefinitions(
-    ): Promise<ArtefactDefinition[]>
+  async getDefinitions(): Promise<ArtefactDefinition[]>
   {
     this.logger.trace(
-      'getDefinitions() { start }');
+      'getDefinitions() { start }'
+    );
 
     const definitions =
       await this.#getDefinitions();
 
     this.logger.trace(
       'getDefinitions() { return %d definitions }',
-      definitions.length);
+      definitions.length
+    );
 
     return definitions;
   }
 
-  async #getDefinitions(
-    ): Promise<ArtefactDefinition[]>
-{
+  async #getDefinitions(): Promise<ArtefactDefinition[]>
+  {
     if (this.cache) {
       return this.cache;
     }
 
     this.logger.trace(
       '#getDefinitions() { scanning for definitions in %s }',
-      this.definitionsPath);
+      this.definitionsPath
+    );
 
     const markdownPaths =
       await glob(
         '**/*.md',
-        { absolute: true,
-          cwd: this.definitionsPath,
-          dot: true,
-          nodir: true });
+        { absolute: true, cwd: this.definitionsPath, dot: true, nodir: true });
 
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
@@ -202,8 +209,7 @@ export class ArtefactDefinitionProviderImpl
           'utf8');
 
       if (content.startsWith('\uFEFF')) {
-        content =
-          content.slice(1);
+        content = content.slice(1);
       }
 
       const artefactDefinition =
@@ -215,11 +221,14 @@ export class ArtefactDefinitionProviderImpl
         continue;
       }
 
-      definitions.push(artefactDefinition);
+      definitions.push(
+        artefactDefinition
+      );
     }
 
     definitions.sort(
-      sortDefinitionsByName);
+      sortDefinitionsByName
+    );
 
     this.cache = definitions;
 
@@ -227,17 +236,19 @@ export class ArtefactDefinitionProviderImpl
   }
 
   async fromFile(
-      filePath: string
-    ): Promise<ArtefactDefinition>
+    filePath: string
+  ): Promise<ArtefactDefinition>
   {
     if (!path.isAbsolute(filePath)) {
       throw new Error(
-        `'filePath' must be absolute: ${filePath}`);
+        `'filePath' must be absolute: ${filePath}`
+      );
     }
 
     this.logger.trace(
       'fromFile(...) { %s }',
-      filePath);
+      filePath
+    );
 
     let content =
       await readFile(
@@ -245,8 +256,7 @@ export class ArtefactDefinitionProviderImpl
         'utf8');
 
     if (content.startsWith('\uFEFF')) {
-      content =
-        content.slice(1);
+      content = content.slice(1);
     }
 
     const artefactDefinition =
@@ -256,25 +266,28 @@ export class ArtefactDefinitionProviderImpl
 
     if (!artefactDefinition) {
       throw new Error(
-        `Failed to parse artefact definition from ${filePath}`);
+        `Failed to parse artefact definition from ${filePath}`
+      );
     }
 
     this.logger.trace(
       'fromFile(...) { return definition %s }',
-      artefactDefinition.name);
+      artefactDefinition.name
+    );
 
     return artefactDefinition;
   }
 
   tryParse(
-      content: string,
-      context: DefinitionFileParsingContext
-    ): ArtefactDefinition | undefined
+    content: string,
+    context: DefinitionFileParsingContext
+  ): ArtefactDefinition | undefined
   {
     this.logger.trace(
       'tryParse(...%d chars, %o)',
       content.length,
-      context);
+      context
+    );
 
     const name =
       path.basename(
@@ -284,8 +297,9 @@ export class ArtefactDefinitionProviderImpl
 
     const document =
       this.markdownDocumentProvider
-        .parse(
-          content);
+      .parse(
+        content
+      );
 
     const sections =
       getSections(
@@ -294,14 +308,15 @@ export class ArtefactDefinitionProviderImpl
     if (sections.length === 0) {
       this.logger.trace(
         'tryParse(...): no sections found in %s',
-        context.path);
+        context.path
+      );
 
       return;
     }
 
     const firstSection =
       sections[0];
-      
+
     if (
       firstSection.level !== 1
       || firstSection.heading !== name
@@ -309,7 +324,8 @@ export class ArtefactDefinitionProviderImpl
       this.logger.trace(
         'tryParse(...): top-level heading "%s" not found in %s',
         name,
-        context.path);
+        context.path
+      );
 
       return;
     }
@@ -319,15 +335,16 @@ export class ArtefactDefinitionProviderImpl
 
     const locationSection =
       sections
-        .find(
-          section =>
-            section.heading === 'Location');
-      
+      .find(
+        (section) => section.heading === 'Location'
+      );
+
     if (!locationSection) {
       this.logger.trace(
         'tryParse(...): no location section found in %s',
-        context.path);
-      
+        context.path
+      );
+
       return;
     }
 
@@ -339,7 +356,8 @@ export class ArtefactDefinitionProviderImpl
     if (!locations) {
       this.logger.warning(
         'tryParse(...): no locations found in %s',
-        context.path);
+        context.path
+      );
 
       return;
     }
@@ -353,6 +371,7 @@ export class ArtefactDefinitionProviderImpl
         collect = true;
         continue;
       }
+
       if (collect) {
         if (section.level === 3) {
           ruleSections.push(section);
@@ -373,7 +392,8 @@ export class ArtefactDefinitionProviderImpl
         this.logger.warning(
           'tryParse(...): invalid rule heading "%s" in %s',
           ruleSection.heading,
-          context.path);
+          context.path
+        );
 
         continue;
       }
@@ -383,63 +403,71 @@ export class ArtefactDefinitionProviderImpl
 
       const ruleName =
         `${name}_${ruleId}`;
-      
+
       const ruleDescription =
         ruleSection.markup;
-        
+
       const rule: ArtefactDefinitionRule =
-        { id: ruleId,
-          definition: name,
-          name: ruleName,
-          heading: ruleSection.heading,
-          content: ruleDescription };
-      
+        {
+        id: ruleId,
+        definition: name,
+        name: ruleName,
+        heading: ruleSection.heading,
+        content: ruleDescription
+      };
+
       rules.push(rule);
     }
 
     const definition =
-      { path: context.path,
-        name,
-        description,
-        locations,
-        rules };
+      {
+      path: context.path,
+      name,
+      description,
+      locations,
+      rules
+    };
 
     this.logger.trace(
       'parse() { name: %s, rules: %d, locations: %d }',
       name,
       rules.length,
-      locations.length);
+      locations.length
+    );
 
     return definition;
   }
 
   #parseLocations(
-      document: MarkdownDocument,
-      nodes: Node[]
-    ): Location[] | undefined
+    document: MarkdownDocument,
+    nodes: Node[]
+  ): Location[] | undefined
   {
     const locationLists =
       nodes
-        .filter(
-          node =>
-            node.type === 'list')
-        .map(
-          node =>
-            node as List);
+      .filter(
+        (node) => node.type === 'list'
+      )
+      .map(
+        (node) => node as List
+      );
 
     const locations: Location[] = [];
 
     for (const locationList of locationLists) {
       const listItems =
         locationList.children
-          .map(
-            item =>
-              getText(
-                  document,
-                  item)
-                .trim())
-          .filter(
-            itemText => itemText.length > 0);
+        .map(
+          (item) =>
+            getText(
+              document,
+              item
+            )
+              .trim()
+        )
+        .filter(
+          (itemText) => itemText.length > 0
+        );
 
       if (listItems.length === 0) {
         continue;
@@ -448,7 +476,7 @@ export class ArtefactDefinitionProviderImpl
       let pattern: string = '';
 
       const exclude: string[] = [];
-      
+
       const filters: any[] = [];
 
       for (const itemText of listItems) {
@@ -457,8 +485,7 @@ export class ArtefactDefinitionProviderImpl
             /^Pattern\s*:\s*(.+)$/i);
 
         if (typeMatch) {
-          pattern =
-            typeMatch[1].trim();
+          pattern = typeMatch[1].trim();
 
           continue;
         }
@@ -469,21 +496,21 @@ export class ArtefactDefinitionProviderImpl
 
         if (excludeMatch) {
           exclude.push(
-            excludeMatch[1].trim());
+            excludeMatch[1].trim()
+          );
 
           continue;
         }
 
         if (/^GitIgnore$/i.test(itemText)) {
           filters.push(
-            { name: 'GitIgnore' });
+            { name: 'GitIgnore' }
+          );
         }
       }
 
       const location: Location =
-        { pattern,
-          exclude,
-          filters };
+        { pattern, exclude, filters };
 
       locations.push(location);
     }
@@ -493,9 +520,9 @@ export class ArtefactDefinitionProviderImpl
 }
 
 function sortDefinitionsByName(
-    first: ArtefactDefinition,
-    second: ArtefactDefinition
-  ): number
+  first: ArtefactDefinition,
+  second: ArtefactDefinition
+): number
 {
   const firstName =
     first.name;
@@ -510,6 +537,6 @@ function sortDefinitionsByName(
   if (firstName > secondName) {
     return 1;
   }
-  
+
   return 0;
 }
