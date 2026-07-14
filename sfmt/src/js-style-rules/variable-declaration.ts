@@ -48,33 +48,34 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs variable declaration style.',
-          fix(fixer)
-          {
-            const sourceCode =
-              context.sourceCode;
+            node,
+            message: 'Use asljs variable declaration style.',
+            fix(fixer)
+            {
+              const sourceCode =
+                context.sourceCode;
 
-            const newLine =
-              sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+              const newLine =
+                sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildVariableDeclarator(
+              const replacement =
+                buildVariableDeclarator(
+                  node,
+                  sourceCode,
+                  formattingContext);
+
+              return fixer.replaceText(
                 node,
-                sourceCode,
-                formattingContext);
-
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -103,7 +104,8 @@ function checkLayout(
 
   if (
     initialiserIsShortEnoughToStayOnSameLine(
-      nodeInitialiser)
+      nodeInitialiser
+    )
   ) {
     return true;
   }
@@ -166,7 +168,8 @@ function initialiserIsShortEnoughToStayOnSameLine(
     const unaryExpression = /** @type {UnaryExpression} */ initialiser;
 
     return initialiserIsShortEnoughToStayOnSameLine(
-      unaryExpression.argument);
+      unaryExpression.argument
+    );
   }
 
   return false;
@@ -210,7 +213,8 @@ function buildVariableDeclarator(
           node);
 
       code.push(
-        formattingContext.newLine);
+        formattingContext.newLine
+      );
 
       code.push(indentation);
       code.push('  ');

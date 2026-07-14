@@ -24,7 +24,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
       CallExpression(node: SimpleCallExpression): void
       {
         const correctLayout =
-          checkLayout(
+          isLayoutCorrect(
             node,
             context);
 
@@ -34,33 +34,34 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs call expression style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const sourceCode =
-              context.sourceCode;
+            node,
+            message: 'Use asljs call expression style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const sourceCode =
+                context.sourceCode;
 
-            const newLine =
-              sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+              const newLine =
+                sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildCallExpression(
+              const replacement =
+                buildCallExpression(
+                  node,
+                  sourceCode,
+                  formattingContext);
+
+              return fixer.replaceText(
                 node,
-                sourceCode,
-                formattingContext);
-
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -82,15 +83,11 @@ export default callExpressionFormatter.eslintRule;
  *   - single variable or literal that is longer than 15 characters, or
  *   - expression that is not a single variable or literal.
  * - Multiple function call parameters are on separate lines
- *
- * @param {SimpleCallExpression} node
- * @param {RuleContext} context
- * @returns {boolean} true if the layout is correct, false otherwise
  */
-function checkLayout(
-  node: SimpleCallExpression,
-  context: Rule.RuleContext
-): boolean
+function isLayoutCorrect(
+    node: SimpleCallExpression,
+    context: Rule.RuleContext
+  ): boolean
 {
   const argumentsList =
     node.arguments;
@@ -239,25 +236,33 @@ function buildCallExpression(
       if (expressionIsShort(argument)) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
-            formattingContext.newLine);
+            formattingContext.newLine
+          );
 
           code.push(
-            requiredArgumentIndent);
+            requiredArgumentIndent
+          );
         }
 
         code.push(argumentText);
       } else {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push(
-          requiredArgumentIndent);
+          requiredArgumentIndent
+        );
 
         code.push(argumentText);
       }
     }
   } else if (node.arguments.length > 1) {
-    for (let index = 0; index < node.arguments.length; index++) {
+    for (
+      let index = 0;
+      index < node.arguments.length;
+      index++
+    ) {
       if (index > 0) {
         code.push(',');
       }
@@ -284,14 +289,17 @@ function buildCallExpression(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: AST.Token
-): string
+    sourceCode: SourceCode,
+    node: AST.Token
+  ): string
 {
   const nodeLocation =
     node.loc;
 
-  if (nodeLocation === undefined || nodeLocation === null) {
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null
+  ) {
     return '';
   }
 

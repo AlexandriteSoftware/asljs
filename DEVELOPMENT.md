@@ -116,8 +116,8 @@ Keep human-facing docs and AI-facing docs separate.
 - `DEVELOPMENT.md` is for contributor workflow.
 - `RELEASE.md` is for publishing packages.
 
-Use these rules when deciding which of `README.md`, `AGENTS.md`, and tests
-must change together:
+Use these rules when deciding which of `README.md`, `AGENTS.md`, and tests must
+change together:
 
 - If public behavior or a package-root API changed, then update tests.
 - If public behavior changed in a way users need to understand, then update
@@ -134,8 +134,8 @@ must change together:
   update the relevant workflow docs.
 - If build, release, or deployment behavior changed in a way AI needs to know
   for validation or execution, then update `AGENTS.md`.
-- If only generated output changed, then do not update source docs or tests
-  just for the generated diff.
+- If only generated output changed, then do not update source docs or tests just
+  for the generated diff.
 
 When behavior changes:
 
@@ -147,11 +147,11 @@ When behavior changes:
 - Update workflow docs when build, release, or deployment behavior changes.
 
 If a generated file changes because source behavior changed, update the source
-tests and source docs based on the underlying behavior change rather than on
-the generated diff itself.
+tests and source docs based on the underlying behavior change rather than on the
+generated diff itself.
 
-Internal refactors do not require README updates unless public behavior or
-usage expectations changed.
+Internal refactors do not require README updates unless public behavior or usage
+expectations changed.
 
 ### Public API Contract Checks
 
@@ -214,9 +214,8 @@ npm -w asljs-part run test
 npm -w asljs-part run build
 ```
 
-`asljs-part` stays JavaScript-only. Its `typecheck` and `build` scripts exist
-to satisfy the shared publish workflow contract, not to add a transpilation
-step.
+`asljs-part` stays JavaScript-only. Its `typecheck` and `build` scripts exist to
+satisfy the shared publish workflow contract, not to add a transpilation step.
 
 Then follow `RELEASE.md` for versioning, publish, and tag push steps.
 
@@ -232,8 +231,8 @@ Example:
 npm -w asljs-eventful run test:watch
 ```
 
-Do not treat watch mode as a monorepo-wide broadcast workflow. It is
-interactive and should stay targeted to the package being edited.
+Do not treat watch mode as a monorepo-wide broadcast workflow. It is interactive
+and should stay targeted to the package being edited.
 
 ## How To Squash And Commit Changes
 

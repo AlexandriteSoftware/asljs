@@ -27,6 +27,9 @@ interface TestCase
   tags: string[];
 }
 
+/**
+ * Looks for a folder among ancestors with a package.json file.
+ */
 async function findPackageRootDir(
   dir: string
 ): Promise<string>
@@ -69,7 +72,8 @@ export async function addRuleTestsFromMarkdown(
 ): Promise<void>
 {
   const packageRootDir =
-    await findPackageRootDir(filePath);
+    await findPackageRootDir(
+      filePath);
 
   const buildDir =
     path.join(
@@ -206,13 +210,13 @@ export async function extractTests(
         /\r?\n\/\/ ---\r?\n/g);
 
     tests.push(
-      { source: parts[0], expected: parts[1], tags: tags });
+      { source: parts[0], expected: parts[1], tags: tags }
+    );
   }
 
   const focusedTests =
     tests.filter(
-      (testCase) =>
-    testCase.tags.includes('focus'));
+      (testCase) => testCase.tags.includes('focus'));
 
   if (focusedTests.length > 0) {
     return focusedTests;
@@ -256,7 +260,8 @@ function getFormattingFileExtension(
 
   if (
     testsFilePath.includes(
-      `${path.sep}ts-style-rules${path.sep}`)
+      `${path.sep}ts-style-rules${path.sep}`
+    )
   ) {
     return '.ts';
   }

@@ -37,33 +37,34 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs call expression style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const sourceCode =
-              context.sourceCode;
+            node,
+            message: 'Use asljs call expression style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const sourceCode =
+                context.sourceCode;
 
-            const newLine =
-              sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+              const newLine =
+                sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildCallExpression(
-                tsNode,
-                sourceCode,
-                formattingContext);
+              const replacement =
+                buildCallExpression(
+                  tsNode,
+                  sourceCode,
+                  formattingContext);
 
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+              return fixer.replaceText(
+                node,
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -210,7 +211,8 @@ function buildCallExpression(
 
   if (openingParenthesis === null) {
     return sourceCode.getText(
-      asTextNode(node));
+      asTextNode(node)
+    );
   }
 
   const indent =
@@ -247,23 +249,28 @@ function buildCallExpression(
     } else {
       if (
         expressionIsShort(
-          argument as Parameters<typeof expressionIsShort>[0])
+          argument as Parameters<typeof expressionIsShort>[0]
+        )
       ) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
-            formattingContext.newLine);
+            formattingContext.newLine
+          );
 
           code.push(
-            requiredArgumentIndent);
+            requiredArgumentIndent
+          );
         }
 
         code.push(argumentText);
       } else {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push(
-          requiredArgumentIndent);
+          requiredArgumentIndent
+        );
 
         code.push(argumentText);
       }
@@ -282,10 +289,12 @@ function buildCallExpression(
           asTextNode(argument));
 
       code.push(
-        formattingContext.newLine);
+        formattingContext.newLine
+      );
 
       code.push(
-        requiredArgumentIndent);
+        requiredArgumentIndent
+      );
 
       code.push(argumentText);
     }

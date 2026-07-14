@@ -40,7 +40,14 @@ export function expressionIsShort(
       const calleeIdentifier =
         newExpression.callee as Identifier;
 
-      if (calleeIdentifier.name !== 'Set' && calleeIdentifier.name !== 'Map') {
+      const allowedConstructors =
+        ['Set', 'Map'];
+
+      const isAllowedConstructor =
+        allowedConstructors.includes(
+          calleeIdentifier.name);
+
+      if (!isAllowedConstructor) {
         return false;
       }
     }
@@ -97,7 +104,11 @@ function getLength(
     const end =
       acornTemplateLiteral.end;
 
-    if (start !== undefined && end !== undefined) {
+    const isRange =
+      start !== undefined
+      && end !== undefined;
+
+    if (isRange) {
       return end - start;
     }
 
@@ -132,7 +143,9 @@ function getLength(
     return endLocation.column - startLocation.column;
   }
 
-  if (expression.type === 'UnaryExpression') {
+  if (
+    expression.type === 'UnaryExpression'
+  ) {
     const unaryExpression =
       expression as UnaryExpression;
 
@@ -144,7 +157,11 @@ function getLength(
       return null;
     }
 
-    return argumentLength + unaryExpression.operator.length;
+    const length =
+      argumentLength
+      + unaryExpression.operator.length;
+
+    return length;
   }
 
   return null;

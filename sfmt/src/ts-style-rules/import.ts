@@ -53,16 +53,17 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs import style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+            node,
+            message: 'Use asljs import style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              return fixer.replaceText(
+                node,
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -101,17 +102,20 @@ function formatImportNode(
 
       if (/^\s*import\s*$/.test(importPart)) {
         code.push(
-          node.source?.raw || '');
+          node.source?.raw || ''
+        );
 
         code.push(';');
       } else if (/^\s*import[\r\n\s]+from\s*$/.test(importPart)) {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push('  from ');
 
         code.push(
-          node.source?.raw || '');
+          node.source?.raw || ''
+        );
 
         code.push(';');
       } else if (
@@ -120,22 +124,27 @@ function formatImportNode(
         code.push('{ }');
 
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push('  from ');
 
         code.push(
-          node.source?.raw || '');
+          node.source?.raw || ''
+        );
 
         code.push(';');
       } else {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push(
           formatSource(
             node.source,
-            formattingContext));
+            formattingContext
+          )
+        );
       }
     } else {
       code.push('{ }');
@@ -143,7 +152,9 @@ function formatImportNode(
       code.push(
         formatSource(
           node.source,
-          formattingContext));
+          formattingContext
+        )
+      );
     }
   } else {
     let index = 0;
@@ -156,7 +167,8 @@ function formatImportNode(
         code.push(',');
 
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
 
         code.push('       ');
       }
@@ -169,14 +181,18 @@ function formatImportNode(
       if (importSpecifierGroup.length === 0) {
         code.push(
           formatSpecifier(
-            node.specifiers[index]));
+            node.specifiers[index]
+          )
+        );
 
         index++;
       } else {
         code.push(
           formatImportSpecifierGroup(
             importSpecifierGroup,
-            formattingContext));
+            formattingContext
+          )
+        );
 
         index += importSpecifierGroup.length;
       }
@@ -185,7 +201,9 @@ function formatImportNode(
     code.push(
       formatSource(
         node.source,
-        formattingContext));
+        formattingContext
+      )
+    );
   }
 
   return code.join('');
@@ -229,7 +247,8 @@ function formatImportSpecifierGroup(
       code.push(',');
 
       code.push(
-        formattingContext.newLine);
+        formattingContext.newLine
+      );
 
       code.push('         ');
     }
@@ -254,17 +273,20 @@ function formatImportSpecifierGroup(
 
       if (importedIdentifier.name === specifier.local.name) {
         code.push(
-          importedIdentifier.name);
+          importedIdentifier.name
+        );
       } else {
         code.push(
-          `${importedIdentifier.name} as ${specifier.local.name}`);
+          `${importedIdentifier.name} as ${specifier.local.name}`
+        );
       }
     } else if (specifier.imported.type === 'Literal') {
       const importedLiteral =
         specifier.imported;
 
       code.push(
-        `${importedLiteral.raw} as ${specifier.local.name}`);
+        `${importedLiteral.raw} as ${specifier.local.name}`
+      );
     } else {
       throw new Error(`Unsupported import specifier type.`);
     }

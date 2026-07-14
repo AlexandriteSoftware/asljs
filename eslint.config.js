@@ -1,4 +1,4 @@
 import { eslintTopConfig }
-  from './sfmt/dist/index.js';
+  from 'asljs-sfmt';
 
 export default eslintTopConfig;

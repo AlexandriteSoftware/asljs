@@ -30,8 +30,8 @@ For the selected publishable package, `release:patch`:
 4. bumps the package patch version without creating a git tag yet
 5. updates dependency ranges in every sibling workspace package that depends on
    the released package
-6. updates `app-builder/package.json` when `app-builder` depends on the
-   released package
+6. updates `app-builder/package.json` when `app-builder` depends on the released
+   package
 7. refreshes `package-lock.json`
 8. publishes the package
 9. commits the version and dependency updates

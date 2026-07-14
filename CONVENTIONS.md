@@ -2,12 +2,12 @@
 
 ## Baseline — General TypeScript Best Practices
 
-The following widely-accepted TypeScript practices apply here unless
-the exception is clearly documented.
+The following widely-accepted TypeScript practices apply here unless the
+exception is clearly documented.
 
-Anything enforcable by the TypeScript compiler or ESLint is assumed to be in
-the corresponding configuration file. This file is only for conventions that are
-not enforceable by tooling, or for additional guidance on code style.
+Anything enforcable by the TypeScript compiler or ESLint is assumed to be in the
+corresponding configuration file. This file is only for conventions that are not
+enforceable by tooling, or for additional guidance on code style.
 
 - Prefer `interface` for public API shapes; use `type` for unions, aliases, and
   computed types.
@@ -20,8 +20,8 @@ not enforceable by tooling, or for additional guidance on code style.
 ### Documentation style
 
 - Prefer lists and short prose over tables in repository documentation.
-- When documentation explains a choice, routing rule, or selection logic,
-  prefer an explicit decision tree or `if ... then ...` list over a matrix.
+- When documentation explains a choice, routing rule, or selection logic, prefer
+  an explicit decision tree or `if ... then ...` list over a matrix.
 - Use tables only when the information is inherently tabular and would become
   less clear as prose or lists, for example dense payload reference data.
 - When a table is necessary, keep it compact and use it for reference rather
@@ -42,8 +42,8 @@ not enforceable by tooling, or for additional guidance on code style.
 #### Indentation
 
 - **2-space** indentation throughout, unless otherwise required by the syntax
-  (e.g. multi-line function parameters, object literals, if statements,
-  for loops).
+  (e.g. multi-line function parameters, object literals, if statements, for
+  loops).
 
 #### Semicolons
 
@@ -51,13 +51,13 @@ not enforceable by tooling, or for additional guidance on code style.
 
 #### Quotes
 
-- **Single quotes** for all strings.  Template literals are allowed when
-  interpolation is needed.  Escape-avoidance is permitted (e.g. `"it's"` is
+- **Single quotes** for all strings. Template literals are allowed when
+  interpolation is needed. Escape-avoidance is permitted (e.g. `"it's"` is
   acceptable in place of `'it\'s'`).
 
 #### Line length and wrapping
 
-- Prefer **multi-line formatting** over long single lines.  Wrap at logical
+- Prefer **multi-line formatting** over long single lines. Wrap at logical
   boundaries (after a comma, before an operator, after `;` in `for` loops).
 
   ```ts
@@ -99,9 +99,9 @@ closing `)`:
 
 ```ts
 function greet(
-    name: string,
-    greeting: string
-  ): string
+  name: string,
+  greeting: string
+): string
 {
   return `${greeting}, ${name}!`;
 }
@@ -110,15 +110,15 @@ function greet(
 #### Function parameter style
 
 Multi-parameter function signatures use one parameter per double-indented line,
-with the closing `)` on a single-indented line.  The return type follows on the
+with the closing `)` on a single-indented line. The return type follows on the
 same line as `)`, and is always required — even when `void`:
 
 ```ts
 function example(
-    firstParam: string,
-    secondParam: number,
-    thirdParam: boolean
-  ): void
+  firstParam: string,
+  secondParam: number,
+  thirdParam: boolean
+): void
 {
   // …
 }
@@ -132,10 +132,10 @@ For complex initialisers, place `const name =` on its own line and start the
 expression on the next line with 2-space indentation:
 
 ```ts
-const result =
-  someComplexExpression(
-    argumentValue1,
-    argumentValue2);
+const result = someComplexExpression(
+  argumentValue1,
+  argumentValue2
+);
 ```
 
 #### Arrow functions
@@ -143,14 +143,13 @@ const result =
 Arrow function blocks place the opening `{` on the **next line after `=>`**:
 
 ```ts
-const handler =
-  (
-      event: string,
-      details: EventDetails
-    ): void =>
-  {
-    doSomething(event);
-  };
+const handler = (
+  event: string,
+  details: EventDetails
+): void =>
+{
+  doSomething(event);
+};
 ```
 
 Short single-expression arrow functions may remain inline when they fit
@@ -173,10 +172,11 @@ Place `&&` and `||` at the **start** of continuation lines, aligned with the
 start of the expression:
 
 ```ts
-if (isValid
-    && isEnabled
-    && hasPermission)
-{
+if (
+  isValid
+  && isEnabled
+  && hasPermission
+) {
   // …
 }
 ```
@@ -184,39 +184,31 @@ if (isValid
 Ternary expressions always span multiple lines (`multiline-ternary: always`):
 
 ```ts
-const label =
-  condition
-    ? 'yes'
-    : 'no';
+const label = condition
+  ? 'yes'
+  : 'no';
 ```
 
 #### Object and array literals
 
-For multi-line **object literals**, place the first key on the same line as
-the opening `{`. If value is multi-line, double-indent the value on the next
-line. Close with `}` on the same line as the last value:
+For multi-line **object literals**, place the first key on the same line as the
+opening `{`. If value is multi-line, double-indent the value on the next line.
+Close with `}` on the same line as the last value:
 
 ```ts
-const options =
-  { verbose: true };
+const options = { verbose: true };
 
-const config =
-  { server:
-      { host: 'localhost',
-        port: 3000 } };
+const config = { server: { host: 'localhost', port: 3000 } };
 ```
 
 A more complex example with mixed types:
 
 ```ts
-const settings =
-  { retries: 3,
-    backoff:
-      { initial: 100,
-        max: 5000 },
-    tags:
-      [ 'prod',
-        'v2' ] };
+const settings = {
+  retries: 3,
+  backoff: { initial: 100, max: 5000 },
+  tags: ['prod', 'v2']
+};
 ```
 
 For multi-line **array literals**, place the first element on the same line as
@@ -224,17 +216,14 @@ For multi-line **array literals**, place the first element on the same line as
 the same line as the last element:
 
 ```ts
-const items =
-  [ 'alpha',
-    'beta',
-    'gamma' ];
+const items = ['alpha', 'beta', 'gamma'];
 ```
 
 Short arrays whose elements fit on one line may remain inline:
 
 ```ts
-const flags = [ true, false ];
-const pair = [ a, b ];
+const flags = [true, false];
+const pair = [a, b];
 ```
 
 Spaces in object and array literals:
@@ -255,19 +244,19 @@ own line and wrap the expression arguments onto aligned continuation lines.
 
 ```ts
 return someComplexExpression(
-         argumentValue1,
-         argumentValue2);
+  argumentValue1,
+  argumentValue2
+);
 ```
 
 ```ts
-return { key1: value1,
-         key2: value2 };
+return { key1: value1, key2: value2 };
 ```
 
 ```ts
 return condition
-         ? 'yes'
-         : 'no';
+  ? 'yes'
+  : 'no';
 ```
 
 ### Union types
@@ -288,21 +277,21 @@ type Status =
   `guards.ts`); kebab-case for composite names (`observable-object.ts`).
 - **Functions and variables**: camelCase.
 - **Types, interfaces, and classes**: PascalCase.
-- **Constants and enum-like values**: camelCase, when constant is within
-  class, method or function. SCREAMING_SNAKE_CASE when on file level.
+- **Constants and enum-like values**: camelCase, when constant is within class,
+  method or function. SCREAMING_SNAKE_CASE when on file level.
 - Internal/private helpers are unexported; they live in the same file as their
   consumer.
 
 ### Error handling
 
-- Validate function and object arguments at the entry point; throw
-  `TypeError` with a clear message.
+- Validate function and object arguments at the entry point; throw `TypeError`
+  with a clear message.
 
 ### Internal state
 
 - Use `Map` and `Set` for dynamic key/value and membership state.
-- Do not expose internal collections directly; return safe views
-  (e.g. spread copies, boolean results, or counters).
+- Do not expose internal collections directly; return safe views (e.g. spread
+  copies, boolean results, or counters).
 - Injected methods use **non-enumerable** property descriptors
   (`enumerable: false`) unless the method is intended for public iteration.
 - Idempotent operations (e.g. unsubscribe closures) must return a consistent
@@ -311,14 +300,14 @@ type Status =
 ### Explicit return types
 
 All **declared functions** (function declarations, class methods) must have
-explicit return types.  Inline expressions, typed function expressions,
+explicit return types. Inline expressions, typed function expressions,
 higher-order callbacks, and arrow functions with direct `const` assertions are
 exempt (matching the ESLint rule configuration).
 
 ### Testing
 
 - Use Node's **built-in test runner** (`node:test`).
-- All code files (even ones containing interfaces/types only) should have
-  a corresponding test file with at least basic coverage.
+- All code files (even ones containing interfaces/types only) should have a
+  corresponding test file with at least basic coverage.
 - Test files are named with `.test.ts` suffix and live in the same directory as
   the code they test.

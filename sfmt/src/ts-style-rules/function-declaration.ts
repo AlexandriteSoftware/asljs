@@ -34,30 +34,31 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs function declaration style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const newLine =
-              context.sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+            node,
+            message: 'Use asljs function declaration style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const newLine =
+                context.sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildFunctionDeclaration(
-                tsNode,
-                context,
-                formattingContext);
+              const replacement =
+                buildFunctionDeclaration(
+                  tsNode,
+                  context,
+                  formattingContext);
 
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+              return fixer.replaceText(
+                node,
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -118,7 +119,9 @@ function checkLayout(
     context.sourceCode
     .getTokenBefore(
       asTokenTarget(
-        node.body));
+        node.body
+      )
+    );
 
   if (closingParen === null) {
     // If we can't find the closing parenthesis, assume it's correct
@@ -156,14 +159,17 @@ function buildFunctionDeclaration(
     node.returnType
     ? context.sourceCode.getText(
       asTextNode(
-        node.returnType))
+        node.returnType
+      )
+    )
     : '';
 
   const parameters =
     node.params.map(
       (parameter) =>
-    context.sourceCode.getText(
-      asTextNode(parameter)));
+      context.sourceCode.getText(
+        asTextNode(parameter)
+      ));
 
   const code = [];
 
@@ -183,11 +189,13 @@ function buildFunctionDeclaration(
     code.push(')');
   } else {
     code.push(
-      formattingContext.newLine);
+      formattingContext.newLine
+    );
 
     for (let index = 0; index < parameters.length; index++) {
       code.push(
-        `  ${parameters[index]}`);
+        `  ${parameters[index]}`
+      );
 
       if (index < parameters.length - 1) {
         code.push(',');
@@ -195,7 +203,8 @@ function buildFunctionDeclaration(
 
       if (index < parameters.length - 1) {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
       }
     }
 
@@ -205,11 +214,14 @@ function buildFunctionDeclaration(
   code.push(returnTypeText);
 
   code.push(
-    formattingContext.newLine);
+    formattingContext.newLine
+  );
 
   code.push(
     context.sourceCode.getText(
-      asTextNode(body)));
+      asTextNode(body)
+    )
+  );
 
   return code.join('');
 }

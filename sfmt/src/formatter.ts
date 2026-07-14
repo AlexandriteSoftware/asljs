@@ -50,16 +50,20 @@ export async function applyFormatters(
     .fromEntries(
       formatters.map(
         (
-      formatter
-    ) => [formatter.name, formatter.eslintRule]));
+          formatter
+        ) => [formatter.name, formatter.eslintRule]
+      )
+    );
 
   const enabledRules =
     Object
     .fromEntries(
       formatters.map(
         (
-      formatter
-    ) => [`sfmt/${formatter.name}`, 'error' as const]));
+          formatter
+        ) => [`sfmt/${formatter.name}`, 'error' as const]
+      )
+    );
 
   const absoluteFilePath =
     path.resolve(filePath);

@@ -34,33 +34,34 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs conditional expression style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const sourceCode =
-              context.sourceCode;
+            node,
+            message: 'Use asljs conditional expression style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const sourceCode =
+                context.sourceCode;
 
-            const newLine =
-              sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+              const newLine =
+                sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildConditionalExpression(
-                tsNode,
-                sourceCode,
-                formattingContext);
+              const replacement =
+                buildConditionalExpression(
+                  tsNode,
+                  sourceCode,
+                  formattingContext);
 
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+              return fixer.replaceText(
+                node,
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -102,7 +103,10 @@ function checkLayout(
   const consequentEndLine =
     node.consequent.loc?.end.line;
 
-  if (testEndLine === undefined || consequentEndLine === undefined) {
+  if (
+    testEndLine === undefined
+    || consequentEndLine === undefined
+  ) {
     return true;
   }
 

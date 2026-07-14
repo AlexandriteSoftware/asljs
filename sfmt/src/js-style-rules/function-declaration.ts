@@ -31,30 +31,31 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs function declaration style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const newLine =
-              context.sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+            node,
+            message: 'Use asljs function declaration style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const newLine =
+                context.sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildFunctionDeclaration(
+              const replacement =
+                buildFunctionDeclaration(
+                  node,
+                  context,
+                  formattingContext);
+
+              return fixer.replaceText(
                 node,
-                context,
-                formattingContext);
-
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
@@ -149,8 +150,7 @@ function buildFunctionDeclaration(
 
   const parameters =
     node.params.map(
-      (parameter) =>
-    context.sourceCode.getText(parameter));
+      (parameter) => context.sourceCode.getText(parameter));
 
   const code = [];
 
@@ -170,11 +170,13 @@ function buildFunctionDeclaration(
     code.push(')');
   } else {
     code.push(
-      formattingContext.newLine);
+      formattingContext.newLine
+    );
 
     for (let index = 0; index < parameters.length; index++) {
       code.push(
-        `  ${parameters[index]}`);
+        `  ${parameters[index]}`
+      );
 
       if (index < parameters.length - 1) {
         code.push(',');
@@ -182,7 +184,8 @@ function buildFunctionDeclaration(
 
       if (index < parameters.length - 1) {
         code.push(
-          formattingContext.newLine);
+          formattingContext.newLine
+        );
       }
     }
 
@@ -190,10 +193,12 @@ function buildFunctionDeclaration(
   }
 
   code.push(
-    formattingContext.newLine);
+    formattingContext.newLine
+  );
 
   code.push(
-    context.sourceCode.getText(body));
+    context.sourceCode.getText(body)
+  );
 
   return code.join('');
 }

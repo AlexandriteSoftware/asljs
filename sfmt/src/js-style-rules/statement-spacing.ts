@@ -94,24 +94,25 @@ function checkStatements(
 
     context.report(
       {
-      node: nextStatement,
-      message: 'Add a blank line between statements.',
-      fix(fixer: Rule.RuleFixer): Rule.Fix
-      {
-        const range: SourceRange =
-          [statementRange[1], nextStatementRange[0]];
+        node: nextStatement,
+        message: 'Add a blank line between statements.',
+        fix(fixer: Rule.RuleFixer): Rule.Fix
+        {
+          const range: SourceRange =
+            [statementRange[1], nextStatementRange[0]];
 
-        const nextStatementIndentation =
-          getIndentation(
-            sourceCode,
-            nextStatement);
+          const nextStatementIndentation =
+            getIndentation(
+              sourceCode,
+              nextStatement);
 
-        return fixer.replaceTextRange(
-          range,
-          newLine + newLine + nextStatementIndentation
-        );
+          return fixer.replaceTextRange(
+            range,
+            newLine + newLine + nextStatementIndentation
+          );
+        }
       }
-    });
+    );
   }
 }
 

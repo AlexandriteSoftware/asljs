@@ -32,33 +32,34 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         context.report(
           {
-          node,
-          message: 'Use asljs conditional expression style.',
-          fix(fixer: Rule.RuleFixer): Rule.Fix
-          {
-            const sourceCode =
-              context.sourceCode;
+            node,
+            message: 'Use asljs conditional expression style.',
+            fix(fixer: Rule.RuleFixer): Rule.Fix
+            {
+              const sourceCode =
+                context.sourceCode;
 
-            const newLine =
-              sourceCode.text.includes('\r\n')
-              ? '\r\n'
-              : '\n';
+              const newLine =
+                sourceCode.text.includes('\r\n')
+                ? '\r\n'
+                : '\n';
 
-            const formattingContext =
-              { newLine };
+              const formattingContext =
+                { newLine };
 
-            const replacement =
-              buildConditionalExpression(
+              const replacement =
+                buildConditionalExpression(
+                  node,
+                  sourceCode,
+                  formattingContext);
+
+              return fixer.replaceText(
                 node,
-                sourceCode,
-                formattingContext);
-
-            return fixer.replaceText(
-              node,
-              replacement
-            );
+                replacement
+              );
+            }
           }
-        });
+        );
       }
     };
 
