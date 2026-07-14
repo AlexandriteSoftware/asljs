@@ -38,19 +38,19 @@
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format": "npm run format:json",
-    "clean": "node ../common/dist/toolkit/toolkit.js clean",
+    "clean": "node ../common/dist/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "guard:clean-git": "node ../common/dist/toolkit/toolkit.js ensure-clean-working-directory",
+    "guard:clean-git": "node ../common/dist/toolkit.js ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
-    "postpublish": "node ../common/dist/toolkit/toolkit.js tag-release-revision",
+    "postpublish": "node ../common/dist/toolkit.js tag-release-revision",
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "test:watch": "node --watch --test build/**/*.test.js",
     "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",
-    "release:patch": "node ../common/dist/toolkit/toolkit.js release-patch",
+    "release:patch": "node ../common/dist/toolkit.js release-patch",
     "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {

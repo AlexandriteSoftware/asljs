@@ -313,12 +313,11 @@ function buildPrompt(
     `
 \`\`\`js
 /*
-${rule.id} - ${rule.content}
+${rule.content}
 */
 
 /**
- * @type { import('../../src/rule-validation-function.js')
- *           .RuleValidationFunction }
+ * @type { import('asljs-part').RuleValidationFunction }
  */
 export async function validate(
   artefact,
@@ -338,25 +337,31 @@ import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { TmpDir,
-         createLogger,
-         ArtefactProvider,
-         DefinitionProvider }
+import { createPinoLoggerProvider,
+         createRuleValidationContext }
   from 'asljs-part';
+import { tmpDirFactory }
+  from './testing/tmpDir.js';
 import { validate }
   from './${rule.name}.js';
 
-const logger =
-  createLogger(
-    { level: 'trace',
-      enabled: false });
+const loggerProvider =
+  createPinoLoggerProvider();
+
+after(
+  () => {
+    loggerProvider.dispose();
+  });
+
+const tmpDir =
+  tmpDirFactory(
+    loggerProvider);
 
 test(
   '${rule.name} ...',
   async () => {
     await using workspace =
-      new TmpDir(
-        logger);
+      tmpDir();
 
       ...
   });
@@ -366,10 +371,7 @@ test(
   const commonPrompt =
     `In the validate function you can use \`context\` to access validation
 context, e.g. artefacts, definitions, and logger. You can use libraries that
-available in to the \`part\` package.json:
-
-- "glob": "^13.0.6"
-- "remark-parse": "^11.0.0"
+available in to the \`part\` package.json.
 
 You can run shell commands, available on the local machine. E.g., \`dotnet\`,
 \`python\`, \`node\`, \`npm\`, \`git\`, etc.

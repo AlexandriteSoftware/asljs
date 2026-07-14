@@ -1,6 +1,5 @@
 /**
- * @type { import('../../src/artefact-data-providing-function.js')
- *           .ArtefactDataProvidingFunction }
+ * @type { import('asljs-part').ArtefactDataProvidingFunction }
  */
 export async function getData()
 {

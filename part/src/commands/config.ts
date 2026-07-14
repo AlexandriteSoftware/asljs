@@ -1,5 +1,3 @@
-import { createRequire }
-  from 'node:module';
 import { Environment }
   from '../environment.js';
 

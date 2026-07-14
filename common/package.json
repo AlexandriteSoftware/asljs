@@ -6,7 +6,7 @@
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format": "npm run format:json",
-    "clean": "node ./dist/toolkit/toolkit.js clean",
+    "clean": "node ./dist/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",

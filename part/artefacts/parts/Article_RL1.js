@@ -11,8 +11,7 @@ import { readFile }
   from 'node:fs/promises';
 
 /**
- * @type { import('../../src/rule-validation-function.js')
- *           .RuleValidationFunction }
+ * @type { import('asljs-part').RuleValidationFunction }
  */
 export async function validate(
   artefact,

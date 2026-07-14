@@ -2,13 +2,13 @@
 
 Artefact Definition is a markdown file, with the following content:
 
-- `# <FileName>` - the name of the definition, should match the name of
-  the markdown file (without extension).
+- `# <FileName>` - the name of the definition, should match the name of the
+  markdown file (without extension).
 - `# <FileName>` is followed by a description of the definition.
-- `## Location` - required, specifies where the definition is located in
-  the project.
-- `## Rules` - optional, specifies rules that apply to the definition. Has
-  a list of rules, each with an id and description. First token in the rule
+- `## Location` - required, specifies where the definition is located in the
+  project.
+- `## Rules` - optional, specifies rules that apply to the definition. Has a
+  list of rules, each with an id and description. First token in the rule
   description should be the rule id. Rule ids has the format
   `<letters><number>`.
 
@@ -46,10 +46,10 @@ There are three types of the location instructions:
   optional and can be used multiple times.
 - Special filters, e.g. `GitIgnore` - defines location in a special way.
 
-`Pattern` and `Exclude` has glob pattern as a parameter. The glob
-pattern is either relative to the artefact definition file or absolute,
-calculated from the project root. Absolute patterns starts with `/`, e.g.
-`/src/**/*.js`. Folder patterns should end with `/`, e.g. `src/`.
+`Pattern` and `Exclude` has glob pattern as a parameter. The glob pattern is
+either relative to the artefact definition file or absolute, calculated from the
+project root. Absolute patterns starts with `/`, e.g. `/src/**/*.js`. Folder
+patterns should end with `/`, e.g. `src/`.
 
 Project root is either the current working directory or directory specified by
 the `--project` CLI option.
@@ -63,13 +63,12 @@ Definition location is represented in code with the following structure:
 ```
 
 Special filters are represented as objects with at least a `name` property, e.g.
-`{ name: 'GitIgnore' }`. Other properties of the filter object depend on
-the filter type.
+`{ name: 'GitIgnore' }`. Other properties of the filter object depend on the
+filter type.
 
 Special filters:
 
-- `GitIgnore` - excludes files and folders defined in `.gitignore` files.
-  It collects `.gitignore` files starting from the file's folder and
-  going up to the project root until it reaches the repository root (folder with
-  the `.git` subfolder) or filesystem root. It caches collected `.gitignore`
-  files.
+- `GitIgnore` - excludes files and folders defined in `.gitignore` files. It
+  collects `.gitignore` files starting from the file's folder and going up to
+  the project root until it reaches the repository root (folder with the `.git`
+  subfolder) or filesystem root. It caches collected `.gitignore` files.

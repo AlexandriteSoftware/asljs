@@ -1,7 +1,7 @@
 # part
 
-> Part of [Alexandrite Software Library][#1] - a set of high-quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
+> JavaScript libraries for everyday use.
 
 Markdown-defined project artefact tracing framework with a CLI for inventory,
 definition inspection, and rule checks.
