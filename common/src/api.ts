@@ -5,7 +5,7 @@ import { fileURLToPath }
 
 /**
  * Path to the compiled script file, which is supposed to be located in
- * common/dist/toolkit.
+ * common/dist.
  */
 const SCRIPT_FILE_PATH =
   fileURLToPath(
@@ -18,8 +18,7 @@ const SCRIPT_FILE_PATH =
 export const PKG_COMMON_DIR =
   path.dirname(
     path.dirname(
-      path.dirname(
-        SCRIPT_FILE_PATH)));
+      SCRIPT_FILE_PATH));
 
 /**
  * Path to the repository root directory, which is supposed to be the parent of
