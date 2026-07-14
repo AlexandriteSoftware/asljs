@@ -74,8 +74,8 @@ export async function validate(
       artefact.path,
       'utf8');
 
-  const dprintBinPath =
-    resolveDprintBinPath();
+  const dprintCommand =
+    resolveDprintCommand();
 
   const tempDir =
     await mkdtemp(
@@ -97,7 +97,7 @@ export async function validate(
 
     const formatted =
       await dprintFormatStdin(
-        dprintBinPath,
+        dprintCommand,
         configPath,
         artefact.path,
         content);
@@ -116,40 +116,59 @@ export async function validate(
 }
 
 /**
- * Resolves the path to the dprint CLI entry point (bin.js) via
- * import.meta.resolve so it works regardless of working directory.
+ * Resolves the dprint command. Prefer the package-local CLI entry point, but
+ * fall back to an OS-discovered executable when dprint is not installed as a
+ * dependency of asljs-part.
  *
- * @returns {string}
+ * @returns {{ command: string, args: string[] }}
  */
-function resolveDprintBinPath()
+function resolveDprintCommand()
 {
-  const packageJsonUrl =
-    import.meta.resolve(
-      'dprint/package.json');
+  try {
+    const packageJsonUrl =
+      import.meta.resolve(
+        'dprint/package.json');
 
-  const packageJsonPath =
-    fileURLToPath(
-      packageJsonUrl);
+    const packageJsonPath =
+      fileURLToPath(
+        packageJsonUrl);
 
-  return path.join(
-    path.dirname(
-      packageJsonPath),
-    'bin.js');
+    return {
+      command:
+        process.execPath,
+      args:
+        [
+          path.join(
+            path.dirname(
+              packageJsonPath),
+            'bin.js')
+        ]
+    };
+  }
+  catch {
+    return {
+      command:
+        process.platform === 'win32'
+          ? 'dprint.cmd'
+          : 'dprint',
+      args:
+        []
+    };
+  }
 }
 
 /**
- * Runs `node dprint/bin.js fmt --stdin <filePath>` and returns the
- * formatted output. Uses stdin/stdout so the file does not need to
- * reside inside the config directory.
+ * Runs dprint and returns the formatted output. Uses stdin/stdout so the file
+ * does not need to reside inside the config directory.
  *
- * @param {string} dprintBinPath
+ * @param {{ command: string, args: string[] }} dprintCommand
  * @param {string} configPath
  * @param {string} filePath
  * @param {string} content
  * @returns {Promise<string>}
  */
 function dprintFormatStdin(
-  dprintBinPath,
+  dprintCommand,
   configPath,
   filePath,
   content)
@@ -159,9 +178,9 @@ function dprintFormatStdin(
     {
       const proc =
         spawn(
-          process.execPath,
+          dprintCommand.command,
           [
-            dprintBinPath,
+            ...dprintCommand.args,
             'fmt',
             '--config', configPath,
             '--stdin', filePath
