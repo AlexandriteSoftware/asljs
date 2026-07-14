@@ -34,7 +34,7 @@
     "@types/yargs": "^17.0.35",
     "@typescript-eslint/eslint-plugin": "^8.63.0",
     "@typescript-eslint/parser": "^8.63.0",
-    "dprint": "^0.49.1",
+    "dprint": "^0.55.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "marked": "^18.0.5",

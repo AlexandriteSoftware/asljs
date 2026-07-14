@@ -75,7 +75,7 @@ export async function validate(
       'utf8');
 
   const dprintCommand =
-    resolveDprintCommand();
+    await resolveDprintCommand();
 
   const tempDir =
     await mkdtemp(
@@ -120,9 +120,9 @@ export async function validate(
  * fall back to an OS-discovered executable when dprint is not installed as a
  * dependency of asljs-part.
  *
- * @returns {{ command: string, args: string[] }}
+ * @returns {Promise<{ command: string, args: string[] }>}
  */
-function resolveDprintCommand()
+async function resolveDprintCommand()
 {
   try {
     const packageJsonUrl =
@@ -133,17 +133,25 @@ function resolveDprintCommand()
       fileURLToPath(
         packageJsonUrl);
 
-    return {
-      command:
-        process.execPath,
-      args:
-        [
-          path.join(
-            path.dirname(
-              packageJsonPath),
-            'bin.js')
-        ]
-    };
+    const packageJson =
+      JSON.parse(
+        await readFile(
+          packageJsonPath,
+          'utf8'));
+
+    const binPath =
+      path.join(
+        path.dirname(
+          packageJsonPath),
+        packageJson.bin);
+
+    const result =
+      { command:
+          process.execPath,
+        args:
+          [ binPath ] };
+      
+    return result;
   }
   catch {
     return {
@@ -151,8 +159,7 @@ function resolveDprintCommand()
         process.platform === 'win32'
           ? 'dprint.cmd'
           : 'dprint',
-      args:
-        []
+      args: [ ]
     };
   }
 }
