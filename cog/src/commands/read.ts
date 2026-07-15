@@ -5,27 +5,27 @@ import path
 import { Envelope,
          EnvelopeFile }
   from '../envelope/envelope.js';
-import { Command as CommandParameters }
-  from '../model/command.js';
-import { RollbackFeed }
-  from '../model/rollback.js';
 import { LocationResolver }
   from '../location.js';
 import { createLogger }
   from '../logger.js';
 import { ExecutionContext }
   from '../main/types.js';
+import { Command as CommandParameters }
+  from '../model/command.js';
+import { RollbackFeed }
+  from '../model/rollback.js';
 
 const textDecoder =
   new TextDecoder(
-    'utf-8',
-    { fatal: true });
+  'utf-8',
+  { fatal: true }
+);
 
 const defaultLines = 150;
 const defaultSizeKb = 15;
 
-export interface ReadParameters
-  extends CommandParameters
+export interface ReadParameters extends CommandParameters
 {
   pattern: string;
   exclude?: string[];
@@ -50,15 +50,16 @@ interface ReadLimits
 }
 
 export async function read(
-    envelope: Envelope,
-    parameters: ReadParameters,
-    _rollbackFeed?: RollbackFeed,
-    context?: ExecutionContext
-  ): Promise<void>
+  envelope: Envelope,
+  parameters: ReadParameters,
+  _rollbackFeed?: RollbackFeed,
+  context?: ExecutionContext
+): Promise<void>
 {
   if (!parameters.pattern) {
     throw new Error(
-      'Read command pattern is required');
+      'Read command pattern is required'
+    );
   }
 
   const normalizedParameters =
@@ -78,88 +79,82 @@ export async function read(
         getUpdateCommand(
           target,
           normalizedParameters),
-        { lines:
-            normalizedParameters.lines ?? defaultLines,
-          sizeKb:
-            normalizedParameters.sizeKb ?? defaultSizeKb,
-          readToEnd:
-            normalizedParameters.readToEnd ?? false,
-          withBinaryB64:
-            normalizedParameters.withBinaryB64 ?? false });
+        {
+        lines: normalizedParameters.lines ?? defaultLines,
+        sizeKb: normalizedParameters.sizeKb ?? defaultSizeKb,
+        readToEnd: normalizedParameters.readToEnd ?? false,
+        withBinaryB64: normalizedParameters.withBinaryB64 ?? false
+      });
 
     const fileIndex =
       envelope.files
-        .findIndex(
-          file =>
-            file.path === target.path);
+      .findIndex(
+        file => file.path === target.path
+      );
 
     if (fileIndex === -1) {
       envelope.files
         .push(
-          file);
+          file
+        );
 
       context?.console.writeLine(
-        `added ${target.path}`);
+        `added ${target.path}`
+      );
     } else {
-      envelope.files[fileIndex] =
-        file;
+      envelope.files[fileIndex] = file;
 
       context?.console.writeLine(
-        `refreshed ${target.path}`);
+        `refreshed ${target.path}`
+      );
     }
   }
 }
 
 export async function rollbackRead(
-    _rollbackFeed: RollbackFeed
-  ): Promise<void>
+  _rollbackFeed: RollbackFeed
+): Promise<void>
 {
 }
 
 function normalizeReadParameters(
-    command: ReadParameters
-  ): ReadParameters
+  command: ReadParameters
+): ReadParameters
 {
   return {
     command: 'read',
-    pattern:
-      command.pattern,
-    exclude:
-      command.exclude
+    pattern: command.pattern,
+    exclude: command.exclude
       ?? [],
-    lines:
-      command.lines
+    lines: command.lines
       ?? defaultLines,
-    sizeKb:
-      command.sizeKb
+    sizeKb: command.sizeKb
       ?? defaultSizeKb,
-    readToEnd:
-      command.readToEnd
+    readToEnd: command.readToEnd
       ?? false,
-    withBinaryB64:
-      command.withBinaryB64
+    withBinaryB64: command.withBinaryB64
       ?? false
   };
 }
 
 function getUpdateCommand(
-    target: ReadTarget,
-    command: ReadParameters
-  ): ReadParameters
+  target: ReadTarget,
+  command: ReadParameters
+): ReadParameters
 {
   return {
     ...command,
-    pattern:
-      target.path.replace(
-        /\\/g,
-        '/')
+    pattern: target.path.replace(
+      /\\/g,
+      '/'
+    )
   };
 }
 
 async function getReadTargets(
-    pattern: string,
-    excludes: string[]
-  ): Promise<ReadTarget[]>
+  pattern: string,
+  excludes: string[]
+): Promise<ReadTarget[]>
 {
   const logger =
     createLogger();
@@ -167,43 +162,47 @@ async function getReadTargets(
   try {
     const resolver =
       new LocationResolver(
-        logger,
-        process.cwd());
+      logger,
+      process.cwd()
+    );
 
     const matches =
       await resolver.resolve(
         process.cwd(),
-        { patterns:
-            [pattern],
-          exclude:
-            excludes });
+        { patterns: [pattern], exclude: excludes });
 
     return matches
       .map(
         match =>
           path.resolve(
-            match))
+            match
+          )
+      )
       .sort()
       .map(
         diskPath => ({
-          path:
-            toDisplayPath(
-              diskPath,
-              pattern),
+          path: toDisplayPath(
+            diskPath,
+            pattern
+          ),
           diskPath
-        }));
+        })
+      );
   } finally {
     logger.dispose();
   }
 }
 
 function toDisplayPath(
-    diskPath: string,
-    pattern: string
-  ): string
+  diskPath: string,
+  pattern: string
+): string
 {
-  if (path.isAbsolute(
-      pattern)) {
+  if (
+    path.isAbsolute(
+      pattern
+    )
+  ) {
     return diskPath;
   }
 
@@ -211,14 +210,17 @@ function toDisplayPath(
     normalizeSlashes(
       path.relative(
         process.cwd(),
-        diskPath)));
+        diskPath
+      )
+    )
+  );
 }
 
 async function getEnvelopeFile(
-    target: ReadTarget,
-    update: ReadParameters,
-    limits: ReadLimits
-  ): Promise<EnvelopeFile>
+  target: ReadTarget,
+  update: ReadParameters,
+  limits: ReadLimits
+): Promise<EnvelopeFile>
 {
   const data =
     await fsp.readFile(
@@ -227,30 +229,25 @@ async function getEnvelopeFile(
   let content: string;
 
   try {
-    content =
-      textDecoder.decode(
-        data);
+    content = textDecoder.decode(
+      data
+    );
   } catch {
     if (limits.withBinaryB64) {
       return {
-        path:
-          target.path,
-        type:
-          'binary',
-        content:
-          data.toString(
-            'base64'),
-        complete:
-          true,
+        path: target.path,
+        type: 'binary',
+        content: data.toString(
+          'base64'
+        ),
+        complete: true,
         update
       };
     }
 
     return {
-      path:
-        target.path,
-      type:
-        'binary',
+      path: target.path,
+      type: 'binary',
       update
     };
   }
@@ -261,58 +258,55 @@ async function getEnvelopeFile(
       limits);
 
   return {
-    path:
-      target.path,
-    type:
-      'text',
-    content:
-      limited.content,
-    complete:
-      limited.complete,
+    path: target.path,
+    type: 'text',
+    content: limited.content,
+    complete: limited.complete,
     update
   };
 }
 
 function limitText(
-    content: string,
-    limits: ReadLimits
-  ): {
-    content: string;
-    complete: boolean;
-  }
+  content: string,
+  limits: ReadLimits
+): {
+  content: string;
+  complete: boolean;
+}
 {
   if (limits.readToEnd) {
     return {
       content,
-      complete:
-        true
+      complete: true
     };
   }
 
-  let limitedContent =
-    content;
+  let limitedContent = content;
 
-  let complete =
-    true;
+  let complete = true;
 
   const maxBytes =
     limits.sizeKb * 1024;
 
-  if (Buffer.byteLength(
+  const length =
+    Buffer.byteLength(
       limitedContent,
-      'utf8') > maxBytes) {
-    limitedContent =
-      Buffer.from(
-        limitedContent,
-        'utf8')
-        .subarray(
-          0,
-          maxBytes)
-        .toString(
-          'utf8');
+      'utf8');
 
-    complete =
-      false;
+  if (length > maxBytes) {
+    limitedContent = Buffer.from(
+      limitedContent,
+      'utf8'
+    )
+      .subarray(
+        0,
+        maxBytes
+      )
+      .toString(
+        'utf8'
+      );
+
+    complete = false;
   }
 
   const lines =
@@ -320,39 +314,40 @@ function limitText(
       /\r?\n/);
 
   if (lines.length > limits.lines) {
-    limitedContent =
-      lines
-        .slice(
-          0,
-          limits.lines)
-        .join(
-          '\n');
+    limitedContent = lines
+      .slice(
+        0,
+        limits.lines
+      )
+      .join(
+        '\n'
+      );
 
-    complete =
-      false;
+    complete = false;
   }
 
   return {
-    content:
-      limitedContent,
+    content: limitedContent,
     complete
   };
 }
 
 function normalizeSlashes(
-    value: string
-  ): string
+  value: string
+): string
 {
   return value.replace(
     /\\/g,
-    '/');
+    '/'
+  );
 }
 
 function stripDotSlash(
-    value: string
-  ): string
+  value: string
+): string
 {
   return value.replace(
     /^\.\//,
-    '');
+    ''
+  );
 }

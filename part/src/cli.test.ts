@@ -61,7 +61,7 @@ test(
 
     environment.register(
       execVersion,
-      async (e) =>
+      async e =>
       {
         definitions = e.definitions;
         return Promise.resolve(0);
@@ -103,7 +103,7 @@ test(
 
     environment.register(
       execVersion,
-      async (e) =>
+      async e =>
       {
         project = e.project;
         return Promise.resolve(0);

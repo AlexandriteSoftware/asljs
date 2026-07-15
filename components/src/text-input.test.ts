@@ -1,9 +1,9 @@
-import test
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
 import { TextInput,
          TextInputChangeDetail }
   from './text-input.js';
@@ -13,7 +13,8 @@ let isTextInputModuleLoaded = false;
 
 test(
   'text-input: renders plain default label description and control',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -27,64 +28,103 @@ test(
 
     const label =
       element.querySelector('label') as HTMLLabelElement;
+
     const textarea =
-      element.querySelector('textarea') as HTMLTextAreaElement | null;
+      element.querySelector('textarea') as
+      | HTMLTextAreaElement
+      | null;
+
     const input =
       element.querySelector('input') as HTMLInputElement;
-    const description =
-      element.querySelector('[data-bind-prop-id="descriptionId"]') as HTMLElement;
 
-    assert.equal(label.textContent, 'Title');
-    assert.equal(textarea, null);
-    assert.equal(input.value, 'Hello');
-    assert.equal(description.textContent, 'Shown below');
-    assert.equal(label.className, '');
-    assert.equal(input.className, '');
-  });
+    const description =
+      element.querySelector(
+        '[data-bind-prop-id="descriptionId"]') as HTMLElement;
+
+    assert.equal(
+      label.textContent,
+      'Title'
+    );
+
+    assert.equal(
+      textarea,
+      null
+    );
+
+    assert.equal(
+      input.value,
+      'Hello'
+    );
+
+    assert.equal(
+      description.textContent,
+      'Shown below'
+    );
+
+    assert.equal(
+      label.className,
+      ''
+    );
+
+    assert.equal(
+      input.className,
+      ''
+    );
+  }
+);
 
 test(
   'text-input: model definition exposes critical runtime properties with types and captions',
-  async () => {
+  async () =>
+  {
     await ensureDomAndModuleLoaded();
 
     const {
-      TextInputModelDefinition,
-    } = await import('./text-input.js');
+      TextInputModelDefinition
+    } =
+      await import('./text-input.js');
 
     const propertyByName =
       new Map(
-        TextInputModelDefinition.properties.map(
-          property => [ property.name,
-                        property ]));
+      TextInputModelDefinition.properties.map(
+        property => [property.name, property]
+      )
+    );
 
     assert.deepEqual(
       propertyByName.get('errorMessage'),
-      { name: 'errorMessage',
+      {
+        name: 'errorMessage',
         type: 'string',
         title: 'Error message',
         description: 'Current validation message or null.',
-        editable: false });
+        editable: false
+      }
+    );
+
     assert.deepEqual(
       propertyByName.get('rows'),
-      { name: 'rows',
-        type: 'number',
-        title: 'Rows' });
+      { name: 'rows', type: 'number', title: 'Rows' }
+    );
+
     assert.deepEqual(
       propertyByName.get('multiline'),
-      { name: 'multiline',
-        type: 'boolean',
-        title: 'Multiline' });
-  });
+      { name: 'multiline', type: 'boolean', title: 'Multiline' }
+    );
+  }
+);
 
 test(
   'text-input: validator sets aria-invalid and shows error message',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
     element.value = 'bad';
-    element.validator =
-      value => value === 'ok'
+
+    element.validator = value =>
+      value === 'ok'
         ? null
         : 'Value is invalid';
 
@@ -94,18 +134,37 @@ test(
 
     const input =
       element.querySelector('input') as HTMLInputElement;
-    const error =
-      element.querySelector('[data-bind-prop-id="errorId"]') as HTMLElement;
 
-    assert.equal(input.hasAttribute('aria-invalid'), true);
-    assert.equal(error.hidden, false);
-    assert.equal(error.textContent, 'Value is invalid');
-    assert.equal(element.isValid, false);
-  });
+    const error =
+      element.querySelector(
+        '[data-bind-prop-id="errorId"]') as HTMLElement;
+
+    assert.equal(
+      input.hasAttribute('aria-invalid'),
+      true
+    );
+
+    assert.equal(
+      error.hidden,
+      false
+    );
+
+    assert.equal(
+      error.textContent,
+      'Value is invalid'
+    );
+
+    assert.equal(
+      element.isValid,
+      false
+    );
+  }
+);
 
 test(
   'text-input: bootstrap theme supplies bootstrap template and classes',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -116,8 +175,9 @@ test(
     element.label = 'Title';
     element.description = 'Shown below';
     element.value = 'Hello';
-    element.validator =
-      value => value === 'ok'
+
+    element.validator = value =>
+      value === 'ok'
         ? null
         : 'Value is invalid';
 
@@ -126,26 +186,61 @@ test(
     await settle(element);
 
     const label =
-      element.querySelector('label.form-label') as HTMLLabelElement;
+      element.querySelector(
+        'label.form-label') as HTMLLabelElement;
+
     const input =
-      element.querySelector('input.form-control') as HTMLInputElement;
+      element.querySelector(
+        'input.form-control') as HTMLInputElement;
+
     const description =
       element.querySelector('.form-text') as HTMLElement;
-    const error =
-      element.querySelector('.invalid-feedback') as HTMLElement;
 
-    assert.equal(label.textContent, 'Title');
-    assert.equal(input.value, 'Hello');
-    assert.equal(input.classList.contains('form-control'), true);
-    assert.equal(input.nextElementSibling, null);
-    assert.equal(description.textContent, 'Shown below');
-    assert.equal(input.classList.contains('is-invalid'), true);
-    assert.equal(error.textContent, 'Value is invalid');
-  });
+    const error =
+      element.querySelector(
+        '.invalid-feedback') as HTMLElement;
+
+    assert.equal(
+      label.textContent,
+      'Title'
+    );
+
+    assert.equal(
+      input.value,
+      'Hello'
+    );
+
+    assert.equal(
+      input.classList.contains('form-control'),
+      true
+    );
+
+    assert.equal(
+      input.nextElementSibling,
+      null
+    );
+
+    assert.equal(
+      description.textContent,
+      'Shown below'
+    );
+
+    assert.equal(
+      input.classList.contains('is-invalid'),
+      true
+    );
+
+    assert.equal(
+      error.textContent,
+      'Value is invalid'
+    );
+  }
+);
 
 test(
   'text-input: bootstrap theme supplies bootstrap textarea control in multiline mode',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -161,29 +256,51 @@ test(
     await settle(element);
 
     const textarea =
-      element.querySelector('textarea.form-control') as HTMLTextAreaElement;
-    const error =
-      element.querySelector('.invalid-feedback') as HTMLElement;
+      element.querySelector(
+        'textarea.form-control') as HTMLTextAreaElement;
 
-    assert.equal(textarea.value, 'Hello');
-    assert.equal(textarea.classList.contains('form-control'), true);
-    assert.equal(textarea.nextElementSibling, null);
-    assert.equal(error.textContent, '');
-  });
+    const error =
+      element.querySelector(
+        '.invalid-feedback') as HTMLElement;
+
+    assert.equal(
+      textarea.value,
+      'Hello'
+    );
+
+    assert.equal(
+      textarea.classList.contains('form-control'),
+      true
+    );
+
+    assert.equal(
+      textarea.nextElementSibling,
+      null
+    );
+
+    assert.equal(
+      error.textContent,
+      ''
+    );
+  }
+);
 
 test(
   'text-input: package default theme applies bootstrap control classes',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
     const themeModule =
       await import('./themes/theme.js');
+
     const bootstrapThemeModule =
       await import('./themes/bootstrap-theme.js');
 
     themeModule.setDefaultTheme(
-      bootstrapThemeModule.createBootstrapTheme());
+      bootstrapThemeModule.createBootstrapTheme()
+    );
 
     try {
       element.label = 'Project name';
@@ -196,15 +313,20 @@ test(
       const input =
         element.querySelector('input') as HTMLInputElement;
 
-      assert.equal(input.classList.contains('form-control'), true);
+      assert.equal(
+        input.classList.contains('form-control'),
+        true
+      );
     } finally {
       themeModule.setDefaultTheme(null);
     }
-  });
+  }
+);
 
 test(
   'text-input: emits input details and keeps value property as reset value',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -218,36 +340,61 @@ test(
 
     element.addEventListener(
       'input',
-      event => {
+      event =>
+      {
         received.push(
-          ((event as unknown) as CustomEvent<TextInputChangeDetail>).detail);
-      });
+          ((event as unknown) as CustomEvent<TextInputChangeDetail>).detail
+        );
+      }
+    );
 
     const input =
       element.querySelector('input') as HTMLInputElement;
 
     input.value = 'Changed';
+
     input.dispatchEvent(
       new window.Event(
         'input',
-        { bubbles: true }));
+        { bubbles: true }
+      )
+    );
 
     const receivedDetail =
       received[0];
 
     if (receivedDetail === undefined) {
-      assert.fail('Expected text input to emit an input event with detail.');
+      assert.fail(
+        'Expected text input to emit an input event with detail.'
+      );
     }
 
-    assert.equal(element.value, 'Initial');
-    assert.equal(element.draftValue, 'Changed');
-    assert.equal(receivedDetail.value, 'Changed');
-    assert.equal(receivedDetail.dirty, true);
-  });
+    assert.equal(
+      element.value,
+      'Initial'
+    );
+
+    assert.equal(
+      element.draftValue,
+      'Changed'
+    );
+
+    assert.equal(
+      receivedDetail.value,
+      'Changed'
+    );
+
+    assert.equal(
+      receivedDetail.dirty,
+      true
+    );
+  }
+);
 
 test(
   'text-input: multiline Enter keeps newline but Ctrl+Enter finishes editing',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -262,9 +409,11 @@ test(
 
     element.addEventListener(
       'change',
-      () => {
+      () =>
+      {
         changes += 1;
-      });
+      }
+    );
 
     const textarea =
       element.querySelector('textarea') as HTMLTextAreaElement;
@@ -272,24 +421,33 @@ test(
     textarea.dispatchEvent(
       new window.KeyboardEvent(
         'keydown',
-        { key: 'Enter',
-          bubbles: true }));
+        { key: 'Enter', bubbles: true }
+      )
+    );
 
-    assert.equal(changes, 0);
+    assert.equal(
+      changes,
+      0
+    );
 
     textarea.dispatchEvent(
       new window.KeyboardEvent(
         'keydown',
-        { key: 'Enter',
-          ctrlKey: true,
-          bubbles: true }));
+        { key: 'Enter', ctrlKey: true, bubbles: true }
+      )
+    );
 
-    assert.equal(changes, 1);
-  });
+    assert.equal(
+      changes,
+      1
+    );
+  }
+);
 
 test(
   'text-input: autoextend applies textarea height with max rows limit',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -305,17 +463,21 @@ test(
     const textarea =
       element.querySelector('textarea') as HTMLTextAreaElement;
 
-    assert.notEqual(textarea.style.height, '');
-  });
+    assert.notEqual(
+      textarea.style.height,
+      ''
+    );
+  }
+);
 
 test(
   'text-input: local template can move label and description around control host',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
-    element.innerHTML =
-      `
+    element.innerHTML = `
         <template data-slot="template">
           <div>
             <div data-role="control-host"></div>
@@ -325,6 +487,7 @@ test(
           </div>
         </template>
       `;
+
     element.label = 'Moved';
 
     document.body.appendChild(element);
@@ -334,17 +497,21 @@ test(
     const after =
       element.querySelector('.after') as HTMLElement;
 
-    assert.equal(after.textContent, 'Moved');
-  });
+    assert.equal(
+      after.textContent,
+      'Moved'
+    );
+  }
+);
 
 test(
   'text-input: local input control template can provide themed control markup',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
-    element.innerHTML =
-      `
+    element.innerHTML = `
         <template data-slot="input">
           <div class="control-shell">
             <input class="custom-control"
@@ -352,46 +519,69 @@ test(
           </div>
         </template>
       `;
+
     element.value = 'Hello';
-    element.validator =
-      () => 'Broken';
+    element.validator = () => 'Broken';
 
     document.body.appendChild(element);
 
     await settle(element);
 
     const shell =
-      element.querySelector('.control-shell') as HTMLElement;
+      element.querySelector(
+        '.control-shell') as HTMLElement;
+
     const input =
-      element.querySelector('input.custom-control') as HTMLInputElement;
+      element.querySelector(
+        'input.custom-control') as HTMLInputElement;
 
-    assert.equal(shell.contains(input), true);
-    assert.equal(input.value, 'Hello');
-    assert.equal(input.classList.contains('custom-invalid'), true);
-  });
+    assert.equal(
+      shell.contains(input),
+      true
+    );
 
-async function createElement(): Promise<TextInput> {
+    assert.equal(
+      input.value,
+      'Hello'
+    );
+
+    assert.equal(
+      input.classList.contains(
+        'custom-invalid'
+      ),
+      true
+    );
+  }
+);
+
+async function createElement(): Promise<TextInput>
+{
   await ensureDomAndModuleLoaded();
 
-  return document.createElement('asljs-text-input') as TextInput;
+  return document.createElement(
+    'asljs-text-input'
+  ) as TextInput;
 }
 
-async function ensureDomAndModuleLoaded(): Promise<void> {
+async function ensureDomAndModuleLoaded(): Promise<void>
+{
   if (domRestore === null) {
     const dom =
       new JSDOM('<!doctype html><html><body></body></html>');
 
     const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        customElements: globalThis.customElements,
-        HTMLElement: globalThis.HTMLElement,
-        HTMLInputElement: globalThis.HTMLInputElement,
-        HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-        Event: globalThis.Event,
-        CustomEvent: globalThis.CustomEvent,
-        KeyboardEvent: globalThis.KeyboardEvent,
-        getComputedStyle: globalThis.getComputedStyle };
+      {
+      window: globalThis.window,
+      document: globalThis.document,
+      customElements: globalThis.customElements,
+      HTMLElement: globalThis.HTMLElement,
+      HTMLInputElement: globalThis.HTMLInputElement,
+      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
+      Event: globalThis.Event,
+      CustomEvent: globalThis.CustomEvent,
+      KeyboardEvent: globalThis.KeyboardEvent,
+      getComputedStyle: globalThis.getComputedStyle
+    };
 
     globalThis.window = dom.window as unknown as typeof globalThis.window;
     globalThis.document = dom.window.document;
@@ -402,21 +592,47 @@ async function ensureDomAndModuleLoaded(): Promise<void> {
     globalThis.Event = dom.window.Event;
     globalThis.CustomEvent = dom.window.CustomEvent;
     globalThis.KeyboardEvent = dom.window.KeyboardEvent;
-    globalThis.getComputedStyle =
-      ((element: Element): CSSStyleDeclaration => {
-        const style =
-          dom.window.getComputedStyle(element);
 
-        Object.defineProperty(style, 'lineHeight', { value: '20px' });
-        Object.defineProperty(style, 'paddingTop', { value: '4px' });
-        Object.defineProperty(style, 'paddingBottom', { value: '4px' });
-        Object.defineProperty(style, 'borderTopWidth', { value: '1px' });
-        Object.defineProperty(style, 'borderBottomWidth', { value: '1px' });
+    globalThis.getComputedStyle = ((element: Element): CSSStyleDeclaration =>
+    {
+      const style =
+        dom.window.getComputedStyle(element);
 
-        return style;
-      }) as typeof globalThis.getComputedStyle;
+      Object.defineProperty(
+        style,
+        'lineHeight',
+        { value: '20px' }
+      );
 
-    domRestore = () => {
+      Object.defineProperty(
+        style,
+        'paddingTop',
+        { value: '4px' }
+      );
+
+      Object.defineProperty(
+        style,
+        'paddingBottom',
+        { value: '4px' }
+      );
+
+      Object.defineProperty(
+        style,
+        'borderTopWidth',
+        { value: '1px' }
+      );
+
+      Object.defineProperty(
+        style,
+        'borderBottomWidth',
+        { value: '1px' }
+      );
+
+      return style;
+    }) as typeof globalThis.getComputedStyle;
+
+    domRestore = () =>
+    {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.customElements = previous.customElements;
@@ -439,8 +655,8 @@ async function ensureDomAndModuleLoaded(): Promise<void> {
 }
 
 async function settle(
-    element: TextInput
-  ): Promise<void>
+  element: TextInput
+): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

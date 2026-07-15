@@ -1,66 +1,81 @@
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
   from 'lit/decorators.js';
-import { type TextInput,
-         type TextInputChangeDetail }
-  from './text-input.js';
 import { ComponentModelDefinition,
          ComponentModelPropertyDefinition,
          ComponentModelPropertyType }
   from './abstractions/model.js';
-import { ComponentsTheme }
-  from './themes/theme.js';
 import { type Select,
          type SelectChangeDetail }
   from './select.js';
+import { type TextInput,
+         type TextInputChangeDetail }
+  from './text-input.js';
+import { ComponentsTheme }
+  from './themes/theme.js';
 import './select.js';
 import './text-input.js';
 
 const BOOLEAN_ITEMS =
-  [ { value: 'yes', label: 'Yes' },
-    { value: 'no', label: 'No' } ];
+  [{ value: 'yes', label: 'Yes' }, {
+  value: 'no',
+  label: 'No'
+}];
 
 export const PropertiesModelDefinition: ComponentModelDefinition =
-  { name: 'PropertiesModelDefinition',
-    title: 'Properties',
-    properties:
-      [ { name: 'definition',
-          title: 'Definition',
-          type: 'object',
-          description: 'Component model definition that drives the generated form.' },
-        { name: 'target',
-          title: 'Target',
-          type: 'object',
-          description: 'Target object updated by the generated controls.' },
-        { name: 'theme',
-          title: 'Theme',
-          type: 'object',
-          description: 'Theme forwarded to nested controls.' } ] };
+  {
+  name: 'PropertiesModelDefinition',
+  title: 'Properties',
+  properties: [{
+    name: 'definition',
+    title: 'Definition',
+    type: 'object',
+    description: 'Component model definition that drives the generated form.'
+  }, {
+    name: 'target',
+    title: 'Target',
+    type: 'object',
+    description: 'Target object updated by the generated controls.'
+  }, {
+    name: 'theme',
+    title: 'Theme',
+    type: 'object',
+    description: 'Theme forwarded to nested controls.'
+  }]
+};
 
-@customElement('asljs-properties')
-export class Properties
-  extends LitElement
+@customElement(
+  'asljs-properties'
+)
+export class Properties extends LitElement
 {
-  static readonly modelDefinition =
-    PropertiesModelDefinition;
+  static readonly modelDefinition = PropertiesModelDefinition;
 
-  @property({ attribute: false })
-    accessor definition: ComponentModelDefinition | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor definition: ComponentModelDefinition | null = null;
 
-  @property({ attribute: false })
-    accessor target: Record<string, unknown> | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor target: Record<string, unknown> | null = null;
 
-  @property({ attribute: false })
-    accessor theme: ComponentsTheme | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor theme: ComponentsTheme | null = null;
 
-  override createRenderRoot(): this {
+  override createRenderRoot(): this
+  {
     return this;
   }
 
-  override render(): ReturnType<LitElement['render']> {
+  override render(): ReturnType<LitElement['render']>
+  {
     if (this.definition === null || this.target === null) {
       return html``;
     }
@@ -68,26 +83,37 @@ export class Properties
     return html`
       <div class="asljs-properties"
            style="display:grid;gap:0.75rem;">
-        ${this.definition.properties.map(
-          propertyDefinition => this.#renderProperty(propertyDefinition))}
+        ${
+      this.definition.properties.map(
+        propertyDefinition =>
+          this.#renderProperty(
+            propertyDefinition
+          )
+      )
+    }
       </div>
     `;
   }
 
   #renderProperty(
-      propertyDefinition: ComponentModelPropertyDefinition
-    ): ReturnType<LitElement['render']>
+    propertyDefinition: ComponentModelPropertyDefinition
+  ): ReturnType<LitElement['render']>
   {
     const propertyValue =
       this.target?.[propertyDefinition.name];
+
     const label =
       propertyDefinition.title ?? propertyDefinition.name;
+
     const description =
       propertyDefinition.description
       ?? `Type: ${propertyDefinition.type}`;
+
     const isEditable =
       propertyDefinition.editable
-      ?? isPrimitiveEditable(propertyDefinition.type);
+      ?? isPrimitiveEditable(
+        propertyDefinition.type
+      );
 
     if (propertyDefinition.type === 'boolean') {
       return html`
@@ -97,11 +123,17 @@ export class Properties
             .label=${label}
             .description=${description}
             .items=${BOOLEAN_ITEMS}
-            .value=${propertyValue === true
-? 'yes'
-: 'no'}
+            .value=${
+        propertyValue === true
+          ? 'yes'
+          : 'no'
+      }
             .disabled=${!isEditable}
-            @input=${(event: Event) => this.#handleBooleanInput(propertyDefinition, event)}>
+            @input=${(event: Event) =>
+        this.#handleBooleanInput(
+          propertyDefinition,
+          event
+        )}>
         </asljs-select>
       `;
     }
@@ -112,20 +144,31 @@ export class Properties
           .theme=${this.theme}
           .label=${label}
           .description=${description}
-          .value=${formatPropertyValue(propertyDefinition.type, propertyValue)}
-          .inputType=${propertyDefinition.type === 'number'
-            ? 'number'
-            : 'text'}
+          .value=${
+      formatPropertyValue(
+        propertyDefinition.type,
+        propertyValue
+      )
+    }
+          .inputType=${
+      propertyDefinition.type === 'number'
+        ? 'number'
+        : 'text'
+    }
           .disabled=${!isEditable}
-          @input=${(event: Event) => this.#handleTextInput(propertyDefinition, event)}>
+          @input=${(event: Event) =>
+      this.#handleTextInput(
+        propertyDefinition,
+        event
+      )}>
       </asljs-text-input>
     `;
   }
 
   #handleBooleanInput(
-      propertyDefinition: ComponentModelPropertyDefinition,
-      event: Event
-    ): void
+    propertyDefinition: ComponentModelPropertyDefinition,
+    event: Event
+  ): void
   {
     if (this.target === null || propertyDefinition.editable === false) {
       return;
@@ -133,8 +176,10 @@ export class Properties
 
     const detail =
       (event as CustomEvent<SelectChangeDetail>).detail;
+
     const source =
       event.currentTarget as Select | null;
+
     const nextValue =
       detail?.value
       ?? source?.draftValue;
@@ -143,15 +188,14 @@ export class Properties
       return;
     }
 
-    this.target[propertyDefinition.name] =
-      nextValue === 'yes';
+    this.target[propertyDefinition.name] = nextValue === 'yes';
     this.requestUpdate();
   }
 
   #handleTextInput(
-      propertyDefinition: ComponentModelPropertyDefinition,
-      event: Event
-    ): void
+    propertyDefinition: ComponentModelPropertyDefinition,
+    event: Event
+  ): void
   {
     if (this.target === null || propertyDefinition.editable === false) {
       return;
@@ -159,8 +203,10 @@ export class Properties
 
     const detail =
       (event as CustomEvent<TextInputChangeDetail>).detail;
+
     const source =
       event.currentTarget as TextInput | null;
+
     const rawValue =
       detail?.value
       ?? source?.draftValue;
@@ -185,13 +231,14 @@ export class Properties
 }
 
 const unchangedValue =
-  Symbol('unchangedValue');
+  Symbol(
+    'unchangedValue');
 
 function coercePropertyValue(
-    type: ComponentModelPropertyType,
-    value: string,
-    currentValue: unknown
-  ): unknown
+  type: ComponentModelPropertyType,
+  value: string,
+  currentValue: unknown
+): unknown
 {
   if (type === 'number') {
     if (value.trim() === '') {
@@ -214,9 +261,9 @@ function coercePropertyValue(
 }
 
 function formatPropertyValue(
-    type: ComponentModelPropertyType,
-    value: unknown
-  ): string
+  type: ComponentModelPropertyType,
+  value: unknown
+): string
 {
   if (type === 'string' || type === 'number') {
     return value === null || value === undefined
@@ -248,8 +295,8 @@ function formatPropertyValue(
 }
 
 function isPrimitiveEditable(
-    type: ComponentModelPropertyType
-  ): boolean
+  type: ComponentModelPropertyType
+): boolean
 {
   return type === 'boolean'
     || type === 'number'

@@ -5,14 +5,14 @@ export interface HostConsole
   ) => void;
 }
 
-export class DefaultHostConsole
-  implements HostConsole
+export class DefaultHostConsole implements HostConsole
 {
   writeLine(
-      line: string
-    ): void
+    line: string
+  ): void
   {
     process.stdout.write(
-      `${line}\n`);
+      `${line}\n`
+    );
   }
 }

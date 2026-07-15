@@ -1,30 +1,27 @@
 import { DeleteStrategy }
   from './delete-strategy.js';
 
-type IndexQueryMapping =
-  { index: string;
-    key: IDBValidKey; };
+type IndexQueryMapping = { index: string; key: IDBValidKey; };
 
-type IndexQueryMapper =
-  (
-      index: string,
-      key: IDBValidKey
-    ) => IndexQueryMapping | null;
+type IndexQueryMapper = (
+  index: string,
+  key: IDBValidKey
+) => IndexQueryMapping | null;
 
 export class UuidSoftDeleteStrategy<
-    T extends Record<string, any>>
-  implements DeleteStrategy<T>
+  T extends Record<string, any>
+> implements DeleteStrategy<T>
 {
   constructor(
-      private readonly deletedField: keyof T & string,
-      private readonly mapActiveIndexQuery?: IndexQueryMapper
-    )
+    private readonly deletedField: keyof T & string,
+    private readonly mapActiveIndexQuery?: IndexQueryMapper
+  )
   {
   }
 
   isDeleted(
-      record: T
-    ): boolean
+    record: T
+  ): boolean
   {
     const marker =
       record[this.deletedField];
@@ -34,11 +31,12 @@ export class UuidSoftDeleteStrategy<
   }
 
   delete(
-      record: T
-    ): T
+    record: T
+  ): T
   {
-    if (this.isDeleted(record))
+    if (this.isDeleted(record)) {
       return record;
+    }
 
     return {
       ...record,
@@ -47,14 +45,25 @@ export class UuidSoftDeleteStrategy<
   }
 
   mapIndexQuery(
-      index: string,
-      key: IDBValidKey
-    ):
-      { index: string;
-        key: IDBValidKey; }
-      | null
+    index: string,
+    key: IDBValidKey
+  ):
+    | { index: string; key: IDBValidKey; }
+    | null
   {
-    return this.mapActiveIndexQuery?.(index, key)
+    const query =
+      this.mapActiveIndexQuery;
+
+    if (query === undefined) {
+      return null;
+    }
+
+    const result =
+      query(
+        index,
+        key);
+
+    return result
       ?? null;
   }
 }

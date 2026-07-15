@@ -1,12 +1,12 @@
 export {
-    bindDataModel
-  } from './bind-data-model.js';
+  bindDataModel
+} from './bind-data-model.js';
 
 export {
-    createBuiltInPipes
-  } from './pipes.js';
+  createBuiltInPipes
+} from './pipes.js';
 
 export type {
-    BindDataModelOptions,
-    DataModel,
-  } from './types.js';
+  BindDataModelOptions,
+  DataModel
+} from './types.js';

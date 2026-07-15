@@ -13,16 +13,14 @@ import { BindDataModelOptions,
 import { writeBindingValue }
   from './write-binding-value.js';
 
-type CompiledPipe =
-  { args: string[];
-    formatter: PipeFn; };
+type CompiledPipe = { args: string[]; formatter: PipeFn; };
 
 export function bindValueModel(
-    element: HTMLElement,
-    spec: ValueBindingSpec,
-    model: DataModel,
-    options: BindDataModelOptions
-  ): () => void
+  element: HTMLElement,
+  spec: ValueBindingSpec,
+  model: DataModel,
+  options: BindDataModelOptions
+): () => void
 {
   const pipeRegistry =
     mergePipes(options);
@@ -33,27 +31,31 @@ export function bindValueModel(
       pipeRegistry);
 
   const update =
-    (): void => {
-      const rawValue =
-        readModelPath(
-          model,
-          spec.path);
+    (): void =>
+  {
+    const rawValue =
+      readModelPath(
+        model,
+        spec.path);
 
-      const formattedValue =
-        applyPipes(
-          rawValue,
-          compiledPipes);
+    const formattedValue =
+      applyPipes(
+        rawValue,
+        compiledPipes);
 
-      writeBindingValue(
-        element,
-        spec.target,
-        formattedValue);
-    };
+    writeBindingValue(
+      element,
+      spec.target,
+      formattedValue
+    );
+  };
 
   update();
 
-  if (spec.path === '')
-    return () => {};
+  if (spec.path === '') {
+    return () =>
+    {};
+  }
 
   const maybeUnsubscribe =
     observable.watch(
@@ -61,16 +63,18 @@ export function bindValueModel(
       spec.path,
       () => update());
 
-  if (typeof maybeUnsubscribe !== 'function')
-    return () => {};
+  if (typeof maybeUnsubscribe !== 'function') {
+    return () =>
+    {};
+  }
 
   return () => maybeUnsubscribe();
 }
 
 function compilePipes(
-    pipes: PipeSpec[],
-    registry: Record<string, PipeFn>
-  ): CompiledPipe[]
+  pipes: PipeSpec[],
+  registry: Record<string, PipeFn>
+): CompiledPipe[]
 {
   const compiled: CompiledPipe[] = [];
 
@@ -80,29 +84,30 @@ function compilePipes(
 
     if (!formatter) {
       throw new Error(
-        `Unknown pipe: ${pipe.name}`);
+        `Unknown pipe: ${pipe.name}`
+      );
     }
 
     compiled.push(
-      { args: [ ...pipe.args ],
-        formatter });
+      { args: [...pipe.args], formatter }
+    );
   }
 
   return compiled;
 }
 
 function applyPipes(
-    value: unknown,
-    pipes: CompiledPipe[]
-  ): unknown
+  value: unknown,
+  pipes: CompiledPipe[]
+): unknown
 {
   let current = value;
 
   for (const pipe of pipes) {
-    current =
-      pipe.formatter(
-        current,
-        ...pipe.args);
+    current = pipe.formatter(
+      current,
+      ...pipe.args
+    );
   }
 
   return current;

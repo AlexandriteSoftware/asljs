@@ -9,8 +9,9 @@
     "format:md": "dprint fmt --config ./dprint.json \"*.md\"",
     "format": "npm run format:json && npm run format:md",
     "check-packages": "npm outdated",
-    "all": "npm -w cog run all && npm -w components run all && npm -w dali run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all",
-    "all:fix": "npm -w app-builder run all"
+    "remove-local-modules": "node ./common/dist/toolkit.js clean cog/node_modules common/node_modules components/node_modules dali/node_modules data/node_modules eventful/node_modules machine/node_modules money/node_modules observable/node_modules part/node_modules tmpdir/node_modules",
+    "all": "npm -w cog run all && npm -w components run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all",
+    "all:todo": "npm -w app-builder run all && npm -w dali run all"
   },
   "workspaces": [
     "app-builder",
@@ -28,18 +29,25 @@
   ],
   "devDependencies": {
     "@babel/generator": "^8.0.0",
-    "@babel/parser": "^8.0.0",
+    "@babel/parser": "^8.0.4",
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.1.0",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.1.1",
     "@types/yargs": "^17.0.35",
-    "@typescript-eslint/eslint-plugin": "^8.63.0",
-    "@typescript-eslint/parser": "^8.63.0",
-    "dprint": "^0.55.1",
-    "eslint": "^10.6.0",
+    "acorn": "^8.17.0",
+    "asljs-sfmt": "^0.1.1",
+    "asljs-tmpdir": "^0.1.9",
+    "dprint": "^0.55.2",
+    "eslint": "^10.7.0",
+    "fake-indexeddb": "^6.2.4",
     "globals": "^17.7.0",
-    "marked": "^18.0.5",
+    "jsdom": "^29.1.1",
+    "marked": "^18.0.6",
     "pkg-types": "^2.3.1",
-    "typescript": "^6.0.2"
+    "tsx": "^4.23.1",
+    "typescript-eslint": "^8.64.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4"
   },
   "version": ""
 }

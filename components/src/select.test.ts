@@ -1,9 +1,9 @@
-import test
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
 import { Select,
          SelectChangeDetail }
   from './select.js';
@@ -13,16 +13,19 @@ let isSelectModuleLoaded = false;
 
 test(
   'select: renders plain default label description and options',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
     element.label = 'Theme';
     element.description = 'Choose one';
+
     element.items = [
       { value: 'dark', label: 'Dark' },
-      { value: 'light', label: 'Light' },
+      { value: 'light', label: 'Light' }
     ];
+
     element.value = 'light';
 
     document.body.appendChild(element);
@@ -31,20 +34,40 @@ test(
 
     const label =
       element.querySelector('label') as HTMLLabelElement;
+
     const select =
       element.querySelector('select') as HTMLSelectElement;
-    const description =
-      element.querySelector('[data-bind-prop-id="descriptionId"]') as HTMLElement;
 
-    assert.equal(label.textContent, 'Theme');
-    assert.equal(select.value, 'light');
-    assert.equal(select.options.length, 2);
-    assert.equal(description.textContent, 'Choose one');
-  });
+    const description =
+      element.querySelector(
+        '[data-bind-prop-id="descriptionId"]') as HTMLElement;
+
+    assert.equal(
+      label.textContent,
+      'Theme'
+    );
+
+    assert.equal(
+      select.value,
+      'light'
+    );
+
+    assert.equal(
+      select.options.length,
+      2
+    );
+
+    assert.equal(
+      description.textContent,
+      'Choose one'
+    );
+  }
+);
 
 test(
   'select: bootstrap theme supplies bootstrap template and classes',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -52,9 +75,11 @@ test(
       await import('./themes/bootstrap-theme.js');
 
     element.theme = bootstrapThemeModule.createBootstrapTheme();
+
     element.items = [
-      { value: 'gpt-4.1', label: 'GPT-4.1' },
+      { value: 'gpt-4.1', label: 'GPT-4.1' }
     ];
+
     element.value = 'gpt-4.1';
 
     document.body.appendChild(element);
@@ -62,15 +87,25 @@ test(
     await settle(element);
 
     const select =
-      element.querySelector('select.form-select') as HTMLSelectElement;
+      element.querySelector(
+        'select.form-select') as HTMLSelectElement;
 
-    assert.equal(select.classList.contains('form-select'), true);
-    assert.equal(select.value, 'gpt-4.1');
-  });
+    assert.equal(
+      select.classList.contains('form-select'),
+      true
+    );
+
+    assert.equal(
+      select.value,
+      'gpt-4.1'
+    );
+  }
+);
 
 test(
   'select: bootstrap theme renders shared invalid feedback from the outer template',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
@@ -78,37 +113,55 @@ test(
       await import('./themes/bootstrap-theme.js');
 
     element.theme = bootstrapThemeModule.createBootstrapTheme();
+
     element.items = [
-      { value: 'gpt-4.1', label: 'GPT-4.1' },
+      { value: 'gpt-4.1', label: 'GPT-4.1' }
     ];
+
     element.value = 'gpt-4.1';
-    element.validator =
-      () => 'Pick a supported model';
+    element.validator = () => 'Pick a supported model';
 
     document.body.appendChild(element);
 
     await settle(element);
 
     const select =
-      element.querySelector('select.form-select') as HTMLSelectElement;
-    const error =
-      element.querySelector('.invalid-feedback') as HTMLElement;
+      element.querySelector(
+        'select.form-select') as HTMLSelectElement;
 
-    assert.equal(select.nextElementSibling, null);
-    assert.equal(error.textContent, 'Pick a supported model');
-    assert.equal(error.hidden, false);
-  });
+    const error =
+      element.querySelector(
+        '.invalid-feedback') as HTMLElement;
+
+    assert.equal(
+      select.nextElementSibling,
+      null
+    );
+
+    assert.equal(
+      error.textContent,
+      'Pick a supported model'
+    );
+
+    assert.equal(
+      error.hidden,
+      false
+    );
+  }
+);
 
 test(
   'select: emits input and change details',
-  async () => {
+  async () =>
+  {
     const element =
       await createElement();
 
     element.items = [
       { value: 'chat', label: 'Chat' },
-      { value: 'code', label: 'Code' },
+      { value: 'code', label: 'Code' }
     ];
+
     element.value = 'chat';
 
     document.body.appendChild(element);
@@ -119,27 +172,50 @@ test(
 
     element.addEventListener(
       'change',
-      event => {
+      event =>
+      {
         received.push(
-          ((event as unknown) as CustomEvent<SelectChangeDetail>).detail);
-      });
+          ((event as unknown) as CustomEvent<SelectChangeDetail>).detail
+        );
+      }
+    );
 
     const select =
       element.querySelector('select') as HTMLSelectElement;
 
     select.value = 'code';
+
     select.dispatchEvent(
       new window.Event(
         'change',
-        { bubbles: true }));
+        { bubbles: true }
+      )
+    );
 
-    assert.equal(element.value, 'chat');
-    assert.equal(element.draftValue, 'code');
-    assert.equal(received[0]?.value, 'code');
-    assert.equal(received[0]?.dirty, true);
-  });
+    assert.equal(
+      element.value,
+      'chat'
+    );
 
-async function createElement(): Promise<Select> {
+    assert.equal(
+      element.draftValue,
+      'code'
+    );
+
+    assert.equal(
+      received[0]?.value,
+      'code'
+    );
+
+    assert.equal(
+      received[0]?.dirty,
+      true
+    );
+  }
+);
+
+async function createElement(): Promise<Select>
+{
   await ensureDom();
 
   if (!isSelectModuleLoaded) {
@@ -150,22 +226,25 @@ async function createElement(): Promise<Select> {
   return document.createElement('asljs-select') as Select;
 }
 
-async function ensureDom(): Promise<void> {
+async function ensureDom(): Promise<void>
+{
   if (domRestore === null) {
     const dom =
       new JSDOM('<!doctype html><html><body></body></html>');
 
     const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        Document: globalThis.Document,
-        Event: globalThis.Event,
-        CustomEvent: globalThis.CustomEvent,
-        customElements: globalThis.customElements,
-        HTMLElement: globalThis.HTMLElement,
-        HTMLSelectElement: globalThis.HTMLSelectElement,
-        ShadowRoot: globalThis.ShadowRoot,
-        CSSStyleSheet: globalThis.CSSStyleSheet };
+      {
+      window: globalThis.window,
+      document: globalThis.document,
+      Document: globalThis.Document,
+      Event: globalThis.Event,
+      CustomEvent: globalThis.CustomEvent,
+      customElements: globalThis.customElements,
+      HTMLElement: globalThis.HTMLElement,
+      HTMLSelectElement: globalThis.HTMLSelectElement,
+      ShadowRoot: globalThis.ShadowRoot,
+      CSSStyleSheet: globalThis.CSSStyleSheet
+    };
 
     globalThis.window = dom.window as unknown as typeof globalThis.window;
     globalThis.document = dom.window.document;
@@ -178,7 +257,8 @@ async function ensureDom(): Promise<void> {
     globalThis.ShadowRoot = dom.window.ShadowRoot;
     globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
 
-    domRestore = () => {
+    domRestore = () =>
+    {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
@@ -196,15 +276,14 @@ async function ensureDom(): Promise<void> {
 }
 
 async function settle(
-    element: LitElementLike
-  ): Promise<void>
+  element: LitElementLike
+): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();
   await element.updateComplete;
 }
 
-type LitElementLike =
-  HTMLElement & {
-    updateComplete: Promise<unknown>;
-  };
+type LitElementLike = HTMLElement & {
+  updateComplete: Promise<unknown>;
+};

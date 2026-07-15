@@ -15,14 +15,16 @@ import { BindDataModelOptions,
          DataModel }
   from './types.js';
 
-const CONTEXT_ATTR = 'data-bind-context';
+const CONTEXT_ATTR =
+  'data-bind-context';
+
 const BIND_PREFIX = 'data-bind-';
 
 type WarnOnce = (
-    key: string,
-    message: string,
-    error?: unknown
-  ) => void;
+  key: string,
+  message: string,
+  error?: unknown
+) => void;
 
 /**
  * Applies `data-bind-*` bindings under a root element and wires optional
@@ -71,61 +73,62 @@ type WarnOnce = (
  * ```
  */
 export function bindDataModel(
-    root: ParentNode,
-    model: DataModel,
-    options: BindDataModelOptions = {}
-  ): () => void
+  root: ParentNode,
+  model: DataModel,
+  options: BindDataModelOptions = {}
+): () => void
 {
   const warned =
     new Set<string>();
 
   const warnOnce: WarnOnce =
     (
-      key: string,
-      message: string,
-      error: unknown = null
-    ): void =>
-    {
-      if (warned.has(key)) {
-        return;
-      }
+    key: string,
+    message: string,
+    error: unknown = null
+  ): void =>
+  {
+    if (warned.has(key)) {
+      return;
+    }
 
-      warned.add(key);
+    warned.add(key);
 
-      if (error === null) {
-        console.warn(message);
-      } else {
-        console.warn(
-          message,
-          error);
-      }
-    };
+    if (error === null) {
+      console.warn(message);
+    } else {
+      console.warn(
+        message,
+        error
+      );
+    }
+  };
 
   let counter = 0;
 
   const nextPrefix =
-    (): string =>
-      `data-bind[${counter++}]`;
+    (): string => `data-bind[${counter++}]`;
 
   return bindSubtree(
     root,
     model,
     options,
     warnOnce,
-    nextPrefix);
+    nextPrefix
+  );
 }
 
 function bindSubtree(
-    root: ParentNode,
-    model: DataModel,
-    options: BindDataModelOptions,
-    warnOnce: WarnOnce,
-    nextPrefix: () => string
-  ): () => void
+  root: ParentNode,
+  model: DataModel,
+  options: BindDataModelOptions,
+  warnOnce: WarnOnce,
+  nextPrefix: () => string
+): () => void
 {
   const disposers: Array<() => void> = [];
 
-  for (const child of [ ...root.children ] as HTMLElement[]) {
+  for (const child of [...root.children] as HTMLElement[]) {
     const contextPath =
       child.getAttribute(CONTEXT_ATTR);
 
@@ -137,7 +140,9 @@ function bindSubtree(
           model,
           options,
           warnOnce,
-          nextPrefix));
+          nextPrefix
+        )
+      );
     } else {
       bindElementAttributes(
         child,
@@ -145,7 +150,8 @@ function bindSubtree(
         options,
         warnOnce,
         nextPrefix,
-        disposers);
+        disposers
+      );
 
       disposers.push(
         bindSubtree(
@@ -153,11 +159,14 @@ function bindSubtree(
           model,
           options,
           warnOnce,
-          nextPrefix));
+          nextPrefix
+        )
+      );
     }
   }
 
-  return (): void => {
+  return (): void =>
+  {
     for (const dispose of disposers) {
       dispose();
     }
@@ -165,13 +174,13 @@ function bindSubtree(
 }
 
 function bindContextElement(
-    element: HTMLElement,
-    contextPath: string,
-    model: DataModel,
-    options: BindDataModelOptions,
-    warnOnce: WarnOnce,
-    nextPrefix: () => string
-  ): () => void
+  element: HTMLElement,
+  contextPath: string,
+  model: DataModel,
+  options: BindDataModelOptions,
+  warnOnce: WarnOnce,
+  nextPrefix: () => string
+): () => void
 {
   const ownDisposers: Array<() => void> = [];
 
@@ -182,33 +191,36 @@ function bindContextElement(
     warnOnce,
     nextPrefix,
     ownDisposers,
-    CONTEXT_ATTR);
+    CONTEXT_ATTR
+  );
 
   let childDisposer: (() => void) | null = null;
 
   const bindChildren =
     (): void =>
-    {
-      childDisposer?.();
+  {
+    childDisposer?.();
 
-      const contextValue =
-        readModelPath(model, contextPath);
+    const contextValue =
+      readModelPath(
+        model,
+        contextPath);
 
-      const childModel =
-        (contextValue !== null
-          && contextValue !== undefined
-          && typeof contextValue === 'object')
-          ? contextValue as DataModel
-          : {} as DataModel;
+    const childModel =
+      (contextValue !== null
+        && contextValue !== undefined
+        && typeof contextValue === 'object')
+      ? contextValue as DataModel
+      : {} as DataModel;
 
-      childDisposer =
-        bindSubtree(
-          element,
-          childModel,
-          options,
-          warnOnce,
-          nextPrefix);
-    };
+    childDisposer = bindSubtree(
+      element,
+      childModel,
+      options,
+      warnOnce,
+      nextPrefix
+    );
+  };
 
   bindChildren();
 
@@ -226,7 +238,8 @@ function bindContextElement(
     }
   }
 
-  return (): void => {
+  return (): void =>
+  {
     for (const dispose of ownDisposers) {
       dispose();
     }
@@ -237,28 +250,30 @@ function bindContextElement(
 }
 
 function bindElementAttributes(
-    element: HTMLElement,
-    model: DataModel,
-    options: BindDataModelOptions,
-    warnOnce: WarnOnce,
-    nextPrefix: () => string,
-    disposers: Array<() => void>,
-    skipAttr?: string
-  ): void
+  element: HTMLElement,
+  model: DataModel,
+  options: BindDataModelOptions,
+  warnOnce: WarnOnce,
+  nextPrefix: () => string,
+  disposers: Array<() => void>,
+  skipAttr?: string
+): void
 {
-  for (const attribute of [ ...element.attributes ]) {
+  for (const attribute of [...element.attributes]) {
     if (!attribute.name.startsWith(BIND_PREFIX)) {
       continue;
     }
 
-    if (skipAttr !== undefined
-        && attribute.name === skipAttr)
-    {
+    if (
+      skipAttr !== undefined
+      && attribute.name === skipAttr
+    ) {
       continue;
     }
 
     const suffix =
-      attribute.name.slice(BIND_PREFIX.length);
+      attribute.name.slice(
+        BIND_PREFIX.length);
 
     const expression =
       attribute.value ?? '';
@@ -278,7 +293,9 @@ function bindElementAttributes(
             element,
             spec,
             model,
-            options));
+            options
+          )
+        );
       } else {
         disposers.push(
           bindEventModel(
@@ -286,7 +303,9 @@ function bindElementAttributes(
             spec,
             model,
             prefix,
-            warnOnce));
+            warnOnce
+          )
+        );
       }
     } catch (error) {
       if (spec.kind === 'value') {
@@ -296,30 +315,33 @@ function bindElementAttributes(
       warnOnce(
         `${prefix}:bind-error`,
         `${prefix}: binding setup failed`,
-        error);
+        error
+      );
     }
   }
 }
 
 function createBindingSpec(
-    suffix: string,
-    expression: string
-  ): BindingSpec
+  suffix: string,
+  expression: string
+): BindingSpec
 {
   if (suffix.startsWith('on') && suffix.length > 2) {
     return parseEventBindingExpression(
       suffix.slice(2),
-      expression);
+      expression
+    );
   }
 
   return parseValueBindingExpression(
     resolveValueTarget(suffix),
-    expression);
+    expression
+  );
 }
 
 function resolveValueTarget(
-    suffix: string
-  ): BindingTarget
+  suffix: string
+): BindingTarget
 {
   if (suffix === 'text') {
     return { kind: 'text' };
@@ -332,14 +354,18 @@ function resolveValueTarget(
   if (suffix.startsWith('class-') && suffix.length > 6) {
     return {
       kind: 'class',
-      name: suffix.slice('class-'.length)
+      name: suffix.slice(
+        'class-'.length
+      )
     };
   }
 
   if (suffix.startsWith('prop-') && suffix.length > 5) {
     return {
       kind: 'prop',
-      name: suffix.slice('prop-'.length)
+      name: suffix.slice(
+        'prop-'.length
+      )
     };
   }
 

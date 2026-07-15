@@ -1,7 +1,7 @@
-import { test }
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import { test }
+  from 'node:test';
 import 'fake-indexeddb/auto';
 import { dbOpen }
   from './db.js';
@@ -10,24 +10,26 @@ import { TransactionStoreAccessError,
          TxMode }
   from './transactions.js';
 
-const TEST_SUITE =
-  'transactions';
+const TEST_SUITE = 'transactions';
 
-async function openTestDb(
-  ): Promise<IDBDatabase>
+async function openTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `transactions-test-${crypto.randomUUID()}`,
-    [ db => {
-        db.createObjectStore(
-          'records',
-          { keyPath: 'id' });
-      } ]);
+    [(db) =>
+    {
+      db.createObjectStore(
+        'records',
+        { keyPath: 'id' }
+      );
+    }]
+  );
 }
 
 test(
   `${TEST_SUITE}: txEnsure accepts read mode on readwrite transaction`,
-  async () => {
+  async () =>
+  {
     const db =
       await openTestDb();
 
@@ -41,12 +43,16 @@ test(
         txEnsure(
           tx,
           'records',
-          TxMode.read));
-  });
+          TxMode.read
+        )
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: txEnsure throws for inaccessible store`,
-  async () => {
+  async () =>
+  {
     const db =
       await openTestDb();
 
@@ -60,11 +66,16 @@ test(
         txEnsure(
           tx,
           'missing_store',
-          TxMode.read),
-      (error: unknown) => {
+          TxMode.read
+        ),
+      (error: unknown) =>
+      {
         assert.ok(
-          error instanceof TransactionStoreAccessError);
+          error instanceof TransactionStoreAccessError
+        );
 
         return true;
-      });
-  });
+      }
+    );
+  }
+);

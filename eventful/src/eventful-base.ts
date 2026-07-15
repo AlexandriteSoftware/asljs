@@ -1,12 +1,11 @@
 import { eventful }
   from './eventful.js';
-import { EventMap,
-         Eventful,
-         EventfulOptions }
+import { Eventful,
+         EventfulOptions,
+         EventMap }
   from './types.js';
 
-export class EventfulBase<E extends EventMap = EventMap>
-  implements Eventful<E>
+export class EventfulBase<E extends EventMap = EventMap> implements Eventful<E>
 {
   declare on: Eventful<E>['on'];
   declare once: Eventful<E>['once'];
@@ -16,11 +15,12 @@ export class EventfulBase<E extends EventMap = EventMap>
   declare has: Eventful<E>['has'];
 
   constructor(
-      options: EventfulOptions = {},
-    )
+    options: EventfulOptions = {}
+  )
   {
     eventful(
       this,
-      options);
+      options
+    );
   }
 }

@@ -7,22 +7,22 @@ import { DataModel,
   from './types.js';
 
 type ActionFn = (
-    event: Event,
-    model: DataModel,
-    element: Element
-  ) => unknown;
+  event: Event,
+  model: DataModel,
+  element: Element
+) => unknown;
 
 export function bindEventModel(
-    element: HTMLElement,
-    spec: EventBindingSpec,
-    model: DataModel,
-    warnPrefix: string,
-    warnOnce: (
-      key: string,
-      message: string,
-      error?: unknown
-    ) => void
-  ): () => void
+  element: HTMLElement,
+  spec: EventBindingSpec,
+  model: DataModel,
+  warnPrefix: string,
+  warnOnce: (
+    key: string,
+    message: string,
+    error?: unknown
+  ) => void
+): () => void
 {
   let currentAction: unknown =
     readModelPath(
@@ -30,39 +30,45 @@ export function bindEventModel(
       spec.actionPath);
 
   const refreshAction =
-    (): void => {
-      currentAction =
-        readModelPath(
-          model,
-          spec.actionPath);
-    };
+    (): void =>
+  {
+    currentAction = readModelPath(
+      model,
+      spec.actionPath
+    );
+  };
 
   const listener =
-    (event: Event): void => {
-      if (typeof currentAction !== 'function') {
-        warnOnce(
-          `${warnPrefix}:missing-action:${spec.actionPath}`,
-          `${warnPrefix}: action '${spec.actionPath}' is not a function`);
+    (event: Event): void =>
+  {
+    if (typeof currentAction !== 'function') {
+      warnOnce(
+        `${warnPrefix}:missing-action:${spec.actionPath}`,
+        `${warnPrefix}: action '${spec.actionPath}' is not a function`
+      );
 
-        return;
-      }
+      return;
+    }
 
-      try {
-        (currentAction as ActionFn)(
-          event,
-          model,
-          element);
-      } catch (error) {
-        warnOnce(
-          `${warnPrefix}:action-error:${spec.actionPath}`,
-          `${warnPrefix}: action '${spec.actionPath}' failed`,
-          error);
-      }
-    };
+    try {
+      (currentAction as ActionFn)(
+        event,
+        model,
+        element
+      );
+    } catch (error) {
+      warnOnce(
+        `${warnPrefix}:action-error:${spec.actionPath}`,
+        `${warnPrefix}: action '${spec.actionPath}' failed`,
+        error
+      );
+    }
+  };
 
   element.addEventListener(
     spec.eventName,
-    listener);
+    listener
+  );
 
   let unsubscribe: (() => boolean) | null = null;
 
@@ -73,14 +79,17 @@ export function bindEventModel(
         spec.actionPath,
         () => refreshAction());
 
-    if (typeof maybeUnsubscribe === 'function')
+    if (typeof maybeUnsubscribe === 'function') {
       unsubscribe = maybeUnsubscribe;
+    }
   }
 
-  return (): void => {
+  return (): void =>
+  {
     element.removeEventListener(
       spec.eventName,
-      listener);
+      listener
+    );
 
     unsubscribe?.();
   };

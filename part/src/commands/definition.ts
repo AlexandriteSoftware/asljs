@@ -55,12 +55,12 @@ function resolveDefinition(
 
   const byPath =
     definitions.find(
-      (definition) =>
+      definition =>
       path.resolve(
         definition.path
       ) === absoluteTarget)
     ?? definitions.find(
-      (definition) =>
+      definition =>
         toPosixPath(
           path.relative(
             rootDirectory,
@@ -75,7 +75,7 @@ function resolveDefinition(
 
   const byName =
     definitions.filter(
-      (definition) => definition.name === target);
+      definition => definition.name === target);
 
   if (byName.length === 1) {
     return byName[0];
@@ -99,7 +99,7 @@ function formatDefinitionDetails(
       description: definition.description,
       location: definition.locations,
       rules: definition.rules.map(
-        (rule) => ({ id: rule.id, description: rule.content })
+        rule => ({ id: rule.id, description: rule.content })
       ),
       path: toPosixPath(
         path.relative(
@@ -119,7 +119,7 @@ function serializeMarkdownList(
   if (Array.isArray(value)) {
     return value
       .map(
-        (entry) =>
+        entry =>
           serializeArrayEntry(
             entry,
             indent
@@ -176,7 +176,7 @@ function serializeArrayEntry(
   if (Array.isArray(value)) {
     const nested =
       value.map(
-        (entry) =>
+        entry =>
         serializeArrayEntry(
           entry,
           indent + 2

@@ -232,7 +232,7 @@ export class RuleRunner
     const ruleFilePath =
       ruleFile.path;
 
-    return new Promise((resolve) =>
+    return new Promise(resolve =>
     {
       const child =
         spawn(
@@ -254,7 +254,7 @@ export class RuleRunner
 
       child.stderr.on(
         'data',
-        (chunk) =>
+        chunk =>
         {
           stderr += String(chunk);
         }
@@ -262,7 +262,7 @@ export class RuleRunner
 
       child.on(
         'error',
-        (error) =>
+        error =>
         {
           resolve(
             {
@@ -276,7 +276,7 @@ export class RuleRunner
 
       child.on(
         'close',
-        (code) =>
+        code =>
         {
           const result =
             code === 0

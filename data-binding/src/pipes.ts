@@ -1,13 +1,13 @@
-import { formatDate }
-  from './date-formatting.js';
 import { coerceDisplayValue }
   from './coerce-display-value.js';
+import { formatDate }
+  from './date-formatting.js';
 import { BindDataModelOptions,
          PipeFn }
   from './types.js';
 
 const DATE_STYLE_NAMES =
-  new Set([ 'short', 'medium', 'long', 'full' ]);
+  new Set(['short', 'medium', 'long', 'full']);
 
 /**
  * Creates the built-in value pipes used by data-bind value bindings.
@@ -35,66 +35,74 @@ const DATE_STYLE_NAMES =
  * ```
  */
 export function createBuiltInPipes(
-    locale?: string
-  ): Record<string, PipeFn>
+  locale?: string
+): Record<string, PipeFn>
 {
   return {
-    string: value => {
-      if (value === null
-          || value === undefined)
-      {
+    string: value =>
+    {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
       return coerceDisplayValue(value);
     },
-    number: value => {
-      if (value === null
-          || value === undefined)
-      {
-        return value;
-      }
-
-      const numeric = Number(value);
-
-      if (Number.isFinite(numeric)) {
-        return new Intl.NumberFormat(locale)
-                 .format(numeric);
-      }
-
-      return '';
-    },
-    currency: (
-        value,
-        code = 'USD'
-      ) =>
+    number: value =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
       const numeric =
         Number(value);
 
-      if (!Number.isFinite(numeric))
+      if (Number.isFinite(numeric)) {
+        return new Intl.NumberFormat(locale)
+          .format(numeric);
+      }
+
+      return '';
+    },
+    currency: (
+      value,
+      code = 'USD'
+    ) =>
+    {
+      if (
+        value === null
+        || value === undefined
+      ) {
+        return value;
+      }
+
+      const numeric =
+        Number(value);
+
+      if (!Number.isFinite(numeric)) {
         return '';
+      }
 
       return new Intl.NumberFormat(
-          locale,
-          { style: 'currency',
-            currency: code })
+        locale,
+        { style: 'currency', currency: code }
+      )
         .format(numeric);
     },
     date: (
-        value,
-        format = 'short'
-      ) =>
+      value,
+      format = 'short'
+    ) =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
@@ -102,16 +110,18 @@ export function createBuiltInPipes(
         value,
         format,
         locale,
-        false);
+        false
+      );
     },
     datetime: (
-        value,
-        format = 'short'
-      ) =>
+      value,
+      format = 'short'
+    ) =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
@@ -119,16 +129,18 @@ export function createBuiltInPipes(
         value,
         format,
         locale,
-        true);
+        true
+      );
     },
     fixed: (
-        value,
-        digitsText = '2'
-      ) =>
+      value,
+      digitsText = '2'
+    ) =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
@@ -138,43 +150,50 @@ export function createBuiltInPipes(
       const digits =
         Number(digitsText);
 
-      if (!Number.isFinite(numeric))
+      if (!Number.isFinite(numeric)) {
         return '';
+      }
 
-      if (!Number.isInteger(digits)
-          || digits < 0)
-      {
+      if (
+        !Number.isInteger(digits)
+        || digits < 0
+      ) {
         return numeric.toString();
       }
 
       return numeric.toFixed(digits);
     },
-    upper: value => {
-      if (value === null
-          || value === undefined)
-      {
+    upper: value =>
+    {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
       return coerceDisplayValue(value).toUpperCase();
     },
-    lower: value => {
-      if (value === null
-          || value === undefined)
-      {
+    lower: value =>
+    {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
       return coerceDisplayValue(value).toLowerCase();
     },
     json: (
-        value,
-        spacesText = '0'
-      ) =>
+      value,
+      spacesText = '0'
+    ) =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
@@ -186,24 +205,26 @@ export function createBuiltInPipes(
           value,
           null,
           Number.isInteger(spaces) && spaces >= 0
-            ? spaces
-            : 0);
+          ? spaces
+          : 0);
 
       return formatted ?? '';
     },
     default: (
-        value,
-        ...fallbackParts
-      ) =>
+      value,
+      ...fallbackParts
+    ) =>
     {
-      if (value === null
-          || value === undefined)
-      {
+      if (
+        value === null
+        || value === undefined
+      ) {
         return value;
       }
 
-      if (value === '')
+      if (value === '') {
         return fallbackParts.join(':');
+      }
 
       return value;
     },
@@ -225,8 +246,8 @@ export function createBuiltInPipes(
  * ```
  */
 export function mergePipes(
-    options: BindDataModelOptions | undefined
-  ): Record<string, PipeFn>
+  options: BindDataModelOptions | undefined
+): Record<string, PipeFn>
 {
   const builtIns =
     createBuiltInPipes();
@@ -238,17 +259,18 @@ export function mergePipes(
 }
 
 function formatDateOrIntl(
-    value: unknown,
-    format: string,
-    locale: string | undefined,
-    withTime: boolean
-  ): string
+  value: unknown,
+  format: string,
+  locale: string | undefined,
+  withTime: boolean
+): string
 {
   const dt =
     asDate(value);
 
-  if (dt === null)
+  if (dt === null) {
     return '';
+  }
 
   if (DATE_STYLE_NAMES.has(format)) {
     const style =
@@ -256,38 +278,43 @@ function formatDateOrIntl(
 
     return withTime
       ? new Intl.DateTimeFormat(
-            locale,
-            { dateStyle: style,
-              timeStyle: style })
-          .format(dt)
+        locale,
+        { dateStyle: style, timeStyle: style }
+      )
+        .format(dt)
       : new Intl.DateTimeFormat(
-            locale,
-            { dateStyle: style })
-          .format(dt);
+        locale,
+        { dateStyle: style }
+      )
+        .format(dt);
   }
 
   return formatDate(
     dt,
-    format);
+    format
+  );
 }
 
 function asDate(
-    value: unknown
-  ): Date | null
+  value: unknown
+): Date | null
 {
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime())
+    return Number.isNaN(
+      value.getTime())
       ? null
       : value;
   }
 
-  if (typeof value === 'string'
-      || typeof value === 'number')
-  {
+  if (
+    typeof value === 'string'
+    || typeof value === 'number'
+  ) {
     const dt =
       new Date(value);
 
-    return Number.isNaN(dt.getTime())
+    return Number.isNaN(
+      dt.getTime())
       ? null
       : dt;
   }

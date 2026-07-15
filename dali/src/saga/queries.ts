@@ -1,31 +1,31 @@
 import { dbRequestAsync }
   from '../db.js';
 import { txDone,
-         txReuseOrCreate,
-         TxMode }
+         TxMode,
+         txReuseOrCreate }
   from '../transactions.js';
-import { SagaEntryRecord,
-         SAGA_ENTRIES_STORE_NAME,
+import { SAGA_ENTRIES_STORE_NAME,
          SAGA_STORE_NAME,
+         SagaEntryRecord,
          SagaTransactionRecord }
   from './types.js';
 
 export async function sagaGetAll(
-    db: IDBDatabase,
-    storeName: string = SAGA_STORE_NAME
-  ): Promise<SagaTransactionRecord[]>
+  db: IDBDatabase,
+  storeName: string = SAGA_STORE_NAME
+): Promise<SagaTransactionRecord[]>
 {
   const tx =
     txReuseOrCreate(
       null,
-      [ storeName ],
+      [storeName],
       TxMode.read,
       db);
 
   const records =
-    await dbRequestAsync<SagaTransactionRecord[]>(
+    await dbRequestAsync(
       tx.objectStore(storeName)
-        .getAll());
+      .getAll());
 
   await txDone(tx);
 
@@ -33,21 +33,21 @@ export async function sagaGetAll(
 }
 
 export async function sagaEntriesGetAll(
-    db: IDBDatabase,
-    storeName: string = SAGA_ENTRIES_STORE_NAME
-  ): Promise<SagaEntryRecord[]>
+  db: IDBDatabase,
+  storeName: string = SAGA_ENTRIES_STORE_NAME
+): Promise<SagaEntryRecord[]>
 {
   const tx =
     txReuseOrCreate(
       null,
-      [ storeName ],
+      [storeName],
       TxMode.read,
       db);
 
   const records =
-    await dbRequestAsync<SagaEntryRecord[]>(
+    await dbRequestAsync(
       tx.objectStore(storeName)
-        .getAll());
+      .getAll());
 
   await txDone(tx);
 

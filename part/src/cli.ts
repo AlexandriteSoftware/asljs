@@ -98,14 +98,14 @@ function createCli(
     .helpCommand(false)
     .configureOutput(
       {
-        writeOut: (value) => environment.stdout.write(value),
-        writeErr: (value) => environment.stderr.write(value),
+        writeOut: value => environment.stdout.write(value),
+        writeErr: value => environment.stderr.write(value),
         outputError: () =>
         {}
       }
     )
     .exitOverride(
-      (error) =>
+      error =>
       {
         throw error;
       }
@@ -222,7 +222,7 @@ function createCli(
       'Comma-separated definition names to get inventory for'
     )
     .action(
-      async (options) =>
+      async options =>
       {
         const method =
           environment.resolve(
@@ -255,7 +255,7 @@ function createCli(
       'target'
     )
     .action(
-      async (target) =>
+      async target =>
       {
         const method =
           environment.resolve(
@@ -311,7 +311,7 @@ function createCli(
       'Print Copilot prompts without running them or writing files'
     )
     .action(
-      async (options) =>
+      async options =>
       {
         const method =
           environment.resolve(
@@ -543,10 +543,10 @@ function splitCommaSeparatedOption(
   return value
     .split(',')
     .map(
-      (entry) => entry.trim()
+      entry => entry.trim()
     )
     .filter(
-      (entry) => entry.length > 0
+      entry => entry.length > 0
     );
 }
 

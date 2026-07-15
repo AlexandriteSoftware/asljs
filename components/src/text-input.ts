@@ -1,21 +1,21 @@
 import { bindDataModel }
   from 'asljs-data-binding';
-import { observable,
-         Observable }
+import { Observable,
+         observable }
   from 'asljs-observable';
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
   from 'lit/decorators.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
-import { findThemeProvider,
+import { ComponentsTheme,
+         findThemeProvider,
          getDefaultTheme,
          resolveThemeTemplate,
          THEME_CHANGED_EVENT_NAME,
-         ComponentsTheme,
          ThemeProviderLike }
   from './themes/theme.js';
 
@@ -28,12 +28,12 @@ export type TextInputEnterKeyBehavior =
   | 'finish'
   | 'newline';
 
-export type TextInputValidator =
-  (
-      value: string
-    ) => string | null;
+export type TextInputValidator = (
+  value: string
+) => string | null;
 
-export interface TextInputChangeDetail {
+export interface TextInputChangeDetail
+{
   value: string;
   isEmpty: boolean;
   isValid: boolean;
@@ -41,85 +41,93 @@ export interface TextInputChangeDetail {
   dirty: boolean;
 }
 
-export type TextInputStatus =
-  Observable<{
-    draftValue: string;
-    isEmpty: boolean;
-    isValid: boolean;
-    errorMessage: string | null;
-    dirty: boolean;
-  }>;
+export type TextInputStatus = Observable<{
+  draftValue: string;
+  isEmpty: boolean;
+  isValid: boolean;
+  errorMessage: string | null;
+  dirty: boolean;
+}>;
 
-type TextInputTemplateModel =
-  Observable<{
-    label: string;
-    description: string;
-    errorMessage: string;
-    hideLabel: boolean;
-    hideDescription: boolean;
-    hideError: boolean;
-    hasError: boolean;
-    isEmpty: boolean;
-    multiline: boolean;
-    inputId: string;
-    descriptionId: string;
-    errorId: string;
-  }>;
+type TextInputTemplateModel = Observable<{
+  label: string;
+  description: string;
+  errorMessage: string;
+  hideLabel: boolean;
+  hideDescription: boolean;
+  hideError: boolean;
+  hasError: boolean;
+  isEmpty: boolean;
+  multiline: boolean;
+  inputId: string;
+  descriptionId: string;
+  errorId: string;
+}>;
 
 export const TextInputModelDefinition: ComponentModelDefinition =
-  { name: 'TextInputModelDefinition',
-    title: 'Text Input',
-    properties:
-      [ { name: 'label', title: 'Label', type: 'string' },
-        { name: 'description', title: 'Description', type: 'string' },
-        { name: 'validator',
-          title: 'Validator',
-          type: 'function',
-          description: 'Validation function that returns an error message or null.' },
-        { name: 'theme',
-          title: 'Theme',
-          type: 'object',
-          description: 'Per-instance components theme override.' },
-        { name: 'value', title: 'Value', type: 'string' },
-        { name: 'placeholder', title: 'Placeholder', type: 'string' },
-        { name: 'inputType', title: 'Input type', type: 'string' },
-        { name: 'controlClassName', title: 'Control class name', type: 'string' },
-        { name: 'multiline', title: 'Multiline', type: 'boolean' },
-        { name: 'autoExtend', title: 'Auto extend', type: 'boolean' },
-        { name: 'autoExtendMaxRows',
-          title: 'Auto extend max rows',
-          type: 'number',
-          description: 'Maximum rows when auto extend is enabled.' },
-        { name: 'enterKeyBehavior', title: 'Enter key behavior', type: 'string' },
-        { name: 'disabled', title: 'Disabled', type: 'boolean' },
-        { name: 'rows', title: 'Rows', type: 'number' },
-        { name: 'status',
-          title: 'Status',
-          type: 'object',
-          description: 'Observable draft status object.',
-          editable: false },
-        { name: 'draftValue',
-          title: 'Draft value',
-          type: 'string',
-          description: 'Current in-progress text.',
-          editable: false },
-        { name: 'isEmpty',
-          title: 'Is empty',
-          type: 'boolean',
-          editable: false },
-        { name: 'isValid',
-          title: 'Is valid',
-          type: 'boolean',
-          editable: false },
-        { name: 'errorMessage',
-          title: 'Error message',
-          type: 'string',
-          description: 'Current validation message or null.',
-          editable: false } ] };
+  {
+  name: 'TextInputModelDefinition',
+  title: 'Text Input',
+  properties: [
+    { name: 'label', title: 'Label', type: 'string' },
+    { name: 'description', title: 'Description', type: 'string' },
+    {
+      name: 'validator',
+      title: 'Validator',
+      type: 'function',
+      description: 'Validation function that returns an error message or null.'
+    },
+    {
+      name: 'theme',
+      title: 'Theme',
+      type: 'object',
+      description: 'Per-instance components theme override.'
+    },
+    { name: 'value', title: 'Value', type: 'string' },
+    { name: 'placeholder', title: 'Placeholder', type: 'string' },
+    { name: 'inputType', title: 'Input type', type: 'string' },
+    { name: 'controlClassName', title: 'Control class name', type: 'string' },
+    { name: 'multiline', title: 'Multiline', type: 'boolean' },
+    { name: 'autoExtend', title: 'Auto extend', type: 'boolean' },
+    {
+      name: 'autoExtendMaxRows',
+      title: 'Auto extend max rows',
+      type: 'number',
+      description: 'Maximum rows when auto extend is enabled.'
+    },
+    { name: 'enterKeyBehavior', title: 'Enter key behavior', type: 'string' },
+    { name: 'disabled', title: 'Disabled', type: 'boolean' },
+    { name: 'rows', title: 'Rows', type: 'number' },
+    {
+      name: 'status',
+      title: 'Status',
+      type: 'object',
+      description: 'Observable draft status object.',
+      editable: false
+    },
+    {
+      name: 'draftValue',
+      title: 'Draft value',
+      type: 'string',
+      description: 'Current in-progress text.',
+      editable: false
+    },
+    { name: 'isEmpty', title: 'Is empty', type: 'boolean', editable: false },
+    { name: 'isValid', title: 'Is valid', type: 'boolean', editable: false },
+    {
+      name: 'errorMessage',
+      title: 'Error message',
+      type: 'string',
+      description: 'Current validation message or null.',
+      editable: false
+    }
+  ]
+};
 
-@customElement('asljs-text-input')
-export class TextInput
-  extends LitElement
+@customElement(
+  'asljs-text-input'
+)
+export class TextInput extends LitElement
 {
   #templateElement: HTMLTemplateElement | null = null;
   #inputTemplateElement: HTMLTemplateElement | null = null;
@@ -135,70 +143,102 @@ export class TextInput
   #controlKeydownListener: (() => void) | null = null;
   #skipNextBlur = false;
   #idBase = `asljs-text-input-${nextTextInputId++}`;
-  #model: TextInputTemplateModel =
-    observable(
-      { label: '',
-        description: '',
-        errorMessage: '',
-        hideLabel: true,
-        hideDescription: true,
-        hideError: true,
-        hasError: false,
-        isEmpty: true,
-        multiline: false,
-        inputId: `${this.#idBase}-control`,
-        descriptionId: `${this.#idBase}-description`,
-        errorId: `${this.#idBase}-error` });
+  #model: TextInputTemplateModel = observable(
+    {
+      label: '',
+      description: '',
+      errorMessage: '',
+      hideLabel: true,
+      hideDescription: true,
+      hideError: true,
+      hasError: false,
+      isEmpty: true,
+      multiline: false,
+      inputId: `${this.#idBase}-control`,
+      descriptionId: `${this.#idBase}-description`,
+      errorId: `${this.#idBase}-error`
+    }
+  );
 
-  readonly status: TextInputStatus =
-    observable(
-      { draftValue: '',
-        isEmpty: true,
-        isValid: true,
-        errorMessage: null,
-        dirty: false });
+  readonly status: TextInputStatus = observable(
+    {
+      draftValue: '',
+      isEmpty: true,
+      isValid: true,
+      errorMessage: null,
+      dirty: false
+    }
+  );
 
-  @property({ attribute: false })
-    accessor label: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor label: string | null = null;
 
-  @property({ attribute: false })
-    accessor description: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor description: string | null = null;
 
-  @property({ attribute: false })
-    accessor validator: TextInputValidator | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor validator: TextInputValidator | null = null;
 
-  @property({ attribute: false })
-    accessor theme: ComponentsTheme | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor theme: ComponentsTheme | null = null;
 
-  @property({ attribute: false })
-    accessor value: string | null = '';
+  @property(
+    { attribute: false }
+  )
+  accessor value: string | null = '';
 
-  @property({ attribute: false })
-    accessor placeholder: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor placeholder: string | null = null;
 
-  @property({ attribute: false })
-    accessor inputType = 'text';
+  @property(
+    { attribute: false }
+  )
+  accessor inputType = 'text';
 
-  @property({ attribute: false })
-    accessor controlClassName = '';
+  @property(
+    { attribute: false }
+  )
+  accessor controlClassName = '';
 
-  @property({ attribute: false })
-    accessor multiline = false;
+  @property(
+    { attribute: false }
+  )
+  accessor multiline = false;
 
-  @property({ attribute: false })
-    accessor autoExtend = false;
+  @property(
+    { attribute: false }
+  )
+  accessor autoExtend = false;
 
-  @property({ attribute: false })
-    accessor autoExtendMaxRows: number | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor autoExtendMaxRows: number | null = null;
 
-  @property({ attribute: false })
-    accessor enterKeyBehavior: TextInputEnterKeyBehavior = 'finish';
+  @property(
+    { attribute: false }
+  )
+  accessor enterKeyBehavior: TextInputEnterKeyBehavior = 'finish';
 
-  @property({ attribute: false })
-    accessor disabled = false;
+  @property(
+    { attribute: false }
+  )
+  accessor disabled = false;
 
-  @property({ attribute: false })
-    accessor rows = 3;
+  @property(
+    { attribute: false }
+  )
+  accessor rows = 3;
 
   get draftValue(): string {
     return this.status.draftValue;
@@ -216,18 +256,21 @@ export class TextInput
     return this.status.errorMessage;
   }
 
-  createRenderRoot(): this {
+  createRenderRoot(): this
+  {
     return this;
   }
 
-  connectedCallback(): void {
+  connectedCallback(): void
+  {
     super.connectedCallback();
     this.#captureTemplates();
     this.#syncThemeProvider();
     this.#applyExternalValue();
   }
 
-  disconnectedCallback(): void {
+  disconnectedCallback(): void
+  {
     this.#disposeControlBindings();
     this.#templateDispose?.();
     this.#templateDispose = null;
@@ -237,15 +280,16 @@ export class TextInput
     super.disconnectedCallback();
   }
 
-  render(): ReturnType<LitElement['render']> {
+  render(): ReturnType<LitElement['render']>
+  {
     return html`
       <div data-role="template-host"></div>
     `;
   }
 
   updated(
-      changedProperties: Map<PropertyKey, unknown>
-    ): void
+    changedProperties: Map<PropertyKey, unknown>
+  ): void
   {
     if (changedProperties.has('theme')) {
       this.#syncThemeProvider();
@@ -255,53 +299,67 @@ export class TextInput
       this.#applyExternalValue();
     }
 
-    if (changedProperties.has('label')
-        || changedProperties.has('description')
-        || changedProperties.has('multiline')
-        || changedProperties.has('theme'))
-    {
+    if (
+      changedProperties.has('label')
+      || changedProperties.has('description')
+      || changedProperties.has('multiline')
+      || changedProperties.has('theme')
+    ) {
       this.#renderTemplate();
       return;
     }
 
-    if (changedProperties.has('placeholder')
+    if (
+      changedProperties.has('placeholder')
       || changedProperties.has('inputType')
-      || changedProperties.has('controlClassName')
-        || changedProperties.has('disabled')
-        || changedProperties.has('rows')
-        || changedProperties.has('autoExtend')
-        || changedProperties.has('autoExtendMaxRows')
-        || changedProperties.has('enterKeyBehavior'))
-    {
+      || changedProperties.has(
+        'controlClassName'
+      )
+      || changedProperties.has('disabled')
+      || changedProperties.has('rows')
+      || changedProperties.has('autoExtend')
+      || changedProperties.has(
+        'autoExtendMaxRows'
+      )
+      || changedProperties.has(
+        'enterKeyBehavior'
+      )
+    ) {
       this.#syncControlState();
     }
 
     this.#syncModelState();
   }
 
-  #captureTemplates(): void {
+  #captureTemplates(): void
+  {
     this.#templateElement = null;
     this.#inputTemplateElement = null;
     this.#textareaTemplateElement = null;
 
-    this.#templateElement =
-      cloneNamedTemplate(
-        this,
-        'template');
-    this.#inputTemplateElement =
-      cloneNamedTemplate(
-        this,
-        'input');
-    this.#textareaTemplateElement =
-      cloneNamedTemplate(
-        this,
-        'textarea');
+    this.#templateElement = cloneNamedTemplate(
+      this,
+      'template'
+    );
+
+    this.#inputTemplateElement = cloneNamedTemplate(
+      this,
+      'input'
+    );
+
+    this.#textareaTemplateElement = cloneNamedTemplate(
+      this,
+      'textarea'
+    );
   }
 
-  #syncThemeProvider(): void {
+  #syncThemeProvider(): void
+  {
     this.#disposeThemeProvider();
-    this.#themeProvider =
-      findThemeProvider(this);
+
+    this.#themeProvider = findThemeProvider(
+      this
+    );
 
     if (this.#themeProvider === null) {
       return;
@@ -309,40 +367,63 @@ export class TextInput
 
     this.#themeProvider.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
   }
 
-  #disposeThemeProvider(): void {
+  #disposeThemeProvider(): void
+  {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
+
     this.#themeProvider = null;
   }
 
-  #handleThemeChanged = (): void => {
+  #handleThemeChanged = (): void =>
+  {
     this.#renderTemplate();
   };
 
-  #applyExternalValue(): void {
+  #applyExternalValue(): void
+  {
     const nextValue =
-      normalizeText(this.value);
+      normalizeText(
+        this.value);
 
     this.status.draftValue = nextValue;
     this.#syncModelState();
     this.#syncControlState();
   }
 
-  #syncModelState(): void {
+  #syncModelState(): void
+  {
     const label =
-      normalizeOptionalText(this.label);
+      normalizeOptionalText(
+        this.label);
+
     const description =
-      normalizeOptionalText(this.description);
-    const errorMessage =
-      this.validator?.(this.status.draftValue) ?? null;
+      normalizeOptionalText(
+        this.description);
+
+    let errorMessage: string | null = null;
+
+    const validator =
+      this.validator;
+
+    if (validator !== null) {
+      errorMessage = validator(
+        this.status.draftValue
+      );
+    }
+
     const isEmpty =
       this.status.draftValue === '';
+
     const dirty =
-      this.status.draftValue !== normalizeText(this.value);
+      this.status.draftValue !== normalizeText(
+        this.value);
 
     this.status.isEmpty = isEmpty;
     this.status.errorMessage = errorMessage;
@@ -362,9 +443,13 @@ export class TextInput
     this.#syncControlState();
   }
 
-  #renderTemplate(): void {
+  #renderTemplate(): void
+  {
     const templateHost =
-      this.querySelector('[data-role="template-host"]') as HTMLElement | null;
+      this.querySelector(
+        '[data-role="template-host"]') as
+      | HTMLElement
+      | null;
 
     if (templateHost === null) {
       return;
@@ -387,10 +472,10 @@ export class TextInput
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
 
-    this.#templateDispose =
-      bindDataModel(
-        fragment,
-        this.#model as unknown as Record<string, unknown>);
+    this.#templateDispose = bindDataModel(
+      fragment,
+      this.#model as unknown as Record<string, unknown>
+    );
 
     templateHost.replaceChildren(fragment);
 
@@ -399,8 +484,8 @@ export class TextInput
   }
 
   #resolveTemplate(
-      slotName: TextInputSlotName
-    ): HTMLTemplateElement | null
+    slotName: TextInputSlotName
+  ): HTMLTemplateElement | null
   {
     return this.#getLocalTemplate(slotName)
       ?? this.#getThemeTemplate(slotName)
@@ -408,8 +493,8 @@ export class TextInput
   }
 
   #getLocalTemplate(
-      slotName: TextInputSlotName
-    ): HTMLTemplateElement | null
+    slotName: TextInputSlotName
+  ): HTMLTemplateElement | null
   {
     switch (slotName) {
       case 'template':
@@ -422,8 +507,8 @@ export class TextInput
   }
 
   #getThemeTemplate(
-      slotName: TextInputSlotName
-    ): HTMLTemplateElement | null
+    slotName: TextInputSlotName
+  ): HTMLTemplateElement | null
   {
     const theme =
       this.theme
@@ -434,14 +519,19 @@ export class TextInput
       slotName === 'template'
         ? theme.textInput?.template
         : slotName === 'input'
-          ? theme.textInput?.input
-          : theme.textInput?.textarea,
-      this);
+        ? theme.textInput?.input
+        : theme.textInput?.textarea,
+      this
+    );
   }
 
-  #mountControl(): void {
+  #mountControl(): void
+  {
     const controlHost =
-      this.querySelector('[data-role="control-host"]') as HTMLElement | null;
+      this.querySelector(
+        '[data-role="control-host"]') as
+      | HTMLElement
+      | null;
 
     if (controlHost === null) {
       return;
@@ -449,80 +539,111 @@ export class TextInput
 
     const mountedControl =
       this.#createMountedControl(controlHost);
+
     const control =
       mountedControl.control;
 
-    this.#controlTemplateDispose =
-      bindDataModel(
-        mountedControl.fragment,
-        this.#model as unknown as Record<string, unknown>);
+    this.#controlTemplateDispose = bindDataModel(
+      mountedControl.fragment,
+      this.#model as unknown as Record<string, unknown>
+    );
 
-    controlHost.replaceChildren(mountedControl.fragment);
+    controlHost.replaceChildren(
+      mountedControl.fragment
+    );
+
     this.#control = control;
     this.#controlBaseClassName = mountedControl.className;
     this.#controlInvalidClassName = mountedControl.invalidClassName;
 
     const inputListener =
-      (): void => {
-        this.status.draftValue = control.value;
-        this.#syncModelState();
-        this.#dispatchValueEvent('input');
-      };
+      (): void =>
+    {
+      this.status.draftValue = control.value;
+      this.#syncModelState();
+      this.#dispatchValueEvent('input');
+    };
 
     const blurListener =
-      (): void => {
-        if (this.#skipNextBlur) {
-          this.#skipNextBlur = false;
-          return;
-        }
+      (): void =>
+    {
+      if (this.#skipNextBlur) {
+        this.#skipNextBlur = false;
+        return;
+      }
 
-        this.#dispatchValueEvent('change');
-      };
+      this.#dispatchValueEvent('change');
+    };
 
     const keydownListener =
-      (event: Event): void => {
-        const keyboardEvent =
-          event as KeyboardEvent;
+      (event: Event): void =>
+    {
+      const keyboardEvent =
+        event as KeyboardEvent;
 
-        if (keyboardEvent.key !== 'Enter') {
-          return;
-        }
+      if (keyboardEvent.key !== 'Enter') {
+        return;
+      }
 
-        if (this.multiline
-            && !keyboardEvent.ctrlKey
-            && !keyboardEvent.metaKey
-            && this.enterKeyBehavior === 'newline')
-        {
-          return;
-        }
+      if (
+        this.multiline
+        && !keyboardEvent.ctrlKey
+        && !keyboardEvent.metaKey
+        && this.enterKeyBehavior === 'newline'
+      ) {
+        return;
+      }
 
-        keyboardEvent.preventDefault();
-        this.#skipNextBlur = true;
-        this.#dispatchValueEvent('change');
-        control.blur();
-      };
+      keyboardEvent.preventDefault();
+      this.#skipNextBlur = true;
+      this.#dispatchValueEvent('change');
+      control.blur();
+    };
 
-    control.addEventListener('input', inputListener);
-    control.addEventListener('blur', blurListener);
-    control.addEventListener('keydown', keydownListener);
+    control.addEventListener(
+      'input',
+      inputListener
+    );
 
-    this.#controlInputListener =
-      () => {
-        control.removeEventListener('input', inputListener);
-      };
-    this.#controlBlurListener =
-      () => {
-        control.removeEventListener('blur', blurListener);
-      };
-    this.#controlKeydownListener =
-      () => {
-        control.removeEventListener('keydown', keydownListener);
-      };
+    control.addEventListener(
+      'blur',
+      blurListener
+    );
+
+    control.addEventListener(
+      'keydown',
+      keydownListener
+    );
+
+    this.#controlInputListener = () =>
+    {
+      control.removeEventListener(
+        'input',
+        inputListener
+      );
+    };
+
+    this.#controlBlurListener = () =>
+    {
+      control.removeEventListener(
+        'blur',
+        blurListener
+      );
+    };
+
+    this.#controlKeydownListener = () =>
+    {
+      control.removeEventListener(
+        'keydown',
+        keydownListener
+      );
+    };
 
     this.#syncControlState();
   }
 
-  #syncControlState(): void {
+  #syncControlState(): void
+  {
     const control =
       this.#control;
 
@@ -535,11 +656,18 @@ export class TextInput
     }
 
     control.id = this.#model.inputId;
-    control.placeholder = normalizeOptionalText(this.placeholder) ?? '';
+
+    control.placeholder = normalizeOptionalText(
+      this.placeholder
+    ) ?? '';
+
     control.disabled = this.disabled;
+
     control.className = joinClassNames(
       this.#controlBaseClassName,
-      this.controlClassName);
+      this.controlClassName
+    );
+
     const invalidClassName =
       this.#controlInvalidClassName;
 
@@ -548,16 +676,29 @@ export class TextInput
     }
 
     if (invalidClassName !== null && !this.status.isValid) {
-      control.classList.add(invalidClassName);
+      control.classList.add(
+        invalidClassName
+      );
     }
 
-    control.toggleAttribute('aria-invalid', !this.status.isValid);
+    control.toggleAttribute(
+      'aria-invalid',
+      !this.status.isValid
+    );
+
     control.setAttribute(
       'aria-describedby',
-      resolveAriaDescribedBy(this.#model));
+      resolveAriaDescribedBy(
+        this.#model
+      )
+    );
 
     if (this.multiline && control instanceof HTMLTextAreaElement) {
-      control.rows = Math.max(1, this.rows);
+      control.rows = Math.max(
+        1,
+        this.rows
+      );
+
       this.#syncAutoExtend(control);
       return;
     }
@@ -567,46 +708,56 @@ export class TextInput
   }
 
   #createMountedControl(
-      controlHost: HTMLElement
-    ): MountedTextInputControl
+    controlHost: HTMLElement
+  ): MountedTextInputControl
   {
     const slotName: TextInputSlotName =
       this.multiline
-        ? 'textarea'
-        : 'input';
+      ? 'textarea'
+      : 'input';
+
     const template =
       this.#resolveTemplate(slotName);
 
     if (template === null) {
       return createFallbackMountedControl(
         this.multiline,
-        controlHost);
+        controlHost
+      );
     }
 
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
+
     const control =
       this.multiline
-        ? fragment.querySelector('textarea')
-        : fragment.querySelector('input');
+      ? fragment.querySelector('textarea')
+      : fragment.querySelector('input');
 
     if (control === null) {
       return createFallbackMountedControl(
         this.multiline,
-        controlHost);
+        controlHost
+      );
     }
 
     return {
       fragment,
       control,
-      className: resolveInitialControlClassName(control, controlHost),
-      invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+      className: resolveInitialControlClassName(
+        control,
+        controlHost
+      ),
+      invalidClassName: resolveInitialControlInvalidClassName(
+        control,
+        controlHost
+      )
     };
   }
 
   #syncAutoExtend(
-      control: HTMLTextAreaElement
-    ): void
+    control: HTMLTextAreaElement
+  ): void
   {
     if (!this.autoExtend) {
       control.style.height = '';
@@ -620,12 +771,17 @@ export class TextInput
       resolveMaxHeight(
         control,
         this.autoExtendMaxRows);
+
     const nextHeight =
       maxHeight === null
-        ? control.scrollHeight
-        : Math.min(control.scrollHeight, maxHeight);
+      ? control.scrollHeight
+      : Math.min(
+        control.scrollHeight,
+        maxHeight
+      );
 
     control.style.height = `${nextHeight}px`;
+
     control.style.overflowY =
       maxHeight !== null && control.scrollHeight > maxHeight
         ? 'auto'
@@ -633,25 +789,28 @@ export class TextInput
   }
 
   #dispatchValueEvent(
-      name: 'input' | 'change'
-    ): void
+    name: 'input' | 'change'
+  ): void
   {
     const detail: TextInputChangeDetail =
-      { value: this.status.draftValue,
-        isEmpty: this.status.isEmpty,
-        isValid: this.status.isValid,
-        errorMessage: this.status.errorMessage,
-        dirty: this.status.dirty };
+      {
+      value: this.status.draftValue,
+      isEmpty: this.status.isEmpty,
+      isValid: this.status.isValid,
+      errorMessage: this.status.errorMessage,
+      dirty: this.status.dirty
+    };
 
     this.dispatchEvent(
       new CustomEvent(
         name,
-        { detail,
-          bubbles: true,
-          composed: true }));
+        { detail, bubbles: true, composed: true }
+      )
+    );
   }
 
-  #disposeControlBindings(): void {
+  #disposeControlBindings(): void
+  {
     this.#controlInputListener?.();
     this.#controlBlurListener?.();
     this.#controlKeydownListener?.();
@@ -668,22 +827,23 @@ export class TextInput
 
 let nextTextInputId = 1;
 
-type MountedTextInputControl =
-  { fragment: DocumentFragment,
-    control: HTMLInputElement | HTMLTextAreaElement,
-    className: string,
-    invalidClassName: string | null };
+type MountedTextInputControl = {
+  fragment: DocumentFragment;
+  control: HTMLInputElement | HTMLTextAreaElement;
+  className: string;
+  invalidClassName: string | null;
+};
 
 function normalizeText(
-    value: string | null | undefined
-  ): string
+  value: string | null | undefined
+): string
 {
   return value ?? '';
 }
 
 function normalizeOptionalText(
-    value: string | null | undefined
-  ): string | null
+  value: string | null | undefined
+): string | null
 {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -693,26 +853,30 @@ function normalizeOptionalText(
 }
 
 function resolveAriaDescribedBy(
-    model: TextInputTemplateModel
-  ): string
+  model: TextInputTemplateModel
+): string
 {
   const ids: string[] = [];
 
   if (!model.hideDescription) {
-    ids.push(model.descriptionId);
+    ids.push(
+      model.descriptionId
+    );
   }
 
   if (!model.hideError) {
-    ids.push(model.errorId);
+    ids.push(
+      model.errorId
+    );
   }
 
   return ids.join(' ');
 }
 
 function resolveMaxHeight(
-    control: HTMLTextAreaElement,
-    maxRows: number | null
-  ): number | null
+  control: HTMLTextAreaElement,
+  maxRows: number | null
+): number | null
 {
   if (maxRows === null || maxRows <= 0) {
     return null;
@@ -720,21 +884,30 @@ function resolveMaxHeight(
 
   const computed =
     getComputedStyle(control);
+
   const lineHeight =
-    parseFloat(computed.lineHeight);
+    parseFloat(
+      computed.lineHeight);
 
   if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
     return null;
   }
 
   const borderTop =
-    parseFloat(computed.borderTopWidth) || 0;
+    parseFloat(
+      computed.borderTopWidth) || 0;
+
   const borderBottom =
-    parseFloat(computed.borderBottomWidth) || 0;
+    parseFloat(
+      computed.borderBottomWidth) || 0;
+
   const paddingTop =
-    parseFloat(computed.paddingTop) || 0;
+    parseFloat(
+      computed.paddingTop) || 0;
+
   const paddingBottom =
-    parseFloat(computed.paddingBottom) || 0;
+    parseFloat(
+      computed.paddingBottom) || 0;
 
   return lineHeight * maxRows
     + paddingTop
@@ -744,52 +917,63 @@ function resolveMaxHeight(
 }
 
 function cloneNamedTemplate(
-    host: Element,
-    slotName: TextInputSlotName
-  ): HTMLTemplateElement | null
+  host: Element,
+  slotName: TextInputSlotName
+): HTMLTemplateElement | null
 {
-  const templateElement =
-    host.querySelector<HTMLTemplateElement>(`template[data-slot="${slotName}"]`);
+  const element =
+    host.querySelector(
+      `template[data-slot="${slotName}"]`);
 
-  if (templateElement === null) {
+  if (element === null) {
     return null;
   }
+
+  const templateElement =
+    element as HTMLTemplateElement;
 
   const clonedTemplate =
     document.createElement('template');
 
   clonedTemplate.content.append(
-    templateElement.content.cloneNode(true));
+    templateElement.content.cloneNode(true)
+  );
 
   return clonedTemplate;
 }
 
 function resolveInitialControlClassName(
-    control: HTMLInputElement | HTMLTextAreaElement,
-    controlHost: HTMLElement
-  ): string
+  control: HTMLInputElement | HTMLTextAreaElement,
+  controlHost: HTMLElement
+): string
 {
   return control.className
-    || controlHost.getAttribute('data-control-class')
+    || controlHost.getAttribute(
+      'data-control-class'
+    )
     || '';
 }
 
 function resolveInitialControlInvalidClassName(
-    control: HTMLInputElement | HTMLTextAreaElement,
-    controlHost: HTMLElement
-  ): string | null
+  control: HTMLInputElement | HTMLTextAreaElement,
+  controlHost: HTMLElement
+): string | null
 {
-  return control.getAttribute('data-control-invalid-class')
-    ?? controlHost.getAttribute('data-control-invalid-class')
+  return control.getAttribute(
+    'data-control-invalid-class'
+  )
+    ?? controlHost.getAttribute(
+      'data-control-invalid-class'
+    )
     ?? null;
 }
 
-function createDefaultTextInputTemplate(): HTMLTemplateElement {
+function createDefaultTextInputTemplate(): HTMLTemplateElement
+{
   const template =
     document.createElement('template');
 
-  template.innerHTML =
-    `
+  template.innerHTML = `
       <div>
         <label
                data-bind-text="label"
@@ -810,7 +994,8 @@ function createDefaultTextInputTemplate(): HTMLTemplateElement {
   return template;
 }
 
-function createSingleLineInput(): HTMLInputElement {
+function createSingleLineInput(): HTMLInputElement
+{
   const input =
     document.createElement('input');
 
@@ -819,77 +1004,104 @@ function createSingleLineInput(): HTMLInputElement {
   return input;
 }
 
-function createDefaultInputTemplate(): HTMLTemplateElement {
+function createDefaultInputTemplate(): HTMLTemplateElement
+{
   const template =
     document.createElement('template');
 
-  template.innerHTML =
-    '<input type="text">';
+  template.innerHTML = '<input type="text">';
 
   return template;
 }
 
-function createDefaultTextareaTemplate(): HTMLTemplateElement {
+function createDefaultTextareaTemplate(): HTMLTemplateElement
+{
   const template =
     document.createElement('template');
 
-  template.innerHTML =
-    '<textarea></textarea>';
+  template.innerHTML = '<textarea></textarea>';
 
   return template;
 }
 
 function createFallbackMountedControl(
-    multiline: boolean,
-    controlHost: HTMLElement
-  ): MountedTextInputControl
+  multiline: boolean,
+  controlHost: HTMLElement
+): MountedTextInputControl
 {
   const fragment =
     document.createDocumentFragment();
+
   const template =
     multiline
-      ? createDefaultTextareaTemplate()
-      : createDefaultInputTemplate();
+    ? createDefaultTextareaTemplate()
+    : createDefaultInputTemplate();
+
   const templateFragment =
     template.content.cloneNode(true) as DocumentFragment;
+
   const control =
     multiline
-      ? templateFragment.querySelector('textarea')
-      : templateFragment.querySelector('input');
+    ? templateFragment.querySelector('textarea')
+    : templateFragment.querySelector('input');
 
   if (control === null) {
     const fallbackControl =
       multiline
-        ? document.createElement('textarea') as HTMLTextAreaElement | HTMLInputElement
-        : createSingleLineInput();
+      ? document.createElement('textarea') as
+        | HTMLTextAreaElement
+        | HTMLInputElement
+      : createSingleLineInput();
 
-    fragment.append(fallbackControl);
+    fragment.append(
+      fallbackControl
+    );
 
     return {
       fragment,
       control: fallbackControl,
-      className: resolveInitialControlClassName(fallbackControl, controlHost),
-      invalidClassName: resolveInitialControlInvalidClassName(fallbackControl, controlHost),
+      className: resolveInitialControlClassName(
+        fallbackControl,
+        controlHost
+      ),
+      invalidClassName: resolveInitialControlInvalidClassName(
+        fallbackControl,
+        controlHost
+      )
     };
   }
 
-  fragment.append(templateFragment);
+  fragment.append(
+    templateFragment
+  );
 
   return {
     fragment,
     control,
-    className: resolveInitialControlClassName(control, controlHost),
-    invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+    className: resolveInitialControlClassName(
+      control,
+      controlHost
+    ),
+    invalidClassName: resolveInitialControlInvalidClassName(
+      control,
+      controlHost
+    )
   };
 }
 
 function joinClassNames(
-    ...classNames: string[]
-  ): string
+  ...classNames: string[]
+): string
 {
   return classNames
-    .flatMap(className => className.split(/\s+/))
-    .map(className => className.trim())
-    .filter(className => className !== '')
+    .flatMap(
+      className => className.split(/\s+/)
+    )
+    .map(
+      className => className.trim()
+    )
+    .filter(
+      className => className !== ''
+    )
     .join(' ');
 }

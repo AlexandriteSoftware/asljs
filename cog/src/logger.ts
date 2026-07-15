@@ -4,81 +4,72 @@ import pino
 export interface Logger
 {
   isLevelEnabled(
-      level: string
-    ): boolean;
+    level: string
+  ): boolean;
   scope: (
-      properties: Record<string, unknown>
-    ) => Logger;
+    properties: Record<string, unknown>
+  ) => Logger;
   trace: (
-      ...args: unknown[]
-    ) => void;
+    ...args: unknown[]
+  ) => void;
   debug: (
-      ...args: unknown[]
-    ) => void;
+    ...args: unknown[]
+  ) => void;
   info: (
-      ...args: unknown[]
-    ) => void;
+    ...args: unknown[]
+  ) => void;
   warn: (
-      ...args: unknown[]
-    ) => void;
+    ...args: unknown[]
+  ) => void;
   error: (
-      ...args: unknown[]
-    ) => void;
+    ...args: unknown[]
+  ) => void;
 }
 
-export interface RootLogger
-  extends Logger
+export interface RootLogger extends Logger
 {
   dispose: () => void;
 }
 
-export class NullLogger
-  implements RootLogger
+export class NullLogger implements RootLogger
 {
   constructor()
   {
   }
 
   isLevelEnabled(
-      level: string
-    ): boolean
+    level: string
+  ): boolean
   {
     return level === 'silent';
   }
 
-  scope(
-    ): Logger
+  scope(): Logger
   {
     return new NullLogger();
   }
 
-  trace(
-    ): void
+  trace(): void
   {
   }
 
-  debug(
-    ): void
+  debug(): void
   {
   }
 
-  error(
-    ): void
+  error(): void
   {
   }
 
-  info(
-    ): void
+  info(): void
   {
   }
 
-  log(
-    ): void
+  log(): void
   {
   }
 
-  warn(
-    ): void
+  warn(): void
   {
   }
 
@@ -93,84 +84,89 @@ export interface LoggerOptions
   file?: string | null;
 }
 
-export class PinoLoggerAdapter
-  implements RootLogger
+export class PinoLoggerAdapter implements RootLogger
 {
   constructor(
-      private readonly logger: pino.Logger,
-      private readonly transport: any = null
-    )
+    private readonly logger: pino.Logger,
+    private readonly transport: any = null
+  )
   {
   }
 
   isLevelEnabled(
-      level: string
-    ): boolean
+    level: string
+  ): boolean
   {
     return this.logger.isLevelEnabled(level);
   }
 
   scope(
-      properties: Record<string, unknown>
-    ): Logger
+    properties: Record<string, unknown>
+  ): Logger
   {
     return new PinoLoggerAdapter(
-      this.logger.child(properties));
+      this.logger.child(properties)
+    );
   }
 
   trace(
-      ...args: any[]
-    ): void
+    ...args: any[]
+  ): void
   {
     const params =
       args as Parameters<pino.LogFn>;
 
     this.logger.trace(
-      ...params);
+      ...params
+    );
   }
 
   debug(
-      ...args: any[]
-    ): void
+    ...args: any[]
+  ): void
   {
     const params =
       args as Parameters<pino.LogFn>;
 
     this.logger.debug(
-      ...params);
+      ...params
+    );
   }
 
   info(
-      ...args: any[]
-    ): void
+    ...args: any[]
+  ): void
   {
     const params =
       args as Parameters<pino.LogFn>;
 
     this.logger.info(
-      ...params);
+      ...params
+    );
   }
 
   warn(
-      ...args: any[]
-    ): void
+    ...args: any[]
+  ): void
   {
     const params =
       args as Parameters<pino.LogFn>;
 
     this.logger.warn(
-      ...params);
+      ...params
+    );
   }
 
   error(
-      ...args: any[]
-    ): void
+    ...args: any[]
+  ): void
   {
     const params =
       args as Parameters<pino.LogFn>;
 
     this.logger.error(
-      ...params);
+      ...params
+    );
   }
 
   dispose(): void
@@ -186,16 +182,16 @@ export class PinoLoggerAdapter
  *
  * If options are not provided, tries to initialise from environment variables.
  * If no environment variables are set, defaults to level 'info' and disabled.
- * 
+ *
  * Environment variables:
- * 
+ *
  * - `COG_LOG_LEVEL`: The logging level (e.g., 'silent', 'trace', 'debug',
  *   'info', ...).
  * - `COG_LOG_FILE`: The file path to write logs to (if specified).
  */
 export function createLogger(
-    options: Partial<LoggerOptions> = { }
-  ): RootLogger
+  options: Partial<LoggerOptions> = {}
+): RootLogger
 {
   const envVarPrefix = 'COG_';
 
@@ -236,29 +232,29 @@ export function createLogger(
   let transport = null;
 
   if (file === null) {
-    transport =
-      pino.transport(
-        { target: 'pino-pretty',
-          options:
-            { messageFormat: '{instanceId}: {msg}',
-              ignore: 'instanceId',
-              colorize: true } });
+    transport = pino.transport(
+      {
+        target: 'pino-pretty',
+        options: {
+          messageFormat: '{instanceId}: {msg}',
+          ignore: 'instanceId',
+          colorize: true
+        }
+      }
+    );
   } else {
-    transport =
-      pino.transport(
-        { target: 'pino/file',
-          options:
-            { destination: file,
-              mkdir: true } });
+    transport = pino.transport(
+      { target: 'pino/file', options: { destination: file, mkdir: true } }
+    );
   }
 
   const logger =
     pino(
-      { base: null,
-        level },
+      { base: null, level },
       transport);
 
   return new PinoLoggerAdapter(
     logger,
-    transport);
+    transport
+  );
 }

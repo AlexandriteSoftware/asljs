@@ -1,38 +1,43 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
-import { eventful,
+import test
+  from 'node:test';
+import { asEventfulLike,
+         eventful,
          EventfulBase,
-         asEventfulLike,
          isEventfulLike,
          ListenerError }
   from './index.js';
 
-const TEST_SUITE =
-  'index';
+const TEST_SUITE = 'index';
 
 test(
   `${TEST_SUITE}: exports public api`,
-  () => {
+  () =>
+  {
     assert.equal(
       typeof eventful,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof EventfulBase,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof asEventfulLike,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof isEventfulLike,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof ListenerError,
-      'function');
-  });
-
+      'function'
+    );
+  }
+);

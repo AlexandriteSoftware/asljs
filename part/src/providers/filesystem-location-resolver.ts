@@ -111,10 +111,10 @@ export class FilesystemLocationResolver
     const rootPathPatterns =
       [pattern]
       .filter(
-        (pattern) => pattern.startsWith('/')
+        pattern => pattern.startsWith('/')
       )
       .map(
-        (pattern) => pattern.slice(1)
+        pattern => pattern.slice(1)
       );
 
     if (rootPathPatterns.length > 0) {
@@ -135,7 +135,7 @@ export class FilesystemLocationResolver
     const basePathPatterns =
       [pattern]
       .filter(
-        (pattern) => !pattern.startsWith('/')
+        pattern => !pattern.startsWith('/')
       );
 
     if (basePathPatterns.length > 0) {
@@ -162,10 +162,10 @@ export class FilesystemLocationResolver
     const rootExcludePatterns =
       exclude
       .filter(
-        (pattern) => pattern.startsWith('/')
+        pattern => pattern.startsWith('/')
       )
       .map(
-        (pattern) => pattern.slice(1)
+        pattern => pattern.slice(1)
       );
 
     if (rootExcludePatterns.length > 0) {
@@ -182,7 +182,7 @@ export class FilesystemLocationResolver
     const basePathExcludePatterns =
       exclude
       .filter(
-        (pattern) => !pattern.startsWith('/')
+        pattern => !pattern.startsWith('/')
       );
 
     if (basePathExcludePatterns.length > 0) {
@@ -282,7 +282,7 @@ export class FilesystemLocationResolver
 
     const included =
       [patterns].some(
-        (pattern) =>
+        pattern =>
       {
         if (pattern.startsWith('/')) {
           return minimatch(
@@ -305,7 +305,7 @@ export class FilesystemLocationResolver
 
     const excluded =
       exclude.some(
-        (pattern) =>
+        pattern =>
       {
         if (pattern.startsWith('/')) {
           return minimatch(

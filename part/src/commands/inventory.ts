@@ -35,7 +35,7 @@ export async function execInventory(
 
   const definitionNames =
     definitions.map(
-      (definition) => definition.name);
+      definition => definition.name);
 
   const inventoryDefinitions =
     options.inventoryDefinitions === undefined
@@ -45,7 +45,7 @@ export async function execInventory(
 
   const filteredDefinitions =
     definitions.filter(
-      (definition) =>
+      definition =>
       inventoryDefinitions.includes(
         definition.name
       ));
@@ -103,7 +103,7 @@ export async function execInventory(
   const items: InventoryItem[] =
     Array.from(
       artefactIndex.values(),
-      (entry) =>
+      entry =>
     {
       return {
         location: entry.location,

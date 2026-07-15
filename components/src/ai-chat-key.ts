@@ -1,5 +1,5 @@
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
@@ -9,12 +9,13 @@ import { }
 import { }
   from './text-input.js';
 
-export interface AiChatKeySubmitDetail {
+export interface AiChatKeySubmitDetail
+{
   key: string;
 }
 
 type TextInputElement =
-  HTMLElement
+  & HTMLElement
   & {
     draftValue: string;
     inputType: string;
@@ -22,27 +23,38 @@ type TextInputElement =
     disabled: boolean;
   };
 
-@customElement('asljs-ai-chat-key')
-export class AiChatKeyPrompt
-  extends LitElement
+@customElement(
+  'asljs-ai-chat-key'
+)
+export class AiChatKeyPrompt extends LitElement
 {
-  @property({ attribute: false })
-    accessor label: string = 'OpenAI API Key';
+  @property(
+    { attribute: false }
+  )
+  accessor label: string = 'OpenAI API Key';
 
-  @property({ attribute: false })
-    accessor placeholder: string = 'sk-…';
+  @property(
+    { attribute: false }
+  )
+  accessor placeholder: string = 'sk-…';
 
-  @property({ attribute: false })
-    accessor submitLabel: string = 'Save key';
+  @property(
+    { attribute: false }
+  )
+  accessor submitLabel: string = 'Save key';
 
-  @property({ type: Boolean, attribute: false })
-    accessor disabled: boolean = false;
+  @property(
+    { type: Boolean, attribute: false }
+  )
+  accessor disabled: boolean = false;
 
-  override createRenderRoot(): this {
+  override createRenderRoot(): this
+  {
     return this;
   }
 
-  override render(): ReturnType<LitElement['render']> {
+  override render(): ReturnType<LitElement['render']>
+  {
     return html`
       <div class="asljs-ai-chat-key">
         <div class="asljs-ai-chat-key-label">
@@ -69,7 +81,8 @@ export class AiChatKeyPrompt
     `;
   }
 
-  #handleKeydown = (event: Event): void => {
+  #handleKeydown = (event: Event): void =>
+  {
     const keyboardEvent =
       event as KeyboardEvent;
 
@@ -79,13 +92,19 @@ export class AiChatKeyPrompt
     }
   };
 
-  #handleSubmit = (): void => {
+  #handleSubmit = (): void =>
+  {
     this.#submit();
   };
 
-  #submit(): void {
+  #submit(): void
+  {
     const input =
-      this.querySelector('[data-role="key-input"]') as TextInputElement | null;
+      this.querySelector(
+        '[data-role="key-input"]') as
+      | TextInputElement
+      | null;
+
     const key =
       (input?.draftValue ?? '').trim();
 
@@ -96,8 +115,8 @@ export class AiChatKeyPrompt
     this.dispatchEvent(
       new CustomEvent<AiChatKeySubmitDetail>(
         'key-submit',
-        { detail: { key },
-          bubbles: true,
-          composed: true }));
+        { detail: { key }, bubbles: true, composed: true }
+      )
+    );
   }
 }

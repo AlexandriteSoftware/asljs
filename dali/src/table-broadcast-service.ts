@@ -8,7 +8,8 @@
  * A Table that receives a message with `originId === this.#instanceId` must
  * discard it to prevent echo/loop.
  */
-export interface TableBroadcastMessage {
+export interface TableBroadcastMessage
+{
   /** Unique ID of this specific message (for deduplication). */
   readonly messageId: string;
   /** Unique ID of the Table instance that originated the message. */
@@ -35,7 +36,8 @@ export interface TableBroadcastMessage {
  * that callers can use any equivalent mechanism (e.g. BroadcastChannel,
  * SharedWorker messages, or in-process mocks for tests).
  */
-export interface TableBroadcastService {
+export interface TableBroadcastService
+{
   /**
    * Publish a committed-change message to all other subscribers.
    * Called only after a successful IndexedDB transaction.
@@ -47,6 +49,6 @@ export interface TableBroadcastService {
    * Returns a disposal function that removes the subscription.
    */
   subscribe(
-      handler: (message: TableBroadcastMessage) => void
-    ): () => void;
+    handler: (message: TableBroadcastMessage) => void
+  ): () => void;
 }

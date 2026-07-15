@@ -1,5 +1,3 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert';
 import fs
@@ -8,15 +6,16 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import { TmpDir,
-         formatMessage,
+import test
+  from 'node:test';
+import { formatMessage,
+         TmpDir,
          type TmpDirLogFunction }
   from './tmp-dir.js';
 
 test(
   'constructor creates unique temporary directories',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const baseTmpDir =
       await fs.mkdtemp(
@@ -25,9 +24,8 @@ test(
           'asljs-tmpdir-test-'));
 
     const options =
-      { tmpDir: baseTmpDir,
-        prefix: 'case-' };
-    
+      { tmpDir: baseTmpDir, prefix: 'case-' };
+
     const tmpDirs =
       new Map<string, TmpDir>();
 
@@ -45,32 +43,37 @@ test(
             tmpDir.path);
 
         assert.ok(
-          tmpDirs.has(name) === false);
+          tmpDirs.has(name) === false
+        );
 
         tmpDirs.set(
           name,
-          tmpDir);
+          tmpDir
+        );
 
         assert.ok(
-          name.startsWith('case-'));
+          name.startsWith('case-')
+        );
 
         await assert.doesNotReject(
           async () =>
             await fs.access(
-              tmpDir.path));
+              tmpDir.path
+            )
+        );
       }
     } finally {
       await fs.rm(
         baseTmpDir,
-        { recursive: true,
-          force: true });
-    }      
-  });
+        { recursive: true, force: true }
+      );
+    }
+  }
+);
 
 test(
   'helpers create subdirectories and files inside the temporary directory',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     using tmpDir =
       new TmpDir();
@@ -98,23 +101,27 @@ test(
 
     assert.strictEqual(
       path.dirname(filePath),
-      directoryPath);
+      directoryPath
+    );
 
     assert.strictEqual(
       fileContent,
-      'hello tmpdir');
+      'hello tmpdir'
+    );
 
     assert.ok(
-      directoryStats.isDirectory());
+      directoryStats.isDirectory()
+    );
 
     assert.ok(
-      fileStats.isFile());
-  });
+      fileStats.isFile()
+    );
+  }
+);
 
 test(
   'cleanup removes the temporary directory',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const tmpDir =
       new TmpDir();
@@ -124,27 +131,34 @@ test(
 
     await tmpDir.writeText(
       'content.txt',
-      'cleanup me');
+      'cleanup me'
+    );
 
     await tmpDir.cleanup();
 
     await assert.rejects(
-      async () => {
+      async () =>
+      {
         await fs.access(
-          tmpDirectoryPath);
-      });
+          tmpDirectoryPath
+        );
+      }
+    );
 
     await assert.rejects(
-      async () => {
+      async () =>
+      {
         await fs.stat(
-          tmpDirectoryPath);
-      });
-  });
+          tmpDirectoryPath
+        );
+      }
+    );
+  }
+);
 
 test(
   'path helpers reject attempts to escape the temporary directory',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const parentDirectoryPath =
       await fs.mkdtemp(
@@ -154,8 +168,8 @@ test(
 
     const tmpDir =
       new TmpDir(
-        { tmpDir: parentDirectoryPath,
-          prefix: 'case-' });
+      { tmpDir: parentDirectoryPath, prefix: 'case-' }
+    );
 
     const escapedFilePath =
       path.join(
@@ -167,48 +181,56 @@ test(
         () =>
           tmpDir.resolve(
             '..',
-            'escaped.txt'));
+            'escaped.txt'
+          )
+      );
 
       await assert.rejects(
         async () =>
           await tmpDir.mkdir(
-            '../escaped-dir'));
+            '../escaped-dir'
+          )
+      );
 
       await assert.rejects(
         async () =>
           await tmpDir.writeText(
             '../escaped.txt',
-            'bad path'));
+            'bad path'
+          )
+      );
 
       await assert.rejects(
         async () =>
           await fs.access(
-            escapedFilePath));
+            escapedFilePath
+          )
+      );
     } finally {
       await tmpDir.cleanup();
 
       await fs.rm(
         parentDirectoryPath,
-        { recursive: true,
-          force: true });
+        { recursive: true, force: true }
+      );
     }
-  });
+  }
+);
 
 test(
   'using statement cleans the temporary directory',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const factory =
-      async (
-        ): Promise<string> =>
+      async (): Promise<string> =>
     {
       using tmpDir =
-          new TmpDir();
+        new TmpDir();
 
       await tmpDir.writeText(
         'content.txt',
-        '');
+        ''
+      );
 
       return tmpDir.path;
     };
@@ -217,27 +239,30 @@ test(
       await factory();
 
     await assert.rejects(
-      async () => {
+      async () =>
+      {
         await fs.access(
-          tmpDirPath);
-      });
-  });
+          tmpDirPath
+        );
+      }
+    );
+  }
+);
 
 test(
   'await using statement cleans the temporary directory',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const factory =
-      async (
-        ): Promise<string> =>
+      async (): Promise<string> =>
     {
       await using tmpDir =
-          new TmpDir();
+        new TmpDir();
 
       await tmpDir.writeText(
         'content.txt',
-        '');
+        ''
+      );
 
       return tmpDir.path;
     };
@@ -246,40 +271,47 @@ test(
       await factory();
 
     await assert.rejects(
-      async () => {
+      async () =>
+      {
         await fs.access(
-          tmpDirPath);
-      });
-  });
+          tmpDirPath
+        );
+      }
+    );
+  }
+);
 
 test(
   'TmpDir traces calls to its methods',
-  async (
-    ): Promise<void> =>
+  async (): Promise<void> =>
   {
     const traceMessages: string[] = [];
 
     const traceHandler: TmpDirLogFunction =
       (
-          message: string,
-          ...params: any[]
-        ): void =>
-      {
-        const text =
-          formatMessage(
-            message,
-            ...params);
-        
-        traceMessages.push(text);
-      };
+      message: string,
+      ...params: any[]
+    ): void =>
+    {
+      const text =
+        formatMessage(
+          message,
+          ...params);
+
+      traceMessages.push(text);
+    };
 
     using tmpDir =
       new TmpDir(
-        { trace: traceHandler });
-    
+      { trace: traceHandler }
+    );
+
     await tmpDir.writeText(
       'content.txt',
-      '');
+      ''
+    );
 
-    assert.ok(traceMessages.length > 0);
-  });
+    assert.ok(
+      traceMessages.length > 0);
+  }
+);

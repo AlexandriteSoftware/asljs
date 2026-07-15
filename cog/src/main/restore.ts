@@ -1,7 +1,7 @@
-import { existsSync }
-  from 'node:fs';
 import { Command }
   from 'commander';
+import { existsSync }
+  from 'node:fs';
 import { BackupRollbackFeed }
   from '../model/rollback.js';
 import { resolveBackupPath }
@@ -13,32 +13,39 @@ import { ExecutionContext,
   from './types.js';
 
 export function configureRestoreCommand(
-    program: Command,
-    _context: ExecutionContext
-  ): void
+  program: Command,
+  _context: ExecutionContext
+): void
 {
   program
     .command(
-      'restore')
+      'restore'
+    )
     .description(
-      'restore files from backup.json')
+      'restore files from backup.json'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const options =
           program.opts<{
-            envelope?: string;
-          }>();
+          envelope?: string;
+        }>();
 
         await restoreCmd(
-          { envelopePath:
-              resolveEnvelopePath(
-                options.envelope) });
-      });
+          {
+            envelopePath: resolveEnvelopePath(
+              options.envelope
+            )
+          }
+        );
+      }
+    );
 }
 
 async function restoreCmd(
-    options: MainOptions = {}
-  ): Promise<void>
+  options: MainOptions = {}
+): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -48,12 +55,17 @@ async function restoreCmd(
     resolveBackupPath(
       envelopePath);
 
-  if (!existsSync(
-      backupPath)) {
+  if (
+    !existsSync(
+      backupPath
+    )
+  ) {
     throw new Error(
-      `backup.json does not exist: ${backupPath}`);
+      `backup.json does not exist: ${backupPath}`
+    );
   }
 
   await BackupRollbackFeed.restoreAndDelete(
-    backupPath);
+    backupPath
+  );
 }

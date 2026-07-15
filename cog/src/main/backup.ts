@@ -5,23 +5,29 @@ import { dirname,
   from 'node:path';
 
 export function resolveBackupPath(
-    envelopePath: string
-  ): string
+  envelopePath: string
+): string
 {
   return join(
     dirname(
-      envelopePath),
+      envelopePath
+    ),
     '.cog',
-    'backup.json');
+    'backup.json'
+  );
 }
 
 export function ensureBackupFileDoesNotExist(
-    backupPath: string
-  ): void
+  backupPath: string
+): void
 {
-  if (existsSync(
-      backupPath)) {
+  if (
+    existsSync(
+      backupPath
+    )
+  ) {
     throw new Error(
-      `backup.json exists: run cog restore or delete ${backupPath} before applying a patch`);
+      `backup.json exists: run cog restore or delete ${backupPath} before applying a patch`
+    );
   }
 }

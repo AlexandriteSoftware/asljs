@@ -1,2 +1,3 @@
-export { main }
-  from './main/main.js';
+export {
+  main
+} from './main/main.js';

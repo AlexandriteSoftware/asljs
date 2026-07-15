@@ -2,52 +2,51 @@ import { EventfulBase }
   from 'asljs-eventful';
 import { dbRequestAsync }
   from './db.js';
-import { KeyPath,
-         keyAssert,
-         keyGet,
-         keyPathAssert }
-  from './keys.js';
 import { DeleteStrategy }
   from './delete-strategy.js';
-import { VersionConflictError }
-  from './version-conflict-error.js';
-import { VersionStrategy }
-  from './version-strategy.js';
-import { txDone,
-         txRead,
-         txWrite }
-  from './transactions.js';
-import { TableBroadcastMessage,
-         TableBroadcastService }
-  from './table-broadcast-service.js';
+import { keyAssert,
+         keyGet,
+         KeyPath,
+         keyPathAssert }
+  from './keys.js';
 import { LiveRecord }
   from './live-record.js';
 import { LiveRecordSet }
   from './live-recordset.js';
+import { TableBroadcastMessage,
+         TableBroadcastService }
+  from './table-broadcast-service.js';
+import { txDone,
+         txRead,
+         txWrite }
+  from './transactions.js';
+import { VersionConflictError }
+  from './version-conflict-error.js';
+import { VersionStrategy }
+  from './version-strategy.js';
 
 export type {
-    TableBroadcastMessage,
-    TableBroadcastService,
-  };
+  TableBroadcastMessage,
+  TableBroadcastService
+};
 
 export {
-    LiveRecord,
-    LiveRecordSet,
-  };
+  LiveRecord,
+  LiveRecordSet
+};
 
-export type TableEvents<T extends Record<string, any>> =
-  { add: [ record: T ];
-    update: [ record: T, previousRecord: T ];
-    delete: [ record: T ];
-    clear: [ records: T[] ]; };
+export type TableEvents<T extends Record<string, any>> = {
+  add: [record: T];
+  update: [record: T, previousRecord: T];
+  delete: [record: T];
+  clear: [records: T[]];
+};
 
-export type TableEventsReceiver<T extends Record<string, any>> =
-  Partial<
-    {
-      [K in keyof TableEvents<T>]:
-        (...args: TableEvents<T>[K]) => void;
-    }
-  >;
+export type TableEventsReceiver<T extends Record<string, any>> = Partial<
+  {
+    [K in keyof TableEvents<T>]: (...args: TableEvents<T>[K]) => void;
+  }
+>;
 
 /**
  * An event delivered to observers (see `Table.observe()`).
@@ -60,21 +59,27 @@ export type TableEventsReceiver<T extends Record<string, any>> =
  * access the typed record fields.
  */
 export type TableObservedEvent<T extends Record<string, any>> =
-  | { source: 'local' | 'remote'; eventType: 'add'; record: T }
-  | { source: 'local' | 'remote'; eventType: 'update'; record: T; previousRecord: T }
-  | { source: 'local' | 'remote'; eventType: 'delete'; record: T }
-  | { source: 'local' | 'remote'; eventType: 'clear'; records: T[] };
+  | { source: 'local' | 'remote'; eventType: 'add'; record: T; }
+  | {
+    source: 'local' | 'remote';
+    eventType: 'update';
+    record: T;
+    previousRecord: T;
+  }
+  | { source: 'local' | 'remote'; eventType: 'delete'; record: T; }
+  | { source: 'local' | 'remote'; eventType: 'clear'; records: T[]; };
 
 /**
  * Callback signature for `Table.observe()` subscriptions.
  * Receives both local and remote observed events.
  */
-export type TableObservedReceiver<T extends Record<string, any>> =
-  (event: TableObservedEvent<T>) => void;
+export type TableObservedReceiver<T extends Record<string, any>> = (
+  event: TableObservedEvent<T>
+) => void;
 
 export class Table<
-    T extends Record<string, any>>
-  extends EventfulBase<TableEvents<T>>
+  T extends Record<string, any>
+> extends EventfulBase<TableEvents<T>>
 {
   /** Local-only subscribers — receive events from this tab only. */
   readonly #receivers: Array<TableEventsReceiver<T>> = [];
@@ -104,13 +109,14 @@ export class Table<
   #broadcastUnsubscribe: (() => void) | undefined;
 
   constructor(
-      public readonly storeName: string,
-      public readonly db: IDBDatabase,
-      options?:
-        { versionStrategy?: VersionStrategy<T>;
-          deleteStrategy?: DeleteStrategy<T>;
-          broadcastService?: TableBroadcastService; }
-    )
+    public readonly storeName: string,
+    public readonly db: IDBDatabase,
+    options?: {
+      versionStrategy?: VersionStrategy<T>;
+      deleteStrategy?: DeleteStrategy<T>;
+      broadcastService?: TableBroadcastService;
+    }
+  )
   {
     super();
 
@@ -120,100 +126,128 @@ export class Table<
     this.#instanceId = crypto.randomUUID();
 
     const key =
-      txRead(this.db, this.storeName)
-        .objectStore(this.storeName)
-        .keyPath as KeyPath<T>;
+      txRead(
+        this.db,
+        this.storeName)
+      .objectStore(
+        this.storeName
+      )
+      .keyPath as KeyPath<T>;
 
     keyPathAssert(
-      key as KeyPath<T>);
+      key as KeyPath<T>
+    );
 
     this.key = key;
 
     if (this.#broadcastService !== undefined) {
-      this.#broadcastUnsubscribe =
-        this.#broadcastService.subscribe(
-          message => {
-            this.#onBroadcastMessage(message);
-          });
+      this.#broadcastUnsubscribe = this.#broadcastService.subscribe(
+        (message) =>
+        {
+          this.#onBroadcastMessage(message);
+        }
+      );
     }
   }
 
   getOne(
-      key: IDBValidKey,
-      tx: IDBTransaction | null = null
-    ): Promise<T | null>
+    key: IDBValidKey,
+    tx: IDBTransaction | null = null
+  ): Promise<T | null>
   {
     keyAssert(
       this.key,
-      key);
+      key
+    );
 
     return new Promise<T | null>(
       (
-          resolve,
-          reject
-        ) =>
+        resolve,
+        reject
+      ) =>
       {
         const request =
           txRead(
             this.db,
             this.storeName,
             tx)
-            .objectStore(this.storeName)
-            .get(key);
+          .objectStore(
+            this.storeName
+          )
+          .get(key);
 
-        request.onsuccess =
-          () => {
-            const fields: T | undefined = request.result;
+        request.onsuccess = () =>
+        {
+          const fields: T | undefined =
+            request.result;
 
-            if (fields === undefined) {
-              resolve(null);
-              return;
-            }
+          if (fields === undefined) {
+            resolve(null);
+            return;
+          }
 
-            if (this.#isDeleted(fields)) {
-              resolve(null);
-              return;
-            }
+          if (this.#isDeleted(fields)) {
+            resolve(null);
+            return;
+          }
 
-            resolve(fields);
-          };
+          resolve(fields);
+        };
 
-        request.onerror =
-          () => {
-            reject(
-              request.error
+        request.onerror = () =>
+        {
+          reject(
+            request.error
               ?? new Error(
-                   `${this.storeName}: getOne request failed`));
-          };
-      });
+                `${this.storeName}: getOne request failed`
+              )
+          );
+        };
+      }
+    );
   }
 
   get(
-      index: string,
-      key: IDBValidKey,
-      tx: IDBTransaction | null = null
-    ): Promise<T[]>
+    index: string,
+    key: IDBValidKey,
+    tx: IDBTransaction | null = null
+  ): Promise<T[]>
   {
-    if (this.#deleteStrategy === undefined)
-      return this.#getByIndex(index, key, tx);
+    if (this.#deleteStrategy === undefined) {
+      return this.#getByIndex(
+        index,
+        key,
+        tx
+      );
+    }
 
-    return this.#getActiveByIndex(index, key, tx);
+    return this.#getActiveByIndex(
+      index,
+      key,
+      tx
+    );
   }
 
   notify(
-      receiver: TableEventsReceiver<T>
-    ): () => boolean
+    receiver: TableEventsReceiver<T>
+  ): () => boolean
   {
     this.#receivers.push(receiver);
 
-    return () : boolean => {
+    return (): boolean =>
+    {
       const index =
         this.#receivers.indexOf(receiver);
 
-      if (index < 0)
+      if (index < 0) {
         return false;
+      }
 
-      this.#receivers.splice(index, 1);
+      this.#receivers.splice(
+        index,
+        1
+      );
+
       return true;
     };
   }
@@ -233,19 +267,25 @@ export class Table<
    * Calling it twice is safe and returns `false` on the second call.
    */
   observe(
-      receiver: TableObservedReceiver<T>
-    ): () => boolean
+    receiver: TableObservedReceiver<T>
+  ): () => boolean
   {
     this.#observedReceivers.push(receiver);
 
-    return () : boolean => {
+    return (): boolean =>
+    {
       const index =
         this.#observedReceivers.indexOf(receiver);
 
-      if (index < 0)
+      if (index < 0) {
         return false;
+      }
 
-      this.#observedReceivers.splice(index, 1);
+      this.#observedReceivers.splice(
+        index,
+        1
+      );
+
       return true;
     };
   }
@@ -280,14 +320,15 @@ export class Table<
    * Note: `record(key)` is limited to key-only semantics for now.
    */
   record(
-      key: IDBValidKey
-    ): LiveRecord<T>
+    key: IDBValidKey
+  ): LiveRecord<T>
   {
     return new LiveRecord<T>(
       key,
       this.key,
-      k => this.getOne(k),
-      receiver => this.notify(receiver));
+      (k) => this.getOne(k),
+      (receiver) => this.notify(receiver)
+    );
   }
 
   /**
@@ -313,155 +354,188 @@ export class Table<
    * not supported here.
    */
   recordset(
-      predicate: (record: T) => boolean
-    ): LiveRecordSet<T>
+    predicate: (record: T) => boolean
+  ): LiveRecordSet<T>
   {
     return new LiveRecordSet<T>(
       this.key,
       predicate,
-      p => this.scan(p),
-      receiver => this.notify(receiver));
+      (p) => this.scan(p),
+      (receiver) => this.notify(receiver)
+    );
   }
 
   async getAll(
-      tx: IDBTransaction | null = null
-    ): Promise<T[]>
+    tx: IDBTransaction | null = null
+  ): Promise<T[]>
   {
     const records =
-      await dbRequestAsync<T[]>(
-        txRead(this.db, this.storeName, tx)
-          .objectStore(this.storeName)
-          .getAll());
+      await dbRequestAsync(
+        txRead(
+          this.db,
+          this.storeName,
+          tx)
+        .objectStore(
+          this.storeName
+        )
+        .getAll());
 
     return this.#activeRecords(records);
   }
 
   scan(
-      predicate: (
-          record: T
-        ) => boolean,
-      tx: IDBTransaction | null = null
-    ): Promise<T[]>
+    predicate: (
+      record: T
+    ) => boolean,
+    tx: IDBTransaction | null = null
+  ): Promise<T[]>
   {
     return new Promise<T[]>(
       (
-          resolve,
-          reject
-        ) =>
+        resolve,
+        reject
+      ) =>
       {
         const request =
-          txRead(this.db, this.storeName, tx)
-            .objectStore(this.storeName)
-            .openCursor();
+          txRead(
+            this.db,
+            this.storeName,
+            tx)
+          .objectStore(
+            this.storeName
+          )
+          .openCursor();
 
         const result: T[] = [];
 
-        request.onsuccess =
-          () => {
-            const cursor =
-              request.result;
+        request.onsuccess = () =>
+        {
+          const cursor =
+            request.result;
 
-            if (cursor === null) {
-              resolve(result);
-              return;
-            }
+          if (cursor === null) {
+            resolve(result);
+            return;
+          }
 
-            const record =
-              cursor.value as T;
+          const record =
+            cursor.value as T;
 
-            if (this.#isDeleted(record)) {
-              cursor.continue();
-              return;
-            }
-
-            try {
-              if (predicate(record)) {
-                result.push(record);
-              }
-            } catch (error) {
-              reject(error);
-              return;
-            }
+          if (this.#isDeleted(record)) {
             cursor.continue();
-          };
-        request.onerror =
-          () => {
-            reject(
-              request.error
+            return;
+          }
+
+          try {
+            if (predicate(record)) {
+              result.push(record);
+            }
+          } catch (error) {
+            reject(error);
+            return;
+          }
+
+          cursor.continue();
+        };
+
+        request.onerror = () =>
+        {
+          reject(
+            request.error
               ?? new Error(
-                   `${this.storeName}: scan request failed`));
-          };
-      });
+                `${this.storeName}: scan request failed`
+              )
+          );
+        };
+      }
+    );
   }
 
   async add(
-      record: T,
-      tx: IDBTransaction | null = null
-    ): Promise<T>
+    record: T,
+    tx: IDBTransaction | null = null
+  ): Promise<T>
   {
     const storedRecord =
       this.#versionStrategy
-        ? this.#versionStrategy.initialise(record)
-        : record;
+      ? this.#versionStrategy.initialise(record)
+      : record;
 
     const ltx =
-      txWrite(this.db, this.storeName, tx);
+      txWrite(
+        this.db,
+        this.storeName,
+        tx);
 
     const store =
-      ltx.objectStore(this.storeName);
+      ltx.objectStore(
+        this.storeName);
 
     await dbRequestAsync(
-      store.add(storedRecord));
+      store.add(storedRecord)
+    );
 
     this.#onTransactionCompleted(
       store.transaction,
-      () => {
+      () =>
+      {
         this.emit(
           'add',
-          storedRecord);
+          storedRecord
+        );
 
         this.#notify(
           'add',
-          [ storedRecord ]);
+          [storedRecord]
+        );
 
         this.#notifyObserved(
-          { source: 'local',
-            eventType: 'add',
-            record: storedRecord });
+          { source: 'local', eventType: 'add', record: storedRecord }
+        );
 
         this.#publishBroadcast(
           'add',
-          { record: storedRecord });
-      });
+          { record: storedRecord }
+        );
+      }
+    );
 
-    if (tx === null)
+    if (tx === null) {
       await txDone(ltx);
+    }
 
     return storedRecord;
   }
 
   async update(
-      record: T,
-      expectedVersion?: unknown,
-      tx: IDBTransaction | null = null
-    ): Promise<T>
+    record: T,
+    expectedVersion?: unknown,
+    tx: IDBTransaction | null = null
+  ): Promise<T>
   {
     const key =
-      keyGet(this.key, record);
+      keyGet(
+        this.key,
+        record);
 
     const ltx =
-      txWrite(this.db, this.storeName, tx);
+      txWrite(
+        this.db,
+        this.storeName,
+        tx);
 
     const store =
-      ltx.objectStore(this.storeName);
+      ltx.objectStore(
+        this.storeName);
 
     const existing =
-      await dbRequestAsync<T | undefined>(
+      await dbRequestAsync(
         store.get(key));
 
     if (!existing) {
       throw new Error(
-        `Record with key ${String(key)} not found.`);
+        `Record with key ${String(key)} not found.`
+      );
     }
 
     let storedRecord = record;
@@ -469,233 +543,311 @@ export class Table<
     if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
-          `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
+          `${this.storeName}: expectedVersion is required when a version strategy is configured.`
+        );
       }
 
-      if (!this.#versionStrategy.verify(existing, expectedVersion)) {
+      if (
+        !this.#versionStrategy.verify(
+          existing,
+          expectedVersion
+        )
+      ) {
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#versionStrategy.getVersion(existing));
+          this.#versionStrategy.getVersion(existing)
+        );
       }
 
       storedRecord = this.#versionStrategy.update(record);
     }
 
     await dbRequestAsync(
-      store.put(storedRecord));
+      store.put(storedRecord)
+    );
 
     this.#onTransactionCompleted(
       store.transaction,
-      () => {
+      () =>
+      {
         this.emit(
           'update',
           storedRecord,
-          existing);
+          existing
+        );
 
         this.#notify(
           'update',
-          [ storedRecord,
-            existing ]);
+          [storedRecord, existing]
+        );
 
         this.#notifyObserved(
-          { source: 'local',
+          {
+            source: 'local',
             eventType: 'update',
             record: storedRecord,
-            previousRecord: existing });
+            previousRecord: existing
+          }
+        );
 
         this.#publishBroadcast(
           'update',
-          { record: storedRecord,
-            previousRecord: existing });
-      });
+          { record: storedRecord, previousRecord: existing }
+        );
+      }
+    );
 
-    if (tx === null)
+    if (tx === null) {
       await txDone(ltx);
+    }
 
     return storedRecord;
   }
 
   async delete(
-      key: IDBValidKey,
-      expectedVersion?: unknown,
-      tx: IDBTransaction | null = null
-    ): Promise<void>
+    key: IDBValidKey,
+    expectedVersion?: unknown,
+    tx: IDBTransaction | null = null
+  ): Promise<void>
   {
-    keyAssert(this.key, key);
+    keyAssert(
+      this.key,
+      key
+    );
 
     const ltx =
-      txWrite(this.db, this.storeName, tx);
+      txWrite(
+        this.db,
+        this.storeName,
+        tx);
 
     const store =
-      ltx.objectStore(this.storeName);
+      ltx.objectStore(
+        this.storeName);
 
     const existing =
-      await dbRequestAsync<T | undefined>(
+      await dbRequestAsync(
         store.get(key));
 
-    if (existing === undefined)
+    if (existing === undefined) {
       return;
+    }
 
     if (this.#deleteStrategy === undefined) {
       if (this.#versionStrategy) {
         if (expectedVersion === undefined) {
           throw new Error(
-            `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
+            `${this.storeName}: expectedVersion is required when a version strategy is configured.`
+          );
         }
 
-        if (!this.#versionStrategy.verify(existing, expectedVersion)) {
+        if (
+          !this.#versionStrategy.verify(
+            existing,
+            expectedVersion
+          )
+        ) {
           throw new VersionConflictError(
             key,
             expectedVersion,
-            this.#versionStrategy.getVersion(existing));
+            this.#versionStrategy.getVersion(existing)
+          );
         }
       }
 
       await dbRequestAsync(
-        store.delete(key));
+        store.delete(key)
+      );
 
       this.#onTransactionCompleted(
         store.transaction,
-        () => {
+        () =>
+        {
           this.emit(
             'delete',
-            existing);
+            existing
+          );
 
           this.#notify(
             'delete',
-            [ existing ]);
+            [existing]
+          );
 
           this.#notifyObserved(
-            { source: 'local',
-              eventType: 'delete',
-              record: existing });
+            { source: 'local', eventType: 'delete', record: existing }
+          );
 
           this.#publishBroadcast(
             'delete',
-            { record: existing });
-        });
+            { record: existing }
+          );
+        }
+      );
 
-      if (tx === null)
+      if (tx === null) {
         await txDone(ltx);
+      }
 
       return;
     }
 
-    if (this.#deleteStrategy.isDeleted(existing))
+    if (this.#deleteStrategy.isDeleted(existing)) {
       return;
+    }
 
     if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
-          `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
+          `${this.storeName}: expectedVersion is required when a version strategy is configured.`
+        );
       }
 
-      if (!this.#versionStrategy.verify(existing, expectedVersion)) {
+      if (
+        !this.#versionStrategy.verify(
+          existing,
+          expectedVersion
+        )
+      ) {
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#versionStrategy.getVersion(existing));
+          this.#versionStrategy.getVersion(existing)
+        );
       }
     }
 
     let storedRecord =
       this.#deleteStrategy.delete(existing);
 
-    if (this.#versionStrategy)
+    if (this.#versionStrategy) {
       storedRecord = this.#versionStrategy.update(storedRecord);
+    }
 
     await dbRequestAsync(
-      store.put(storedRecord));
+      store.put(storedRecord)
+    );
 
     this.#onTransactionCompleted(
       store.transaction,
-      () => {
+      () =>
+      {
         this.emit(
           'delete',
-          storedRecord);
+          storedRecord
+        );
 
         this.#notify(
           'delete',
-          [ storedRecord ]);
+          [storedRecord]
+        );
 
         this.#notifyObserved(
-          { source: 'local',
-            eventType: 'delete',
-            record: storedRecord });
+          { source: 'local', eventType: 'delete', record: storedRecord }
+        );
 
         this.#publishBroadcast(
           'delete',
-          { record: storedRecord });
-      });
+          { record: storedRecord }
+        );
+      }
+    );
 
-    if (tx === null)
+    if (tx === null) {
       await txDone(ltx);
+    }
   }
 
   async clear(
-      tx: IDBTransaction | null = null
-    ): Promise<void>
+    tx: IDBTransaction | null = null
+  ): Promise<void>
   {
     const ltx =
-      txWrite(this.db, this.storeName, tx);
+      txWrite(
+        this.db,
+        this.storeName,
+        tx);
 
     const store =
-      ltx.objectStore(this.storeName);
+      ltx.objectStore(
+        this.storeName);
 
     const records =
-      await dbRequestAsync<T[]>(
+      await dbRequestAsync(
         store.getAll());
 
     await dbRequestAsync(
-      store.clear());
+      store.clear()
+    );
 
     this.#onTransactionCompleted(
       store.transaction,
-      () => {
+      () =>
+      {
         this.emit(
           'clear',
-          records);
+          records
+        );
 
         this.#notify(
           'clear',
-          [ records ]);
+          [records]
+        );
 
         this.#notifyObserved(
-          { source: 'local',
-            eventType: 'clear',
-            records });
+          { source: 'local', eventType: 'clear', records }
+        );
 
         this.#publishBroadcast(
           'clear',
-          { records });
-      });
+          { records }
+        );
+      }
+    );
 
-    if (tx === null)
+    if (tx === null) {
       await txDone(ltx);
+    }
   }
 
   #activeRecords(
-      records: T[]
-    ): T[]
+    records: T[]
+  ): T[]
   {
     const deleteStrategy =
       this.#deleteStrategy;
 
-    if (deleteStrategy === undefined)
+    if (deleteStrategy === undefined) {
       return records;
+    }
 
-    return records.filter(record => !deleteStrategy.isDeleted(record));
+    return records.filter(
+      (record) => !deleteStrategy.isDeleted(record)
+    );
   }
 
   async #getActiveByIndex(
-      index: string,
-      key: IDBValidKey,
-      tx: IDBTransaction | null
-    ): Promise<T[]>
+    index: string,
+    key: IDBValidKey,
+    tx: IDBTransaction | null
+  ): Promise<T[]>
   {
-    const mapped =
-      this.#deleteStrategy?.mapIndexQuery?.(index, key);
+    let mapped: { index: string; key: IDBValidKey; } | null = null;
+
+    const strategy =
+      this.#deleteStrategy;
+
+    if (strategy) {
+      const query =
+        strategy.mapIndexQuery;
+
+      if (query) {
+        mapped = query(
+          index,
+          key
+        );
+      }
+    }
 
     if (mapped) {
       try {
@@ -709,27 +861,36 @@ export class Table<
         return this.#activeRecords(records);
       } catch (error) {
         // Degrade to filtering when mapped query cannot be executed.
-        if (!this.#canFallbackMappedQuery(error))
+        if (!this.#canFallbackMappedQuery(error)) {
           throw error;
+        }
       }
     }
 
     const records =
-      await this.#getByIndex(index, key, tx);
+      await this.#getByIndex(
+        index,
+        key,
+        tx);
 
     return this.#activeRecords(records);
   }
 
   #getByIndex(
-      index: string,
-      key: IDBValidKey,
-      tx: IDBTransaction | null,
-      validateKey: boolean = true
-    ): Promise<T[]>
+    index: string,
+    key: IDBValidKey,
+    tx: IDBTransaction | null,
+    validateKey: boolean = true
+  ): Promise<T[]>
   {
     const store =
-      txRead(this.db, this.storeName, tx)
-        .objectStore(this.storeName);
+      txRead(
+        this.db,
+        this.storeName,
+        tx)
+      .objectStore(
+        this.storeName
+      );
 
     const idx =
       store.index(index);
@@ -738,105 +899,132 @@ export class Table<
       idx.keyPath as KeyPath<T>;
 
     if (validateKey) {
-      keyPathAssert(keyPath as KeyPath<T>);
-      keyAssert(keyPath, key);
+      keyPathAssert(
+        keyPath as KeyPath<T>
+      );
+
+      keyAssert(
+        keyPath,
+        key
+      );
     }
 
     return new Promise<T[]>(
       (
-          resolve,
-          reject
-        ) =>
+        resolve,
+        reject
+      ) =>
       {
         const request =
           idx.getAll(key);
 
-        request.onsuccess =
-          () => {
-            const records: T[] = request.result;
+        request.onsuccess = () =>
+        {
+          const records: T[] =
+            request.result;
 
-            resolve(records);
-          };
+          resolve(records);
+        };
 
-        request.onerror =
-          () => {
-            reject(
-              request.error
+        request.onerror = () =>
+        {
+          reject(
+            request.error
               ?? new Error(
-                   `${this.storeName}: get request failed for index ${index}`));
-          };
-      });
+                `${this.storeName}: get request failed for index ${index}`
+              )
+          );
+        };
+      }
+    );
   }
 
   #isDeleted(
-      record: T
-    ): boolean
+    record: T
+  ): boolean
   {
     return this.#deleteStrategy?.isDeleted(record)
       ?? false;
   }
 
   #canFallbackMappedQuery(
-      error: unknown
-    ): boolean
+    error: unknown
+  ): boolean
   {
-    if (!(error instanceof DOMException))
+    if (!(error instanceof DOMException)) {
       return false;
+    }
 
     return error.name === 'NotFoundError'
       || error.name === 'DataError';
   }
 
   #onTransactionCompleted(
-      tx: IDBTransaction,
-      action: () => void
-    ): void
+    tx: IDBTransaction,
+    action: () => void
+  ): void
   {
     tx.addEventListener(
       'complete',
-      () => {
+      () =>
+      {
         try {
           action();
         } catch (error) {
           console.error(
             `${this.storeName}: on complete action failed`,
-            error);
+            error
+          );
         }
       },
-      { once: true });
+      { once: true }
+    );
   }
 
   #notify<K extends keyof TableEvents<T>>(
-      eventName: K,
-      args: TableEvents<T>[K]
-    ): void
+    eventName: K,
+    args: TableEvents<T>[K]
+  ): void
   {
-    if (this.#receivers.length === 0)
+    if (this.#receivers.length === 0) {
       return;
+    }
 
     for (const receiver of this.#receivers) {
       const handler =
         receiver[eventName];
 
-      if (typeof handler !== 'function')
+      if (typeof handler !== 'function') {
         continue;
+      }
+
+      const tableEventHandler =
+        handler as (
+        ...largs: TableEvents<T>[K]
+      ) => void;
 
       try {
-        (handler as (...largs: TableEvents<T>[K]) => void)(...args);
+        tableEventHandler(
+          ...args
+        );
       } catch (error) {
         console.error(
-          `${this.storeName}: notify handler failed for event ${String(eventName)}`,
-          error);
+          `${this.storeName}: notify handler failed for event ${
+            String(eventName)
+          }`,
+          error
+        );
       }
     }
   }
 
   #notifyObserved(
-      event: TableObservedEvent<T>
-    ): void
+    event: TableObservedEvent<T>
+  ): void
   {
-    if (this.#observedReceivers.length === 0)
+    if (this.#observedReceivers.length === 0) {
       return;
+    }
 
     for (const receiver of this.#observedReceivers) {
       try {
@@ -844,32 +1032,37 @@ export class Table<
       } catch (error) {
         console.error(
           `${this.storeName}: observe handler failed for event ${event.eventType}`,
-          error);
+          error
+        );
       }
     }
   }
 
   #publishBroadcast(
-      eventType: TableBroadcastMessage['eventType'],
-      payload: unknown
-    ): void
+    eventType: TableBroadcastMessage['eventType'],
+    payload: unknown
+  ): void
   {
-    if (this.#broadcastService === undefined)
+    if (this.#broadcastService === undefined) {
       return;
+    }
 
     const message: TableBroadcastMessage =
-      { messageId: crypto.randomUUID(),
-        originId: this.#instanceId,
-        storeName: this.storeName,
-        eventType,
-        payload };
+      {
+      messageId: crypto.randomUUID(),
+      originId: this.#instanceId,
+      storeName: this.storeName,
+      eventType,
+      payload
+    };
 
     try {
       this.#broadcastService.publish(message);
     } catch (error) {
       console.error(
         `${this.storeName}: broadcast publish failed`,
-        error);
+        error
+      );
     }
   }
 
@@ -883,19 +1076,22 @@ export class Table<
    *    subscribers are never called, and the message is never re-published.
    */
   #onBroadcastMessage(
-      message: TableBroadcastMessage
-    ): void
+    message: TableBroadcastMessage
+  ): void
   {
     // Discard own echoes.
-    if (message.originId === this.#instanceId)
+    if (message.originId === this.#instanceId) {
       return;
+    }
 
     // Discard messages for other stores.
-    if (message.storeName !== this.storeName)
+    if (message.storeName !== this.storeName) {
       return;
+    }
 
-    if (this.#observedReceivers.length === 0)
+    if (this.#observedReceivers.length === 0) {
       return;
+    }
 
     const payload =
       message.payload as Record<string, unknown>;
@@ -903,30 +1099,35 @@ export class Table<
     let event: TableObservedEvent<T> | undefined;
 
     if (message.eventType === 'add') {
-      event =
-        { source: 'remote',
-          eventType: 'add',
-          record: payload['record'] as T };
+      event = {
+        source: 'remote',
+        eventType: 'add',
+        record: payload['record'] as T
+      };
     } else if (message.eventType === 'update') {
-      event =
-        { source: 'remote',
-          eventType: 'update',
-          record: payload['record'] as T,
-          previousRecord: payload['previousRecord'] as T };
+      event = {
+        source: 'remote',
+        eventType: 'update',
+        record: payload['record'] as T,
+        previousRecord: payload['previousRecord'] as T
+      };
     } else if (message.eventType === 'delete') {
-      event =
-        { source: 'remote',
-          eventType: 'delete',
-          record: payload['record'] as T };
+      event = {
+        source: 'remote',
+        eventType: 'delete',
+        record: payload['record'] as T
+      };
     } else if (message.eventType === 'clear') {
-      event =
-        { source: 'remote',
-          eventType: 'clear',
-          records: payload['records'] as T[] };
+      event = {
+        source: 'remote',
+        eventType: 'clear',
+        records: payload['records'] as T[]
+      };
     }
 
-    if (event === undefined)
+    if (event === undefined) {
       return;
+    }
 
     this.#notifyObserved(event);
   }

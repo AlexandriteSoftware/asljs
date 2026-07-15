@@ -91,7 +91,7 @@ export class GitIgnore
   ): string[]
   {
     return paths.filter(
-      (filePath) => !this.isIgnored(filePath)
+      filePath => !this.isIgnored(filePath)
     );
   }
 

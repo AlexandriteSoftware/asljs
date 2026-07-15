@@ -1,2 +1,1 @@
-export *
-  from './table/version/version-conflict-error.js';
+export * from './table/version/version-conflict-error.js';

@@ -1,9 +1,9 @@
-import test
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
 import { createImageFileHandler,
          createPdfFileHandler,
          createTextEditorFileHandler,
@@ -11,7 +11,7 @@ import { createImageFileHandler,
   from './file.js';
 
 type FileViewElement =
-  HTMLElement
+  & HTMLElement
   & {
     provider: {
       loadFile: (fileName: string) => Promise<unknown>;
@@ -22,11 +22,12 @@ type FileViewElement =
     updateComplete: Promise<boolean>;
   };
 
-type FileModule =
-  { createImageFileHandler: typeof createImageFileHandler;
-    createPdfFileHandler: typeof createPdfFileHandler;
-    createTextEditorFileHandler: typeof createTextEditorFileHandler;
-    createTextFileHandler: typeof createTextFileHandler; };
+type FileModule = {
+  createImageFileHandler: typeof createImageFileHandler;
+  createPdfFileHandler: typeof createPdfFileHandler;
+  createTextEditorFileHandler: typeof createTextEditorFileHandler;
+  createTextFileHandler: typeof createTextFileHandler;
+};
 
 let domRestore: (() => void) | null = null;
 let isComponentsLoaded = false;
@@ -34,7 +35,8 @@ let fileModule: FileModule | null = null;
 
 test(
   'file-view: renders pdf handler for pdf files',
-  async () => {
+  async () =>
+  {
     await ensureDomAndFileLoaded();
     resetDomBody();
 
@@ -44,28 +46,43 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider =
-      { loadFile: async () =>
-          ({ name: 'invoice.pdf',
-             blob: new Blob([ 'pdf' ], { type: 'application/pdf' }) }) };
-    element.handlers = [ file.createPdfFileHandler() ];
+    element.provider = {
+      loadFile: async () => ({
+        name: 'invoice.pdf',
+        blob: new Blob(['pdf'], { type: 'application/pdf' })
+      })
+    };
+
+    element.handlers = [file.createPdfFileHandler()];
     element.fileName = 'invoice.pdf';
 
     document.body.appendChild(element);
 
     await settle(element);
-    await waitFor(() => element.querySelector('iframe') !== null);
+
+    await waitFor(
+      () => element.querySelector('iframe') !== null
+    );
 
     const frame =
       element.querySelector('iframe') as HTMLIFrameElement;
 
-    assert.equal(frame !== null, true);
-    assert.equal(frame.src.startsWith('blob:'), true);
-  });
+    assert.equal(
+      frame !== null,
+      true
+    );
+
+    assert.equal(
+      frame.src.startsWith('blob:'),
+      true
+    );
+  }
+);
 
 test(
   'file-view: renders image handler for data url images',
-  async () => {
+  async () =>
+  {
     await ensureDomAndFileLoaded();
     resetDomBody();
 
@@ -75,29 +92,46 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider =
-      { loadFile: async () =>
-          ({ name: 'logo.png',
-             mimeType: 'image/png',
-             dataUrl: 'data:image/png;base64,AQID' }) };
-    element.handlers = [ file.createImageFileHandler() ];
+    element.provider = {
+      loadFile: async () => ({
+        name: 'logo.png',
+        mimeType: 'image/png',
+        dataUrl: 'data:image/png;base64,AQID'
+      })
+    };
+
+    element.handlers = [file.createImageFileHandler()];
     element.fileName = 'logo.png';
 
     document.body.appendChild(element);
 
     await settle(element);
-    await waitFor(() => element.querySelector('img') !== null);
+
+    await waitFor(
+      () => element.querySelector('img') !== null
+    );
 
     const image =
       element.querySelector('img') as HTMLImageElement;
 
-    assert.equal(image !== null, true);
-    assert.equal(image.src.endsWith('data:image/png;base64,AQID'), true);
-  });
+    assert.equal(
+      image !== null,
+      true
+    );
+
+    assert.equal(
+      image.src.endsWith(
+        'data:image/png;base64,AQID'
+      ),
+      true
+    );
+  }
+);
 
 test(
   'file-view: renders text handler for text files',
-  async () => {
+  async () =>
+  {
     await ensureDomAndFileLoaded();
     resetDomBody();
 
@@ -107,27 +141,35 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider =
-      { loadFile: async () =>
-          ({ name: 'notes.md',
-             text: '# hello' }) };
-    element.handlers = [ file.createTextFileHandler() ];
+    element.provider = {
+      loadFile: async () => ({ name: 'notes.md', text: '# hello' })
+    };
+
+    element.handlers = [file.createTextFileHandler()];
     element.fileName = 'notes.md';
 
     document.body.appendChild(element);
 
     await settle(element);
-    await waitFor(() => element.querySelector('pre') !== null);
+
+    await waitFor(
+      () => element.querySelector('pre') !== null
+    );
 
     const pre =
       element.querySelector('pre') as HTMLElement;
 
-    assert.equal(pre.textContent, '# hello');
-  });
+    assert.equal(
+      pre.textContent,
+      '# hello'
+    );
+  }
+);
 
 test(
   'file-view: text editor handler saves through provider on blur',
-  async () => {
+  async () =>
+  {
     await ensureDomAndFileLoaded();
     resetDomBody();
 
@@ -139,36 +181,47 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider =
-      { loadFile: async () =>
-          ({ name: 'app.js',
-             text: 'console.log(1);' }),
-        saveText: async (fileName, text) => {
-          saved.push({ fileName, text });
-        } };
-    element.handlers = [ file.createTextEditorFileHandler() ];
+    element.provider = {
+      loadFile: async () => ({ name: 'app.js', text: 'console.log(1);' }),
+      saveText: async (fileName, text) =>
+      {
+        saved.push(
+          { fileName, text }
+        );
+      }
+    };
+
+    element.handlers = [file.createTextEditorFileHandler()];
     element.fileName = 'app.js';
 
     document.body.appendChild(element);
 
     await settle(element);
-    await waitFor(() => element.querySelector('textarea') !== null);
+
+    await waitFor(
+      () => element.querySelector('textarea') !== null
+    );
 
     const textArea =
       element.querySelector('textarea') as HTMLTextAreaElement;
 
     textArea.value = 'console.log(2);';
-    textArea.dispatchEvent(new window.Event('blur'));
+
+    textArea.dispatchEvent(
+      new window.Event('blur')
+    );
 
     assert.deepEqual(
       saved,
-      [ { fileName: 'app.js',
-          text: 'console.log(2);' } ]);
-  });
+      [{ fileName: 'app.js', text: 'console.log(2);' }]
+    );
+  }
+);
 
 test(
   'file-view: shows fallback open link when no handler matches',
-  async () => {
+  async () =>
+  {
     await ensureDomAndFileLoaded();
     resetDomBody();
 
@@ -178,11 +231,14 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider =
-      { loadFile: async () =>
-          ({ name: 'archive.bin',
-             blob: new Blob([ 'bin' ], { type: 'application/octet-stream' }) }) };
-    element.handlers = [ file.createTextFileHandler() ];
+    element.provider = {
+      loadFile: async () => ({
+        name: 'archive.bin',
+        blob: new Blob(['bin'], { type: 'application/octet-stream' })
+      })
+    };
+
+    element.handlers = [file.createTextFileHandler()];
     element.fileName = 'archive.bin';
 
     document.body.appendChild(element);
@@ -192,26 +248,37 @@ test(
     const link =
       element.querySelector('a') as HTMLAnchorElement;
 
-    assert.equal(link.textContent, 'Open');
-    assert.equal(link.href.startsWith('blob:'), true);
-  });
+    assert.equal(
+      link.textContent,
+      'Open'
+    );
 
-async function ensureDomAndFileLoaded(): Promise<void> {
+    assert.equal(
+      link.href.startsWith('blob:'),
+      true
+    );
+  }
+);
+
+async function ensureDomAndFileLoaded(): Promise<void>
+{
   if (domRestore === null) {
     const dom =
       new JSDOM('<!doctype html><html><body></body></html>');
 
     const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        customElements: globalThis.customElements,
-        HTMLElement: globalThis.HTMLElement,
-        HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-        HTMLIFrameElement: globalThis.HTMLIFrameElement,
-        HTMLImageElement: globalThis.HTMLImageElement,
-        Blob: globalThis.Blob,
-        Event: globalThis.Event,
-        URL: globalThis.URL };
+      {
+      window: globalThis.window,
+      document: globalThis.document,
+      customElements: globalThis.customElements,
+      HTMLElement: globalThis.HTMLElement,
+      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
+      HTMLIFrameElement: globalThis.HTMLIFrameElement,
+      HTMLImageElement: globalThis.HTMLImageElement,
+      Blob: globalThis.Blob,
+      Event: globalThis.Event,
+      URL: globalThis.URL
+    };
 
     globalThis.window = dom.window as unknown as typeof globalThis.window;
     globalThis.document = dom.window.document;
@@ -224,27 +291,32 @@ async function ensureDomAndFileLoaded(): Promise<void> {
     globalThis.Event = dom.window.Event;
 
     let counter = 0;
+
     const mockedUrl =
       Object.assign(
-        function URLConstructor(
-            url: string | URL,
-            base?: string | URL
-          ): URL
-        {
-          return new dom.window.URL(
-            String(url),
-            base === undefined
-              ? undefined
-              : String(base));
-        },
+        function URLConstructor (
+        url: string | URL,
+        base?: string | URL
+      ): URL
+      {
+        return new dom.window.URL(
+          String(url),
+          base === undefined
+            ? undefined
+            : String(base)
+        );
+      },
         globalThis.URL,
-        { createObjectURL: () => `blob:test-${++counter}`,
-          revokeObjectURL: () => {} });
+        {
+        createObjectURL: () => `blob:test-${++counter}`,
+        revokeObjectURL: () =>
+        {}
+      });
 
-    globalThis.URL =
-      mockedUrl as unknown as typeof globalThis.URL;
+    globalThis.URL = mockedUrl as unknown as typeof globalThis.URL;
 
-    domRestore = () => {
+    domRestore = () =>
+    {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.customElements = previous.customElements;
@@ -259,13 +331,13 @@ async function ensureDomAndFileLoaded(): Promise<void> {
   }
 
   if (!isComponentsLoaded) {
-    fileModule =
-      await import('./file.js');
+    fileModule = await import('./file.js');
     isComponentsLoaded = true;
   }
 }
 
-async function getFileModule(): Promise<FileModule> {
+async function getFileModule(): Promise<FileModule>
+{
   await ensureDomAndFileLoaded();
 
   if (fileModule === null) {
@@ -275,20 +347,22 @@ async function getFileModule(): Promise<FileModule> {
   return fileModule;
 }
 
-function resetDomBody(): void {
+function resetDomBody(): void
+{
   document.body.replaceChildren();
 }
 
-async function settle(element: FileViewElement): Promise<void> {
+async function settle(element: FileViewElement): Promise<void>
+{
   await element.updateComplete;
   await Promise.resolve();
   await element.updateComplete;
 }
 
 async function waitFor(
-    predicate: () => boolean,
-    maxTries: number = 20
-  ): Promise<void>
+  predicate: () => boolean,
+  maxTries: number = 20
+): Promise<void>
 {
   for (let index = 0; index < maxTries; index++) {
     if (predicate()) {

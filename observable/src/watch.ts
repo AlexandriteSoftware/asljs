@@ -1,18 +1,19 @@
 import { asEventfulLike }
   from 'asljs-eventful';
-import { ObservableWatchFn }
-  from './types.js';
 import { functionTypeGuard,
          isObject }
   from './guards.js';
+import { ObservableWatchFn }
+  from './types.js';
 
 function splitPath(
-    path: string
-  ): string[]
+  path: string
+): string[]
 {
   if (path.trim() === '') {
     throw new TypeError(
-      'Expect watch path to be a non-empty string.');
+      'Expect watch path to be a non-empty string.'
+    );
   }
 
   const rawSegments =
@@ -21,20 +22,23 @@ function splitPath(
   for (const rawSegment of rawSegments) {
     if (rawSegment.trim() === '') {
       throw new TypeError(
-        'Expect watch path segments to be non-empty.');
+        'Expect watch path segments to be non-empty.'
+      );
     }
   }
 
   return path
     .split('.')
-    .map(segment => segment.trim())
-    .filter(segment => segment !== '');
+    .map(
+      segment => segment.trim())
+    .filter(
+      segment => segment !== '');
 }
 
 function readPathValue(
-    source: any,
-    path: string
-  ): any
+  source: any,
+  path: string
+): any
 {
   const segments =
     splitPath(path);
@@ -46,9 +50,10 @@ function readPathValue(
   let current = source;
 
   for (const segment of segments) {
-    if (!isObject(current)
-      || !(segment in current))
-    {
+    if (
+      !isObject(current)
+      || !(segment in current)
+    ) {
       return undefined;
     }
 
@@ -60,158 +65,178 @@ function readPathValue(
 
 export const watchImpl: ObservableWatchFn =
   (
-      target: any,
-      properties: readonly string[] | string,
-      callback: (...values: any[]) => void
-    ): () => boolean =>
-  {
-    if (Array.isArray(target)) {
+  target: any,
+  properties: readonly string[] | string,
+  callback: (...values: any[]) => void
+): () => boolean =>
+{
+  if (Array.isArray(target)) {
+    throw new TypeError(
+      'Watching arrays is not supported.'
+    );
+  }
+
+  functionTypeGuard(callback);
+
+  const propertiesList =
+    typeof properties === 'string'
+    ? [properties]
+    : properties;
+
+  if (!Array.isArray(propertiesList)) {
+    throw new TypeError(
+      'Expect properties to be a string or an array of strings.'
+    );
+  }
+
+  for (const property of propertiesList) {
+    if (typeof property !== 'string') {
       throw new TypeError(
-        'Watching arrays is not supported.');
+        'Expect properties to be a string or an array of strings.'
+      );
     }
 
-    functionTypeGuard(callback);
+    splitPath(property);
+  }
 
-    const propertiesList =
-      typeof properties === 'string'
-        ? [ properties ]
-        : properties;
-
-    if (!Array.isArray(propertiesList)) {
-      throw new TypeError(
-        'Expect properties to be a string or an array of strings.');
-    }
-
-    for (const property of propertiesList) {
-      if (typeof property !== 'string') {
-        throw new TypeError(
-          'Expect properties to be a string or an array of strings.');
-      }
-
-      splitPath(property);
-    }
-
-    const getValues =
-      (): any =>
-        propertiesList.map(
-          property =>
-            readPathValue(
-              target,
-              property)) as any;
-
-    const unwatchers: Array<() => boolean> = [];
-
-    for (const property of propertiesList) {
-      const segments =
-        splitPath(property);
-
-      let unwatchPath: (() => boolean) | null = null;
-
-      const bindPath =
-        (): (() => boolean) =>
-      {
-        const localUnwatchers: Array<() => boolean> = [];
-
-        const bindFrom =
-          (
-            current: any,
-            index: number
-          ): void =>
-        {
-          if (!isObject(current)
-            || index >= segments.length)
-          {
-            return;
-          }
-
-          const segment =
-            segments[index];
-
-          const eventfulLike =
-            asEventfulLike(current);
-
-          if (eventfulLike) {
-            const unwatch =
-              eventfulLike.on(
-                `set:${segment}`,
-                () => {
-                  callback(...getValues());
-
-                  if (index < segments.length - 1
-                    && unwatchPath)
-                  {
-                    unwatchPath();
-                    unwatchPath = bindPath();
-                  }
-                });
-
-            localUnwatchers.push(unwatch);
-          }
-
-          if (index < segments.length - 1) {
-            bindFrom(
-              (current as Record<string, unknown>)[segment],
-              index + 1);
-          }
-        };
-
-        bindFrom(
+  const getValues =
+    (): any =>
+    propertiesList.map(
+      property =>
+        readPathValue(
           target,
-          0);
+          property
+        )
+    ) as any;
 
-        return () : boolean =>
-          localUnwatchers.reduce(
-            (result, unwatch) =>
-              unwatch() || result,
-            false);
+  const unwatchers: Array<() => boolean> = [];
+
+  for (const property of propertiesList) {
+    const segments =
+      splitPath(property);
+
+    let unwatchPath: (() => boolean) | null = null;
+
+    const bindPath =
+      (): () => boolean =>
+    {
+      const localUnwatchers: Array<() => boolean> = [];
+
+      const bindFrom =
+        (
+        current: any,
+        index: number
+      ): void =>
+      {
+        if (
+          !isObject(current)
+          || index >= segments.length
+        ) {
+          return;
+        }
+
+        const segment =
+          segments[index];
+
+        const eventfulLike =
+          asEventfulLike(current);
+
+        if (eventfulLike) {
+          const unwatch =
+            eventfulLike.on(
+              `set:${segment}`,
+              () =>
+            {
+              callback(
+                ...getValues());
+
+              if (
+                index < segments.length - 1
+                && unwatchPath
+              ) {
+                unwatchPath();
+                unwatchPath = bindPath();
+              }
+            });
+
+          localUnwatchers.push(unwatch);
+        }
+
+        if (index < segments.length - 1) {
+          bindFrom(
+            (current as Record<string, unknown>)[segment],
+            index + 1
+          );
+        }
       };
 
-      unwatchPath = bindPath();
+      bindFrom(
+        target,
+        0
+      );
 
-      unwatchers.push(
-        () => unwatchPath
+      return (): boolean =>
+        localUnwatchers.reduce(
+          (result, unwatch) => unwatch() || result,
+          false
+        );
+    };
+
+    unwatchPath = bindPath();
+
+    unwatchers.push(
+      () =>
+        unwatchPath
           ? unwatchPath()
-          : false);
-    }
+          : false
+    );
+  }
 
-    callback(...getValues());
+  callback(
+    ...getValues());
 
-    return () : boolean =>
-      unwatchers.reduce(
-        (result, unwatch) =>
-          unwatch() || result,
-        false);
-  };
+  return (): boolean =>
+    unwatchers.reduce(
+      (result, unwatch) => unwatch() || result,
+      false
+    );
+};
 
 export function ensureWatchMethod(
-    target: any,
-    watchFn: ObservableWatchFn
-  ): void
+  target: any,
+  watchFn: ObservableWatchFn
+): void
 {
-  if ('watch' in target)
+  if ('watch' in target) {
     return;
+  }
 
   Object.defineProperty(
     target,
     'watch',
-    { configurable: true,
+    {
+      configurable: true,
       writable: true,
       enumerable: false,
       value(
-          properties: readonly string[] | string,
-          callback: (...values: any[]) => void
-        ): () => boolean
+        properties: readonly string[] | string,
+        callback: (...values: any[]) => void
+      ): () => boolean
       {
         if (typeof properties === 'string') {
           return watchFn(
             this as any,
             properties,
-            callback);
+            callback
+          );
         }
 
         return watchFn(
           this as any,
           properties,
-          callback);
-      } });
+          callback
+        );
+      }
+    }
+  );
 }

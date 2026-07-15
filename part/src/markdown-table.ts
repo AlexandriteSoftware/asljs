@@ -13,14 +13,14 @@ export function renderObjectsToMarkdownTable(
 
   const properties =
     columns.map(
-      (column) =>
+      column =>
       typeof column === 'string'
         ? column
         : column.property);
 
   const headers =
     columns.map(
-      (column) =>
+      column =>
       typeof column === 'string'
         ? column
         : (column.name
@@ -28,11 +28,11 @@ export function renderObjectsToMarkdownTable(
 
   const widths =
     properties.map(
-      (property) =>
+      property =>
     {
       const columnWidths =
         objects.map(
-          (row) =>
+          row =>
         {
           const text =
             String(
@@ -66,7 +66,7 @@ export function renderObjectsToMarkdownTable(
   lines.push(
     renderRow(
       widths.map(
-        (width) => '-'.repeat(width)
+        width => '-'.repeat(width)
       ),
       widths
     )
@@ -76,7 +76,7 @@ export function renderObjectsToMarkdownTable(
     lines.push(
       renderRow(
         properties.map(
-          (property) =>
+          property =>
             String(
               obj[property]
             )

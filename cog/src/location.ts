@@ -1,11 +1,11 @@
+import { glob }
+  from 'glob';
+import { minimatch }
+  from 'minimatch';
 import path
   from 'node:path';
 import { GitIgnore }
   from './git-ignore.js';
-import { glob }
-  from 'glob';
-import { minimatch }
-  from 'minimatch';  
 import { Logger }
   from './logger.js';
 
@@ -29,23 +29,24 @@ export class LocationResolver
 
   constructor(
     logger: Logger,
-    rootPath: string)
+    rootPath: string
+  )
   {
     this.logger = logger;
 
-    this.rootPath =
-      path.normalize(
-        path.resolve(rootPath));
+    this.rootPath = path.normalize(
+      path.resolve(rootPath)
+    );
 
-    this.gitIgnore =
-      new GitIgnore(
-        this.logger);
+    this.gitIgnore = new GitIgnore(
+      this.logger
+    );
   }
 
   async resolve(
-      basePath: string,
-      location: Location
-    ): Promise<string[]>
+    basePath: string,
+    location: Location
+  ): Promise<string[]>
   {
     const patterns =
       location.patterns;
@@ -57,15 +58,10 @@ export class LocationResolver
       location.filters || [];
 
     this.logger.trace(
-      `FilesystemLocationResolver.resolve(${
-        JSON.stringify(basePath)
-      }, ${
+      `FilesystemLocationResolver.resolve(${JSON.stringify(basePath)}, ${
         JSON.stringify(patterns)
-      }, ${
-        JSON.stringify(exclude)
-      }, ${
-        JSON.stringify(filters)
-      })`);
+      }, ${JSON.stringify(exclude)}, ${JSON.stringify(filters)})`
+    );
 
     const normalisedBasePath =
       path.normalize(
@@ -74,39 +70,41 @@ export class LocationResolver
     const filesOnly =
       patterns.every(
         pattern => !pattern.endsWith('/'));
-    
+
     const directoriesOnly =
       patterns.every(
         pattern => pattern.endsWith('/'));
 
     if (
       !filesOnly
-      && !directoriesOnly)
-    {
+      && !directoriesOnly
+    ) {
       throw new Error(
-        `Patterns must be either all files or all directories`);
+        `Patterns must be either all files or all directories`
+      );
     }
 
-    const matches: Set<string> = new Set();
+    const matches: Set<string> =
+      new Set();
 
     const rootPathPatterns =
       patterns
-        .filter(
-          pattern =>
-            pattern.startsWith('/'))
-        .map(
-          pattern =>
-            pattern.slice(1));
-    
+      .filter(
+        pattern => pattern.startsWith('/')
+      )
+      .map(
+        pattern => pattern.slice(1)
+      );
+
     if (rootPathPatterns.length > 0) {
       const rootPathMatches =
         await glob(
           rootPathPatterns,
           {
-            cwd: this.rootPath,
-            absolute: true,
-            nodir: filesOnly
-          });
+          cwd: this.rootPath,
+          absolute: true,
+          nodir: filesOnly
+        });
 
       for (const match of rootPathMatches) {
         matches.add(match);
@@ -115,21 +113,23 @@ export class LocationResolver
 
     const basePathPatterns =
       patterns
-        .filter(
-          pattern => !pattern.startsWith('/'));
+      .filter(
+        pattern => !pattern.startsWith('/')
+      );
 
     if (basePathPatterns.length > 0) {
       const basePathMatches =
         await glob(
           basePathPatterns,
           {
-            cwd: normalisedBasePath,
-            absolute: true,
-            nodir: filesOnly
-          });
+          cwd: normalisedBasePath,
+          absolute: true,
+          nodir: filesOnly
+        });
 
       this.logger.trace(
-        `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`);
+        `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`
+      );
 
       for (const match of basePathMatches) {
         matches.add(match);
@@ -138,18 +138,18 @@ export class LocationResolver
 
     const rootExcludePatterns =
       exclude
-        .filter(
-          pattern => pattern.startsWith('/'))
-        .map(
-          pattern => pattern.slice(1));
+      .filter(
+        pattern => pattern.startsWith('/')
+      )
+      .map(
+        pattern => pattern.slice(1)
+      );
 
     if (rootExcludePatterns.length > 0) {
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd: this.rootPath,
-            absolute: true,
-            nodir: filesOnly });
+          { cwd: this.rootPath, absolute: true, nodir: filesOnly });
 
       for (const match of rootExcludeMatches) {
         matches.delete(match);
@@ -158,16 +158,15 @@ export class LocationResolver
 
     const basePathExcludePatterns =
       exclude
-        .filter(
-          pattern => !pattern.startsWith('/'));
+      .filter(
+        pattern => !pattern.startsWith('/')
+      );
 
     if (basePathExcludePatterns.length > 0) {
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd: normalisedBasePath,
-            absolute: true,
-            nodir: filesOnly });
+          { cwd: normalisedBasePath, absolute: true, nodir: filesOnly });
 
       for (const match of basePathExcludeMatches) {
         matches.delete(match);
@@ -180,32 +179,34 @@ export class LocationResolver
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result =
-            this.gitIgnore
-              .filter(
-                result);
+          result = this.gitIgnore
+            .filter(
+              result
+            );
           break;
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`);
+            `Unknown filter: ${filter.name}`
+          );
       }
     }
 
     result.sort(
-      (a, b) =>
-        a.localeCompare(b));
+      (a, b) => a.localeCompare(b)
+    );
 
     this.logger.trace(
-      `FilesystemLocationResolver.resolve() => ${result.length} matches`);
+      `FilesystemLocationResolver.resolve() => ${result.length} matches`
+    );
 
     return result;
   }
 
   async check(
-      targetPath: string,
-      basePath: string,
-      location: Location
-    ): Promise<boolean>
+    targetPath: string,
+    basePath: string,
+    location: Location
+  ): Promise<boolean>
   {
     const patterns =
       location.patterns;
@@ -237,19 +238,21 @@ export class LocationResolver
     const included =
       patterns.some(
         pattern =>
-        {
-          if (pattern.startsWith('/')) {
-            return minimatch(
-              relativeToRoot,
-              pattern.slice(1),
-              { dot: true });
-          }
-
+      {
+        if (pattern.startsWith('/')) {
           return minimatch(
-            relativeToBase,
-            pattern,
-            { dot: true });
-        });
+            relativeToRoot,
+            pattern.slice(1),
+            { dot: true }
+          );
+        }
+
+        return minimatch(
+          relativeToBase,
+          pattern,
+          { dot: true }
+        );
+      });
 
     if (!included) {
       return false;
@@ -258,41 +261,43 @@ export class LocationResolver
     const excluded =
       exclude.some(
         pattern =>
-        {
-          if (pattern.startsWith('/')) {
-            return minimatch(
-              relativeToRoot,
-              pattern.slice(1),
-              { dot: true });
-          }
-
+      {
+        if (pattern.startsWith('/')) {
           return minimatch(
-            relativeToBase,
-            pattern,
-            { dot: true });
-        });
+            relativeToRoot,
+            pattern.slice(1),
+            { dot: true }
+          );
+        }
+
+        return minimatch(
+          relativeToBase,
+          pattern,
+          { dot: true }
+        );
+      });
 
     if (excluded) {
       return false;
     }
 
     let result =
-      [ normalisedTargetPath ];
+      [normalisedTargetPath];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result =
-            this.gitIgnore
-              .filter(result);
+          result = this.gitIgnore
+            .filter(result);
           break;
 
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`);
+            `Unknown filter: ${filter.name}`
+          );
       }
     }
 
     return result.length > 0;
-  }  
+  }
 }

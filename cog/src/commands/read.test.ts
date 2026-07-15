@@ -1,23 +1,32 @@
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
 import { join }
   from 'node:path';
 import test
   from 'node:test';
-import { read }
-  from './read.js';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logger.js';
 import { Envelope }
   from '../envelope/envelope.js';
+import { createLogger }
+  from '../logger.js';
+import { read }
+  from './read.js';
+
+const testBinaryFileContent: Buffer =
+  Buffer.from(
+    [
+    0,
+    1,
+    255
+  ]);
 
 const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose());
+  () => logger.dispose()
+);
 
 function emptyEnvelope(): Envelope
 {
@@ -29,24 +38,32 @@ function emptyEnvelope(): Envelope
 
 test(
   'read command requires pattern and does not accept the old path shape',
-  async () => {
+  async () =>
+  {
     const envelope =
       emptyEnvelope();
 
     await assert.rejects(
-      () => read(
-        envelope,
-        { command: 'read',
-          path: 'file.txt' } as unknown as Parameters<typeof read>[1]),
-      /Read command pattern is required/);
-  });
+      () =>
+        read(
+          envelope,
+          { command: 'read', path: 'file.txt' } as unknown as Parameters<
+            typeof read
+          >[1]
+        ),
+      /Read command pattern is required/
+    );
+  }
+);
 
 test(
   'read treats pattern as a glob and reads an exact file match through LocationResolver',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const filePath =
       workspace.resolve(
@@ -59,47 +76,55 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'one\ntwo\nthree\n');
+      'one\ntwo\nthree\n'
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern: filePattern,
-        lines: 2,
-        sizeKb: 1 });
+      { command: 'read', pattern: filePattern, lines: 2, sizeKb: 1 }
+    );
 
     assert.equal(
       envelope.files[0].type,
-      'text');
+      'text'
+    );
 
     assert.equal(
       envelope.files[0].content,
-      'one\ntwo');
+      'one\ntwo'
+    );
 
     assert.equal(
       envelope.files[0].complete,
-      false);
+      false
+    );
 
     assert.deepEqual(
       envelope.files[0].update,
-      { command: 'read',
+      {
+        command: 'read',
         pattern: filePattern,
         exclude: [],
         lines: 2,
         sizeKb: 1,
         readToEnd: false,
-        withBinaryB64: false });
-  });
+        withBinaryB64: false
+      }
+    );
+  }
+);
 
 test(
   'read includes complete text when readToEnd is true',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const filePath =
       workspace.resolve(
@@ -112,44 +137,56 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'one\ntwo\nthree\n');
+      'one\ntwo\nthree\n'
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
+      {
+        command: 'read',
         pattern: filePath,
         lines: 1,
         sizeKb: 1,
-        readToEnd: true });
+        readToEnd: true
+      }
+    );
 
     assert.equal(
       envelope.files[0].content,
-      'one\ntwo\nthree\n');
+      'one\ntwo\nthree\n'
+    );
 
     assert.equal(
       envelope.files[0].complete,
-      true);
+      true
+    );
 
     assert.deepEqual(
       envelope.files[0].update,
-      { command: 'read',
+      {
+        command: 'read',
         pattern: filePattern,
         exclude: [],
         lines: 1,
         sizeKb: 1,
         readToEnd: true,
-        withBinaryB64: false });
-  });
+        withBinaryB64: false
+      }
+    );
+  }
+);
 
 test(
   'read can include binary content as base64',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const filePath =
       workspace.resolve(
@@ -157,46 +194,43 @@ test(
 
     await workspace.write(
       'file.bin',
-      Buffer.from([
-        0,
-        1,
-        255
-      ]));
+      testBinaryFileContent
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern: filePath,
-        withBinaryB64: true });
+      { command: 'read', pattern: filePath, withBinaryB64: true }
+    );
 
     assert.equal(
       envelope.files[0].type,
-      'binary');
+      'binary'
+    );
 
     assert.equal(
       envelope.files[0].content,
-      Buffer.from([
-        0,
-        1,
-        255
-      ])
-        .toString(
-          'base64'));
+      testBinaryFileContent
+        .toString('base64')
+    );
 
     assert.equal(
       envelope.files[0].complete,
-      true);
-  });
+      true
+    );
+  }
+);
 
 test(
   'read omits binary content when withBinaryB64 is false',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const filePath =
       workspace.resolve(
@@ -204,143 +238,179 @@ test(
 
     await workspace.write(
       'file.bin',
-      Buffer.from([
-        0,
-        1,
-        255
-      ]));
+      testBinaryFileContent
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern: filePath });
+      { command: 'read', pattern: filePath }
+    );
 
     assert.equal(
       envelope.files[0].type,
-      'binary');
+      'binary'
+    );
 
     assert.equal(
       envelope.files[0].content,
-      undefined);
+      undefined
+    );
 
     assert.equal(
       envelope.files[0].complete,
-      undefined);
-  });
+      undefined
+    );
+  }
+);
 
 test(
   'read treats folder paths as glob patterns and does not expand them specially',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     await workspace.writeText(
       join(
         'src',
-        'one.txt'),
-      'one\n');
+        'one.txt'
+      ),
+      'one\n'
+    );
 
     await workspace.writeText(
       join(
         'src',
-        'two.txt'),
-      'two\n');
+        'two.txt'
+      ),
+      'two\n'
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern:
-          workspace.resolve(
-            'src') });
+      {
+        command: 'read',
+        pattern: workspace.resolve(
+          'src'
+        )
+      }
+    );
 
     assert.deepEqual(
       envelope.files,
-      []);
-  });
+      []
+    );
+  }
+);
 
 test(
   'read uses LocationResolver glob matching and excludes',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     await workspace.writeText(
       join(
         'src',
-        'one.ts'),
-      'one\n');
+        'one.ts'
+      ),
+      'one\n'
+    );
 
     await workspace.writeText(
       join(
         'src',
-        'two.test.ts'),
-      'two\n');
+        'two.test.ts'
+      ),
+      'two\n'
+    );
 
     await workspace.writeText(
       join(
         'src',
         'nested',
-        'three.ts'),
-      'three\n');
+        'three.ts'
+      ),
+      'three\n'
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern:
-          `${workspace.resolve(
-            'src')}/**/*.ts`,
-        exclude:
-          [`${workspace.resolve(
-            'src')}/**/*.test.ts`],
-        readToEnd: true });
+      {
+        command: 'read',
+        pattern: `${
+          workspace.resolve(
+            'src'
+          )
+        }/**/*.ts`,
+        exclude: [`${
+          workspace.resolve(
+            'src'
+          )
+        }/**/*.test.ts`],
+        readToEnd: true
+      }
+    );
 
     assert.deepEqual(
       envelope.files
         .map(
-          file =>
-            file.path)
+          file => file.path
+        )
         .sort(),
       [
         workspace.resolve(
           join(
             'src',
             'nested',
-            'three.ts')),
+            'three.ts'
+          )
+        ),
         workspace.resolve(
           join(
             'src',
-            'one.ts'))
-      ].sort());
+            'one.ts'
+          )
+        )
+      ].sort()
+    );
 
     assert.deepEqual(
       envelope.files
         .map(
-          file =>
-            file.content)
+          file => file.content
+        )
         .sort(),
       [
         'one\n',
         'three\n'
-      ]);
-  });
+      ]
+    );
+  }
+);
 
 test(
   'read updates existing envelope file for matched glob target',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const filePath =
       workspace.resolve(
@@ -348,32 +418,35 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'old\n');
+      'old\n'
+    );
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read',
-        pattern: filePath,
-        readToEnd: true });
+      { command: 'read', pattern: filePath, readToEnd: true }
+    );
 
     await workspace.writeText(
       'file.txt',
-      'new\n');
+      'new\n'
+    );
 
     await read(
       envelope,
-      { command: 'read',
-        pattern: filePath,
-        readToEnd: true });
+      { command: 'read', pattern: filePath, readToEnd: true }
+    );
 
     assert.equal(
       envelope.files.length,
-      1);
+      1
+    );
 
     assert.equal(
       envelope.files[0].content,
-      'new\n');
-  });
+      'new\n'
+    );
+  }
+);

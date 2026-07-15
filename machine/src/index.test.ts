@@ -1,23 +1,29 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { machine }
   from './index.js';
 
 test(
   'index: exports machine factory',
-  () => {
+  () =>
+  {
     assert.equal(
       typeof machine,
-      'function');
-  });
+      'function'
+    );
+  }
+);
 
 test(
   'state transitions',
-  () => {
+  () =>
+  {
     const currentMachine =
-      machine({ }, 'idle');
+      machine(
+        {},
+        'idle');
 
     const select =
       currentMachine.state.createTransition(
@@ -27,34 +33,44 @@ test(
 
     currentMachine.on(
       'set:state',
-      event => {
+      event =>
+      {
         const stateEvent =
           event as { value: { name: string | undefined; }; };
 
-        events.push(`state:${stateEvent.value.name}`);
-      });
+        events.push(
+          `state:${stateEvent.value.name}`);
+      }
+    );
 
     select.on(
       'activating',
-      () => {
-        events.push('select:activating');
-      });
+      () =>
+      {
+        events.push(
+          'select:activating');
+      }
+    );
 
     select.on(
       'completed',
-      () => {
-        events.push('select:completed');
-      });
+      () =>
+      {
+        events.push(
+          'select:completed');
+      }
+    );
 
     select.activate();
 
     assert.strictEqual(
       currentMachine.state.name,
-      'selected');
+      'selected'
+    );
 
     assert.deepStrictEqual(
       events,
-      [ 'select:activating',
-        'state:selected',
-        'select:completed' ]);
-  });
+      ['select:activating', 'state:selected', 'select:completed']
+    );
+  }
+);

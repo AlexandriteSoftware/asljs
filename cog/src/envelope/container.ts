@@ -9,26 +9,29 @@ import { Logger }
 import { Envelope }
   from './envelope.js';
 
-export class EnvelopeContainer {
+export class EnvelopeContainer
+{
   private readonly logger: Logger;
 
   public envelope: Envelope | null = null;
 
   constructor(
-    logger: Logger)
+    logger: Logger
+  )
   {
-    this.logger =
-      logger.scope(
-        { instanceId: 'EnvelopeContainer' });
+    this.logger = logger.scope(
+      { instanceId: 'EnvelopeContainer' }
+    );
   }
 
   public async tryLoadEnvelope(
-      filePath: string
-    ): Promise<boolean>
+    filePath: string
+  ): Promise<boolean>
   {
     this.logger.trace(
       'tryLoadEnvelope(%s)',
-      filePath);
+      filePath
+    );
 
     try {
       await this._loadEnvelope(filePath);
@@ -37,42 +40,46 @@ export class EnvelopeContainer {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return false;
       }
+
       throw error;
     }
   }
 
   public async loadEnvelope(
-      filePath: string
-    ): Promise<Envelope>
+    filePath: string
+  ): Promise<Envelope>
   {
     this.logger.trace(
       'loadEnvelope(%s)',
-      filePath);
+      filePath
+    );
 
     await this._loadEnvelope(filePath);
 
     if (this.envelope === null) {
       throw new Error(
-        `Envelope is null after loading from ${filePath}`);
+        `Envelope is null after loading from ${filePath}`
+      );
     }
 
     return this.envelope;
   }
 
   private async _loadEnvelope(
-      filePath: string
-    ): Promise<void>
+    filePath: string
+  ): Promise<void>
   {
     try {
-      const content = await fs.readFile(
-        filePath,
-        'utf-8');
+      const content =
+        await fs.readFile(
+          filePath,
+          'utf-8');
 
-      const json = JSON.parse(
-        content);
+      const json =
+        JSON.parse(
+          content);
 
-      this.envelope =
-        json as Envelope;
+      this.envelope = json as Envelope;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
@@ -80,26 +87,24 @@ export class EnvelopeContainer {
     }
   }
 
-  async initializeEnvelope(
-    ): Promise<Envelope>
+  async initializeEnvelope(): Promise<Envelope>
   {
     this.logger.trace(
-      'initializeEnvelope()');
+      'initializeEnvelope()'
+    );
 
     const instruction =
       await this.loadInstruction();
 
     const envelope =
-      { instruction,
-        files: [] };
+      { instruction, files: [] };
 
     this.envelope = envelope;
 
     return envelope;
   }
 
-  async loadInstruction(
-    ): Promise<string>
+  async loadInstruction(): Promise<string>
   {
     const instructionPath =
       path.join(
@@ -117,12 +122,13 @@ export class EnvelopeContainer {
   }
 
   async saveEnvelope(
-      filePath: string
-    ): Promise<void>
+    filePath: string
+  ): Promise<void>
   {
     this.logger.trace(
       'saveEnvelope(%s)',
-      filePath);
+      filePath
+    );
 
     const json =
       JSON.stringify(
@@ -132,11 +138,13 @@ export class EnvelopeContainer {
 
     await fs.mkdir(
       path.dirname(filePath),
-      { recursive: true });
+      { recursive: true }
+    );
 
     await fs.writeFile(
       filePath,
       json,
-      'utf-8');
+      'utf-8'
+    );
   }
 }

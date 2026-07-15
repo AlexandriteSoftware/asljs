@@ -1,7 +1,7 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { EventfulBase }
   from './eventful-base.js';
 
@@ -10,12 +10,11 @@ const TEST_SUITE =
 
 test(
   `${TEST_SUITE}: EventfulBase wires eventful methods in constructor`,
-  () => {
-    type Events =
-      { ping: [value: number] };
+  () =>
+  {
+    type Events = { ping: [value: number]; };
 
-    class Demo
-      extends EventfulBase<Events>
+    class Demo extends EventfulBase<Events>
     {
     }
 
@@ -26,44 +25,51 @@ test(
 
     demo.on(
       'ping',
-      value => seen = value);
+      value => seen = value
+    );
 
     demo.emit(
       'ping',
-      7);
+      7
+    );
 
     assert.equal(
       seen,
-      7);
-  });
-
+      7
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: EventfulBase passes options to eventful setup`,
-  () => {
-    type Events =
-      { boom: [] };
+  () =>
+  {
+    type Events = { boom: []; };
 
-    class Demo
-      extends EventfulBase<Events>
+    class Demo extends EventfulBase<Events>
     {
     }
 
     const demo =
       new Demo(
-        { strict: true,
-          error: () => { } });
+      {
+        strict: true,
+        error: () =>
+        {}
+      }
+    );
 
     demo.on(
       'boom',
-      () => {
+      () =>
+      {
         throw new Error('boom');
-      });
+      }
+    );
 
     assert.throws(
       () => demo.emit('boom'),
-      Error);
-  });
-
-
-
+      Error
+    );
+  }
+);

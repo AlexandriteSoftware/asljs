@@ -1,33 +1,35 @@
-import { EventName,
-         Listener }
-  from './types.js';
 import { isFunction,
          isObject }
   from './guards.js';
+import { EventName,
+         Listener }
+  from './types.js';
 
-export interface EventfulLike {
+export interface EventfulLike
+{
   on(
-      event: EventName,
-      listener: Listener
-    ): () => boolean;
+    event: EventName,
+    listener: Listener
+  ): () => boolean;
 }
 
 export function isEventfulLike(
-    value: unknown
-  ): value is EventfulLike
+  value: unknown
+): value is EventfulLike
 {
-  if (!isObject(value)
-      && !isFunction(value))
-  {
+  if (
+    !isObject(value)
+    && !isFunction(value)
+  ) {
     return false;
   }
 
-  return typeof (value as { on?: unknown }).on === 'function';
+  return typeof (value as { on?: unknown; }).on === 'function';
 }
 
 export function asEventfulLike(
-    value: unknown
-  ): EventfulLike | undefined
+  value: unknown
+): EventfulLike | undefined
 {
   if (isEventfulLike(value)) {
     return value;

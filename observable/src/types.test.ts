@@ -1,7 +1,7 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { Observable,
          ObservableGlobalOptions,
          ObservableOptions,
@@ -10,66 +10,68 @@ import { Observable,
          WatchedValues }
   from './types.js';
 
-const TEST_SUITE =
-  'types';
+const TEST_SUITE = 'types';
 
 test(
   `${TEST_SUITE}: compile-time shapes can be referenced`,
-  () => {
+  () =>
+  {
     const options: ObservableOptions =
-      { shallow: true,
-        trace: null };
+      { shallow: true, trace: null };
 
     const globalOptions: ObservableGlobalOptions =
       { trace: null };
 
     const traceFn: ObservableTraceFn =
-      (_object, _action, _payload) => { };
+      (_object, _action, _payload) =>
+    {};
 
     const watchFn: ObservableWatchFn =
       (
-          _target: object,
-          _properties: string | readonly string[],
-          _callback: (...values: unknown[]) => void
-        ) =>
-        () => false;
+      _target: object,
+      _properties: string | readonly string[],
+      _callback: (...values: unknown[]) => void
+    ) =>
+    () => false;
 
-    type BoxedNumber =
-      Observable<number>;
+    type BoxedNumber = Observable<number>;
 
-    type Person =
-      { name: string;
-        age: number; };
+    type Person = { name: string; age: number; };
 
-    type PickedValues =
-      WatchedValues<Person, [ 'name', 'age' ]>;
+    type PickedValues = WatchedValues<Person, ['name', 'age']>;
 
-    const boxed: BoxedNumber | null =
-      null;
+    const boxed: BoxedNumber | null = null;
 
     const picked: PickedValues =
-      [ 'Alice', 7 ];
+      ['Alice', 7];
 
     assert.ok(
-      options.shallow);
+      options.shallow
+    );
 
     assert.equal(
       globalOptions.trace,
-      null);
+      null
+    );
 
     assert.equal(
       typeof traceFn,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof watchFn,
-      'function');
+      'function'
+    );
 
     assert.equal(
       boxed,
-      null);
+      null
+    );
 
     assert.deepEqual(
       picked,
-      [ 'Alice', 7 ]);
-  });
+      ['Alice', 7]
+    );
+  }
+);

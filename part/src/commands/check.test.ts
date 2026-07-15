@@ -389,17 +389,17 @@ Second rule.
       environment.stdout.toString()
       .split('\n')
       .filter(
-        (line) =>
+        line =>
           line.startsWith(
             '| development/'
           )
       )
       .map(
-        (line) =>
+        line =>
           line.split('|').map(
-            (cell) => cell.trim()
+            cell => cell.trim()
           ).filter(
-            (cell) => cell.length > 0
+            cell => cell.length > 0
           )
       );
 

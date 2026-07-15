@@ -1,5 +1,5 @@
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
@@ -8,23 +8,29 @@ import { ComponentModelDefinition }
   from './abstractions/model.js';
 
 export const FileViewModelDefinition: ComponentModelDefinition =
-  { name: 'FileViewModelDefinition',
-    title: 'File View',
-    properties:
-      [ { name: 'provider',
-          title: 'Provider',
-          type: 'object',
-          description: 'File provider used to load and optionally save files.' },
-        { name: 'handlers',
-          title: 'Handlers',
-          type: 'array',
-          description: 'Ordered file handlers from most specific to most general.' },
-        { name: 'fileName',
-          title: 'File name',
-          type: 'string',
-          description: 'Selected file name to preview.' } ] };
+  {
+  name: 'FileViewModelDefinition',
+  title: 'File View',
+  properties: [{
+    name: 'provider',
+    title: 'Provider',
+    type: 'object',
+    description: 'File provider used to load and optionally save files.'
+  }, {
+    name: 'handlers',
+    title: 'Handlers',
+    type: 'array',
+    description: 'Ordered file handlers from most specific to most general.'
+  }, {
+    name: 'fileName',
+    title: 'File name',
+    type: 'string',
+    description: 'Selected file name to preview.'
+  }]
+};
 
-export interface FileViewData {
+export interface FileViewData
+{
   name: string;
   mimeType?: string | null;
   blob?: Blob | null;
@@ -32,87 +38,104 @@ export interface FileViewData {
   dataUrl?: string | null;
 }
 
-export interface FileViewProvider {
+export interface FileViewProvider
+{
   loadFile: (fileName: string) => Promise<FileViewData | null>;
   saveText?: (
-      fileName: string,
-      text: string
-    ) => Promise<void> | void;
+    fileName: string,
+    text: string
+  ) => Promise<void> | void;
 }
 
-export interface FileHandlerRenderResult {
+export interface FileHandlerRenderResult
+{
   element: HTMLElement;
   dispose?: () => void;
 }
 
-export interface FileHandlerRenderContext {
+export interface FileHandlerRenderContext
+{
   file: FileViewData;
   fileName: string;
   provider: FileViewProvider;
 }
 
-export interface FileHandler {
+export interface FileHandler
+{
   canDisplay: (file: FileViewData) => boolean | Promise<boolean>;
   render: (
-      context: FileHandlerRenderContext
-    ) => Promise<FileHandlerRenderResult> | FileHandlerRenderResult;
+    context: FileHandlerRenderContext
+  ) => Promise<FileHandlerRenderResult> | FileHandlerRenderResult;
 }
 
 type ActiveRenderState =
-  { dispose?: (() => void) | undefined; }
+  | { dispose?: (() => void) | undefined; }
   | null;
 
 @customElement('asljs-file')
-export class FileView
-  extends LitElement
+export class FileView extends LitElement
 {
   #activeRenderState: ActiveRenderState = null;
   #renderRequestId = 0;
 
-  @property({ attribute: false })
-    accessor provider: FileViewProvider | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor provider: FileViewProvider | null = null;
 
-  @property({ attribute: false })
-    accessor handlers: FileHandler[] = [];
+  @property(
+    { attribute: false }
+  )
+  accessor handlers: FileHandler[] = [];
 
-  @property({ attribute: false })
-    accessor fileName: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor fileName: string | null = null;
 
-  createRenderRoot(): this {
+  createRenderRoot(): this
+  {
     return this;
   }
 
-  disconnectedCallback(): void {
+  disconnectedCallback(): void
+  {
     this.#disposeActiveRender();
     super.disconnectedCallback();
   }
 
-  render(): ReturnType<LitElement['render']> {
+  render(): ReturnType<LitElement['render']>
+  {
     return html`
       <div data-role="content"></div>
     `;
   }
 
   updated(
-      changedProperties: Map<PropertyKey, unknown>
-    ): void
+    changedProperties: Map<PropertyKey, unknown>
+  ): void
   {
-    if (changedProperties.has('provider')
-        || changedProperties.has('handlers')
-        || changedProperties.has('fileName'))
-    {
+    if (
+      changedProperties.has('provider')
+      || changedProperties.has('handlers')
+      || changedProperties.has('fileName')
+    ) {
       void this.#refresh();
     }
   }
 
-  async #refresh(): Promise<void> {
+  async #refresh(): Promise<void>
+  {
     const requestId =
       ++this.#renderRequestId;
 
     this.#disposeActiveRender();
 
     const contentHost =
-      this.querySelector('[data-role="content"]') as HTMLElement | null;
+      this.querySelector(
+        '[data-role="content"]') as
+      | HTMLElement
+      | null;
 
     if (contentHost === null) {
       return;
@@ -120,7 +143,11 @@ export class FileView
 
     if (this.fileName === null || this.fileName.trim() === '') {
       contentHost.replaceChildren(
-        createMessageElement('Select a file to preview.'));
+        createMessageElement(
+          'Select a file to preview.'
+        )
+      );
+
       return;
     }
 
@@ -129,15 +156,23 @@ export class FileView
 
     if (provider === null) {
       contentHost.replaceChildren(
-        createMessageElement('File provider is not configured.'));
+        createMessageElement(
+          'File provider is not configured.'
+        )
+      );
+
       return;
     }
 
     contentHost.replaceChildren(
-      createMessageElement('Loading preview...'));
+      createMessageElement(
+        'Loading preview...'
+      )
+    );
 
     const file =
-      await provider.loadFile(this.fileName);
+      await provider.loadFile(
+        this.fileName);
 
     if (requestId !== this.#renderRequestId) {
       return;
@@ -145,7 +180,11 @@ export class FileView
 
     if (file === null) {
       contentHost.replaceChildren(
-        createMessageElement('File content is not available.'));
+        createMessageElement(
+          'File content is not available.'
+        )
+      );
+
       return;
     }
 
@@ -162,40 +201,44 @@ export class FileView
       const fallback =
         createFallbackElement(file);
 
-      this.#activeRenderState =
-        { dispose: fallback.dispose };
+      this.#activeRenderState = { dispose: fallback.dispose };
 
-      contentHost.replaceChildren(fallback.element);
+      contentHost.replaceChildren(
+        fallback.element
+      );
+
       return;
     }
 
     const result =
       await handler.render(
-        { file,
-          fileName: this.fileName,
-          provider });
+        { file, fileName: this.fileName, provider });
 
     if (requestId !== this.#renderRequestId) {
       result.dispose?.();
       return;
     }
 
-    this.#activeRenderState =
-      { dispose: result.dispose };
+    this.#activeRenderState = { dispose: result.dispose };
 
-    contentHost.replaceChildren(result.element);
+    contentHost.replaceChildren(
+      result.element
+    );
   }
 
-  #disposeActiveRender(): void {
+  #disposeActiveRender(): void
+  {
     this.#activeRenderState?.dispose?.();
     this.#activeRenderState = null;
   }
 }
 
-export function createPdfFileHandler(): FileHandler {
+export function createPdfFileHandler(): FileHandler
+{
   return {
     canDisplay: file => isPdfFile(file),
-    render: async ({ file }) => {
+    render: async ({ file }) =>
+    {
       const source =
         await getObjectUrlSource(file);
 
@@ -216,16 +259,18 @@ export function createPdfFileHandler(): FileHandler {
 
       return {
         element: frame,
-        dispose: source.dispose,
+        dispose: source.dispose
       };
-    },
+    }
   };
 }
 
-export function createImageFileHandler(): FileHandler {
+export function createImageFileHandler(): FileHandler
+{
   return {
     canDisplay: file => isImageFile(file),
-    render: async ({ file }) => {
+    render: async ({ file }) =>
+    {
       const source =
         await getObjectUrlSource(file);
 
@@ -245,16 +290,18 @@ export function createImageFileHandler(): FileHandler {
 
       return {
         element: image,
-        dispose: source.dispose,
+        dispose: source.dispose
       };
-    },
+    }
   };
 }
 
-export function createTextFileHandler(): FileHandler {
+export function createTextFileHandler(): FileHandler
+{
   return {
     canDisplay: file => isTextFile(file),
-    render: async ({ file }) => {
+    render: async ({ file }) =>
+    {
       const text =
         await resolveText(file);
 
@@ -270,16 +317,18 @@ export function createTextFileHandler(): FileHandler {
       pre.style.whiteSpace = 'pre-wrap';
 
       return {
-        element: pre,
+        element: pre
       };
-    },
+    }
   };
 }
 
-export function createTextEditorFileHandler(): FileHandler {
+export function createTextEditorFileHandler(): FileHandler
+{
   return {
     canDisplay: file => isTextFile(file),
-    render: async ({ file, fileName, provider }) => {
+    render: async ({ file, fileName, provider }) =>
+    {
       const text =
         await resolveText(file);
 
@@ -299,7 +348,10 @@ export function createTextEditorFileHandler(): FileHandler {
       textArea.style.border = '0';
       textArea.style.resize = 'none';
       textArea.style.padding = '0.75rem';
-      textArea.style.fontFamily = 'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
+
+      textArea.style.fontFamily =
+        'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
+
       textArea.style.fontSize = '0.8rem';
       textArea.style.lineHeight = '1.6';
       textArea.style.boxSizing = 'border-box';
@@ -307,24 +359,27 @@ export function createTextEditorFileHandler(): FileHandler {
       if (provider.saveText !== undefined) {
         textArea.addEventListener(
           'blur',
-          () => {
+          () =>
+          {
             void provider.saveText?.(
               fileName,
-              textArea.value);
-          });
+              textArea.value
+            );
+          }
+        );
       }
 
       return {
-        element: textArea,
+        element: textArea
       };
-    },
+    }
   };
 }
 
 async function findHandler(
-    handlers: FileHandler[],
-    file: FileViewData
-  ): Promise<FileHandler | null>
+  handlers: FileHandler[],
+  file: FileViewData
+): Promise<FileHandler | null>
 {
   for (const handler of handlers) {
     if (await handler.canDisplay(file)) {
@@ -336,8 +391,8 @@ async function findHandler(
 }
 
 function createMessageElement(
-    text: string
-  ): HTMLElement
+  text: string
+): HTMLElement
 {
   const element =
     document.createElement('div');
@@ -348,15 +403,18 @@ function createMessageElement(
   return element;
 }
 
-function createUnavailableResult(): FileHandlerRenderResult {
+function createUnavailableResult(): FileHandlerRenderResult
+{
   return {
-    element: createMessageElement('Preview unavailable for this file type.'),
+    element: createMessageElement(
+      'Preview unavailable for this file type.'
+    )
   };
 }
 
 function createFallbackElement(
-    file: FileViewData
-  ): FileHandlerRenderResult
+  file: FileViewData
+): FileHandlerRenderResult
 {
   const root =
     document.createElement('div');
@@ -366,7 +424,8 @@ function createFallbackElement(
   root.style.gap = '0.5rem';
 
   const message =
-    createMessageElement('Preview unavailable for this file type.');
+    createMessageElement(
+      'Preview unavailable for this file type.');
 
   root.appendChild(message);
 
@@ -385,66 +444,73 @@ function createFallbackElement(
     }
 
     const url =
-      URL.createObjectURL(file.blob!);
+      URL.createObjectURL(
+        file.blob!);
 
     link.href = url;
     root.appendChild(link);
 
     return {
       element: root,
-      dispose: () => {
+      dispose: () =>
+      {
         URL.revokeObjectURL(url);
-      },
+      }
     };
   }
 
   return {
-    element: root,
+    element: root
   };
 }
 
-type ObjectUrlSource =
-  { url: string;
-    dispose?: () => void; };
+type ObjectUrlSource = { url: string; dispose?: () => void; };
 
 async function getObjectUrlSource(
-    file: FileViewData
-  ): Promise<ObjectUrlSource | null>
+  file: FileViewData
+): Promise<ObjectUrlSource | null>
 {
   if (file.dataUrl) {
     return {
-      url: file.dataUrl,
+      url: file.dataUrl
     };
   }
 
   if (file.blob) {
-    if (isPdfFile(file)
-        && normalizeMimeType(file.mimeType ?? file.blob.type) !== 'application/pdf')
-    {
+    if (
+      isPdfFile(file)
+      && normalizeMimeType(
+        file.mimeType ?? file.blob.type)
+        !== 'application/pdf'
+    ) {
       const pdfBlob =
         new Blob(
-          [ await file.blob.arrayBuffer() ],
-          { type: 'application/pdf' });
+        [await file.blob.arrayBuffer()],
+        { type: 'application/pdf' }
+      );
 
       const pdfUrl =
         URL.createObjectURL(pdfBlob);
 
       return {
         url: pdfUrl,
-        dispose: () => {
+        dispose: () =>
+        {
           URL.revokeObjectURL(pdfUrl);
-        },
+        }
       };
     }
 
     const url =
-      URL.createObjectURL(file.blob);
+      URL.createObjectURL(
+        file.blob);
 
     return {
       url,
-      dispose: () => {
+      dispose: () =>
+      {
         URL.revokeObjectURL(url);
-      },
+      }
     };
   }
 
@@ -452,8 +518,8 @@ async function getObjectUrlSource(
 }
 
 async function resolveText(
-    file: FileViewData
-  ): Promise<string | null>
+  file: FileViewData
+): Promise<string | null>
 {
   if (typeof file.text === 'string') {
     return file.text;
@@ -467,52 +533,60 @@ async function resolveText(
 }
 
 function isPdfFile(
-    file: FileViewData
-  ): boolean
+  file: FileViewData
+): boolean
 {
-  return normalizeMimeType(file.mimeType ?? file.blob?.type) === 'application/pdf'
+  return normalizeMimeType(
+    file.mimeType ?? file.blob?.type)
+      === 'application/pdf'
     || getLowerFileName(file).endsWith('.pdf');
 }
 
 function isImageFile(
-    file: FileViewData
-  ): boolean
+  file: FileViewData
+): boolean
 {
   const mimeType =
-    normalizeMimeType(file.mimeType ?? file.blob?.type);
+    normalizeMimeType(
+      file.mimeType ?? file.blob?.type);
 
   return mimeType.startsWith('image/')
-    || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(file.name);
+    || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(
+      file.name
+    );
 }
 
 function isTextFile(
-    file: FileViewData
-  ): boolean
+  file: FileViewData
+): boolean
 {
   if (typeof file.text === 'string') {
     return true;
   }
 
   const mimeType =
-    normalizeMimeType(file.mimeType ?? file.blob?.type);
+    normalizeMimeType(
+      file.mimeType ?? file.blob?.type);
 
   return mimeType.startsWith('text/')
-    || [ 'application/json',
-         'application/xml',
-         'image/svg+xml' ].includes(mimeType)
-    || /\.(txt|csv|json|xml|html|htm|md|markdown|svg)$/i.test(file.name);
+    || ['application/json', 'application/xml', 'image/svg+xml'].includes(
+      mimeType
+    )
+    || /\.(txt|csv|json|xml|html|htm|md|markdown|svg)$/i.test(
+      file.name
+    );
 }
 
 function normalizeMimeType(
-    mimeType: string | null | undefined
-  ): string
+  mimeType: string | null | undefined
+): string
 {
   return (mimeType ?? '').trim().toLowerCase();
 }
 
 function getLowerFileName(
-    file: FileViewData
-  ): string
+  file: FileViewData
+): string
 {
   return file.name.toLowerCase();
 }

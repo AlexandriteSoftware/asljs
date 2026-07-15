@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
-    "format": "npm run format:json",
+    "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "sfmt \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
     "clean": "node ./dist/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
@@ -14,11 +16,5 @@
     "lint:fix": "eslint . --fix",
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run build && npm run test"
-  },
-  "devDependencies": {
-    "@types/node": "^26.0.0",
-    "acorn": "^8.17.0",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.63.0"
   }
 }

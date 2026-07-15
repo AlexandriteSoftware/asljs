@@ -8,38 +8,41 @@ import { DefaultHostConsole,
 
 test(
   'DefaultHostConsole writes one line to stdout',
-  () => {
+  () =>
+  {
     const originalWrite =
       process.stdout.write;
 
-    let output =
-      '';
+    let output = '';
 
-    process.stdout.write =
-      ((chunk: string | Uint8Array) => {
-        output
-          += typeof chunk === 'string'
-            ? chunk
-            : Buffer.from(
-              chunk)
-              .toString(
-                'utf8');
+    process.stdout.write = ((chunk: string | Uint8Array) =>
+    {
+      output += typeof chunk === 'string'
+        ? chunk
+        : Buffer.from(
+          chunk
+        )
+          .toString(
+            'utf8'
+          );
 
-        return true;
-      }) as typeof process.stdout.write;
+      return true;
+    }) as typeof process.stdout.write;
 
     try {
       const hostConsole: HostConsole =
         new DefaultHostConsole();
 
       hostConsole.writeLine(
-        'hello');
+        'hello'
+      );
 
       assert.equal(
         output,
-        'hello\n');
+        'hello\n'
+      );
     } finally {
-      process.stdout.write =
-        originalWrite;
+      process.stdout.write = originalWrite;
     }
-  });
+  }
+);

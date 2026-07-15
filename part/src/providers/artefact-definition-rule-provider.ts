@@ -51,7 +51,7 @@ export class ArtefactDefinitionRuleProvider
     const rule =
       definitionObj.rules
       .find(
-        (item) => item.id === ruleId
+        item => item.id === ruleId
       );
 
     if (!rule) {

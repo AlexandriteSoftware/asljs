@@ -9,36 +9,39 @@ import { Command }
 import { RollbackFeed }
   from '../model/rollback.js';
 
-export interface Write
-  extends Command
+export interface Write extends Command
 {
   path: string;
   content: string;
 }
 
 export async function write(
-    envelope: Envelope,
-    command: Write,
-    rollbackFeed?: RollbackFeed
-  ): Promise<void>
+  envelope: Envelope,
+  command: Write,
+  rollbackFeed?: RollbackFeed
+): Promise<void>
 {
   await rollbackFeed?.saveFileState(
-    command.path);
+    command.path
+  );
 
   await fs.mkdir(
     path.dirname(
-      command.path),
-    { recursive: true });
+      command.path
+    ),
+    { recursive: true }
+  );
 
   await fs.writeFile(
     command.path,
     command.content,
-    'utf-8');
+    'utf-8'
+  );
 }
 
 export async function rollbackWrite(
-    rollbackFeed: RollbackFeed
-  ): Promise<void>
+  rollbackFeed: RollbackFeed
+): Promise<void>
 {
   await rollbackFeed.rollbackLast();
 }

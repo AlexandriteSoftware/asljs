@@ -6,17 +6,19 @@
  * - all other values are converted using `String()`
  */
 export function coerceDisplayValue(
-    value: unknown
-  ): string
+  value: unknown
+): string
 {
-  if (value === null
-      || value === undefined)
-  {
+  if (
+    value === null
+    || value === undefined
+  ) {
     return '';
   }
 
-  if (value instanceof Date)
+  if (value instanceof Date) {
     return value.toISOString();
+  }
 
   return String(value);
 }

@@ -1,5 +1,7 @@
 import { Command }
   from 'commander';
+import { EnvelopeContainer }
+  from '../envelope/container.js';
 import { Envelope,
          EnvelopeFile }
   from '../envelope/envelope.js';
@@ -8,38 +10,43 @@ import { resolveEnvelopePath }
 import { ExecutionContext,
          MainOptions }
   from './types.js';
-import { EnvelopeContainer }
-  from '../envelope/container.js';
 
 export function configureListCommand(
-    program: Command,
-    context: ExecutionContext
-  ): void
+  program: Command,
+  context: ExecutionContext
+): void
 {
   program
     .command(
-      'list')
+      'list'
+    )
     .description(
-      'print a markdown table of envelope files')
+      'print a markdown table of envelope files'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const options =
           program.opts<{
-            envelope?: string;
-          }>();
+          envelope?: string;
+        }>();
 
         await listCmd(
           context,
-          { envelopePath:
-              resolveEnvelopePath(
-                options.envelope) });
-      });
+          {
+            envelopePath: resolveEnvelopePath(
+              options.envelope
+            )
+          }
+        );
+      }
+    );
 }
 
 async function listCmd(
-    context: ExecutionContext,
-    options: MainOptions = {}
-  ): Promise<void>
+  context: ExecutionContext,
+  options: MainOptions = {}
+): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -47,66 +54,88 @@ async function listCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-      context.logger);
+    context.logger
+  );
 
   const envelope =
     await envelopeContainer.loadEnvelope(
       envelopePath);
 
-  for (const line of formatFileList(
-      envelope)
+  for (
+    const line of formatFileList(
+      envelope
+    )
       .trimEnd()
       .split(
-        '\n')) {
+        '\n'
+      )
+  ) {
     context.console.writeLine(
-      line);
+      line
+    );
   }
 }
 
 export function formatFileList(
-    envelope: Envelope
-  ): string
+  envelope: Envelope
+): string
 {
   const lines =
     [
-      '| Location | Complete | Type |',
-      '| --- | --- | --- |',
-      ...envelope.files
-        .map(
-          file =>
-            `| ${escapeMarkdownTableCell(
-              file.path)} | ${formatComplete(
-              file)} | ${escapeMarkdownTableCell(
-              file.type)} |`)
-    ];
+    '| Location | Complete | Type |',
+    '| --- | --- | --- |',
+    ...envelope.files
+      .map(
+        file =>
+          `| ${
+            escapeMarkdownTableCell(
+              file.path
+            )
+          } | ${
+            formatComplete(
+              file
+            )
+          } | ${
+            escapeMarkdownTableCell(
+              file.type
+            )
+          } |`
+      )
+  ];
 
-  return `${lines.join(
-    '\n')}\n`;
+  return `${
+    lines.join(
+      '\n'
+    )
+  }\n`;
 }
 
 function formatComplete(
-    file: EnvelopeFile
-  ): string
+  file: EnvelopeFile
+): string
 {
   return file.complete === undefined
     ? ''
     : file.complete
-      ? 'yes'
-      : 'no';
+    ? 'yes'
+    : 'no';
 }
 
 function escapeMarkdownTableCell(
-    value: string
-  ): string
+  value: string
+): string
 {
   return value
     .replace(
       /\\/g,
-      '\\\\')
+      '\\\\'
+    )
     .replace(
       /\|/g,
-      '\\|')
+      '\\|'
+    )
     .replace(
       /\r?\n/g,
-      ' ');
+      ' '
+    );
 }

@@ -1,14 +1,13 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
-import { observable }
-  from './observable.js';
+import test
+  from 'node:test';
 import { ObservableObject }
   from './observable-object.js';
+import { observable }
+  from './observable.js';
 
-const TEST_SUITE =
-  'watch';
+const TEST_SUITE = 'watch';
 
 /**
  * Plain objects should gain a hidden watch method so consumers can subscribe
@@ -16,35 +15,41 @@ const TEST_SUITE =
  */
 test(
   `${TEST_SUITE}: observable adds non-enumerable watch method when missing`,
-  async () => {
+  async () =>
+  {
     const obj =
       observable(
-        { a: 1,
-          b: 2 });
+        { a: 1, b: 2 });
 
     assert.equal(
       typeof (obj as any).watch,
-      'function');
+      'function'
+    );
 
     assert.equal(
       Object.keys(obj).includes('watch'),
-      false);
+      false
+    );
 
     const calls: Array<[number, number]> = [];
 
     (obj as any).watch(
-      [ 'a', 'b' ],
-      (a: number, b: number) => {
-        calls.push([ a, b ]);
-      });
+      ['a', 'b'],
+      (a: number, b: number) =>
+      {
+        calls.push(
+          [a, b]);
+      }
+    );
 
     obj.b = 4;
 
     assert.deepEqual(
       calls,
-      [ [ 1, 2 ],
-        [ 1, 4 ] ]);
-  });
+      [[1, 2], [1, 4]]
+    );
+  }
+);
 
 /**
  * Pre-existing watch implementations must be preserved to avoid breaking
@@ -52,19 +57,22 @@ test(
  */
 test(
   `${TEST_SUITE}: observable does not override existing watch method`,
-  async () => {
+  async () =>
+  {
     const originalWatch =
-      (): any => { };
+      (): any =>
+    {};
 
     const obj =
       observable(
-        { a: 1,
-          watch: originalWatch } as any);
+        { a: 1, watch: originalWatch } as any);
 
     assert.equal(
       obj.watch,
-      originalWatch);
-  });
+      originalWatch
+    );
+  }
+);
 
 /**
  * Attempting watch() on array targets must fail explicitly so unsupported
@@ -72,26 +80,34 @@ test(
  */
 test(
   `${TEST_SUITE}: watching arrays is not supported`,
-  async () => {
+  async () =>
+  {
     const arr =
       observable(
-        [ 1, 2, 3 ]);
+        [1, 2, 3]);
 
     assert.throws(
       () =>
         observable.watch(
           arr as any,
-          [ '0' ] as const,
-          () => { }),
-      /Watching arrays is not supported\./);
+          ['0'] as const,
+          () =>
+          {}
+        ),
+      /Watching arrays is not supported\./
+    );
 
     assert.throws(
       () =>
         (arr as any).watch(
-          [ '0' ],
-          () => { }),
-      /Watching arrays is not supported\./);
-  });
+          ['0'],
+          () =>
+          {}
+        ),
+      /Watching arrays is not supported\./
+    );
+  }
+);
 
 /**
  * Multi-field watchers need an initial snapshot and updates only when selected
@@ -99,21 +115,23 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch tracks selected properties and emits initial callback`,
-  async () => {
+  async () =>
+  {
     const obj =
       observable(
-        { a: 1,
-          b: 2,
-          c: 3 });
+        { a: 1, b: 2, c: 3 });
 
     const calls: Array<[number, number]> = [];
 
     observable.watch(
       obj,
-      [ 'a', 'b' ] as const,
-      (a: number, b: number) => {
-        calls.push([ a, b ]);
-      });
+      ['a', 'b'] as const,
+      (a: number, b: number) =>
+      {
+        calls.push(
+          [a, b]);
+      }
+    );
 
     obj.a = 10;
     obj.c = 30;
@@ -121,10 +139,10 @@ test(
 
     assert.deepEqual(
       calls,
-      [ [ 1, 2 ],
-        [ 10, 2 ],
-        [ 10, 20 ] ]);
-  });
+      [[1, 2], [10, 2], [10, 20]]
+    );
+  }
+);
 
 /**
  * One-path subscriptions should work without forcing callers to allocate an
@@ -132,29 +150,32 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch accepts a single string path`,
-  async () => {
+  async () =>
+  {
     const obj =
       observable(
-        { a: 1,
-          b: 2 });
+        { a: 1, b: 2 });
 
     const calls: number[] = [];
 
     observable.watch(
       obj,
       'a',
-      (a: number) => {
+      (a: number) =>
+      {
         calls.push(a);
-      });
+      }
+    );
 
     obj.b = 20;
     obj.a = 10;
 
     assert.deepEqual(
       calls,
-      [ 1,
-        10 ]);
-  });
+      [1, 10]
+    );
+  }
+);
 
 /**
  * Injected instance watch() should mirror function API support for a single
@@ -162,28 +183,31 @@ test(
  */
 test(
   `${TEST_SUITE}: injected watch method accepts a single string path`,
-  async () => {
+  async () =>
+  {
     const obj =
       observable(
-        { a: 1,
-          b: 2 });
+        { a: 1, b: 2 });
 
     const calls: number[] = [];
 
     obj.watch(
       'a',
-      (a: number) => {
+      (a: number) =>
+      {
         calls.push(a);
-      });
+      }
+    );
 
     obj.b = 20;
     obj.a = 10;
 
     assert.deepEqual(
       calls,
-      [ 1,
-        10 ]);
-  });
+      [1, 10]
+    );
+  }
+);
 
 /**
  * Deep path subscriptions must react to leaf edits while independent paths
@@ -191,30 +215,33 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch supports nested paths and nested updates`,
-  async () => {
+  async () =>
+  {
     const state =
       observable(
-        { user: { name: 'Alice' },
-          active: false });
+        { user: { name: 'Alice' }, active: false });
 
     const calls: Array<[string | undefined, boolean]> = [];
 
     observable.watch(
       state,
-      [ 'user.name', 'active' ] as const,
-      (userName: string | undefined, active: boolean) => {
-        calls.push([ userName, active ]);
-      });
+      ['user.name', 'active'] as const,
+      (userName: string | undefined, active: boolean) =>
+      {
+        calls.push(
+          [userName, active]);
+      }
+    );
 
     state.active = true;
     state.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [ [ 'Alice', false ],
-        [ 'Alice', true ],
-        [ 'Bob', true ] ]);
-  });
+      [['Alice', false], ['Alice', true], ['Bob', true]]
+    );
+  }
+);
 
 /**
  * Replacing an ancestor object should rebind deep listeners so future leaf
@@ -222,32 +249,34 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch rebinds nested path when ancestor object changes`,
-  async () => {
+  async () =>
+  {
     const state =
       observable(
-        { user: { name: 'Alice' },
-          active: false });
+        { user: { name: 'Alice' }, active: false });
 
     const calls: Array<[string | undefined, boolean]> = [];
 
     observable.watch(
       state,
-      [ 'user.name', 'active' ] as const,
-      (userName: string | undefined, active: boolean) => {
-        calls.push([ userName, active ]);
-      });
+      ['user.name', 'active'] as const,
+      (userName: string | undefined, active: boolean) =>
+      {
+        calls.push(
+          [userName, active]);
+      }
+    );
 
-    state.user =
-      { name: 'Carol' } as any;
+    state.user = { name: 'Carol' } as any;
 
     state.user.name = 'Dan';
 
     assert.deepEqual(
       calls,
-      [ [ 'Alice', false ],
-        [ 'Carol', false ],
-        [ 'Dan', false ] ]);
-  });
+      [['Alice', false], ['Carol', false], ['Dan', false]]
+    );
+  }
+);
 
 /**
  * The disposer must detach every listener and remain idempotent across
@@ -255,39 +284,44 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch returns disposer for all attached listeners`,
-  () => {
+  () =>
+  {
     const obj =
       observable(
-        { a: 1,
-          b: 2 });
+        { a: 1, b: 2 });
 
     const calls: Array<[number, number]> = [];
 
     const unwatch =
       observable.watch(
         obj,
-        [ 'a', 'b' ] as const,
-        (a: number, b: number) => {
-          calls.push([ a, b ]);
-        });
+        ['a', 'b'] as const,
+        (a: number, b: number) =>
+      {
+        calls.push(
+          [a, b]);
+      });
 
     obj.a = 10;
 
     assert.equal(
       unwatch(),
-      true);
+      true
+    );
 
     obj.b = 20;
 
     assert.equal(
       unwatch(),
-      false);
+      false
+    );
 
     assert.deepEqual(
       calls,
-      [ [ 1, 2 ],
-        [ 10, 2 ] ]);
-  });
+      [[1, 2], [10, 2]]
+    );
+  }
+);
 
 /**
  * Malformed paths should be rejected immediately to prevent hidden no-op
@@ -295,32 +329,39 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch rejects empty and malformed paths`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { user: { name: 'Alice' } });
 
     const callback =
-      (): void => { };
+      (): void =>
+    {};
 
     const invalidPaths =
-      [ '',
-        '   ',
-        '.user.name',
-        'user.name.',
-        'user..name',
-        'user. .name' ] as const;
+      [
+      '',
+      '   ',
+      '.user.name',
+      'user.name.',
+      'user..name',
+      'user. .name'
+    ] as const;
 
     for (const path of invalidPaths) {
       assert.throws(
         () =>
           observable.watch(
             state,
-            [ path ],
-            callback),
-        TypeError);
+            [path],
+            callback
+          ),
+        TypeError
+      );
     }
-  });
+  }
+);
 
 /**
  * Plain roots should still support an immediate snapshot even without any
@@ -328,7 +369,8 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch supports non-eventful root with snapshot only`,
-  () => {
+  () =>
+  {
     const plainState =
       { user: { name: 'Alice' } };
 
@@ -337,58 +379,63 @@ test(
     observable.watch(
       plainState as any,
       'user.name',
-      (name: string | undefined) => {
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
-    plainState.user.name =
-      'Bob';
+    plainState.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [ 'Alice' ]);
-  });
+      ['Alice']
+    );
+  }
+);
 
-    /**
+/**
  * Even when the root is plain, nested eventful objects should still drive
  * updates when a listener can be attached at the eventful segment.
-     */
-    test(
+ */
+test(
   `${TEST_SUITE}: observable.watch supports non-eventful root with nested eventful segments`,
-      () => {
+  () =>
+  {
     const user =
       observable(
         { name: 'Alice' },
         { shallow: true });
 
-        const plainState =
+    const plainState =
       { user };
 
     const calls: Array<string | undefined> = [];
 
     observable.watch(
       plainState as any,
-      [ 'user.name' ],
-      (name: string | undefined) => {
+      ['user.name'],
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
-    user.name =
-      'Bob';
+    user.name = 'Bob';
 
-    plainState.user =
-      observable(
-        { name: 'Carol' },
-        { shallow: true });
+    plainState.user = observable(
+      { name: 'Carol' },
+      { shallow: true }
+    );
 
-    (plainState.user as any).name =
-      'Dan';
+    (plainState.user as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      [ 'Alice',
-        'Bob' ]);
-      });
+      ['Alice', 'Bob']
+    );
+  }
+);
 
 /**
  * Non-string or non-array path selectors must fail fast to keep watch input
@@ -396,7 +443,8 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch rejects invalid properties input type`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { a: 1 });
@@ -406,9 +454,13 @@ test(
         observable.watch(
           state,
           123 as any,
-          () => { }),
-      /Expect properties to be a string or an array of strings\./);
-  });
+          () =>
+          {}
+        ),
+      /Expect properties to be a string or an array of strings\./
+    );
+  }
+);
 
 /**
  * Mixed-type selector arrays should throw before binding so partial
@@ -416,7 +468,8 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch rejects non-string items in properties array`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { a: 1 });
@@ -425,10 +478,14 @@ test(
       () =>
         observable.watch(
           state,
-          [ 'a', 1 as any ],
-          () => { }),
-      /Expect properties to be a string or an array of strings\./);
-  });
+          ['a', 1 as any],
+          () =>
+          {}
+        ),
+      /Expect properties to be a string or an array of strings\./
+    );
+  }
+);
 
 /**
  * Nested watchers should become active after a missing ancestor object is
@@ -436,7 +493,8 @@ test(
  */
 test(
   `${TEST_SUITE}: observable.watch nested path rebinds when ancestor is created later`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { user: undefined as undefined | { name: string; } });
@@ -446,22 +504,22 @@ test(
     observable.watch(
       state,
       'user.name',
-      (name: string | undefined) => {
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
-    state.user =
-      { name: 'Alice' };
+    state.user = { name: 'Alice' };
 
-    state.user.name =
-      'Bob';
+    state.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [ undefined,
-        'Alice',
-        'Bob' ]);
-  });
+      [undefined, 'Alice', 'Bob']
+    );
+  }
+);
 
 /**
  * Watching partially initialised model should emit undefined once at start,
@@ -469,7 +527,8 @@ test(
  */
 test(
   `${TEST_SUITE}: watching partially initialised model`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { user: {} as { info?: { name: string; }; } });
@@ -479,22 +538,25 @@ test(
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) => {
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
     assert.deepEqual(
       calls,
-      [ undefined ]);
+      [undefined]
+    );
 
-    state.user.info =
-      { name: 'Alice' };
+    state.user.info = { name: 'Alice' };
 
     assert.deepEqual(
       calls,
-      [ undefined,
-        'Alice' ]);
-  });
+      [undefined, 'Alice']
+    );
+  }
+);
 
 /**
  * Paths that traverse only plain nested objects (no eventful segments beyond
@@ -503,7 +565,8 @@ test(
  */
 test(
   `${TEST_SUITE}: watches path when nested segments are non-eventful`,
-  () => {
+  () =>
+  {
     const state =
       observable(
         { user: { info: { name: 'Alice' } } },
@@ -514,23 +577,24 @@ test(
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) => {
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
     // Leaf edits do not emit without eventful objects along nested segments.
-    state.user.info.name =
-      'Bob';
+    state.user.info.name = 'Bob';
 
     // Replacing the observable ancestor segment emits with refreshed value.
-    state.user =
-      { info: { name: 'Carol' } };
+    state.user = { info: { name: 'Carol' } };
 
     assert.deepEqual(
       calls,
-      [ 'Alice',
-        'Carol' ]);
-  });
+      ['Alice', 'Carol']
+    );
+  }
+);
 
 /**
  * Mixed path segments should still work: updates at observable boundaries must
@@ -539,7 +603,8 @@ test(
  */
 test(
   `${TEST_SUITE}: supports mixed observable and non-observable path segments`,
-  () => {
+  () =>
+  {
     const user =
       observable(
         { info: { name: 'Alice' } },
@@ -555,30 +620,29 @@ test(
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) => {
+      (name: string | undefined) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
     // info is not observable yet, but user is; changing info should refresh.
-    user.info =
-      { name: 'Bob' };
+    user.info = { name: 'Bob' };
 
     // swap to observable info; path should rebind to set:name.
-    user.info =
-      observable(
-        { name: 'Carol' },
-        { shallow: true }) as any;
+    user.info = observable(
+      { name: 'Carol' },
+      { shallow: true }
+    ) as any;
 
-    (user.info as any).name =
-      'Dan';
+    (user.info as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      [ 'Alice',
-        'Bob',
-        'Carol',
-        'Dan' ]);
-  });
+      ['Alice', 'Bob', 'Carol', 'Dan']
+    );
+  }
+);
 
 /**
  * ObservableObject with setAndEmit should deliver deduplicated change
@@ -586,17 +650,20 @@ test(
  */
 test(
   `${TEST_SUITE}: ObservableObject watch with setAndEmit`,
-  () => {
+  () =>
+  {
     const obj =
       new ObjWithName();
 
     const calls: string[] = [];
 
     obj.watch(
-      [ 'name' ],
-      (name: string) => {
+      ['name'],
+      (name: string) =>
+      {
         calls.push(name);
-      });
+      }
+    );
 
     obj.name = 'Alice';
     obj.name = 'Alice';
@@ -604,10 +671,10 @@ test(
 
     assert.deepEqual(
       calls,
-      [ '',
-        'Alice',
-        'Bob' ]);
-  });
+      ['', 'Alice', 'Bob']
+    );
+  }
+);
 
 /**
  * Class-based watch() must provide a disposer that reliably detaches listeners
@@ -615,7 +682,8 @@ test(
  */
 test(
   `${TEST_SUITE}: ObservableObject watch returns disposer`,
-  () => {
+  () =>
+  {
     const obj =
       new ObjWithName();
 
@@ -623,24 +691,27 @@ test(
 
     const unwatch =
       obj.watch(
-        [ 'name' ],
-        (name: string) => {
-          calls.push(name);
-        });
+        ['name'],
+        (name: string) =>
+      {
+        calls.push(name);
+      });
 
     obj.name = 'Alice';
 
     assert.equal(
       unwatch(),
-      true);
+      true
+    );
 
     obj.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [ '',
-        'Alice' ]);
-  });
+      ['', 'Alice']
+    );
+  }
+);
 
 /**
  * ObservableObject watch() should accept a single property key string for
@@ -648,7 +719,8 @@ test(
  */
 test(
   `${TEST_SUITE}: ObservableObject watch accepts a property name string`,
-  () => {
+  () =>
+  {
     const obj =
       new ObjWithName();
 
@@ -656,8 +728,8 @@ test(
 
     obj.watch(
       'name',
-      (name: string) =>
-        calls.push(name));
+      (name: string) => calls.push(name)
+    );
 
     obj.name = 'Alice';
     obj.name = 'Alice';
@@ -665,17 +737,17 @@ test(
 
     assert.deepEqual(
       calls,
-      [ '',
-        'Alice',
-        'Bob' ]);
-  });
+      ['', 'Alice', 'Bob']
+    );
+  }
+);
 
-class ObjWithName
-  extends ObservableObject<{ name: string }>
+class ObjWithName extends ObservableObject<{ name: string; }>
 {
   #name: string = '';
 
-  constructor() {
+  constructor()
+  {
     super();
   }
 
@@ -688,7 +760,7 @@ class ObjWithName
       'name',
       this.#name,
       value,
-      (next: string) =>
-        this.#name = next);
+      (next: string) => this.#name = next
+    );
   }
 }

@@ -1,29 +1,35 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
-import { Table,
-         dbOpen,
+import test
+  from 'node:test';
+import { dbOpen,
          IncrementTableVersionStrategy,
+         Table,
          UuidSoftDeleteTableDeleteStrategy }
   from './index.js';
 
 test(
   'index: exports table api',
-  () => {
+  () =>
+  {
     assert.equal(
       typeof dbOpen,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Table,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof IncrementTableVersionStrategy,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof UuidSoftDeleteTableDeleteStrategy,
-      'function');
-  });
+      'function'
+    );
+  }
+);

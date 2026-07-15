@@ -1,12 +1,12 @@
 import { existsSync }
   from 'node:fs';
-import { dirname }
-  from 'node:path';
 import { mkdir,
          readFile,
          rm,
          writeFile }
   from 'node:fs/promises';
+import { dirname }
+  from 'node:path';
 
 interface Backup
 {
@@ -29,94 +29,104 @@ export interface RollbackFeed
   rollbackAll: () => Promise<void>;
 }
 
-export class BackupRollbackFeed
-  implements RollbackFeed
+export class BackupRollbackFeed implements RollbackFeed
 {
   constructor(
-      private readonly backupPath: string
-    )
+    private readonly backupPath: string
+  )
   {
   }
 
   static async create(
-      backupPath: string
-    ): Promise<BackupRollbackFeed>
+    backupPath: string
+  ): Promise<BackupRollbackFeed>
   {
     const backup: Backup =
       { files: [] };
 
     await mkdir(
       dirname(
-        backupPath),
-      { recursive: true });
+        backupPath
+      ),
+      { recursive: true }
+    );
 
     await writeFile(
       backupPath,
-      `${JSON.stringify(
-        backup,
-        null,
-        2)}\n`,
-      'utf8');
+      `${
+        JSON.stringify(
+          backup,
+          null,
+          2
+        )
+      }\n`,
+      'utf8'
+    );
 
     return new BackupRollbackFeed(
-      backupPath);
+      backupPath
+    );
   }
 
   static async restoreAndDelete(
-      backupPath: string
-    ): Promise<void>
+    backupPath: string
+  ): Promise<void>
   {
     const rollbackFeed =
       new BackupRollbackFeed(
-        backupPath);
+      backupPath
+    );
 
     await rollbackFeed.rollbackAll();
     await rollbackFeed.delete();
   }
 
-  async delete(
-    ): Promise<void>
+  async delete(): Promise<void>
   {
     await rm(
       this.backupPath,
-      { force: true });
+      { force: true }
+    );
   }
 
   async saveFileState(
-      filePath: string
-    ): Promise<void>
+    filePath: string
+  ): Promise<void>
   {
     const backup =
       await this.load();
 
-    if (existsSync(
-        filePath)) {
+    if (
+      existsSync(
+        filePath
+      )
+    ) {
       backup.files
         .push(
-          { path:
-              filePath,
-            existed:
-              true,
-            content:
-              (await readFile(
-                filePath))
-                .toString(
-                  'base64') });
+          {
+            path: filePath,
+            existed: true,
+            content: (await readFile(
+              filePath
+            ))
+              .toString(
+                'base64'
+              )
+          }
+        );
     } else {
       backup.files
         .push(
-          { path:
-              filePath,
-            existed:
-              false });
+          { path: filePath, existed: false }
+        );
     }
 
     await this.save(
-      backup);
+      backup
+    );
   }
 
-  async rollbackLast(
-    ): Promise<void>
+  async rollbackLast(): Promise<void>
   {
     const backup =
       await this.load();
@@ -129,74 +139,87 @@ export class BackupRollbackFeed
     }
 
     await restoreFile(
-      file);
+      file
+    );
 
     await this.save(
-      backup);
+      backup
+    );
   }
 
-  async rollbackAll(
-    ): Promise<void>
+  async rollbackAll(): Promise<void>
   {
     const backup =
       await this.load();
 
-    for (const file of [
-      ...backup.files
-    ].reverse()) {
+    for (
+      const file of [
+        ...backup.files
+      ].reverse()
+    ) {
       await restoreFile(
-        file);
+        file
+      );
     }
 
-    backup.files =
-      [];
+    backup.files = [];
 
     await this.save(
-      backup);
+      backup
+    );
   }
 
-  private async load(
-    ): Promise<Backup>
+  private async load(): Promise<Backup>
   {
     return JSON.parse(
       await readFile(
         this.backupPath,
-        'utf8')) as Backup;
+        'utf8'
+      )
+    ) as Backup;
   }
 
   private async save(
-      backup: Backup
-    ): Promise<void>
+    backup: Backup
+  ): Promise<void>
   {
     await writeFile(
       this.backupPath,
-      `${JSON.stringify(
-        backup,
-        null,
-        2)}\n`,
-      'utf8');
+      `${
+        JSON.stringify(
+          backup,
+          null,
+          2
+        )
+      }\n`,
+      'utf8'
+    );
   }
 }
 
 async function restoreFile(
-    file: BackupFile
-  ): Promise<void>
+  file: BackupFile
+): Promise<void>
 {
   if (file.existed) {
     await mkdir(
       dirname(
-        file.path),
-      { recursive: true });
+        file.path
+      ),
+      { recursive: true }
+    );
 
     await writeFile(
       file.path,
       Buffer.from(
         file.content ?? '',
-        'base64'));
+        'base64'
+      )
+    );
   } else {
     await rm(
       file.path,
-      { recursive: true,
-        force: true });
+      { recursive: true, force: true }
+    );
   }
 }

@@ -1,6 +1,6 @@
 export function argv(
-    ...args: string[]
-  ): string[]
+  ...args: string[]
+): string[]
 {
   return [
     'node',
@@ -10,36 +10,49 @@ export function argv(
 }
 
 export function quoteShellArg(
-    value: string
-  ): string
+  value: string
+): string
 {
-  return `"${value.replace(
-    /"/g,
-    '\"')}"`;
+  return `"${
+    value.replace(
+      /"/g,
+      '"'
+    )
+  }"`;
 }
 
 export function nodeCommand(
-    source: string
-  ): string
+  source: string
+): string
 {
-  return `${quoteShellArg(
-    process.execPath)} -e ${quoteShellArg(
-    source)}`;
+  return `${
+    quoteShellArg(
+      process.execPath
+    )
+  } -e ${
+    quoteShellArg(
+      source
+    )
+  }`;
 }
 
 export function withEnv(
-    updates: Record<string, string | undefined>,
-    action: () => void | Promise<void>
-  ): Promise<void>
+  updates: Record<string, string | undefined>,
+  action: () => void | Promise<void>
+): Promise<void>
 {
   const previous =
     new Map<string, string | undefined>();
 
-  for (const name of Object.keys(
-      updates)) {
+  for (
+    const name of Object.keys(
+      updates
+    )
+  ) {
     previous.set(
       name,
-      process.env[name]);
+      process.env[name]
+    );
 
     const value =
       updates[name];
@@ -47,23 +60,24 @@ export function withEnv(
     if (value === undefined) {
       delete process.env[name];
     } else {
-      process.env[name] =
-        value;
+      process.env[name] = value;
     }
   }
 
   return Promise.resolve()
     .then(
-      action)
+      action
+    )
     .finally(
-      () => {
+      () =>
+      {
         for (const [name, value] of previous) {
           if (value === undefined) {
             delete process.env[name];
           } else {
-            process.env[name] =
-              value;
+            process.env[name] = value;
           }
         }
-      });
+      }
+    );
 }

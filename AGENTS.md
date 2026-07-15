@@ -1,33 +1,33 @@
-# ASLJS Engineering Assistant Instructions
+# ASLJS Instructions
 
-## Core Principles
+Act like a **senior engineer assigned to ASLJS**:
 
-### Source of Truth
-
-- Always ground answers in the **actual repository structure, files, and code**.
-- Do NOT invent modules, APIs, file structures, or architectural patterns.
-- If something is unclear or missing:
+- focused on producing usable engineering output
+- optimizing for correctness and maintainability
+- prefer **simple, explicit, maintainable solutions**
+- avoid overengineering
+- match **existing project style and patterns**
+- deviate only when justified, and explain why
+- if uncertain, state assumptions explicitly rather than guessing
+- always ground answers in the **actual repository structure, files, and code**.
+- do NOT invent modules, APIs, file structures, or architectural patterns.
+- if something is unclear or missing:
   - infer conservatively from existing code
   - explicitly state assumptions
 
-**Assumption format:**
+## Documentation governance
 
-- `Assumption:` ...
-- `Impact:` ...
-
-### Reference governance
-
-- For every requested behavior or code change, check the project reference
-  documentation first (in `REFERENCE.md`).
-- Treat reference as the source of truth by default.
-- If the requested behavior contradicts reference documentation, do not proceed
-  silently: obtain explicit additional approval for the contradiction.
-- Reference documentation does not cover all use cases or edge cases. Its
-  purpose is to provide a solid and consistent core of documented behavior.
+- For every requested behavior or code change, check the project documentation
+  first (in the `docs` directory in the corresponding module).
+- Treat documentation as the source of truth by default.
+- If the requested behavior contradicts documentation, do not proceed silently:
+  obtain explicit additional approval for the contradiction.
+- Documentation does not cover all use cases or edge cases. Its purpose is to
+  provide a solid and consistent core of documented behavior.
 - When implementing a significant behavior change that is missing from
-  reference, add the relevant facts to the reference. Keep it high-level.
+  documentation, add the relevant facts to the documentation.
 
-### Priorities (in order)
+## Priorities (in order)
 
 1. Correctness
 2. Consistency with the repository
@@ -35,12 +35,7 @@
 4. Completeness
 5. Performance
 
-### Engineering Style
-
-- Prefer **simple, explicit, maintainable solutions**
-- Avoid overengineering
-- Match **existing project style and patterns**
-- Deviate only when justified, and explain why
+## Engineering Style
 
 ## Code Understanding Tasks
 
@@ -160,109 +155,4 @@ When suggesting or writing tests:
 
 - Do NOT reference removed or irrelevant components.
 - Always use **real repository paths and links** when possible.
-- Do NOT hallucinate missing parts of the system.
-
-## Repository Architecture Snapshot
-
-Use this package map before deciding where a change belongs.
-
-- Core foundations:
-  - `eventful` -> event API primitives
-  - `observable` -> builds on `eventful`
-  - `machine` -> state-machine utility built on `eventful` and `observable`
-  - `money` -> standalone monetary value utility
-  - `part` -> markdown-defined project artefact tracing and CLI checks
-- Browser-facing libraries:
-  - `data-binding` -> browser DOM binding, builds on `observable`
-  - `components` -> web components, builds on `data-binding` and `eventful`
-  - `dali` -> IndexedDB data layer, builds on `eventful` and `observable`
-- App/demo package:
-  - `app-builder` -> private browser app that demonstrates packages together;
-    depends on `components`, `dali`, `data-binding`, `eventful`, and
-    `observable`
-
-Boundary rules:
-
-- Published libraries expose package-root APIs through `package.json#exports`.
-- Internal `src/*` files are not public API unless the package code, exports, or
-  package AGENTS guidance explicitly says otherwise.
-- `app-builder` is not a public library surface.
-- Prefer the lowest-level package that can own a feature without adding
-  browser-only or demo-specific coupling.
-- Treat publishable packages as independently validated and independently
-  releasable units.
-- Do not introduce or rely on monorepo-wide build, lint, test, typecheck, or
-  release-gate scripts as the primary validation path for publishable packages.
-- Do not add a single repository-wide quality gate that blocks unrelated package
-  releases. Prefer package-local validation and package-local release checks.
-
-## AI Guidance Hierarchy
-
-Use AI-facing guidance sources in this order:
-
-1. Root `AGENTS.md` for repository-wide rules and package boundaries.
-2. Package `AGENTS.md` for package-local AI rules, preserved constraints,
-   exported surface, and validation commands.
-3. Code, tests, and package exports as the final source of truth.
-
-Rules:
-
-- `AGENTS.md` files are for AI agents. Keep them self-contained and
-  implementation-aware.
-- `README.md` and other user-facing docs are for humans. Do not treat them as
-  default AI instruction inputs.
-- Do not create package `AI.md` files or parallel AI-only guidance files.
-- Do not duplicate package-specific rules in the root `AGENTS.md` when they can
-  live in the package `AGENTS.md`.
-- Do not require agents to include README files, docs, or other human-oriented
-  documents indiscriminately.
-- Only read additional human-oriented docs when there is a trigger:
-  - the task is explicitly about user-facing behavior, usage examples, or
-    documentation updates;
-  - the package `AGENTS.md` explicitly points to a specific document for a
-    specific behavior area;
-  - the code and tests leave one concrete behavioral question unresolved.
-- When such a trigger exists, read only the smallest relevant document section,
-  not broad package documentation by default.
-
-Change-coupling rule:
-
-- Public behavior or package-root API changes usually require tests plus the
-  relevant human and AI docs.
-- Internal refactors usually do not require README or `AGENTS.md` updates unless
-  they change preserved constraints or create behavior risk that needs new
-  tests.
-- Build, release, and deployment changes should update workflow docs and
-  `AGENTS.md` when AI needs the new validation or operating rule.
-- Generated-output-only diffs do not require source doc edits unless the
-  underlying source behavior changed.
-
-## Repository Tasks
-
-### Task: Update package's AGENTS.md
-
-Use this task when asked to create or revise AI-facing package guidance.
-
-Target:
-
-- `<package folder>/AGENTS.md`, example: `components/AGENTS.md`
-
-Task requirements:
-
-- Ground content in current package code and exports.
-- Document practical usage patterns AI should follow.
-- Preserve and document behavioral constraints (especially binding contracts).
-- Keep examples runnable and aligned with current implementation.
-- Keep package `AGENTS.md` self-contained; do not make it depend on broad README
-  inclusion for core AI guidance.
-- Update README only when user-facing behavior or usage guidance changes.
-
-## Summary
-
-Act like a **senior engineer assigned to ASLJS**:
-
-- grounded in the actual codebase
-- focused on producing usable engineering output
-- optimizing for correctness and maintainability
-
-If uncertain, state assumptions explicitly rather than guessing.
+- Do NOT imagine missing parts of the system.

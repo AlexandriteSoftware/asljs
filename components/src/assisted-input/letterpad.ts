@@ -6,26 +6,27 @@ import { customElement,
   from 'lit/decorators.js';
 import { unsafeHTML }
   from 'lit/directives/unsafe-html.js';
-import { AssistedInput,
-         AssistedInputModelProperties,
-         AssistedInputButtonDefinition,
-         AssistedInputKeyDetail }
-  from './assisted-input.js';
 import { ComponentModelDefinition }
   from '../abstractions/model.js';
+import { AssistedInput,
+         AssistedInputButtonDefinition,
+         AssistedInputKeyDetail,
+         AssistedInputModelProperties }
+  from './assisted-input.js';
 
-export type LetterpadKeyDetail =
-  AssistedInputKeyDetail;
+export type LetterpadKeyDetail = AssistedInputKeyDetail;
 
 export const LetterpadModelDefinition: ComponentModelDefinition =
-  { name: 'LetterpadModelDefinition',
-    title: 'Letterpad',
-    properties:
-      [ ...AssistedInputModelProperties,
-        { name: 'collapsed',
-          title: 'Collapsed',
-          type: 'boolean',
-          description: 'Whether the letterpad is collapsed.' } ] };
+  {
+  name: 'LetterpadModelDefinition',
+  title: 'Letterpad',
+  properties: [...AssistedInputModelProperties, {
+    name: 'collapsed',
+    title: 'Collapsed',
+    type: 'boolean',
+    description: 'Whether the letterpad is collapsed.'
+  }]
+};
 
 const KEYBOARD_ICON_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">'
@@ -33,42 +34,44 @@ const KEYBOARD_ICON_SVG =
   + '</svg>';
 
 const BUTTONS: readonly AssistedInputButtonDefinition[] =
-  [ { action: 'toggle', className: 'toggle' },
-    { key: 'a', label: 'A' },
-    { key: 'b', label: 'B' },
-    { key: 'c', label: 'C' },
-    { key: 'd', label: 'D' },
-    { key: 'e', label: 'E' },
-    { key: 'f', label: 'F' },
-    { key: 'g', label: 'G' },
-    { key: 'h', label: 'H' },
-    { key: 'i', label: 'I' },
-    { key: 'j', label: 'J' },
-    { key: 'k', label: 'K' },
-    { key: 'l', label: 'L' },
-    { key: 'm', label: 'M' },
-    { key: 'n', label: 'N' },
-    { key: 'o', label: 'O' },
-    { key: 'p', label: 'P' },
-    { key: 'q', label: 'Q' },
-    { key: 'r', label: 'R' },
-    { key: 'Backspace', label: '⌫' },
-    { key: 's', label: 'S' },
-    { key: 't', label: 'T' },
-    { key: 'u', label: 'U' },
-    { key: 'v', label: 'V' },
-    { key: 'Enter', label: '⏎', className: 'enter' },
-    { key: 'w', label: 'W' },
-    { key: 'x', label: 'X' },
-    { key: 'y', label: 'Y' },
-    { key: 'z', label: 'Z' } ];
+  [
+  { action: 'toggle', className: 'toggle' },
+  { key: 'a', label: 'A' },
+  { key: 'b', label: 'B' },
+  { key: 'c', label: 'C' },
+  { key: 'd', label: 'D' },
+  { key: 'e', label: 'E' },
+  { key: 'f', label: 'F' },
+  { key: 'g', label: 'G' },
+  { key: 'h', label: 'H' },
+  { key: 'i', label: 'I' },
+  { key: 'j', label: 'J' },
+  { key: 'k', label: 'K' },
+  { key: 'l', label: 'L' },
+  { key: 'm', label: 'M' },
+  { key: 'n', label: 'N' },
+  { key: 'o', label: 'O' },
+  { key: 'p', label: 'P' },
+  { key: 'q', label: 'Q' },
+  { key: 'r', label: 'R' },
+  { key: 'Backspace', label: '⌫' },
+  { key: 's', label: 'S' },
+  { key: 't', label: 'T' },
+  { key: 'u', label: 'U' },
+  { key: 'v', label: 'V' },
+  { key: 'Enter', label: '⏎', className: 'enter' },
+  { key: 'w', label: 'W' },
+  { key: 'x', label: 'X' },
+  { key: 'y', label: 'Y' },
+  { key: 'z', label: 'Z' }
+];
 
-@customElement('asljs-letterpad')
-export class Letterpad
-  extends AssistedInput
+@customElement(
+  'asljs-letterpad'
+)
+export class Letterpad extends AssistedInput
 {
-  static override styles =
-    css`
+  static override styles = css`
       :host {
         display: inline-block;
         user-select: none;
@@ -129,26 +132,33 @@ export class Letterpad
       }
     `;
 
-  @property({ reflect: true, type: Boolean })
-    accessor collapsed = false;
+  @property(
+    { reflect: true, type: Boolean }
+  )
+  accessor collapsed = false;
 
   protected override get defaultAriaLabel(): string {
     return 'letterpad';
   }
 
-  override render(): ReturnType<AssistedInput['render']> {
+  override render(): ReturnType<AssistedInput['render']>
+  {
     return html`
       <div class="grid" part="grid">
-        ${BUTTONS.map(button => this.#renderButton(button))}
+        ${
+      BUTTONS.map(
+        button => this.#renderButton(button)
+      )
+    }
       </div>
     `;
   }
 
   protected override handleAction(
-      action: string,
-      event: Event,
-      _button: HTMLButtonElement
-    ): boolean
+    action: string,
+    event: Event,
+    _button: HTMLButtonElement
+  ): boolean
   {
     if (action !== 'toggle') {
       return false;
@@ -161,20 +171,23 @@ export class Letterpad
   }
 
   #renderButton(
-      button: AssistedInputButtonDefinition
-    ): ReturnType<typeof html>
+    button: AssistedInputButtonDefinition
+  ): ReturnType<typeof html>
   {
     if (button.action === 'toggle') {
       return this.renderAssistedInputButton(
         button,
-        unsafeHTML(KEYBOARD_ICON_SVG),
-        { ariaLabel: this.#toggleLabel,
-          title: this.#toggleLabel });
+        unsafeHTML(
+          KEYBOARD_ICON_SVG
+        ),
+        { ariaLabel: this.#toggleLabel, title: this.#toggleLabel }
+      );
     }
 
     return this.renderAssistedInputButton(
       button,
-      html`<span class="label">${button.label ?? ''}</span>`);
+      html`<span class="label">${button.label ?? ''}</span>`
+    );
   }
 
   get #toggleLabel(): string {

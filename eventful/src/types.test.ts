@@ -1,16 +1,16 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { ListenerError }
   from './types.js';
 
-const TEST_SUITE =
-  'types';
+const TEST_SUITE = 'types';
 
 test(
   `${TEST_SUITE}: ListenerError extends Error and stores context`,
-  () => {
+  () =>
+  {
     const inner =
       new Error('inner');
 
@@ -18,43 +18,50 @@ test(
       { id: 1 };
 
     const listener =
-      (): void => { };
+      (): void =>
+    {};
 
     const error =
       new ListenerError(
-        'failed',
-        inner,
-        object,
-        'test',
-        listener);
+      'failed',
+      inner,
+      object,
+      'test',
+      listener
+    );
 
     assert.ok(
-      error instanceof Error);
+      error instanceof Error
+    );
 
     assert.equal(
       error.name,
-      'ListenerError');
+      'ListenerError'
+    );
 
     assert.equal(
       error.message,
-      'failed');
+      'failed'
+    );
 
     assert.equal(
       error.error,
-      inner);
+      inner
+    );
 
     assert.equal(
       error.object,
-      object);
+      object
+    );
 
     assert.equal(
       error.event,
-      'test');
+      'test'
+    );
 
     assert.equal(
       error.listener,
-      listener);
-  });
-
-
-
+      listener
+    );
+  }
+);

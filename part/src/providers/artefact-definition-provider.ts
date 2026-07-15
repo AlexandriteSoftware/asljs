@@ -115,7 +115,7 @@ export class ArtefactDefinitionProviderImpl
     const definition =
       definitions
       .find(
-        (item) => item.name === definitionName
+        item => item.name === definitionName
       );
 
     const definitionFoundStatus =
@@ -147,7 +147,7 @@ export class ArtefactDefinitionProviderImpl
     const definition =
       definitions
       .find(
-        (item) => item.name === definitionName
+        item => item.name === definitionName
       );
 
     if (!definition) {
@@ -336,7 +336,7 @@ export class ArtefactDefinitionProviderImpl
     const locationSection =
       sections
       .find(
-        (section) => section.heading === 'Location'
+        section => section.heading === 'Location'
       );
 
     if (!locationSection) {
@@ -446,10 +446,10 @@ export class ArtefactDefinitionProviderImpl
     const locationLists =
       nodes
       .filter(
-        (node) => node.type === 'list'
+        node => node.type === 'list'
       )
       .map(
-        (node) => node as List
+        node => node as List
       );
 
     const locations: Location[] = [];
@@ -458,7 +458,7 @@ export class ArtefactDefinitionProviderImpl
       const listItems =
         locationList.children
         .map(
-          (item) =>
+          item =>
             getText(
               document,
               item
@@ -466,7 +466,7 @@ export class ArtefactDefinitionProviderImpl
               .trim()
         )
         .filter(
-          (itemText) => itemText.length > 0
+          itemText => itemText.length > 0
         );
 
       if (listItems.length === 0) {

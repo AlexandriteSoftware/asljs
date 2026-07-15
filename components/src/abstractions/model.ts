@@ -6,7 +6,8 @@ export type ComponentModelPropertyType =
   | 'object'
   | 'string';
 
-export interface ComponentModelPropertyDefinition {
+export interface ComponentModelPropertyDefinition
+{
   name: string;
   type: ComponentModelPropertyType;
   title?: string;
@@ -14,7 +15,8 @@ export interface ComponentModelPropertyDefinition {
   editable?: boolean;
 }
 
-export interface ComponentModelDefinition {
+export interface ComponentModelDefinition
+{
   name: string;
   title?: string;
   properties: readonly ComponentModelPropertyDefinition[];

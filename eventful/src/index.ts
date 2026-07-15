@@ -1,24 +1,24 @@
 export {
-    eventful
-  } from './eventful.js';
+  eventful
+} from './eventful.js';
 
 export {
-    type EventfulLike,
-    isEventfulLike,
-    asEventfulLike,
-  } from './eventful-like.js';
+  asEventfulLike,
+  isEventfulLike,
+  type EventfulLike
+} from './eventful-like.js';
 
 export {
-    EventfulBase
-  } from './eventful-base.js';
+  EventfulBase
+} from './eventful-base.js';
 
 export {
-    type EventName,
-    type EventMap,
-    type Eventful,
-    type EventfulFactory,
-    type EventfulOptions,
-    type Listener,
-    ListenerError,
-    type TraceFn
-  } from './types.js';
+  ListenerError,
+  type Eventful,
+  type EventfulFactory,
+  type EventfulOptions,
+  type EventMap,
+  type EventName,
+  type Listener,
+  type TraceFn
+} from './types.js';

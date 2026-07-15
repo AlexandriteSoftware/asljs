@@ -1,19 +1,24 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
-import { AiChatModelDefinition,
+import test
+  from 'node:test';
+import { AiChat,
+         AiChatKeyPrompt,
+         AiChatModelDefinition,
          AssistedInput,
          AssistedInputModelDefinition,
-         AiChat,
-         AiChatKeyPrompt,
          Button,
          ButtonModelDefinition,
-         createBootstrapTheme,
          createAiChatModel,
-         OpenAiTransport,
+         createBootstrapTheme,
+         createImageFileHandler,
+         createPdfFileHandler,
+         createTextEditorFileHandler,
+         createTextFileHandler,
          FileView,
          FileViewModelDefinition,
+         getComponentVariantList,
+         getDefaultTheme,
          Keyboard,
          KeyboardModelDefinition,
          Letterpad,
@@ -22,164 +27,195 @@ import { AiChatModelDefinition,
          ListModelDefinition,
          Numpad,
          NumpadModelDefinition,
+         OpenAiTransport,
          Properties,
          PropertiesModelDefinition,
          Select,
          SelectModelDefinition,
+         setDefaultTheme,
          TextInput,
          TextInputModelDefinition,
          ThemeProvider,
-         ThemeProviderModelDefinition,
-         createImageFileHandler,
-         createPdfFileHandler,
-         createTextEditorFileHandler,
-         createTextFileHandler,
-         getComponentVariantList,
-         getDefaultTheme,
-         setDefaultTheme }
+         ThemeProviderModelDefinition }
   from './index.js';
 
 test(
   'index: exports component package root API',
-  () => {
+  () =>
+  {
     assert.equal(
       typeof Button,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Properties,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createBootstrapTheme,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof AssistedInput,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Numpad,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Keyboard,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Letterpad,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof List,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof TextInput,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof Select,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof AiChat,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof AiChatKeyPrompt,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof OpenAiTransport,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createAiChatModel,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof FileView,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createPdfFileHandler,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createImageFileHandler,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createTextFileHandler,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof createTextEditorFileHandler,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof ThemeProvider,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof getDefaultTheme,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof getComponentVariantList,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof setDefaultTheme,
-      'function');
+      'function'
+    );
 
     assert.equal(
       AiChatModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       AssistedInputModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       ButtonModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       FileViewModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       KeyboardModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       LetterpadModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       ListModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       NumpadModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       PropertiesModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       SelectModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       TextInputModelDefinition.properties.length > 0,
-      true);
+      true
+    );
 
     assert.equal(
       ThemeProviderModelDefinition.properties.length > 0,
-      true);
-
-  });
+      true
+    );
+  }
+);

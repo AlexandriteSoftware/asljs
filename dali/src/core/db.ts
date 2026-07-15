@@ -1,41 +1,49 @@
 export function dbRequestAsync<T>(
-    request: IDBRequest<T>
-  ): Promise<T>
+  request: IDBRequest<T>
+): Promise<T>
 {
   return new Promise(
     (
-        resolve,
-        reject
-      ) =>
+      resolve,
+      reject
+    ) =>
     {
       request.addEventListener(
         'success',
-        () => {
+        () =>
+        {
           resolve(
-            request.result);
-        });
+            request.result
+          );
+        }
+      );
 
       request.addEventListener(
         'error',
-        () => {
+        () =>
+        {
           reject(
             request.error
-            ?? new Error(
-                 'IndexedDB request failed'));
-        });
-    });
+              ?? new Error(
+                'IndexedDB request failed'
+              )
+          );
+        }
+      );
+    }
+  );
 }
 
 export function dbOpen(
-    name: string,
-    upgrades: ((db: IDBDatabase) => void)[]
-  ): Promise<IDBDatabase>
+  name: string,
+  upgrades: ((db: IDBDatabase) => void)[]
+): Promise<IDBDatabase>
 {
   return new Promise<IDBDatabase>(
     (
-        resolve,
-        reject
-      ) =>
+      resolve,
+      reject
+    ) =>
     {
       const request =
         indexedDB.open(
@@ -44,7 +52,8 @@ export function dbOpen(
 
       request.addEventListener(
         'upgradeneeded',
-        e => {
+        (e) =>
+        {
           const updates =
             upgrades.slice(
               e.oldVersion,
@@ -52,69 +61,96 @@ export function dbOpen(
               ?? upgrades.length);
 
           for (const update of updates) {
-            update(request.result);
+            update(
+              request.result
+            );
           }
-        });
+        }
+      );
 
       request.addEventListener(
         'success',
-        () => {
-          resolve(request.result);
-        });
+        () =>
+        {
+          resolve(
+            request.result
+          );
+        }
+      );
 
       request.addEventListener(
         'blocked',
-        () => {
+        () =>
+        {
           reject(
             new Error(
-              'Database opening is blocked'));
-        });
+              'Database opening is blocked'
+            )
+          );
+        }
+      );
 
       request.addEventListener(
         'error',
-        () => {
+        () =>
+        {
           reject(
             request.error
-            ?? new Error(
-                 'Failed to open database'));
-        });
-    });
+              ?? new Error(
+                'Failed to open database'
+              )
+          );
+        }
+      );
+    }
+  );
 }
 
 export function dbDelete(
-    name: string
-  ): Promise<void>
+  name: string
+): Promise<void>
 {
   return new Promise(
     (
-        resolve,
-        reject
-      ) =>
+      resolve,
+      reject
+    ) =>
     {
       const request =
         indexedDB.deleteDatabase(name);
 
       request.addEventListener(
         'success',
-        () => {
+        () =>
+        {
           resolve();
-        });
+        }
+      );
 
       request.addEventListener(
         'blocked',
-        () => {
+        () =>
+        {
           reject(
             new Error(
-              'Database deletion is blocked'));
-        });
+              'Database deletion is blocked'
+            )
+          );
+        }
+      );
 
       request.addEventListener(
         'error',
-        () => {
+        () =>
+        {
           reject(
             request.error
-            ?? new Error(
-                 'Failed to delete database'));
-        });
-    });
+              ?? new Error(
+                'Failed to delete database'
+              )
+          );
+        }
+      );
+    }
+  );
 }

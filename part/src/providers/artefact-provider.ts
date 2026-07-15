@@ -91,7 +91,7 @@ export class ArtefactProvider
       if (definitions) {
         definitionsList = definitions
           .map(
-            (definition) => definition.name
+            definition => definition.name
           )
           .join(', ');
       } else {
@@ -221,7 +221,7 @@ export class ArtefactProvider
       ),
       definitions: definitions
         .map(
-          (definition) => definition.name
+          definition => definition.name
         )
     };
 

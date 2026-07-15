@@ -3,14 +3,15 @@ import fs
 import { Command }
   from './command.js';
 
-export interface Patch {
+export interface Patch
+{
   task: string;
   commands: Command[];
 }
 
 export async function loadPatch(
-    filePath: string
-  ): Promise<Patch>
+  filePath: string
+): Promise<Patch>
 {
   const content =
     await fs.readFile(

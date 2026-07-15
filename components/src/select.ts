@@ -1,40 +1,41 @@
 import { bindDataModel }
   from 'asljs-data-binding';
-import { observable,
-         Observable }
+import { Observable,
+         observable }
   from 'asljs-observable';
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
   from 'lit/decorators.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
-import { findThemeProvider,
+import { ComponentsTheme,
+         findThemeProvider,
          getDefaultTheme,
          resolveThemeTemplate,
          THEME_CHANGED_EVENT_NAME,
-         ComponentsTheme,
          ThemeProviderLike }
   from './themes/theme.js';
 
 type SelectSlotName =
-  'template'
+  | 'template'
   | 'select';
 
-export interface SelectItem {
+export interface SelectItem
+{
   value: string;
   label: string;
   disabled?: boolean;
 }
 
-export type SelectValidator =
-  (
-      value: string
-    ) => string | null;
+export type SelectValidator = (
+  value: string
+) => string | null;
 
-export interface SelectChangeDetail {
+export interface SelectChangeDetail
+{
   value: string;
   isEmpty: boolean;
   isValid: boolean;
@@ -42,78 +43,80 @@ export interface SelectChangeDetail {
   dirty: boolean;
 }
 
-export type SelectStatus =
-  Observable<{
-    draftValue: string;
-    isEmpty: boolean;
-    isValid: boolean;
-    errorMessage: string | null;
-    dirty: boolean;
-  }>;
+export type SelectStatus = Observable<{
+  draftValue: string;
+  isEmpty: boolean;
+  isValid: boolean;
+  errorMessage: string | null;
+  dirty: boolean;
+}>;
 
-type SelectTemplateModel =
-  Observable<{
-    label: string;
-    description: string;
-    errorMessage: string;
-    hideLabel: boolean;
-    hideDescription: boolean;
-    hideError: boolean;
-    hasError: boolean;
-    isEmpty: boolean;
-    inputId: string;
-    descriptionId: string;
-    errorId: string;
-  }>;
+type SelectTemplateModel = Observable<{
+  label: string;
+  description: string;
+  errorMessage: string;
+  hideLabel: boolean;
+  hideDescription: boolean;
+  hideError: boolean;
+  hasError: boolean;
+  isEmpty: boolean;
+  inputId: string;
+  descriptionId: string;
+  errorId: string;
+}>;
 
 export const SelectModelDefinition: ComponentModelDefinition =
-  { name: 'SelectModelDefinition',
-    title: 'Select',
-    properties:
-      [ { name: 'label', title: 'Label', type: 'string' },
-        { name: 'description', title: 'Description', type: 'string' },
-        { name: 'validator',
-          title: 'Validator',
-          type: 'function',
-          description: 'Validation function that returns an error message or null.' },
-        { name: 'theme',
-          title: 'Theme',
-          type: 'object',
-          description: 'Per-instance components theme override.' },
-        { name: 'value', title: 'Value', type: 'string' },
-        { name: 'placeholder', title: 'Placeholder', type: 'string' },
-        { name: 'items', title: 'Items', type: 'array' },
-        { name: 'disabled', title: 'Disabled', type: 'boolean' },
-        { name: 'controlClassName',
-          title: 'Control class name',
-          type: 'string' },
-        { name: 'status',
-          title: 'Status',
-          type: 'object',
-          description: 'Observable draft status object.',
-          editable: false },
-        { name: 'draftValue',
-          title: 'Draft value',
-          type: 'string',
-          description: 'Current in-progress selection.',
-          editable: false },
-        { name: 'isEmpty',
-          title: 'Is empty',
-          type: 'boolean',
-          editable: false },
-        { name: 'isValid',
-          title: 'Is valid',
-          type: 'boolean',
-          editable: false },
-        { name: 'errorMessage',
-          title: 'Error message',
-          type: 'string',
-          description: 'Current validation message or null.',
-          editable: false } ] };
+  {
+  name: 'SelectModelDefinition',
+  title: 'Select',
+  properties: [
+    { name: 'label', title: 'Label', type: 'string' },
+    { name: 'description', title: 'Description', type: 'string' },
+    {
+      name: 'validator',
+      title: 'Validator',
+      type: 'function',
+      description: 'Validation function that returns an error message or null.'
+    },
+    {
+      name: 'theme',
+      title: 'Theme',
+      type: 'object',
+      description: 'Per-instance components theme override.'
+    },
+    { name: 'value', title: 'Value', type: 'string' },
+    { name: 'placeholder', title: 'Placeholder', type: 'string' },
+    { name: 'items', title: 'Items', type: 'array' },
+    { name: 'disabled', title: 'Disabled', type: 'boolean' },
+    { name: 'controlClassName', title: 'Control class name', type: 'string' },
+    {
+      name: 'status',
+      title: 'Status',
+      type: 'object',
+      description: 'Observable draft status object.',
+      editable: false
+    },
+    {
+      name: 'draftValue',
+      title: 'Draft value',
+      type: 'string',
+      description: 'Current in-progress selection.',
+      editable: false
+    },
+    { name: 'isEmpty', title: 'Is empty', type: 'boolean', editable: false },
+    { name: 'isValid', title: 'Is valid', type: 'boolean', editable: false },
+    {
+      name: 'errorMessage',
+      title: 'Error message',
+      type: 'string',
+      description: 'Current validation message or null.',
+      editable: false
+    }
+  ]
+};
 
 @customElement('asljs-select')
-export class Select
-  extends LitElement
+export class Select extends LitElement
 {
   #templateElement: HTMLTemplateElement | null = null;
   #selectTemplateElement: HTMLTemplateElement | null = null;
@@ -125,54 +128,76 @@ export class Select
   #controlInvalidClassName: string | null = null;
   #controlChangeListener: (() => void) | null = null;
   #idBase = `asljs-select-${nextSelectId++}`;
-  #model: SelectTemplateModel =
-    observable(
-      { label: '',
-        description: '',
-        errorMessage: '',
-        hideLabel: true,
-        hideDescription: true,
-        hideError: true,
-        hasError: false,
-        isEmpty: true,
-        inputId: `${this.#idBase}-control`,
-        descriptionId: `${this.#idBase}-description`,
-        errorId: `${this.#idBase}-error` });
+  #model: SelectTemplateModel = observable(
+    {
+      label: '',
+      description: '',
+      errorMessage: '',
+      hideLabel: true,
+      hideDescription: true,
+      hideError: true,
+      hasError: false,
+      isEmpty: true,
+      inputId: `${this.#idBase}-control`,
+      descriptionId: `${this.#idBase}-description`,
+      errorId: `${this.#idBase}-error`
+    }
+  );
 
-  readonly status: SelectStatus =
-    observable(
-      { draftValue: '',
-        isEmpty: true,
-        isValid: true,
-        errorMessage: null,
-        dirty: false });
+  readonly status: SelectStatus = observable(
+    {
+      draftValue: '',
+      isEmpty: true,
+      isValid: true,
+      errorMessage: null,
+      dirty: false
+    }
+  );
 
-  @property({ attribute: false })
-    accessor label: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor label: string | null = null;
 
-  @property({ attribute: false })
-    accessor description: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor description: string | null = null;
 
-  @property({ attribute: false })
-    accessor validator: SelectValidator | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor validator: SelectValidator | null = null;
 
-  @property({ attribute: false })
-    accessor theme: ComponentsTheme | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor theme: ComponentsTheme | null = null;
 
-  @property({ attribute: false })
-    accessor value: string | null = '';
+  @property(
+    { attribute: false }
+  )
+  accessor value: string | null = '';
 
-  @property({ attribute: false })
-    accessor placeholder: string | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor placeholder: string | null = null;
 
-  @property({ attribute: false })
-    accessor items: SelectItem[] = [];
+  @property(
+    { attribute: false }
+  )
+  accessor items: SelectItem[] = [];
 
-  @property({ attribute: false })
-    accessor disabled = false;
+  @property(
+    { attribute: false }
+  )
+  accessor disabled = false;
 
-  @property({ attribute: false })
-    accessor controlClassName = '';
+  @property(
+    { attribute: false }
+  )
+  accessor controlClassName = '';
 
   get draftValue(): string {
     return this.status.draftValue;
@@ -190,18 +215,21 @@ export class Select
     return this.status.errorMessage;
   }
 
-  createRenderRoot(): this {
+  createRenderRoot(): this
+  {
     return this;
   }
 
-  connectedCallback(): void {
+  connectedCallback(): void
+  {
     super.connectedCallback();
     this.#captureTemplates();
     this.#syncThemeProvider();
     this.#applyExternalValue();
   }
 
-  disconnectedCallback(): void {
+  disconnectedCallback(): void
+  {
     this.#disposeControlBindings();
     this.#templateDispose?.();
     this.#templateDispose = null;
@@ -211,15 +239,16 @@ export class Select
     super.disconnectedCallback();
   }
 
-  render(): ReturnType<LitElement['render']> {
+  render(): ReturnType<LitElement['render']>
+  {
     return html`
       <div data-role="template-host"></div>
     `;
   }
 
   updated(
-      changedProperties: Map<PropertyKey, unknown>
-    ): void
+    changedProperties: Map<PropertyKey, unknown>
+  ): void
   {
     if (changedProperties.has('theme')) {
       this.#syncThemeProvider();
@@ -229,40 +258,49 @@ export class Select
       this.#applyExternalValue();
     }
 
-    if (changedProperties.has('label')
-        || changedProperties.has('description')
-        || changedProperties.has('theme'))
-    {
+    if (
+      changedProperties.has('label')
+      || changedProperties.has('description')
+      || changedProperties.has('theme')
+    ) {
       this.#renderTemplate();
       return;
     }
 
-    if (changedProperties.has('placeholder')
-        || changedProperties.has('disabled')
-        || changedProperties.has('items')
-        || changedProperties.has('controlClassName'))
-    {
+    if (
+      changedProperties.has('placeholder')
+      || changedProperties.has('disabled')
+      || changedProperties.has('items')
+      || changedProperties.has(
+        'controlClassName'
+      )
+    ) {
       this.#syncControlState();
     }
 
     this.#syncModelState();
   }
 
-  #captureTemplates(): void {
-    this.#templateElement =
-      cloneNamedTemplate(
-        this,
-        'template');
-    this.#selectTemplateElement =
-      cloneNamedTemplate(
-        this,
-        'select');
+  #captureTemplates(): void
+  {
+    this.#templateElement = cloneNamedTemplate(
+      this,
+      'template'
+    );
+
+    this.#selectTemplateElement = cloneNamedTemplate(
+      this,
+      'select'
+    );
   }
 
-  #syncThemeProvider(): void {
+  #syncThemeProvider(): void
+  {
     this.#disposeThemeProvider();
-    this.#themeProvider =
-      findThemeProvider(this);
+
+    this.#themeProvider = findThemeProvider(
+      this
+    );
 
     if (this.#themeProvider === null) {
       return;
@@ -270,37 +308,62 @@ export class Select
 
     this.#themeProvider.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
   }
 
-  #disposeThemeProvider(): void {
+  #disposeThemeProvider(): void
+  {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
+
     this.#themeProvider = null;
   }
 
-  #handleThemeChanged = (): void => {
+  #handleThemeChanged = (): void =>
+  {
     this.#renderTemplate();
   };
 
-  #applyExternalValue(): void {
-    this.status.draftValue = normalizeText(this.value);
+  #applyExternalValue(): void
+  {
+    this.status.draftValue = normalizeText(
+      this.value
+    );
+
     this.#syncModelState();
     this.#syncControlState();
   }
 
-  #syncModelState(): void {
+  #syncModelState(): void
+  {
     const label =
-      normalizeOptionalText(this.label);
+      normalizeOptionalText(
+        this.label);
+
     const description =
-      normalizeOptionalText(this.description);
-    const errorMessage =
-      this.validator?.(this.status.draftValue) ?? null;
+      normalizeOptionalText(
+        this.description);
+
+    let errorMessage: string | null = null;
+
+    const validator =
+      this.validator;
+
+    if (validator !== null) {
+      errorMessage = validator(
+        this.status.draftValue
+      );
+    }
+
     const isEmpty =
       this.status.draftValue === '';
+
     const dirty =
-      this.status.draftValue !== normalizeText(this.value);
+      this.status.draftValue !== normalizeText(
+        this.value);
 
     this.status.isEmpty = isEmpty;
     this.status.errorMessage = errorMessage;
@@ -319,9 +382,13 @@ export class Select
     this.#syncControlState();
   }
 
-  #renderTemplate(): void {
+  #renderTemplate(): void
+  {
     const templateHost =
-      this.querySelector('[data-role="template-host"]') as HTMLElement | null;
+      this.querySelector(
+        '[data-role="template-host"]') as
+      | HTMLElement
+      | null;
 
     if (templateHost === null) {
       return;
@@ -344,10 +411,10 @@ export class Select
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
 
-    this.#templateDispose =
-      bindDataModel(
-        fragment,
-        this.#model as unknown as Record<string, unknown>);
+    this.#templateDispose = bindDataModel(
+      fragment,
+      this.#model as unknown as Record<string, unknown>
+    );
 
     templateHost.replaceChildren(fragment);
     this.#mountControl();
@@ -355,8 +422,8 @@ export class Select
   }
 
   #resolveTemplate(
-      slotName: SelectSlotName
-    ): HTMLTemplateElement | null
+    slotName: SelectSlotName
+  ): HTMLTemplateElement | null
   {
     return this.#getLocalTemplate(slotName)
       ?? this.#getThemeTemplate(slotName)
@@ -364,8 +431,8 @@ export class Select
   }
 
   #getLocalTemplate(
-      slotName: SelectSlotName
-    ): HTMLTemplateElement | null
+    slotName: SelectSlotName
+  ): HTMLTemplateElement | null
   {
     return slotName === 'template'
       ? this.#templateElement
@@ -373,8 +440,8 @@ export class Select
   }
 
   #getThemeTemplate(
-      slotName: SelectSlotName
-    ): HTMLTemplateElement | null
+    slotName: SelectSlotName
+  ): HTMLTemplateElement | null
   {
     const theme =
       this.theme
@@ -385,12 +452,17 @@ export class Select
       slotName === 'template'
         ? theme.select?.template
         : theme.select?.select,
-      this);
+      this
+    );
   }
 
-  #mountControl(): void {
+  #mountControl(): void
+  {
     const controlHost =
-      this.querySelector('[data-role="control-host"]') as HTMLElement | null;
+      this.querySelector(
+        '[data-role="control-host"]') as
+      | HTMLElement
+      | null;
 
     if (controlHost === null) {
       return;
@@ -399,39 +471,50 @@ export class Select
     const mountedControl =
       this.#createMountedControl(controlHost);
 
-    this.#controlTemplateDispose =
-      bindDataModel(
-        mountedControl.fragment,
-        this.#model as unknown as Record<string, unknown>);
+    this.#controlTemplateDispose = bindDataModel(
+      mountedControl.fragment,
+      this.#model as unknown as Record<string, unknown>
+    );
 
-    controlHost.replaceChildren(mountedControl.fragment);
+    controlHost.replaceChildren(
+      mountedControl.fragment
+    );
+
     this.#control = mountedControl.control;
     this.#controlBaseClassName = mountedControl.className;
     this.#controlInvalidClassName = mountedControl.invalidClassName;
 
     const changeListener =
-      (): void => {
-        if (this.#control === null) {
-          return;
-        }
+      (): void =>
+    {
+      if (this.#control === null) {
+        return;
+      }
 
-        this.status.draftValue = this.#control.value;
-        this.#syncModelState();
-        this.#dispatchValueEvent('input');
-        this.#dispatchValueEvent('change');
-      };
+      this.status.draftValue = this.#control.value;
+      this.#syncModelState();
+      this.#dispatchValueEvent('input');
+      this.#dispatchValueEvent('change');
+    };
 
-    this.#control.addEventListener('change', changeListener);
+    this.#control.addEventListener(
+      'change',
+      changeListener
+    );
 
-    this.#controlChangeListener =
-      () => {
-        this.#control?.removeEventListener('change', changeListener);
-      };
+    this.#controlChangeListener = () =>
+    {
+      this.#control?.removeEventListener(
+        'change',
+        changeListener
+      );
+    };
 
     this.#syncControlState();
   }
 
-  #syncControlState(): void {
+  #syncControlState(): void
+  {
     const control =
       this.#control;
 
@@ -442,7 +525,8 @@ export class Select
     control.replaceChildren();
 
     const placeholder =
-      normalizeOptionalText(this.placeholder);
+      normalizeOptionalText(
+        this.placeholder);
 
     if (placeholder !== null) {
       const option =
@@ -453,7 +537,11 @@ export class Select
       control.appendChild(option);
     }
 
-    for (const item of normalizeItems(this.items)) {
+    for (
+      const item of normalizeItems(
+        this.items
+      )
+    ) {
       const option =
         document.createElement('option');
 
@@ -464,13 +552,18 @@ export class Select
     }
 
     const candidateValues =
-      Array.from(control.options).map(option => option.value);
+      Array.from(
+        control.options).map(
+          option => option.value);
+
     const nextValue =
-      candidateValues.includes(this.status.draftValue)
-        ? this.status.draftValue
-        : placeholder !== null
-          ? ''
-          : candidateValues[0] ?? '';
+      candidateValues.includes(
+        this.status.draftValue
+      )
+      ? this.status.draftValue
+      : placeholder !== null
+      ? ''
+      : candidateValues[0] ?? '';
 
     if (this.status.draftValue !== nextValue) {
       this.status.draftValue = nextValue;
@@ -480,23 +573,34 @@ export class Select
     control.value = nextValue;
     control.id = this.#model.inputId;
     control.disabled = this.disabled;
+
     control.className = joinClassNames(
       this.#controlBaseClassName,
-      this.controlClassName);
+      this.controlClassName
+    );
 
     if (this.#controlInvalidClassName !== null && !this.status.isValid) {
-      control.classList.add(this.#controlInvalidClassName);
+      control.classList.add(
+        this.#controlInvalidClassName
+      );
     }
 
-    control.toggleAttribute('aria-invalid', !this.status.isValid);
+    control.toggleAttribute(
+      'aria-invalid',
+      !this.status.isValid
+    );
+
     control.setAttribute(
       'aria-describedby',
-      resolveAriaDescribedBy(this.#model));
+      resolveAriaDescribedBy(
+        this.#model
+      )
+    );
   }
 
   #createMountedControl(
-      controlHost: HTMLElement
-    ): MountedSelectControl
+    controlHost: HTMLElement
+  ): MountedSelectControl
   {
     const template =
       this.#resolveTemplate('select');
@@ -507,6 +611,7 @@ export class Select
 
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
+
     const control =
       fragment.querySelector('select');
 
@@ -517,31 +622,40 @@ export class Select
     return {
       fragment,
       control,
-      className: resolveInitialControlClassName(control, controlHost),
-      invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+      className: resolveInitialControlClassName(
+        control,
+        controlHost
+      ),
+      invalidClassName: resolveInitialControlInvalidClassName(
+        control,
+        controlHost
+      )
     };
   }
 
   #dispatchValueEvent(
-      name: 'input' | 'change'
-    ): void
+    name: 'input' | 'change'
+  ): void
   {
     const detail: SelectChangeDetail =
-      { value: this.status.draftValue,
-        isEmpty: this.status.isEmpty,
-        isValid: this.status.isValid,
-        errorMessage: this.status.errorMessage,
-        dirty: this.status.dirty };
+      {
+      value: this.status.draftValue,
+      isEmpty: this.status.isEmpty,
+      isValid: this.status.isValid,
+      errorMessage: this.status.errorMessage,
+      dirty: this.status.dirty
+    };
 
     this.dispatchEvent(
       new CustomEvent(
         name,
-        { detail,
-          bubbles: true,
-          composed: true }));
+        { detail, bubbles: true, composed: true }
+      )
+    );
   }
 
-  #disposeControlBindings(): void {
+  #disposeControlBindings(): void
+  {
     this.#controlChangeListener?.();
     this.#controlChangeListener = null;
     this.#control = null;
@@ -554,22 +668,23 @@ export class Select
 
 let nextSelectId = 1;
 
-type MountedSelectControl =
-  { fragment: DocumentFragment;
-    control: HTMLSelectElement;
-    className: string;
-    invalidClassName: string | null; };
+type MountedSelectControl = {
+  fragment: DocumentFragment;
+  control: HTMLSelectElement;
+  className: string;
+  invalidClassName: string | null;
+};
 
 function normalizeText(
-    value: string | null | undefined
-  ): string
+  value: string | null | undefined
+): string
 {
   return value ?? '';
 }
 
 function normalizeOptionalText(
-    value: string | null | undefined
-  ): string | null
+  value: string | null | undefined
+): string | null
 {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -579,86 +694,104 @@ function normalizeOptionalText(
 }
 
 function normalizeItems(
-    items: SelectItem[]
-  ): SelectItem[]
+  items: SelectItem[]
+): SelectItem[]
 {
   return items
-    .map(item => ({
-      value: item.value,
-      label: item.label,
-      disabled: item.disabled ?? false,
-    }))
-    .filter(item => item.label.trim() !== '');
+    .map(
+      item => ({
+        value: item.value,
+        label: item.label,
+        disabled: item.disabled ?? false
+      })
+    )
+    .filter(
+      item => item.label.trim() !== ''
+    );
 }
 
 function resolveAriaDescribedBy(
-    model: SelectTemplateModel
-  ): string
+  model: SelectTemplateModel
+): string
 {
   const ids: string[] = [];
 
   if (!model.hideDescription) {
-    ids.push(model.descriptionId);
+    ids.push(
+      model.descriptionId
+    );
   }
 
   if (!model.hideError) {
-    ids.push(model.errorId);
+    ids.push(
+      model.errorId
+    );
   }
 
   return ids.join(' ');
 }
 
 function cloneNamedTemplate(
-    host: Element,
-    slotName: SelectSlotName
-  ): HTMLTemplateElement | null
+  host: Element,
+  slotName: SelectSlotName
+): HTMLTemplateElement | null
 {
-  const templateElement =
-    host.querySelector<HTMLTemplateElement>(`template[data-slot="${slotName}"]`);
+  const element =
+    host.querySelector(
+      `template[data-slot="${slotName}"]`);
 
-  if (templateElement === null) {
+  if (element === null) {
     return null;
   }
+
+  const templateElement =
+    element as HTMLTemplateElement;
 
   const clonedTemplate =
     document.createElement('template');
 
   clonedTemplate.content.append(
-    templateElement.content.cloneNode(true));
+    templateElement.content.cloneNode(true)
+  );
 
   return clonedTemplate;
 }
 
 function resolveInitialControlClassName(
-    control: HTMLSelectElement,
-    controlHost: HTMLElement
-  ): string
+  control: HTMLSelectElement,
+  controlHost: HTMLElement
+): string
 {
   return control.className
-    || controlHost.getAttribute('data-control-class')
+    || controlHost.getAttribute(
+      'data-control-class'
+    )
     || '';
 }
 
 function resolveInitialControlInvalidClassName(
-    control: HTMLSelectElement,
-    controlHost: HTMLElement
-  ): string | null
+  control: HTMLSelectElement,
+  controlHost: HTMLElement
+): string | null
 {
-  return control.getAttribute('data-control-invalid-class')
-    ?? controlHost.getAttribute('data-control-invalid-class')
+  return control.getAttribute(
+    'data-control-invalid-class'
+  )
+    ?? controlHost.getAttribute(
+      'data-control-invalid-class'
+    )
     ?? null;
 }
 
 function createDefaultSelectTemplate(
-    slotName: SelectSlotName
-  ): HTMLTemplateElement
+  slotName: SelectSlotName
+): HTMLTemplateElement
 {
   const template =
     document.createElement('template');
 
-  template.innerHTML =
-    slotName === 'template'
-      ? `
+  template.innerHTML = slotName === 'template'
+    ? `
           <div>
             <label
                    data-bind-text="label"
@@ -675,17 +808,18 @@ function createDefaultSelectTemplate(
                  data-bind-prop-id="errorId"></div>
           </div>
         `
-      : '<select></select>';
+    : '<select></select>';
 
   return template;
 }
 
 function createFallbackMountedControl(
-    controlHost: HTMLElement
-  ): MountedSelectControl
+  controlHost: HTMLElement
+): MountedSelectControl
 {
   const fragment =
     document.createDocumentFragment();
+
   const control =
     document.createElement('select');
 
@@ -694,18 +828,30 @@ function createFallbackMountedControl(
   return {
     fragment,
     control,
-    className: resolveInitialControlClassName(control, controlHost),
-    invalidClassName: resolveInitialControlInvalidClassName(control, controlHost),
+    className: resolveInitialControlClassName(
+      control,
+      controlHost
+    ),
+    invalidClassName: resolveInitialControlInvalidClassName(
+      control,
+      controlHost
+    )
   };
 }
 
 function joinClassNames(
-    ...classNames: string[]
-  ): string
+  ...classNames: string[]
+): string
 {
   return classNames
-    .flatMap(className => className.split(/\s+/))
-    .map(className => className.trim())
-    .filter(className => className !== '')
+    .flatMap(
+      className => className.split(/\s+/)
+    )
+    .map(
+      className => className.trim()
+    )
+    .filter(
+      className => className !== ''
+    )
     .join(' ');
 }

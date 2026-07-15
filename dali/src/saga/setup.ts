@@ -3,11 +3,9 @@ import { SAGA_ENTRIES_STORE_NAME,
   from './types.js';
 
 export function sagaSetup(
-    db: IDBDatabase,
-    options:
-      { sagaStoreName?: string;
-        entryStoreName?: string; } = {}
-  ): void
+  db: IDBDatabase,
+  options: { sagaStoreName?: string; entryStoreName?: string; } = {}
+): void
 {
   const sagaStoreName =
     options.sagaStoreName
@@ -26,29 +24,32 @@ export function sagaSetup(
     sagaStore.createIndex(
       'by_status',
       'status',
-      { unique: false });
+      { unique: false }
+    );
 
     sagaStore.createIndex(
       'by_updatedAt',
       'updatedAt',
-      { unique: false });
+      { unique: false }
+    );
   }
 
   if (!db.objectStoreNames.contains(entryStoreName)) {
     const entryStore =
       db.createObjectStore(
         entryStoreName,
-        { keyPath: 'id',
-          autoIncrement: true });
+        { keyPath: 'id', autoIncrement: true });
 
     entryStore.createIndex(
       'by_saga_sequence',
-      [ 'sagaId', 'sequence' ],
-      { unique: true });
+      ['sagaId', 'sequence'],
+      { unique: true }
+    );
 
     entryStore.createIndex(
       'by_saga',
       'sagaId',
-      { unique: false });
+      { unique: false }
+    );
   }
 }

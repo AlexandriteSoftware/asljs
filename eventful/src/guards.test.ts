@@ -1,80 +1,102 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { eventNameTypeGuard,
          functionTypeGuard,
          isFunction,
          isObject }
   from './guards.js';
 
-const TEST_SUITE =
-  'guards';
+const TEST_SUITE = 'guards';
 
 test(
   `${TEST_SUITE}: eventNameTypeGuard accepts string and symbol`,
-  () => {
+  () =>
+  {
     assert.doesNotThrow(
-      () => eventNameTypeGuard('event'));
+      () => eventNameTypeGuard('event')
+    );
 
     assert.doesNotThrow(
-      () => eventNameTypeGuard(Symbol('event')));
-  });
-
+      () => eventNameTypeGuard(
+        Symbol('event'))
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: eventNameTypeGuard throws for invalid values`,
-  () => {
+  () =>
+  {
     assert.throws(
       () => eventNameTypeGuard(42),
-      TypeError);
+      TypeError
+    );
 
     assert.throws(
       () => eventNameTypeGuard(null),
-      TypeError);
-  });
-
+      TypeError
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: isFunction returns expected result`,
-  () => {
+  () =>
+  {
     assert.equal(
-      isFunction(() => { }),
-      true);
+      isFunction(
+        () =>
+      {}),
+      true
+    );
 
     assert.equal(
-      isFunction({ }),
-      false);
-  });
-
+      isFunction({}),
+      false
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: isObject returns expected result`,
-  () => {
+  () =>
+  {
     assert.equal(
-      isObject({ key: 'value' }),
-      true);
+      isObject(
+        { key: 'value' }),
+      true
+    );
 
     assert.equal(
       isObject(null),
-      false);
+      false
+    );
 
     assert.equal(
-      isObject(() => { }),
-      false);
-  });
-
+      isObject(
+        () =>
+      {}),
+      false
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: functionTypeGuard validates value`,
-  () => {
+  () =>
+  {
     assert.doesNotThrow(
-      () => functionTypeGuard(() => { }));
+      () =>
+        functionTypeGuard(
+          () =>
+        {})
+    );
 
     assert.throws(
       () => functionTypeGuard('nope'),
-      TypeError);
-  });
-
-
-
+      TypeError
+    );
+  }
+);

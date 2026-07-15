@@ -1,59 +1,60 @@
 import { dbRequestAsync }
   from '../db.js';
 import { txDone,
-         txReuseOrCreate,
-         TxMode }
+         TxMode,
+         txReuseOrCreate }
   from '../transactions.js';
-import { EventSourceProjection,
-         EVENT_SOURCE_PROJECTION_STORE_NAME,
-         EventSourceTransaction,
-         EVENT_SOURCE_STORE_NAME }
-  from './types.js';
 import { EventSourceManager }
   from './manager.js';
+import { EVENT_SOURCE_PROJECTION_STORE_NAME,
+         EVENT_SOURCE_STORE_NAME,
+         EventSourceProjection,
+         EventSourceTransaction }
+  from './types.js';
 
 export async function eventSourceGetAll(
-    db: IDBDatabase,
-    tx: IDBTransaction | null = null,
-    storeName: string = EVENT_SOURCE_STORE_NAME
-  ): Promise<EventSourceTransaction[]>
+  db: IDBDatabase,
+  tx: IDBTransaction | null = null,
+  storeName: string = EVENT_SOURCE_STORE_NAME
+): Promise<EventSourceTransaction[]>
 {
   const ltx =
     txReuseOrCreate(
       tx,
-      [ storeName ],
+      [storeName],
       TxMode.read,
       db);
 
   const records =
-    await dbRequestAsync<EventSourceTransaction[]>(
+    await dbRequestAsync(
       ltx.objectStore(storeName)
-        .index('by_sequence')
-        .getAll());
+      .index('by_sequence')
+      .getAll());
 
-  if (tx === null)
+  if (tx === null) {
     await txDone(ltx);
+  }
 
   return records;
 }
 
 export async function eventSourceProjectionGet(
-    db: IDBDatabase,
-    projectionId: string,
-    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-  ): Promise<EventSourceProjection | null>
+  db: IDBDatabase,
+  projectionId: string,
+  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+): Promise<EventSourceProjection | null>
 {
   const tx =
     txReuseOrCreate(
       null,
-      [ storeName ],
+      [storeName],
       TxMode.read,
       db);
 
   const projection =
-    await dbRequestAsync<EventSourceProjection | undefined>(
+    await dbRequestAsync(
       tx.objectStore(storeName)
-        .get(projectionId));
+      .get(projectionId));
 
   await txDone(tx);
 
@@ -61,21 +62,22 @@ export async function eventSourceProjectionGet(
 }
 
 export async function eventSourceProjectionSet(
-    db: IDBDatabase,
-    projection: EventSourceProjection,
-    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-  ): Promise<void>
+  db: IDBDatabase,
+  projection: EventSourceProjection,
+  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+): Promise<void>
 {
   const tx =
     txReuseOrCreate(
       null,
-      [ storeName ],
+      [storeName],
       TxMode.readWrite,
       db);
 
   await dbRequestAsync(
     tx.objectStore(storeName)
-      .put(projection));
+      .put(projection)
+  );
 
   await txDone(tx);
 }
@@ -83,23 +85,22 @@ export async function eventSourceProjectionSet(
 export class EventSourceProjectionManager
 {
   constructor(
-      public readonly projectionId: string,
-      public readonly source: EventSourceManager,
-      private readonly apply:
-        (
-            transaction: EventSourceTransaction
-          ) => Promise<void>,
-      private readonly projectionReader: () => Promise<EventSourceProjection | null>,
-      private readonly projectionWriter:
-        (
-            projection: EventSourceProjection
-          ) => Promise<void>
-    )
+    public readonly projectionId: string,
+    public readonly source: EventSourceManager,
+    private readonly apply: (
+      transaction: EventSourceTransaction
+    ) => Promise<void>,
+    private readonly projectionReader: () => Promise<
+      EventSourceProjection | null
+    >,
+    private readonly projectionWriter: (
+      projection: EventSourceProjection
+    ) => Promise<void>
+  )
   {
   }
 
-  async applyPending(
-    ): Promise<number>
+  async applyPending(): Promise<number>
   {
     const checkpoint =
       await this.projectionReader();
@@ -117,9 +118,12 @@ export class EventSourceProjectionManager
       await this.apply(transaction);
 
       await this.projectionWriter(
-        { projectionId: this.projectionId,
+        {
+          projectionId: this.projectionId,
           appliedTransactionId: transaction.id,
-          updatedAt: new Date().toISOString() });
+          updatedAt: new Date().toISOString()
+        }
+      );
 
       applied += 1;
     }

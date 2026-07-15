@@ -1,5 +1,10 @@
-import { LitElement,
-         html,
+import { bindDataModel }
+  from 'asljs-data-binding';
+import { asEventfulLike,
+         EventfulLike }
+  from 'asljs-eventful';
+import { html,
+         LitElement,
          nothing }
   from 'lit';
 import { customElement,
@@ -7,16 +12,11 @@ import { customElement,
   from 'lit/decorators.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
-import { bindDataModel }
-  from 'asljs-data-binding';
-import { asEventfulLike,
-         EventfulLike }
-  from 'asljs-eventful';
-import { findThemeProvider,
+import { ComponentsTheme,
+         findThemeProvider,
          getDefaultTheme,
          resolveThemeTemplate,
          THEME_CHANGED_EVENT_NAME,
-         ComponentsTheme,
          ThemeProviderLike }
   from './themes/theme.js';
 
@@ -25,42 +25,45 @@ type ListSlotName =
   | 'empty'
   | 'item';
 
-export type ListRowContext =
-  { item: ListItem;
-    index: number;
-    context: unknown;
-    first: boolean;
-    last: boolean;
-    odd: boolean;
-    even: boolean;
-    count: number; };
+export type ListRowContext = {
+  item: ListItem;
+  index: number;
+  context: unknown;
+  first: boolean;
+  last: boolean;
+  odd: boolean;
+  even: boolean;
+  count: number;
+};
 
-export type ListItem =
-  Record<string, unknown>;
+export type ListItem = Record<string, unknown>;
 
-export type ListItemsSource =
-  ListItem[];
+export type ListItemsSource = ListItem[];
 
 export const ListModelDefinition: ComponentModelDefinition =
-  { name: 'ListModelDefinition',
-    title: 'List',
-    properties:
-      [ { name: 'items',
-          title: 'Items',
-          type: 'array',
-          description: 'Rows rendered by the list.' },
-        { name: 'context',
-          title: 'Context',
-          type: 'object',
-          description: 'Shared row binding context.' },
-        { name: 'theme',
-          title: 'Theme',
-          type: 'object',
-          description: 'Per-instance components theme override.' } ] };
+  {
+  name: 'ListModelDefinition',
+  title: 'List',
+  properties: [{
+    name: 'items',
+    title: 'Items',
+    type: 'array',
+    description: 'Rows rendered by the list.'
+  }, {
+    name: 'context',
+    title: 'Context',
+    type: 'object',
+    description: 'Shared row binding context.'
+  }, {
+    name: 'theme',
+    title: 'Theme',
+    type: 'object',
+    description: 'Per-instance components theme override.'
+  }]
+};
 
 @customElement('asljs-list')
-export class List
-  extends LitElement
+export class List extends LitElement
 {
   #containerTemplate: HTMLTemplateElement | null = null;
   #emptyTemplate: HTMLTemplateElement | null = null;
@@ -71,28 +74,32 @@ export class List
   #warnedMissingItemTemplate = false;
   #warnedInvalidContainer = false;
 
-  #handleThemeChanged =
-    (): void => {
-      this.requestUpdate();
-    };
+  #handleThemeChanged = (): void =>
+  {
+    this.requestUpdate();
+  };
 
-  @property({ attribute: false })
-    accessor items: ListItemsSource = [];
+  @property(
+    { attribute: false }
+  )
+  accessor items: ListItemsSource = [];
 
-  @property({ attribute: false })
-    accessor context: unknown = undefined;
+  @property(
+    { attribute: false }
+  )
+  accessor context: unknown = undefined;
 
-  @property({ attribute: false })
-    accessor theme: ComponentsTheme | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor theme: ComponentsTheme | null = null;
 
-  createRenderRoot(
-    ): this
+  createRenderRoot(): this
   {
     return this;
   }
 
-  connectedCallback(
-    ): void
+  connectedCallback(): void
   {
     super.connectedCallback();
     this.#captureTemplates();
@@ -100,8 +107,7 @@ export class List
     this.#syncThemeProvider();
   }
 
-  disconnectedCallback(
-    ): void
+  disconnectedCallback(): void
   {
     this.#disposeItemsObserver();
     this.#disposeItemBindings();
@@ -109,8 +115,7 @@ export class List
     super.disconnectedCallback();
   }
 
-  render(
-    ): ReturnType<LitElement['render']>
+  render(): ReturnType<LitElement['render']>
   {
     const emptyTemplate =
       this.#resolveTemplate('empty');
@@ -148,8 +153,8 @@ export class List
   }
 
   updated(
-      changedProperties: Map<PropertyKey, unknown>
-    ): void
+    changedProperties: Map<PropertyKey, unknown>
+  ): void
   {
     if (changedProperties.has('items')) {
       this.#syncItemsObserver();
@@ -162,8 +167,7 @@ export class List
     this.#renderTemplateContent();
   }
 
-  #captureTemplates(
-    ): void
+  #captureTemplates(): void
   {
     this.#containerTemplate = null;
     this.#emptyTemplate = null;
@@ -172,9 +176,13 @@ export class List
     this.#warnedInvalidContainer = false;
 
     const templateElements =
-      this.querySelectorAll<HTMLTemplateElement>('template[data-slot]');
+      this.querySelectorAll(
+        'template[data-slot]');
 
-    for (const templateElement of templateElements) {
+    for (const item of templateElements) {
+      const templateElement =
+        item as HTMLTemplateElement;
+
       const slotName =
         templateElement.getAttribute('data-slot');
 
@@ -182,7 +190,8 @@ export class List
         document.createElement('template');
 
       clonedTemplate.content.append(
-        templateElement.content.cloneNode(true));
+        templateElement.content.cloneNode(true)
+      );
 
       if (slotName === 'empty') {
         this.#emptyTemplate = clonedTemplate;
@@ -198,15 +207,13 @@ export class List
     }
   }
 
-  #renderTemplateContent(
-    ): void
+  #renderTemplateContent(): void
   {
     this.#renderEmptyTemplate();
     this.#renderItemTemplates();
   }
 
-  #renderEmptyTemplate(
-    ): void
+  #renderEmptyTemplate(): void
   {
     const emptyTemplate =
       this.#resolveTemplate('empty');
@@ -216,18 +223,19 @@ export class List
     }
 
     const host =
-      this.querySelector('[data-role="empty-template-host"]');
+      this.querySelector(
+        '[data-role="empty-template-host"]');
 
     if (!host) {
       return;
     }
 
     host.replaceChildren(
-      emptyTemplate.content.cloneNode(true));
+      emptyTemplate.content.cloneNode(true)
+    );
   }
 
-  #renderItemTemplates(
-    ): void
+  #renderItemTemplates(): void
   {
     this.#disposeItemBindings();
 
@@ -250,6 +258,7 @@ export class List
     }
 
     const rowNodes: Node[] = [];
+
     const count =
       this.items.length;
 
@@ -258,47 +267,59 @@ export class List
         this.items[index];
 
       const rowContext: ListRowContext =
-        { item,
-          index,
-          context: this.#createRowScopeContext(item, index),
-          first: index === 0,
-          last: index === count - 1,
-          odd: index % 2 === 1,
-          even: index % 2 === 0,
-          count };
+        {
+        item,
+        index,
+        context: this.#createRowScopeContext(
+          item,
+          index
+        ),
+        first: index === 0,
+        last: index === count - 1,
+        odd: index % 2 === 1,
+        even: index % 2 === 0,
+        count
+      };
 
       const fragment =
         itemTemplate.content.cloneNode(true) as DocumentFragment;
 
       this.#bindFragmentModel(
         fragment,
-        rowContext);
+        rowContext
+      );
 
-      rowNodes.push(...[ ...fragment.childNodes ]);
+      rowNodes.push(
+        ...[...fragment.childNodes]
+      );
     }
 
-    itemsHost.replaceChildren(...rowNodes);
+    itemsHost.replaceChildren(
+      ...rowNodes
+    );
   }
 
-  #resolveItemsHost(
-    ): ParentNode | null
+  #resolveItemsHost(): ParentNode | null
   {
     const containerTemplate =
       this.#resolveTemplate('container');
 
     if (containerTemplate) {
       const containerHost =
-        this.querySelector('[data-role="container-template-host"]');
+        this.querySelector(
+          '[data-role="container-template-host"]');
 
       if (!containerHost) {
         return null;
       }
 
       const fragment =
-        containerTemplate.content.cloneNode(true) as DocumentFragment;
+        containerTemplate.content.cloneNode(
+          true) as DocumentFragment;
 
       const templatedItemsHost =
-        fragment.querySelector('[data-role="items"]');
+        fragment.querySelector(
+          '[data-role="items"]');
 
       containerHost.replaceChildren(fragment);
 
@@ -311,22 +332,23 @@ export class List
     }
 
     const defaultContainerHost =
-      this.querySelector('[data-role="default-container-host"]');
+      this.querySelector(
+        '[data-role="default-container-host"]');
 
     return defaultContainerHost;
   }
 
   #resolveTemplate(
-      slotName: ListSlotName
-    ): HTMLTemplateElement | null
+    slotName: ListSlotName
+  ): HTMLTemplateElement | null
   {
     return this.#getLocalTemplate(slotName)
       ?? this.#getThemeTemplate(slotName);
   }
 
   #getLocalTemplate(
-      slotName: ListSlotName
-    ): HTMLTemplateElement | null
+    slotName: ListSlotName
+  ): HTMLTemplateElement | null
   {
     if (slotName === 'container') {
       return this.#containerTemplate;
@@ -340,8 +362,8 @@ export class List
   }
 
   #getThemeTemplate(
-      slotName: ListSlotName
-    ): HTMLTemplateElement | null
+    slotName: ListSlotName
+  ): HTMLTemplateElement | null
   {
     const activeTheme =
       this.theme
@@ -350,13 +372,14 @@ export class List
 
     return resolveThemeTemplate(
       activeTheme.list?.[slotName],
-      this);
+      this
+    );
   }
 
   #bindFragmentModel(
-      fragment: DocumentFragment,
-      model: ListRowContext
-    ): void
+    fragment: DocumentFragment,
+    model: ListRowContext
+  ): void
   {
     const dispose =
       bindDataModel(
@@ -367,14 +390,15 @@ export class List
   }
 
   #createRowScopeContext(
-      item: ListItem,
-      index: number
-    ): unknown
+    item: ListItem,
+    index: number
+  ): unknown
   {
-    if (this.context === null
-        || this.context === undefined
-        || typeof this.context !== 'object')
-    {
+    if (
+      this.context === null
+      || this.context === undefined
+      || typeof this.context !== 'object'
+    ) {
       return this.context;
     }
 
@@ -388,7 +412,8 @@ export class List
     rowContext.index = index;
 
     for (const key of Object.keys(baseContext)) {
-      const value = baseContext[key];
+      const value =
+        baseContext[key];
 
       if (typeof value === 'function') {
         rowContext[key] = value.bind(rowContext);
@@ -398,8 +423,7 @@ export class List
     return rowContext;
   }
 
-  #disposeItemBindings(
-    ): void
+  #disposeItemBindings(): void
   {
     for (const dispose of this.#itemBindingDisposers) {
       dispose();
@@ -408,13 +432,13 @@ export class List
     this.#itemBindingDisposers = [];
   }
 
-  #syncItemsObserver(
-    ): void
+  #syncItemsObserver(): void
   {
     this.#disposeItemsObserver();
 
     const eventSource =
-      toEventfulLike(this.items);
+      toEventfulLike(
+        this.items);
 
     if (!eventSource) {
       return;
@@ -423,31 +447,34 @@ export class List
     const unsubscribers: Array<() => void> = [];
 
     const onCollectionChanged =
-      (): void => {
-        this.requestUpdate();
-      };
+      (): void =>
+    {
+      this.requestUpdate();
+    };
 
-    for (const eventName of [ 'set', 'delete', 'define' ]) {
+    for (const eventName of ['set', 'delete', 'define']) {
       const unsubscribe =
         eventSource.on(
           eventName,
           onCollectionChanged);
 
-      unsubscribers.push(() => {
-        unsubscribe();
-      });
-    }
-
-    this.#itemsObserverDispose =
-      () => {
-        for (const unsubscribe of unsubscribers) {
+      unsubscribers.push(
+        () =>
+        {
           unsubscribe();
         }
-      };
+      );
+    }
+
+    this.#itemsObserverDispose = () =>
+    {
+      for (const unsubscribe of unsubscribers) {
+        unsubscribe();
+      }
+    };
   }
 
-  #disposeItemsObserver(
-    ): void
+  #disposeItemsObserver(): void
   {
     if (this.#itemsObserverDispose) {
       this.#itemsObserverDispose();
@@ -455,13 +482,14 @@ export class List
     }
   }
 
-  #syncThemeProvider(
-    ): void
+  #syncThemeProvider(): void
   {
     const nextProvider =
       this.theme
-        ? null
-        : findThemeProvider(this);
+      ? null
+      : findThemeProvider(
+        this
+      );
 
     if (this.#themeProvider === nextProvider) {
       return;
@@ -470,22 +498,24 @@ export class List
     this.#disposeThemeProvider();
 
     this.#themeProvider = nextProvider;
+
     this.#themeProvider?.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
   }
 
-  #disposeThemeProvider(
-    ): void
+  #disposeThemeProvider(): void
   {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
+
     this.#themeProvider = null;
   }
 
-  #warnMissingItemTemplate(
-    ): void
+  #warnMissingItemTemplate(): void
   {
     if (this.#warnedMissingItemTemplate) {
       return;
@@ -494,11 +524,11 @@ export class List
     this.#warnedMissingItemTemplate = true;
 
     console.warn(
-      'asljs-list: missing required template[data-slot="item"] for non-empty items.');
+      'asljs-list: missing required template[data-slot="item"] for non-empty items.'
+    );
   }
 
-  #warnInvalidContainer(
-    ): void
+  #warnInvalidContainer(): void
   {
     if (this.#warnedInvalidContainer) {
       return;
@@ -507,13 +537,14 @@ export class List
     this.#warnedInvalidContainer = true;
 
     console.warn(
-      'asljs-list: container template must include [data-role="items"].');
+      'asljs-list: container template must include [data-role="items"].'
+    );
   }
 }
 
 function toEventfulLike(
-    value: unknown
-  ): EventfulLike | null
+  value: unknown
+): EventfulLike | null
 {
   return asEventfulLike(value)
     ?? null;

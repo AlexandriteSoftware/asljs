@@ -1,5 +1,4 @@
-﻿import test,
-       { after }
+﻿import test
   from 'node:test';
 import assert
   from 'node:assert/strict';
@@ -14,7 +13,7 @@ import { validate }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
+test.after(
   () =>
   {
     loggerProvider.dispose();
@@ -25,7 +24,20 @@ const tmpDir =
     loggerProvider);
 
 const ARTICLE_DEFINITION =
-  '# Article\n\nMarkdown article.\n\n## Location\n\n- Pattern: `/*.md`\n\n## Rules\n\n### RL3\n\nFormatted with dprint.\n';
+  `# Article
+
+Markdown article.
+
+## Location
+
+- Pattern: \`/*.md\`
+
+## Rules
+
+### RL3
+
+Formatted with dprint.
+`;
 
 async function makeArtefact(
   workspace,

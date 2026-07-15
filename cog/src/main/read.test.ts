@@ -1,30 +1,33 @@
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { main }
-  from './main.js';
-import { TmpDir }
-  from 'asljs-tmpdir';
-import { createLogger }
-  from '../logger.js';
-import { argv }
-  from './test-helpers.js';
 import { Envelope }
   from '../envelope/envelope.js';
+import { createLogger }
+  from '../logger.js';
+import { main }
+  from './main.js';
+import { argv }
+  from './test-helpers.js';
 
 const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose());
+  () => logger.dispose()
+);
 
 test(
   'read CLI normalises Windows path separators in stored update pattern',
-  async () => {
+  async () =>
+  {
     await using workspace =
       new TmpDir(
-        logger);
+      logger
+    );
 
     const envelopePath =
       workspace.resolve(
@@ -32,15 +35,17 @@ test(
 
     await workspace.writeText(
       'docs/one.txt',
-      'one\n');
+      'one\n'
+    );
 
     const pattern =
       workspace.resolve(
-          'docs',
-          '*.txt')
-        .replace(
-          /\//g,
-          '\\');
+        'docs',
+        '*.txt')
+      .replace(
+        /\//g,
+        '\\'
+      );
 
     await main(
       argv(
@@ -48,7 +53,9 @@ test(
         envelopePath,
         'read',
         pattern,
-        '--read-to-end'));
+        '--read-to-end'
+      )
+    );
 
     const envelope =
       JSON.parse(
@@ -57,25 +64,32 @@ test(
 
     assert.equal(
       envelope.files.length,
-      1);
+      1
+    );
 
     assert.equal(
       envelope.files[0].content,
-      'one\n');
+      'one\n'
+    );
 
     assert.deepEqual(
       envelope.files[0].update,
-      { command: 'read',
-        pattern:
-          workspace.resolve(
-              'docs',
-              'one.txt')
-            .replace(
-              /\\/g,
-              '/'),
+      {
+        command: 'read',
+        pattern: workspace.resolve(
+          'docs',
+          'one.txt'
+        )
+          .replace(
+            /\\/g,
+            '/'
+          ),
         exclude: [],
         lines: 150,
         sizeKb: 15,
         readToEnd: true,
-        withBinaryB64: false });
-  });
+        withBinaryB64: false
+      }
+    );
+  }
+);

@@ -1,11 +1,11 @@
-import { test }
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
-import { JSDOM }
-  from 'jsdom';
 import { observable }
   from 'asljs-observable';
+import { JSDOM }
+  from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import { test }
+  from 'node:test';
 import { bindValueModel }
   from './bind-value-model.js';
 import { ValueBindingSpec }
@@ -16,7 +16,8 @@ const TEST_SUITE =
 
 test(
   `${TEST_SUITE}: applies configured pipes in order`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<span></span>');
 
@@ -28,14 +29,14 @@ test(
 
     const spec: ValueBindingSpec =
       {
-        kind: 'value',
-        target: { kind: 'text' },
-        path: 'value',
-        pipes: [
-          { name: 'add', args: [ '2' ] },
-          { name: 'mul', args: [ '3' ] }
-        ]
-      };
+      kind: 'value',
+      target: { kind: 'text' },
+      path: 'value',
+      pipes: [
+        { name: 'add', args: ['2'] },
+        { name: 'mul', args: ['3'] }
+      ]
+    };
 
     bindValueModel(
       element,
@@ -46,16 +47,20 @@ test(
           add: (value, amount) => Number(value) + Number(amount),
           mul: (value, factor) => Number(value) * Number(factor)
         }
-      });
+      }
+    );
 
     assert.equal(
       element.textContent,
-      '18');
-  });
+      '18'
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: throws for unknown pipe during binding setup`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<span></span>');
 
@@ -67,13 +72,13 @@ test(
 
     const spec: ValueBindingSpec =
       {
-        kind: 'value',
-        target: { kind: 'text' },
-        path: 'value',
-        pipes: [
-          { name: 'missing', args: [] }
-        ]
-      };
+      kind: 'value',
+      target: { kind: 'text' },
+      path: 'value',
+      pipes: [
+        { name: 'missing', args: [] }
+      ]
+    };
 
     assert.throws(
       () =>
@@ -81,13 +86,17 @@ test(
           element,
           spec,
           model,
-          {}),
-      /Unknown pipe: missing/);
-  });
+          {}
+        ),
+      /Unknown pipe: missing/
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: pipe error propagates to caller`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<span></span>');
 
@@ -99,13 +108,13 @@ test(
 
     const spec: ValueBindingSpec =
       {
-        kind: 'value',
-        target: { kind: 'text' },
-        path: 'value',
-        pipes: [
-          { name: 'boom', args: [] }
-        ]
-      };
+      kind: 'value',
+      target: { kind: 'text' },
+      path: 'value',
+      pipes: [
+        { name: 'boom', args: [] }
+      ]
+    };
 
     assert.throws(
       () =>
@@ -115,17 +124,22 @@ test(
           model,
           {
             pipes: {
-              boom: () => {
+              boom: () =>
+              {
                 throw new Error('broken');
               }
             }
-          }),
-      /broken/);
-  });
+          }
+        ),
+      /broken/
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: renders nullish values as empty string for text and html`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM(`
           <div>
@@ -135,16 +149,18 @@ test(
         `);
 
     const textElement =
-      dom.window.document.querySelector('span') as HTMLElement;
+      dom.window.document.querySelector(
+        'span') as HTMLElement;
 
     const htmlElement =
-      dom.window.document.querySelector('div div') as HTMLElement;
+      dom.window.document.querySelector(
+        'div div') as HTMLElement;
 
     const model: Record<string, unknown> =
       {
-        textValue: null,
-        htmlValue: undefined
-      };
+      textValue: null,
+      htmlValue: undefined
+    };
 
     bindValueModel(
       textElement,
@@ -155,7 +171,8 @@ test(
         pipes: []
       },
       model,
-      {});
+      {}
+    );
 
     bindValueModel(
       htmlElement,
@@ -166,15 +183,25 @@ test(
         pipes: []
       },
       model,
-      {});
+      {}
+    );
 
-    assert.equal(textElement.textContent, '');
-    assert.equal(htmlElement.innerHTML, '');
-  });
+    assert.equal(
+      textElement.textContent,
+      ''
+    );
+
+    assert.equal(
+      htmlElement.innerHTML,
+      ''
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: updates nested path via watch when leaf and ancestor change`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<span></span>');
 
@@ -187,11 +214,11 @@ test(
 
     const spec: ValueBindingSpec =
       {
-        kind: 'value',
-        target: { kind: 'text' },
-        path: 'user.name',
-        pipes: []
-      };
+      kind: 'value',
+      target: { kind: 'text' },
+      path: 'user.name',
+      pipes: []
+    };
 
     const dispose =
       bindValueModel(
@@ -202,28 +229,30 @@ test(
 
     assert.equal(
       element.textContent,
-      'Alice');
+      'Alice'
+    );
 
-    model.user.name =
-      'Bob';
-
-    assert.equal(
-      element.textContent,
-      'Bob');
-
-    model.user =
-      { name: 'Carol' };
+    model.user.name = 'Bob';
 
     assert.equal(
       element.textContent,
-      'Carol');
+      'Bob'
+    );
+
+    model.user = { name: 'Carol' };
+
+    assert.equal(
+      element.textContent,
+      'Carol'
+    );
 
     dispose();
 
-    model.user.name =
-      'Dan';
+    model.user.name = 'Dan';
 
     assert.equal(
       element.textContent,
-      'Carol');
-  });
+      'Carol'
+    );
+  }
+);

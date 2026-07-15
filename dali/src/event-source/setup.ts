@@ -3,9 +3,9 @@ import { EVENT_SOURCE_PROJECTION_STORE_NAME,
   from './types.js';
 
 export function eventSourceSetup(
-    db: IDBDatabase,
-    storeName: string = EVENT_SOURCE_STORE_NAME
-  ): void
+  db: IDBDatabase,
+  storeName: string = EVENT_SOURCE_STORE_NAME
+): void
 {
   if (!db.objectStoreNames.contains(storeName)) {
     const store =
@@ -16,24 +16,28 @@ export function eventSourceSetup(
     store.createIndex(
       'by_sequence',
       'sequence',
-      { unique: true });
+      { unique: true }
+    );
 
     store.createIndex(
       'by_previous',
       'previousTransactionId',
-      { unique: false });
+      { unique: false }
+    );
   }
 }
 
 export function eventSourceProjectionSetup(
-    db: IDBDatabase,
-    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-  ): void
+  db: IDBDatabase,
+  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+): void
 {
-  if (db.objectStoreNames.contains(storeName))
+  if (db.objectStoreNames.contains(storeName)) {
     return;
+  }
 
   db.createObjectStore(
     storeName,
-    { keyPath: 'projectionId' });
+    { keyPath: 'projectionId' }
+  );
 }

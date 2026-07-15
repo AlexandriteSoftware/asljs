@@ -1,19 +1,19 @@
 export interface DeleteStrategy<
-    T extends Record<string, any>>
+  T extends Record<string, any>
+>
 {
   isDeleted(
-      record: T
-    ): boolean;
+    record: T
+  ): boolean;
 
   delete(
-      record: T
-    ): T;
+    record: T
+  ): T;
 
   mapIndexQuery?(
-      index: string,
-      key: IDBValidKey
-    ):
-      { index: string;
-        key: IDBValidKey; }
-      | null;
+    index: string,
+    key: IDBValidKey
+  ):
+    | { index: string; key: IDBValidKey; }
+    | null;
 }

@@ -1,56 +1,52 @@
-import { test }
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import { test }
+  from 'node:test';
 import 'fake-indexeddb/auto';
 import { dbOpen,
-         eventSourceGetAll,
+         EventSourceAdapter,
          EventSourceConflictError,
+         eventSourceGetAll,
          EventSourceManager,
-         EventSourceProjectionManager,
          eventSourceProjectionGet,
+         EventSourceProjectionManager,
          eventSourceProjectionSet,
          eventSourceProjectionSetup,
          eventSourceSetup,
+         EventSourceTransaction,
          IndexedDbEventSourceAdapter,
-         SagaManager,
          sagaEntriesGetAll,
          sagaGetAll,
+         SagaManager,
          sagaSetup,
-         Table,
-         EventSourceAdapter,
-         EventSourceTransaction }
+         Table }
   from './index.js';
 
-type Item =
-  { id: string;
-    value: string;
-    deleted: string; };
+type Item = { id: string; value: string; deleted: string; };
 
-class MemoryEventSourceAdapter
-  implements EventSourceAdapter
+class MemoryEventSourceAdapter implements EventSourceAdapter
 {
   readonly #items: EventSourceTransaction[] = [];
 
   constructor(
-      public readonly name: string
-    )
+    public readonly name: string
+  )
   {
   }
 
-  async peek(
-    ): Promise<EventSourceTransaction | null>
+  async peek(): Promise<EventSourceTransaction | null>
   {
-    if (this.#items.length === 0)
+    if (this.#items.length === 0) {
       return null;
+    }
 
     return this.#items[this.#items.length - 1] ?? null;
   }
 
   async append(
-      transaction: EventSourceTransaction,
-      expectedPreviousTransactionId: string | null
-    ): Promise<void>
+    transaction: EventSourceTransaction,
+    expectedPreviousTransactionId: string | null
+  ): Promise<void>
   {
     const head =
       await this.peek();
@@ -61,16 +57,23 @@ class MemoryEventSourceAdapter
 
     if (actualPrevious !== expectedPreviousTransactionId) {
       throw new EventSourceConflictError(
-        `${this.name}: expected previous ${String(expectedPreviousTransactionId)}, actual ${String(actualPrevious)}.`);
+        `${this.name}: expected previous ${
+          String(
+            expectedPreviousTransactionId
+          )
+        }, actual ${String(actualPrevious)}.`
+      );
     }
 
     const existing =
-      this.#items.find(item => item.id === transaction.id);
+      this.#items.find(
+        (item) => item.id === transaction.id);
 
     if (existing) {
       if (JSON.stringify(existing) !== JSON.stringify(transaction)) {
         throw new EventSourceConflictError(
-          `${this.name}: duplicate id with different payload.`);
+          `${this.name}: duplicate id with different payload.`
+        );
       }
 
       return;
@@ -80,64 +83,75 @@ class MemoryEventSourceAdapter
   }
 
   async readAfter(
-      transactionId: string | null
-    ): Promise<EventSourceTransaction[]>
+    transactionId: string | null
+  ): Promise<EventSourceTransaction[]>
   {
-    if (transactionId === null)
-      return [ ...this.#items ];
+    if (transactionId === null) {
+      return [...this.#items];
+    }
 
     const index =
-      this.#items.findIndex(item => item.id === transactionId);
+      this.#items.findIndex(
+        (item) => item.id === transactionId);
 
     if (index < 0) {
       throw new EventSourceConflictError(
-        `${this.name}: transaction ${transactionId} not found.`);
+        `${this.name}: transaction ${transactionId} not found.`
+      );
     }
 
-    return this.#items.slice(index + 1);
+    return this.#items.slice(
+      index + 1
+    );
   }
 }
 
-class RejectingAppendAdapter
-  extends MemoryEventSourceAdapter
+class RejectingAppendAdapter extends MemoryEventSourceAdapter
 {
   async append(
-      transaction: EventSourceTransaction,
-      expectedPreviousTransactionId: string | null
-    ): Promise<void>
+    transaction: EventSourceTransaction,
+    expectedPreviousTransactionId: string | null
+  ): Promise<void>
   {
-    await super.append(transaction, expectedPreviousTransactionId);
+    await super.append(
+      transaction,
+      expectedPreviousTransactionId
+    );
 
     throw new Error('remote write failed');
   }
 }
 
-async function openSagaDb(
-  ): Promise<IDBDatabase>
+async function openSagaDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `saga-test-${crypto.randomUUID()}`,
-    [ db => {
-        db.createObjectStore(
-          'items',
-          { keyPath: 'id' });
+    [(db) =>
+    {
+      db.createObjectStore(
+        'items',
+        { keyPath: 'id' }
+      );
 
-        sagaSetup(db);
-        eventSourceSetup(db);
-        eventSourceProjectionSetup(db);
-      } ]);
+      sagaSetup(db);
+      eventSourceSetup(db);
+      eventSourceProjectionSetup(db);
+    }]
+  );
 }
 
 test(
   'saga: completes only after event source transaction is persisted',
-  async () => {
+  async () =>
+  {
     const db =
       await openSagaDb();
 
     const table =
       new Table<Item>(
-        'items',
-        db);
+      'items',
+      db
+    );
 
     const localAdapter =
       new IndexedDbEventSourceAdapter(db);
@@ -147,23 +161,30 @@ test(
 
     const source =
       new EventSourceManager(
-        localAdapter,
-        [ failingRemote ]);
+      localAdapter,
+      [failingRemote]
+    );
 
     const saga =
       new SagaManager(
-        db,
-        { eventSource: source });
+      db,
+      { eventSource: source }
+    );
 
     await assert.rejects(
-      () => saga.execute(
-        'write-and-fail-eventsource',
-        [ table as unknown as Table<Record<string, any>> ],
-        async () => {
-          await table.add(
-            { id: 'a', value: '1', deleted: '' });
-        }),
-      /remote write failed/);
+      () =>
+        saga.execute(
+          'write-and-fail-eventsource',
+          [table as unknown as Table<Record<string, any>>],
+          async () =>
+          {
+            await table.add(
+              { id: 'a', value: '1', deleted: '' }
+            );
+          }
+        ),
+      /remote write failed/
+    );
 
     const sagas =
       await sagaGetAll(db);
@@ -171,17 +192,25 @@ test(
     const sagaRecord =
       sagas[0];
 
-    assert.equal(sagaRecord?.status, 'started');
+    assert.equal(
+      sagaRecord?.status,
+      'started'
+    );
 
     const events =
       await eventSourceGetAll(db);
 
-    assert.equal(events.length, 0);
-  });
+    assert.equal(
+      events.length,
+      0
+    );
+  }
+);
 
 test(
   'event source: append succeeds only when all linked stores persist',
-  async () => {
+  async () =>
+  {
     const db =
       await openSagaDb();
 
@@ -193,17 +222,21 @@ test(
 
     const source =
       new EventSourceManager(
-        local,
-        [ remote ]);
+      local,
+      [remote]
+    );
 
     const tx =
       await source.appendTransaction(
-        { sagaId: 's1',
-          events:
-            [ { tableName: 'items',
-                eventName: 'add',
-                forward: { id: 'a' },
-                undo: { id: 'a' } } ] });
+        {
+        sagaId: 's1',
+        events: [{
+          tableName: 'items',
+          eventName: 'add',
+          forward: { id: 'a' },
+          undo: { id: 'a' }
+        }]
+      });
 
     const localHead =
       await local.peek();
@@ -211,13 +244,22 @@ test(
     const remoteHead =
       await remote.peek();
 
-    assert.equal(localHead?.id, tx.id);
-    assert.equal(remoteHead?.id, tx.id);
-  });
+    assert.equal(
+      localHead?.id,
+      tx.id
+    );
+
+    assert.equal(
+      remoteHead?.id,
+      tx.id
+    );
+  }
+);
 
 test(
   'event source: pull remote ahead and append next transaction',
-  async () => {
+  async () =>
+  {
     const db =
       await openSagaDb();
 
@@ -228,27 +270,34 @@ test(
       new MemoryEventSourceAdapter('remote-ahead');
 
     await remote.append(
-      { id: 'r1',
+      {
+        id: 'r1',
         previousTransactionId: null,
         sequence: 1,
         sagaId: 'seed',
         createdAt: new Date().toISOString(),
-        events: [] },
-      null);
+        events: []
+      },
+      null
+    );
 
     const source =
       new EventSourceManager(
-        local,
-        [ remote ]);
+      local,
+      [remote]
+    );
 
     const appended =
       await source.appendTransaction(
-        { sagaId: 's2',
-          events:
-            [ { tableName: 'items',
-                eventName: 'update',
-                forward: { id: 'a', value: '2' },
-                undo: { id: 'a', value: '1' } } ] });
+        {
+        sagaId: 's2',
+        events: [{
+          tableName: 'items',
+          eventName: 'update',
+          forward: { id: 'a', value: '2' },
+          undo: { id: 'a', value: '1' }
+        }]
+      });
 
     const localAll =
       await local.readAfter(null);
@@ -256,16 +305,37 @@ test(
     const remoteAll =
       await remote.readAfter(null);
 
-    assert.equal(localAll.length, 2);
-    assert.equal(remoteAll.length, 2);
-    assert.equal(appended.previousTransactionId, 'r1');
-    assert.equal(localAll[0]?.id, 'r1');
-    assert.equal(remoteAll[0]?.id, 'r1');
-  });
+    assert.equal(
+      localAll.length,
+      2
+    );
+
+    assert.equal(
+      remoteAll.length,
+      2
+    );
+
+    assert.equal(
+      appended.previousTransactionId,
+      'r1'
+    );
+
+    assert.equal(
+      localAll[0]?.id,
+      'r1'
+    );
+
+    assert.equal(
+      remoteAll[0]?.id,
+      'r1'
+    );
+  }
+);
 
 test(
   'projection: apply pending transactions and persist checkpoint',
-  async () => {
+  async () =>
+  {
     const db =
       await openSagaDb();
 
@@ -276,32 +346,52 @@ test(
       new EventSourceManager(local);
 
     await source.appendTransaction(
-      { sagaId: 's1',
-        events:
-          [ { tableName: 'items',
-              eventName: 'add',
-              forward: { id: 'a' },
-              undo: { id: 'a' } } ] });
+      {
+        sagaId: 's1',
+        events: [{
+          tableName: 'items',
+          eventName: 'add',
+          forward: { id: 'a' },
+          undo: { id: 'a' }
+        }]
+      }
+    );
 
     await source.appendTransaction(
-      { sagaId: 's2',
-        events:
-          [ { tableName: 'items',
-              eventName: 'add',
-              forward: { id: 'b' },
-              undo: { id: 'b' } } ] });
+      {
+        sagaId: 's2',
+        events: [{
+          tableName: 'items',
+          eventName: 'add',
+          forward: { id: 'b' },
+          undo: { id: 'b' }
+        }]
+      }
+    );
 
     const applied: string[] = [];
 
     const projection =
       new EventSourceProjectionManager(
-        'table-set-main',
-        source,
-        async transaction => {
-          applied.push(transaction.id);
-        },
-        () => eventSourceProjectionGet(db, 'table-set-main'),
-        record => eventSourceProjectionSet(db, record));
+      'table-set-main',
+      source,
+      async (transaction) =>
+      {
+        applied.push(
+          transaction.id
+        );
+      },
+      () =>
+        eventSourceProjectionGet(
+          db,
+          'table-set-main'
+        ),
+      (record) =>
+        eventSourceProjectionSet(
+          db,
+          record
+        )
+    );
 
     const appliedCount =
       await projection.applyPending();
@@ -314,62 +404,96 @@ test(
     const secondApplied =
       await projection.applyPending();
 
-    assert.equal(appliedCount, 2);
-    assert.equal(secondApplied, 0);
-    assert.equal(applied.length, 2);
-    assert.equal(checkpoint?.appliedTransactionId, applied[1]);
-  });
+    assert.equal(
+      appliedCount,
+      2
+    );
+
+    assert.equal(
+      secondApplied,
+      0
+    );
+
+    assert.equal(
+      applied.length,
+      2
+    );
+
+    assert.equal(
+      checkpoint?.appliedTransactionId,
+      applied[1]
+    );
+  }
+);
 
 test(
   'saga: recover pending rolls back unfinished saga',
-  async () => {
+  async () =>
+  {
     const db =
       await openSagaDb();
 
     const table =
       new Table<Item>(
-        'items',
-        db);
+      'items',
+      db
+    );
 
     await table.add(
-      { id: 'a', value: '1', deleted: '' });
+      { id: 'a', value: '1', deleted: '' }
+    );
 
     const tx =
       db.transaction(
-        [ 'saga_transactions',
-          'saga_entries' ],
+        ['saga_transactions', 'saga_entries'],
         'readwrite');
 
-    tx.objectStore('saga_transactions')
+    tx.objectStore(
+      'saga_transactions'
+    )
       .add(
-        { id: 's1',
+        {
+          id: 's1',
           name: 'pending',
           status: 'started',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString() });
+          updatedAt: new Date().toISOString()
+        }
+      );
 
     tx.objectStore('saga_entries')
       .add(
-        { sagaId: 's1',
+        {
+          sagaId: 's1',
           sequence: 1,
           tableName: 'items',
           eventName: 'add',
-          forward:
-            { type: 'add',
-              tableName: 'items',
-              record: { id: 'a', value: '1', deleted: '' } },
-          undo:
-            { type: 'delete',
-              tableName: 'items',
-              key: 'a' },
-          createdAt: new Date().toISOString() });
+          forward: {
+            type: 'add',
+            tableName: 'items',
+            record: { id: 'a', value: '1', deleted: '' }
+          },
+          undo: { type: 'delete', tableName: 'items', key: 'a' },
+          createdAt: new Date().toISOString()
+        }
+      );
 
     await new Promise<void>(
-      (resolve, reject) => {
+      (resolve, reject) =>
+      {
         tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error);
-      });
+
+        tx.onerror = () =>
+          reject(
+            tx.error
+          );
+
+        tx.onabort = () =>
+          reject(
+            tx.error
+          );
+      }
+    );
 
     const manager =
       new SagaManager(db);
@@ -384,12 +508,25 @@ test(
       await sagaGetAll(db);
 
     const sagaRecord =
-      sagas.find(item => item.id === 's1');
+      sagas.find(
+        (item) => item.id === 's1');
 
-    assert.deepEqual(rolledBack, [ 's1' ]);
-    assert.equal(record, null);
-    assert.equal(sagaRecord?.status, 'rolled_back');
-  });
+    assert.deepEqual(
+      rolledBack,
+      ['s1']
+    );
+
+    assert.equal(
+      record,
+      null
+    );
+
+    assert.equal(
+      sagaRecord?.status,
+      'rolled_back'
+    );
+  }
+);
 
 // Keep named import used to validate public API compiles end-to-end.
 void sagaEntriesGetAll;

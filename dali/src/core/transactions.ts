@@ -1,55 +1,69 @@
 export const TxMode =
-  { read : 'readonly' as IDBTransactionMode,
-    readWrite : 'readwrite' as IDBTransactionMode };
+  {
+  read: 'readonly' as IDBTransactionMode,
+  readWrite: 'readwrite' as IDBTransactionMode
+};
 
 export function txDone(
-    tx: IDBTransaction
-  ): Promise<void>
+  tx: IDBTransaction
+): Promise<void>
 {
   return new Promise(
     (
-        resolve,
-        reject
-      ) =>
+      resolve,
+      reject
+    ) =>
     {
       tx.addEventListener(
         'complete',
-        () => {
+        () =>
+        {
           resolve();
-        });
+        }
+      );
 
       tx.addEventListener(
         'abort',
-        () => {
-          reject(tx.error);
-        });
+        () =>
+        {
+          reject(
+            tx.error
+          );
+        }
+      );
 
       tx.addEventListener(
         'error',
-        () => {
-          reject(tx.error);
-        });
-    });
+        () =>
+        {
+          reject(
+            tx.error
+          );
+        }
+      );
+    }
+  );
 }
 
 export function txReuseOrCreate(
-    tx: IDBTransaction | null,
-    storeNames: string | string[],
-    mode: IDBTransactionMode,
-    db: IDBDatabase
-  ): IDBTransaction
+  tx: IDBTransaction | null,
+  storeNames: string | string[],
+  mode: IDBTransactionMode,
+  db: IDBDatabase
+): IDBTransaction
 {
   if (tx) {
     const storeNamesArray =
       Array.isArray(storeNames)
-        ? storeNames
-        : [ storeNames ];
+      ? storeNames
+      : [storeNames];
 
     for (const storeName of storeNamesArray) {
       txEnsure(
         tx,
         storeName,
-        mode);
+        mode
+      );
     }
 
     return tx;
@@ -57,14 +71,15 @@ export function txReuseOrCreate(
 
   return db.transaction(
     storeNames,
-    mode);
+    mode
+  );
 }
 
 export function txEnsure(
-    tx: IDBTransaction,
-    storeName: string,
-    mode: IDBTransactionMode
-  ): void
+  tx: IDBTransaction,
+  storeName: string,
+  mode: IDBTransactionMode
+): void
 {
   if (!tx.objectStoreNames.contains(storeName)) {
     throw new TransactionStoreAccessError(storeName);
@@ -72,9 +87,10 @@ export function txEnsure(
 
   switch (mode) {
     case TxMode.read:
-      if (tx.mode !== TxMode.read
-          && tx.mode !== TxMode.readWrite)
-      {
+      if (
+        tx.mode !== TxMode.read
+        && tx.mode !== TxMode.readWrite
+      ) {
         throw new TransactionReadModeRequiredError(storeName);
       }
       break;
@@ -88,98 +104,102 @@ export function txEnsure(
   }
 }
 
-export class UnsupportedTransactionModeError
-  extends Error
+export class UnsupportedTransactionModeError extends Error
 {
   constructor(
-      mode: IDBTransactionMode
-    )
+    mode: IDBTransactionMode
+  )
   {
     super(
-      `Unsupported transaction mode "${mode}"`);
+      `Unsupported transaction mode "${mode}"`
+    );
 
     this.name = 'UnsupportedTransactionModeError';
   }
 }
 
-export class TransactionReadModeRequiredError
-  extends Error
+export class TransactionReadModeRequiredError extends Error
 {
   constructor(
-      storeName: string
-    )
+    storeName: string
+  )
   {
     super(
-      `Transaction does not have read access to the store "${storeName}".`);
+      `Transaction does not have read access to the store "${storeName}".`
+    );
 
     this.name = 'TransactionReadModeRequiredError';
   }
 }
 
-export class TransactionWriteModeRequiredError
-  extends Error
+export class TransactionWriteModeRequiredError extends Error
 {
   constructor(
-      storeName: string
-    )
+    storeName: string
+  )
   {
     super(
-      `Transaction does not have write access to the store "${storeName}".`);
+      `Transaction does not have write access to the store "${storeName}".`
+    );
 
     this.name = 'TransactionWriteModeRequiredError';
   }
 }
 
-export class TransactionStoreAccessError
-  extends Error
+export class TransactionStoreAccessError extends Error
 {
   constructor(
-      storeName: string
-    )
+    storeName: string
+  )
   {
     super(
-      `Transaction does not have access to the store "${storeName}".`);
+      `Transaction does not have access to the store "${storeName}".`
+    );
 
     this.name = 'TransactionStoreAccessError';
   }
 }
 
 export function txRead(
-    db: IDBDatabase,
-    storeName: string,
-    tx: IDBTransaction | null = null
-  ): IDBTransaction
+  db: IDBDatabase,
+  storeName: string,
+  tx: IDBTransaction | null = null
+): IDBTransaction
 {
   if (tx !== null) {
     txEnsure(
       tx,
       storeName,
-      TxMode.read);
+      TxMode.read
+    );
 
     return tx;
   }
 
   return db.transaction(
-    [ storeName ],
-    TxMode.read);
+    [storeName],
+    TxMode.read
+  );
 }
 
 export function txWrite(
-    db: IDBDatabase,
-    storeName: string,
-    tx: IDBTransaction | null = null
-  ): IDBTransaction
+  db: IDBDatabase,
+  storeName: string,
+  tx: IDBTransaction | null = null
+): IDBTransaction
 {
   if (tx !== null) {
     txEnsure(
       tx,
       storeName,
-      TxMode.readWrite);
+      TxMode.readWrite
+    );
 
     return tx;
   }
 
   return db.transaction(
-    [ storeName ],
-    TxMode.readWrite);
+    [storeName],
+    TxMode.readWrite
+  );
 }

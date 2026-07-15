@@ -83,7 +83,7 @@ Requirement.
     assert.deepEqual(
       requirementArtefacts
         .map(
-          (artefact) => artefact.relativePath
+          artefact => artefact.relativePath
         )
         .sort(),
       ['development/visible/RQ101 Example.md']
@@ -157,7 +157,7 @@ Specification.
 
     assert.deepEqual(
       matchingDefinitions.map(
-        (definition) => definition.name
+        definition => definition.name
       ).sort(),
       ['Article', 'Specification']
     );

@@ -1,47 +1,54 @@
 import { Command }
   from 'commander';
+import { read,
+         ReadParameters }
+  from '../commands/read.js';
 import { EnvelopeContainer }
   from '../envelope/container.js';
-import { ReadParameters,
-         read }
-  from '../commands/read.js';
+import { Envelope }
+  from '../envelope/envelope.js';
 import { resolveEnvelopePath }
   from './env.js';
 import { ExecutionContext,
          MainOptions }
   from './types.js';
-import { Envelope }
-  from '../envelope/envelope.js';
 
 export function configureUpdateCommand(
-    program: Command,
-    context: ExecutionContext
-  ): void
+  program: Command,
+  context: ExecutionContext
+): void
 {
   program
     .command(
-      'update')
+      'update'
+    )
     .description(
-      'refresh envelope files using their update commands')
+      'refresh envelope files using their update commands'
+    )
     .action(
-      async () => {
+      async () =>
+      {
         const options =
           program.opts<{
-            envelope?: string;
-          }>();
+          envelope?: string;
+        }>();
 
         await updateCmd(
           context,
-          { envelopePath:
-              resolveEnvelopePath(
-                options.envelope) });
-      });
+          {
+            envelopePath: resolveEnvelopePath(
+              options.envelope
+            )
+          }
+        );
+      }
+    );
 }
 
 async function updateCmd(
-    context: ExecutionContext,
-    options: MainOptions = {}
-  ): Promise<void>
+  context: ExecutionContext,
+  options: MainOptions = {}
+): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -49,7 +56,8 @@ async function updateCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-      context.logger);
+    context.logger
+  );
 
   const envelope =
     await envelopeContainer.loadEnvelope(
@@ -57,32 +65,36 @@ async function updateCmd(
 
   await updateEnvelopeFiles(
     envelope,
-    context);
+    context
+  );
 
   await envelopeContainer.saveEnvelope(
-    envelopePath);
+    envelopePath
+  );
 }
 
 export async function updateEnvelopeFiles(
-    envelope: Envelope,
-    context?: ExecutionContext
-  ): Promise<void>
+  envelope: Envelope,
+  context?: ExecutionContext
+): Promise<void>
 {
   const updateCommands =
     envelope.files
-      .map(
-        file =>
-          file.update)
-      .filter(
-        (command): command is ReadParameters =>
-          command !== undefined);
+    .map(
+      file => file.update
+    )
+    .filter(
+      (command): command is ReadParameters => command !== undefined
+    );
 
   for (const command of updateCommands) {
     await read(
       envelope,
-      command);
+      command
+    );
 
     context?.console.writeLine(
-      `refreshed ${command.pattern}`);
+      `refreshed ${command.pattern}`
+    );
   }
 }

@@ -12,24 +12,24 @@ import { configureReadCommand }
   from './read.js';
 import { configureRestoreCommand }
   from './restore.js';
-import { configureUpdateCommand }
-  from './update.js';
 import { ExecutionContext }
   from './types.js';
+import { configureUpdateCommand }
+  from './update.js';
 
 export async function main(
-    argv = process.argv
-  ): Promise<void>
+  argv = process.argv
+): Promise<void>
 {
   const logger =
     createLogger();
 
   const context: ExecutionContext =
-    { logger,
-      console:
-        new DefaultHostConsole(),
-      dispose:
-        () => logger.dispose() };
+    {
+    logger,
+    console: new DefaultHostConsole(),
+    dispose: () => logger.dispose()
+  };
 
   try {
     const program =
@@ -37,47 +37,60 @@ export async function main(
 
     program
       .name(
-        'cog')
+        'cog'
+      )
       .allowExcessArguments(
-        false)
+        false
+      )
       .exitOverride()
       .option(
         '--envelope <path>',
-        'path to the envelope JSON file')
+        'path to the envelope JSON file'
+      )
       .option(
         '--patch <path>',
-        'path to the patch JSON file')
+        'path to the patch JSON file'
+      )
       .showHelpAfterError();
 
     configureReadCommand(
       program,
-      context);
+      context
+    );
 
     configureListCommand(
       program,
-      context);
+      context
+    );
 
     configureUpdateCommand(
       program,
-      context);
+      context
+    );
 
     configureRestoreCommand(
       program,
-      context);
+      context
+    );
 
     configureApplyPatchCommand(
       program,
-      context);
+      context
+    );
 
     program
       .action(
-        () => {
+        () =>
+        {
           throw new Error(
-            'Usage: cog <read|list|update|restore|apply-patch> [args...]');
-        });
+            'Usage: cog <read|list|update|restore|apply-patch> [args...]'
+          );
+        }
+      );
 
     await program.parseAsync(
-      argv);
+      argv
+    );
   } finally {
     context.dispose?.();
   }

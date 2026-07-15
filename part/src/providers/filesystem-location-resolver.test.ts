@@ -136,14 +136,14 @@ function checkResolvedFiles(
   const normalisedResolvedFiles =
     resolvedFiles
     .map(
-      (filePath) =>
+      filePath =>
         path.relative(
           tmpDir.path,
           filePath
         )
     )
     .map(
-      (filePath) =>
+      filePath =>
         filePath.replace(
           /\\/g,
           '/'

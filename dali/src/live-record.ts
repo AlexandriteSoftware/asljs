@@ -2,10 +2,10 @@ import { EventfulBase }
   from 'asljs-eventful';
 import { observable }
   from 'asljs-observable';
-import { KeyPath,
-         keyAssert,
+import { keyAssert,
          keyEqual,
-         keyGet }
+         keyGet,
+         KeyPath }
   from './keys.js';
 import { TableEventsReceiver }
   from './table.js';
@@ -16,10 +16,11 @@ import { TableEventsReceiver }
  * are consumed by `observable.watch()` to support deep-path watching
  * (e.g. `r.watch('record.title', cb)`).
  */
-export type LiveRecordSetPayload<T extends Record<string, any>> =
-  { property: 'record';
-    value: T | null;
-    previous: T | null; };
+export type LiveRecordSetPayload<T extends Record<string, any>> = {
+  property: 'record';
+  value: T | null;
+  previous: T | null;
+};
 
 /**
  * Event map for `LiveRecord`.
@@ -31,11 +32,12 @@ export type LiveRecordSetPayload<T extends Record<string, any>> =
  * Observable property events (via ASLJS observable, used by `watch()`):
  * - `set:record` / `set` — emitted whenever `record` is reassigned.
  */
-export type LiveRecordEvents<T extends Record<string, any>> =
-  { 'changed': [ record: T, previous: T | null ];
-    'deleted': [ previous: T ];
-    'set:record': [ LiveRecordSetPayload<T> ];
-    'set': [ LiveRecordSetPayload<T> ]; };
+export type LiveRecordEvents<T extends Record<string, any>> = {
+  changed: [record: T, previous: T | null];
+  deleted: [previous: T];
+  'set:record': [LiveRecordSetPayload<T>];
+  set: [LiveRecordSetPayload<T>];
+};
 
 /**
  * A live single-record view for a specific primary key.
@@ -67,53 +69,63 @@ export class LiveRecord<T extends Record<string, any>>
   #disposed = false;
 
   constructor(
-      key: IDBValidKey,
-      keyPath: KeyPath<T>,
-      loadFn: (key: IDBValidKey) => Promise<T | null>,
-      subscribeFn:
-        (receiver: TableEventsReceiver<T>) => (() => boolean)
-    )
+    key: IDBValidKey,
+    keyPath: KeyPath<T>,
+    loadFn: (key: IDBValidKey) => Promise<T | null>,
+    subscribeFn: (receiver: TableEventsReceiver<T>) => () => boolean
+  )
   {
     super();
 
-    keyAssert(keyPath, key);
+    keyAssert(
+      keyPath,
+      key
+    );
 
     this.#key = key;
     this.#keyPath = keyPath;
 
     // Subscribe to committed table changes first to avoid missing events
     // that occur between construction and the initial load completing.
-    this.#unsubscribe =
-      subscribeFn({
-        add: record => {
-          if (!this.#matchesKey(record))
+    this.#unsubscribe = subscribeFn(
+      {
+        add: (record) =>
+        {
+          if (!this.#matchesKey(record)) {
             return;
+          }
 
           this.#loadVersion++;
           this.#setRecord(record);
         },
 
-        update: record => {
-          if (!this.#matchesKey(record))
+        update: (record) =>
+        {
+          if (!this.#matchesKey(record)) {
             return;
+          }
 
           this.#loadVersion++;
           this.#setRecord(record);
         },
 
-        delete: record => {
-          if (!this.#matchesKey(record))
+        delete: (record) =>
+        {
+          if (!this.#matchesKey(record)) {
             return;
+          }
 
           this.#loadVersion++;
           this.#setRecord(null);
         },
 
-        clear: () => {
+        clear: () =>
+        {
           this.#loadVersion++;
           this.#setRecord(null);
-        },
-      });
+        }
+      }
+    );
 
     // Load initial state asynchronously.
     // If a relevant committed event fires before this load settles,
@@ -122,21 +134,32 @@ export class LiveRecord<T extends Record<string, any>>
     const capturedVersion =
       this.#loadVersion;
 
-    loadFn(this.#key)
-      .then(record => {
-        if (this.#disposed)
-          return;
+    loadFn(
+      this.#key
+    )
+      .then(
+        (record) =>
+        {
+          if (this.#disposed) {
+            return;
+          }
 
-        if (this.#loadVersion !== capturedVersion)
-          return;
+          if (this.#loadVersion !== capturedVersion) {
+            return;
+          }
 
-        this.#setRecord(record);
-      })
-      .catch(error => {
-        console.error(
-          'LiveRecord: initial load failed',
-          error);
-      });
+          this.#setRecord(record);
+        }
+      )
+      .catch(
+        (error) =>
+        {
+          console.error(
+            'LiveRecord: initial load failed',
+            error
+          );
+        }
+      );
   }
 
   /**
@@ -145,8 +168,7 @@ export class LiveRecord<T extends Record<string, any>>
    * Changes to this property are signalled via `set:record` / `set` events,
    * enabling `watch('record.someField', cb)` through ASLJS observable.
    */
-  get record(): T | null
-  {
+  get record(): T | null {
     return this.#current;
   }
 
@@ -166,14 +188,15 @@ export class LiveRecord<T extends Record<string, any>>
    * underlying record object does not break existing subscriptions.
    */
   watch(
-      property: string,
-      callback: (value: any) => void
-    ): () => boolean
+    property: string,
+    callback: (value: any) => void
+  ): () => boolean
   {
     return observable.watch(
       this as any,
       property,
-      callback);
+      callback
+    );
   }
 
   /**
@@ -187,26 +210,32 @@ export class LiveRecord<T extends Record<string, any>>
   }
 
   #matchesKey(
-      record: T
-    ): boolean
+    record: T
+  ): boolean
   {
     const recordKey =
-      keyGet(this.#keyPath, record);
+      keyGet(
+        this.#keyPath,
+        record);
 
-    return keyEqual(recordKey, this.#key);
+    return keyEqual(
+      recordKey,
+      this.#key
+    );
   }
 
   #setRecord(
-      value: T | null
-    ): void
+    value: T | null
+  ): void
   {
     // Reference equality is correct here: every committed table change
     // delivers a freshly deserialised object from IndexedDB, so two
     // distinct records will never share the same reference.  The only
     // case where the references are equal is null === null, which
     // correctly suppresses a redundant notification.
-    if (this.#current === value)
+    if (this.#current === value) {
       return;
+    }
 
     const previous =
       this.#current;
@@ -220,19 +249,36 @@ export class LiveRecord<T extends Record<string, any>>
     // observable watch system internally and are not part of the public domain
     // event surface.
     const payload: LiveRecordSetPayload<T> =
-      { property: 'record',
-        value,
-        previous };
+      {
+      property: 'record',
+      value,
+      previous
+    };
 
-    (this as any).emit('set:record', payload);
-    (this as any).emit('set', payload);
+    (this as any).emit(
+      'set:record',
+      payload
+    );
+
+    (this as any).emit(
+      'set',
+      payload
+    );
 
     // Emit ASLJS eventful domain events.
     if (value === null) {
-      if (previous !== null)
-        this.emit('deleted', previous);
+      if (previous !== null) {
+        this.emit(
+          'deleted',
+          previous
+        );
+      }
     } else {
-      this.emit('changed', value, previous);
+      this.emit(
+        'changed',
+        value,
+        previous
+      );
     }
   }
 }

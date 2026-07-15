@@ -68,7 +68,7 @@ export function createEnvironment(
     stdout: createInMemoryWritableBuffer(),
     stderr: createInMemoryWritableBuffer(),
     loggerProvider: new NullLoggerProvider(),
-    resolve: (type) =>
+    resolve: type =>
       registry.get(type)
         ?? type,
     register: (type, value) =>
@@ -86,7 +86,7 @@ export function createEnvironment(
         this.definitions
       );
     },
-    onDispose: (action) => disposeActions.push(action),
+    onDispose: action => disposeActions.push(action),
     dispose: async () =>
     {
       for (const action of disposeActions) {

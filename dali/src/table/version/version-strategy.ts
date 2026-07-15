@@ -1,18 +1,19 @@
-export interface VersionStrategy<T extends Record<string, any>> {
+export interface VersionStrategy<T extends Record<string, any>>
+{
   getVersion(
-      record: T
-    ): unknown;
+    record: T
+  ): unknown;
 
   initialise(
-      record: T
-    ): T;
+    record: T
+  ): T;
 
   verify(
-      record: T,
-      expectedVersion: unknown
-    ): boolean;
+    record: T,
+    expectedVersion: unknown
+  ): boolean;
 
   update(
-      record: T
-    ): T;
+    record: T
+  ): T;
 }

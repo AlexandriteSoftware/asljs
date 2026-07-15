@@ -37,7 +37,9 @@
   },
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
-    "format": "npm run format:json",
+    "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "sfmt \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
     "clean": "node ../common/dist/toolkit.js clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",

@@ -30,7 +30,7 @@
     "operatorPosition": "nextLine",
     "preferHanging": false,
     "preferSingleLine": false,
-    "arrowFunction.useParentheses": "force",
+    "arrowFunction.useParentheses": "preferNone",
     "binaryExpression.linePerExpression": true,
     "memberExpression.linePerExpression": false,
     "typeLiteral.separatorKind": "semiColon",

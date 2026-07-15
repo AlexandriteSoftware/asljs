@@ -1,5 +1,5 @@
-import { LitElement,
-         html }
+import { html,
+         LitElement }
   from 'lit';
 import { property }
   from 'lit/decorators.js';
@@ -7,51 +7,64 @@ import { ComponentModelDefinition,
          ComponentModelPropertyDefinition }
   from '../abstractions/model.js';
 
-export interface AssistedInputKeyDetail {
+export interface AssistedInputKeyDetail
+{
   key: string;
 }
 
-export type AssistedInputButtonDefinition =
-  { key?: string;
-    label?: string;
-    className?: string;
-    action?: string; };
+export type AssistedInputButtonDefinition = {
+  key?: string;
+  label?: string;
+  className?: string;
+  action?: string;
+};
 
 export const AssistedInputModelProperties =
-  [ { name: 'characters',
-      title: 'Characters',
-      type: 'string',
-      description: 'Allowed single-character keys. Empty means no filter.' },
-  ] as const satisfies readonly ComponentModelPropertyDefinition[];
+  [{
+  name: 'characters',
+  title: 'Characters',
+  type: 'string',
+  description: 'Allowed single-character keys. Empty means no filter.'
+}] as const satisfies readonly ComponentModelPropertyDefinition[];
 
 export const AssistedInputModelDefinition: ComponentModelDefinition =
-  { name: 'AssistedInputModelDefinition',
-    title: 'Assisted Input',
-    properties: AssistedInputModelProperties };
+  {
+  name: 'AssistedInputModelDefinition',
+  title: 'Assisted Input',
+  properties: AssistedInputModelProperties
+};
 
-export abstract class AssistedInput
-  extends LitElement
+export abstract class AssistedInput extends LitElement
 {
-  @property({ reflect: true })
-    accessor characters = '';
+  @property(
+    { reflect: true }
+  )
+  accessor characters = '';
 
   protected abstract get defaultAriaLabel(): string;
 
-  override connectedCallback(): void {
+  override connectedCallback(): void
+  {
     super.connectedCallback();
 
     if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'group');
+      this.setAttribute(
+        'role',
+        'group'
+      );
     }
 
     if (!this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', this.defaultAriaLabel);
+      this.setAttribute(
+        'aria-label',
+        this.defaultAriaLabel
+      );
     }
   }
 
   protected isButtonAllowed(
-      button: AssistedInputButtonDefinition
-    ): boolean
+    button: AssistedInputButtonDefinition
+  ): boolean
   {
     if (button.action !== undefined) {
       return true;
@@ -61,12 +74,14 @@ export abstract class AssistedInput
       return false;
     }
 
-    return this.isKeyAllowed(button.key);
+    return this.isKeyAllowed(
+      button.key
+    );
   }
 
   protected isKeyAllowed(
-      key: string
-    ): boolean
+    key: string
+  ): boolean
   {
     if (this.characters === '') {
       return true;
@@ -82,22 +97,24 @@ export abstract class AssistedInput
   }
 
   protected renderAssistedInputButton(
-      button: AssistedInputButtonDefinition,
-      content: unknown,
-      options: { ariaLabel?: string;
-                 title?: string; } = {}
-    ): ReturnType<typeof html>
+    button: AssistedInputButtonDefinition,
+    content: unknown,
+    options: { ariaLabel?: string; title?: string; } = {}
+  ): ReturnType<typeof html>
   {
     const allowed =
       this.isButtonAllowed(button);
+
     const classes =
-      [ 'key',
-        button.className ?? '',
-        allowed
-          ? ''
-          : 'disallowed' ]
-        .filter(Boolean)
-        .join(' ');
+      [
+      'key',
+      button.className ?? '',
+      allowed
+        ? ''
+        : 'disallowed'
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return html`
       <button
@@ -117,71 +134,81 @@ export abstract class AssistedInput
   }
 
   protected dispatchKey(
-      key: string
-    ): void
+    key: string
+  ): void
   {
     this.dispatchEvent(
       new CustomEvent<AssistedInputKeyDetail>(
         'key',
-        { detail: { key },
-          bubbles: true,
-          composed: true }));
+        { detail: { key }, bubbles: true, composed: true }
+      )
+    );
   }
 
-  protected dispatchSubmit(): void {
+  protected dispatchSubmit(): void
+  {
     this.dispatchEvent(
       new CustomEvent(
         'submit',
-        { detail: {},
-          bubbles: true,
-          composed: true }));
+        { detail: {}, bubbles: true, composed: true }
+      )
+    );
   }
 
   protected handleAction(
-      _action: string,
-      _event: Event,
-      _button: HTMLButtonElement
-    ): boolean
+    _action: string,
+    _event: Event,
+    _button: HTMLButtonElement
+  ): boolean
   {
     return false;
   }
 
   protected handleAssistedInputButtonClick = (
-      event: Event
-    ): void => {
-      const button =
-        event.currentTarget as HTMLButtonElement | null;
+    event: Event
+  ): void =>
+  {
+    const button =
+      event.currentTarget as HTMLButtonElement | null;
 
-      if (button === null || button.disabled) {
-        return;
-      }
+    if (button === null || button.disabled) {
+      return;
+    }
 
-      const action =
-        button.getAttribute('data-action');
+    const action =
+      button.getAttribute('data-action');
 
-      if (action !== null && action !== ''
-          && this.handleAction(action, event, button)) {
-        return;
-      }
+    if (
+      action !== null
+      && action !== ''
+      && this.handleAction(
+        action,
+        event,
+        button
+      )
+    ) {
+      return;
+    }
 
-      const key =
-        button.getAttribute('data-key');
+    const key =
+      button.getAttribute('data-key');
 
-      if (key === null || key === '') {
-        return;
-      }
+    if (key === null || key === '') {
+      return;
+    }
 
-      if (key === 'Enter') {
-        this.dispatchSubmit();
-        return;
-      }
+    if (key === 'Enter') {
+      this.dispatchSubmit();
+      return;
+    }
 
-      this.dispatchKey(key);
-    };
+    this.dispatchKey(key);
+  };
 
   protected handleAssistedInputPointerDown = (
-      event: Event
-    ): void => {
-      event.preventDefault();
-    };
+    event: Event
+  ): void =>
+  {
+    event.preventDefault();
+  };
 }

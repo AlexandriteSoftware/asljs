@@ -1,6 +1,6 @@
-import { LitElement,
-         css,
-         html }
+import { css,
+         html,
+         LitElement }
   from 'lit';
 import { customElement,
          property }
@@ -9,85 +9,111 @@ import { unsafeHTML }
   from 'lit/directives/unsafe-html.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
-import { findThemeProvider,
+import { ButtonThemeDefinition,
+         ComponentsTheme,
+         findThemeProvider,
          getDefaultTheme,
          resolveThemeText,
          THEME_CHANGED_EVENT_NAME,
-         ButtonThemeDefinition,
-         ComponentsTheme,
          ThemeProviderLike }
   from './themes/theme.js';
 
 export const ButtonModelDefinition: ComponentModelDefinition =
-  { name: 'ButtonModelDefinition',
-    title: 'Button',
-    properties:
-      [ { name: 'variant',
-          title: 'Variant',
-          type: 'string',
-          description: 'Variant key used to resolve theme defaults such as add or delete.' },
-        { name: 'icon',
-          title: 'Icon',
-          type: 'string',
-          description: 'HTML markup string for the icon.' },
-        { name: 'buttonClassName',
-          title: 'Button class name',
-          type: 'string',
-          description: 'Class name applied to the native button.' },
-        { name: 'theme',
-          title: 'Theme',
-          type: 'object',
-          description: 'Per-instance components theme override.' },
-        { name: 'text',
-          title: 'Text',
-          type: 'string',
-          description: 'Visible button label.' },
-        { name: 'disabled',
-          title: 'Disabled',
-          type: 'boolean',
-          description: 'Native disabled state.' },
-        { name: 'type',
-          title: 'Type',
-          type: 'string',
-          description: 'Native button type such as button, submit, or reset.' } ] };
+  {
+  name: 'ButtonModelDefinition',
+  title: 'Button',
+  properties: [{
+    name: 'variant',
+    title: 'Variant',
+    type: 'string',
+    description:
+      'Variant key used to resolve theme defaults such as add or delete.'
+  }, {
+    name: 'icon',
+    title: 'Icon',
+    type: 'string',
+    description: 'HTML markup string for the icon.'
+  }, {
+    name: 'buttonClassName',
+    title: 'Button class name',
+    type: 'string',
+    description: 'Class name applied to the native button.'
+  }, {
+    name: 'theme',
+    title: 'Theme',
+    type: 'object',
+    description: 'Per-instance components theme override.'
+  }, {
+    name: 'text',
+    title: 'Text',
+    type: 'string',
+    description: 'Visible button label.'
+  }, {
+    name: 'disabled',
+    title: 'Disabled',
+    type: 'boolean',
+    description: 'Native disabled state.'
+  }, {
+    name: 'type',
+    title: 'Type',
+    type: 'string',
+    description: 'Native button type such as button, submit, or reset.'
+  }]
+};
 
 @customElement('asljs-button')
-export class Button
-  extends LitElement
+export class Button extends LitElement
 {
   #themeProvider: ThemeProviderLike | null = null;
 
-  @property({ reflect: true })
-    accessor variant = '';
+  @property(
+    { reflect: true }
+  )
+  accessor variant = '';
 
-  @property({ attribute: false })
-    accessor icon = '';
+  @property(
+    { attribute: false }
+  )
+  accessor icon = '';
 
-  @property({ attribute: false })
-    accessor buttonClassName = '';
+  @property(
+    { attribute: false }
+  )
+  accessor buttonClassName = '';
 
-  @property({ attribute: false })
-    accessor theme: ComponentsTheme | null = null;
+  @property(
+    { attribute: false }
+  )
+  accessor theme: ComponentsTheme | null = null;
 
-  @property({ attribute: false })
-    accessor text = '';
+  @property(
+    { attribute: false }
+  )
+  accessor text = '';
 
-  @property({ reflect: true })
-    accessor disabled = false;
+  @property(
+    { reflect: true }
+  )
+  accessor disabled = false;
 
-  @property({ reflect: true })
-    accessor type: 'button' | 'submit' | 'reset' = 'button';
+  @property(
+    { reflect: true }
+  )
+  accessor type: 'button' | 'submit' | 'reset' = 'button';
 
-  override createRenderRoot(): this {
+  override createRenderRoot(): this
+  {
     return this;
   }
 
-  connectedCallback(): void {
+  connectedCallback(): void
+  {
     super.connectedCallback();
     this.#syncThemeProvider();
   }
 
-  disconnectedCallback(): void {
+  disconnectedCallback(): void
+  {
     this.#disposeThemeProvider();
     super.disconnectedCallback();
   }
@@ -126,15 +152,16 @@ export class Button
   }
 
   protected override updated(
-      changedProperties: Map<PropertyKey, unknown>
-    ): void
+    changedProperties: Map<PropertyKey, unknown>
+  ): void
   {
     if (changedProperties.has('theme')) {
       this.#syncThemeProvider();
     }
   }
 
-  override render(): ReturnType<LitElement['render']> {
+  override render(): ReturnType<LitElement['render']>
+  {
     return html`
       <button
           class=${this.resolvedButtonClassName}
@@ -143,7 +170,11 @@ export class Button
           style="display:inline-flex;align-items:center;gap:0.5rem;">
         <span class="icon"
               ?hidden=${this.resolvedIcon === ''}
-              aria-hidden="true">${unsafeHTML(this.resolvedIcon)}</span>
+              aria-hidden="true">${
+      unsafeHTML(
+        this.resolvedIcon
+      )
+    }</span>
         <span class="text"
               ?hidden=${this.resolvedText === ''}>${this.resolvedText}</span>
       </button>
@@ -151,8 +182,8 @@ export class Button
   }
 
   #resolveButtonThemeText(
-      fieldName: 'className' | 'icon' | 'text'
-    ): string | null
+    fieldName: 'className' | 'icon' | 'text'
+  ): string | null
   {
     for (const source of this.#getButtonThemeSources()) {
       const themedVariantValue =
@@ -178,9 +209,9 @@ export class Button
   }
 
   #resolveVariantThemeText(
-      source: ButtonThemeDefinition | undefined,
-      fieldName: 'className' | 'icon' | 'text'
-    ): string | null
+    source: ButtonThemeDefinition | undefined,
+    fieldName: 'className' | 'icon' | 'text'
+  ): string | null
   {
     const variant =
       this.variant.trim();
@@ -201,34 +232,41 @@ export class Button
     return themedVariantValue;
   }
 
-  #getButtonThemeSources(
-    ): Array<ButtonThemeDefinition | undefined>
+  #getButtonThemeSources(): Array<ButtonThemeDefinition | undefined>
   {
     return [
       this.theme?.button,
       this.#themeProvider?.theme?.button,
-      getDefaultTheme().button,
+      getDefaultTheme().button
     ];
   }
 
-  #syncThemeProvider(): void {
+  #syncThemeProvider(): void
+  {
     this.#disposeThemeProvider();
-    this.#themeProvider =
-      findThemeProvider(this);
+
+    this.#themeProvider = findThemeProvider(
+      this
+    );
 
     this.#themeProvider?.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
   }
 
-  #disposeThemeProvider(): void {
+  #disposeThemeProvider(): void
+  {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged);
+      this.#handleThemeChanged
+    );
+
     this.#themeProvider = null;
   }
 
-  #handleThemeChanged = (): void => {
+  #handleThemeChanged = (): void =>
+  {
     this.requestUpdate();
   };
 }

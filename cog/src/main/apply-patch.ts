@@ -1,23 +1,25 @@
-import { spawn }
-  from 'node:child_process';
 import { Command }
   from 'commander';
-import { EnvelopeContainer }
-  from '../envelope/container.js';
-import { BackupRollbackFeed,
-         RollbackFeed }
-  from '../model/rollback.js';
-import { loadPatch }
-  from '../model/patch.js';
-import { ReadParameters,
-         read }
+import { spawn }
+  from 'node:child_process';
+import { read,
+         ReadParameters }
   from '../commands/read.js';
-import { Write,
-         write }
-  from '../commands/write.js';
 import { Remove,
          remove }
   from '../commands/remove.js';
+import { Write,
+         write }
+  from '../commands/write.js';
+import { EnvelopeContainer }
+  from '../envelope/container.js';
+import { Envelope }
+  from '../envelope/envelope.js';
+import { loadPatch }
+  from '../model/patch.js';
+import { BackupRollbackFeed,
+         RollbackFeed }
+  from '../model/rollback.js';
 import { ensureBackupFileDoesNotExist,
          resolveBackupPath }
   from './backup.js';
@@ -30,52 +32,57 @@ import { ExecutionContext,
   from './types.js';
 import { updateEnvelopeFiles }
   from './update.js';
-import { Envelope }
-  from '../envelope/envelope.js';
 
 export function configureApplyPatchCommand(
-    program: Command,
-    context: ExecutionContext
-  ): void
+  program: Command,
+  context: ExecutionContext
+): void
 {
   program
     .command(
-      'apply-patch')
+      'apply-patch'
+    )
     .description(
-      'apply the selected patch to the selected envelope')
+      'apply the selected patch to the selected envelope'
+    )
     .option(
       '--patch-verify-cmd <command>',
-      'command used to verify the applied patch')
+      'command used to verify the applied patch'
+    )
     .action(
       async (
-          applyPatchOptions: {
-            patchVerifyCmd?: string;
-          }
-        ) => {
+        applyPatchOptions: {
+          patchVerifyCmd?: string;
+        }
+      ) =>
+      {
         const options =
           program.opts<{
-            envelope?: string;
-            patch?: string;
-          }>();
+          envelope?: string;
+          patch?: string;
+        }>();
 
         await applyPatch(
           context,
-          { envelopePath:
-              resolveEnvelopePath(
-                options.envelope),
-            patchPath:
-              resolvePatchPath(
-                options.patch),
-            patchVerifyCmd:
-              applyPatchOptions.patchVerifyCmd
-              ?? process.env.COG_PATCH_VERIFY_CMD });
-      });
+          {
+            envelopePath: resolveEnvelopePath(
+              options.envelope
+            ),
+            patchPath: resolvePatchPath(
+              options.patch
+            ),
+            patchVerifyCmd: applyPatchOptions.patchVerifyCmd
+              ?? process.env.COG_PATCH_VERIFY_CMD
+          }
+        );
+      }
+    );
 }
 
 async function applyPatch(
-    context: ExecutionContext,
-    options: MainOptions = {}
-  ): Promise<void>
+  context: ExecutionContext,
+  options: MainOptions = {}
+): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -90,10 +97,12 @@ async function applyPatch(
       envelopePath);
 
   ensureBackupFileDoesNotExist(
-    backupPath);
+    backupPath
+  );
 
   ensurePatchFileExists(
-    patchPath);
+    patchPath
+  );
 
   const rollbackFeed =
     await BackupRollbackFeed.create(
@@ -101,7 +110,8 @@ async function applyPatch(
 
   const envelopeContainer =
     new EnvelopeContainer(
-      context.logger);
+    context.logger
+  );
 
   const envelope =
     await envelopeContainer.loadEnvelope(
@@ -117,14 +127,17 @@ async function applyPatch(
         context,
         envelope,
         command,
-        rollbackFeed);
+        rollbackFeed
+      );
     }
 
     await verifyPatch(
-      options.patchVerifyCmd);
+      options.patchVerifyCmd
+    );
 
     await updateEnvelopeFiles(
-      envelope);
+      envelope
+    );
 
     await envelopeContainer.saveEnvelope(envelopePath);
 
@@ -138,41 +151,47 @@ async function applyPatch(
 }
 
 async function applyPatchCommand(
-    context: ExecutionContext,
-    envelope: Envelope,
-    command: { command: string },
-    rollbackFeed: RollbackFeed
-  ): Promise<void>
+  context: ExecutionContext,
+  envelope: Envelope,
+  command: { command: string; },
+  rollbackFeed: RollbackFeed
+): Promise<void>
 {
   if (command.command === 'read') {
     await read(
       envelope,
       command as unknown as ReadParameters,
       rollbackFeed,
-      context);
+      context
+    );
   } else if (command.command === 'write') {
     await write(
       envelope,
       command as unknown as Write,
-      rollbackFeed);
+      rollbackFeed
+    );
   } else if (command.command === 'remove') {
     await remove(
       envelope,
       command as unknown as Remove,
       rollbackFeed,
-      context);
+      context
+    );
   } else {
     throw new Error(
-      `Unknown patch command ${command.command}`);
+      `Unknown patch command ${command.command}`
+    );
   }
 }
 
 async function verifyPatch(
-    patchVerifyCmd?: string
-  ): Promise<void>
+  patchVerifyCmd?: string
+): Promise<void>
 {
-  if (patchVerifyCmd === undefined
-      || patchVerifyCmd.trim() === '') {
+  if (
+    patchVerifyCmd === undefined
+    || patchVerifyCmd.trim() === ''
+  ) {
     return;
   }
 
@@ -182,28 +201,32 @@ async function verifyPatch(
 
   if (exitCode !== 0) {
     throw new Error(
-      `Patch verify command failed with exit code ${exitCode}`);
+      `Patch verify command failed with exit code ${exitCode}`
+    );
   }
 }
 
 async function runCommand(
-    command: string
-  ): Promise<number | null>
+  command: string
+): Promise<number | null>
 {
   return new Promise(
-    (resolve, reject) => {
+    (resolve, reject) =>
+    {
       const child =
         spawn(
           command,
-          { shell: true,
-            stdio: 'inherit' });
+          { shell: true, stdio: 'inherit' });
 
       child.on(
         'error',
-        reject);
+        reject
+      );
 
       child.on(
         'close',
-        resolve);
-    });
+        resolve
+      );
+    }
+  );
 }

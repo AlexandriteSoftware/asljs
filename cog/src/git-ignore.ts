@@ -1,21 +1,22 @@
-import path
-  from 'node:path';
+import ignore
+  from 'ignore';
 import { readFileSync,
          statSync }
   from 'node:fs';
-import ignore
-  from 'ignore';
+import path
+  from 'node:path';
 import { Logger }
   from './logger.js';
 
 export class GitIgnore
 {
   private readonly logger: Logger;
-  private readonly matchers: Array<{ path: string, matcher: ignore.Ignore }>;
+  private readonly matchers: Array<{ path: string; matcher: ignore.Ignore; }>;
   private readonly visitedPaths: Set<string>;
 
   constructor(
-    logger: Logger)
+    logger: Logger
+  )
   {
     this.logger = logger;
     this.matchers = [];
@@ -23,12 +24,13 @@ export class GitIgnore
   }
 
   isIgnored(
-      targetPath: string
-    ): boolean
+    targetPath: string
+  ): boolean
   {
     if (!path.isAbsolute(targetPath)) {
       throw new Error(
-        `Path must be absolute: ${targetPath}`);
+        `Path must be absolute: ${targetPath}`
+      );
     }
 
     const isDirectory =
@@ -41,11 +43,14 @@ export class GitIgnore
 
     if (isDirectory) {
       this.loadMatchers(
-        normalisedPath);
+        normalisedPath
+      );
     } else {
       this.loadMatchers(
         path.dirname(
-          normalisedPath));
+          normalisedPath
+        )
+      );
     }
 
     for (const matcher of this.matchers) {
@@ -55,22 +60,23 @@ export class GitIgnore
             matcher.path,
             normalisedPath));
 
-      if (relativePath === ''
-          || relativePath.startsWith('../'))
-      {
+      if (
+        relativePath === ''
+        || relativePath.startsWith('../')
+      ) {
         continue;
       }
 
-    const testRelativePath =
-      isDirectory
+      const testRelativePath =
+        isDirectory
         ? relativePath + '/'
         : relativePath;
 
-
       if (
         matcher.matcher.ignores(
-          testRelativePath))
-      {
+          testRelativePath
+        )
+      ) {
         return true;
       }
     }
@@ -79,33 +85,34 @@ export class GitIgnore
   }
 
   filter(
-      paths: string[]
-    ): string[]
+    paths: string[]
+  ): string[]
   {
     const result =
       paths.filter(
-        filePath =>
-          !this.isIgnored(filePath));
-    
+        filePath => !this.isIgnored(filePath));
+
     this.logger.trace(
       'filter(paths[%d]) { filtered out %d items }',
       paths.length,
-      paths.length - result.length);
+      paths.length - result.length
+    );
 
     return result;
   }
 
   loadMatchers(
-      directoryPath: string
-    ): void
+    directoryPath: string
+  ): void
   {
     if (this.visitedPaths.has(directoryPath)) {
       return;
     }
-    
+
     this.visitedPaths
       .add(
-        directoryPath);
+        directoryPath
+      );
 
     const gitIgnorePath =
       path.join(
@@ -120,7 +127,7 @@ export class GitIgnore
     } catch (err) {
       const code =
         (err as NodeJS.ErrnoException).code;
-      
+
       if (code !== 'ENOENT') {
         throw err;
       }
@@ -134,12 +141,13 @@ export class GitIgnore
 
       const matcher =
         ignore()
-          .add(
-            gitIgnoreContent);
+        .add(
+          gitIgnoreContent
+        );
 
       this.matchers.push(
-        { path: directoryPath,
-          matcher });
+        { path: directoryPath, matcher }
+      );
     }
 
     const parentPath =
@@ -148,14 +156,15 @@ export class GitIgnore
 
     if (parentPath !== directoryPath) {
       this.loadMatchers(
-        parentPath);
+        parentPath
+      );
     }
   }
 }
 
 function toPosixPath(
-    path: string
-  ): string
+  path: string
+): string
 {
   const posixPath =
     path.replace(

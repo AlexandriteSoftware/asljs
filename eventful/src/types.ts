@@ -1,22 +1,20 @@
-export type EventName =
-  string | symbol;
+export type EventName = string | symbol;
 
-export type EventMap =
-  Record<EventName, unknown[]>;
+export type EventMap = Record<EventName, unknown[]>;
 
-export type Listener<Args extends unknown[] = unknown[]> =
-  (...args: Args) => unknown;
+export type Listener<Args extends unknown[] = unknown[]> = (
+  ...args: Args
+) => unknown;
 
-export interface ListenerErrorArgs {
+export interface ListenerErrorArgs
+{
   error: unknown;
   object: object | Function;
   event: EventName;
   listener: Function;
 }
 
-export class ListenerError
-  extends Error
-  implements ListenerErrorArgs
+export class ListenerError extends Error implements ListenerErrorArgs
 {
   error: unknown;
   object: object | Function;
@@ -24,12 +22,12 @@ export class ListenerError
   listener: Function;
 
   constructor(
-      message: string,
-      error: unknown,
-      object: object | Function,
-      event: EventName,
-      listener: Function
-    )
+    message: string,
+    error: unknown,
+    object: object | Function,
+    event: EventName,
+    listener: Function
+  )
   {
     super(message);
 
@@ -81,28 +79,27 @@ type TracePayloadByAction = {
   };
 };
 
-export type TraceFn =
-  <A extends TraceAction>(
-      action: A,
-      args: TracePayloadByAction[A]
-    ) => void;
+export type TraceFn = <A extends TraceAction>(
+  action: A,
+  args: TracePayloadByAction[A]
+) => void;
 
-export type ErrorFn =
-  (error: ListenerErrorArgs) => void;
+export type ErrorFn = (error: ListenerErrorArgs) => void;
 
 export type EventfulFn =
-  EventfulFactory
+  & EventfulFactory
   & Eventful;
 
-export interface EventfulFactory {
-  <T extends object | Function | undefined,
-   E extends EventMap = EventMap>(
+export interface EventfulFactory
+{
+  <T extends object | Function | undefined, E extends EventMap = EventMap>(
     object?: T,
     options?: EventfulOptions
   ): (T extends undefined ? {} : T) & Eventful<E>;
 }
 
-export interface EventfulOptions {
+export interface EventfulOptions
+{
   /**
    * If true, exceptions from listeners are propagated (fail fast).
    * When false, errors are isolated (ignored) after calling `error` hook.
@@ -123,54 +120,55 @@ export interface EventfulOptions {
   error?: ErrorFn;
 }
 
-export interface Eventful<E extends EventMap = EventMap> {
+export interface Eventful<E extends EventMap = EventMap>
+{
   /**
    * Subscribe to an event. Returns an unsubscribe function.
    */
   on<K extends keyof E & EventName>(
-      event: K,
-      listener: Listener<E[K]>
-    ): () => boolean;
+    event: K,
+    listener: Listener<E[K]>
+  ): () => boolean;
 
   /**
    * Subscribe once to an event. Returns an unsubscribe function
    * (called automatically).
    */
   once<K extends keyof E & EventName>(
-      event: K,
-      listener: Listener<E[K]>
-    ): () => boolean;
+    event: K,
+    listener: Listener<E[K]>
+  ): () => boolean;
 
   /**
    * Unsubscribe a previously registered listener. Returns true if removed.
    */
   off<K extends keyof E & EventName>(
-      event: K,
-      listener: Listener<E[K]>
-    ): boolean;
+    event: K,
+    listener: Listener<E[K]>
+  ): boolean;
 
   /**
    * Emit an event synchronously. All listeners run in order.
    * Errors are isolated (ignored) unless `strict` is true.
    */
   emit<K extends keyof E & EventName>(
-      event: K,
-      ...args: E[K]
-    ): void;
+    event: K,
+    ...args: E[K]
+  ): void;
 
   /**
    * Emit an event and wait for all listeners (run in parallel).
    * Errors are isolated (ignored) unless `strict` is true.
    */
   emitAsync<K extends keyof E & EventName>(
-      event: K,
-      ...args: E[K]
-    ): Promise<void>;
+    event: K,
+    ...args: E[K]
+  ): Promise<void>;
 
   /**
    * Returns true if there is at least one listener for the event.
    */
   has<K extends keyof E & EventName>(
-      event: K
-    ): boolean;
+    event: K
+  ): boolean;
 }

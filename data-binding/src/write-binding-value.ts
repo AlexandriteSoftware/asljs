@@ -3,20 +3,20 @@ import { coerceDisplayValue }
 import { BindingTarget }
   from './types.js';
 
-
 /**
  * Last step of value binding: writes the value to the target element.
  */
 export function writeBindingValue(
-    element: HTMLElement,
-    target: BindingTarget,
-    value: unknown
-  ): void
+  element: HTMLElement,
+  target: BindingTarget,
+  value: unknown
+): void
 {
   if (target.kind === 'class') {
     element.classList.toggle(
       target.name,
-      Boolean(value));
+      Boolean(value)
+    );
 
     return;
   }
@@ -31,17 +31,21 @@ export function writeBindingValue(
   }
 
   if (target.kind === 'attr') {
-    if (value === null
-        || value === undefined)
-    {
-      element.removeAttribute(target.name);
+    if (
+      value === null
+      || value === undefined
+    ) {
+      element.removeAttribute(
+        target.name
+      );
 
       return;
     }
 
     element.setAttribute(
       target.name,
-      coerceDisplayValue(value));
+      coerceDisplayValue(value)
+    );
 
     return;
   }

@@ -62,7 +62,7 @@ export async function execCheck(
     'Check command: list of definitions after filtering %s',
     JSON.stringify(
       filteredDefinitions.map(
-        (definition) => definition.name
+        definition => definition.name
       )
     )
   );
@@ -70,7 +70,7 @@ export async function execCheck(
   const rules =
     filteredDefinitions
     .flatMap(
-      (definition) => definition.rules
+      definition => definition.rules
     );
 
   const selectedRules =
@@ -94,7 +94,7 @@ export async function execCheck(
 
   const selectedDefinitionNames =
     selectedDefinitions.map(
-      (definition) => definition.name);
+      definition => definition.name);
 
   logger.trace(
     'Check command: found %s definitions',
@@ -142,7 +142,7 @@ export async function execCheck(
       const artefactSelectedDefinitions =
         artefact.definitions
         .filter(
-          (definition) => selectedDefinitionNames.includes(definition)
+          definition => selectedDefinitionNames.includes(definition)
         );
 
       if (artefactSelectedDefinitions.length === 0) {
@@ -165,7 +165,7 @@ export async function execCheck(
     for (const artefact of artefacts) {
       definitionNamesForArtefact[artefact.path] = artefact.definitions
         .filter(
-          (definition) => selectedDefinitionNames.includes(definition)
+          definition => selectedDefinitionNames.includes(definition)
         );
     }
   }
@@ -295,7 +295,7 @@ export function filterDefinitions(
     new Set(definitionNames);
 
   return definitions.filter(
-    (definition) =>
+    definition =>
       allowedNames.has(
         definition.name
       )
@@ -315,7 +315,7 @@ export function filterRules(
     new Set(ruleNames);
 
   return rules.filter(
-    (rule) =>
+    rule =>
       allowedNames.has(
         rule.name
       )

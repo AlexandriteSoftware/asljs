@@ -247,7 +247,7 @@ export function getText(
     const text =
       nodes
       .map(
-        (node) =>
+        node =>
           getText(
             document,
             node
@@ -275,7 +275,7 @@ export function getText(
     const text =
       children
       .map(
-        (childNode) =>
+        childNode =>
           getText(
             document,
             childNode

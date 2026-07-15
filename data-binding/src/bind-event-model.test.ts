@@ -1,11 +1,11 @@
-import { test }
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
-import { JSDOM }
-  from 'jsdom';
 import { observable }
   from 'asljs-observable';
+import { JSDOM }
+  from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import { test }
+  from 'node:test';
 import { bindEventModel }
   from './bind-event-model.js';
 import { EventBindingSpec }
@@ -16,7 +16,8 @@ const TEST_SUITE =
 
 test(
   `${TEST_SUITE}: invokes resolved handler and updates reactively`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<button></button>');
 
@@ -28,46 +29,58 @@ test(
     const model =
       createReactiveModel(
         {
-          activate: (
-              _event: Event,
-              _model: Record<string, unknown>,
-              _element: Element
-            ) => {
-              calls.push('first');
-            }
-        });
+        activate: (
+          _event: Event,
+          _model: Record<string, unknown>,
+          _element: Element
+        ) =>
+        {
+          calls.push('first');
+        }
+      });
 
     const spec: EventBindingSpec =
       {
-        kind: 'event',
-        eventName: 'click',
-        actionPath: 'activate'
-      };
+      kind: 'event',
+      eventName: 'click',
+      actionPath: 'activate'
+    };
 
     bindEventModel(
       button,
       spec,
       model,
       'event[0]',
-      () => {});
+      () =>
+      {}
+    );
 
-    button.dispatchEvent(new dom.window.Event('click'));
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
 
-    model.activate = (
-      () => {
-        calls.push('second');
-      });
+    model.activate = () =>
+    {
+      calls.push('second');
+    };
 
     model.emit('set:activate');
 
-    button.dispatchEvent(new dom.window.Event('click'));
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
 
-    assert.deepEqual(calls, [ 'first', 'second' ]);
-  });
+    assert.deepEqual(
+      calls,
+      ['first', 'second']
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: disposer removes listener and subscription`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<button></button>');
 
@@ -79,17 +92,18 @@ test(
     const model =
       createReactiveModel(
         {
-          activate: () => {
-            calls.push('active');
-          }
-        });
+        activate: () =>
+        {
+          calls.push('active');
+        }
+      });
 
     const spec: EventBindingSpec =
       {
-        kind: 'event',
-        eventName: 'click',
-        actionPath: 'activate'
-      };
+      kind: 'event',
+      eventName: 'click',
+      actionPath: 'activate'
+    };
 
     const dispose =
       bindEventModel(
@@ -97,23 +111,33 @@ test(
         spec,
         model,
         'event[2]',
-        () => {});
+        () =>
+      {});
 
     dispose();
 
-    model.activate = () => {
+    model.activate = () =>
+    {
       calls.push('updated');
     };
 
     model.emit('set:activate');
-    button.dispatchEvent(new dom.window.Event('click'));
 
-    assert.deepEqual(calls, []);
-  });
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
+
+    assert.deepEqual(
+      calls,
+      []
+    );
+  }
+);
 
 test(
   `${TEST_SUITE}: refreshes nested action path when leaf and ancestor change`,
-  () => {
+  () =>
+  {
     const dom =
       new JSDOM('<button></button>');
 
@@ -125,94 +149,113 @@ test(
     const model =
       observable(
         {
-          user:
-            {
-              activate: () => {
-                calls.push('first');
-              }
-            }
-        });
+        user: {
+          activate: () =>
+          {
+            calls.push('first');
+          }
+        }
+      });
 
     const spec: EventBindingSpec =
       {
-        kind: 'event',
-        eventName: 'click',
-        actionPath: 'user.activate'
-      };
+      kind: 'event',
+      eventName: 'click',
+      actionPath: 'user.activate'
+    };
 
     bindEventModel(
       button,
       spec,
       model as unknown as Record<string, unknown>,
       'event[3]',
-      () => {});
+      () =>
+      {}
+    );
 
-    button.dispatchEvent(new dom.window.Event('click'));
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
 
-    model.user.activate =
-      () => {
-        calls.push('second');
-      };
+    model.user.activate = () =>
+    {
+      calls.push('second');
+    };
 
-    button.dispatchEvent(new dom.window.Event('click'));
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
 
-    model.user =
+    model.user = {
+      activate: () =>
       {
-        activate: () => {
-          calls.push('third');
-        }
-      };
+        calls.push('third');
+      }
+    };
 
-    button.dispatchEvent(new dom.window.Event('click'));
+    button.dispatchEvent(
+      new dom.window.Event('click')
+    );
 
     assert.deepEqual(
       calls,
-      [ 'first', 'second', 'third' ]);
-  });
+      ['first', 'second', 'third']
+    );
+  }
+);
 
 type ReactiveModel =
-  Record<string, unknown> &
-  { on: (
+  & Record<string, unknown>
+  & {
+    on: (
       event: string,
       listener: (...args: unknown[]) => void
     ) => () => boolean;
     emit: (
       event: string,
       ...args: unknown[]
-    ) => void; };
+    ) => void;
+  };
 
 function createReactiveModel(
-    initial: Record<string, unknown>
-  ): ReactiveModel
+  initial: Record<string, unknown>
+): ReactiveModel
 {
   const listeners =
     new Map<string, Set<(...args: unknown[]) => void>>();
 
   const model: ReactiveModel =
     {
-      ...initial,
-      on: (event, listener) => {
-        if (!listeners.has(event)) {
-          listeners.set(event, new Set());
-        }
-
-        listeners.get(event)?.add(listener);
-
-        return () => listeners.get(event)?.delete(listener) ?? false;
-      },
-      emit: (event, ...args) => {
-        const registered =
-          listeners.get(event);
-
-        if (!registered) {
-          return;
-        }
-
-        for (const listener of registered) {
-          listener(...args);
-        }
+    ...initial,
+    on: (event, listener) =>
+    {
+      if (!listeners.has(event)) {
+        listeners.set(
+          event,
+          new Set()
+        );
       }
-    };
+
+      listeners.get(event)?.add(listener);
+
+      return () => listeners.get(event)?.delete(listener) ?? false;
+    },
+    emit: (event, ...args) =>
+    {
+      const registered =
+        listeners.get(event);
+
+      if (!registered) {
+        return;
+      }
+
+      for (const listener of registered) {
+        listener(
+          ...args
+        );
+      }
+    }
+  };
 
   return model;
 }

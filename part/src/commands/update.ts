@@ -488,7 +488,7 @@ async function runCopilotCli(
 
       child.stdout.on(
         'data',
-        (chunk) =>
+        chunk =>
         {
           logger.trace(
             String(chunk)
@@ -500,7 +500,7 @@ async function runCopilotCli(
 
       child.stderr.on(
         'data',
-        (chunk) =>
+        chunk =>
         {
           logger.trace(
             String(chunk)
@@ -517,7 +517,7 @@ async function runCopilotCli(
 
       child.on(
         'close',
-        (code) =>
+        code =>
         {
           if (code !== 0) {
             reject(

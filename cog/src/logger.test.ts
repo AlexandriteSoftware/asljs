@@ -7,27 +7,34 @@ import { NullLogger }
 
 test(
   'NullLogger has all levels disabled, except silent',
-  () => {
-    const logger = new NullLogger();
-    
+  () =>
+  {
+    const logger =
+      new NullLogger();
+
     assert.strictEqual(
       logger.isLevelEnabled('trace'),
-      false);
+      false
+    );
 
     assert.strictEqual(
       logger.isLevelEnabled('debug'),
-      false);
+      false
+    );
 
     assert.strictEqual(
       logger.isLevelEnabled('info'),
-      false);
+      false
+    );
 
     assert.strictEqual(
       logger.isLevelEnabled('warn'),
-      false);
+      false
+    );
 
     assert.strictEqual(
       logger.isLevelEnabled('error'),
-      false);
-  });
-    
+      false
+    );
+  }
+);

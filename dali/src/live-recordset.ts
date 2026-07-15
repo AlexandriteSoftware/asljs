@@ -2,17 +2,17 @@ import { EventfulBase }
   from 'asljs-eventful';
 import { observable }
   from 'asljs-observable';
-import { KeyPath,
-         keyGet }
+import { keyGet,
+         KeyPath }
   from './keys.js';
 import { TableEventsReceiver }
   from './table.js';
 
 type PendingEvent<T> =
-  | { type: 'add'; record: T }
-  | { type: 'update'; record: T }
-  | { type: 'delete'; record: T }
-  | { type: 'clear' };
+  | { type: 'add'; record: T; }
+  | { type: 'update'; record: T; }
+  | { type: 'delete'; record: T; }
+  | { type: 'clear'; };
 
 /**
  * Payload emitted on `set:records` and `set` events.
@@ -20,10 +20,11 @@ type PendingEvent<T> =
  * are consumed by `observable.watch()` to support path watching
  * (e.g. `rs.watch('records.length', cb)`).
  */
-export type LiveRecordSetSetPayload<T extends Record<string, any>> =
-  { property: 'records';
-    value: readonly T[];
-    previous: readonly T[]; };
+export type LiveRecordSetSetPayload<T extends Record<string, any>> = {
+  property: 'records';
+  value: readonly T[];
+  previous: readonly T[];
+};
 
 /**
  * Event map for `LiveRecordSet`.
@@ -38,14 +39,15 @@ export type LiveRecordSetSetPayload<T extends Record<string, any>> =
  * Observable property events (via ASLJS observable, used by `watch()`):
  * - `set:records` / `set` — emitted whenever `records` changes.
  */
-export type LiveRecordSetEvents<T extends Record<string, any>> =
-  { 'added': [ record: T ];
-    'removed': [ record: T ];
-    'updated': [ record: T, previous: T ];
-    'cleared': [];
-    'changed': [ records: readonly T[] ];
-    'set:records': [ LiveRecordSetSetPayload<T> ];
-    'set': [ LiveRecordSetSetPayload<T> ]; };
+export type LiveRecordSetEvents<T extends Record<string, any>> = {
+  added: [record: T];
+  removed: [record: T];
+  updated: [record: T, previous: T];
+  cleared: [];
+  changed: [records: readonly T[]];
+  'set:records': [LiveRecordSetSetPayload<T>];
+  set: [LiveRecordSetSetPayload<T>];
+};
 
 /**
  * A live filtered set view for one table, driven by a client-side predicate.
@@ -88,13 +90,11 @@ export class LiveRecordSet<T extends Record<string, any>>
   #disposed = false;
 
   constructor(
-      keyPath: KeyPath<T>,
-      predicate: (record: T) => boolean,
-      scanFn:
-        (predicate: (record: T) => boolean) => Promise<T[]>,
-      subscribeFn:
-        (receiver: TableEventsReceiver<T>) => (() => boolean)
-    )
+    keyPath: KeyPath<T>,
+    predicate: (record: T) => boolean,
+    scanFn: (predicate: (record: T) => boolean) => Promise<T[]>,
+    subscribeFn: (receiver: TableEventsReceiver<T>) => () => boolean
+  )
   {
     super();
 
@@ -104,82 +104,110 @@ export class LiveRecordSet<T extends Record<string, any>>
     // Subscribe to committed table changes first to avoid missing events
     // that occur between construction and the initial scan completing.
     // Events that arrive while loading are buffered and applied afterwards.
-    this.#unsubscribe =
-      subscribeFn({
-        add: record => {
+    this.#unsubscribe = subscribeFn(
+      {
+        add: (record) =>
+        {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'add',
-                record });
+              { type: 'add', record }
+            );
+
             return;
           }
 
-          this.#applyAndNotify({ type: 'add', record });
+          this.#applyAndNotify(
+            { type: 'add', record }
+          );
         },
 
-        update: (record, _previousRecord) => {
+        update: (record, _previousRecord) =>
+        {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'update',
-                record });
+              { type: 'update', record }
+            );
+
             return;
           }
 
-          this.#applyAndNotify({ type: 'update', record });
+          this.#applyAndNotify(
+            { type: 'update', record }
+          );
         },
 
-        delete: record => {
+        delete: (record) =>
+        {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'delete',
-                record });
+              { type: 'delete', record }
+            );
+
             return;
           }
 
-          this.#applyAndNotify({ type: 'delete', record });
+          this.#applyAndNotify(
+            { type: 'delete', record }
+          );
         },
 
-        clear: () => {
+        clear: () =>
+        {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'clear' });
+              { type: 'clear' }
+            );
+
             return;
           }
 
-          this.#applyAndNotify({ type: 'clear' });
-        },
-      });
+          this.#applyAndNotify(
+            { type: 'clear' }
+          );
+        }
+      }
+    );
 
     // Initial scan: load all matching records, then replay buffered events.
-    scanFn(this.#predicate)
-      .then(records => {
-        if (this.#disposed)
-          return;
+    scanFn(
+      this.#predicate
+    )
+      .then(
+        (records) =>
+        {
+          if (this.#disposed) {
+            return;
+          }
 
-        this.#current =
-          new Map(
-            records.map(record =>
-              [ this.#keyString(record),
-                record ]));
+          this.#current = new Map(
+            records.map(
+              (record) => [this.#keyString(record), record]
+            )
+          );
 
-        // Replay events that arrived while the scan was in flight.
-        // We do not emit individual domain events for replayed events —
-        // a single `changed` is emitted via #emitRecordsChanged() after all
-        // replays settle.
-        for (const event of this.#pendingEvents) {
-          this.#applyEvent(event);
+          // Replay events that arrived while the scan was in flight.
+          // We do not emit individual domain events for replayed events —
+          // a single `changed` is emitted via #emitRecordsChanged() after all
+          // replays settle.
+          for (const event of this.#pendingEvents) {
+            this.#applyEvent(event);
+          }
+
+          this.#pendingEvents = [];
+          this.#loaded = true;
+
+          this.#emitRecordsChanged();
         }
-
-        this.#pendingEvents = [];
-        this.#loaded = true;
-
-        this.#emitRecordsChanged();
-      })
-      .catch(error => {
-        console.error(
-          'LiveRecordSet: initial scan failed',
-          error);
-      });
+      )
+      .catch(
+        (error) =>
+        {
+          console.error(
+            'LiveRecordSet: initial scan failed',
+            error
+          );
+        }
+      );
   }
 
   /**
@@ -188,9 +216,8 @@ export class LiveRecordSet<T extends Record<string, any>>
    * Changes to this property are signalled via `set:records` / `set` events,
    * enabling `watch('records.length', cb)` through ASLJS observable.
    */
-  get records(): readonly T[]
-  {
-    return [ ...this.#current.values() ];
+  get records(): readonly T[] {
+    return [...this.#current.values()];
   }
 
   /**
@@ -206,14 +233,15 @@ export class LiveRecordSet<T extends Record<string, any>>
    * whenever the path's value changes.  Returns an unwatch function.
    */
   watch(
-      property: string,
-      callback: (value: any) => void
-    ): () => boolean
+    property: string,
+    callback: (value: any) => void
+  ): () => boolean
   {
     return observable.watch(
       this as any,
       property,
-      callback);
+      callback
+    );
   }
 
   /**
@@ -227,11 +255,15 @@ export class LiveRecordSet<T extends Record<string, any>>
   }
 
   #keyString(
-      record: T
-    ): string
+    record: T
+  ): string
   {
     return JSON.stringify(
-      keyGet(this.#keyPath, record));
+      keyGet(
+        this.#keyPath,
+        record
+      )
+    );
   }
 
   /**
@@ -239,14 +271,15 @@ export class LiveRecordSet<T extends Record<string, any>>
    * the `set:records` / `changed` notifications if the set changed.
    */
   #applyAndNotify(
-      event: PendingEvent<T>
-    ): void
+    event: PendingEvent<T>
+  ): void
   {
     const result =
       this.#applyEvent(event);
 
-    if (!result.changed)
+    if (!result.changed) {
       return;
+    }
 
     this.#emitDomainEvent(result);
     this.#emitRecordsChanged();
@@ -254,40 +287,52 @@ export class LiveRecordSet<T extends Record<string, any>>
 
   /** Applies a single pending event to `#current`. Returns change metadata. */
   #applyEvent(
-      event: PendingEvent<T>
-    ): ApplyResult<T>
+    event: PendingEvent<T>
+  ): ApplyResult<T>
   {
-    if (event.type === 'add')
-      return this.#handleAdd(event.record);
+    if (event.type === 'add') {
+      return this.#handleAdd(
+        event.record
+      );
+    }
 
-    if (event.type === 'update')
-      return this.#handleUpdate(event.record);
+    if (event.type === 'update') {
+      return this.#handleUpdate(
+        event.record
+      );
+    }
 
-    if (event.type === 'delete')
-      return this.#handleDelete(event.record);
+    if (event.type === 'delete') {
+      return this.#handleDelete(
+        event.record
+      );
+    }
 
     return this.#handleClear();
   }
 
   #handleAdd(
-      record: T
-    ): ApplyResult<T>
+    record: T
+  ): ApplyResult<T>
   {
-    if (!this.#predicate(record))
+    if (!this.#predicate(record)) {
       return { changed: false };
+    }
 
     const key =
       this.#keyString(record);
 
-    this.#current.set(key, record);
-    return { changed: true,
-             domainEvent: 'added',
-             record };
+    this.#current.set(
+      key,
+      record
+    );
+
+    return { changed: true, domainEvent: 'added', record };
   }
 
   #handleUpdate(
-      record: T
-    ): ApplyResult<T>
+    record: T
+  ): ApplyResult<T>
   {
     // Membership of the previous version is determined by checking whether
     // the key is already present in #current, rather than using the
@@ -304,31 +349,28 @@ export class LiveRecordSet<T extends Record<string, any>>
     const matches =
       this.#predicate(record);
 
-    if (!wasPresent && !matches)
+    if (!wasPresent && !matches) {
       return { changed: false };
+    }
 
     if (matches) {
-      this.#current.set(key, record);
+      this.#current.set(
+        key,
+        record
+      );
 
       return wasPresent
-        ? { changed: true,
-            domainEvent: 'updated',
-            record,
-            previous }
-        : { changed: true,
-            domainEvent: 'added',
-            record };
+        ? { changed: true, domainEvent: 'updated', record, previous }
+        : { changed: true, domainEvent: 'added', record };
     }
 
     this.#current.delete(key);
-    return { changed: true,
-             domainEvent: 'removed',
-             record: previous! };
+    return { changed: true, domainEvent: 'removed', record: previous! };
   }
 
   #handleDelete(
-      record: T
-    ): ApplyResult<T>
+    record: T
+  ): ApplyResult<T>
   {
     const key =
       this.#keyString(record);
@@ -336,37 +378,47 @@ export class LiveRecordSet<T extends Record<string, any>>
     const existing =
       this.#current.get(key);
 
-    if (existing === undefined)
+    if (existing === undefined) {
       return { changed: false };
+    }
 
     this.#current.delete(key);
-    return { changed: true,
-             domainEvent: 'removed',
-             record: existing };
+    return { changed: true, domainEvent: 'removed', record: existing };
   }
 
   #handleClear(): ApplyResult<T>
   {
-    if (this.#current.size === 0)
+    if (this.#current.size === 0) {
       return { changed: false };
+    }
 
     this.#current.clear();
-    return { changed: true,
-             domainEvent: 'cleared' };
+    return { changed: true, domainEvent: 'cleared' };
   }
 
   #emitDomainEvent(
-      result: ApplyResult<T> & { changed: true }
-    ): void
+    result: ApplyResult<T> & { changed: true; }
+  ): void
   {
-    if (result.domainEvent === 'added')
-      this.emit('added', result.record);
-    else if (result.domainEvent === 'removed')
-      this.emit('removed', result.record);
-    else if (result.domainEvent === 'updated')
-      this.emit('updated', result.record, result.previous);
-    else
+    if (result.domainEvent === 'added') {
+      this.emit(
+        'added',
+        result.record
+      );
+    } else if (result.domainEvent === 'removed') {
+      this.emit(
+        'removed',
+        result.record
+      );
+    } else if (result.domainEvent === 'updated') {
+      this.emit(
+        'updated',
+        result.record,
+        result.previous
+      );
+    } else {
       this.emit('cleared');
+    }
   }
 
   #emitRecordsChanged(): void
@@ -377,8 +429,7 @@ export class LiveRecordSet<T extends Record<string, any>>
     const snapshot =
       this.records;
 
-    this.#lastSnapshot =
-      snapshot;
+    this.#lastSnapshot = snapshot;
 
     // Emit ASLJS observable-style property-change event so that
     // observable.watch() path subscriptions work correctly.
@@ -387,15 +438,27 @@ export class LiveRecordSet<T extends Record<string, any>>
     // the observable watch system internally and are not part of the public
     // domain event surface.
     const payload: LiveRecordSetSetPayload<T> =
-      { property: 'records',
-        value: snapshot,
-        previous };
+      {
+      property: 'records',
+      value: snapshot,
+      previous
+    };
 
-    (this as any).emit('set:records', payload);
-    (this as any).emit('set', payload);
+    (this as any).emit(
+      'set:records',
+      payload
+    );
+
+    (this as any).emit(
+      'set',
+      payload
+    );
 
     // Emit the catch-all domain event.
-    this.emit('changed', snapshot);
+    this.emit(
+      'changed',
+      snapshot
+    );
   }
 }
 
@@ -404,8 +467,8 @@ export class LiveRecordSet<T extends Record<string, any>>
 // ---------------------------------------------------------------------------
 
 type ApplyResult<T> =
-  | { changed: false }
-  | { changed: true; domainEvent: 'added';   record: T }
-  | { changed: true; domainEvent: 'removed'; record: T }
-  | { changed: true; domainEvent: 'updated'; record: T; previous: T }
-  | { changed: true; domainEvent: 'cleared' };
+  | { changed: false; }
+  | { changed: true; domainEvent: 'added'; record: T; }
+  | { changed: true; domainEvent: 'removed'; record: T; }
+  | { changed: true; domainEvent: 'updated'; record: T; previous: T; }
+  | { changed: true; domainEvent: 'cleared'; };

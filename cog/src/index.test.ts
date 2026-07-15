@@ -7,8 +7,11 @@ import { main }
 
 test(
   'index exports main',
-  t => {
+  t =>
+  {
     assert.equal(
       typeof main,
-      'function');
-  });
+      'function'
+    );
+  }
+);

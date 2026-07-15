@@ -1,22 +1,27 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { money }
   from './index.js';
 
 test(
   'index: exports money factory',
-  () => {
+  () =>
+  {
     assert.equal(
       typeof money,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof money.fromString,
-      'function');
+      'function'
+    );
 
     assert.equal(
       typeof money.fromNumber,
-      'function');
-  });
+      'function'
+    );
+  }
+);
