@@ -52,7 +52,7 @@ export function dbOpen(
 
       request.addEventListener(
         'upgradeneeded',
-        (e) =>
+        e =>
         {
           const updates =
             upgrades.slice(

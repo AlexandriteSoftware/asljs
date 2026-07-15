@@ -125,25 +125,30 @@ export function machine<TBase extends object = {}>(
                 try {
                   transition.emit(
                     'activating',
-                    payload);
+                    payload
+                  );
 
                   state.emit(
                     'leaving',
-                    payload);
+                    payload
+                  );
 
                   currentMachine.state = to;
 
                   to.emit(
                     'entered',
-                    payload);
+                    payload
+                  );
 
                   transition.emit(
                     'completed',
-                    payload);
+                    payload
+                  );
 
                   currentMachine.emit(
                     'transition',
-                    payload);
+                    payload
+                  );
 
                   return true;
                 } finally {
@@ -165,7 +170,8 @@ export function machine<TBase extends object = {}>(
 
   currentMachine.getState = (name: string): MachineState | null =>
     states.find(
-      state => state.name === name)
+      state => state.name === name
+    )
       ?? null;
 
   if (!initial) {

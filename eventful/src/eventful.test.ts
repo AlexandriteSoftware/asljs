@@ -143,7 +143,8 @@ test(
       )
       {
         eventful(
-          this);
+          this
+        );
 
         this.name = name;
       }
@@ -250,9 +251,10 @@ test(
         () =>
           eventful(
             {
-            [method]: () =>
-            {}
-          })
+              [method]: () =>
+              {}
+            }
+          )
       );
     }
   }
@@ -294,23 +296,28 @@ function assertEventfulMethods(
 
   assert.equal(
     typeof candidate.on,
-    'function');
+    'function'
+  );
 
   assert.equal(
     typeof candidate.off,
-    'function');
+    'function'
+  );
 
   assert.equal(
     typeof candidate.emit,
-    'function');
+    'function'
+  );
 
   assert.equal(
     typeof candidate.emitAsync,
-    'function');
+    'function'
+  );
 
   assert.equal(
     typeof candidate.has,
-    'function');
+    'function'
+  );
 }
 
 test(
@@ -377,7 +384,8 @@ test(
     );
 
     await assert.rejects(
-      () => obj.emitAsync('test'));
+      () => obj.emitAsync('test')
+    );
   }
 );
 
@@ -447,7 +455,8 @@ test(
 
     assert.equal(
       ran,
-      2);
+      2
+    );
   }
 );
 
@@ -472,26 +481,34 @@ test(
     obj.emit(
       'e',
       1,
-      2);
+      2
+    );
 
     await obj.emitAsync(
       'e',
       3,
-      4);
+      4
+    );
 
     off();
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'on'));
+        item => item.action === 'on'
+      )
+    );
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'emit'));
+        item => item.action === 'emit'
+      )
+    );
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'emitAsync'));
+        item => item.action === 'emitAsync'
+      )
+    );
 
     const emitTrace =
       recorder.records().find(
@@ -501,34 +518,41 @@ test(
 
     assert.ok(
       Array.isArray(
-        emitTrace.payload.listeners));
+        emitTrace.payload.listeners
+      )
+    );
 
     assert.equal(
       emitTrace.payload.event,
-      'e');
+      'e'
+    );
 
     assert.deepEqual(
       emitTrace.payload.args,
-      [1, 2]);
+      [1, 2]
+    );
 
     const emitAsyncTrace =
       recorder.records().find(
-        item =>
-      item.action === 'emitAsync');
+        item => item.action === 'emitAsync');
 
     assert.ok(emitAsyncTrace);
 
     assert.ok(
       Array.isArray(
-        emitAsyncTrace.payload.listeners));
+        emitAsyncTrace.payload.listeners
+      )
+    );
 
     assert.equal(
       emitAsyncTrace.payload.event,
-      'e');
+      'e'
+    );
 
     assert.deepEqual(
       emitAsyncTrace.payload.args,
-      [3, 4]);
+      [3, 4]
+    );
   }
 );
 
@@ -557,7 +581,8 @@ test(
 
     assert.equal(
       errors,
-      1);
+      1
+    );
   }
 );
 
@@ -706,8 +731,10 @@ test(
     );
 
     assert.throws(
-      () => obj.emit(
-        123 as unknown as never),
+      () =>
+        obj.emit(
+          123 as unknown as never
+        ),
       TypeError
     );
 
@@ -756,7 +783,8 @@ export function createRecorder(): Recorder
     ): void =>
     {
       records.push(
-        { action, payload });
+        { action, payload }
+      );
     },
     records: (): TraceRecord[] => records
   };

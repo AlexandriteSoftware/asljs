@@ -177,9 +177,13 @@ test(
     const proxy =
       observable(
         object,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     proxy.a = 2;
 
@@ -227,9 +231,13 @@ test(
     const obj =
       observable(
         { a: 1 },
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     Object.defineProperty(
       obj,
@@ -283,9 +291,13 @@ test(
     const obj =
       observable(
         object,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     delete (obj as any).a;
 
@@ -330,9 +342,13 @@ test(
     const arr =
       observable(
         array,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     arr['0'] = 10;
     arr[1] = 20;
@@ -417,9 +433,13 @@ test(
     const arr =
       observable(
         array,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     // setting length does not delete items
     arr.length = 1;
@@ -465,9 +485,13 @@ test(
     const arr =
       observable(
         array,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     // deleting items does not change length
     delete arr[1];
@@ -518,9 +542,13 @@ test(
     const arr =
       observable(
         array,
-        { eventful: (value: any) => eventful(
-          value,
-          tracer) });
+        {
+        eventful: (value: any) =>
+          eventful(
+            value,
+            tracer
+          )
+      });
 
     (arr as any)['01'] = 99;
 
@@ -734,6 +762,7 @@ test(
 
     assert.strictEqual(
       newValue,
-      43);
+      43
+    );
   }
 );

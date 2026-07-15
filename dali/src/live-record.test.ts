@@ -16,7 +16,7 @@ async function openTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `live-record-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'items',
@@ -39,7 +39,7 @@ async function waitFor(
       throw new Error('Timed out waiting for condition');
     }
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         0
@@ -92,7 +92,7 @@ test(
       table.record('missing');
 
     // Give the initial load time to settle; record should remain null.
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -213,7 +213,7 @@ test(
     );
 
     // Give time for any spurious update to land
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -367,7 +367,7 @@ test(
 
     live.on(
       'deleted',
-      (previous) =>
+      previous =>
       {
         deletedPrevious.push(previous);
       }
@@ -423,7 +423,7 @@ test(
 
     live.on(
       'deleted',
-      (previous) =>
+      previous =>
       {
         deletedPrevious.push(previous);
       }
@@ -472,7 +472,7 @@ test(
     // watch is called immediately with current value, then on each change
     live.watch(
       'record.value',
-      (v) =>
+      v =>
       {
         seen.push(
           v as string | undefined
@@ -548,7 +548,7 @@ test(
 
     live.watch(
       'record',
-      (r) =>
+      r =>
       {
         seen.push(
           r as TestRecord | null
@@ -609,7 +609,7 @@ test(
 
     live.on(
       'changed',
-      (record) =>
+      record =>
       {
         fired.push(record);
       }
@@ -621,7 +621,7 @@ test(
       { id: 'a', value: '20' }
     );
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20

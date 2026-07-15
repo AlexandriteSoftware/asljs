@@ -148,21 +148,26 @@ const observableImpl =
     if (Array.isArray(target)) {
       for (let i = 0; i < target.length; i++) {
         target[i] = convertNestedValue(
-          target[i]);
+          target[i]
+        );
       }
 
       return;
     }
 
     for (const key of Reflect.ownKeys(target)) {
-      if (!hasOwn(
-        target,
-        key)) {
+      if (
+        !hasOwn(
+          target,
+          key
+        )
+      ) {
         continue;
       }
 
       target[key] = convertNestedValue(
-        target[key]);
+        target[key]
+      );
     }
   };
 
@@ -221,9 +226,12 @@ const observableImpl =
                 property,
                 receiver);
 
-            if (!Object.is(
-              previous,
-              current)) {
+            if (
+              !Object.is(
+                previous,
+                current
+              )
+            ) {
               const payload =
                 isArrayIndex
                 ? { index: Number(property), value: current, previous }
@@ -450,9 +458,12 @@ const observableImpl =
         return value;
       },
       set value(v) {
-        if (Object.is(
-          v,
-          value)) {
+        if (
+          Object.is(
+            v,
+            value
+          )
+        ) {
           return;
         }
 

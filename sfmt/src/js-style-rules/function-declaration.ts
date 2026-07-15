@@ -1,8 +1,7 @@
 import { RuleDefinition,
          RuleDefinitionTypeOptions }
   from '@eslint/core';
-import { JSRuleDefinition,
-         Rule }
+import { Rule }
   from 'eslint';
 import { FunctionDeclaration }
   from 'estree';
@@ -83,7 +82,11 @@ function checkLayout(
     node.params;
 
   if (parameters.length > 1) {
-    for (let index = 1; index < parameters.length; index++) {
+    for (
+      let index = 1;
+      index < parameters.length;
+      index++
+    ) {
       const previousParameter =
         parameters[index - 1];
 
@@ -94,16 +97,16 @@ function checkLayout(
         previousParameter.loc?.end.line;
 
       if (previousParameterEndLine === undefined) {
-        // If we can't determine the line number, assume it's correct
-        return true;
+        // skip if we can't determine the line number
+        continue;
       }
 
       const currentParameterStartLine =
         currentParameter.loc?.start.line;
 
       if (currentParameterStartLine === undefined) {
-        // If we can't determine the line number, assume it's correct
-        return true;
+        // skip if we can't determine the line number
+        continue;
       }
 
       if (previousParameterEndLine === currentParameterStartLine) {

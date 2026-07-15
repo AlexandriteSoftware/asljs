@@ -39,7 +39,8 @@ test(
           event as { value: { name: string | undefined; }; };
 
         events.push(
-          `state:${stateEvent.value.name}`);
+          `state:${stateEvent.value.name}`
+        );
       }
     );
 
@@ -48,7 +49,8 @@ test(
       () =>
       {
         events.push(
-          'select:activating');
+          'select:activating'
+        );
       }
     );
 
@@ -57,7 +59,8 @@ test(
       () =>
       {
         events.push(
-          'select:completed');
+          'select:completed'
+        );
       }
     );
 

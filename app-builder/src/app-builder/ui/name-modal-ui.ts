@@ -1,15 +1,16 @@
-import { configureButton,
+import { AppBuilderButtonElement,
+         AppBuilderTextInputElement,
+         configureButton,
          configureTextInput,
          focusInnerControl,
          mustElement,
          readControlValue,
          selectInnerTextControl,
-         AppBuilderButtonElement,
-         AppBuilderTextInputElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderNameModal(): string {
+export function renderNameModal(): string
+{
   return `
     <div id="name-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
       <div class="bg-body rounded-4 shadow border w-100" style="max-width: 32rem;">
@@ -30,58 +31,90 @@ export function renderNameModal(): string {
   `;
 }
 
-export type NameModalRequest =
-  {
-    title: string;
-    initialValue: string;
-    selectText: boolean;
-    onConfirm: (value: string) => Promise<void>;
-  };
+export type NameModalRequest = {
+  title: string;
+  initialValue: string;
+  selectText: boolean;
+  onConfirm: (value: string) => Promise<void>;
+};
 
-export type NameModalUi =
-  {
-    open: (request: NameModalRequest) => void;
-    close: () => void;
-  };
+export type NameModalUi = {
+  open: (request: NameModalRequest) => void;
+  close: () => void;
+};
 
-export function createNameModalUi(): NameModalUi {
-  const elModal = mustElement<HTMLElement>('name-modal');
-  const elTitle = mustElement<HTMLElement>('name-modal-title');
-  const elInput = mustElement<AppBuilderTextInputElement>('app-name-input');
-  const elBtnConfirm = mustElement<AppBuilderButtonElement>('btn-confirm-name');
-  const elBtnCancel = mustElement<AppBuilderButtonElement>('btn-cancel-name');
+export function createNameModalUi(): NameModalUi
+{
+  const elModal =
+    mustElement<HTMLElement>('name-modal');
+
+  const elTitle =
+    mustElement(
+      'name-modal-title');
+
+  const elInput =
+    mustElement(
+      'app-name-input');
+
+  const elBtnConfirm =
+    mustElement(
+      'btn-confirm-name');
+
+  const elBtnCancel =
+    mustElement(
+      'btn-cancel-name');
+
   const elBtnClose =
-    mustElement<AppBuilderButtonElement>('btn-close-name-modal');
+    mustElement(
+      'btn-close-name-modal');
 
   let activeRequest: NameModalRequest | null = null;
 
-  configureButton(elBtnClose, {
-    icon: '<i class="bi bi-x-lg"></i>',
-    className: 'btn btn-outline-secondary btn-sm',
-  });
-  configureButton(elBtnConfirm, {
-    text: 'OK',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCancel, {
-    text: 'Cancel',
-    className: 'btn btn-outline-secondary',
-  });
-  configureTextInput(elInput, {
-    placeholder: 'My App',
-  });
+  configureButton(
+    elBtnClose,
+    {
+      icon: '<i class="bi bi-x-lg"></i>',
+      className: 'btn btn-outline-secondary btn-sm'
+    }
+  );
 
-  function close(): void {
+  configureButton(
+    elBtnConfirm,
+    {
+      text: 'OK',
+      className: 'btn btn-primary'
+    }
+  );
+
+  configureButton(
+    elBtnCancel,
+    {
+      text: 'Cancel',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  configureTextInput(
+    elInput,
+    {
+      placeholder: 'My App'
+    }
+  );
+
+  function close(): void
+  {
     activeRequest = null;
     elModal.classList.add('hidden');
   }
 
-  async function confirm(): Promise<void> {
+  async function confirm(): Promise<void>
+  {
     if (activeRequest === null) {
       return;
     }
 
-    const value = readControlValue(elInput).trim();
+    const value =
+      readControlValue(elInput).trim();
 
     if (value === '') {
       focusInnerControl(elInput);
@@ -93,28 +126,56 @@ export function createNameModalUi(): NameModalUi {
     await request.onConfirm(value);
   }
 
-  elBtnConfirm.addEventListener('click', () => {
-    void confirm();
-  });
-  elBtnCancel.addEventListener('click', close);
-  elBtnClose.addEventListener('click', close);
-  elInput.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
+  elBtnConfirm.addEventListener(
+    'click',
+    () =>
+    {
       void confirm();
     }
-  });
-  elModal.addEventListener('click', (event: MouseEvent) => {
-    if (event.target === elModal) {
-      close();
+  );
+
+  elBtnCancel.addEventListener(
+    'click',
+    close
+  );
+
+  elBtnClose.addEventListener(
+    'click',
+    close
+  );
+
+  elInput.addEventListener(
+    'keydown',
+    (event: KeyboardEvent) =>
+    {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void confirm();
+      }
     }
-  });
+  );
+
+  elModal.addEventListener(
+    'click',
+    (event: MouseEvent) =>
+    {
+      if (event.target === elModal) {
+        close();
+      }
+    }
+  );
 
   return {
-    open(request: NameModalRequest): void {
+    open(request: NameModalRequest): void
+    {
       activeRequest = request;
       elTitle.textContent = request.title;
-      writeControlValue(elInput, request.initialValue);
+
+      writeControlValue(
+        elInput,
+        request.initialValue
+      );
+
       elModal.classList.remove('hidden');
 
       if (request.selectText) {
@@ -124,6 +185,6 @@ export function createNameModalUi(): NameModalUi {
 
       focusInnerControl(elInput);
     },
-    close,
+    close
   };
 }

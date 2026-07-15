@@ -17,7 +17,7 @@ async function openTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `live-recordset-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'items',
@@ -40,7 +40,7 @@ async function waitFor(
       throw new Error('Timed out waiting for condition');
     }
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         0
@@ -55,7 +55,7 @@ function sortedIds(
 {
   return records
     .map(
-      (r) => r.id
+      r => r.id
     )
     .sort();
 }
@@ -84,7 +84,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value !== '20');
+        record => record.value !== '20');
 
     await waitFor(
       () => live.records.length >= 2
@@ -117,10 +117,10 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value === 'NOPE');
+        record => record.value === 'NOPE');
 
     // Give the scan time to settle.
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -148,10 +148,10 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     // Wait for initial scan to settle (no records yet)
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -192,9 +192,9 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -205,7 +205,7 @@ test(
       { id: 'a', value: 'other' }
     );
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -237,7 +237,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -276,7 +276,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -315,9 +315,9 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -366,7 +366,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 2
@@ -407,7 +407,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 2
@@ -440,9 +440,9 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -453,7 +453,7 @@ test(
 
     live.on(
       'added',
-      (record) =>
+      record =>
       {
         added.push(record);
       }
@@ -482,7 +482,7 @@ test(
       { id: 'b', value: 'other' }
     );
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20
@@ -514,7 +514,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -524,7 +524,7 @@ test(
 
     live.on(
       'removed',
-      (record) =>
+      record =>
       {
         removed.push(record);
       }
@@ -566,7 +566,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -627,7 +627,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -675,14 +675,14 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     const lengths: number[] = [];
 
     // Fires once after initial scan
     live.on(
       'changed',
-      (records) =>
+      records =>
       {
         lengths.push(
           records.length
@@ -723,14 +723,14 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     const lengths: number[] = [];
 
     // Immediately called with current value (0 before scan settles)
     live.watch(
       'records',
-      (r) =>
+      r =>
       {
         lengths.push(
           (r as readonly TestRecord[] ?? []).length
@@ -780,7 +780,7 @@ test(
 
     const live =
       table.recordset(
-        (record) => record.value.startsWith('v'));
+        record => record.value.startsWith('v'));
 
     await waitFor(
       () => live.records.length === 1
@@ -790,7 +790,7 @@ test(
 
     live.on(
       'changed',
-      (records) =>
+      records =>
       {
         fired.push(
           records.length
@@ -804,7 +804,7 @@ test(
       { id: 'b', value: 'v2' }
     );
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         20

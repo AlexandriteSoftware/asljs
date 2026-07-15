@@ -1,1 +1,3 @@
-export type FormattingContext = { sourceCode: string; };
+export type FormattingContext =
+  { sourceCode: string;
+    newLine: string; };

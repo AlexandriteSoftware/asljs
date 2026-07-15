@@ -142,7 +142,7 @@ export class Table<
 
     if (this.#broadcastService !== undefined) {
       this.#broadcastUnsubscribe = this.#broadcastService.subscribe(
-        (message) =>
+        message =>
         {
           this.#onBroadcastMessage(message);
         }
@@ -326,8 +326,8 @@ export class Table<
     return new LiveRecord<T>(
       key,
       this.key,
-      (k) => this.getOne(k),
-      (receiver) => this.notify(receiver)
+      k => this.getOne(k),
+      receiver => this.notify(receiver)
     );
   }
 
@@ -360,8 +360,8 @@ export class Table<
     return new LiveRecordSet<T>(
       this.key,
       predicate,
-      (p) => this.scan(p),
-      (receiver) => this.notify(receiver)
+      p => this.scan(p),
+      receiver => this.notify(receiver)
     );
   }
 
@@ -822,7 +822,7 @@ export class Table<
     }
 
     return records.filter(
-      (record) => !deleteStrategy.isDeleted(record)
+      record => !deleteStrategy.isDeleted(record)
     );
   }
 
@@ -838,11 +838,8 @@ export class Table<
       this.#deleteStrategy;
 
     if (strategy) {
-      const query =
-        strategy.mapIndexQuery;
-
-      if (query) {
-        mapped = query(
+      if (strategy.mapIndexQuery) {
+        mapped = strategy.mapIndexQuery(
           index,
           key
         );

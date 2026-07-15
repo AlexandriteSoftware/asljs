@@ -19,8 +19,10 @@ test(
     );
 
     assert.doesNotThrow(
-      () => eventNameTypeGuard(
-        Symbol('event'))
+      () =>
+        eventNameTypeGuard(
+          Symbol('event')
+        )
     );
   }
 );
@@ -48,7 +50,8 @@ test(
     assert.equal(
       isFunction(
         () =>
-      {}),
+        {}
+      ),
       true
     );
 
@@ -65,7 +68,8 @@ test(
   {
     assert.equal(
       isObject(
-        { key: 'value' }),
+        { key: 'value' }
+      ),
       true
     );
 
@@ -77,7 +81,8 @@ test(
     assert.equal(
       isObject(
         () =>
-      {}),
+        {}
+      ),
       false
     );
   }
@@ -91,7 +96,8 @@ test(
       () =>
         functionTypeGuard(
           () =>
-        {})
+          {}
+        )
     );
 
     assert.throws(

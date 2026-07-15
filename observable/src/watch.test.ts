@@ -38,7 +38,8 @@ test(
       (a: number, b: number) =>
       {
         calls.push(
-          [a, b]);
+          [a, b]
+        );
       }
     );
 
@@ -129,7 +130,8 @@ test(
       (a: number, b: number) =>
       {
         calls.push(
-          [a, b]);
+          [a, b]
+        );
       }
     );
 
@@ -229,7 +231,8 @@ test(
       (userName: string | undefined, active: boolean) =>
       {
         calls.push(
-          [userName, active]);
+          [userName, active]
+        );
       }
     );
 
@@ -263,7 +266,8 @@ test(
       (userName: string | undefined, active: boolean) =>
       {
         calls.push(
-          [userName, active]);
+          [userName, active]
+        );
       }
     );
 
@@ -299,7 +303,8 @@ test(
         (a: number, b: number) =>
       {
         calls.push(
-          [a, b]);
+          [a, b]
+        );
       });
 
     obj.a = 10;

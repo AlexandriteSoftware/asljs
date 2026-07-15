@@ -1,15 +1,16 @@
-import observableReadme
-  from '../../../../observable/AGENTS.md?raw';
-import eventfulReadme
-  from '../../../../eventful/AGENTS.md?raw';
-import dataBindingReadme
-  from '../../../../data-binding/AGENTS.md?raw';
 import componentsReadme
   from '../../../../components/AGENTS.md?raw';
 import daliReadme
   from '../../../../dali/AGENTS.md?raw';
+import dataBindingReadme
+  from '../../../../data-binding/AGENTS.md?raw';
+import eventfulReadme
+  from '../../../../eventful/AGENTS.md?raw';
+import observableReadme
+  from '../../../../observable/AGENTS.md?raw';
 
-export const GENERATION_SYSTEM_PROMPT = `
+export const GENERATION_SYSTEM_PROMPT =
+  `
 You are an expert ASLJS app generator.
 
 Your normal job is to execute a queued implementation cycle from CHANGE.md.
@@ -95,7 +96,7 @@ Generation rules:
 - app.js is the app entry point.
 - index.html must load app.js using <script type="module">.
 - OpenAI libraries are allowed when required by user features.
-- If OpenAI is used in the generated app, read key from host context: 
+- If OpenAI is used in the generated app, read key from host context:
   window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey.
 - Never hardcode API keys in generated files.
 - UI code must be data-binding-first: prefer declarative \`data-bind-*\` attributes with \`bindDataModel\`.
@@ -216,4 +217,5 @@ ${componentsReadme}
 ${daliReadme}
 `;
 
-export const SYSTEM_PROMPT = GENERATION_SYSTEM_PROMPT;
+export const SYSTEM_PROMPT =
+  GENERATION_SYSTEM_PROMPT;

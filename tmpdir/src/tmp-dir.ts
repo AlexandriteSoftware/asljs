@@ -39,7 +39,8 @@ export function formatMessage(
             return String(param);
           case '%d':
             return String(
-              Number(param));
+              Number(param)
+            );
           case '%o':
             return JSON.stringify(param);
         }
@@ -148,7 +149,8 @@ export class TmpDir
     if (
       relativePath === '..'
       || relativePath.startsWith(
-        `..${path.sep}`)
+        `..${path.sep}`
+      )
       || path.isAbsolute(relativePath)
     ) {
       throw new Error(

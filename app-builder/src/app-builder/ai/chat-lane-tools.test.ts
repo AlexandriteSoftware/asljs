@@ -1,13 +1,14 @@
-import test
-  from 'node:test';
 import assert
   from 'node:assert/strict';
+import test
+  from 'node:test';
 import { AiTools }
   from './ai-tools.js';
 import { createChatLaneTools }
   from './chat-lane-tools.js';
 
-function makeBaseTools(): AiTools {
+function makeBaseTools(): AiTools
+{
   return {
     listFileset: async () => [],
     listFilesByMask: async () => [],
@@ -29,45 +30,66 @@ function makeBaseTools(): AiTools {
       total: 0,
       passed: 0,
       failed: 0,
-      results: [],
+      results: []
     }),
     startGeneration: async () => 'queued',
     getAppDiagnostics: async () => null,
-    runAppAndCollectDiagnostics: async () => null,
+    runAppAndCollectDiagnostics: async () => null
   };
 }
 
 test(
   'createChatLaneTools only allows PLAN.md writes',
-  async () => {
+  async () =>
+  {
     const chatTools =
-      createChatLaneTools(makeBaseTools(), {
+      createChatLaneTools(
+        makeBaseTools(),
+        {
         planFileName: 'PLAN.md',
-        startGeneration: async () => 'queued',
+        startGeneration: async () => 'queued'
       });
 
     await assert.rejects(
-      () => chatTools.setFileContent('app.js', 'console.log(1);'),
-      /only edit PLAN\.md/i,
+      () =>
+        chatTools.setFileContent(
+          'app.js',
+          'console.log(1);'
+        ),
+      /only edit PLAN\.md/i
     );
-  });
+  }
+);
 
 test(
   'createChatLaneTools forwards startGeneration',
-  async () => {
+  async () =>
+  {
     let called = false;
 
     const chatTools =
-      createChatLaneTools(makeBaseTools(), {
+      createChatLaneTools(
+        makeBaseTools(),
+        {
         planFileName: 'PLAN.md',
-        startGeneration: async () => {
+        startGeneration: async () =>
+        {
           called = true;
           return 'queued';
-        },
+        }
       });
 
-    const result = await chatTools.startGeneration();
+    const result =
+      await chatTools.startGeneration();
 
-    assert.equal(called, true);
-    assert.equal(result, 'queued');
-  });
+    assert.equal(
+      called,
+      true
+    );
+
+    assert.equal(
+      result,
+      'queued'
+    );
+  }
+);

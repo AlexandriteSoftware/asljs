@@ -145,7 +145,8 @@ test(
         (name: string, age: number) =>
       {
         values.push(
-          [name, age]);
+          [name, age]
+        );
       });
 
     person.name = 'Alice';

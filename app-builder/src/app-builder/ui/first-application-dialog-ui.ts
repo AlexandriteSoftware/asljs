@@ -1,14 +1,15 @@
-import { configureButton,
+import { AppBuilderButtonElement,
+         AppBuilderTextInputElement,
+         configureButton,
          configureTextInput,
          focusInnerControl,
          mustElement,
          readControlValue,
-         AppBuilderButtonElement,
-         AppBuilderTextInputElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderFirstApplicationDialog(): string {
+export function renderFirstApplicationDialog(): string
+{
   return `
     <section id="first-app-setup" class="hidden d-flex flex-grow-1 align-items-center justify-content-center p-3 p-lg-5">
       <div class="card shadow-sm border-0 w-100" style="max-width: 42rem;">
@@ -50,65 +51,90 @@ export function renderFirstApplicationDialog(): string {
   `;
 }
 
-export type FirstApplicationDialogValues =
-  {
-    name: string;
-    apiKey: string;
-  };
+export type FirstApplicationDialogValues = {
+  name: string;
+  apiKey: string;
+};
 
-export type FirstApplicationDialogUi =
-  {
-    show: () => void;
-    hide: () => void;
-  };
+export type FirstApplicationDialogUi = {
+  show: () => void;
+  hide: () => void;
+};
 
 export function createFirstApplicationDialogUi(
-    options: {
-      onCreateApplication: (
-        values: FirstApplicationDialogValues,
-      ) => Promise<void>;
-      onCreateTodoSample: (
-        values: FirstApplicationDialogValues,
-      ) => Promise<void>;
-    }
-  ): FirstApplicationDialogUi
+  options: {
+    onCreateApplication: (
+      values: FirstApplicationDialogValues
+    ) => Promise<void>;
+    onCreateTodoSample: (
+      values: FirstApplicationDialogValues
+    ) => Promise<void>;
+  }
+): FirstApplicationDialogUi
 {
-  const elDialog = mustElement<HTMLElement>('first-app-setup');
+  const elDialog =
+    mustElement(
+      'first-app-setup');
+
   const elApiKeyInput =
-    mustElement<AppBuilderTextInputElement>('first-api-key-input');
+    mustElement(
+      'first-api-key-input');
+
   const elNameInput =
-    mustElement<AppBuilderTextInputElement>('first-app-name-input');
+    mustElement(
+      'first-app-name-input');
+
   const elBtnCreate =
-    mustElement<AppBuilderButtonElement>('btn-create-first-app');
+    mustElement(
+      'btn-create-first-app');
+
   const elBtnCreateSample =
-    mustElement<AppBuilderButtonElement>('btn-create-todo-sample');
+    mustElement(
+      'btn-create-todo-sample');
 
-  configureButton(elBtnCreate, {
-    text: 'Create Application',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCreateSample, {
-    text: 'Create TODO Sample App',
-    className: 'btn btn-outline-secondary',
-  });
+  configureButton(
+    elBtnCreate,
+    {
+      text: 'Create Application',
+      className: 'btn btn-primary'
+    }
+  );
 
-  configureTextInput(elApiKeyInput, {
-    placeholder: 'sk-...',
-    inputType: 'password',
-  });
-  configureTextInput(elNameInput, {
-    placeholder: 'My App',
-  });
+  configureButton(
+    elBtnCreateSample,
+    {
+      text: 'Create TODO Sample App',
+      className: 'btn btn-outline-secondary'
+    }
+  );
 
-  function readValues(): FirstApplicationDialogValues {
+  configureTextInput(
+    elApiKeyInput,
+    {
+      placeholder: 'sk-...',
+      inputType: 'password'
+    }
+  );
+
+  configureTextInput(
+    elNameInput,
+    {
+      placeholder: 'My App'
+    }
+  );
+
+  function readValues(): FirstApplicationDialogValues
+  {
     return {
       name: readControlValue(elNameInput).trim(),
-      apiKey: readControlValue(elApiKeyInput).trim(),
+      apiKey: readControlValue(elApiKeyInput).trim()
     };
   }
 
-  async function createApplication(): Promise<void> {
-    const values = readValues();
+  async function createApplication(): Promise<void>
+  {
+    const values =
+      readValues();
 
     if (values.name === '') {
       focusInnerControl(elNameInput);
@@ -118,35 +144,62 @@ export function createFirstApplicationDialogUi(
     await options.onCreateApplication(values);
   }
 
-  async function createTodoSample(): Promise<void> {
-    await options.onCreateTodoSample(readValues());
+  async function createTodoSample(): Promise<void>
+  {
+    await options.onCreateTodoSample(
+      readValues()
+    );
   }
 
-  function clear(): void {
-    writeControlValue(elApiKeyInput, '');
-    writeControlValue(elNameInput, '');
+  function clear(): void
+  {
+    writeControlValue(
+      elApiKeyInput,
+      ''
+    );
+
+    writeControlValue(
+      elNameInput,
+      ''
+    );
   }
 
-  elBtnCreate.addEventListener('click', () => {
-    void createApplication();
-  });
-  elBtnCreateSample.addEventListener('click', () => {
-    void createTodoSample();
-  });
-  elNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
+  elBtnCreate.addEventListener(
+    'click',
+    () =>
+    {
       void createApplication();
     }
-  });
+  );
+
+  elBtnCreateSample.addEventListener(
+    'click',
+    () =>
+    {
+      void createTodoSample();
+    }
+  );
+
+  elNameInput.addEventListener(
+    'keydown',
+    (event: KeyboardEvent) =>
+    {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void createApplication();
+      }
+    }
+  );
 
   return {
-    show(): void {
+    show(): void
+    {
       clear();
       elDialog.classList.remove('hidden');
     },
-    hide(): void {
+    hide(): void
+    {
       elDialog.classList.add('hidden');
-    },
+    }
   };
 }

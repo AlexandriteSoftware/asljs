@@ -2,7 +2,7 @@ import { SelectItem }
   from 'asljs-components';
 
 export type AppBuilderButtonElement =
-  HTMLElement
+  & HTMLElement
   & {
     text: string;
     icon: string;
@@ -12,7 +12,7 @@ export type AppBuilderButtonElement =
   };
 
 export type AppBuilderTextInputElement =
-  HTMLElement
+  & HTMLElement
   & {
     value: string | null;
     placeholder: string | null;
@@ -22,7 +22,7 @@ export type AppBuilderTextInputElement =
   };
 
 export type AppBuilderSelectElement =
-  HTMLElement
+  & HTMLElement
   & {
     value: string | null;
     items: SelectItem[];
@@ -31,8 +31,10 @@ export type AppBuilderSelectElement =
     disabled: boolean;
   };
 
-export function mustElement<T extends HTMLElement>(id: string): T {
-  const element = document.getElementById(id);
+export function mustElement<T extends HTMLElement>(id: string): T
+{
+  const element =
+    document.getElementById(id);
 
   if (element === null) {
     throw new Error(`Missing element #${id}`);
@@ -42,29 +44,33 @@ export function mustElement<T extends HTMLElement>(id: string): T {
 }
 
 export function configureButton(
-    element: AppBuilderButtonElement,
-    options: {
-      text?: string;
-      icon?: string;
-      className: string;
-    }
-  ): void
+  element: AppBuilderButtonElement,
+  options: {
+    text?: string;
+    icon?: string;
+    className: string;
+  }
+): void
 {
   element.type = 'button';
   element.buttonClassName = options.className;
-  setButtonContent(element, {
-    text: options.text ?? '',
-    icon: options.icon ?? '',
-  });
+
+  setButtonContent(
+    element,
+    {
+      text: options.text ?? '',
+      icon: options.icon ?? ''
+    }
+  );
 }
 
 export function setButtonContent(
-    element: HTMLElement & { text?: string; icon?: string; },
-    options: {
-      text: string;
-      icon?: string;
-    }
-  ): void
+  element: HTMLElement & { text?: string; icon?: string; },
+  options: {
+    text: string;
+    icon?: string;
+  }
+): void
 {
   element.text = options.text;
   element.icon = options.icon ?? '';
@@ -75,27 +81,29 @@ export function setButtonContent(
 }
 
 export function configureTextInput(
-    element: AppBuilderTextInputElement,
-    options: {
-      placeholder?: string;
-      inputType?: string;
-      className?: string;
-    }
-  ): void
+  element: AppBuilderTextInputElement,
+  options: {
+    placeholder?: string;
+    inputType?: string;
+    className?: string;
+  }
+): void
 {
   element.placeholder = options.placeholder ?? null;
   element.inputType = options.inputType ?? 'text';
-  element.controlClassName = options.className ?? 'form-control bootstrap-input';
+
+  element.controlClassName = options.className
+    ?? 'form-control bootstrap-input';
 }
 
 export function configureSelect(
-    element: AppBuilderSelectElement,
-    options: {
-      className: string;
-      items?: SelectItem[];
-      placeholder?: string | null;
-    }
-  ): void
+  element: AppBuilderSelectElement,
+  options: {
+    className: string;
+    items?: SelectItem[];
+    placeholder?: string | null;
+  }
+): void
 {
   element.controlClassName = options.className;
   element.items = options.items ?? [];
@@ -103,26 +111,29 @@ export function configureSelect(
 }
 
 export function readControlValue(
-    element: { value: string | null; }
-  ): string
+  element: { value: string | null; }
+): string
 {
   return element.value ?? '';
 }
 
 export function writeControlValue(
-    element: { value: string | null; },
-    value: string
-  ): void
+  element: { value: string | null; },
+  value: string
+): void
 {
   element.value = value;
 }
 
 export function focusInnerControl(
-    element: HTMLElement
-  ): void
+  element: HTMLElement
+): void
 {
   const control =
-    element.querySelector('input, textarea, select, button') as HTMLElement | null;
+    element.querySelector(
+      'input, textarea, select, button') as
+    | HTMLElement
+    | null;
 
   if (control !== null) {
     control.focus();
@@ -133,11 +144,15 @@ export function focusInnerControl(
 }
 
 export function selectInnerTextControl(
-    element: HTMLElement
-  ): void
+  element: HTMLElement
+): void
 {
   const control =
-    element.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement | null;
+    element.querySelector(
+      'input, textarea') as
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | null;
 
   control?.focus();
   control?.select();

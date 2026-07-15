@@ -106,7 +106,7 @@ export class LiveRecordSet<T extends Record<string, any>>
     // Events that arrive while loading are buffered and applied afterwards.
     this.#unsubscribe = subscribeFn(
       {
-        add: (record) =>
+        add: record =>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
@@ -136,7 +136,7 @@ export class LiveRecordSet<T extends Record<string, any>>
           );
         },
 
-        delete: (record) =>
+        delete: record =>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
@@ -173,7 +173,7 @@ export class LiveRecordSet<T extends Record<string, any>>
       this.#predicate
     )
       .then(
-        (records) =>
+        records =>
         {
           if (this.#disposed) {
             return;
@@ -181,7 +181,7 @@ export class LiveRecordSet<T extends Record<string, any>>
 
           this.#current = new Map(
             records.map(
-              (record) => [this.#keyString(record), record]
+              record => [this.#keyString(record), record]
             )
           );
 
@@ -200,7 +200,7 @@ export class LiveRecordSet<T extends Record<string, any>>
         }
       )
       .catch(
-        (error) =>
+        error =>
         {
           console.error(
             'LiveRecordSet: initial scan failed',

@@ -7,45 +7,52 @@ type AppListSelectElement = {
   disabled: boolean;
 };
 
-export type AppListItem =
-  { id: string;
-    name: string;
-    updatedAt: string; };
+export type AppListItem = { id: string; name: string; updatedAt: string; };
 
-export type RenderAppListUiOptions =
-  { selectElement: AppListSelectElement;
-    apps: AppListItem[];
-    currentAppId: string | null;
-    newActionValue: string;
-    importActionValue: string; };
+export type RenderAppListUiOptions = {
+  selectElement: AppListSelectElement;
+  apps: AppListItem[];
+  currentAppId: string | null;
+  newActionValue: string;
+  importActionValue: string;
+};
 
 export function renderAppListUi(
-    options: RenderAppListUiOptions
-  ): void
+  options: RenderAppListUiOptions
+): void
 {
-  const selectElement = options.selectElement;
+  const selectElement =
+    options.selectElement;
 
-  const apps = [ ...options.apps ]
-    .sort((left, right) =>
-      right.updatedAt.localeCompare(left.updatedAt));
+  const apps =
+    [...options.apps]
+    .sort(
+      (left, right) =>
+        right.updatedAt.localeCompare(
+          left.updatedAt
+        )
+    );
 
   const items: SelectItem[] =
-    apps.map(app => ({
+    apps.map(
+      app => ({
       value: app.id,
-      label: app.name,
+      label: app.name
     }));
 
   if (apps.length > 0) {
-    items.push({
-      value: '__separator__',
-      label: '────────',
-      disabled: true,
-    });
+    items.push(
+      {
+        value: '__separator__',
+        label: '────────',
+        disabled: true
+      }
+    );
   }
 
   items.push(
     { value: options.newActionValue, label: 'New...' },
-    { value: options.importActionValue, label: 'Import...' },
+    { value: options.importActionValue, label: 'Import...' }
   );
 
   selectElement.items = items;

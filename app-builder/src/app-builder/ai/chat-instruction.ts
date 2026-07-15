@@ -1,15 +1,16 @@
-import observableReadme
-  from '../../../../observable/AGENTS.md?raw';
-import eventfulReadme
-  from '../../../../eventful/AGENTS.md?raw';
-import dataBindingReadme
-  from '../../../../data-binding/AGENTS.md?raw';
 import componentsReadme
   from '../../../../components/AGENTS.md?raw';
 import daliReadme
   from '../../../../dali/AGENTS.md?raw';
+import dataBindingReadme
+  from '../../../../data-binding/AGENTS.md?raw';
+import eventfulReadme
+  from '../../../../eventful/AGENTS.md?raw';
+import observableReadme
+  from '../../../../observable/AGENTS.md?raw';
 
-export const CHAT_SYSTEM_PROMPT = `
+export const CHAT_SYSTEM_PROMPT =
+  `
 You are the chat lane for the ASLJS app builder.
 
 Your job is to help the user shape the next changeset without directly editing

@@ -30,9 +30,11 @@ function splitPath(
   return path
     .split('.')
     .map(
-      segment => segment.trim())
+      segment => segment.trim()
+    )
     .filter(
-      segment => segment !== '');
+      segment => segment !== ''
+    );
 }
 
 function readPathValue(
@@ -148,7 +150,8 @@ export const watchImpl: ObservableWatchFn =
               () =>
             {
               callback(
-                ...getValues());
+                ...getValues()
+              );
 
               if (
                 index < segments.length - 1
@@ -193,7 +196,8 @@ export const watchImpl: ObservableWatchFn =
   }
 
   callback(
-    ...getValues());
+    ...getValues()
+  );
 
   return (): boolean =>
     unwatchers.reduce(

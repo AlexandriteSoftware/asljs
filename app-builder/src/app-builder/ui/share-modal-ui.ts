@@ -1,9 +1,10 @@
-import { configureButton,
-         mustElement,
-         AppBuilderButtonElement }
+import { AppBuilderButtonElement,
+         configureButton,
+         mustElement }
   from './control-ui.js';
 
-export function renderShareModal(): string {
+export function renderShareModal(): string
+{
   return `
     <div id="share-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
       <div class="bg-body rounded-4 shadow border w-100" style="max-width: 44rem;">
@@ -49,90 +50,139 @@ export function renderShareModal(): string {
   `;
 }
 
-export type ShareModalOptions =
-  {
-    minified: boolean;
-    excludeNonApplicationFiles: boolean;
-  };
+export type ShareModalOptions = {
+  minified: boolean;
+  excludeNonApplicationFiles: boolean;
+};
 
-export type ShareModalPreparedLink =
-  {
-    url: string;
-    status: string;
-  };
+export type ShareModalPreparedLink = {
+  url: string;
+  status: string;
+};
 
-export type ShareModalUi =
-  {
-    open: () => void;
-    close: () => void;
-  };
+export type ShareModalUi = {
+  open: () => void;
+  close: () => void;
+};
 
 export function createShareModalUi(
-    options: {
-      canOpen: () => boolean;
-      readAppName: () => string;
-      prepareLink: (
-        shareOptions: ShareModalOptions,
-      ) => Promise<ShareModalPreparedLink>;
-      downloadExport: (
-        shareOptions: ShareModalOptions,
-      ) => Promise<void>;
-    }
-  ): ShareModalUi
+  options: {
+    canOpen: () => boolean;
+    readAppName: () => string;
+    prepareLink: (
+      shareOptions: ShareModalOptions
+    ) => Promise<ShareModalPreparedLink>;
+    downloadExport: (
+      shareOptions: ShareModalOptions
+    ) => Promise<void>;
+  }
+): ShareModalUi
 {
-  const elModal = mustElement<HTMLElement>('share-modal');
-  const elBtnClose = mustElement<AppBuilderButtonElement>('btn-close-share');
+  const elModal =
+    mustElement<HTMLElement>('share-modal');
+
+  const elBtnClose =
+    mustElement(
+      'btn-close-share');
+
   const elBtnCloseFooter =
-    mustElement<AppBuilderButtonElement>('btn-close-share-2');
-  const elBtnShareLink = mustElement<AppBuilderButtonElement>('btn-share-link');
+    mustElement(
+      'btn-close-share-2');
+
+  const elBtnShareLink =
+    mustElement(
+      'btn-share-link');
+
   const elBtnShareDownload =
-    mustElement<AppBuilderButtonElement>('btn-share-download');
+    mustElement(
+      'btn-share-download');
+
   const elBtnCopyText =
-    mustElement<AppBuilderButtonElement>('btn-share-copy-text');
+    mustElement(
+      'btn-share-copy-text');
+
   const elBtnCopyHtml =
-    mustElement<AppBuilderButtonElement>('btn-share-copy-html');
-  const elMinifiedInput = mustElement<HTMLInputElement>('share-minified-input');
+    mustElement(
+      'btn-share-copy-html');
+
+  const elMinifiedInput =
+    mustElement(
+      'share-minified-input');
+
   const elExcludeTestsInput =
-    mustElement<HTMLInputElement>('share-exclude-tests-input');
-  const elStatus = mustElement<HTMLElement>('share-link-status');
-  const elOutput = mustElement<HTMLTextAreaElement>('share-link-output');
+    mustElement(
+      'share-exclude-tests-input');
+
+  const elStatus =
+    mustElement(
+      'share-link-status');
+
+  const elOutput =
+    mustElement(
+      'share-link-output');
 
   let preparationId = 0;
 
-  configureButton(elBtnClose, {
-    icon: '<i class="bi bi-x-lg"></i>',
-    className: 'btn btn-outline-secondary btn-sm',
-  });
-  configureButton(elBtnShareLink, {
-    text: 'Share with link',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnShareDownload, {
-    text: 'Download export',
-    className: 'btn btn-outline-secondary',
-  });
-  configureButton(elBtnCopyText, {
-    text: 'Copy as text link',
-    className: 'btn btn-outline-secondary',
-  });
-  configureButton(elBtnCopyHtml, {
-    text: 'Copy as HTML link',
-    className: 'btn btn-outline-secondary',
-  });
-  configureButton(elBtnCloseFooter, {
-    text: 'Close',
-    className: 'btn btn-outline-secondary',
-  });
+  configureButton(
+    elBtnClose,
+    {
+      icon: '<i class="bi bi-x-lg"></i>',
+      className: 'btn btn-outline-secondary btn-sm'
+    }
+  );
 
-  function readShareOptions(): ShareModalOptions {
+  configureButton(
+    elBtnShareLink,
+    {
+      text: 'Share with link',
+      className: 'btn btn-primary'
+    }
+  );
+
+  configureButton(
+    elBtnShareDownload,
+    {
+      text: 'Download export',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  configureButton(
+    elBtnCopyText,
+    {
+      text: 'Copy as text link',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  configureButton(
+    elBtnCopyHtml,
+    {
+      text: 'Copy as HTML link',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  configureButton(
+    elBtnCloseFooter,
+    {
+      text: 'Close',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  function readShareOptions(): ShareModalOptions
+  {
     return {
       minified: elMinifiedInput.checked,
-      excludeNonApplicationFiles: elExcludeTestsInput.checked,
+      excludeNonApplicationFiles: elExcludeTestsInput.checked
     };
   }
 
-  async function prepareShareLink(): Promise<void> {
-    const requestId = ++preparationId;
+  async function prepareShareLink(): Promise<void>
+  {
+    const requestId =
+      ++preparationId;
 
     elOutput.value = '';
     elBtnShareLink.disabled = true;
@@ -141,7 +191,9 @@ export function createShareModalUi(
     elStatus.textContent = 'Preparing share link...';
 
     try {
-      const prepared = await options.prepareLink(readShareOptions());
+      const prepared =
+        await options.prepareLink(
+          readShareOptions());
 
       if (requestId !== preparationId) {
         return;
@@ -163,50 +215,62 @@ export function createShareModalUi(
     }
   }
 
-  function close(): void {
+  function close(): void
+  {
     preparationId += 1;
     elModal.classList.add('hidden');
   }
 
-  async function copyShareUrlAsText(): Promise<void> {
+  async function copyShareUrlAsText(): Promise<void>
+  {
     if (elOutput.value.trim() === '') {
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(elOutput.value);
+      await navigator.clipboard.writeText(
+        elOutput.value
+      );
+
       elStatus.textContent = 'Share link copied to clipboard.';
     } catch {
       elOutput.focus();
       elOutput.select();
+
       elStatus.textContent =
         'Could not copy automatically. Link is selected, copy it manually.';
     }
   }
 
-  async function copyShareUrlAsHtml(): Promise<void> {
-    const url = elOutput.value.trim();
+  async function copyShareUrlAsHtml(): Promise<void>
+  {
+    const url =
+      elOutput.value.trim();
 
     if (url === '') {
       return;
     }
 
-    const appName = options.readAppName().trim() || 'Shared app';
-    const html = `<a href="${escapeHtml(url)}">${escapeHtml(appName)}</a>`;
+    const appName =
+      options.readAppName().trim() || 'Shared app';
+
+    const html =
+      `<a href="${escapeHtml(url)}">${escapeHtml(appName)}</a>`;
 
     try {
-      if (typeof ClipboardItem !== 'undefined'
-          && navigator.clipboard.write !== undefined)
-      {
+      if (
+        typeof ClipboardItem !== 'undefined'
+        && navigator.clipboard.write !== undefined
+      ) {
         await navigator.clipboard.write(
           [
             new ClipboardItem(
               {
-                'text/html': new Blob([ html ], { type: 'text/html' }),
-                'text/plain': new Blob([ url ], { type: 'text/plain' }),
-              },
-            ),
-          ],
+                'text/html': new Blob([html], { type: 'text/html' }),
+                'text/plain': new Blob([url], { type: 'text/plain' })
+              }
+            )
+          ]
         );
 
         elStatus.textContent = 'HTML link copied to clipboard.';
@@ -214,57 +278,121 @@ export function createShareModalUi(
       }
 
       await navigator.clipboard.writeText(url);
+
       elStatus.textContent =
         'HTML clipboard is unavailable here. URL copied as text.';
     } catch {
       elOutput.focus();
       elOutput.select();
+
       elStatus.textContent =
         'Could not copy automatically. Link is selected, copy it manually.';
     }
   }
 
-  function escapeHtml(value: string): string {
+  function escapeHtml(value: string): string
+  {
     return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#39;'
+      );
   }
 
-  async function downloadExport(): Promise<void> {
-    await options.downloadExport(readShareOptions());
+  async function downloadExport(): Promise<void>
+  {
+    await options.downloadExport(
+      readShareOptions()
+    );
   }
 
-  elBtnClose.addEventListener('click', close);
-  elBtnCloseFooter.addEventListener('click', close);
-  elBtnShareLink.addEventListener('click', () => {
-    void copyShareUrlAsText();
-  });
-  elBtnShareDownload.addEventListener('click', () => {
-    void downloadExport();
-  });
-  elBtnCopyText.addEventListener('click', () => {
-    void copyShareUrlAsText();
-  });
-  elBtnCopyHtml.addEventListener('click', () => {
-    void copyShareUrlAsHtml();
-  });
-  elMinifiedInput.addEventListener('change', () => {
-    void prepareShareLink();
-  });
-  elExcludeTestsInput.addEventListener('change', () => {
-    void prepareShareLink();
-  });
-  elModal.addEventListener('click', (event: MouseEvent) => {
-    if (event.target === elModal) {
-      close();
+  elBtnClose.addEventListener(
+    'click',
+    close
+  );
+
+  elBtnCloseFooter.addEventListener(
+    'click',
+    close
+  );
+
+  elBtnShareLink.addEventListener(
+    'click',
+    () =>
+    {
+      void copyShareUrlAsText();
     }
-  });
+  );
+
+  elBtnShareDownload.addEventListener(
+    'click',
+    () =>
+    {
+      void downloadExport();
+    }
+  );
+
+  elBtnCopyText.addEventListener(
+    'click',
+    () =>
+    {
+      void copyShareUrlAsText();
+    }
+  );
+
+  elBtnCopyHtml.addEventListener(
+    'click',
+    () =>
+    {
+      void copyShareUrlAsHtml();
+    }
+  );
+
+  elMinifiedInput.addEventListener(
+    'change',
+    () =>
+    {
+      void prepareShareLink();
+    }
+  );
+
+  elExcludeTestsInput.addEventListener(
+    'change',
+    () =>
+    {
+      void prepareShareLink();
+    }
+  );
+
+  elModal.addEventListener(
+    'click',
+    (event: MouseEvent) =>
+    {
+      if (event.target === elModal) {
+        close();
+      }
+    }
+  );
 
   return {
-    open(): void {
+    open(): void
+    {
       if (!options.canOpen()) {
         return;
       }
@@ -272,6 +400,6 @@ export function createShareModalUi(
       elModal.classList.remove('hidden');
       void prepareShareLink();
     },
-    close,
+    close
   };
 }

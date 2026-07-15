@@ -9,9 +9,11 @@ import { renderShareModal }
 import { renderWorkspace }
   from './workspace-ui.js';
 
-export function renderAppBuilderShell(): void {
+export function renderAppBuilderShell(): void
+{
   const root =
-    document.getElementById('app-builder-root');
+    document.getElementById(
+      'app-builder-root');
 
   if (root === null) {
     throw new Error('Missing #app-builder-root.');
@@ -30,5 +32,6 @@ export function renderAppBuilderShell(): void {
   `;
 
   root.replaceChildren(
-    template.content.cloneNode(true));
+    template.content.cloneNode(true)
+  );
 }

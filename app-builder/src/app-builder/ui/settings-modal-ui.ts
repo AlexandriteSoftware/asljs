@@ -1,16 +1,17 @@
-import { configureButton,
+import { AppBuilderButtonElement,
+         AppBuilderSelectElement,
+         AppBuilderTextInputElement,
+         configureButton,
          configureSelect,
          configureTextInput,
          focusInnerControl,
          mustElement,
          readControlValue,
-         AppBuilderButtonElement,
-         AppBuilderSelectElement,
-         AppBuilderTextInputElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderSettingsModal(): string {
+export function renderSettingsModal(): string
+{
   return `
     <div id="settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
       <div class="bg-body rounded-4 shadow border w-100" style="max-width: 36rem;">
@@ -55,117 +56,206 @@ export function renderSettingsModal(): string {
   `;
 }
 
-export type SettingsModalState =
-  {
-    apiKey: string;
-    theme: 'dark' | 'light';
-    fontSize: number;
-    maxToolSteps: number;
-  };
+export type SettingsModalState = {
+  apiKey: string;
+  theme: 'dark' | 'light';
+  fontSize: number;
+  maxToolSteps: number;
+};
 
-export type SettingsModalValues =
-  {
-    apiKey: string;
-    theme: string;
-    fontSizeText: string;
-    maxToolStepsText: string;
-  };
+export type SettingsModalValues = {
+  apiKey: string;
+  theme: string;
+  fontSizeText: string;
+  maxToolStepsText: string;
+};
 
-export type SettingsModalUi =
-  {
-    open: () => Promise<void>;
-    close: () => void;
-  };
+export type SettingsModalUi = {
+  open: () => Promise<void>;
+  close: () => void;
+};
 
 export function createSettingsModalUi(
-    options: {
-      loadValues: () => Promise<SettingsModalState>;
-      onSave: (values: SettingsModalValues) => Promise<void>;
-    }
-  ): SettingsModalUi
+  options: {
+    loadValues: () => Promise<SettingsModalState>;
+    onSave: (values: SettingsModalValues) => Promise<void>;
+  }
+): SettingsModalUi
 {
-  const elModal = mustElement<HTMLElement>('settings-modal');
-  const elBtnClose = mustElement<AppBuilderButtonElement>('btn-close-settings');
-  const elBtnSave = mustElement<AppBuilderButtonElement>('btn-save-settings');
-  const elBtnCancel = mustElement<AppBuilderButtonElement>('btn-cancel-settings');
-  const elApiKeyInput = mustElement<AppBuilderTextInputElement>('api-key-input');
-  const elThemeSelect = mustElement<AppBuilderSelectElement>('theme-select');
+  const elModal =
+    mustElement(
+      'settings-modal');
+
+  const elBtnClose =
+    mustElement(
+      'btn-close-settings');
+
+  const elBtnSave =
+    mustElement(
+      'btn-save-settings');
+
+  const elBtnCancel =
+    mustElement(
+      'btn-cancel-settings');
+
+  const elApiKeyInput =
+    mustElement(
+      'api-key-input');
+
+  const elThemeSelect =
+    mustElement<AppBuilderSelectElement>('theme-select');
+
   const elFontSizeInput =
-    mustElement<AppBuilderTextInputElement>('font-size-input');
+    mustElement(
+      'font-size-input');
+
   const elMaxToolStepsInput =
-    mustElement<AppBuilderTextInputElement>('max-tool-steps-input');
+    mustElement(
+      'max-tool-steps-input');
 
-  configureButton(elBtnClose, {
-    icon: '<i class="bi bi-x-lg"></i>',
-    className: 'btn btn-outline-secondary btn-sm',
-  });
-  configureButton(elBtnSave, {
-    text: 'Save',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnCancel, {
-    text: 'Cancel',
-    className: 'btn btn-outline-secondary',
-  });
+  configureButton(
+    elBtnClose,
+    {
+      icon: '<i class="bi bi-x-lg"></i>',
+      className: 'btn btn-outline-secondary btn-sm'
+    }
+  );
 
-  configureTextInput(elApiKeyInput, {
-    placeholder: 'sk-…  (optional, stored locally)',
-    inputType: 'password',
-  });
-  configureTextInput(elFontSizeInput, {
-    placeholder: '14',
-    inputType: 'number',
-  });
-  configureTextInput(elMaxToolStepsInput, {
-    placeholder: '20',
-    inputType: 'number',
-  });
+  configureButton(
+    elBtnSave,
+    {
+      text: 'Save',
+      className: 'btn btn-primary'
+    }
+  );
 
-  configureSelect(elThemeSelect, {
-    className: 'form-select bootstrap-select',
-    items: [
-      { value: 'dark', label: 'Dark' },
-      { value: 'light', label: 'Light' },
-    ],
-  });
+  configureButton(
+    elBtnCancel,
+    {
+      text: 'Cancel',
+      className: 'btn btn-outline-secondary'
+    }
+  );
 
-  function close(): void {
+  configureTextInput(
+    elApiKeyInput,
+    {
+      placeholder: 'sk-…  (optional, stored locally)',
+      inputType: 'password'
+    }
+  );
+
+  configureTextInput(
+    elFontSizeInput,
+    {
+      placeholder: '14',
+      inputType: 'number'
+    }
+  );
+
+  configureTextInput(
+    elMaxToolStepsInput,
+    {
+      placeholder: '20',
+      inputType: 'number'
+    }
+  );
+
+  configureSelect(
+    elThemeSelect,
+    {
+      className: 'form-select bootstrap-select',
+      items: [
+        { value: 'dark', label: 'Dark' },
+        { value: 'light', label: 'Light' }
+      ]
+    }
+  );
+
+  function close(): void
+  {
     elModal.classList.add('hidden');
   }
 
-  async function save(): Promise<void> {
-    await options.onSave({
-      apiKey: readControlValue(elApiKeyInput).trim(),
-      theme: readControlValue(elThemeSelect),
-      fontSizeText: readControlValue(elFontSizeInput),
-      maxToolStepsText: readControlValue(elMaxToolStepsInput),
-    });
+  async function save(): Promise<void>
+  {
+    await options.onSave(
+      {
+        apiKey: readControlValue(elApiKeyInput).trim(),
+        theme: readControlValue(elThemeSelect),
+        fontSizeText: readControlValue(
+          elFontSizeInput
+        ),
+        maxToolStepsText: readControlValue(
+          elMaxToolStepsInput
+        )
+      }
+    );
+
     close();
   }
 
-  elBtnClose.addEventListener('click', close);
-  elBtnSave.addEventListener('click', () => {
-    void save();
-  });
-  elBtnCancel.addEventListener('click', close);
-  elModal.addEventListener('click', (event: MouseEvent) => {
-    if (event.target === elModal) {
-      close();
+  elBtnClose.addEventListener(
+    'click',
+    close
+  );
+
+  elBtnSave.addEventListener(
+    'click',
+    () =>
+    {
+      void save();
     }
-  });
+  );
+
+  elBtnCancel.addEventListener(
+    'click',
+    close
+  );
+
+  elModal.addEventListener(
+    'click',
+    (event: MouseEvent) =>
+    {
+      if (event.target === elModal) {
+        close();
+      }
+    }
+  );
 
   return {
-    async open(): Promise<void> {
-      const values = await options.loadValues();
+    async open(): Promise<void>
+    {
+      const values =
+        await options.loadValues();
 
-      writeControlValue(elApiKeyInput, values.apiKey);
-      writeControlValue(elThemeSelect, values.theme);
-      writeControlValue(elFontSizeInput, String(values.fontSize));
-      writeControlValue(elMaxToolStepsInput, String(values.maxToolSteps));
+      writeControlValue(
+        elApiKeyInput,
+        values.apiKey
+      );
+
+      writeControlValue(
+        elThemeSelect,
+        values.theme
+      );
+
+      writeControlValue(
+        elFontSizeInput,
+        String(
+          values.fontSize
+        )
+      );
+
+      writeControlValue(
+        elMaxToolStepsInput,
+        String(
+          values.maxToolSteps
+        )
+      );
 
       elModal.classList.remove('hidden');
       focusInnerControl(elApiKeyInput);
     },
-    close,
+    close
   };
 }

@@ -218,9 +218,11 @@ const eventfulImpl =
 
     return () =>
       active
-        ? ((active = false), remove(
-          event,
-          listener))
+        ? ((active = false),
+          remove(
+            event,
+            listener
+          ))
         : false;
   }
 
@@ -240,7 +242,8 @@ const eventfulImpl =
         off();
 
         listener(
-          ...args);
+          ...args
+        );
       });
 
     return off;
@@ -297,7 +300,8 @@ const eventfulImpl =
     for (const listener of listeners) {
       try {
         listener(
-          ...args);
+          ...args
+        );
       } catch (err) {
         reportListenerError(
           event,
@@ -338,7 +342,8 @@ const eventfulImpl =
       {
         try {
           await listener(
-            ...args);
+            ...args
+          );
         } catch (err) {
           reportListenerError(
             event,

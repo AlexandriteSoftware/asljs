@@ -89,7 +89,7 @@ export class LiveRecord<T extends Record<string, any>>
     // that occur between construction and the initial load completing.
     this.#unsubscribe = subscribeFn(
       {
-        add: (record) =>
+        add: record =>
         {
           if (!this.#matchesKey(record)) {
             return;
@@ -99,7 +99,7 @@ export class LiveRecord<T extends Record<string, any>>
           this.#setRecord(record);
         },
 
-        update: (record) =>
+        update: record =>
         {
           if (!this.#matchesKey(record)) {
             return;
@@ -109,7 +109,7 @@ export class LiveRecord<T extends Record<string, any>>
           this.#setRecord(record);
         },
 
-        delete: (record) =>
+        delete: record =>
         {
           if (!this.#matchesKey(record)) {
             return;
@@ -138,7 +138,7 @@ export class LiveRecord<T extends Record<string, any>>
       this.#key
     )
       .then(
-        (record) =>
+        record =>
         {
           if (this.#disposed) {
             return;
@@ -152,7 +152,7 @@ export class LiveRecord<T extends Record<string, any>>
         }
       )
       .catch(
-        (error) =>
+        error =>
         {
           console.error(
             'LiveRecord: initial load failed',

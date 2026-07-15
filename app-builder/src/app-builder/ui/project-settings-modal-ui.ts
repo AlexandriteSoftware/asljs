@@ -1,15 +1,16 @@
-import { configureButton,
+import { AppBuilderButtonElement,
+         AppBuilderTextInputElement,
+         configureButton,
          configureTextInput,
          focusInnerControl,
          mustElement,
          readControlValue,
          selectInnerTextControl,
-         AppBuilderButtonElement,
-         AppBuilderTextInputElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderProjectSettingsModal(): string {
+export function renderProjectSettingsModal(): string
+{
   return `
     <div id="project-settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
       <div class="bg-body rounded-4 shadow border w-100" style="max-width: 36rem;">
@@ -43,84 +44,132 @@ export function renderProjectSettingsModal(): string {
   `;
 }
 
-export type ProjectSettingsModalValues =
-  {
-    name: string;
-    authorName: string;
-    authorEmail: string;
-  };
+export type ProjectSettingsModalValues = {
+  name: string;
+  authorName: string;
+  authorEmail: string;
+};
 
-export type ProjectSettingsModalUi =
-  {
-    open: (values: ProjectSettingsModalValues) => void;
-    close: () => void;
-  };
+export type ProjectSettingsModalUi = {
+  open: (values: ProjectSettingsModalValues) => void;
+  close: () => void;
+};
 
 export function createProjectSettingsModalUi(
-    options: {
-      onSave: (values: ProjectSettingsModalValues) => Promise<void>;
-      onDelete: () => Promise<void>;
-    }
-  ): ProjectSettingsModalUi
+  options: {
+    onSave: (values: ProjectSettingsModalValues) => Promise<void>;
+    onDelete: () => Promise<void>;
+  }
+): ProjectSettingsModalUi
 {
-  const elModal = mustElement<HTMLElement>('project-settings-modal');
+  const elModal =
+    mustElement(
+      'project-settings-modal');
+
   const elNameInput =
-    mustElement<AppBuilderTextInputElement>('project-name-input');
+    mustElement(
+      'project-name-input');
+
   const elAuthorNameInput =
-    mustElement<AppBuilderTextInputElement>('project-author-name-input');
+    mustElement(
+      'project-author-name-input');
+
   const elAuthorEmailInput =
-    mustElement<AppBuilderTextInputElement>('project-author-email-input');
+    mustElement(
+      'project-author-email-input');
+
   const elBtnSave =
-    mustElement<AppBuilderButtonElement>('btn-save-project-settings');
+    mustElement(
+      'btn-save-project-settings');
+
   const elBtnDelete =
-    mustElement<AppBuilderButtonElement>('btn-delete-project');
+    mustElement(
+      'btn-delete-project');
+
   const elBtnClose =
-    mustElement<AppBuilderButtonElement>('btn-close-project-settings');
+    mustElement(
+      'btn-close-project-settings');
+
   const elBtnCloseX =
-    mustElement<AppBuilderButtonElement>('btn-close-project-settings-x');
+    mustElement(
+      'btn-close-project-settings-x');
 
-  configureButton(elBtnCloseX, {
-    icon: '<i class="bi bi-x-lg"></i>',
-    className: 'btn btn-outline-secondary btn-sm',
-  });
-  configureButton(elBtnSave, {
-    text: 'Save',
-    className: 'btn btn-primary',
-  });
-  configureButton(elBtnDelete, {
-    text: 'Delete',
-    className: 'btn btn-danger',
-  });
-  configureButton(elBtnClose, {
-    text: 'Cancel',
-    className: 'btn btn-outline-secondary',
-  });
+  configureButton(
+    elBtnCloseX,
+    {
+      icon: '<i class="bi bi-x-lg"></i>',
+      className: 'btn btn-outline-secondary btn-sm'
+    }
+  );
 
-  configureTextInput(elNameInput, {
-    placeholder: 'Project name',
-  });
-  configureTextInput(elAuthorNameInput, {
-    placeholder: 'Jane Doe',
-  });
-  configureTextInput(elAuthorEmailInput, {
-    placeholder: 'jane@example.com',
-    inputType: 'email',
-  });
+  configureButton(
+    elBtnSave,
+    {
+      text: 'Save',
+      className: 'btn btn-primary'
+    }
+  );
 
-  function close(): void {
+  configureButton(
+    elBtnDelete,
+    {
+      text: 'Delete',
+      className: 'btn btn-danger'
+    }
+  );
+
+  configureButton(
+    elBtnClose,
+    {
+      text: 'Cancel',
+      className: 'btn btn-outline-secondary'
+    }
+  );
+
+  configureTextInput(
+    elNameInput,
+    {
+      placeholder: 'Project name'
+    }
+  );
+
+  configureTextInput(
+    elAuthorNameInput,
+    {
+      placeholder: 'Jane Doe'
+    }
+  );
+
+  configureTextInput(
+    elAuthorEmailInput,
+    {
+      placeholder: 'jane@example.com',
+      inputType: 'email'
+    }
+  );
+
+  function close(): void
+  {
     elModal.classList.add('hidden');
   }
 
-  function readValues(): ProjectSettingsModalValues {
+  function readValues(): ProjectSettingsModalValues
+  {
     return {
       name: readControlValue(elNameInput).trim(),
-      authorName: readControlValue(elAuthorNameInput).trim(),
-      authorEmail: readControlValue(elAuthorEmailInput).trim(),
+      authorName: readControlValue(
+        elAuthorNameInput
+      ).trim(),
+      authorEmail: readControlValue(
+        elAuthorEmailInput
+      ).trim()
     };
   }
 
-  async function save(): Promise<void> {
-    const values = readValues();
+  async function save(): Promise<void>
+  {
+    const values =
+      readValues();
 
     if (values.name === '') {
       focusInnerControl(elNameInput);
@@ -131,39 +180,80 @@ export function createProjectSettingsModalUi(
     close();
   }
 
-  async function deleteProject(): Promise<void> {
+  async function deleteProject(): Promise<void>
+  {
     close();
     await options.onDelete();
   }
 
-  elBtnSave.addEventListener('click', () => {
-    void save();
-  });
-  elBtnDelete.addEventListener('click', () => {
-    void deleteProject();
-  });
-  elBtnClose.addEventListener('click', close);
-  elBtnCloseX.addEventListener('click', close);
-  elNameInput.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
+  elBtnSave.addEventListener(
+    'click',
+    () =>
+    {
       void save();
     }
-  });
-  elModal.addEventListener('click', (event: MouseEvent) => {
-    if (event.target === elModal) {
-      close();
+  );
+
+  elBtnDelete.addEventListener(
+    'click',
+    () =>
+    {
+      void deleteProject();
     }
-  });
+  );
+
+  elBtnClose.addEventListener(
+    'click',
+    close
+  );
+
+  elBtnCloseX.addEventListener(
+    'click',
+    close
+  );
+
+  elNameInput.addEventListener(
+    'keydown',
+    (event: KeyboardEvent) =>
+    {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void save();
+      }
+    }
+  );
+
+  elModal.addEventListener(
+    'click',
+    (event: MouseEvent) =>
+    {
+      if (event.target === elModal) {
+        close();
+      }
+    }
+  );
 
   return {
-    open(values: ProjectSettingsModalValues): void {
-      writeControlValue(elNameInput, values.name);
-      writeControlValue(elAuthorNameInput, values.authorName);
-      writeControlValue(elAuthorEmailInput, values.authorEmail);
+    open(values: ProjectSettingsModalValues): void
+    {
+      writeControlValue(
+        elNameInput,
+        values.name
+      );
+
+      writeControlValue(
+        elAuthorNameInput,
+        values.authorName
+      );
+
+      writeControlValue(
+        elAuthorEmailInput,
+        values.authorEmail
+      );
+
       elModal.classList.remove('hidden');
       selectInnerTextControl(elNameInput);
     },
-    close,
+    close
   };
 }

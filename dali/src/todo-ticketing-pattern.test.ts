@@ -74,7 +74,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
 
     const existing =
       this.#items.find(
-        (item) => item.id === transaction.id);
+        item => item.id === transaction.id);
 
     if (existing) {
       if (JSON.stringify(existing) !== JSON.stringify(transaction)) {
@@ -99,7 +99,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
 
     const index =
       this.#items.findIndex(
-        (item) => item.id === transactionId);
+        item => item.id === transactionId);
 
     if (index < 0) {
       throw new EventSourceConflictError(
@@ -117,7 +117,7 @@ async function openTicketingDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `ticketing-pattern-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       const tickets =
         db.createObjectStore(
@@ -313,7 +313,7 @@ test(
       new EventSourceProjectionManager(
       'ticket-read-model-v1',
       source,
-      async (transaction) =>
+      async transaction =>
       {
         for (const event of transaction.events) {
           if (event.tableName !== 'tickets') {
@@ -371,7 +371,7 @@ test(
           db,
           'ticket-read-model-v1'
         ),
-      (record) =>
+      record =>
         eventSourceProjectionSet(
           db,
           record

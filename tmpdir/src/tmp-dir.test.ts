@@ -312,6 +312,7 @@ test(
     );
 
     assert.ok(
-      traceMessages.length > 0);
+      traceMessages.length > 0
+    );
   }
 );

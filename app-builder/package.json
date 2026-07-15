@@ -9,6 +9,7 @@
     "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
     "format:sfmt": "sfmt \"src/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "clean": "node ../common/dist/toolkit.js clean",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -16,7 +17,8 @@
     "preview": "vite preview",
     "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "all": "npm run lint && npm run typecheck && npm run test"
+    "all": "npm run clean && npm run format",
+    "all:todo": "npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {
     "asljs-components": "^0.1.3",

@@ -1,19 +1,22 @@
-import test
-  from 'node:test';
-import assert
-  from 'node:assert/strict';
 import { JSDOM }
   from 'jsdom';
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
 import { createSessionStorageAiChatStateStore }
   from './ai-chat-storage.js';
 
 test(
   'session chat state store saves and loads serializable chat state',
-  async () => {
+  async () =>
+  {
     const dom =
       new JSDOM(
-        '',
-        { url: 'https://example.test/' });
+      '',
+      { url: 'https://example.test/' }
+    );
+
     const previousSessionStorage =
       globalThis.sessionStorage;
 
@@ -24,9 +27,8 @@ test(
         createSessionStorageAiChatStateStore('app-1');
 
       await store.save(
-        { messages:
-            [ { role: 'assistant',
-                content: 'Hi' } ],
+        {
+          messages: [{ role: 'assistant', content: 'Hi' }],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -34,13 +36,14 @@ test(
           lastResponseId: 'resp_1',
           choicePrompt: null,
           progress: null,
-          sending: false });
+          sending: false
+        }
+      );
 
       assert.deepEqual(
         await store.load(),
-        { messages:
-            [ { role: 'assistant',
-                content: 'Hi' } ],
+        {
+          messages: [{ role: 'assistant', content: 'Hi' }],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -48,8 +51,11 @@ test(
           lastResponseId: 'resp_1',
           choicePrompt: null,
           progress: null,
-          sending: false });
+          sending: false
+        }
+      );
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
     }
-  });
+  }
+);

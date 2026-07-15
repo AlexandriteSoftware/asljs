@@ -17,7 +17,7 @@ async function openBasicDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `db-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'records',
@@ -95,7 +95,7 @@ test(
     const opened =
       await dbOpen(
         dbName,
-        [(db) =>
+        [db =>
       {
         db.createObjectStore(
           'records',
@@ -112,7 +112,7 @@ test(
     const reopened =
       await dbOpen(
         dbName,
-        [(db) =>
+        [db =>
       {
         upgraded = true;
 
@@ -138,13 +138,13 @@ test(
     const db =
       await dbOpen(
         `db-migration-test-${crypto.randomUUID()}`,
-        [(database) =>
+        [database =>
       {
         database.createObjectStore(
           'first',
           { keyPath: 'id' }
         );
-      }, (database) =>
+      }, database =>
       {
         database.createObjectStore(
           'second',
@@ -176,7 +176,7 @@ test(
     const firstVersion =
       await dbOpen(
         dbName,
-        [(database) =>
+        [database =>
       {
         database.createObjectStore(
           'first',
@@ -189,13 +189,13 @@ test(
     const secondVersion =
       await dbOpen(
         dbName,
-        [(database) =>
+        [database =>
       {
         database.createObjectStore(
           'first',
           { keyPath: 'id' }
         );
-      }, (database) =>
+      }, database =>
       {
         database.createObjectStore(
           'second',

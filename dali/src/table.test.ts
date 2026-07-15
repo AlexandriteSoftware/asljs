@@ -28,7 +28,7 @@ async function openTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       const store =
         db.createObjectStore(
@@ -77,7 +77,7 @@ async function waitFor(
       throw new Error('Timed out waiting for condition');
     }
 
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       setTimeout(
         resolve,
         0
@@ -118,7 +118,7 @@ test(
     const ids =
       rows
       .map(
-        (row) => row.id
+        row => row.id
       )
       .sort();
 
@@ -238,7 +238,7 @@ async function openVersionedTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'items',
@@ -626,7 +626,7 @@ async function openSoftDeleteTestDb(
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       const store =
         db.createObjectStore(
@@ -717,7 +717,7 @@ test(
 
     assert.deepEqual(
       all.map(
-        (record) => record.id
+        record => record.id
       ),
       ['a']
     );
@@ -750,7 +750,7 @@ test(
 
     const records =
       await table.scan(
-        (record) =>
+        record =>
       {
         assert.notEqual(
           record.id,
@@ -762,7 +762,7 @@ test(
 
     assert.deepEqual(
       records.map(
-        (record) => record.id
+        record => record.id
       ),
       ['a']
     );
@@ -776,30 +776,33 @@ test(
     const db =
       await openSoftDeleteTestDb(true);
 
+    const deleteStrategy =
+      new UuidSoftDeleteTableDeleteStrategy<
+      SoftDeleteRecordFields
+    >(
+      'deleted',
+      (
+        index: string,
+        key: IDBValidKey
+      ) =>
+      {
+        const mappedKey =
+          Array.isArray(key)
+          ? ['', ...key]
+          : ['', key];
+
+        return {
+          index: `deleted:${index}`,
+          key: mappedKey as unknown as IDBValidKey
+        };
+      }
+    );
+
     const table =
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      {
-        deleteStrategy: new UuidSoftDeleteTableDeleteStrategy(
-          'deleted',
-          (
-            index: string,
-            key: IDBValidKey
-          ) =>
-          {
-            const mappedKey =
-              Array.isArray(key)
-              ? ['', ...key]
-              : ['', key];
-
-            return {
-              index: `deleted:${index}`,
-              key: mappedKey as unknown as IDBValidKey
-            };
-          }
-        )
-      }
+      { deleteStrategy }
     );
 
     await table.add(
@@ -819,7 +822,7 @@ test(
 
     assert.deepEqual(
       records.map(
-        (record) => record.id
+        record => record.id
       ),
       ['a']
     );
@@ -876,7 +879,7 @@ test(
 
     assert.deepEqual(
       records.map(
-        (record) => record.id
+        record => record.id
       ),
       ['a']
     );
@@ -933,7 +936,7 @@ test(
 
     assert.deepEqual(
       records.map(
-        (record) => record.id
+        record => record.id
       ),
       ['a']
     );
@@ -1271,7 +1274,7 @@ test(
     const observed: Array<{ source: string; id: string; event: string; }> = [];
 
     localTable.observe(
-      (event) =>
+      event =>
       {
         if (event.eventType === 'add') {
           observed.push(
@@ -1330,7 +1333,7 @@ test(
 
     const unsubscribe =
       table.observe(
-        (event) =>
+        event =>
       {
         if (event.eventType === 'add') {
           events.push(
@@ -1422,7 +1425,7 @@ test(
     const observed: TableObservedEvent<TestRecordFields>[] = [];
 
     localTable.observe(
-      (event) => observed.push(event)
+      event => observed.push(event)
     );
 
     // Remote publishes one message.
@@ -1471,7 +1474,7 @@ test(
     const observed: TableObservedEvent<TestRecordFields>[] = [];
 
     table.observe(
-      (event) => observed.push(event)
+      event => observed.push(event)
     );
 
     await table.add(
@@ -1568,7 +1571,7 @@ test(
     const observed: string[] = [];
 
     localTable.observe(
-      (event) =>
+      event =>
       {
         if (event.eventType === 'add') {
           observed.push(

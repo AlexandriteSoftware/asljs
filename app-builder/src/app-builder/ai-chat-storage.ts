@@ -9,50 +9,54 @@ const chatStateStorageKeyPrefix =
   'asljs-app-builder:chat-state:';
 
 export function createAppBuilderAiChatSecretsAndSettingsProvider(
-    options:
-      { appId: string;
-        readChatModel: () => string;
-        readInitialToolStepLimit: () => number; }
-  ): AiChatSecretsAndSettingsProvider
+  options: {
+    appId: string;
+    readChatModel: () => string;
+    readInitialToolStepLimit: () => number;
+  }
+): AiChatSecretsAndSettingsProvider
 {
   return {
     getOpenAiApiKey: async () =>
-      loadAppOpenAiApiKey(options.appId),
-    getChatModel: async () =>
-      options.readChatModel(),
-    getInitialToolStepLimit: async () =>
-      options.readInitialToolStepLimit(),
+      loadAppOpenAiApiKey(
+        options.appId
+      ),
+    getChatModel: async () => options.readChatModel(),
+    getInitialToolStepLimit: async () => options.readInitialToolStepLimit()
   };
 }
 
 export function createSessionStorageAiChatStateStore(
-    appId: string
-  ): AiChatStateStore
+  appId: string
+): AiChatStateStore
 {
   const storageKey =
     `${chatStateStorageKeyPrefix}${appId}`;
 
   return {
-    load: async (): Promise<Partial<AiChatSerializableState>> => {
+    load: async (): Promise<Partial<AiChatSerializableState>> =>
+    {
       try {
         const raw =
           sessionStorage.getItem(storageKey);
 
         if (raw === null || raw.trim() === '') {
-          return { };
+          return {};
         }
 
         return JSON.parse(raw) as Partial<AiChatSerializableState>;
       } catch {
-        return { };
+        return {};
       }
     },
     save: async (
-        state: AiChatSerializableState
-      ): Promise<void> => {
+      state: AiChatSerializableState
+    ): Promise<void> =>
+    {
       sessionStorage.setItem(
         storageKey,
-        JSON.stringify(state));
-    },
+        JSON.stringify(state)
+      );
+    }
   };
 }

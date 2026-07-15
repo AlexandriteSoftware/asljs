@@ -19,11 +19,14 @@ export function createTracer(): Tracer
     trace: (action: any, payload: any): void =>
     {
       traces.push(
-        { action, payload });
+        { action, payload }
+      );
     },
-    clear: () => traces.splice(
-      0,
-      traces.length),
+    clear: () =>
+      traces.splice(
+        0,
+        traces.length
+      ),
     getTraces: (): TraceRecord[] => traces,
     getMinimalTraces: () =>
     {
@@ -47,11 +50,13 @@ export function createTracer(): Tracer
             }
 
             result.push(
-              { action, payload: emitPayload });
+              { action, payload: emitPayload }
+            );
             break;
           default:
             result.push(
-              { action, payload });
+              { action, payload }
+            );
             break;
         }
       }

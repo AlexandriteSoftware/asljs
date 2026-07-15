@@ -67,7 +67,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
 
     const existing =
       this.#items.find(
-        (item) => item.id === transaction.id);
+        item => item.id === transaction.id);
 
     if (existing) {
       if (JSON.stringify(existing) !== JSON.stringify(transaction)) {
@@ -92,7 +92,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
 
     const index =
       this.#items.findIndex(
-        (item) => item.id === transactionId);
+        item => item.id === transactionId);
 
     if (index < 0) {
       throw new EventSourceConflictError(
@@ -126,7 +126,7 @@ async function openSagaDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `saga-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'items',
@@ -375,7 +375,7 @@ test(
       new EventSourceProjectionManager(
       'table-set-main',
       source,
-      async (transaction) =>
+      async transaction =>
       {
         applied.push(
           transaction.id
@@ -386,7 +386,7 @@ test(
           db,
           'table-set-main'
         ),
-      (record) =>
+      record =>
         eventSourceProjectionSet(
           db,
           record
@@ -509,7 +509,7 @@ test(
 
     const sagaRecord =
       sagas.find(
-        (item) => item.id === 's1');
+        item => item.id === 's1');
 
     assert.deepEqual(
       rolledBack,

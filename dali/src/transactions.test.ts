@@ -16,7 +16,7 @@ async function openTestDb(): Promise<IDBDatabase>
 {
   return dbOpen(
     `transactions-test-${crypto.randomUUID()}`,
-    [(db) =>
+    [db =>
     {
       db.createObjectStore(
         'records',

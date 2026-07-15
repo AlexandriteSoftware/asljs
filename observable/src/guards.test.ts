@@ -16,7 +16,8 @@ test(
     assert.equal(
       isFunction(
         () =>
-      {}),
+        {}
+      ),
       true
     );
 
@@ -33,7 +34,8 @@ test(
   {
     assert.equal(
       isObject(
-        { a: 1 }),
+        { a: 1 }
+      ),
       true
     );
 
@@ -45,7 +47,8 @@ test(
     assert.equal(
       isObject(
         () =>
-      {}),
+        {}
+      ),
       false
     );
   }
@@ -59,7 +62,8 @@ test(
       () =>
         functionTypeGuard(
           () =>
-        {})
+          {}
+        )
     );
 
     assert.throws(

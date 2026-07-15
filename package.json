@@ -10,8 +10,7 @@
     "format": "npm run format:json && npm run format:md",
     "check-packages": "npm outdated",
     "remove-local-modules": "node ./common/dist/toolkit.js clean cog/node_modules common/node_modules components/node_modules dali/node_modules data/node_modules eventful/node_modules machine/node_modules money/node_modules observable/node_modules part/node_modules tmpdir/node_modules",
-    "all": "npm -w cog run all && npm -w components run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all",
-    "all:todo": "npm -w app-builder run all && npm -w dali run all"
+    "all": "npm -w app-builder run all && npm -w cog run all && npm -w components run all && npm -w dali run all && npm -w data-binding run all && npm -w eventful run all && npm -w machine run all && npm -w money run all && npm -w observable run all && npm -w part run all && npm -w tmpdir run all"
   },
   "workspaces": [
     "app-builder",

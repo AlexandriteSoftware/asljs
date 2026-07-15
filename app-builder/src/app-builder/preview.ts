@@ -3,10 +3,13 @@ import { GeneratedFile }
 
 const EVAL_REQUEST_TYPE =
   'asljs-app-builder:eval-request';
+
 const EVAL_RESPONSE_TYPE =
   'asljs-app-builder:eval-response';
+
 const DIAGNOSTICS_REQUEST_TYPE =
   'asljs-app-builder:diagnostics-request';
+
 const DIAGNOSTICS_RESPONSE_TYPE =
   'asljs-app-builder:diagnostics-response';
 
@@ -225,10 +228,10 @@ const EVAL_BRIDGE_SCRIPT =
 </script>`;
 
 export function renderPreview(
-    frame: HTMLIFrameElement,
-    files: GeneratedFile[],
-    options?: PreviewRenderOptions,
-  ): void
+  frame: HTMLIFrameElement,
+  files: GeneratedFile[],
+  options?: PreviewRenderOptions
+): void
 {
   if (files.length === 0) {
     frame.removeAttribute('srcdoc');
@@ -237,8 +240,11 @@ export function renderPreview(
   }
 
   const htmlFile =
-    files.find(file => file.name === 'index.html')
-    ?? files.find(file => file.name.endsWith('.html'))
+    files.find(
+      file => file.name === 'index.html')
+    ?? files.find(
+      file => file.name.endsWith('.html')
+    )
     ?? null;
 
   if (htmlFile === null) {
@@ -254,29 +260,32 @@ export function renderPreview(
     createVirtualAssetUrlMap(files);
 
   const cssFile =
-    files.find(file => file.name === 'style.css')
-    ?? files.find(file => file.name.endsWith('.css'))
+    files.find(
+      file => file.name === 'style.css')
+    ?? files.find(
+      file => file.name.endsWith('.css')
+    )
     ?? null;
 
   const resolvedCssContent =
     cssFile === null
-      ? null
-      : replaceCssAssetUrls(
-          cssFile.content,
-          cssFile.name,
-          assetUrls,
-        );
+    ? null
+    : replaceCssAssetUrls(
+      cssFile.content,
+      cssFile.name,
+      assetUrls
+    );
 
   if (cssFile !== null) {
-    html =
-      html.replace(
-        /<link[^>]+href=["']style\.css["'][^>]*>/gi,
-        `<style>${resolvedCssContent}</style>`);
+    html = html.replace(
+      /<link[^>]+href=["']style\.css["'][^>]*>/gi,
+      `<style>${resolvedCssContent}</style>`
+    );
 
-    html =
-      html.replace(
-        /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
-        `<style>${resolvedCssContent}</style>`);
+    html = html.replace(
+      /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
+      `<style>${resolvedCssContent}</style>`
+    );
   }
 
   for (const file of files) {
@@ -285,52 +294,67 @@ export function renderPreview(
     }
 
     const escapedName =
-      file.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      file.name.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&');
 
-    html =
-      html.replace(
-        new RegExp(
-          `(<script[^>]*?)\\s+src=["']${escapedName}["']([^>]*)><\\/script>`,
-          'gi'),
-        (
-            _match,
-            beforeAttrs,
-            afterAttrs
-          ) => {
-          const attrs =
-            `${String(beforeAttrs)} ${String(afterAttrs)}`;
+    html = html.replace(
+      new RegExp(
+        `(<script[^>]*?)\\s+src=["']${escapedName}["']([^>]*)><\\/script>`,
+        'gi'
+      ),
+      (
+        _match,
+        beforeAttrs,
+        afterAttrs
+      ) =>
+      {
+        const attrs =
+          `${String(beforeAttrs)} ${String(afterAttrs)}`;
 
-          const isModule =
-            /type=["']module["']/i.test(attrs);
+        const isModule =
+          /type=["']module["']/i.test(attrs);
 
-          return isModule
-            ? `<script type="module">${file.content}</script>`
-            : `<script>${file.content}</script>`;
-        });
+        return isModule
+          ? `<script type="module">${file.content}</script>`
+          : `<script>${file.content}</script>`;
+      }
+    );
   }
 
-          html = replaceHtmlAssetReferences(html, htmlFile.name, assetUrls);
+  html = replaceHtmlAssetReferences(
+    html,
+    htmlFile.name,
+    assetUrls
+  );
 
-          html = injectPackageImportMap(html, files);
+  html = injectPackageImportMap(
+    html,
+    files
+  );
 
-          html = injectHostContext(html, options);
+  html = injectHostContext(
+    html,
+    options
+  );
 
   html = injectEvalBridge(html);
-          frame.srcdoc = html;
+  frame.srcdoc = html;
 }
 
 export async function evaluateInPreview(
   frame: HTMLIFrameElement,
-  code: string,
-): Promise<unknown> {
-  const payload = await requestPreviewPayload(
-    frame,
-    EVAL_REQUEST_TYPE,
-    {
-      code,
+  code: string
+): Promise<unknown>
+{
+  const payload =
+    await requestPreviewPayload(
+      frame,
+      EVAL_REQUEST_TYPE,
+      {
+      code
     },
-    EVAL_RESPONSE_TYPE,
-  );
+      EVAL_RESPONSE_TYPE);
 
   if (payload.ok === true) {
     return payload.value;
@@ -339,29 +363,31 @@ export async function evaluateInPreview(
   throw new Error(
     typeof payload.error === 'string'
       ? payload.error
-      : 'Unknown preview evaluation error.',
+      : 'Unknown preview evaluation error.'
   );
 }
 
 export async function getPreviewDiagnostics(
-  frame: HTMLIFrameElement,
-): Promise<RuntimeDiagnostics> {
-  const payload = await requestPreviewPayload(
-    frame,
-    DIAGNOSTICS_REQUEST_TYPE,
-    {},
-    DIAGNOSTICS_RESPONSE_TYPE,
-  );
+  frame: HTMLIFrameElement
+): Promise<RuntimeDiagnostics>
+{
+  const payload =
+    await requestPreviewPayload(
+      frame,
+      DIAGNOSTICS_REQUEST_TYPE,
+      {},
+      DIAGNOSTICS_RESPONSE_TYPE);
 
   if (payload.ok !== true) {
     throw new Error(
       typeof payload.error === 'string'
         ? payload.error
-        : 'Failed to read preview diagnostics.',
+        : 'Failed to read preview diagnostics.'
     );
   }
 
-  const diagnostics = payload.diagnostics as RuntimeDiagnostics | undefined;
+  const diagnostics =
+    payload.diagnostics as RuntimeDiagnostics | undefined;
 
   return diagnostics
     ?? { logs: [], errors: [] };
@@ -371,134 +397,187 @@ async function requestPreviewPayload(
   frame: HTMLIFrameElement,
   requestType: string,
   requestBody: Record<string, unknown>,
-  responseType: string,
-): Promise<Record<string, unknown>> {
-  const frameWindow = frame.contentWindow;
+  responseType: string
+): Promise<Record<string, unknown>>
+{
+  const frameWindow =
+    frame.contentWindow;
 
   if (frameWindow === null) {
     throw new Error('Preview frame is not available.');
   }
 
-  const requestId = crypto.randomUUID();
+  const requestId =
+    crypto.randomUUID();
 
-  return new Promise<Record<string, unknown>>((resolve, reject) => {
-    const timeoutId = window.setTimeout(() => {
-      cleanup();
-      reject(new Error('Timed out waiting for app evaluation result.'));
-    }, 5000);
+  return new Promise<Record<string, unknown>>((resolve, reject) =>
+  {
+    const timeoutId =
+      window.setTimeout(
+        () =>
+      {
+        cleanup();
+
+        reject(
+          new Error('Timed out waiting for app evaluation result.')
+        );
+      },
+        5000);
 
     const onMessage =
-      (event: MessageEvent): void => {
-        if (event.source !== frameWindow) {
-          return;
-        }
+      (event: MessageEvent): void =>
+    {
+      if (event.source !== frameWindow) {
+        return;
+      }
 
-        const payload = event.data as Record<string, unknown>;
+      const payload =
+        event.data as Record<string, unknown>;
 
-        if (
-          payload.type !== responseType
-          || payload.id !== requestId
-        ) {
-          return;
-        }
+      if (
+        payload.type !== responseType
+        || payload.id !== requestId
+      ) {
+        return;
+      }
 
-        cleanup();
-        resolve(payload);
-      };
+      cleanup();
+      resolve(payload);
+    };
 
-    function cleanup(): void {
+    function cleanup(): void
+    {
       window.clearTimeout(timeoutId);
-      window.removeEventListener('message', onMessage);
+
+      window.removeEventListener(
+        'message',
+        onMessage
+      );
     }
 
-    window.addEventListener('message', onMessage);
+    window.addEventListener(
+      'message',
+      onMessage
+    );
 
     frameWindow.postMessage(
       {
         type: requestType,
         id: requestId,
-        ...requestBody,
+        ...requestBody
       },
-      '*',
+      '*'
     );
   });
 }
 
-function injectEvalBridge(html: string): string {
-  if (html.includes(EVAL_REQUEST_TYPE)) {
+function injectEvalBridge(html: string): string
+{
+  if (
+    html.includes(
+      EVAL_REQUEST_TYPE
+    )
+  ) {
     return html;
   }
 
   if (html.includes('</body>')) {
-    return html.replace('</body>', `${EVAL_BRIDGE_SCRIPT}</body>`);
+    return html.replace(
+      '</body>',
+      `${EVAL_BRIDGE_SCRIPT}</body>`
+    );
   }
 
   return `${html}\n${EVAL_BRIDGE_SCRIPT}`;
 }
 
-function injectPackageImportMap(html: string, files: GeneratedFile[]): string {
+function injectPackageImportMap(
+  html: string,
+  files: GeneratedFile[]
+): string
+{
   if (/type=["']importmap["']/i.test(html)) {
     return html;
   }
 
   const packageFile =
-    files.find(file => file.name === 'package.json')
+    files.find(
+      file => file.name === 'package.json')
     ?? null;
 
   const versions =
-    readImportMapVersions(packageFile?.content);
+    readImportMapVersions(
+      packageFile?.content);
 
-  const imports = Object.fromEntries(
-    versions.map(([name, version]) => [
-      name,
-      `https://esm.sh/${name}@${version}?bundle`,
-    ]),
-  );
+  const imports =
+    Object.fromEntries(
+      versions.map(
+        ([name, version]) => [
+        name,
+        `https://esm.sh/${name}@${version}?bundle`
+      ]));
 
   if (Object.keys(imports).length === 0) {
     return html;
   }
 
-  const importMap = `<script type="importmap">${JSON.stringify({ imports })}</script>`;
+  const importMap =
+    `<script type="importmap">${
+    JSON.stringify(
+      { imports }
+    )
+  }</script>`;
 
   if (/<head[^>]*>/i.test(html)) {
-    return html.replace(/<head[^>]*>/i, match => `${match}\n${importMap}`);
+    return html.replace(
+      /<head[^>]*>/i,
+      match => `${match}\n${importMap}`
+    );
   }
 
   return `${importMap}\n${html}`;
 }
 
 function readImportMapVersions(
-  packageJsonContent: string | undefined,
-): Array<[string, string]> {
+  packageJsonContent: string | undefined
+): Array<[string, string]>
+{
   if (packageJsonContent === undefined) {
     return defaultImportMapPackages();
   }
 
   try {
-    const parsed = JSON.parse(packageJsonContent) as {
+    const parsed =
+      JSON.parse(
+        packageJsonContent) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
 
-    const source = {
+    const source =
+      {
       ...(parsed.dependencies ?? {}),
-      ...(parsed.devDependencies ?? {}),
+      ...(parsed.devDependencies ?? {})
     };
 
-    const names = [
+    const names =
+      [
       'asljs-eventful',
       'asljs-observable',
       'asljs-data-binding',
       'asljs-components',
       'asljs-dali',
-      'openai',
+      'openai'
     ];
 
-    const versions = names.map((name): [string, string] => [
-      name,
-      normalizeNpmVersion(source[name]),
-    ]);
+    const versions =
+      names.map(
+        (name): [string, string] => [
+        name,
+        normalizeNpmVersion(
+          source[name]
+        )
+      ]);
 
     return versions;
   } catch {
@@ -506,75 +585,107 @@ function readImportMapVersions(
   }
 }
 
-function normalizeNpmVersion(value: string | undefined): string {
+function normalizeNpmVersion(value: string | undefined): string
+{
   if (typeof value !== 'string' || value.trim() === '') {
     return 'latest';
   }
 
-  const cleaned = value.trim().replace(/^[~^<>=\s]+/, '');
+  const cleaned =
+    value.trim().replace(
+      /^[~^<>=\s]+/,
+      '');
+
   return cleaned === ''
     ? 'latest'
     : cleaned;
 }
 
-function defaultImportMapPackages(): Array<[string, string]> {
+function defaultImportMapPackages(): Array<[string, string]>
+{
   return [
     ['asljs-eventful', 'latest'],
     ['asljs-observable', 'latest'],
     ['asljs-data-binding', 'latest'],
     ['asljs-components', 'latest'],
     ['asljs-dali', 'latest'],
-    ['openai', 'latest'],
+    ['openai', 'latest']
   ];
 }
 
 function injectHostContext(
   html: string,
-  options: PreviewRenderOptions | undefined,
-): string {
-  if (html.includes('__ASLJS_APP_BUILDER_HOST__')) {
+  options: PreviewRenderOptions | undefined
+): string
+{
+  if (
+    html.includes(
+      '__ASLJS_APP_BUILDER_HOST__'
+    )
+  ) {
     return html;
   }
 
-  const script = `<script>window.__ASLJS_APP_BUILDER_HOST__ = ${JSON.stringify({
-    openAiApiKey:
-      options?.hostOpenAiApiKey === undefined
-      || options.hostOpenAiApiKey.trim() === ''
-        ? null
-        : options.hostOpenAiApiKey,
-  })};</script>`;
+  const script =
+    `<script>window.__ASLJS_APP_BUILDER_HOST__ = ${
+    JSON.stringify(
+      {
+        openAiApiKey: options?.hostOpenAiApiKey === undefined
+            || options.hostOpenAiApiKey.trim() === ''
+          ? null
+          : options.hostOpenAiApiKey
+      }
+    )
+  };</script>`;
 
   if (html.includes('</head>')) {
-    return html.replace('</head>', `${script}</head>`);
+    return html.replace(
+      '</head>',
+      `${script}</head>`
+    );
   }
 
   if (html.includes('<body')) {
-    return html.replace(/<body[^>]*>/i, match => `${match}\n${script}`);
+    return html.replace(
+      /<body[^>]*>/i,
+      match => `${match}\n${script}`
+    );
   }
 
   return `${script}\n${html}`;
 }
 
 function createVirtualAssetUrlMap(
-  files: GeneratedFile[],
-): Map<string, string> {
-  const assetUrls = new Map<string, string>();
+  files: GeneratedFile[]
+): Map<string, string>
+{
+  const assetUrls =
+    new Map<string, string>();
 
   for (const file of files) {
-    const assetUrl = readEmbeddableAssetUrl(file.content);
+    const assetUrl =
+      readEmbeddableAssetUrl(
+        file.content);
 
     if (assetUrl === null) {
       continue;
     }
 
-    assetUrls.set(normalizeVirtualPath(file.name), assetUrl);
+    assetUrls.set(
+      normalizeVirtualPath(
+        file.name
+      ),
+      assetUrl
+    );
   }
 
   return assetUrls;
 }
 
-function readEmbeddableAssetUrl(content: string): string | null {
-  const trimmed = content.trim();
+function readEmbeddableAssetUrl(content: string): string | null
+{
+  const trimmed =
+    content.trim();
 
   return /^data:[^,]+,.+/i.test(trimmed)
     ? trimmed
@@ -584,53 +695,59 @@ function readEmbeddableAssetUrl(content: string): string | null {
 function replaceHtmlAssetReferences(
   html: string,
   htmlPath: string,
-  assetUrls: Map<string, string>,
-): string {
+  assetUrls: Map<string, string>
+): string
+{
   return html.replace(
     /\b(src|href|poster)=(["'])([^"']+)\2/gi,
-    (match, attributeName, quote, originalPath) => {
+    (match, attributeName, quote, originalPath) =>
+    {
       const resolved =
         resolveVirtualAssetReference(
           htmlPath,
           String(originalPath),
-          assetUrls,
-        );
+          assetUrls);
 
       return resolved === null
         ? match
-        : `${String(attributeName)}=${String(quote)}${resolved}${String(quote)}`;
-    },
+        : `${String(attributeName)}=${String(quote)}${resolved}${
+          String(quote)
+        }`;
+    }
   );
 }
 
 function replaceCssAssetUrls(
   css: string,
   cssPath: string,
-  assetUrls: Map<string, string>,
-): string {
+  assetUrls: Map<string, string>
+): string
+{
   return css.replace(
     /url\(\s*(["']?)([^"')]+)\1\s*\)/gi,
-    (match, quote, originalPath) => {
+    (match, quote, originalPath) =>
+    {
       const resolved =
         resolveVirtualAssetReference(
           cssPath,
           String(originalPath),
-          assetUrls,
-        );
+          assetUrls);
 
       return resolved === null
         ? match
         : `url(${String(quote)}${resolved}${String(quote)})`;
-    },
+    }
   );
 }
 
 function resolveVirtualAssetReference(
   sourcePath: string,
   referencePath: string,
-  assetUrls: Map<string, string>,
-): string | null {
-  const trimmed = referencePath.trim();
+  assetUrls: Map<string, string>
+): string | null
+{
+  const trimmed =
+    referencePath.trim();
 
   if (
     trimmed === ''
@@ -641,26 +758,39 @@ function resolveVirtualAssetReference(
     return null;
   }
 
-  const withoutHash = trimmed.split('#', 1)[0] ?? trimmed;
-  const withoutQuery = withoutHash.split('?', 1)[0] ?? withoutHash;
+  const withoutHash =
+    trimmed.split(
+      '#',
+      1)[0] ?? trimmed;
+
+  const withoutQuery =
+    withoutHash.split(
+      '?',
+      1)[0] ?? withoutHash;
+
   const resolvedPath =
     normalizeVirtualPath(
       joinVirtualPath(
         parentVirtualDirectory(sourcePath),
-        withoutQuery,
-      ),
-    );
+        withoutQuery));
 
   return assetUrls.get(resolvedPath) ?? null;
 }
 
-function parentVirtualDirectory(path: string): string {
-  const segments = normalizeVirtualPath(path).split('/');
+function parentVirtualDirectory(path: string): string
+{
+  const segments =
+    normalizeVirtualPath(path).split('/');
+
   segments.pop();
   return segments.join('/');
 }
 
-function joinVirtualPath(basePath: string, nextPath: string): string {
+function joinVirtualPath(
+  basePath: string,
+  nextPath: string
+): string
+{
   if (nextPath.startsWith('/')) {
     return nextPath;
   }
@@ -670,11 +800,16 @@ function joinVirtualPath(basePath: string, nextPath: string): string {
     : `${basePath}/${nextPath}`;
 }
 
-function normalizeVirtualPath(path: string): string {
+function normalizeVirtualPath(path: string): string
+{
   const parts =
     path
-      .replace(/\\/g, '/')
-      .split('/');
+    .replace(
+      /\\/g,
+      '/'
+    )
+    .split('/');
+
   const normalized: string[] = [];
 
   for (const part of parts) {

@@ -99,7 +99,7 @@ export class SagaManager
       const unsubscribe =
         table.notify(
           {
-          add: (record) =>
+          add: record =>
           {
             sequence += 1;
 
@@ -176,7 +176,7 @@ export class SagaManager
               }
             );
           },
-          delete: (record) =>
+          delete: record =>
           {
             sequence += 1;
 
@@ -211,7 +211,7 @@ export class SagaManager
               }
             );
           },
-          clear: (records) =>
+          clear: records =>
           {
             sequence += 1;
 
@@ -359,7 +359,7 @@ export class SagaManager
       Array.from(
         new Set(
         reversed.map(
-          (entry) => entry.undo.tableName
+          entry => entry.undo.tableName
         )
       ));
 
@@ -571,7 +571,7 @@ export class SagaManager
         (left, right) => left.sequence - right.sequence
       )
       .map(
-        (entry) => ({
+        entry => ({
           tableName: entry.tableName,
           eventName: entry.eventName,
           forward: entry.forward,
@@ -617,7 +617,7 @@ export class SagaManager
       await getQueue();
 
       await new Promise<void>(
-        (resolve) =>
+        resolve =>
           setTimeout(
             resolve,
             0

@@ -60,7 +60,8 @@ function toString(
 {
   if (format === 'c') {
     return String(
-      this.value / 100);
+      this.value / 100
+    );
   }
 
   const value =
@@ -76,27 +77,37 @@ function toString(
     .toString()
     .padStart(
       3,
-      '0');
+      '0'
+    );
 
   let text =
-    `.${digits.substring(
+    `.${
+    digits.substring(
       digits.length - 2,
-      digits.length)}`;
+      digits.length
+    )
+  }`;
 
   let index =
     digits.length - 2;
 
   while (true) {
     if (index - 3 > 0) {
-      text = `,${digits.substring(
-        index - 3,
-        index)}` + text;
+      text = `,${
+        digits.substring(
+          index - 3,
+          index
+        )
+      }` + text;
 
       index -= 3;
     } else {
-      text = `${digits.substring(
-        0,
-        index)}` + text;
+      text = `${
+        digits.substring(
+          0,
+          index
+        )
+      }` + text;
 
       break;
     }
@@ -125,7 +136,8 @@ function add(
   for (const v of values) {
     currencyGuard(
       this.currency,
-      v.currency);
+      v.currency
+    );
   }
 
   const sum =
@@ -135,7 +147,8 @@ function add(
 
   return money(
     sum,
-    this.currency);
+    this.currency
+  );
 }
 
 function subtract(
@@ -146,7 +159,8 @@ function subtract(
   for (const v of values) {
     currencyGuard(
       this.currency,
-      v.currency);
+      v.currency
+    );
   }
 
   const diff =
@@ -156,7 +170,8 @@ function subtract(
 
   return money(
     diff,
-    this.currency);
+    this.currency
+  );
 }
 
 function inverse(
@@ -193,7 +208,8 @@ function distribute(
     if (
       recipients.length < 1
       || recipients.some(
-        x => !Number.isFinite(x) || x < 0)
+        x => !Number.isFinite(x) || x < 0
+      )
     ) {
       throw new TypeError(
         "recipient's share should be a positive finite number"
@@ -250,7 +266,8 @@ function distribute(
     this.value - distributed;
 
   amounts.sort(
-    (a, b) => b.diff - a.diff);
+    (a, b) => b.diff - a.diff
+  );
 
   for (let i = 0; i < amounts.length; i++) {
     if (remainder === 0) {
@@ -262,12 +279,16 @@ function distribute(
   }
 
   amounts.sort(
-    (a, b) => a.i - b.i);
+    (a, b) => a.i - b.i
+  );
 
   return amounts.map(
-    x => money(
-      x.value,
-      this.currency));
+    x =>
+      money(
+        x.value,
+        this.currency
+      )
+  );
 }
 
 function major(
@@ -363,7 +384,8 @@ function parse(
       return index === start
         ? null
         : money(
-          main * 100 + fraction);
+          main * 100 + fraction
+        );
     }
 
     const ch =
@@ -404,7 +426,8 @@ function parse(
 
       if (index === value.length) {
         return money(
-          main * 100 + fraction);
+          main * 100 + fraction
+        );
       }
 
       const ch2 =
@@ -423,7 +446,8 @@ function parse(
       fraction += sign * (ch2.charCodeAt(0) - '0'.charCodeAt(0));
 
       return money(
-        main * 100 + fraction);
+        main * 100 + fraction
+      );
     }
 
     return null;
@@ -436,7 +460,8 @@ const moneyImpl =
   if (isMoney(value)) {
     return moneyImpl(
       value.value,
-      value.currency);
+      value.currency
+    );
   }
 
   if (typeof value !== 'number') {
@@ -491,7 +516,8 @@ money.fromMinor = (value: number, currency: Currency = null) =>
 
   return money(
     value,
-    currency);
+    currency
+  );
 };
 
 money.fromNumber = (value: number, currency: Currency = null) =>
@@ -520,7 +546,8 @@ money.fromMajor = (value: number, currency: Currency = null) =>
 
   return money(
     value * 100,
-    currency);
+    currency
+  );
 };
 
 money.isMoney = (value: unknown): value is Money => isMoney(value);

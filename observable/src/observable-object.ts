@@ -59,9 +59,12 @@ export class ObservableObject<T extends object>
     assign: (value: T[K]) => void
   ): boolean
   {
-    if (Object.is(
-      previous,
-      value)) {
+    if (
+      Object.is(
+        previous,
+        value
+      )
+    ) {
       return false;
     }
 

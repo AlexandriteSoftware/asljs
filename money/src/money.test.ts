@@ -20,64 +20,79 @@ test(
       if (expectedMinorOrNull === null) {
         assert.equal(
           actual,
-          null);
+          null
+        );
       } else {
         assert.ok(
-          actual !== null);
+          actual !== null
+        );
 
         assert.equal(
           actual.value,
-          expectedMinorOrNull);
+          expectedMinorOrNull
+        );
       }
     }
 
     assertParse(
       null,
-      null);
+      null
+    );
 
     assertParse(
       '',
-      null);
+      null
+    );
 
     assertParse(
       '-',
-      null);
+      null
+    );
 
     assertParse(
       '1',
-      100);
+      100
+    );
 
     assertParse(
       '1000000',
-      100000000);
+      100000000
+    );
 
     assertParse(
       '1.2',
-      120);
+      120
+    );
 
     assertParse(
       '-0',
-      0);
+      0
+    );
 
     assertParse(
       '-1',
-      -100);
+      -100
+    );
 
     assertParse(
       '-1.2',
-      -120);
+      -120
+    );
 
     assertParse(
       '-1.23',
-      -123);
+      -123
+    );
 
     assertParse(
       '-1000000.23',
-      -100000023);
+      -100000023
+    );
 
     assertParse(
       '902.01',
-      90201);
+      90201
+    );
   }
 );
 
@@ -107,7 +122,8 @@ test(
     assert.equal(
       money.fromNumber(
         1,
-        'USD').toString('f'),
+        'USD'
+      ).toString('f'),
       '1.00 USD'
     );
 
@@ -119,7 +135,8 @@ test(
     assert.equal(
       money.fromNumber(
         1_000_000.00,
-        'USD').toString('f'),
+        'USD'
+      ).toString('f'),
       '1,000,000.00 USD'
     );
 
@@ -130,7 +147,8 @@ test(
     assertFormat('-1.23');
 
     assertFormat(
-      '-1,000,000.23');
+      '-1,000,000.23'
+    );
   }
 );
 
@@ -146,7 +164,8 @@ test(
     assert.equal(
       money.fromNumber(
         1,
-        'USD').toString('c'),
+        'USD'
+      ).toString('c'),
       '1'
     );
 
@@ -158,7 +177,8 @@ test(
     assert.equal(
       money.fromNumber(
         1_000_000.00,
-        'USD').toString('c'),
+        'USD'
+      ).toString('c'),
       '1000000'
     );
   }
@@ -184,35 +204,43 @@ test(
 
     assertMinor(
       '1',
-      100);
+      100
+    );
 
     assertMinor(
       '1000000',
-      100000000);
+      100000000
+    );
 
     assertMinor(
       '1.2',
-      120);
+      120
+    );
 
     assertMinor(
       '-0',
-      0);
+      0
+    );
 
     assertMinor(
       '-1',
-      -100);
+      -100
+    );
 
     assertMinor(
       '-1.2',
-      -120);
+      -120
+    );
 
     assertMinor(
       '-1.23',
-      -123);
+      -123
+    );
 
     assertMinor(
       '-1,000,000.23',
-      -100000023);
+      -100000023
+    );
 
     assert.throws(
       () => money.fromString('asdf'),
@@ -235,40 +263,49 @@ test(
 
       assert.equal(
         actual,
-        expected);
+        expected
+      );
     }
 
     assertMinor(
       1,
-      100);
+      100
+    );
 
     assertMinor(
       1000000,
-      100000000);
+      100000000
+    );
 
     assertMinor(
       1.2,
-      120);
+      120
+    );
 
     assertMinor(
       -0,
-      0);
+      0
+    );
 
     assertMinor(
       -1,
-      -100);
+      -100
+    );
 
     assertMinor(
       -1.2,
-      -120);
+      -120
+    );
 
     assertMinor(
       -1.23,
-      -123);
+      -123
+    );
 
     assertMinor(
       -1000000.23,
-      -100000023);
+      -100000023
+    );
 
     assert.throws(
       () => money.fromNumber(10e40),
@@ -296,11 +333,13 @@ test(
 
     assert.equal(
       c.value,
-      150);
+      150
+    );
 
     assert.equal(
       c.currency,
-      'USD');
+      'USD'
+    );
 
     const d =
       c.subtract(
@@ -310,11 +349,13 @@ test(
 
     assert.equal(
       d.value,
-      120);
+      120
+    );
 
     assert.equal(
       d.currency,
-      'USD');
+      'USD'
+    );
 
     const eur =
       money.fromMinor(
@@ -323,11 +364,13 @@ test(
 
     assert.throws(
       () => a.add(eur),
-      /currency mismatch/);
+      /currency mismatch/
+    );
 
     assert.throws(
       () => a.subtract(eur),
-      /currency mismatch/);
+      /currency mismatch/
+    );
   }
 );
 
@@ -347,24 +390,31 @@ test(
 
     assert.equal(
       eur.currency,
-      'EUR');
+      'EUR'
+    );
 
     assert.equal(
       eur.value,
       Math.trunc(
-        (12345 / 100) * 0.9 * 100));
+        (12345 / 100) * 0.9 * 100
+      )
+    );
 
     assert.throws(
-      () => usd.convert(
-        -1,
-        'EUR'),
+      () =>
+        usd.convert(
+          -1,
+          'EUR'
+        ),
       /rate must be a positive finite number/
     );
 
     assert.throws(
-      () => usd.convert(
-        Number.POSITIVE_INFINITY,
-        'EUR'),
+      () =>
+        usd.convert(
+          Number.POSITIVE_INFINITY,
+          'EUR'
+        ),
       /rate must be a positive finite number/
     );
   }
@@ -384,16 +434,19 @@ test(
 
       assert.equal(
         actual,
-        expected);
+        expected
+      );
     }
 
     assertMinor(
       1,
-      100);
+      100
+    );
 
     assertMinor(
       -1,
-      -100);
+      -100
+    );
 
     assert.throws(
       () => money.fromMajor(1.2),
@@ -416,7 +469,8 @@ test(
         money.fromString(value)
         .distribute(count)
         .map(
-          x => x.toString())
+          x => x.toString()
+        )
         .join(',');
 
       assert.equal(
