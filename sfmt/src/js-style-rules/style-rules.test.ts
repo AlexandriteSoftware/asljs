@@ -2,8 +2,8 @@ import { ESLint }
   from 'eslint';
 import { fileURLToPath }
   from 'node:url';
-import { addRuleTestsFromMarkdown }
-  from '../functions/extractTests.js';
+import { buildStyleRuleTestsFromMarkdown }
+  from '../functions/build-style-rule-tests-from-markdown.js';
 import callExpressionStyleRule
   from './call-expression.js';
 import conditionalExpressionStyleRule
@@ -49,7 +49,7 @@ const eslint =
   }
 });
 
-await addRuleTestsFromMarkdown(
+await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
   eslint
 );

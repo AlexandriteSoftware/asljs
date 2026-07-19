@@ -18,9 +18,9 @@ export interface FormatterDefinition
 }
 
 export function createFormatter(
-  name: string,
-  eslintRule: RuleDefinition<RuleDefinitionTypeOptions>
-): FormatterDefinition
+    name: string,
+    eslintRule: RuleDefinition<RuleDefinitionTypeOptions>
+  ): FormatterDefinition
 {
   return {
     name,
@@ -29,10 +29,10 @@ export function createFormatter(
 }
 
 export async function applyFormatters(
-  text: string,
-  filePath: string,
-  formatters: FormatterDefinition[]
-): Promise<string>
+    text: string,
+    filePath: string,
+    formatters: FormatterDefinition[]
+  ): Promise<string>
 {
   if (formatters.length === 0) {
     return text;
@@ -49,9 +49,7 @@ export async function applyFormatters(
     Object
     .fromEntries(
       formatters.map(
-        (
-          formatter
-        ) => [formatter.name, formatter.eslintRule]
+        formatter => [formatter.name, formatter.eslintRule]
       )
     );
 
@@ -59,9 +57,7 @@ export async function applyFormatters(
     Object
     .fromEntries(
       formatters.map(
-        (
-          formatter
-        ) => [`sfmt/${formatter.name}`, 'error' as const]
+        formatter => [`sfmt/${formatter.name}`, 'error' as const]
       )
     );
 
@@ -104,8 +100,8 @@ export async function applyFormatters(
 }
 
 export function getFileType(
-  filePath: string
-): SupportedFileType | null
+    filePath: string
+  ): SupportedFileType | null
 {
   const extension =
     path.extname(filePath).toLowerCase();
@@ -122,8 +118,8 @@ export function getFileType(
 }
 
 function getLanguageOptions(
-  fileType: SupportedFileType
-): Linter.LanguageOptions
+    fileType: SupportedFileType
+  ): Linter.LanguageOptions
 {
   if (fileType === 'typescript') {
     return {
@@ -139,8 +135,8 @@ function getLanguageOptions(
 }
 
 function getFilePatterns(
-  fileType: SupportedFileType
-): string[]
+    fileType: SupportedFileType
+  ): string[]
 {
   if (fileType === 'typescript') {
     return ['**/*.{ts,mts,cts}'];

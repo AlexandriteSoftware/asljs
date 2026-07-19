@@ -7,9 +7,9 @@ import { format }
   from './format.js';
 
 export async function runCli(
-  args: string[],
-  environment: Environment | null = null
-): Promise<number>
+    args: string[],
+    environment: Environment | null = null
+  ): Promise<number>
 {
   const ownEnvironment = !environment;
 
@@ -61,8 +61,8 @@ export async function runCli(
 }
 
 function createCli(
-  environment: Environment
-): Command
+    environment: Environment
+  ): Command
 {
   const cli =
     new Command();
@@ -80,14 +80,14 @@ function createCli(
     .helpCommand(false)
     .configureOutput(
       {
-        writeOut: (value) => environment.stdout.write(value),
-        writeErr: (value) => environment.stderr.write(value),
+        writeOut: value => environment.stdout.write(value),
+        writeErr: value => environment.stderr.write(value),
         outputError: () =>
         {}
       }
     )
     .exitOverride(
-      (error) =>
+      error =>
       {
         throw error;
       }
@@ -123,10 +123,10 @@ function createCli(
 }
 
 function writeCommanderError(
-  environment: Environment,
-  error: any,
-  cli: Command
-): boolean
+    environment: Environment,
+    error: any,
+    cli: Command
+  ): boolean
 {
   if (!(error instanceof Error)) {
     return false;
@@ -193,8 +193,8 @@ function writeCommanderError(
 }
 
 function tryExtractOptionName(
-  message: string
-): string | null
+    message: string
+  ): string | null
 {
   const match =
     /'(--[^ <']+)/.exec(message);

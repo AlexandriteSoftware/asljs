@@ -74,9 +74,9 @@ export default functionDeclarationFormatter.eslintRule;
  * is on a new line.
  */
 function checkLayout(
-  node: FunctionDeclaration,
-  context: Rule.RuleContext
-): boolean
+    node: FunctionDeclaration,
+    context: Rule.RuleContext
+  ): boolean
 {
   const parameters =
     node.params;
@@ -140,10 +140,10 @@ function checkLayout(
 }
 
 function buildFunctionDeclaration(
-  node: FunctionDeclaration,
-  context: Rule.RuleContext,
-  formattingContext: FormattingContext
-): string
+    node: FunctionDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const name =
     node.id?.name ?? '';
@@ -153,7 +153,7 @@ function buildFunctionDeclaration(
 
   const parameters =
     node.params.map(
-      (parameter) => context.sourceCode.getText(parameter));
+      parameter => context.sourceCode.getText(parameter));
 
   const code = [];
 

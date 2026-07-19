@@ -7,16 +7,15 @@ import { ArrayExpression,
          NewExpression,
          ObjectExpression,
          SpreadElement,
+         TemplateLiteral,
          UnaryExpression }
-  from 'estree';
-import * as estree
   from 'estree';
 
 const LONG_EXPRESSION_LENGTH = 15;
 
 export function expressionIsShort(
-  expression: Expression | SpreadElement
-): boolean
+    expression: Expression | SpreadElement
+  ): boolean
 {
   if (expression.type === 'ObjectExpression') {
     const objectExpression =
@@ -70,99 +69,113 @@ export function expressionIsShort(
 }
 
 function getLength(
-  expression: Expression | SpreadElement
-): number | null
+    expression: Expression | SpreadElement
+  ): number | null
 {
   if (expression.type === 'Identifier') {
-    const identifier =
-      expression as Identifier;
-
-    return identifier.name.length;
+    return getIdentifierLength(expression);
   }
 
   if (expression.type === 'Literal') {
-    const literal =
-      expression as Literal;
-
-    const literalRawContent =
-      literal.raw;
-
-    if (literalRawContent === undefined) {
-      return null;
-    }
-
-    return literalRawContent.length;
+    return getLiteralLength(expression);
   }
 
   if (expression.type === 'TemplateLiteral') {
-    const acornTemplateLiteral =
-      expression as acorn.TemplateLiteral;
-
-    const start =
-      acornTemplateLiteral.start;
-
-    const end =
-      acornTemplateLiteral.end;
-
-    const isRange =
-      start !== undefined
-      && end !== undefined;
-
-    if (isRange) {
-      return end - start;
-    }
-
-    const estreeTemplateLiteral =
-      expression as estree.TemplateLiteral;
-
-    const estreeLocation =
-      estreeTemplateLiteral.loc;
-
-    if (!estreeLocation) {
-      return null;
-    }
-
-    const startLocation =
-      estreeLocation.start;
-
-    if (!startLocation) {
-      return null;
-    }
-
-    const endLocation =
-      estreeLocation.end;
-
-    if (!endLocation) {
-      return null;
-    }
-
-    if (startLocation.line !== endLocation.line) {
-      return null;
-    }
-
-    return endLocation.column - startLocation.column;
+    return getTemplateLiteralLength(expression);
   }
 
-  if (
-    expression.type === 'UnaryExpression'
-  ) {
-    const unaryExpression =
-      expression as UnaryExpression;
-
-    const argumentLength =
-      getLength(
-        unaryExpression.argument);
-
-    if (argumentLength === null) {
-      return null;
-    }
-
-    const length =
-      argumentLength
-      + unaryExpression.operator.length;
-
-    return length;
+  if (expression.type === 'UnaryExpression') {
+    return getUnaryExpressionLength(expression);
   }
 
   return null;
+}
+
+function getIdentifierLength(
+    expression: Identifier
+  ): number
+{
+  return expression.name.length;
+}
+
+function getTemplateLiteralLength(
+    expression: TemplateLiteral
+  ): number | null
+{
+  const acornTemplateLiteral =
+    expression as acorn.TemplateLiteral;
+
+  const start =
+    acornTemplateLiteral.start;
+
+  const end =
+    acornTemplateLiteral.end;
+
+  const isRange =
+    start !== undefined
+    && end !== undefined;
+
+  if (isRange) {
+    return end - start;
+  }
+
+  const estreeLocation =
+    expression.loc;
+
+  if (!estreeLocation) {
+    return null;
+  }
+
+  const startLocation =
+    estreeLocation.start;
+
+  if (!startLocation) {
+    return null;
+  }
+
+  const endLocation =
+    estreeLocation.end;
+
+  if (!endLocation) {
+    return null;
+  }
+
+  if (startLocation.line !== endLocation.line) {
+    return null;
+  }
+
+  return endLocation.column - startLocation.column;
+}
+
+function getLiteralLength(
+    expression: Literal
+  ): number | null
+{
+  const literalRawContent =
+    expression.raw;
+
+  if (literalRawContent === undefined) {
+    return null;
+  }
+
+  return literalRawContent.length;
+}
+
+function getUnaryExpressionLength(
+    expression: UnaryExpression
+  ): number | null
+{
+  const argumentLength =
+    getLength(
+      expression.argument);
+
+  if (argumentLength === null) {
+    return null;
+  }
+
+  const length =
+    argumentLength
+    + expression.operator.length;
+
+  return length;
 }

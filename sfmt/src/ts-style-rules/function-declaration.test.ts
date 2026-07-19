@@ -8,8 +8,8 @@ import test
   from 'node:test';
 import { fileURLToPath }
   from 'node:url';
-import { addRuleTestsFromMarkdown }
-  from '../functions/extractTests.js';
+import { buildStyleRuleTestsFromMarkdown }
+  from '../functions/build-style-rule-tests-from-markdown.js';
 import rule
   from './function-declaration.js';
 
@@ -28,24 +28,7 @@ const eslint =
   }
 });
 
-test(
-  'ts-style-rules/function-declaration: \r\n line endings',
-  async () =>
-  {
-    const code =
-      'function test(\r\n  param1,\r\n  param2)\r\n{\r\n}';
-
-    const [result] =
-      await eslint.lintText(code);
-
-    assert.strictEqual(
-      result.output,
-      undefined
-    );
-  }
-);
-
-await addRuleTestsFromMarkdown(
+await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
   eslint
 );

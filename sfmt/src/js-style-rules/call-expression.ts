@@ -99,7 +99,7 @@ function isLayoutCorrect(
   const openingParenthesis =
     context.sourceCode.getTokenAfter(
       node.callee,
-      (token) => token.value === '(');
+      token => token.value === '(');
 
   if (openingParenthesis === null) {
     return true;
@@ -189,15 +189,15 @@ function isLayoutCorrect(
 }
 
 function buildCallExpression(
-  node: SimpleCallExpression,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: SimpleCallExpression,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const openingParenthesis =
     sourceCode.getTokenAfter(
       node.callee,
-      (token) => token.value === '(');
+      token => token.value === '(');
 
   if (openingParenthesis === null) {
     return sourceCode.getText(node);
@@ -274,10 +274,12 @@ function buildCallExpression(
         sourceCode.getText(argument);
 
       code.push(
-        formattingContext.newLine);
+        formattingContext.newLine
+      );
 
       code.push(
-        requiredArgumentIndent);
+        requiredArgumentIndent
+      );
 
       code.push(argumentText);
     }

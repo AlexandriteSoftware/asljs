@@ -92,9 +92,9 @@ export default callExpressionFormatter.eslintRule;
  * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
-  node: TSESTree.CallExpression,
-  context: Rule.RuleContext
-): boolean
+    node: TSESTree.CallExpression,
+    context: Rule.RuleContext
+  ): boolean
 {
   const argumentsList =
     node.arguments;
@@ -107,7 +107,7 @@ function checkLayout(
     context.sourceCode.getTokenAfter(
       asTokenAfterTarget(
         node.callee),
-      (token) => token.value === '(');
+      token => token.value === '(');
 
   if (openingParenthesis === null) {
     return true;
@@ -198,16 +198,16 @@ function checkLayout(
 }
 
 function buildCallExpression(
-  node: TSESTree.CallExpression,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: TSESTree.CallExpression,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const openingParenthesis =
     sourceCode.getTokenAfter(
       asTokenAfterTarget(
         node.callee),
-      (token) => token.value === '(');
+      token => token.value === '(');
 
   if (openingParenthesis === null) {
     return sourceCode.getText(
@@ -306,9 +306,9 @@ function buildCallExpression(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: Locatable
-): string
+    sourceCode: SourceCode,
+    node: Locatable
+  ): string
 {
   const nodeLocation =
     node.loc;
@@ -327,15 +327,15 @@ function getIndentation(
 }
 
 function asTokenAfterTarget(
-  node: unknown
-): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
+    node: unknown
+  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
 {
   return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
 }
 
 function asTextNode(
-  node: unknown
-): Parameters<SourceCode['getText']>[0]
+    node: unknown
+  ): Parameters<SourceCode['getText']>[0]
 {
   return node as Parameters<SourceCode['getText']>[0];
 }

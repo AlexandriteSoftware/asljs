@@ -86,9 +86,9 @@ export const variableDeclarationFormatter =
 export default variableDeclarationFormatter.eslintRule;
 
 function checkLayout(
-  node: TSESTree.VariableDeclarator,
-  context: Rule.RuleContext
-): boolean
+    node: TSESTree.VariableDeclarator,
+    context: Rule.RuleContext
+  ): boolean
 {
   const nodeInitialiser =
     node.init;
@@ -109,7 +109,7 @@ function checkLayout(
     context.sourceCode.getTokenBefore(
       asTokenTarget(
         nodeInitialiser),
-      (token) => token.value === '=');
+      token => token.value === '=');
 
   if (equalsToken === undefined || equalsToken === null) {
     return true;
@@ -126,8 +126,8 @@ function checkLayout(
 }
 
 function initialiserIsShortEnoughToStayOnSameLine(
-  initialiser: TSESTree.Expression
-): boolean
+    initialiser: TSESTree.Expression
+  ): boolean
 {
   if (initialiser.type === 'Identifier') {
     const identifier = initialiser;
@@ -178,10 +178,10 @@ function initialiserIsShortEnoughToStayOnSameLine(
  * @returns {string}
  */
 function buildVariableDeclarator(
-  node: TSESTree.VariableDeclarator,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: TSESTree.VariableDeclarator,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const code = [];
 
@@ -224,9 +224,9 @@ function buildVariableDeclarator(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: TSESTree.VariableDeclarator
-): string
+    sourceCode: SourceCode,
+    node: TSESTree.VariableDeclarator
+  ): string
 {
   const nodeInit =
     node.init;
@@ -238,7 +238,7 @@ function getIndentation(
   const equalsToken =
     sourceCode.getTokenBefore(
       asTokenTarget(nodeInit),
-      (token) => token.value === '=');
+      token => token.value === '=');
 
   const equalsTokenLocation =
     equalsToken?.loc;
@@ -257,15 +257,15 @@ function getIndentation(
 }
 
 function asTokenTarget(
-  node: unknown
-): NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>
+    node: unknown
+  ): NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>
 {
   return node as NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>;
 }
 
 function asTextNode(
-  node: unknown
-): Parameters<SourceCode['getText']>[0]
+    node: unknown
+  ): Parameters<SourceCode['getText']>[0]
 {
   return node as Parameters<SourceCode['getText']>[0];
 }

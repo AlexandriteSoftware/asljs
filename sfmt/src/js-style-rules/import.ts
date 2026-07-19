@@ -81,10 +81,10 @@ export const importFormatter =
 export default importFormatter.eslintRule;
 
 function formatImportNode(
-  node: ImportDeclaration,
-  context: Rule.RuleContext,
-  formattingContext: FormattingContext
-): string
+    node: ImportDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     ['import '];
@@ -212,9 +212,9 @@ function formatImportNode(
 }
 
 function getImportSpecifierGroup(
-  specifiers: Import[],
-  startAt: number
-): ImportSpecifier[]
+    specifiers: Import[],
+    startAt: number
+  ): ImportSpecifier[]
 {
   const group = [];
 
@@ -233,9 +233,9 @@ function getImportSpecifierGroup(
 }
 
 function formatImportSpecifierGroup(
-  importSpecifierGroup: ImportSpecifier[],
-  formattingContext: FormattingContext
-): string
+    importSpecifierGroup: ImportSpecifier[],
+    formattingContext: FormattingContext
+  ): string
 {
   const code = [];
 
@@ -286,9 +286,9 @@ function formatImportSpecifierGroup(
 }
 
 function formatSource(
-  source: Literal,
-  formattingContext: FormattingContext
-): string
+    source: Literal,
+    formattingContext: FormattingContext
+  ): string
 {
   return formattingContext.newLine + '  from ' + source.raw + ';';
 }
@@ -298,8 +298,8 @@ function formatSource(
  * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
  */
 function formatSpecifier(
-  specifier: Import
-): string
+    specifier: Import
+  ): string
 {
   switch (specifier.type) {
     case 'ImportDefaultSpecifier':

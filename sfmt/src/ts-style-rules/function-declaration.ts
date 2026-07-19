@@ -3,13 +3,20 @@ import { RuleDefinition,
   from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { Rule,
+import { AST,
+         Rule,
          SourceCode }
   from 'eslint';
+import * as ESTree
+  from 'estree';
 import { createFormatter }
   from '../formatter.js';
-
-type FormattingContext = { newLine: string; };
+import { FormattingContext }
+  from '../formatting-context.js';
+import { getIndentation }
+  from '../functions/indentations.js';
+import { ensureNodeAndLocation }
+  from '../functions/location.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   {
@@ -23,10 +30,24 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         const tsNode =
           node as unknown as TSESTree.FunctionDeclaration;
 
+        const sourceCode =
+          context.sourceCode as SourceCode;
+
+        const newLine =
+          context.sourceCode.text.includes('\r\n')
+          ? '\r\n'
+          : '\n';
+
+        const formattingContext: FormattingContext =
+          {
+          newLine,
+          sourceCode
+        };
+
         const correctLayout =
           checkLayout(
             tsNode,
-            context);
+            formattingContext);
 
         if (correctLayout) {
           return;
@@ -38,18 +59,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
             message: 'Use asljs function declaration style.',
             fix(fixer: Rule.RuleFixer): Rule.Fix
             {
-              const newLine =
-                context.sourceCode.text.includes('\r\n')
-                ? '\r\n'
-                : '\n';
-
-              const formattingContext =
-                { newLine };
-
               const replacement =
                 buildFunctionDeclaration(
                   tsNode,
-                  context,
                   formattingContext);
 
               return fixer.replaceText(
@@ -78,77 +90,150 @@ export default functionDeclarationFormatter.eslintRule;
  * is on a new line.
  */
 function checkLayout(
-  node: TSESTree.FunctionDeclaration,
-  context: Rule.RuleContext
-): boolean
+    node: TSESTree.FunctionDeclaration,
+    context: FormattingContext
+  ): boolean
 {
+  const baseIndent =
+    getIndentation(
+      context.sourceCode,
+      node);
+
+  const id =
+    node.id;
+
+  const openingParen =
+    context.sourceCode.getTokenAfter(
+      id as unknown as ESTree.Node);
+
+  ensureNodeAndLocation(
+    openingParen
+  );
+
+  const openingParenEndLine =
+    openingParen.loc.end.line;
+
   const parameters =
     node.params;
 
-  if (parameters.length > 1) {
-    for (let index = 1; index < parameters.length; index++) {
-      const previousParameter =
-        parameters[index - 1];
+  if (parameters.length > 0) {
+    const firstParameter =
+      parameters[0];
 
-      const currentParameter =
-        parameters[index];
+    ensureNodeAndLocation(
+      firstParameter
+    );
 
-      const previousParameterEndLine =
-        previousParameter.loc?.end.line;
+    const firstParameterStartLine =
+      firstParameter.loc.start.line;
 
-      if (previousParameterEndLine === undefined) {
-        // If we can't determine the line number, assume it's correct
-        return true;
-      }
+    if (openingParenEndLine === firstParameterStartLine) {
+      return false;
+    }
 
-      const currentParameterStartLine =
-        currentParameter.loc?.start.line;
+    const parameterIndent =
+      getIndentation(
+        context.sourceCode,
+        firstParameter);
 
-      if (currentParameterStartLine === undefined) {
-        // If we can't determine the line number, assume it's correct
-        return true;
-      }
+    if (parameterIndent !== baseIndent + '    ') {
+      return false;
+    }
+  }
 
-      if (previousParameterEndLine === currentParameterStartLine) {
-        return false;
-      }
+  for (let index = 1; index < parameters.length; index++) {
+    const previousParameter =
+      parameters[index - 1];
+
+    ensureNodeAndLocation(
+      previousParameter
+    );
+
+    const currentParameter =
+      parameters[index];
+
+    ensureNodeAndLocation(
+      currentParameter
+    );
+
+    const previousParameterEndLine =
+      previousParameter.loc.end.line;
+
+    const currentParameterStartLine =
+      currentParameter.loc.start.line;
+
+    if (previousParameterEndLine === currentParameterStartLine) {
+      return false;
+    }
+
+    const parameterIndent =
+      getIndentation(
+        context.sourceCode,
+        currentParameter);
+
+    if (parameterIndent !== baseIndent + '    ') {
+      return false;
     }
   }
 
   const closingParen =
     context.sourceCode
     .getTokenBefore(
-      asTokenTarget(
-        node.body
-      )
+      node.body as unknown as ESTree.Node
     );
 
-  if (closingParen === null) {
-    // If we can't find the closing parenthesis, assume it's correct
-    return true;
+  ensureNodeAndLocation(
+    closingParen
+  );
+
+  if (parameters.length > 0) {
+    const lastParameter =
+      parameters[parameters.length - 1];
+
+    ensureNodeAndLocation(
+      lastParameter
+    );
+
+    const closingParenEndLine =
+      closingParen.loc.end.line;
+
+    if (closingParenEndLine === lastParameter.loc.end.line) {
+      return false;
+    }
+  } else {
+    const openingParenEndLine =
+      openingParen.loc.end.line;
+
+    const closingParenStartLine =
+      closingParen.loc.start.line;
+
+    if (openingParenEndLine === closingParenStartLine) {
+      return false;
+    }
   }
 
-  const nodeBodyStartLine =
-    node.body.loc?.start.line;
+  const closingParenIndent =
+    getIndentation(
+      context.sourceCode,
+      closingParen);
 
-  if (nodeBodyStartLine === undefined) {
-    // If we can't determine the line number, assume it's correct
-    return true;
-  }
-
-  if (closingParen.loc.end.line === nodeBodyStartLine) {
+  if (closingParenIndent !== baseIndent + '  ') {
     return false;
   }
 
   return true;
 }
 
-function buildFunctionDeclaration(
-  node: TSESTree.FunctionDeclaration,
-  context: Rule.RuleContext,
-  formattingContext: FormattingContext
-): string
+export function buildFunctionDeclaration(
+    node: TSESTree.FunctionDeclaration,
+    context: FormattingContext
+  ): string
 {
+  const baseIndent =
+    getIndentation(
+      context.sourceCode,
+      node);
+
   const name =
     node.id?.name ?? '';
 
@@ -156,19 +241,15 @@ function buildFunctionDeclaration(
     node.body;
 
   const returnTypeText =
-    node.returnType
-    ? context.sourceCode.getText(
-      asTextNode(
-        node.returnType
-      )
-    )
-    : '';
+    getReturnTypeText(
+      node,
+      context);
 
   const parameters =
     node.params.map(
-      (parameter) =>
+      parameter =>
       context.sourceCode.getText(
-        asTextNode(parameter)
+        parameter as unknown as ESTree.Node
       ));
 
   const code = [];
@@ -185,57 +266,57 @@ function buildFunctionDeclaration(
 
   code.push('(');
 
-  if (parameters.length === 0) {
-    code.push(')');
-  } else {
+  for (let index = 0; index < parameters.length; index++) {
     code.push(
-      formattingContext.newLine
+      context.newLine
     );
 
-    for (let index = 0; index < parameters.length; index++) {
-      code.push(
-        `  ${parameters[index]}`
-      );
+    code.push(baseIndent);
+    code.push('    ');
 
-      if (index < parameters.length - 1) {
-        code.push(',');
-      }
+    code.push(
+      parameters[index]
+    );
 
-      if (index < parameters.length - 1) {
-        code.push(
-          formattingContext.newLine
-        );
-      }
+    if (index < parameters.length - 1) {
+      code.push(',');
     }
-
-    code.push(')');
   }
 
+  code.push(
+    context.newLine
+  );
+
+  code.push(baseIndent);
+  code.push('  ');
+  code.push(')');
   code.push(returnTypeText);
 
   code.push(
-    formattingContext.newLine
+    context.newLine
   );
 
   code.push(
     context.sourceCode.getText(
-      asTextNode(body)
+      body as unknown as ESTree.Node
     )
   );
 
   return code.join('');
 }
 
-function asTokenTarget(
-  node: unknown
-): NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>
+function getReturnTypeText(
+    node: TSESTree.FunctionDeclaration,
+    context: FormattingContext
+  ): string
 {
-  return node as NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>;
-}
+  if (!node.returnType) {
+    return '';
+  }
 
-function asTextNode(
-  node: unknown
-): Parameters<SourceCode['getText']>[0]
-{
-  return node as Parameters<SourceCode['getText']>[0];
+  const returnTypeText =
+    context.sourceCode.getText(
+      node.returnType as unknown as ESTree.Node);
+
+  return returnTypeText;
 }

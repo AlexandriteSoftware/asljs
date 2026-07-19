@@ -79,10 +79,10 @@ export const importFormatter =
 export default importFormatter.eslintRule;
 
 function formatImportNode(
-  node: TSESTree.ImportDeclaration,
-  context: Rule.RuleContext,
-  formattingContext: FormattingContext
-): string
+    node: TSESTree.ImportDeclaration,
+    context: Rule.RuleContext,
+    formattingContext: FormattingContext
+  ): string
 {
   const code =
     ['import '];
@@ -210,9 +210,9 @@ function formatImportNode(
 }
 
 function getImportSpecifierGroup(
-  specifiers: Import[],
-  startAt: number
-): TSESTree.ImportSpecifier[]
+    specifiers: Import[],
+    startAt: number
+  ): TSESTree.ImportSpecifier[]
 {
   const group = [];
 
@@ -231,9 +231,9 @@ function getImportSpecifierGroup(
 }
 
 function formatImportSpecifierGroup(
-  importSpecifierGroup: TSESTree.ImportSpecifier[],
-  formattingContext: FormattingContext
-): string
+    importSpecifierGroup: TSESTree.ImportSpecifier[],
+    formattingContext: FormattingContext
+  ): string
 {
   const code = [];
 
@@ -298,9 +298,9 @@ function formatImportSpecifierGroup(
 }
 
 function formatSource(
-  source: TSESTree.StringLiteral,
-  formattingContext: FormattingContext
-): string
+    source: TSESTree.StringLiteral,
+    formattingContext: FormattingContext
+  ): string
 {
   return formattingContext.newLine + '  from ' + source.raw + ';';
 }
@@ -310,8 +310,8 @@ function formatSource(
  * `ImportSpecifier` is handled by `formatImportSpecifierGroup`.
  */
 function formatSpecifier(
-  specifier: Import
-): string
+    specifier: Import
+  ): string
 {
   switch (specifier.type) {
     case 'ImportDefaultSpecifier':

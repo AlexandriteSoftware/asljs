@@ -77,21 +77,21 @@ export const conditionalExpressionFormatter =
 export default conditionalExpressionFormatter.eslintRule;
 
 function checkLayout(
-  node: TSESTree.ConditionalExpression,
-  sourceCode: SourceCode
-): boolean
+    node: TSESTree.ConditionalExpression,
+    sourceCode: SourceCode
+  ): boolean
 {
   const questionMark =
     sourceCode.getTokenAfter(
       asTokenTarget(
         node.test),
-      (token) => token.value === '?');
+      token => token.value === '?');
 
   const colon =
     sourceCode.getTokenAfter(
       asTokenTarget(
         node.consequent),
-      (token) => token.value === ':');
+      token => token.value === ':');
 
   if (questionMark === null || colon === null) {
     return true;
@@ -117,10 +117,10 @@ function checkLayout(
 }
 
 function buildConditionalExpression(
-  node: TSESTree.ConditionalExpression,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: TSESTree.ConditionalExpression,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const indent =
     getIndentation(
@@ -149,9 +149,9 @@ function buildConditionalExpression(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: TSESTree.ConditionalExpression
-): string
+    sourceCode: SourceCode,
+    node: TSESTree.ConditionalExpression
+  ): string
 {
   const nodeLocation =
     node.loc;
@@ -170,15 +170,15 @@ function getIndentation(
 }
 
 function asTokenTarget(
-  node: unknown
-): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
+    node: unknown
+  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
 {
   return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
 }
 
 function asTextNode(
-  node: unknown
-): Parameters<SourceCode['getText']>[0]
+    node: unknown
+  ): Parameters<SourceCode['getText']>[0]
 {
   return node as Parameters<SourceCode['getText']>[0];
 }

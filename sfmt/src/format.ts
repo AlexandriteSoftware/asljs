@@ -14,9 +14,9 @@ import { tsStyleFormatters }
   from './ts-style-rules/style-rules.js';
 
 export async function format(
-  environment: Environment,
-  ...args: string[]
-): Promise<void>
+    environment: Environment,
+    ...args: string[]
+  ): Promise<void>
 {
   const pattern =
     args.length > 0
@@ -40,8 +40,8 @@ export async function format(
 }
 
 export async function formatFile(
-  path: string
-): Promise<void>
+    path: string
+  ): Promise<void>
 {
   const text =
     await fs.readFile(
@@ -65,10 +65,10 @@ export async function formatFile(
 }
 
 export async function formatText(
-  path: string,
-  text: string,
-  formatters: FormatterDefinition[] | null = null
-): Promise<string>
+    path: string,
+    text: string,
+    formatters: FormatterDefinition[] | null = null
+  ): Promise<string>
 {
   const normalised =
     normaliseWhitespace(text);
@@ -81,8 +81,8 @@ export async function formatText(
 }
 
 function getFormattersForPath(
-  path: string
-): FormatterDefinition[]
+    path: string
+  ): FormatterDefinition[]
 {
   const fileType =
     getFileType(path);
@@ -100,8 +100,8 @@ function getFormattersForPath(
 }
 
 function normaliseWhitespace(
-  text: string
-): string
+    text: string
+  ): string
 {
   const formatters =
     [
@@ -121,8 +121,8 @@ function normaliseWhitespace(
 }
 
 function normaliseLineEndings(
-  text: string
-): string
+    text: string
+  ): string
 {
   return text.replace(
     /\r\n/g,
@@ -131,8 +131,8 @@ function normaliseLineEndings(
 }
 
 function normaliseTrailingWhitespace(
-  text: string
-): string
+    text: string
+  ): string
 {
   return text.replace(
     /[ \t]+$/gm,
@@ -141,8 +141,8 @@ function normaliseTrailingWhitespace(
 }
 
 function normaliseFinalNewline(
-  text: string
-): string
+    text: string
+  ): string
 {
   if (text.length === 0) {
     return '\n';
@@ -156,8 +156,8 @@ function normaliseFinalNewline(
 }
 
 function normaliseIndentationCharacters(
-  text: string
-): string
+    text: string
+  ): string
 {
   return text.replace(
     /\t/g,

@@ -91,9 +91,9 @@ export const variableDeclarationFormatter =
 export default variableDeclarationFormatter.eslintRule;
 
 function checkLayout(
-  node: VariableDeclarator,
-  context: Rule.RuleContext
-): boolean
+    node: VariableDeclarator,
+    context: Rule.RuleContext
+  ): boolean
 {
   const nodeInitialiser =
     node.init;
@@ -113,7 +113,7 @@ function checkLayout(
   const equalsToken =
     context.sourceCode.getTokenBefore(
       nodeInitialiser,
-      (token) => token.value === '=');
+      token => token.value === '=');
 
   if (equalsToken === undefined || equalsToken === null) {
     return true;
@@ -130,8 +130,8 @@ function checkLayout(
 }
 
 function initialiserIsShortEnoughToStayOnSameLine(
-  initialiser: Expression
-): boolean
+    initialiser: Expression
+  ): boolean
 {
   if (initialiser.type === 'Identifier') {
     const identifier = /** @type {Identifier} */ initialiser;
@@ -182,10 +182,10 @@ function initialiserIsShortEnoughToStayOnSameLine(
  * @returns {string}
  */
 function buildVariableDeclarator(
-  node: VariableDeclarator,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: VariableDeclarator,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const code = [];
 
@@ -226,9 +226,9 @@ function buildVariableDeclarator(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: VariableDeclarator
-): string
+    sourceCode: SourceCode,
+    node: VariableDeclarator
+  ): string
 {
   const nodeInit =
     node.init;
@@ -240,7 +240,7 @@ function getIndentation(
   const equalsToken =
     sourceCode.getTokenBefore(
       nodeInit,
-      (token) => token.value === '=');
+      token => token.value === '=');
 
   const equalsTokenLocation =
     equalsToken?.loc;

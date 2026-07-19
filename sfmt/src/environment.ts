@@ -14,8 +14,8 @@ export interface Environment
 }
 
 export function createEnvironment(
-  environment: Partial<Environment> = {}
-): Environment
+    environment: Partial<Environment> = {}
+  ): Environment
 {
   const cwd =
     process.cwd();
@@ -30,7 +30,7 @@ export function createEnvironment(
     cwd,
     stdout: createInMemoryWritableBuffer(),
     stderr: createInMemoryWritableBuffer(),
-    onDispose: (action) => disposeActions.push(action),
+    onDispose: action => disposeActions.push(action),
     dispose: async () =>
     {
       for (const action of disposeActions) {
@@ -53,7 +53,8 @@ interface WritableBuffer
   toString: () => string;
 }
 
-function createInMemoryWritableBuffer(): WritableBuffer
+function createInMemoryWritableBuffer(
+  ): WritableBuffer
 {
   const output: string[] = [];
 

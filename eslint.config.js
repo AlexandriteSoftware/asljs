@@ -1,4 +1,4 @@
-import { eslintTopConfig }
+import { eslintConfig }
   from 'asljs-sfmt';
 
-export default eslintTopConfig;
+export default eslintConfig;

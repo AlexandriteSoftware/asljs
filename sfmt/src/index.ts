@@ -3,8 +3,8 @@ export {
 } from './cli.js';
 
 export {
-  default as eslintTopConfig
-} from './eslint.topconfig.js';
+  default as eslintConfig
+} from './eslint-config.js';
 
 export {
   format

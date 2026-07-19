@@ -6,8 +6,8 @@ import test
   from 'node:test';
 import { fileURLToPath }
   from 'node:url';
-import { addRuleTestsFromMarkdown }
-  from '../functions/extractTests.js';
+import { buildStyleRuleTestsFromMarkdown }
+  from '../functions/build-style-rule-tests-from-markdown.js';
 import rule
   from './function-declaration.js';
 
@@ -42,7 +42,7 @@ test(
   }
 );
 
-await addRuleTestsFromMarkdown(
+await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
   eslint
 );

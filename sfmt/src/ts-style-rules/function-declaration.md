@@ -1,7 +1,7 @@
 # function-declaration
 
-Chops `FunctionDeclaration` parameters into multiple lines and moves the opening
-brace to a new line.
+Chops `FunctionDeclaration` parameters into multiple lines and moves the closing
+brace with a return type to a new line.
 
 `FunctionDeclaration` structure:
 
@@ -12,24 +12,87 @@ brace to a new line.
 ## Tests
 
 ```js
-function test(
-  param1,
-  param2)
-{
+function test() {
 }
 // ---
 function test(
-  param1,
-  param2)
+  )
 {
 }
 ```
 
 ```js
-function test() {
+function test(
+) {
 }
 // ---
-function test()
+function test(
+  )
+{
+}
+```
+
+```js
+function test(
+    ) {
+}
+// ---
+function test(
+  )
+{
+}
+```
+
+```js
+function test(
+)
+{
+}
+// ---
+function test(
+  )
+{
+}
+```
+
+```js
+function test(
+    )
+{
+}
+// ---
+function test(
+  )
+{
+}
+```
+
+```js
+function test(
+  param1,
+  param2)
+{
+}
+// ---
+function test(
+    param1,
+    param2
+  )
+{
+}
+```
+
+```js
+function test(
+    param1,
+  param2)
+{
+}
+// ---
+function test(
+    param1,
+    param2
+  )
 {
 }
 ```
@@ -39,7 +102,8 @@ function test(param1) {
 }
 // ---
 function test(
-  param1)
+    param1
+  )
 {
 }
 ```
@@ -49,8 +113,9 @@ function test(param1, param2) {
 }
 // ---
 function test(
-  param1,
-  param2)
+    param1,
+    param2
+  )
 {
 }
 ```
@@ -60,8 +125,9 @@ function test(param1, param2) {
 }
 // ---
 function test(
-  param1,
-  param2)
+    param1,
+    param2
+  )
 {
 }
 ```
@@ -71,8 +137,9 @@ function test(param1, param2 = null) {
 }
 // ---
 function test(
-  param1,
-  param2 = null)
+    param1,
+    param2 = null
+  )
 {
 }
 ```
@@ -83,8 +150,9 @@ function test(param1, param2 = null) {
 }
 // ---
 function test(
-  param1,
-  param2 = null)
+    param1,
+    param2 = null
+  )
 {
   console.log('test');
 }
@@ -96,8 +164,9 @@ async function test(param1, param2 = null) {
 }
 // ---
 async function test(
-  param1,
-  param2 = null)
+    param1,
+    param2 = null
+  )
 {
   console.log('test');
 }
@@ -111,8 +180,9 @@ async function test(param1, param2 = null) {
 }
 // ---
 async function test(
-  param1,
-  param2 = null)
+    param1,
+    param2 = null
+  )
 {
   console.log('test');
 
@@ -126,7 +196,8 @@ function test(value: unknown): FormatterDefinition {
 }
 // ---
 function test(
-  value: unknown): FormatterDefinition
+    value: unknown
+  ): FormatterDefinition
 {
   return value as FormatterDefinition;
 }
@@ -138,8 +209,9 @@ function test(value: unknown, fallback: FormatterDefinition): FormatterDefinitio
 }
 // ---
 function test(
-  value: unknown,
-  fallback: FormatterDefinition): FormatterDefinition
+    value: unknown,
+    fallback: FormatterDefinition
+  ): FormatterDefinition
 {
   return fallback;
 }
@@ -151,7 +223,8 @@ function isFormatterDefinition(value: unknown): value is FormatterDefinition {
 }
 // ---
 function isFormatterDefinition(
-  value: unknown): value is FormatterDefinition
+    value: unknown
+  ): value is FormatterDefinition
 {
   return typeof value === 'object';
 }
@@ -159,15 +232,14 @@ function isFormatterDefinition(
 
 ```ts
 function isFormatterDefinition(
-  value: unknown
-): value is FormatterDefinition
+  value: unknown): value is FormatterDefinition
 {
   return typeof value === 'object';
 }
 // ---
 function isFormatterDefinition(
-  value: unknown
-): value is FormatterDefinition
+    value: unknown
+  ): value is FormatterDefinition
 {
   return typeof value === 'object';
 }

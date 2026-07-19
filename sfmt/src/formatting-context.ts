@@ -1,3 +1,4 @@
-export type FormattingContext =
-  { sourceCode: string;
-    newLine: string; };
+import { SourceCode }
+  from 'eslint';
+
+export type FormattingContext = { sourceCode: SourceCode; newLine: string; };

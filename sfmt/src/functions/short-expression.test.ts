@@ -10,8 +10,8 @@ import { expressionIsShort }
   from './short-expression.js';
 
 function parseExpression(
-  code: string
-): Expression
+    code: string
+  ): Expression
 {
   const ast =
     espree.parse(

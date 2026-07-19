@@ -55,9 +55,9 @@ export default statementSpacingFormatter.eslintRule;
  * Enforces a blank line between multiline statements.
  */
 function checkStatements(
-  statements: TSESTree.Statement[],
-  context: Rule.RuleContext
-): void
+    statements: TSESTree.Statement[],
+    context: Rule.RuleContext
+  ): void
 {
   const sourceCode =
     context.sourceCode;
@@ -122,9 +122,9 @@ function checkStatements(
 }
 
 function shouldSpace(
-  statement: TSESTree.Statement,
-  nextStatement: TSESTree.Statement
-): boolean
+    statement: TSESTree.Statement,
+    nextStatement: TSESTree.Statement
+  ): boolean
 {
   if (
     statement.type === 'ImportDeclaration'
@@ -162,8 +162,8 @@ function shouldSpace(
 }
 
 function statementIsMultiline(
-  statement: TSESTree.Statement
-): boolean
+    statement: TSESTree.Statement
+  ): boolean
 {
   const statementLocation =
     statement.loc;
@@ -176,9 +176,9 @@ function statementIsMultiline(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: TSESTree.Statement
-): string
+    sourceCode: SourceCode,
+    node: TSESTree.Statement
+  ): string
 {
   const nodeLocation =
     node.loc;

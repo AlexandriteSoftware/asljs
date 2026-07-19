@@ -75,19 +75,19 @@ export const conditionalExpressionFormatter =
 export default conditionalExpressionFormatter.eslintRule;
 
 function checkLayout(
-  node: ConditionalExpression,
-  sourceCode: SourceCode
-): boolean
+    node: ConditionalExpression,
+    sourceCode: SourceCode
+  ): boolean
 {
   const questionMark =
     sourceCode.getTokenAfter(
       node.test,
-      (token) => token.value === '?');
+      token => token.value === '?');
 
   const colon =
     sourceCode.getTokenAfter(
       node.consequent,
-      (token) => token.value === ':');
+      token => token.value === ':');
 
   if (questionMark === null || colon === null) {
     return true;
@@ -110,10 +110,10 @@ function checkLayout(
 }
 
 function buildConditionalExpression(
-  node: ConditionalExpression,
-  sourceCode: SourceCode,
-  formattingContext: FormattingContext
-): string
+    node: ConditionalExpression,
+    sourceCode: SourceCode,
+    formattingContext: FormattingContext
+  ): string
 {
   const indent =
     getIndentation(
@@ -139,9 +139,9 @@ function buildConditionalExpression(
 }
 
 function getIndentation(
-  sourceCode: SourceCode,
-  node: Node
-): string
+    sourceCode: SourceCode,
+    node: Node
+  ): string
 {
   const nodeLocation =
     node.loc;
