@@ -520,9 +520,9 @@ export class ArtefactDefinitionProviderImpl
 }
 
 function sortDefinitionsByName(
-  first: ArtefactDefinition,
-  second: ArtefactDefinition
-): number
+    first: ArtefactDefinition,
+    second: ArtefactDefinition
+  ): number
 {
   const firstName =
     first.name;

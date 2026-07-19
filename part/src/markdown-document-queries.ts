@@ -21,8 +21,8 @@ export interface Section
 }
 
 export function getSections(
-  document: MarkdownDocument
-): Section[]
+    document: MarkdownDocument
+  ): Section[]
 {
   const sections: Section[] = [];
 
@@ -91,10 +91,10 @@ export function getSections(
   return sections;
 
   function updateMarkupForSection(
-    document: MarkdownDocument,
-    section: Section
-  ): void
-  {
+      document: MarkdownDocument,
+      section: Section
+    ): void
+{
     const sectionMarkup =
       getMarkup(
         document,
@@ -112,9 +112,9 @@ export function getSections(
 }
 
 export function getSectionNode(
-  document: MarkdownDocument,
-  sectionHeadingMarkup: string
-): Heading | null
+    document: MarkdownDocument,
+    sectionHeadingMarkup: string
+  ): Heading | null
 {
   for (const node of document.root.children) {
     if (node.type !== 'heading') {
@@ -141,9 +141,9 @@ export function getSectionNode(
  * the section is not found.
  */
 export function getSectionNodes(
-  document: MarkdownDocument,
-  sectionHeadingMarkup: string
-): Node[] | null
+    document: MarkdownDocument,
+    sectionHeadingMarkup: string
+  ): Node[] | null
 {
   const sectionNodes: Node[] = [];
 
@@ -189,9 +189,9 @@ export function getSectionNodes(
 }
 
 export function getMarkup(
-  document: MarkdownDocument,
-  node: Node | Node[]
-): string
+    document: MarkdownDocument,
+    node: Node | Node[]
+  ): string
 {
   if (!node) {
     return '';
@@ -235,9 +235,9 @@ export function getMarkup(
 }
 
 export function getText(
-  document: MarkdownDocument,
-  nodes: Node | Node[]
-): string
+    document: MarkdownDocument,
+    nodes: Node | Node[]
+  ): string
 {
   if (!nodes) {
     return '';

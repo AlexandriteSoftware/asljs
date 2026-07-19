@@ -2,8 +2,8 @@ import { existsSync }
   from 'node:fs';
 
 export function resolveEnvelopePath(
-  envelopePath?: string
-): string
+    envelopePath?: string
+  ): string
 {
   return envelopePath
     ?? getRequiredEnv(
@@ -12,8 +12,8 @@ export function resolveEnvelopePath(
 }
 
 export function resolvePatchPath(
-  patchPath?: string
-): string
+    patchPath?: string
+  ): string
 {
   return patchPath
     ?? getRequiredEnv(
@@ -22,8 +22,8 @@ export function resolvePatchPath(
 }
 
 export function ensurePatchFileExists(
-  patchPath: string
-): void
+    patchPath: string
+  ): void
 {
   if (
     !existsSync(
@@ -37,8 +37,8 @@ export function ensurePatchFileExists(
 }
 
 function getRequiredEnv(
-  name: string
-): string
+    name: string
+  ): string
 {
   const value =
     process.env[name];

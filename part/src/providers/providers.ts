@@ -31,10 +31,10 @@ export interface Providers
 }
 
 export function providersFactory(
-  loggerProvider: LoggerProvider,
-  projectPath: string,
-  definitionsPath: string
-): Providers
+    loggerProvider: LoggerProvider,
+    projectPath: string,
+    definitionsPath: string
+  ): Providers
 {
   const filesystemLocationResolver =
     new FilesystemLocationResolver(

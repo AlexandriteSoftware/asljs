@@ -18,8 +18,8 @@ import { configureUpdateCommand }
   from './update.js';
 
 export async function main(
-  argv = process.argv
-): Promise<void>
+    argv = process.argv
+  ): Promise<void>
 {
   const logger =
     createLogger();

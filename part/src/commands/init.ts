@@ -22,8 +22,8 @@ const ARTEFACTS_DIRECTORY =
     '../../artefacts');
 
 export async function execInit(
-  environment: Environment
-): Promise<void>
+    environment: Environment
+  ): Promise<void>
 {
   const definitionsPath =
     environment.definitions;

@@ -32,10 +32,10 @@ export interface CheckCommandOptions
 }
 
 export async function execCheck(
-  logger: Logger,
-  environment: Environment,
-  options: Partial<CheckCommandOptions> = {}
-): Promise<void>
+    logger: Logger,
+    environment: Environment,
+    options: Partial<CheckCommandOptions> = {}
+  ): Promise<void>
 {
   logger.trace(
     'Check command: start with %s',
@@ -283,9 +283,9 @@ export async function execCheck(
 }
 
 export function filterDefinitions(
-  definitions: ArtefactDefinition[],
-  definitionNames: string[] = []
-): ArtefactDefinition[]
+    definitions: ArtefactDefinition[],
+    definitionNames: string[] = []
+  ): ArtefactDefinition[]
 {
   if (definitionNames.length === 0) {
     return definitions;
@@ -303,9 +303,9 @@ export function filterDefinitions(
 }
 
 export function filterRules(
-  rules: ArtefactDefinitionRule[],
-  ruleNames: string[] = []
-): ArtefactDefinitionRule[]
+    rules: ArtefactDefinitionRule[],
+    ruleNames: string[] = []
+  ): ArtefactDefinitionRule[]
 {
   if (ruleNames.length === 0) {
     return rules;

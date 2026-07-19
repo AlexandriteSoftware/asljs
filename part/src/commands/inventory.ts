@@ -17,10 +17,10 @@ interface InventoryItem
 }
 
 export async function execInventory(
-  logger: Logger,
-  environment: Environment,
-  options: Partial<InventoryCommandOptions> = {}
-): Promise<void>
+    logger: Logger,
+    environment: Environment,
+    options: Partial<InventoryCommandOptions> = {}
+  ): Promise<void>
 {
   logger.trace(
     'Inventory command: start'

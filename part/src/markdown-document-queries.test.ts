@@ -160,8 +160,8 @@ text`;
 );
 
 function parse(
-  content: string
-): MarkdownDocument
+    content: string
+  ): MarkdownDocument
 {
   const document =
     MARKDOWN_PARSER.parse(

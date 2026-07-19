@@ -5,8 +5,8 @@ import { LoggerProvider }
   from '../logging/logging.js';
 
 export function tmpDirFactory(
-  loggerProvider: LoggerProvider
-): () => TmpDir
+    loggerProvider: LoggerProvider
+  ): () => TmpDir
 {
   return () =>
   {

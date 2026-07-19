@@ -4,8 +4,8 @@ import { Environment }
   from '../environment.js';
 
 export function execVersion(
-  environment: Environment
-): Promise<number>
+    environment: Environment
+  ): Promise<number>
 {
   const packageVersion =
     (() =>

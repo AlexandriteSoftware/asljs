@@ -34,9 +34,9 @@ import { updateEnvelopeFiles }
   from './update.js';
 
 export function configureApplyPatchCommand(
-  program: Command,
-  context: ExecutionContext
-): void
+    program: Command,
+    context: ExecutionContext
+  ): void
 {
   program
     .command(
@@ -80,9 +80,9 @@ export function configureApplyPatchCommand(
 }
 
 async function applyPatch(
-  context: ExecutionContext,
-  options: MainOptions = {}
-): Promise<void>
+    context: ExecutionContext,
+    options: MainOptions = {}
+  ): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -151,11 +151,11 @@ async function applyPatch(
 }
 
 async function applyPatchCommand(
-  context: ExecutionContext,
-  envelope: Envelope,
-  command: { command: string; },
-  rollbackFeed: RollbackFeed
-): Promise<void>
+    context: ExecutionContext,
+    envelope: Envelope,
+    command: { command: string; },
+    rollbackFeed: RollbackFeed
+  ): Promise<void>
 {
   if (command.command === 'read') {
     await read(
@@ -185,8 +185,8 @@ async function applyPatchCommand(
 }
 
 async function verifyPatch(
-  patchVerifyCmd?: string
-): Promise<void>
+    patchVerifyCmd?: string
+  ): Promise<void>
 {
   if (
     patchVerifyCmd === undefined
@@ -207,8 +207,8 @@ async function verifyPatch(
 }
 
 async function runCommand(
-  command: string
-): Promise<number | null>
+    command: string
+  ): Promise<number | null>
 {
   return new Promise(
     (resolve, reject) =>

@@ -13,9 +13,9 @@ import { ExecutionContext,
   from './types.js';
 
 export function configureRestoreCommand(
-  program: Command,
-  _context: ExecutionContext
-): void
+    program: Command,
+    _context: ExecutionContext
+  ): void
 {
   program
     .command(
@@ -44,8 +44,8 @@ export function configureRestoreCommand(
 }
 
 async function restoreCmd(
-  options: MainOptions = {}
-): Promise<void>
+    options: MainOptions = {}
+  ): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(

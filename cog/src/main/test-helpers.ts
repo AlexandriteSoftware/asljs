@@ -1,6 +1,6 @@
 export function argv(
-  ...args: string[]
-): string[]
+    ...args: string[]
+  ): string[]
 {
   return [
     'node',
@@ -10,8 +10,8 @@ export function argv(
 }
 
 export function quoteShellArg(
-  value: string
-): string
+    value: string
+  ): string
 {
   return `"${
     value.replace(
@@ -22,8 +22,8 @@ export function quoteShellArg(
 }
 
 export function nodeCommand(
-  source: string
-): string
+    source: string
+  ): string
 {
   return `${
     quoteShellArg(
@@ -37,9 +37,9 @@ export function nodeCommand(
 }
 
 export function withEnv(
-  updates: Record<string, string | undefined>,
-  action: () => void | Promise<void>
-): Promise<void>
+    updates: Record<string, string | undefined>,
+    action: () => void | Promise<void>
+  ): Promise<void>
 {
   const previous =
     new Map<string, string | undefined>();

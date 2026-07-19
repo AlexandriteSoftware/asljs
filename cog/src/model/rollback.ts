@@ -198,8 +198,8 @@ export class BackupRollbackFeed implements RollbackFeed
 }
 
 async function restoreFile(
-  file: BackupFile
-): Promise<void>
+    file: BackupFile
+  ): Promise<void>
 {
   if (file.existed) {
     await mkdir(

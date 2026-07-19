@@ -190,8 +190,8 @@ export class PinoLoggerAdapter implements RootLogger
  * - `COG_LOG_FILE`: The file path to write logs to (if specified).
  */
 export function createLogger(
-  options: Partial<LoggerOptions> = {}
-): RootLogger
+    options: Partial<LoggerOptions> = {}
+  ): RootLogger
 {
   const envVarPrefix = 'COG_';
 

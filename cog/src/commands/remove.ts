@@ -15,11 +15,11 @@ export interface Remove extends Command
 }
 
 export async function remove(
-  envelope: Envelope,
-  command: Remove,
-  rollbackFeed?: RollbackFeed,
-  context?: ExecutionContext
-): Promise<void>
+    envelope: Envelope,
+    command: Remove,
+    rollbackFeed?: RollbackFeed,
+    context?: ExecutionContext
+  ): Promise<void>
 {
   await rollbackFeed?.saveFileState(
     command.path
@@ -49,8 +49,8 @@ export async function remove(
 }
 
 export async function rollbackRemove(
-  rollbackFeed: RollbackFeed
-): Promise<void>
+    rollbackFeed: RollbackFeed
+  ): Promise<void>
 {
   await rollbackFeed.rollbackLast();
 }

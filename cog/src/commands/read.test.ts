@@ -28,7 +28,8 @@ test.after(
   () => logger.dispose()
 );
 
-function emptyEnvelope(): Envelope
+function emptyEnvelope(
+  ): Envelope
 {
   return {
     instruction: '',

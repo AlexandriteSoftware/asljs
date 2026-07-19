@@ -16,10 +16,10 @@ export interface Write extends Command
 }
 
 export async function write(
-  envelope: Envelope,
-  command: Write,
-  rollbackFeed?: RollbackFeed
-): Promise<void>
+    envelope: Envelope,
+    command: Write,
+    rollbackFeed?: RollbackFeed
+  ): Promise<void>
 {
   await rollbackFeed?.saveFileState(
     command.path
@@ -40,8 +40,8 @@ export async function write(
 }
 
 export async function rollbackWrite(
-  rollbackFeed: RollbackFeed
-): Promise<void>
+    rollbackFeed: RollbackFeed
+  ): Promise<void>
 {
   await rollbackFeed.rollbackLast();
 }

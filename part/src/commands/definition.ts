@@ -13,9 +13,9 @@ export interface DefinitionOptions
 }
 
 export async function execDefinition(
-  environment: Environment,
-  options: DefinitionOptions
-): Promise<void>
+    environment: Environment,
+    options: DefinitionOptions
+  ): Promise<void>
 {
   const rootDirectory =
     environment.project;
@@ -40,10 +40,10 @@ export async function execDefinition(
 }
 
 function resolveDefinition(
-  definitions: ArtefactDefinition[],
-  rootDirectory: string,
-  target: string
-): ArtefactDefinition
+    definitions: ArtefactDefinition[],
+    rootDirectory: string,
+    target: string
+  ): ArtefactDefinition
 {
   const normalizedTarget =
     toPosixPath(target);
@@ -89,9 +89,9 @@ function resolveDefinition(
 }
 
 function formatDefinitionDetails(
-  definition: ArtefactDefinition,
-  rootDirectory: string
-): string
+    definition: ArtefactDefinition,
+    rootDirectory: string
+  ): string
 {
   return serializeMarkdownList(
     {
@@ -112,9 +112,9 @@ function formatDefinitionDetails(
 }
 
 function serializeMarkdownList(
-  value: any,
-  indent: number = 0
-): string
+    value: any,
+    indent: number = 0
+  ): string
 {
   if (Array.isArray(value)) {
     return value
@@ -141,10 +141,10 @@ function serializeMarkdownList(
 }
 
 function serializeObjectEntry(
-  key: string,
-  value: any,
-  indent: number
-): string
+    key: string,
+    value: any,
+    indent: number
+  ): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -162,9 +162,9 @@ function serializeObjectEntry(
 }
 
 function serializeArrayEntry(
-  value: any,
-  indent: number
-): string
+    value: any,
+    indent: number
+  ): string
 {
   const prefix =
     ' '.repeat(indent);
@@ -201,8 +201,8 @@ function serializeArrayEntry(
 }
 
 function isScalar(
-  value: any
-): boolean
+    value: any
+  ): boolean
 {
   return value === null
     || typeof value !== 'object';

@@ -12,9 +12,9 @@ import { ExecutionContext,
   from './types.js';
 
 export function configureListCommand(
-  program: Command,
-  context: ExecutionContext
-): void
+    program: Command,
+    context: ExecutionContext
+  ): void
 {
   program
     .command(
@@ -44,9 +44,9 @@ export function configureListCommand(
 }
 
 async function listCmd(
-  context: ExecutionContext,
-  options: MainOptions = {}
-): Promise<void>
+    context: ExecutionContext,
+    options: MainOptions = {}
+  ): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -77,8 +77,8 @@ async function listCmd(
 }
 
 export function formatFileList(
-  envelope: Envelope
-): string
+    envelope: Envelope
+  ): string
 {
   const lines =
     [
@@ -111,8 +111,8 @@ export function formatFileList(
 }
 
 function formatComplete(
-  file: EnvelopeFile
-): string
+    file: EnvelopeFile
+  ): string
 {
   return file.complete === undefined
     ? ''
@@ -122,8 +122,8 @@ function formatComplete(
 }
 
 function escapeMarkdownTableCell(
-  value: string
-): string
+    value: string
+  ): string
 {
   return value
     .replace(

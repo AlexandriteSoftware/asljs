@@ -26,8 +26,8 @@ export interface LoggerOptions
  * - `ASLJS_LOG_FILE`: The file path to write logs to (if specified).
  */
 export function createPinoLoggerProvider(
-  options: Partial<LoggerOptions> = {}
-): LoggerProvider
+    options: Partial<LoggerOptions> = {}
+  ): LoggerProvider
 {
   const envVarPrefix =
     options.envVarPrefix

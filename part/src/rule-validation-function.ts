@@ -33,10 +33,10 @@ export type RuleValidationFunction = (
 ) => Promise<void>;
 
 export function createRuleValidationContext(
-  loggerProvider: LoggerProvider,
-  projectPath: string,
-  definitionsPath: string
-): RuleValidationContext
+    loggerProvider: LoggerProvider,
+    projectPath: string,
+    definitionsPath: string
+  ): RuleValidationContext
 {
   const providers =
     providersFactory(

@@ -26,9 +26,9 @@ import { createPinoLoggerProvider,
   from './logging/pino.js';
 
 export async function runCli(
-  args: string[],
-  environment: Environment | null = null
-): Promise<number>
+    args: string[],
+    environment: Environment | null = null
+  ): Promise<number>
 {
   const ownEnvironment = !environment;
 
@@ -84,8 +84,8 @@ export async function runCli(
 }
 
 function createCli(
-  environment: Environment
-): Command
+    environment: Environment
+  ): Command
 {
   const cli =
     new Command();
@@ -418,10 +418,10 @@ function createCli(
 }
 
 function writeCommanderError(
-  environment: Environment,
-  error: any,
-  cli: Command
-): boolean
+    environment: Environment,
+    error: any,
+    cli: Command
+  ): boolean
 {
   if (!(error instanceof Error)) {
     return false;
@@ -495,8 +495,8 @@ function writeCommanderError(
 }
 
 function tryExtractOptionName(
-  message: string
-): string | null
+    message: string
+  ): string | null
 {
   const match =
     /'(--[^ <']+)/.exec(message);
@@ -530,8 +530,8 @@ function tryExtractOptionName(
  * ignoring empty entries.
  */
 function splitCommaSeparatedOption(
-  value: unknown
-): string[]
+    value: unknown
+  ): string[]
 {
   if (
     typeof value !== 'string'
@@ -555,8 +555,8 @@ function splitCommaSeparatedOption(
  * for non-string values.
  */
 function filterStringOption(
-  value: unknown
-): string
+    value: unknown
+  ): string
 {
   if (typeof value !== 'string') {
     return '';

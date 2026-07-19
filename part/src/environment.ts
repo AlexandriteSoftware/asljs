@@ -51,8 +51,8 @@ export interface Environment
 }
 
 export function createEnvironment(
-  environment: Partial<Environment> = {}
-): Environment
+    environment: Partial<Environment> = {}
+  ): Environment
 {
   const cwd =
     process.cwd();
@@ -109,7 +109,8 @@ interface WritableBuffer
   toString: () => string;
 }
 
-function createInMemoryWritableBuffer(): WritableBuffer
+function createInMemoryWritableBuffer(
+  ): WritableBuffer
 {
   const output: string[] = [];
 

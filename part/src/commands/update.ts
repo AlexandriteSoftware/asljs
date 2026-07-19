@@ -37,10 +37,10 @@ export interface UpdateCommandOptions
 }
 
 export async function execUpdate(
-  logger: Logger,
-  environment: Environment,
-  options: Partial<UpdateCommandOptions> = {}
-): Promise<void>
+    logger: Logger,
+    environment: Environment,
+    options: Partial<UpdateCommandOptions> = {}
+  ): Promise<void>
 {
   logger.trace('start');
 
@@ -288,9 +288,9 @@ export async function execUpdate(
 }
 
 function getExpectedRuleFilePath(
-  definition: ArtefactDefinition,
-  rule: ArtefactDefinitionRule
-): string
+    definition: ArtefactDefinition,
+    rule: ArtefactDefinitionRule
+  ): string
 {
   return path.join(
     path.dirname(
@@ -302,12 +302,12 @@ function getExpectedRuleFilePath(
 }
 
 function buildPrompt(
-  mode: 'create' | 'update',
-  definition: ArtefactDefinition,
-  rule: ArtefactDefinitionRule,
-  targetFilePath: string,
-  currentContent: string | null
-): string
+    mode: 'create' | 'update',
+    definition: ArtefactDefinition,
+    rule: ArtefactDefinitionRule,
+    targetFilePath: string,
+    currentContent: string | null
+  ): string
 {
   const template =
     `
@@ -435,9 +435,9 @@ implementation. Run test cases to ensure the rule implementation is correct.`;
 }
 
 async function runConfiguredCopilotCli(
-  logger: Logger,
-  request: CodeGenerationRequest
-): Promise<string>
+    logger: Logger,
+    request: CodeGenerationRequest
+  ): Promise<string>
 {
   let command =
     process.env.PART_COPILOT_CLI_COMMAND?.trim();
@@ -458,10 +458,10 @@ async function runConfiguredCopilotCli(
 }
 
 async function runCopilotCli(
-  logger: Logger,
-  command: string,
-  request: CodeGenerationRequest
-): Promise<string>
+    logger: Logger,
+    command: string,
+    request: CodeGenerationRequest
+  ): Promise<string>
 {
   logger.trace(
     'runCopilotCli: %s',

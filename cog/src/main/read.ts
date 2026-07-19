@@ -23,9 +23,9 @@ interface ReadCliOptions
 }
 
 export function configureReadCommand(
-  program: Command,
-  context: ExecutionContext
-): void
+    program: Command,
+    context: ExecutionContext
+  ): void
 {
   program
     .command(
@@ -89,11 +89,11 @@ export function configureReadCommand(
 }
 
 async function readCmd(
-  context: ExecutionContext,
-  pattern: string,
-  readOptions: ReadCliOptions,
-  options: MainOptions = {}
-): Promise<void>
+    context: ExecutionContext,
+    pattern: string,
+    readOptions: ReadCliOptions,
+    options: MainOptions = {}
+  ): Promise<void>
 {
   const logger =
     context.logger.scope(
@@ -166,9 +166,9 @@ async function readCmd(
 }
 
 function collect(
-  value: string,
-  values: string[]
-): string[]
+    value: string,
+    values: string[]
+  ): string[]
 {
   return [
     ...values,
@@ -177,9 +177,9 @@ function collect(
 }
 
 function parsePositiveInteger(
-  value: string | undefined,
-  name: string
-): number
+    value: string | undefined,
+    name: string
+  ): number
 {
   const parsed =
     Number.parseInt(
@@ -202,8 +202,8 @@ function parsePositiveInteger(
 }
 
 function normaliseGlobPattern(
-  pattern: string
-): string
+    pattern: string
+  ): string
 {
   return pattern.replace(
     /\\/g,

@@ -10,8 +10,8 @@ export interface Patch
 }
 
 export async function loadPatch(
-  filePath: string
-): Promise<Patch>
+    filePath: string
+  ): Promise<Patch>
 {
   const content =
     await fs.readFile(

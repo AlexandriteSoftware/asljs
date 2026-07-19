@@ -2,8 +2,8 @@ import { Environment }
   from '../environment.js';
 
 export function execConfig(
-  environment: Environment
-): Promise<number>
+    environment: Environment
+  ): Promise<number>
 {
   const output: string[] = [];
 
@@ -41,18 +41,18 @@ export function execConfig(
   return Promise.resolve(0);
 
   function outputEnvVars(
-    ...names: string[]
-  ): void
-  {
+      ...names: string[]
+    ): void
+{
     for (const name of names) {
       outputEnvVar(name);
     }
   }
 
   function outputEnvVar(
-    name: string
-  ): void
-  {
+      name: string
+    ): void
+{
     const value =
       process.env[name]
       || '';

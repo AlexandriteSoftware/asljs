@@ -5,8 +5,8 @@ import { dirname,
   from 'node:path';
 
 export function resolveBackupPath(
-  envelopePath: string
-): string
+    envelopePath: string
+  ): string
 {
   return join(
     dirname(
@@ -18,8 +18,8 @@ export function resolveBackupPath(
 }
 
 export function ensureBackupFileDoesNotExist(
-  backupPath: string
-): void
+    backupPath: string
+  ): void
 {
   if (
     existsSync(

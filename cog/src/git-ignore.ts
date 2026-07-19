@@ -163,8 +163,8 @@ export class GitIgnore
 }
 
 function toPosixPath(
-  path: string
-): string
+    path: string
+  ): string
 {
   const posixPath =
     path.replace(

@@ -5,9 +5,9 @@ export interface Column
 }
 
 export function renderObjectsToMarkdownTable(
-  columns: Column[],
-  objects: Record<string, any>[]
-): string
+    columns: Column[],
+    objects: Record<string, any>[]
+  ): string
 {
   const minWidth = 3;
 
@@ -90,9 +90,9 @@ export function renderObjectsToMarkdownTable(
 }
 
 function renderRow(
-  cells: any[],
-  widths: number[]
-): string
+    cells: any[],
+    widths: number[]
+  ): string
 {
   const md = [];
 

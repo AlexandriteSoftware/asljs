@@ -14,9 +14,9 @@ import { ExecutionContext,
   from './types.js';
 
 export function configureUpdateCommand(
-  program: Command,
-  context: ExecutionContext
-): void
+    program: Command,
+    context: ExecutionContext
+  ): void
 {
   program
     .command(
@@ -46,9 +46,9 @@ export function configureUpdateCommand(
 }
 
 async function updateCmd(
-  context: ExecutionContext,
-  options: MainOptions = {}
-): Promise<void>
+    context: ExecutionContext,
+    options: MainOptions = {}
+  ): Promise<void>
 {
   const envelopePath =
     resolveEnvelopePath(
@@ -74,9 +74,9 @@ async function updateCmd(
 }
 
 export async function updateEnvelopeFiles(
-  envelope: Envelope,
-  context?: ExecutionContext
-): Promise<void>
+    envelope: Envelope,
+    context?: ExecutionContext
+  ): Promise<void>
 {
   const updateCommands =
     envelope.files

@@ -8,8 +8,8 @@ import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 
 export async function execDefinitions(
-  environment: Environment
-): Promise<void>
+    environment: Environment
+  ): Promise<void>
 {
   const rootDirectory =
     environment.project;

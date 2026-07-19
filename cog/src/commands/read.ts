@@ -50,11 +50,11 @@ interface ReadLimits
 }
 
 export async function read(
-  envelope: Envelope,
-  parameters: ReadParameters,
-  _rollbackFeed?: RollbackFeed,
-  context?: ExecutionContext
-): Promise<void>
+    envelope: Envelope,
+    parameters: ReadParameters,
+    _rollbackFeed?: RollbackFeed,
+    context?: ExecutionContext
+  ): Promise<void>
 {
   if (!parameters.pattern) {
     throw new Error(
@@ -112,14 +112,14 @@ export async function read(
 }
 
 export async function rollbackRead(
-  _rollbackFeed: RollbackFeed
-): Promise<void>
+    _rollbackFeed: RollbackFeed
+  ): Promise<void>
 {
 }
 
 function normalizeReadParameters(
-  command: ReadParameters
-): ReadParameters
+    command: ReadParameters
+  ): ReadParameters
 {
   return {
     command: 'read',
@@ -138,9 +138,9 @@ function normalizeReadParameters(
 }
 
 function getUpdateCommand(
-  target: ReadTarget,
-  command: ReadParameters
-): ReadParameters
+    target: ReadTarget,
+    command: ReadParameters
+  ): ReadParameters
 {
   return {
     ...command,
@@ -152,9 +152,9 @@ function getUpdateCommand(
 }
 
 async function getReadTargets(
-  pattern: string,
-  excludes: string[]
-): Promise<ReadTarget[]>
+    pattern: string,
+    excludes: string[]
+  ): Promise<ReadTarget[]>
 {
   const logger =
     createLogger();
@@ -194,9 +194,9 @@ async function getReadTargets(
 }
 
 function toDisplayPath(
-  diskPath: string,
-  pattern: string
-): string
+    diskPath: string,
+    pattern: string
+  ): string
 {
   if (
     path.isAbsolute(
@@ -217,10 +217,10 @@ function toDisplayPath(
 }
 
 async function getEnvelopeFile(
-  target: ReadTarget,
-  update: ReadParameters,
-  limits: ReadLimits
-): Promise<EnvelopeFile>
+    target: ReadTarget,
+    update: ReadParameters,
+    limits: ReadLimits
+  ): Promise<EnvelopeFile>
 {
   const data =
     await fsp.readFile(
@@ -267,12 +267,9 @@ async function getEnvelopeFile(
 }
 
 function limitText(
-  content: string,
-  limits: ReadLimits
-): {
-  content: string;
-  complete: boolean;
-}
+    content: string,
+    limits: ReadLimits
+  ): { content: string; complete: boolean; }
 {
   if (limits.readToEnd) {
     return {
@@ -333,8 +330,8 @@ function limitText(
 }
 
 function normalizeSlashes(
-  value: string
-): string
+    value: string
+  ): string
 {
   return value.replace(
     /\\/g,
@@ -343,8 +340,8 @@ function normalizeSlashes(
 }
 
 function stripDotSlash(
-  value: string
-): string
+    value: string
+  ): string
 {
   return value.replace(
     /^\.\//,
