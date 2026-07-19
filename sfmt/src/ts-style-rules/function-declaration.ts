@@ -118,14 +118,10 @@ function checkLayout(
   }
 
   ensureNodeAndLocation(
-    openingParen
+    openingParen,
+    'Punctuator',
+    '('
   );
-
-  if (openingParen.value !== '(') {
-    throw new Error(
-      'Expected opening parenthesis after function name.'
-    );
-  }
 
   const openingParenEndLine =
     openingParen.loc.end.line;
@@ -193,15 +189,7 @@ function checkLayout(
     }
   }
 
-  const closingParen =
-    context.sourceCode
-    .getTokenBefore(
-      node.body as unknown as ESTree.Node
-    );
-
-  ensureNodeAndLocation(
-    closingParen
-  );
+  let closingParen: AST.Token | null = null;
 
   if (parameters.length > 0) {
     const lastParameter =
@@ -209,6 +197,17 @@ function checkLayout(
 
     ensureNodeAndLocation(
       lastParameter
+    );
+
+    closingParen = context.sourceCode
+      .getTokenAfter(
+        lastParameter as unknown as ESTree.Node
+      );
+
+    ensureNodeAndLocation(
+      closingParen,
+      'Punctuator',
+      ')'
     );
 
     const closingParenEndLine =
@@ -220,6 +219,17 @@ function checkLayout(
   } else {
     const openingParenEndLine =
       openingParen.loc.end.line;
+
+    closingParen = context.sourceCode
+      .getTokenAfter(
+        openingParen as unknown as ESTree.Node
+      );
+
+    ensureNodeAndLocation(
+      closingParen,
+      'Punctuator',
+      ')'
+    );
 
     const closingParenStartLine =
       closingParen.loc.start.line;

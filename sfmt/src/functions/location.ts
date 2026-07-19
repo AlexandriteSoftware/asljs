@@ -35,7 +35,9 @@ export function ensureNodeAndLocation(
     node:
     | TSESTree.Node
     | AST.Token
-    | null
+    | null,
+    nodeType?: string,
+    nodeValue?: string
   ): asserts node is NodeOrTokenWithLocation
 {
   if (
@@ -45,5 +47,24 @@ export function ensureNodeAndLocation(
     || !node.loc.end
   ) {
     throw new LocationIncompleteError();
+  }
+
+  if (
+    nodeType
+    && node.type !== nodeType
+  ) {
+    throw new Error(
+      `Expected node of type "${nodeType}", but found "${node.type}".`
+    );
+  }
+
+  if (
+    nodeValue
+    && 'value' in node
+    && node.value !== nodeValue
+  ) {
+    throw new Error(
+      `Expected node with value "${nodeValue}", but found "${node.value}".`
+    );
   }
 }

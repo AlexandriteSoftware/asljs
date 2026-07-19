@@ -245,7 +245,7 @@ function isFormatterDefinition(
 }
 ```
 
-```ts focus
+```ts
 function test<T>(value: T): T {
   return value;
 }
@@ -255,5 +255,21 @@ function test<T>(
   ): T
 {
   return value;
+}
+```
+
+```ts
+function isUser(msg: string): msg is { role: 'user'
+}
+{
+  return msg.role === 'user';
+}
+// ---
+function isUser(
+    msg: string
+  ): msg is { role: 'user'
+}
+{
+  return msg.role === 'user';
 }
 ```
