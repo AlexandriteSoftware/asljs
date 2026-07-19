@@ -216,9 +216,9 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
 };
 
 export async function listAvailableModels(
-  apiKey: string,
-  transport: AiModelsTransport = DEFAULT_MODELS_TRANSPORT
-): Promise<AvailableModelResult[]>
+    apiKey: string,
+    transport: AiModelsTransport = DEFAULT_MODELS_TRANSPORT
+  ): Promise<AvailableModelResult[]>
 {
   if (apiKey.trim() === '') {
     return [];
@@ -228,12 +228,12 @@ export async function listAvailableModels(
 }
 
 export async function generateApp(
-  prompt: string,
-  apiKey: string,
-  model: AiModel,
-  tools: AiTools,
-  options?: GenerateAppOptions
-): Promise<AgentRunResult>
+    prompt: string,
+    apiKey: string,
+    model: AiModel,
+    tools: AiTools,
+    options?: GenerateAppOptions
+  ): Promise<AgentRunResult>
 {
   const transport =
     options?.transport ?? DEFAULT_TRANSPORT;
@@ -367,8 +367,8 @@ export async function generateApp(
 }
 
 function normalizeInitialStepLimit(
-  value: number | undefined
-): number
+    value: number | undefined
+  ): number
 {
   if (!Number.isFinite(value)) {
     return DEFAULT_MAX_TOOL_STEPS;
@@ -384,9 +384,9 @@ function normalizeInitialStepLimit(
 }
 
 async function reportProgress(
-  options: GenerateAppOptions | undefined,
-  message: string
-): Promise<void>
+    options: GenerateAppOptions | undefined,
+    message: string
+  ): Promise<void>
 {
   if (options?.onProgress === undefined) {
     return;
@@ -398,8 +398,8 @@ async function reportProgress(
 }
 
 function getOpenAiErrorMessage(
-  payload: Record<string, unknown>
-): string | null
+    payload: Record<string, unknown>
+  ): string | null
 {
   const error =
     payload.error as { message?: unknown; } | undefined;
@@ -409,7 +409,9 @@ function getOpenAiErrorMessage(
     : null;
 }
 
-function extractResponsesSummary(data: ResponsesResult): string
+function extractResponsesSummary(
+    data: ResponsesResult
+  ): string
 {
   if (typeof data.output_text === 'string' && data.output_text.trim() !== '') {
     return data.output_text.trim();

@@ -114,12 +114,14 @@ import { CHANGE_FILE,
 
 renderAppBuilderShell();
 
-function randomId(): string
+function randomId(
+  ): string
 {
   return crypto.randomUUID();
 }
 
-function now(): string
+function now(
+  ): string
 {
   return new Date().toISOString();
 }
@@ -324,7 +326,8 @@ type BrowserEsbuildApi = {
   ) => Promise<{ code: string; }>;
 };
 
-function configureShellControls(): void
+function configureShellControls(
+  ): void
 {
   configureButton(
     elBtnSettings,
@@ -464,12 +467,15 @@ function configureShellControls(): void
   );
 }
 
-function isMobileViewport(): boolean
+function isMobileViewport(
+  ): boolean
 {
   return window.getComputedStyle(elMobileTabBar).display !== 'none';
 }
 
-function setMobileWorkspaceTab(tab: MobileWorkspaceTab): void
+function setMobileWorkspaceTab(
+    tab: MobileWorkspaceTab
+  ): void
 {
   elPanels.classList.remove(
     'mobile-tab-chat',
@@ -506,12 +512,14 @@ function setMobileWorkspaceTab(tab: MobileWorkspaceTab): void
   }
 }
 
-function renderPreviewTitle(): void
+function renderPreviewTitle(
+  ): void
 {
   elPreviewTitle.textContent = getCurrentApp()?.name ?? 'Preview';
 }
 
-function getLinkSharingService(): LinkSharingService
+function getLinkSharingService(
+  ): LinkSharingService
 {
   linkSharingService = linkSharingService
     ?? createLinkSharingService(
@@ -526,7 +534,8 @@ function getLinkSharingService(): LinkSharingService
   return linkSharingService;
 }
 
-function loadSettings(): Settings
+function loadSettings(
+  ): Settings
 {
   try {
     const raw =
@@ -538,7 +547,9 @@ function loadSettings(): Settings
   }
 }
 
-function saveSettings(settings: Settings): void
+function saveSettings(
+    settings: Settings
+  ): void
 {
   localStorage.setItem(
     SETTINGS_KEY,
@@ -546,7 +557,8 @@ function saveSettings(settings: Settings): void
   );
 }
 
-async function refreshCurrentAppOpenAiApiKey(): Promise<string>
+async function refreshCurrentAppOpenAiApiKey(
+  ): Promise<string>
 {
   if (state.currentAppId === null) {
     currentAppOpenAiApiKey = '';
@@ -560,12 +572,14 @@ async function refreshCurrentAppOpenAiApiKey(): Promise<string>
   return currentAppOpenAiApiKey;
 }
 
-function getCurrentAppOpenAiApiKey(): string
+function getCurrentAppOpenAiApiKey(
+  ): string
 {
   return currentAppOpenAiApiKey;
 }
 
-function getChatModel(): AiModel
+function getChatModel(
+  ): AiModel
 {
   return pickSavedOrDefaultModel(
     loadSettings().chatModel,
@@ -573,7 +587,8 @@ function getChatModel(): AiModel
   );
 }
 
-function getCodeGenerationModel(): AiModel
+function getCodeGenerationModel(
+  ): AiModel
 {
   return pickSavedOrDefaultModel(
     loadSettings().generationModel,
@@ -581,7 +596,8 @@ function getCodeGenerationModel(): AiModel
   );
 }
 
-function getMaxToolSteps(): number
+function getMaxToolSteps(
+  ): number
 {
   const candidate =
     loadSettings().maxToolSteps;
@@ -601,7 +617,8 @@ function getMaxToolSteps(): number
   return normalized;
 }
 
-function getTheme(): 'dark' | 'light'
+function getTheme(
+  ): 'dark' | 'light'
 {
   const candidate =
     loadSettings().theme;
@@ -611,7 +628,8 @@ function getTheme(): 'dark' | 'light'
     : DEFAULT_THEME;
 }
 
-function getFontSize(): number
+function getFontSize(
+  ): number
 {
   const candidate =
     loadSettings().fontSize;
@@ -631,7 +649,8 @@ function getFontSize(): number
   return normalized;
 }
 
-function applyAppearanceSettings(): void
+function applyAppearanceSettings(
+  ): void
 {
   document.documentElement.setAttribute(
     'data-bs-theme',
@@ -641,7 +660,9 @@ function applyAppearanceSettings(): void
   document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
 
-function normalizeExistingUuid(value: unknown): string | null
+function normalizeExistingUuid(
+    value: unknown
+  ): string | null
 {
   if (typeof value !== 'string') {
     return null;
@@ -655,14 +676,15 @@ function normalizeExistingUuid(value: unknown): string | null
     : normalized;
 }
 
-function createAppUuid(): string
+function createAppUuid(
+  ): string
 {
   return crypto.randomUUID();
 }
 
 async function ensureAppsHaveUniqueUuids(
-  apps: AppRecord[]
-): Promise<AppRecord[]>
+    apps: AppRecord[]
+  ): Promise<AppRecord[]>
 {
   const used =
     new Set<string>();
@@ -699,14 +721,17 @@ async function ensureAppsHaveUniqueUuids(
   return normalized;
 }
 
-function getCurrentApp(): AppRecord | undefined
+function getCurrentApp(
+  ): AppRecord | undefined
 {
   return state.apps.find(
     item => item.id === state.currentAppId
   );
 }
 
-async function saveAppAndReplaceInState(app: AppRecord): Promise<void>
+async function saveAppAndReplaceInState(
+    app: AppRecord
+  ): Promise<void>
 {
   await saveApp(app);
 
@@ -719,7 +744,8 @@ async function saveAppAndReplaceInState(app: AppRecord): Promise<void>
   );
 }
 
-async function regenerateCurrentAppUuidForFileChange(): Promise<void>
+async function regenerateCurrentAppUuidForFileChange(
+  ): Promise<void>
 {
   const app =
     getCurrentApp();
@@ -830,7 +856,8 @@ const appRuntimeTools =
       })
   });
 
-function renderAppList(): void
+function renderAppList(
+  ): void
 {
   renderAppListUi(
     {
@@ -843,7 +870,8 @@ function renderAppList(): void
   );
 }
 
-function renderWorkspace(): void
+function renderWorkspace(
+  ): void
 {
   elAppWorkspace.classList.remove('hidden');
 
@@ -871,11 +899,11 @@ function renderWorkspace(): void
 }
 
 async function createFirstApp(
-  values: {
+    values: {
     name: string;
     apiKey: string;
   }
-): Promise<void>
+  ): Promise<void>
 {
   const app: AppRecord =
     {
@@ -912,11 +940,11 @@ async function createFirstApp(
 }
 
 async function createTodoSampleApp(
-  values: {
+    values: {
     name: string;
     apiKey: string;
   }
-): Promise<void>
+  ): Promise<void>
 {
   const sample =
     getSampleByName('TODO Sample');
@@ -971,7 +999,8 @@ async function createTodoSampleApp(
   );
 }
 
-function renderFileSelect(): void
+function renderFileSelect(
+  ): void
 {
   renderFileSelectUi(
     {
@@ -982,7 +1011,8 @@ function renderFileSelect(): void
   );
 }
 
-function renderFileContent(): void
+function renderFileContent(
+  ): void
 {
   renderFileContentUi(
     {
@@ -1007,29 +1037,35 @@ function renderFileContent(): void
   );
 }
 
-function setGenerating(value: boolean): void
+function setGenerating(
+    value: boolean
+  ): void
 {
   state.generating = value;
   elBtnStartGeneration.disabled = value || state.generationBusy;
 }
 
-function setGenerationBusy(value: boolean): void
+function setGenerationBusy(
+    value: boolean
+  ): void
 {
   state.generationBusy = value;
   elBtnStartGeneration.disabled = value || state.generating;
   elBtnStopGeneration.disabled = !value;
 }
 
-function setGenerationStatus(message: string): void
+function setGenerationStatus(
+    message: string
+  ): void
 {
   state.generationStatus = message;
   elGenerationStatus.textContent = message;
 }
 
 function appendChatMessage(
-  role: 'user' | 'assistant',
-  text: string
-): void
+    role: 'user' | 'assistant',
+    text: string
+  ): void
 {
   currentAiChatModel?.appendMessage(
     role,
@@ -1039,15 +1075,16 @@ function appendChatMessage(
   syncStateChatMessagesFromAiChatModel();
 }
 
-function clearChoicePrompt(): void
+function clearChoicePrompt(
+  ): void
 {
   currentAiChatModel?.dismissChoices();
 }
 
 function showChoicePrompt(
-  question: string,
-  options: string[]
-): void
+    question: string,
+    options: string[]
+  ): void
 {
   if (currentAiChatModel === null) {
     return;
@@ -1060,7 +1097,8 @@ function showChoicePrompt(
   );
 }
 
-function resetChatConversation(): void
+function resetChatConversation(
+  ): void
 {
   currentAiChatModel?.clearMessages();
   currentAiChatModel?.dismissChoices();
@@ -1068,7 +1106,8 @@ function resetChatConversation(): void
   syncStateChatMessagesFromAiChatModel();
 }
 
-function syncStateChatMessagesFromAiChatModel(): void
+function syncStateChatMessagesFromAiChatModel(
+  ): void
 {
   state.chatMessages = currentAiChatModel === null
     ? []
@@ -1083,8 +1122,8 @@ function syncStateChatMessagesFromAiChatModel(): void
 }
 
 function isUserOrAssistantMessage(
-  message: { role: string; }
-): message is {
+    message: { role: string; }
+  ): message is {
   role: 'user' | 'assistant';
   content: string;
 }
@@ -1093,7 +1132,8 @@ function isUserOrAssistantMessage(
     || message.role === 'assistant';
 }
 
-async function mountAiChatForCurrentApp(): Promise<void>
+async function mountAiChatForCurrentApp(
+  ): Promise<void>
 {
   if (state.currentAppId === null) {
     currentAiChatModel = null;
@@ -1236,7 +1276,8 @@ async function mountAiChatForCurrentApp(): Promise<void>
   syncStateChatMessagesFromAiChatModel();
 }
 
-async function persistCurrentFile(): Promise<void>
+async function persistCurrentFile(
+  ): Promise<void>
 {
   if (state.activeFileName === null || state.currentAppId === null) {
     return;
@@ -1269,7 +1310,9 @@ async function persistCurrentFile(): Promise<void>
   await regenerateCurrentAppUuidForFileChange();
 }
 
-async function openApp(id: string): Promise<void>
+async function openApp(
+    id: string
+  ): Promise<void>
 {
   state.currentAppId = id;
 
@@ -1308,13 +1351,14 @@ async function openApp(id: string): Promise<void>
 }
 
 function pickFirstFileName(
-  files: Array<{ name: string; }>
-): string | null
+    files: Array<{ name: string; }>
+  ): string | null
 {
   return files[0]?.name ?? null;
 }
 
-function promptNewApp(): void
+function promptNewApp(
+  ): void
 {
   nameModal.open(
     {
@@ -1353,7 +1397,8 @@ function promptNewApp(): void
   );
 }
 
-function promptRenameApp(): void
+function promptRenameApp(
+  ): void
 {
   const app =
     state.apps.find(
@@ -1391,7 +1436,8 @@ function promptRenameApp(): void
   );
 }
 
-function openProjectSettings(): void
+function openProjectSettings(
+  ): void
 {
   const app =
     state.apps.find(
@@ -1411,12 +1457,12 @@ function openProjectSettings(): void
 }
 
 async function saveProjectSettings(
-  values: {
+    values: {
     name: string;
     authorName: string;
     authorEmail: string;
   }
-): Promise<void>
+  ): Promise<void>
 {
   const app =
     state.apps.find(
@@ -1457,7 +1503,8 @@ async function saveProjectSettings(
   );
 }
 
-async function confirmDeleteApp(): Promise<void>
+async function confirmDeleteApp(
+  ): Promise<void>
 {
   const app =
     state.apps.find(
@@ -1490,7 +1537,8 @@ async function confirmDeleteApp(): Promise<void>
   elPreviewFrame.src = 'about:blank';
 }
 
-async function handleStartGeneration(): Promise<void>
+async function handleStartGeneration(
+  ): Promise<void>
 {
   if (state.generating) {
     setGenerationStatus(
@@ -1620,7 +1668,8 @@ async function handleStartGeneration(): Promise<void>
   }
 }
 
-function handleStopGeneration(): void
+function handleStopGeneration(
+  ): void
 {
   if (!state.generationBusy) {
     return;
@@ -1633,7 +1682,8 @@ function handleStopGeneration(): void
   );
 }
 
-function handleRun(): void
+function handleRun(
+  ): void
 {
   if (isMobileViewport()) {
     setMobileWorkspaceTab('run');
@@ -1653,7 +1703,8 @@ function handleRun(): void
   );
 }
 
-async function buildExportPayload(): Promise<ExportPayload>
+async function buildExportPayload(
+  ): Promise<ExportPayload>
 {
   await persistCurrentFile();
 
@@ -1672,7 +1723,9 @@ async function buildExportPayload(): Promise<ExportPayload>
   );
 }
 
-function downloadExportPayload(payload: ExportPayload): void
+function downloadExportPayload(
+    payload: ExportPayload
+  ): void
 {
   const blob =
     new Blob([JSON.stringify(payload)], {
@@ -1699,11 +1752,11 @@ function downloadExportPayload(payload: ExportPayload): void
 }
 
 async function buildSharePayload(
-  options: {
+    options: {
     minified: boolean;
     excludeNonApplicationFiles: boolean;
   }
-): Promise<ExportPayload>
+  ): Promise<ExportPayload>
 {
   let payload =
     await buildExportPayload();
@@ -1733,9 +1786,9 @@ async function buildSharePayload(
 }
 
 async function transformWithBrowserEsbuild(
-  source: string,
-  loader: SharePayloadMinifyLoader
-): Promise<string>
+    source: string,
+    loader: SharePayloadMinifyLoader
+  ): Promise<string>
 {
   const esbuildApi =
     await getBrowserEsbuildApi();
@@ -1752,7 +1805,8 @@ async function transformWithBrowserEsbuild(
   return result.code.trim();
 }
 
-async function getBrowserEsbuildApi(): Promise<BrowserEsbuildApi>
+async function getBrowserEsbuildApi(
+  ): Promise<BrowserEsbuildApi>
 {
   if (browserEsbuildApiPromise !== null) {
     return browserEsbuildApiPromise;
@@ -1772,7 +1826,9 @@ async function getBrowserEsbuildApi(): Promise<BrowserEsbuildApi>
   return browserEsbuildApiPromise;
 }
 
-function formatImportAuthor(author: ImportedPayload['author']): string
+function formatImportAuthor(
+    author: ImportedPayload['author']
+  ): string
 {
   const name =
     author?.name?.trim() ?? '';
@@ -1793,7 +1849,9 @@ function formatImportAuthor(author: ImportedPayload['author']): string
   return `Author: ${displayName}\nEmail: ${displayEmail}`;
 }
 
-function confirmImportSafetyNotice(payload: ImportedPayload): boolean
+function confirmImportSafetyNotice(
+    payload: ImportedPayload
+  ): boolean
 {
   return confirm(
     'Security warning: You are about to import an application.\n\n'
@@ -1808,7 +1866,9 @@ function confirmImportSafetyNotice(payload: ImportedPayload): boolean
   );
 }
 
-function setWorkspaceMode(mode: 'edit' | 'run'): void
+function setWorkspaceMode(
+    mode: 'edit' | 'run'
+  ): void
 {
   const collapsed =
     mode === 'run';
@@ -1862,7 +1922,8 @@ function setWorkspaceMode(mode: 'edit' | 'run'): void
   }
 }
 
-function askPostLinkImportMode(): 'edit' | 'run'
+function askPostLinkImportMode(
+  ): 'edit' | 'run'
 {
   const run =
     confirm(
@@ -1875,7 +1936,8 @@ function askPostLinkImportMode(): 'edit' | 'run'
     : 'edit';
 }
 
-function handleImportClick(): void
+function handleImportClick(
+  ): void
 {
   elImportFile.value = '';
   elImportFile.click();
@@ -1887,9 +1949,9 @@ type ImportPayloadOptions = {
 };
 
 async function importPayload(
-  payload: ImportedPayload,
-  options: ImportPayloadOptions
-): Promise<string | null>
+    payload: ImportedPayload,
+    options: ImportPayloadOptions
+  ): Promise<string | null>
 {
   const plan =
     createImportPlan(
@@ -1938,7 +2000,8 @@ async function importPayload(
   return plan.app.id;
 }
 
-async function handleImportFile(): Promise<void>
+async function handleImportFile(
+  ): Promise<void>
 {
   const file =
     elImportFile.files?.[0];
@@ -1977,14 +2040,16 @@ async function handleImportFile(): Promise<void>
   }
 }
 
-function getImportHashToken(): string | null
+function getImportHashToken(
+  ): string | null
 {
   return getLinkSharingService().readTokenFromHash(
     window.location.hash
   );
 }
 
-function clearImportHashFromUrl(): void
+function clearImportHashFromUrl(
+  ): void
 {
   window.history.pushState(
     null,
@@ -1993,7 +2058,8 @@ function clearImportHashFromUrl(): void
   );
 }
 
-async function handleImportFromHashOnStartup(): Promise<boolean>
+async function handleImportFromHashOnStartup(
+  ): Promise<boolean>
 {
   const token =
     getImportHashToken();
@@ -2096,10 +2162,10 @@ async function handleImportFromHashOnStartup(): Promise<boolean>
 }
 
 async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  timeoutMessage: string
-): Promise<T>
+    promise: Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string
+  ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
@@ -2129,11 +2195,11 @@ async function withTimeout<T>(
 }
 
 async function prepareShareLink(
-  options: {
+    options: {
     minified: boolean;
     excludeNonApplicationFiles: boolean;
   }
-): Promise<{
+  ): Promise<{
   url: string;
   status: string;
 }>
@@ -2172,11 +2238,11 @@ async function prepareShareLink(
 }
 
 async function downloadShareExport(
-  options: {
+    options: {
     minified: boolean;
     excludeNonApplicationFiles: boolean;
   }
-): Promise<void>
+  ): Promise<void>
 {
   const payload =
     await buildSharePayload(options);
@@ -2185,13 +2251,13 @@ async function downloadShareExport(
 }
 
 async function saveSettingsFromModal(
-  values: {
+    values: {
     apiKey: string;
     theme: string;
     fontSizeText: string;
     maxToolStepsText: string;
   }
-): Promise<void>
+  ): Promise<void>
 {
   const settings =
     loadSettings();
@@ -2245,10 +2311,10 @@ async function saveSettingsFromModal(
 }
 
 function syncModelSelectOptions(
-  selectElement: AppBuilderSelectElement,
-  modelIds: string[],
-  selectedValue: string
-): void
+    selectElement: AppBuilderSelectElement,
+    modelIds: string[],
+    selectedValue: string
+  ): void
 {
   const currentValue =
     readControlValue(selectElement);
@@ -2277,7 +2343,8 @@ function syncModelSelectOptions(
   );
 }
 
-function refreshLaneModelSelectOptions(): void
+function refreshLaneModelSelectOptions(
+  ): void
 {
   const modelIds =
     dedupeModels(
@@ -2302,9 +2369,9 @@ function refreshLaneModelSelectOptions(): void
 }
 
 function pickSavedOrDefaultModel(
-  savedValue: string | undefined,
-  defaultValue: string
-): string
+    savedValue: string | undefined,
+    defaultValue: string
+  ): string
 {
   const modelIds =
     dedupeModels(
@@ -2322,7 +2389,8 @@ function pickSavedOrDefaultModel(
   return modelIds[0] ?? defaultValue;
 }
 
-function saveChatModelSelection(): void
+function saveChatModelSelection(
+  ): void
 {
   const settings =
     loadSettings();
@@ -2334,7 +2402,8 @@ function saveChatModelSelection(): void
   saveSettings(settings);
 }
 
-function saveGenerationModelSelection(): void
+function saveGenerationModelSelection(
+  ): void
 {
   const settings =
     loadSettings();
@@ -2346,7 +2415,9 @@ function saveGenerationModelSelection(): void
   saveSettings(settings);
 }
 
-function readCurrentFileContent(fileName: string): string
+function readCurrentFileContent(
+    fileName: string
+  ): string
 {
   return state.files.find(
     file => file.name === fileName
@@ -2354,9 +2425,9 @@ function readCurrentFileContent(fileName: string): string
 }
 
 async function writeCurrentFileContent(
-  fileName: string,
-  content: string
-): Promise<void>
+    fileName: string,
+    content: string
+  ): Promise<void>
 {
   if (state.currentAppId === null) {
     return;
@@ -2392,8 +2463,8 @@ async function writeCurrentFileContent(
 }
 
 async function refreshAvailableModels(
-  apiKey = getCurrentAppOpenAiApiKey()
-): Promise<void>
+    apiKey = getCurrentAppOpenAiApiKey()
+  ): Promise<void>
 {
   const trimmedApiKey =
     apiKey.trim();
@@ -2442,7 +2513,8 @@ async function refreshAvailableModels(
   refreshLaneModelSelectOptions();
 }
 
-function toggleAppsCollapsed(): void
+function toggleAppsCollapsed(
+  ): void
 {
   if (isMobileViewport()) {
     setMobileWorkspaceTab('chat');
@@ -2463,7 +2535,8 @@ function toggleAppsCollapsed(): void
   );
 }
 
-function toggleFilesCollapsed(): void
+function toggleFilesCollapsed(
+  ): void
 {
   if (isMobileViewport()) {
     setMobileWorkspaceTab('files');
@@ -2700,7 +2773,8 @@ window.addEventListener(
   }
 );
 
-async function init(): Promise<void>
+async function init(
+  ): Promise<void>
 {
   applyAppearanceSettings();
   await refreshAvailableModels();

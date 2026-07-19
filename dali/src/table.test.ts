@@ -24,7 +24,8 @@ const TEST_SUITE = 'table';
 
 type TestRecordFields = { id: string; value: string; };
 
-async function openTestDb(): Promise<IDBDatabase>
+async function openTestDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
@@ -45,9 +46,9 @@ async function openTestDb(): Promise<IDBDatabase>
 }
 
 async function seed(
-  db: IDBDatabase,
-  rows: TestRecordFields[]
-): Promise<void>
+    db: IDBDatabase,
+    rows: TestRecordFields[]
+  ): Promise<void>
 {
   const tx =
     db.transaction(
@@ -65,9 +66,9 @@ async function seed(
 }
 
 async function waitFor(
-  predicate: () => boolean,
-  timeoutMs: number = 250
-): Promise<void>
+    predicate: () => boolean,
+    timeoutMs: number = 250
+  ): Promise<void>
 {
   const started =
     Date.now();
@@ -234,7 +235,8 @@ type UuidVersionedRecordFields = {
   version: string;
 };
 
-async function openVersionedTestDb(): Promise<IDBDatabase>
+async function openVersionedTestDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
@@ -621,8 +623,8 @@ type SoftDeleteRecordFields = {
 };
 
 async function openSoftDeleteTestDb(
-  includeDeletedAwareIndex: boolean = true
-): Promise<IDBDatabase>
+    includeDeletedAwareIndex: boolean = true
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
@@ -651,9 +653,9 @@ async function openSoftDeleteTestDb(
 }
 
 async function getRawRecord(
-  db: IDBDatabase,
-  key: string
-): Promise<SoftDeleteRecordFields | undefined>
+    db: IDBDatabase,
+    key: string
+  ): Promise<SoftDeleteRecordFields | undefined>
 {
   const tx =
     db.transaction(
@@ -1150,7 +1152,8 @@ test(
  * Table's publish call triggers another Table's handler — simulating two
  * browser tabs backed by the same channel.
  */
-function createTestBroadcastService(): TableBroadcastService
+function createTestBroadcastService(
+  ): TableBroadcastService
 {
   const handlers: Array<(m: TableBroadcastMessage) => void> = [];
 

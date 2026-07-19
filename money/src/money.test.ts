@@ -10,10 +10,10 @@ test(
   () =>
   {
     function assertParse(
-      input: any,
-      expectedMinorOrNull: number | null
-    ): void
-    {
+        input: any,
+        expectedMinorOrNull: number | null
+      ): void
+{
       const actual =
         money.parse(input);
 
@@ -101,9 +101,9 @@ test(
   () =>
   {
     function assertFormat(
-      value: string
-    ): void
-    {
+        value: string
+      ): void
+{
       const actual =
         money.fromString(value)
         .toString('f');
@@ -189,10 +189,10 @@ test(
   () =>
   {
     function assertMinor(
-      value: string,
-      expected: number
-    ): void
-    {
+        value: string,
+        expected: number
+      ): void
+{
       const actual =
         money.fromString(value).value;
 
@@ -254,10 +254,10 @@ test(
   () =>
   {
     function assertMinor(
-      value: number,
-      expected: number
-    ): void
-    {
+        value: number,
+        expected: number
+      ): void
+{
       const actual =
         money.fromNumber(value).value;
 
@@ -425,10 +425,10 @@ test(
   () =>
   {
     function assertMinor(
-      value: number,
-      expected: number
-    ): void
-    {
+        value: number,
+        expected: number
+      ): void
+{
       const actual =
         money.fromMajor(value).value;
 
@@ -460,11 +460,11 @@ test(
   () =>
   {
     function assertDist(
-      value: string,
-      count: number,
-      expected: string
-    ): void
-    {
+        value: string,
+        count: number,
+        expected: string
+      ): void
+{
       const actual =
         money.fromString(value)
         .distribute(count)

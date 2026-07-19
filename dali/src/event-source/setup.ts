@@ -3,9 +3,9 @@ import { EVENT_SOURCE_PROJECTION_STORE_NAME,
   from './types.js';
 
 export function eventSourceSetup(
-  db: IDBDatabase,
-  storeName: string = EVENT_SOURCE_STORE_NAME
-): void
+    db: IDBDatabase,
+    storeName: string = EVENT_SOURCE_STORE_NAME
+  ): void
 {
   if (!db.objectStoreNames.contains(storeName)) {
     const store =
@@ -28,9 +28,9 @@ export function eventSourceSetup(
 }
 
 export function eventSourceProjectionSetup(
-  db: IDBDatabase,
-  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-): void
+    db: IDBDatabase,
+    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+  ): void
 {
   if (db.objectStoreNames.contains(storeName)) {
     return;

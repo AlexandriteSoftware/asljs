@@ -122,7 +122,8 @@ class RejectingAppendAdapter extends MemoryEventSourceAdapter
   }
 }
 
-async function openSagaDb(): Promise<IDBDatabase>
+async function openSagaDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `saga-test-${crypto.randomUUID()}`,

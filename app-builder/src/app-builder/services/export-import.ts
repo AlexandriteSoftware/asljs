@@ -32,8 +32,8 @@ export type ImportPlan =
   | { kind: 'new'; app: AppRecord; files: FileRecord[]; };
 
 export function buildExportPayload(
-  options: BuildExportPayloadOptions
-): ExportPayload
+    options: BuildExportPayloadOptions
+  ): ExportPayload
 {
   const files: Record<string, string> = {};
 
@@ -52,8 +52,8 @@ export function buildExportPayload(
 }
 
 export function parseImportedPayloadText(
-  text: string
-): ImportedPayload
+    text: string
+  ): ImportedPayload
 {
   const payload =
     JSON.parse(text) as ImportedPayload;
@@ -64,8 +64,8 @@ export function parseImportedPayloadText(
 }
 
 export function createImportPlan(
-  options: CreateImportPlanOptions
-): ImportPlan
+    options: CreateImportPlanOptions
+  ): ImportPlan
 {
   validateImportedPayload(
     options.payload
@@ -119,7 +119,9 @@ export function createImportPlan(
   };
 }
 
-function validateImportedPayload(payload: ImportedPayload): void
+function validateImportedPayload(
+    payload: ImportedPayload
+  ): void
 {
   if (typeof payload.id !== 'string' || payload.id.trim() === '') {
     throw new Error('Invalid app JSON format.');
@@ -152,7 +154,9 @@ function validateImportedPayload(payload: ImportedPayload): void
   }
 }
 
-function normalizeAuthor(author: AppAuthor | undefined): AppAuthor | undefined
+function normalizeAuthor(
+    author: AppAuthor | undefined
+  ): AppAuthor | undefined
 {
   if (author === undefined) {
     return undefined;
@@ -182,7 +186,9 @@ function normalizeAuthor(author: AppAuthor | undefined): AppAuthor | undefined
   };
 }
 
-function isValidAuthor(value: unknown): boolean
+function isValidAuthor(
+    value: unknown
+  ): boolean
 {
   if (value === undefined) {
     return true;

@@ -605,7 +605,8 @@ test(
   }
 );
 
-async function loadModules(): Promise<void>
+async function loadModules(
+  ): Promise<void>
 {
   await ensureDom();
 
@@ -620,7 +621,8 @@ async function loadModules(): Promise<void>
   modulesLoaded = true;
 }
 
-async function loadAiChatModule(): Promise<typeof AiChatModule>
+async function loadAiChatModule(
+  ): Promise<typeof AiChatModule>
 {
   await ensureDom();
 
@@ -631,7 +633,8 @@ async function loadAiChatModule(): Promise<typeof AiChatModule>
   return aiChatModulePromise;
 }
 
-async function ensureDom(): Promise<void>
+async function ensureDom(
+  ): Promise<void>
 {
   if (domRestore === null) {
     const dom =
@@ -712,8 +715,8 @@ async function ensureDom(): Promise<void>
 }
 
 async function settleDeep(
-  element: LitElementLike
-): Promise<void>
+    element: LitElementLike
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

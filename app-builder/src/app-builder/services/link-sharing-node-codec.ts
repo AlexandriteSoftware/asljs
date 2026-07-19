@@ -8,7 +8,8 @@ import { gunzipSync,
 import { TextCompressionCodec }
   from './link-sharing.js';
 
-export function createNodeEsbuildGzipBase64UrlCodec(): TextCompressionCodec
+export function createNodeEsbuildGzipBase64UrlCodec(
+  ): TextCompressionCodec
 {
   return {
     compress: compressTextInNode,
@@ -16,7 +17,9 @@ export function createNodeEsbuildGzipBase64UrlCodec(): TextCompressionCodec
   };
 }
 
-async function compressTextInNode(text: string): Promise<string>
+async function compressTextInNode(
+    text: string
+  ): Promise<string>
 {
   const source =
     `export default ${text};`;
@@ -40,7 +43,9 @@ async function compressTextInNode(text: string): Promise<string>
   return compressed.toString('base64url');
 }
 
-async function decompressTextInNode(value: string): Promise<string>
+async function decompressTextInNode(
+    value: string
+  ): Promise<string>
 {
   const compiledSource =
     gunzipSync(
@@ -63,7 +68,9 @@ async function decompressTextInNode(value: string): Promise<string>
   return JSON.stringify(payload);
 }
 
-function extractDefaultExportExpression(compiledSource: string): string
+function extractDefaultExportExpression(
+    compiledSource: string
+  ): string
 {
   const directMatch =
     compiledSource.match(

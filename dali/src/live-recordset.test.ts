@@ -13,7 +13,8 @@ const TEST_SUITE =
 
 type TestRecord = { id: string; value: string; };
 
-async function openTestDb(): Promise<IDBDatabase>
+async function openTestDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `live-recordset-test-${crypto.randomUUID()}`,
@@ -28,9 +29,9 @@ async function openTestDb(): Promise<IDBDatabase>
 }
 
 async function waitFor(
-  predicate: () => boolean,
-  timeoutMs: number = 250
-): Promise<void>
+    predicate: () => boolean,
+    timeoutMs: number = 250
+  ): Promise<void>
 {
   const started =
     Date.now();
@@ -50,8 +51,8 @@ async function waitFor(
 }
 
 function sortedIds(
-  records: readonly TestRecord[]
-): string[]
+    records: readonly TestRecord[]
+  ): string[]
 {
   return records
     .map(

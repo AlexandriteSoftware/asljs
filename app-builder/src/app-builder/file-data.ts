@@ -4,7 +4,9 @@ export type FileDataInfo = {
   dataUrl: string;
 };
 
-export function readFileDataInfo(content: string): FileDataInfo | null
+export function readFileDataInfo(
+    content: string
+  ): FileDataInfo | null
 {
   const trimmed =
     content.trim();
@@ -26,7 +28,9 @@ export function readFileDataInfo(content: string): FileDataInfo | null
   };
 }
 
-export function isImageMimeType(mimeType: string): boolean
+export function isImageMimeType(
+    mimeType: string
+  ): boolean
 {
   return /^image\//i.test(
     mimeType.trim()

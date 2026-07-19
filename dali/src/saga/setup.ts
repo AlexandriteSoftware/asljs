@@ -3,9 +3,9 @@ import { SAGA_ENTRIES_STORE_NAME,
   from './types.js';
 
 export function sagaSetup(
-  db: IDBDatabase,
-  options: { sagaStoreName?: string; entryStoreName?: string; } = {}
-): void
+    db: IDBDatabase,
+    options: { sagaStoreName?: string; entryStoreName?: string; } = {}
+  ): void
 {
   const sagaStoreName =
     options.sagaStoreName

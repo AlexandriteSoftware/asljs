@@ -718,7 +718,8 @@ test(
   }
 );
 
-async function ensureDomAndListLoaded(): Promise<void>
+async function ensureDomAndListLoaded(
+  ): Promise<void>
 {
   if (domRestore === null) {
     domRestore = installDom();
@@ -730,14 +731,15 @@ async function ensureDomAndListLoaded(): Promise<void>
   }
 }
 
-function resetDomBody(): void
+function resetDomBody(
+  ): void
 {
   document.body.replaceChildren();
 }
 
 async function settle(
-  list: { updateComplete: Promise<boolean>; }
-): Promise<void>
+    list: { updateComplete: Promise<boolean>; }
+  ): Promise<void>
 {
   await list.updateComplete;
   await nextTick();
@@ -745,8 +747,8 @@ async function settle(
 }
 
 async function waitFor(
-  predicate: () => boolean
-): Promise<void>
+    predicate: () => boolean
+  ): Promise<void>
 {
   for (let index = 0; index < 50; index++) {
     if (predicate()) {
@@ -759,7 +761,8 @@ async function waitFor(
   throw new Error('waitFor timeout');
 }
 
-function nextTick(): Promise<void>
+function nextTick(
+  ): Promise<void>
 {
   return new Promise(resolve =>
   {
@@ -773,7 +776,8 @@ function nextTick(): Promise<void>
   });
 }
 
-function installDom(): () => void
+function installDom(
+  ): () => void
 {
   const dom =
     new JSDOM(

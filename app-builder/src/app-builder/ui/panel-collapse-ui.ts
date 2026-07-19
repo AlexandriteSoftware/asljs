@@ -20,8 +20,8 @@ export type TogglePanelUiOptions = {
 };
 
 export function togglePanelUi(
-  options: TogglePanelUiOptions
-): boolean
+    options: TogglePanelUiOptions
+  ): boolean
 {
   const collapsed =
     !options.panelElement.classList.contains('collapsed');

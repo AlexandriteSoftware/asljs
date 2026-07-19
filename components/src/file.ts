@@ -233,7 +233,8 @@ export class FileView extends LitElement
   }
 }
 
-export function createPdfFileHandler(): FileHandler
+export function createPdfFileHandler(
+  ): FileHandler
 {
   return {
     canDisplay: file => isPdfFile(file),
@@ -265,7 +266,8 @@ export function createPdfFileHandler(): FileHandler
   };
 }
 
-export function createImageFileHandler(): FileHandler
+export function createImageFileHandler(
+  ): FileHandler
 {
   return {
     canDisplay: file => isImageFile(file),
@@ -296,7 +298,8 @@ export function createImageFileHandler(): FileHandler
   };
 }
 
-export function createTextFileHandler(): FileHandler
+export function createTextFileHandler(
+  ): FileHandler
 {
   return {
     canDisplay: file => isTextFile(file),
@@ -323,7 +326,8 @@ export function createTextFileHandler(): FileHandler
   };
 }
 
-export function createTextEditorFileHandler(): FileHandler
+export function createTextEditorFileHandler(
+  ): FileHandler
 {
   return {
     canDisplay: file => isTextFile(file),
@@ -377,9 +381,9 @@ export function createTextEditorFileHandler(): FileHandler
 }
 
 async function findHandler(
-  handlers: FileHandler[],
-  file: FileViewData
-): Promise<FileHandler | null>
+    handlers: FileHandler[],
+    file: FileViewData
+  ): Promise<FileHandler | null>
 {
   for (const handler of handlers) {
     if (await handler.canDisplay(file)) {
@@ -391,8 +395,8 @@ async function findHandler(
 }
 
 function createMessageElement(
-  text: string
-): HTMLElement
+    text: string
+  ): HTMLElement
 {
   const element =
     document.createElement('div');
@@ -403,7 +407,8 @@ function createMessageElement(
   return element;
 }
 
-function createUnavailableResult(): FileHandlerRenderResult
+function createUnavailableResult(
+  ): FileHandlerRenderResult
 {
   return {
     element: createMessageElement(
@@ -413,8 +418,8 @@ function createUnavailableResult(): FileHandlerRenderResult
 }
 
 function createFallbackElement(
-  file: FileViewData
-): FileHandlerRenderResult
+    file: FileViewData
+  ): FileHandlerRenderResult
 {
   const root =
     document.createElement('div');
@@ -467,8 +472,8 @@ function createFallbackElement(
 type ObjectUrlSource = { url: string; dispose?: () => void; };
 
 async function getObjectUrlSource(
-  file: FileViewData
-): Promise<ObjectUrlSource | null>
+    file: FileViewData
+  ): Promise<ObjectUrlSource | null>
 {
   if (file.dataUrl) {
     return {
@@ -518,8 +523,8 @@ async function getObjectUrlSource(
 }
 
 async function resolveText(
-  file: FileViewData
-): Promise<string | null>
+    file: FileViewData
+  ): Promise<string | null>
 {
   if (typeof file.text === 'string') {
     return file.text;
@@ -533,8 +538,8 @@ async function resolveText(
 }
 
 function isPdfFile(
-  file: FileViewData
-): boolean
+    file: FileViewData
+  ): boolean
 {
   return normalizeMimeType(
     file.mimeType ?? file.blob?.type)
@@ -543,8 +548,8 @@ function isPdfFile(
 }
 
 function isImageFile(
-  file: FileViewData
-): boolean
+    file: FileViewData
+  ): boolean
 {
   const mimeType =
     normalizeMimeType(
@@ -557,8 +562,8 @@ function isImageFile(
 }
 
 function isTextFile(
-  file: FileViewData
-): boolean
+    file: FileViewData
+  ): boolean
 {
   if (typeof file.text === 'string') {
     return true;
@@ -578,15 +583,15 @@ function isTextFile(
 }
 
 function normalizeMimeType(
-  mimeType: string | null | undefined
-): string
+    mimeType: string | null | undefined
+  ): string
 {
   return (mimeType ?? '').trim().toLowerCase();
 }
 
 function getLowerFileName(
-  file: FileViewData
-): string
+    file: FileViewData
+  ): string
 {
   return file.name.toLowerCase();
 }

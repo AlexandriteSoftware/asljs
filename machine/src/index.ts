@@ -42,9 +42,9 @@ type MachineBacking<TBase extends object> =
   };
 
 export function machine<TBase extends object = {}>(
-  base: TBase = {} as TBase,
-  initial: string
-): TBase & Machine
+    base: TBase = {} as TBase,
+    initial: string
+  ): TBase & Machine
 {
   const initialMachine: MachineBacking<TBase> =
     {

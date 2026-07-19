@@ -14,9 +14,9 @@ import { ensureWatchMethod,
   from './watch.js';
 
 function hasOwn(
-  object: object,
-  key: PropertyKey
-): boolean
+    object: object,
+    key: PropertyKey
+  ): boolean
 {
   return Object.prototype
     .hasOwnProperty
@@ -27,8 +27,8 @@ function hasOwn(
 }
 
 function isArrayIndexProperty(
-  key: PropertyKey
-): boolean
+    key: PropertyKey
+  ): boolean
 {
   if (typeof key === 'symbol') {
     return false;
@@ -52,8 +52,8 @@ function isArrayIndexProperty(
 }
 
 function isEventfulObject(
-  value: any
-): boolean
+    value: any
+  ): boolean
 {
   const eventfulLike =
     asEventfulLike(value);

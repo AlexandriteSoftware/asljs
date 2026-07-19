@@ -235,10 +235,10 @@ const unchangedValue =
     'unchangedValue');
 
 function coercePropertyValue(
-  type: ComponentModelPropertyType,
-  value: string,
-  currentValue: unknown
-): unknown
+    type: ComponentModelPropertyType,
+    value: string,
+    currentValue: unknown
+  ): unknown
 {
   if (type === 'number') {
     if (value.trim() === '') {
@@ -261,9 +261,9 @@ function coercePropertyValue(
 }
 
 function formatPropertyValue(
-  type: ComponentModelPropertyType,
-  value: unknown
-): string
+    type: ComponentModelPropertyType,
+    value: unknown
+  ): string
 {
   if (type === 'string' || type === 'number') {
     return value === null || value === undefined
@@ -295,8 +295,8 @@ function formatPropertyValue(
 }
 
 function isPrimitiveEditable(
-  type: ComponentModelPropertyType
-): boolean
+    type: ComponentModelPropertyType
+  ): boolean
 {
   return type === 'boolean'
     || type === 'number'

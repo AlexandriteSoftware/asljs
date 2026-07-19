@@ -122,10 +122,10 @@ const eventfulImpl =
   return object as (T extends undefined ? {} : T) & Eventful;
 
   function add(
-    event: EventName,
-    listener: Function
-  ): void
-  {
+      event: EventName,
+      listener: Function
+    ): void
+{
     let listeners =
       map.get(event);
 
@@ -140,10 +140,10 @@ const eventfulImpl =
   }
 
   function remove(
-    event: EventName,
-    listener: Function
-  ): boolean
-  {
+      event: EventName,
+      listener: Function
+    ): boolean
+{
     const listeners =
       map.get(event);
 
@@ -162,11 +162,11 @@ const eventfulImpl =
   }
 
   function reportListenerError(
-    event: EventName,
-    listener: Function,
-    err: unknown
-  ): void
-  {
+      event: EventName,
+      listener: Function,
+      err: unknown
+    ): void
+{
     const errorArgs: ListenerErrorArgs =
       {
       error: err,
@@ -197,10 +197,10 @@ const eventfulImpl =
   }
 
   function on(
-    event: EventName,
-    listener: Function
-  ): () => boolean
-  {
+      event: EventName,
+      listener: Function
+    ): () => boolean
+{
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
@@ -227,10 +227,10 @@ const eventfulImpl =
   }
 
   function once(
-    event: EventName,
-    listener: Function
-  ): () => boolean
-  {
+      event: EventName,
+      listener: Function
+    ): () => boolean
+{
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
@@ -250,10 +250,10 @@ const eventfulImpl =
   }
 
   function off(
-    event: EventName,
-    listener: Function
-  ): boolean
-  {
+      event: EventName,
+      listener: Function
+    ): boolean
+{
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
@@ -269,19 +269,19 @@ const eventfulImpl =
   }
 
   function has(
-    event: EventName
-  ): boolean
-  {
+      event: EventName
+    ): boolean
+{
     eventNameTypeGuard(event);
 
     return (map.get(event)?.size ?? 0) > 0;
   }
 
   function emit(
-    event: EventName,
-    ...args: unknown[]
-  ): void
-  {
+      event: EventName,
+      ...args: unknown[]
+    ): void
+{
     eventNameTypeGuard(event);
 
     const listeners =
@@ -317,10 +317,10 @@ const eventfulImpl =
   }
 
   async function emitAsync(
-    event: EventName,
-    ...args: unknown[]
-  ): Promise<void>
-  {
+      event: EventName,
+      ...args: unknown[]
+    ): Promise<void>
+{
     eventNameTypeGuard(event);
 
     const listeners =

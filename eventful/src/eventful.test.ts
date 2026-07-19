@@ -282,8 +282,8 @@ test(
 );
 
 function assertEventfulMethods(
-  object: unknown
-): void
+    object: unknown
+  ): void
 {
   const candidate =
     object as {
@@ -772,7 +772,8 @@ type Recorder = {
   records: () => TraceRecord[];
 };
 
-export function createRecorder(): Recorder
+export function createRecorder(
+  ): Recorder
 {
   const records: TraceRecord[] = [];
 

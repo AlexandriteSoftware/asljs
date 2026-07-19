@@ -13,10 +13,10 @@ import { EVENT_SOURCE_PROJECTION_STORE_NAME,
   from './types.js';
 
 export async function eventSourceGetAll(
-  db: IDBDatabase,
-  tx: IDBTransaction | null = null,
-  storeName: string = EVENT_SOURCE_STORE_NAME
-): Promise<EventSourceTransaction[]>
+    db: IDBDatabase,
+    tx: IDBTransaction | null = null,
+    storeName: string = EVENT_SOURCE_STORE_NAME
+  ): Promise<EventSourceTransaction[]>
 {
   const ltx =
     txReuseOrCreate(
@@ -39,10 +39,10 @@ export async function eventSourceGetAll(
 }
 
 export async function eventSourceProjectionGet(
-  db: IDBDatabase,
-  projectionId: string,
-  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-): Promise<EventSourceProjection | null>
+    db: IDBDatabase,
+    projectionId: string,
+    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+  ): Promise<EventSourceProjection | null>
 {
   const tx =
     txReuseOrCreate(
@@ -62,10 +62,10 @@ export async function eventSourceProjectionGet(
 }
 
 export async function eventSourceProjectionSet(
-  db: IDBDatabase,
-  projection: EventSourceProjection,
-  storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
-): Promise<void>
+    db: IDBDatabase,
+    projection: EventSourceProjection,
+    storeName: string = EVENT_SOURCE_PROJECTION_STORE_NAME
+  ): Promise<void>
 {
   const tx =
     txReuseOrCreate(

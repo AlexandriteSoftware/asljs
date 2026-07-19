@@ -14,9 +14,9 @@ export type SharePayloadTransformer = (
 ) => Promise<string>;
 
 export async function minifySharePayload(
-  payload: ExportPayload,
-  transform: SharePayloadTransformer
-): Promise<ExportPayload>
+    payload: ExportPayload,
+    transform: SharePayloadTransformer
+  ): Promise<ExportPayload>
 {
   const files =
     { ...payload.files };
@@ -50,8 +50,8 @@ export async function minifySharePayload(
 }
 
 function resolveLoaderFromFileName(
-  fileName: string
-): SharePayloadMinifyLoader | null
+    fileName: string
+  ): SharePayloadMinifyLoader | null
 {
   const lower =
     fileName.toLowerCase();
@@ -83,7 +83,9 @@ function resolveLoaderFromFileName(
   return null;
 }
 
-function isHtmlFile(fileName: string): boolean
+function isHtmlFile(
+    fileName: string
+  ): boolean
 {
   const lower =
     fileName.toLowerCase();
@@ -92,7 +94,9 @@ function isHtmlFile(fileName: string): boolean
     || lower.endsWith('.htm');
 }
 
-function compactHtml(html: string): string
+function compactHtml(
+    html: string
+  ): string
 {
   const preservedBlocks: string[] = [];
 

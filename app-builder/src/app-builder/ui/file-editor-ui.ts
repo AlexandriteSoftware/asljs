@@ -41,8 +41,8 @@ export type RenderFileContentUiOptions = {
 };
 
 export function renderFileSelectUi(
-  options: RenderFileSelectUiOptions
-): void
+    options: RenderFileSelectUiOptions
+  ): void
 {
   const selectElement =
     options.selectElement;
@@ -80,8 +80,8 @@ export function renderFileSelectUi(
 }
 
 export function renderFileContentUi(
-  options: RenderFileContentUiOptions
-): void
+    options: RenderFileContentUiOptions
+  ): void
 {
   const provider: FileViewProvider =
     {

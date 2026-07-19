@@ -15,7 +15,9 @@ const AFFIRMATIVE_REPLY_PATTERN =
 export const DEFAULT_CHAT_MODEL = 'gpt-5-mini';
 export const DEFAULT_CODE_MODEL = 'gpt-5.4';
 
-export function dedupeModels(models: AvailableAiModel[]): AvailableAiModel[]
+export function dedupeModels(
+    models: AvailableAiModel[]
+  ): AvailableAiModel[]
 {
   const seen =
     new Set<string>();
@@ -55,9 +57,9 @@ export function dedupeModels(models: AvailableAiModel[]): AvailableAiModel[]
 }
 
 export function shouldUseCodeGenerationModel(
-  prompt: string,
-  messages: ChatMessage[]
-): boolean
+    prompt: string,
+    messages: ChatMessage[]
+  ): boolean
 {
   const normalizedPrompt =
     prompt.trim();
@@ -91,7 +93,9 @@ export function shouldUseCodeGenerationModel(
     );
 }
 
-export function selectPreferredChatModel(models: AvailableAiModel[]): string
+export function selectPreferredChatModel(
+    models: AvailableAiModel[]
+  ): string
 {
   const generalModels =
     filterGeneralPurposeModels(models)
@@ -102,7 +106,9 @@ export function selectPreferredChatModel(models: AvailableAiModel[]): string
   return generalModels[0]?.id ?? DEFAULT_CHAT_MODEL;
 }
 
-export function selectPreferredCodeModel(models: AvailableAiModel[]): string
+export function selectPreferredCodeModel(
+    models: AvailableAiModel[]
+  ): string
 {
   const codexModels =
     filterCodexModels(models)
@@ -123,7 +129,9 @@ export function selectPreferredCodeModel(models: AvailableAiModel[]): string
   return generalModels[0]?.id ?? DEFAULT_CODE_MODEL;
 }
 
-function filterCodexModels(models: AvailableAiModel[]): AvailableAiModel[]
+function filterCodexModels(
+    models: AvailableAiModel[]
+  ): AvailableAiModel[]
 {
   return dedupeModels(models)
     .filter(
@@ -137,8 +145,8 @@ function filterCodexModels(models: AvailableAiModel[]): AvailableAiModel[]
 }
 
 function filterGeneralPurposeModels(
-  models: AvailableAiModel[]
-): AvailableAiModel[]
+    models: AvailableAiModel[]
+  ): AvailableAiModel[]
 {
   return dedupeModels(models)
     .filter(
@@ -151,7 +159,9 @@ function filterGeneralPurposeModels(
     );
 }
 
-function isSupportedChatModel(modelId: string): boolean
+function isSupportedChatModel(
+    modelId: string
+  ): boolean
 {
   const normalized =
     modelId.trim().toLowerCase();
@@ -161,9 +171,9 @@ function isSupportedChatModel(modelId: string): boolean
 }
 
 function compareChatModels(
-  left: AvailableAiModel,
-  right: AvailableAiModel
-): number
+    left: AvailableAiModel,
+    right: AvailableAiModel
+  ): number
 {
   const tierDelta =
     compareVariantPriority(
@@ -182,9 +192,9 @@ function compareChatModels(
 }
 
 function compareLatestModels(
-  left: AvailableAiModel,
-  right: AvailableAiModel
-): number
+    left: AvailableAiModel,
+    right: AvailableAiModel
+  ): number
 {
   const versionDelta =
     compareNumericTokens(
@@ -210,15 +220,17 @@ function compareLatestModels(
 }
 
 function compareVariantPriority(
-  leftId: string,
-  rightId: string,
-  getPriority: (modelId: string) => number
-): number
+    leftId: string,
+    rightId: string,
+    getPriority: (modelId: string) => number
+  ): number
 {
   return getPriority(leftId) - getPriority(rightId);
 }
 
-function getChatVariantPriority(modelId: string): number
+function getChatVariantPriority(
+    modelId: string
+  ): number
 {
   const normalized =
     modelId.toLowerCase();
@@ -234,7 +246,9 @@ function getChatVariantPriority(modelId: string): number
   return 2;
 }
 
-function getLatestVariantPriority(modelId: string): number
+function getLatestVariantPriority(
+    modelId: string
+  ): number
 {
   const normalized =
     modelId.toLowerCase();
@@ -251,9 +265,9 @@ function getLatestVariantPriority(modelId: string): number
 }
 
 function compareNumericTokens(
-  leftId: string,
-  rightId: string
-): number
+    leftId: string,
+    rightId: string
+  ): number
 {
   const left =
     extractNumericTokens(leftId);
@@ -278,7 +292,9 @@ function compareNumericTokens(
   return 0;
 }
 
-function extractNumericTokens(modelId: string): number[]
+function extractNumericTokens(
+    modelId: string
+  ): number[]
 {
   return Array.from(
     modelId.matchAll(/\d+/g),

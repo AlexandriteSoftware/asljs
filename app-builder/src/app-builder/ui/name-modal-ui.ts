@@ -9,7 +9,8 @@ import { AppBuilderButtonElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderNameModal(): string
+export function renderNameModal(
+  ): string
 {
   return `
     <div id="name-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
@@ -43,7 +44,8 @@ export type NameModalUi = {
   close: () => void;
 };
 
-export function createNameModalUi(): NameModalUi
+export function createNameModalUi(
+  ): NameModalUi
 {
   const elModal =
     mustElement<HTMLElement>('name-modal');
@@ -101,14 +103,16 @@ export function createNameModalUi(): NameModalUi
     }
   );
 
-  function close(): void
-  {
+  function close(
+    ): void
+{
     activeRequest = null;
     elModal.classList.add('hidden');
   }
 
-  async function confirm(): Promise<void>
-  {
+  async function confirm(
+    ): Promise<void>
+{
     if (activeRequest === null) {
       return;
     }

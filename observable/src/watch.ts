@@ -7,8 +7,8 @@ import { ObservableWatchFn }
   from './types.js';
 
 function splitPath(
-  path: string
-): string[]
+    path: string
+  ): string[]
 {
   if (path.trim() === '') {
     throw new TypeError(
@@ -38,9 +38,9 @@ function splitPath(
 }
 
 function readPathValue(
-  source: any,
-  path: string
-): any
+    source: any,
+    path: string
+  ): any
 {
   const segments =
     splitPath(path);
@@ -207,9 +207,9 @@ export const watchImpl: ObservableWatchFn =
 };
 
 export function ensureWatchMethod(
-  target: any,
-  watchFn: ObservableWatchFn
-): void
+    target: any,
+    watchFn: ObservableWatchFn
+  ): void
 {
   if ('watch' in target) {
     return;

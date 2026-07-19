@@ -12,7 +12,8 @@ import { TransactionStoreAccessError,
 
 const TEST_SUITE = 'transactions';
 
-async function openTestDb(): Promise<IDBDatabase>
+async function openTestDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `transactions-test-${crypto.randomUUID()}`,

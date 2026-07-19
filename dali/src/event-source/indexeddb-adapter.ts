@@ -11,8 +11,8 @@ import { EVENT_SOURCE_STORE_NAME,
   from './types.js';
 
 async function storePeek(
-  store: IDBObjectStore
-): Promise<EventSourceTransaction | null>
+    store: IDBObjectStore
+  ): Promise<EventSourceTransaction | null>
 {
   const cursor =
     await dbRequestAsync(

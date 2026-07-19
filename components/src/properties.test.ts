@@ -459,7 +459,8 @@ test(
   }
 );
 
-async function createElement(): Promise<Properties>
+async function createElement(
+  ): Promise<Properties>
 {
   await ensureDom();
 
@@ -474,9 +475,9 @@ async function createElement(): Promise<Properties>
 }
 
 function queryPropertyTextInput(
-  element: Properties,
-  propertyName: string
-): TextInputLike
+    element: Properties,
+    propertyName: string
+  ): TextInputLike
 {
   const textInput =
     element.querySelector(
@@ -492,9 +493,9 @@ function queryPropertyTextInput(
 }
 
 function queryPropertySelect(
-  element: Properties,
-  propertyName: string
-): SelectLike
+    element: Properties,
+    propertyName: string
+  ): SelectLike
 {
   const select =
     element.querySelector(
@@ -509,7 +510,8 @@ function queryPropertySelect(
   return select as SelectLike;
 }
 
-async function ensureDom(): Promise<void>
+async function ensureDom(
+  ): Promise<void>
 {
   if (domRestore === null) {
     const dom =
@@ -565,8 +567,8 @@ async function ensureDom(): Promise<void>
 }
 
 async function settleTree(
-  element: LitElementLike
-): Promise<void>
+    element: LitElementLike
+  ): Promise<void>
 {
   await settle(
     element
@@ -587,8 +589,8 @@ async function settleTree(
 }
 
 async function settle(
-  element: LitElementLike
-): Promise<void>
+    element: LitElementLike
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

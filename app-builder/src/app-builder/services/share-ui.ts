@@ -2,8 +2,8 @@ const DEFAULT_SHARE_LIMIT_LABEL =
   'Use copy buttons to share as text or HTML.';
 
 export function shouldExcludeNonApplicationFileFromShare(
-  fileName: string
-): boolean
+    fileName: string
+  ): boolean
 {
   const normalized =
     fileName.trim();
@@ -13,10 +13,10 @@ export function shouldExcludeNonApplicationFileFromShare(
 }
 
 export function buildShareStatusMessage(
-  urlLength: number,
-  practicalLimit: number,
-  maxLimit: number
-): string
+    urlLength: number,
+    practicalLimit: number,
+    maxLimit: number
+  ): string
 {
   const prefix =
     `Link is ready at ${urlLength} characters. Practical working limit is about ${practicalLimit}. `;

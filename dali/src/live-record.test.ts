@@ -12,7 +12,8 @@ const TEST_SUITE = 'LiveRecord';
 
 type TestRecord = { id: string; value: string; };
 
-async function openTestDb(): Promise<IDBDatabase>
+async function openTestDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `live-record-test-${crypto.randomUUID()}`,
@@ -27,9 +28,9 @@ async function openTestDb(): Promise<IDBDatabase>
 }
 
 async function waitFor(
-  predicate: () => boolean,
-  timeoutMs: number = 250
-): Promise<void>
+    predicate: () => boolean,
+    timeoutMs: number = 250
+  ): Promise<void>
 {
   const started =
     Date.now();

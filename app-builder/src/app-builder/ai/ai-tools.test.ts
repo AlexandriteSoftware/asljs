@@ -13,8 +13,8 @@ import { AiToolFileRecord,
   from './ai-tools.js';
 
 function makeFile(
-  overrides?: Partial<AiToolFileRecord>
-): AiToolFileRecord
+    overrides?: Partial<AiToolFileRecord>
+  ): AiToolFileRecord
 {
   return {
     id: overrides?.id ?? 'f1',
@@ -25,8 +25,8 @@ function makeFile(
 }
 
 function makeToolsStub(
-  overrides?: Partial<AiTools>
-): AiTools
+    overrides?: Partial<AiTools>
+  ): AiTools
 {
   return {
     listFileset: async () => [],

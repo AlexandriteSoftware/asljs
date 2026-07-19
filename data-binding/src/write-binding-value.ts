@@ -7,10 +7,10 @@ import { BindingTarget }
  * Last step of value binding: writes the value to the target element.
  */
 export function writeBindingValue(
-  element: HTMLElement,
-  target: BindingTarget,
-  value: unknown
-): void
+    element: HTMLElement,
+    target: BindingTarget,
+    value: unknown
+  ): void
 {
   if (target.kind === 'class') {
     element.classList.toggle(

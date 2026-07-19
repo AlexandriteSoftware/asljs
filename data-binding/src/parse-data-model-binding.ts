@@ -15,9 +15,9 @@ import { BindingTarget,
  * ```
  */
 export function parseValueBindingExpression(
-  target: BindingTarget,
-  expression: string
-): ValueBindingSpec
+    target: BindingTarget,
+    expression: string
+  ): ValueBindingSpec
 {
   const segments =
     splitExpressionTokens(
@@ -60,9 +60,9 @@ export function parseValueBindingExpression(
  * ```
  */
 export function parseEventBindingExpression(
-  eventName: string,
-  expression: string
-): EventBindingSpec
+    eventName: string,
+    expression: string
+  ): EventBindingSpec
 {
   const actionPath =
     expression.trim();
@@ -75,8 +75,8 @@ export function parseEventBindingExpression(
 }
 
 function parsePipe(
-  text: string
-): PipeSpec | null
+    text: string
+  ): PipeSpec | null
 {
   const trimmed =
     text.trim();
@@ -116,9 +116,9 @@ function parsePipe(
 }
 
 function parsePipeArgs(
-  text: string,
-  index: number
-): string[]
+    text: string,
+    index: number
+  ): string[]
 {
   const args: string[] = [];
 
@@ -213,10 +213,10 @@ function parsePipeArgs(
 }
 
 function splitExpressionTokens(
-  text: string,
-  delimiter: string,
-  stripQuotes: boolean = false
-): string[]
+    text: string,
+    delimiter: string,
+    stripQuotes: boolean = false
+  ): string[]
 {
   const tokens: string[] = [];
 

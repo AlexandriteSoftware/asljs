@@ -9,7 +9,8 @@ import { AppBuilderButtonElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderProjectSettingsModal(): string
+export function renderProjectSettingsModal(
+  ): string
 {
   return `
     <div id="project-settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
@@ -56,11 +57,11 @@ export type ProjectSettingsModalUi = {
 };
 
 export function createProjectSettingsModalUi(
-  options: {
+    options: {
     onSave: (values: ProjectSettingsModalValues) => Promise<void>;
     onDelete: () => Promise<void>;
   }
-): ProjectSettingsModalUi
+  ): ProjectSettingsModalUi
 {
   const elModal =
     mustElement(
@@ -148,13 +149,15 @@ export function createProjectSettingsModalUi(
     }
   );
 
-  function close(): void
-  {
+  function close(
+    ): void
+{
     elModal.classList.add('hidden');
   }
 
-  function readValues(): ProjectSettingsModalValues
-  {
+  function readValues(
+    ): ProjectSettingsModalValues
+{
     return {
       name: readControlValue(elNameInput).trim(),
       authorName: readControlValue(
@@ -166,8 +169,9 @@ export function createProjectSettingsModalUi(
     };
   }
 
-  async function save(): Promise<void>
-  {
+  async function save(
+    ): Promise<void>
+{
     const values =
       readValues();
 
@@ -180,8 +184,9 @@ export function createProjectSettingsModalUi(
     close();
   }
 
-  async function deleteProject(): Promise<void>
-  {
+  async function deleteProject(
+    ): Promise<void>
+{
     close();
     await options.onDelete();
   }

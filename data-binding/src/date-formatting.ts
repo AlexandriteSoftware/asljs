@@ -56,8 +56,8 @@ const dateFormatterCache =
   new Map<string, (dt: Date) => string>();
 
 function createFormatter(
-  format: string
-): (dt: Date) => string
+    format: string
+  ): (dt: Date) => string
 {
   const parts: Array<(dt: Date) => string> = [];
 
@@ -124,9 +124,9 @@ function createFormatter(
 }
 
 export function formatDate(
-  dt: Date,
-  format: string | null
-): string
+    dt: Date,
+    format: string | null
+  ): string
 {
   if (!format) {
     return dt.toString();

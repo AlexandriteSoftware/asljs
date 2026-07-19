@@ -1,7 +1,7 @@
 export function renderGeneratingButtonUi(
-  button: HTMLButtonElement,
-  generating: boolean
-): void
+    button: HTMLButtonElement,
+    generating: boolean
+  ): void
 {
   button.disabled = generating;
 
@@ -11,10 +11,10 @@ export function renderGeneratingButtonUi(
 }
 
 export function setChatProgressUi(
-  progressElement: HTMLElement,
-  message: string,
-  visible: boolean
-): void
+    progressElement: HTMLElement,
+    message: string,
+    visible: boolean
+  ): void
 {
   progressElement.textContent = message;
 
@@ -25,10 +25,10 @@ export function setChatProgressUi(
 }
 
 export function appendChatMessageUi(
-  messagesElement: HTMLElement,
-  role: 'user' | 'assistant',
-  text: string
-): void
+    messagesElement: HTMLElement,
+    role: 'user' | 'assistant',
+    text: string
+  ): void
 {
   const message =
     document.createElement('div');
@@ -57,11 +57,11 @@ export function appendChatMessageUi(
 }
 
 export function renderChatChoicesUi(
-  containerElement: HTMLElement,
-  question: string,
-  options: string[],
-  onChoose: (value: string) => void
-): void
+    containerElement: HTMLElement,
+    question: string,
+    options: string[],
+    onChoose: (value: string) => void
+  ): void
 {
   containerElement.replaceChildren();
 
@@ -108,7 +108,9 @@ export function renderChatChoicesUi(
   containerElement.classList.remove('hidden');
 }
 
-export function clearChatChoicesUi(containerElement: HTMLElement): void
+export function clearChatChoicesUi(
+    containerElement: HTMLElement
+  ): void
 {
   containerElement.replaceChildren();
   containerElement.classList.add('hidden');

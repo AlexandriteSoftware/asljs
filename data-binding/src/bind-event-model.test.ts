@@ -218,8 +218,8 @@ type ReactiveModel =
   };
 
 function createReactiveModel(
-  initial: Record<string, unknown>
-): ReactiveModel
+    initial: Record<string, unknown>
+  ): ReactiveModel
 {
   const listeners =
     new Map<string, Set<(...args: unknown[]) => void>>();

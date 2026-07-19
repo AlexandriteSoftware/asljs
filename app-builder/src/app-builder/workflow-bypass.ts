@@ -1,7 +1,9 @@
 const DIRECT_FILE_PATTERN =
   /\b(?:[\w-]+\/)*[\w.-]+\.(?:html|css|js|json|md|svg|png|jpg|jpeg|gif|webp)\b/i;
 
-export function shouldBypassWorkflowCycle(request: string): boolean
+export function shouldBypassWorkflowCycle(
+    request: string
+  ): boolean
 {
   const normalized =
     request.trim().toLowerCase();

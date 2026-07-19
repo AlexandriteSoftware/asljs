@@ -7,7 +7,8 @@ import { AiTools }
 import { createChatLaneTools }
   from './chat-lane-tools.js';
 
-function makeBaseTools(): AiTools
+function makeBaseTools(
+  ): AiTools
 {
   return {
     listFileset: async () => [],

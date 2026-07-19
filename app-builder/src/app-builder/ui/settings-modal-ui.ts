@@ -10,7 +10,8 @@ import { AppBuilderButtonElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderSettingsModal(): string
+export function renderSettingsModal(
+  ): string
 {
   return `
     <div id="settings-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
@@ -76,11 +77,11 @@ export type SettingsModalUi = {
 };
 
 export function createSettingsModalUi(
-  options: {
+    options: {
     loadValues: () => Promise<SettingsModalState>;
     onSave: (values: SettingsModalValues) => Promise<void>;
   }
-): SettingsModalUi
+  ): SettingsModalUi
 {
   const elModal =
     mustElement(
@@ -172,13 +173,15 @@ export function createSettingsModalUi(
     }
   );
 
-  function close(): void
-  {
+  function close(
+    ): void
+{
     elModal.classList.add('hidden');
   }
 
-  async function save(): Promise<void>
-  {
+  async function save(
+    ): Promise<void>
+{
     await options.onSave(
       {
         apiKey: readControlValue(elApiKeyInput).trim(),

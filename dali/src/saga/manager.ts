@@ -19,7 +19,8 @@ import { SAGA_ENTRIES_STORE_NAME,
          SagaUndoOperation }
   from './types.js';
 
-function nowIso(): string
+function nowIso(
+  ): string
 {
   return new Date().toISOString();
 }

@@ -14,7 +14,8 @@ const SAMPLE_JSON_SOURCES =
   pdfParserJson
 ] as const;
 
-function getSamples(): ImportedPayload[]
+function getSamples(
+  ): ImportedPayload[]
 {
   return SAMPLE_JSON_SOURCES
     .map(
@@ -25,12 +26,15 @@ function getSamples(): ImportedPayload[]
     );
 }
 
-export function listSamples(): ImportedPayload[]
+export function listSamples(
+  ): ImportedPayload[]
 {
   return getSamples();
 }
 
-export function getSampleByName(name: string): ImportedPayload | null
+export function getSampleByName(
+    name: string
+  ): ImportedPayload | null
 {
   const sample =
     getSamples().find(
@@ -39,7 +43,9 @@ export function getSampleByName(name: string): ImportedPayload | null
   return sample ?? null;
 }
 
-export function getSampleById(id: string): ImportedPayload | null
+export function getSampleById(
+    id: string
+  ): ImportedPayload | null
 {
   const sample =
     getSamples().find(
@@ -49,10 +55,10 @@ export function getSampleById(id: string): ImportedPayload | null
 }
 
 export function buildSampleFiles(
-  sample: ImportedPayload,
-  appId: string,
-  createId: () => string
-): FileRecord[]
+    sample: ImportedPayload,
+    appId: string,
+    createId: () => string
+  ): FileRecord[]
 {
   return Object.entries(
     sample.files
@@ -66,7 +72,9 @@ export function buildSampleFiles(
   );
 }
 
-function normalizeSampleSource(source: unknown): string
+function normalizeSampleSource(
+    source: unknown
+  ): string
 {
   if (typeof source === 'string') {
     return source;

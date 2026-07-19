@@ -31,7 +31,9 @@ export interface MoneyFactory
   isMoney: (value: unknown) => value is Money;
 }
 
-function currencyTypeGuard(value: unknown): asserts value is Currency
+function currencyTypeGuard(
+    value: unknown
+  ): asserts value is Currency
 {
   if (
     value !== null
@@ -42,9 +44,9 @@ function currencyTypeGuard(value: unknown): asserts value is Currency
 }
 
 function currencyGuard(
-  a: Currency,
-  b: Currency
-): void
+    a: Currency,
+    b: Currency
+  ): void
 {
   if (a !== b) {
     throw new TypeError(
@@ -54,9 +56,9 @@ function currencyGuard(
 }
 
 function toString(
-  this: Money,
-  format: string = 'f'
-): string
+    this: Money,
+    format: string = 'f'
+  ): string
 {
   if (format === 'c') {
     return String(
@@ -122,16 +124,16 @@ function toString(
 }
 
 function toNumber(
-  this: Money
-): number
+    this: Money
+  ): number
 {
   return this.value / 100;
 }
 
 function add(
-  this: Money,
-  ...values: Money[]
-): Money
+    this: Money,
+    ...values: Money[]
+  ): Money
 {
   for (const v of values) {
     currencyGuard(
@@ -152,9 +154,9 @@ function add(
 }
 
 function subtract(
-  this: Money,
-  ...values: Money[]
-): Money
+    this: Money,
+    ...values: Money[]
+  ): Money
 {
   for (const v of values) {
     currencyGuard(
@@ -175,8 +177,8 @@ function subtract(
 }
 
 function inverse(
-  this: Money
-): Money
+    this: Money
+  ): Money
 {
   return money(
     -this.value,
@@ -185,10 +187,10 @@ function inverse(
 }
 
 function distribute(
-  this: Money,
-  recipients: number | number[],
-  unit: Money | undefined = undefined
-): Money[]
+    this: Money,
+    recipients: number | number[],
+    unit: Money | undefined = undefined
+  ): Money[]
 {
   unit = unit || money.minor;
 
@@ -292,24 +294,24 @@ function distribute(
 }
 
 function major(
-  this: Money
-): number
+    this: Money
+  ): number
 {
   return ((this.value - (this.value % 100)) / 100) | 0;
 }
 
 function minor(
-  this: Money
-): number
+    this: Money
+  ): number
 {
   return this.value % 100;
 }
 
 function convert(
-  this: Money,
-  rate: number,
-  currency: Currency
-): Money
+    this: Money,
+    rate: number,
+    currency: Currency
+  ): Money
 {
   currencyTypeGuard(currency);
 
@@ -347,15 +349,17 @@ const MoneyProto =
   toNumber
 };
 
-function isMoney(value: unknown): value is Money
+function isMoney(
+    value: unknown
+  ): value is Money
 {
   return !!value
     && (value as any).__proto__ === MoneyProto;
 }
 
 function parse(
-  value: string
-): Money | null
+    value: string
+  ): Money | null
 {
   if (
     typeof value !== 'string'

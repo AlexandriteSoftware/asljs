@@ -14,8 +14,8 @@ export interface EventfulLike
 }
 
 export function isEventfulLike(
-  value: unknown
-): value is EventfulLike
+    value: unknown
+  ): value is EventfulLike
 {
   if (
     !isObject(value)
@@ -28,8 +28,8 @@ export function isEventfulLike(
 }
 
 export function asEventfulLike(
-  value: unknown
-): EventfulLike | undefined
+    value: unknown
+  ): EventfulLike | undefined
 {
   if (isEventfulLike(value)) {
     return value;

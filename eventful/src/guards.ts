@@ -2,8 +2,8 @@ import { EventName }
   from './types.js';
 
 export function eventNameTypeGuard(
-  value: unknown
-): asserts value is EventName
+    value: unknown
+  ): asserts value is EventName
 {
   if (
     typeof value !== 'string'
@@ -16,15 +16,15 @@ export function eventNameTypeGuard(
 }
 
 export function isFunction(
-  value: unknown
-): value is Function
+    value: unknown
+  ): value is Function
 {
   return typeof value === 'function';
 }
 
 export function asFunction(
-  value: unknown
-): Function | undefined
+    value: unknown
+  ): Function | undefined
 {
   if (isFunction(value)) {
     return value;
@@ -34,16 +34,16 @@ export function asFunction(
 }
 
 export function isObject(
-  value: unknown
-): value is object
+    value: unknown
+  ): value is object
 {
   return typeof value === 'object'
     && value !== null;
 }
 
 export function functionTypeGuard(
-  value: unknown
-): asserts value is Function
+    value: unknown
+  ): asserts value is Function
 {
   if (!isFunction(value)) {
     throw new TypeError(

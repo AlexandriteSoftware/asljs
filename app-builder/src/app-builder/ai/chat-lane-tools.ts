@@ -7,16 +7,18 @@ type ChatLaneOptions = {
 };
 
 export function createChatLaneTools(
-  baseTools: AiTools,
-  options: ChatLaneOptions
-): AiTools
+    baseTools: AiTools,
+    options: ChatLaneOptions
+  ): AiTools
 {
   const normalizedPlanFileName =
     normalizePath(
       options.planFileName);
 
-  function assertPlanOnly(path: string): void
-  {
+  function assertPlanOnly(
+      path: string
+    ): void
+{
     if (normalizePath(path) !== normalizedPlanFileName) {
       throw new Error(
         'The chat lane may only edit PLAN.md. Ask the generation lane to implement runtime files.'
@@ -101,7 +103,9 @@ export function createChatLaneTools(
   };
 }
 
-function normalizePath(path: string): string
+function normalizePath(
+    path: string
+  ): string
 {
   return path.trim().replace(
     /\\/g,

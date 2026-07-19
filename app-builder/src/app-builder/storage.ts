@@ -10,7 +10,8 @@ const DB_NAME =
 
 let dbRef: IDBDatabase | null = null;
 
-async function getDb(): Promise<IDBDatabase>
+async function getDb(
+  ): Promise<IDBDatabase>
 {
   if (dbRef !== null) {
     return dbRef;
@@ -48,8 +49,8 @@ async function getDb(): Promise<IDBDatabase>
 }
 
 function ensureStores(
-  db: IDBDatabase
-): void
+    db: IDBDatabase
+  ): void
 {
   if (!db.objectStoreNames.contains('apps')) {
     db.createObjectStore(
@@ -79,7 +80,8 @@ function ensureStores(
   }
 }
 
-export async function listApps(): Promise<AppRecord[]>
+export async function listApps(
+  ): Promise<AppRecord[]>
 {
   const db =
     await getDb();
@@ -95,8 +97,8 @@ export async function listApps(): Promise<AppRecord[]>
 }
 
 export async function saveApp(
-  app: AppRecord
-): Promise<void>
+    app: AppRecord
+  ): Promise<void>
 {
   const db =
     await getDb();
@@ -112,8 +114,8 @@ export async function saveApp(
 }
 
 export async function deleteApp(
-  id: string
-): Promise<void>
+    id: string
+  ): Promise<void>
 {
   const db =
     await getDb();
@@ -146,8 +148,8 @@ export async function deleteApp(
 }
 
 export async function listFiles(
-  appId: string
-): Promise<FileRecord[]>
+    appId: string
+  ): Promise<FileRecord[]>
 {
   const db =
     await getDb();
@@ -165,8 +167,8 @@ export async function listFiles(
 }
 
 export async function saveFile(
-  file: FileRecord
-): Promise<void>
+    file: FileRecord
+  ): Promise<void>
 {
   const db =
     await getDb();
@@ -182,8 +184,8 @@ export async function saveFile(
 }
 
 export async function deleteFile(
-  fileId: string
-): Promise<void>
+    fileId: string
+  ): Promise<void>
 {
   const db =
     await getDb();
@@ -199,9 +201,9 @@ export async function deleteFile(
 }
 
 export async function replaceFiles(
-  appId: string,
-  files: FileRecord[]
-): Promise<void>
+    appId: string,
+    files: FileRecord[]
+  ): Promise<void>
 {
   const db =
     await getDb();
@@ -232,8 +234,8 @@ export async function replaceFiles(
 }
 
 export async function loadAppOpenAiApiKey(
-  appId: string
-): Promise<string>
+    appId: string
+  ): Promise<string>
 {
   const db =
     await getDb();
@@ -255,9 +257,9 @@ export async function loadAppOpenAiApiKey(
 }
 
 export async function saveAppOpenAiApiKey(
-  appId: string,
-  apiKey: string
-): Promise<void>
+    appId: string,
+    apiKey: string
+  ): Promise<void>
 {
   const db =
     await getDb();

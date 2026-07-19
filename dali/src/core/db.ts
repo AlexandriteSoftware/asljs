@@ -1,6 +1,6 @@
 export function dbRequestAsync<T>(
-  request: IDBRequest<T>
-): Promise<T>
+    request: IDBRequest<T>
+  ): Promise<T>
 {
   return new Promise(
     (
@@ -35,9 +35,9 @@ export function dbRequestAsync<T>(
 }
 
 export function dbOpen(
-  name: string,
-  upgrades: ((db: IDBDatabase) => void)[]
-): Promise<IDBDatabase>
+    name: string,
+    upgrades: ((db: IDBDatabase) => void)[]
+  ): Promise<IDBDatabase>
 {
   return new Promise<IDBDatabase>(
     (
@@ -107,8 +107,8 @@ export function dbOpen(
 }
 
 export function dbDelete(
-  name: string
-): Promise<void>
+    name: string
+  ): Promise<void>
 {
   return new Promise(
     (

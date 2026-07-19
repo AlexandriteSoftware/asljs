@@ -543,8 +543,8 @@ export class List extends LitElement
 }
 
 function toEventfulLike(
-  value: unknown
-): EventfulLike | null
+    value: unknown
+  ): EventfulLike | null
 {
   return asEventfulLike(value)
     ?? null;

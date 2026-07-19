@@ -256,7 +256,8 @@ test(
   }
 );
 
-async function importFileEditorUi(): Promise<FileEditorUiModule>
+async function importFileEditorUi(
+  ): Promise<FileEditorUiModule>
 {
   return await import('./file-editor-ui.js');
 }

@@ -11,7 +11,8 @@ export type Tracer = {
   getFirstEventParameters: (action: string) => any;
 };
 
-export function createTracer(): Tracer
+export function createTracer(
+  ): Tracer
 {
   const traces: TraceRecord[] = [];
 

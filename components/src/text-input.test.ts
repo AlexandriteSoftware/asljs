@@ -554,7 +554,8 @@ test(
   }
 );
 
-async function createElement(): Promise<TextInput>
+async function createElement(
+  ): Promise<TextInput>
 {
   await ensureDomAndModuleLoaded();
 
@@ -563,7 +564,8 @@ async function createElement(): Promise<TextInput>
   ) as TextInput;
 }
 
-async function ensureDomAndModuleLoaded(): Promise<void>
+async function ensureDomAndModuleLoaded(
+  ): Promise<void>
 {
   if (domRestore === null) {
     const dom =
@@ -655,8 +657,8 @@ async function ensureDomAndModuleLoaded(): Promise<void>
 }
 
 async function settle(
-  element: TextInput
-): Promise<void>
+    element: TextInput
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

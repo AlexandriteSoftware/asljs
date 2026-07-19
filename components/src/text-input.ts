@@ -835,15 +835,15 @@ type MountedTextInputControl = {
 };
 
 function normalizeText(
-  value: string | null | undefined
-): string
+    value: string | null | undefined
+  ): string
 {
   return value ?? '';
 }
 
 function normalizeOptionalText(
-  value: string | null | undefined
-): string | null
+    value: string | null | undefined
+  ): string | null
 {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -853,8 +853,8 @@ function normalizeOptionalText(
 }
 
 function resolveAriaDescribedBy(
-  model: TextInputTemplateModel
-): string
+    model: TextInputTemplateModel
+  ): string
 {
   const ids: string[] = [];
 
@@ -874,9 +874,9 @@ function resolveAriaDescribedBy(
 }
 
 function resolveMaxHeight(
-  control: HTMLTextAreaElement,
-  maxRows: number | null
-): number | null
+    control: HTMLTextAreaElement,
+    maxRows: number | null
+  ): number | null
 {
   if (maxRows === null || maxRows <= 0) {
     return null;
@@ -917,9 +917,9 @@ function resolveMaxHeight(
 }
 
 function cloneNamedTemplate(
-  host: Element,
-  slotName: TextInputSlotName
-): HTMLTemplateElement | null
+    host: Element,
+    slotName: TextInputSlotName
+  ): HTMLTemplateElement | null
 {
   const element =
     host.querySelector(
@@ -943,9 +943,9 @@ function cloneNamedTemplate(
 }
 
 function resolveInitialControlClassName(
-  control: HTMLInputElement | HTMLTextAreaElement,
-  controlHost: HTMLElement
-): string
+    control: HTMLInputElement | HTMLTextAreaElement,
+    controlHost: HTMLElement
+  ): string
 {
   return control.className
     || controlHost.getAttribute(
@@ -955,9 +955,9 @@ function resolveInitialControlClassName(
 }
 
 function resolveInitialControlInvalidClassName(
-  control: HTMLInputElement | HTMLTextAreaElement,
-  controlHost: HTMLElement
-): string | null
+    control: HTMLInputElement | HTMLTextAreaElement,
+    controlHost: HTMLElement
+  ): string | null
 {
   return control.getAttribute(
     'data-control-invalid-class'
@@ -968,7 +968,8 @@ function resolveInitialControlInvalidClassName(
     ?? null;
 }
 
-function createDefaultTextInputTemplate(): HTMLTemplateElement
+function createDefaultTextInputTemplate(
+  ): HTMLTemplateElement
 {
   const template =
     document.createElement('template');
@@ -994,7 +995,8 @@ function createDefaultTextInputTemplate(): HTMLTemplateElement
   return template;
 }
 
-function createSingleLineInput(): HTMLInputElement
+function createSingleLineInput(
+  ): HTMLInputElement
 {
   const input =
     document.createElement('input');
@@ -1004,7 +1006,8 @@ function createSingleLineInput(): HTMLInputElement
   return input;
 }
 
-function createDefaultInputTemplate(): HTMLTemplateElement
+function createDefaultInputTemplate(
+  ): HTMLTemplateElement
 {
   const template =
     document.createElement('template');
@@ -1014,7 +1017,8 @@ function createDefaultInputTemplate(): HTMLTemplateElement
   return template;
 }
 
-function createDefaultTextareaTemplate(): HTMLTemplateElement
+function createDefaultTextareaTemplate(
+  ): HTMLTemplateElement
 {
   const template =
     document.createElement('template');
@@ -1025,9 +1029,9 @@ function createDefaultTextareaTemplate(): HTMLTemplateElement
 }
 
 function createFallbackMountedControl(
-  multiline: boolean,
-  controlHost: HTMLElement
-): MountedTextInputControl
+    multiline: boolean,
+    controlHost: HTMLElement
+  ): MountedTextInputControl
 {
   const fragment =
     document.createDocumentFragment();
@@ -1090,8 +1094,8 @@ function createFallbackMountedControl(
 }
 
 function joinClassNames(
-  ...classNames: string[]
-): string
+    ...classNames: string[]
+  ): string
 {
   return classNames
     .flatMap(

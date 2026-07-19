@@ -9,12 +9,12 @@ const chatStateStorageKeyPrefix =
   'asljs-app-builder:chat-state:';
 
 export function createAppBuilderAiChatSecretsAndSettingsProvider(
-  options: {
+    options: {
     appId: string;
     readChatModel: () => string;
     readInitialToolStepLimit: () => number;
   }
-): AiChatSecretsAndSettingsProvider
+  ): AiChatSecretsAndSettingsProvider
 {
   return {
     getOpenAiApiKey: async () =>
@@ -27,8 +27,8 @@ export function createAppBuilderAiChatSecretsAndSettingsProvider(
 }
 
 export function createSessionStorageAiChatStateStore(
-  appId: string
-): AiChatStateStore
+    appId: string
+  ): AiChatStateStore
 {
   const storageKey =
     `${chatStateStorageKeyPrefix}${appId}`;

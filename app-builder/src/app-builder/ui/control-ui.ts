@@ -31,7 +31,9 @@ export type AppBuilderSelectElement =
     disabled: boolean;
   };
 
-export function mustElement<T extends HTMLElement>(id: string): T
+export function mustElement<T extends HTMLElement>(
+    id: string
+  ): T
 {
   const element =
     document.getElementById(id);
@@ -44,13 +46,13 @@ export function mustElement<T extends HTMLElement>(id: string): T
 }
 
 export function configureButton(
-  element: AppBuilderButtonElement,
-  options: {
+    element: AppBuilderButtonElement,
+    options: {
     text?: string;
     icon?: string;
     className: string;
   }
-): void
+  ): void
 {
   element.type = 'button';
   element.buttonClassName = options.className;
@@ -65,12 +67,12 @@ export function configureButton(
 }
 
 export function setButtonContent(
-  element: HTMLElement & { text?: string; icon?: string; },
-  options: {
+    element: HTMLElement & { text?: string; icon?: string; },
+    options: {
     text: string;
     icon?: string;
   }
-): void
+  ): void
 {
   element.text = options.text;
   element.icon = options.icon ?? '';
@@ -81,13 +83,13 @@ export function setButtonContent(
 }
 
 export function configureTextInput(
-  element: AppBuilderTextInputElement,
-  options: {
+    element: AppBuilderTextInputElement,
+    options: {
     placeholder?: string;
     inputType?: string;
     className?: string;
   }
-): void
+  ): void
 {
   element.placeholder = options.placeholder ?? null;
   element.inputType = options.inputType ?? 'text';
@@ -97,13 +99,13 @@ export function configureTextInput(
 }
 
 export function configureSelect(
-  element: AppBuilderSelectElement,
-  options: {
+    element: AppBuilderSelectElement,
+    options: {
     className: string;
     items?: SelectItem[];
     placeholder?: string | null;
   }
-): void
+  ): void
 {
   element.controlClassName = options.className;
   element.items = options.items ?? [];
@@ -111,23 +113,23 @@ export function configureSelect(
 }
 
 export function readControlValue(
-  element: { value: string | null; }
-): string
+    element: { value: string | null; }
+  ): string
 {
   return element.value ?? '';
 }
 
 export function writeControlValue(
-  element: { value: string | null; },
-  value: string
-): void
+    element: { value: string | null; },
+    value: string
+  ): void
 {
   element.value = value;
 }
 
 export function focusInnerControl(
-  element: HTMLElement
-): void
+    element: HTMLElement
+  ): void
 {
   const control =
     element.querySelector(
@@ -144,8 +146,8 @@ export function focusInnerControl(
 }
 
 export function selectInnerTextControl(
-  element: HTMLElement
-): void
+    element: HTMLElement
+  ): void
 {
   const control =
     element.querySelector(

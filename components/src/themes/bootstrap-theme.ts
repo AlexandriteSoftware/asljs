@@ -1,7 +1,8 @@
 import { ComponentsTheme }
   from './theme.js';
 
-export function createBootstrapTheme(): ComponentsTheme
+export function createBootstrapTheme(
+  ): ComponentsTheme
 {
   return {
     button: {

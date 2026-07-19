@@ -132,7 +132,8 @@ test(
   }
 );
 
-async function ensureDomAndModuleLoaded(): Promise<void>
+async function ensureDomAndModuleLoaded(
+  ): Promise<void>
 {
   if (restoreDom === null) {
     const dom =
@@ -184,15 +185,16 @@ async function ensureDomAndModuleLoaded(): Promise<void>
   }
 }
 
-function resetDomBody(): void
+function resetDomBody(
+  ): void
 {
   document.body.replaceChildren();
 }
 
 function getButton(
-  element: Keyboard,
-  key: string
-): HTMLButtonElement
+    element: Keyboard,
+    key: string
+  ): HTMLButtonElement
 {
   return element.shadowRoot?.querySelector(
     `button[data-key="${key}"]`
@@ -200,8 +202,8 @@ function getButton(
 }
 
 async function settle(
-  element: Keyboard
-): Promise<void>
+    element: Keyboard
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

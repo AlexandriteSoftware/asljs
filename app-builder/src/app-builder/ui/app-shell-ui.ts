@@ -9,7 +9,8 @@ import { renderShareModal }
 import { renderWorkspace }
   from './workspace-ui.js';
 
-export function renderAppBuilderShell(): void
+export function renderAppBuilderShell(
+  ): void
 {
   const root =
     document.getElementById(

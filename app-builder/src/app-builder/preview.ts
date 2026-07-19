@@ -228,10 +228,10 @@ const EVAL_BRIDGE_SCRIPT =
 </script>`;
 
 export function renderPreview(
-  frame: HTMLIFrameElement,
-  files: GeneratedFile[],
-  options?: PreviewRenderOptions
-): void
+    frame: HTMLIFrameElement,
+    files: GeneratedFile[],
+    options?: PreviewRenderOptions
+  ): void
 {
   if (files.length === 0) {
     frame.removeAttribute('srcdoc');
@@ -343,9 +343,9 @@ export function renderPreview(
 }
 
 export async function evaluateInPreview(
-  frame: HTMLIFrameElement,
-  code: string
-): Promise<unknown>
+    frame: HTMLIFrameElement,
+    code: string
+  ): Promise<unknown>
 {
   const payload =
     await requestPreviewPayload(
@@ -368,8 +368,8 @@ export async function evaluateInPreview(
 }
 
 export async function getPreviewDiagnostics(
-  frame: HTMLIFrameElement
-): Promise<RuntimeDiagnostics>
+    frame: HTMLIFrameElement
+  ): Promise<RuntimeDiagnostics>
 {
   const payload =
     await requestPreviewPayload(
@@ -394,11 +394,11 @@ export async function getPreviewDiagnostics(
 }
 
 async function requestPreviewPayload(
-  frame: HTMLIFrameElement,
-  requestType: string,
-  requestBody: Record<string, unknown>,
-  responseType: string
-): Promise<Record<string, unknown>>
+    frame: HTMLIFrameElement,
+    requestType: string,
+    requestBody: Record<string, unknown>,
+    responseType: string
+  ): Promise<Record<string, unknown>>
 {
   const frameWindow =
     frame.contentWindow;
@@ -445,8 +445,9 @@ async function requestPreviewPayload(
       resolve(payload);
     };
 
-    function cleanup(): void
-    {
+    function cleanup(
+      ): void
+{
       window.clearTimeout(timeoutId);
 
       window.removeEventListener(
@@ -471,7 +472,9 @@ async function requestPreviewPayload(
   });
 }
 
-function injectEvalBridge(html: string): string
+function injectEvalBridge(
+    html: string
+  ): string
 {
   if (
     html.includes(
@@ -492,9 +495,9 @@ function injectEvalBridge(html: string): string
 }
 
 function injectPackageImportMap(
-  html: string,
-  files: GeneratedFile[]
-): string
+    html: string,
+    files: GeneratedFile[]
+  ): string
 {
   if (/type=["']importmap["']/i.test(html)) {
     return html;
@@ -539,8 +542,8 @@ function injectPackageImportMap(
 }
 
 function readImportMapVersions(
-  packageJsonContent: string | undefined
-): Array<[string, string]>
+    packageJsonContent: string | undefined
+  ): Array<[string, string]>
 {
   if (packageJsonContent === undefined) {
     return defaultImportMapPackages();
@@ -585,7 +588,9 @@ function readImportMapVersions(
   }
 }
 
-function normalizeNpmVersion(value: string | undefined): string
+function normalizeNpmVersion(
+    value: string | undefined
+  ): string
 {
   if (typeof value !== 'string' || value.trim() === '') {
     return 'latest';
@@ -601,7 +606,8 @@ function normalizeNpmVersion(value: string | undefined): string
     : cleaned;
 }
 
-function defaultImportMapPackages(): Array<[string, string]>
+function defaultImportMapPackages(
+  ): Array<[string, string]>
 {
   return [
     ['asljs-eventful', 'latest'],
@@ -614,9 +620,9 @@ function defaultImportMapPackages(): Array<[string, string]>
 }
 
 function injectHostContext(
-  html: string,
-  options: PreviewRenderOptions | undefined
-): string
+    html: string,
+    options: PreviewRenderOptions | undefined
+  ): string
 {
   if (
     html.includes(
@@ -656,8 +662,8 @@ function injectHostContext(
 }
 
 function createVirtualAssetUrlMap(
-  files: GeneratedFile[]
-): Map<string, string>
+    files: GeneratedFile[]
+  ): Map<string, string>
 {
   const assetUrls =
     new Map<string, string>();
@@ -682,7 +688,9 @@ function createVirtualAssetUrlMap(
   return assetUrls;
 }
 
-function readEmbeddableAssetUrl(content: string): string | null
+function readEmbeddableAssetUrl(
+    content: string
+  ): string | null
 {
   const trimmed =
     content.trim();
@@ -693,10 +701,10 @@ function readEmbeddableAssetUrl(content: string): string | null
 }
 
 function replaceHtmlAssetReferences(
-  html: string,
-  htmlPath: string,
-  assetUrls: Map<string, string>
-): string
+    html: string,
+    htmlPath: string,
+    assetUrls: Map<string, string>
+  ): string
 {
   return html.replace(
     /\b(src|href|poster)=(["'])([^"']+)\2/gi,
@@ -718,10 +726,10 @@ function replaceHtmlAssetReferences(
 }
 
 function replaceCssAssetUrls(
-  css: string,
-  cssPath: string,
-  assetUrls: Map<string, string>
-): string
+    css: string,
+    cssPath: string,
+    assetUrls: Map<string, string>
+  ): string
 {
   return css.replace(
     /url\(\s*(["']?)([^"')]+)\1\s*\)/gi,
@@ -741,10 +749,10 @@ function replaceCssAssetUrls(
 }
 
 function resolveVirtualAssetReference(
-  sourcePath: string,
-  referencePath: string,
-  assetUrls: Map<string, string>
-): string | null
+    sourcePath: string,
+    referencePath: string,
+    assetUrls: Map<string, string>
+  ): string | null
 {
   const trimmed =
     referencePath.trim();
@@ -777,7 +785,9 @@ function resolveVirtualAssetReference(
   return assetUrls.get(resolvedPath) ?? null;
 }
 
-function parentVirtualDirectory(path: string): string
+function parentVirtualDirectory(
+    path: string
+  ): string
 {
   const segments =
     normalizeVirtualPath(path).split('/');
@@ -787,9 +797,9 @@ function parentVirtualDirectory(path: string): string
 }
 
 function joinVirtualPath(
-  basePath: string,
-  nextPath: string
-): string
+    basePath: string,
+    nextPath: string
+  ): string
 {
   if (nextPath.startsWith('/')) {
     return nextPath;
@@ -800,7 +810,9 @@ function joinVirtualPath(
     : `${basePath}/${nextPath}`;
 }
 
-function normalizeVirtualPath(path: string): string
+function normalizeVirtualPath(
+    path: string
+  ): string
 {
   const parts =
     path

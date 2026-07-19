@@ -113,7 +113,8 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
   }
 }
 
-async function openTicketingDb(): Promise<IDBDatabase>
+async function openTicketingDb(
+  ): Promise<IDBDatabase>
 {
   return dbOpen(
     `ticketing-pattern-test-${crypto.randomUUID()}`,
@@ -149,9 +150,9 @@ async function openTicketingDb(): Promise<IDBDatabase>
 }
 
 function ticketDeleteMapper(
-  index: string,
-  key: IDBValidKey
-):
+    index: string,
+    key: IDBValidKey
+  ):
   | { index: string; key: IDBValidKey; }
   | null
 {

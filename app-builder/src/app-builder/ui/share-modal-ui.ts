@@ -3,7 +3,8 @@ import { AppBuilderButtonElement,
          mustElement }
   from './control-ui.js';
 
-export function renderShareModal(): string
+export function renderShareModal(
+  ): string
 {
   return `
     <div id="share-modal" class="hidden position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center p-3 app-modal-overlay">
@@ -66,7 +67,7 @@ export type ShareModalUi = {
 };
 
 export function createShareModalUi(
-  options: {
+    options: {
     canOpen: () => boolean;
     readAppName: () => string;
     prepareLink: (
@@ -76,7 +77,7 @@ export function createShareModalUi(
       shareOptions: ShareModalOptions
     ) => Promise<void>;
   }
-): ShareModalUi
+  ): ShareModalUi
 {
   const elModal =
     mustElement<HTMLElement>('share-modal');
@@ -171,16 +172,18 @@ export function createShareModalUi(
     }
   );
 
-  function readShareOptions(): ShareModalOptions
-  {
+  function readShareOptions(
+    ): ShareModalOptions
+{
     return {
       minified: elMinifiedInput.checked,
       excludeNonApplicationFiles: elExcludeTestsInput.checked
     };
   }
 
-  async function prepareShareLink(): Promise<void>
-  {
+  async function prepareShareLink(
+    ): Promise<void>
+{
     const requestId =
       ++preparationId;
 
@@ -215,14 +218,16 @@ export function createShareModalUi(
     }
   }
 
-  function close(): void
-  {
+  function close(
+    ): void
+{
     preparationId += 1;
     elModal.classList.add('hidden');
   }
 
-  async function copyShareUrlAsText(): Promise<void>
-  {
+  async function copyShareUrlAsText(
+    ): Promise<void>
+{
     if (elOutput.value.trim() === '') {
       return;
     }
@@ -242,8 +247,9 @@ export function createShareModalUi(
     }
   }
 
-  async function copyShareUrlAsHtml(): Promise<void>
-  {
+  async function copyShareUrlAsHtml(
+    ): Promise<void>
+{
     const url =
       elOutput.value.trim();
 
@@ -290,8 +296,10 @@ export function createShareModalUi(
     }
   }
 
-  function escapeHtml(value: string): string
-  {
+  function escapeHtml(
+      value: string
+    ): string
+{
     return value
       .replace(
         /&/g,
@@ -315,8 +323,9 @@ export function createShareModalUi(
       );
   }
 
-  async function downloadExport(): Promise<void>
-  {
+  async function downloadExport(
+    ): Promise<void>
+{
     await options.downloadExport(
       readShareOptions()
     );

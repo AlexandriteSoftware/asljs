@@ -22,9 +22,9 @@ export interface TmpDirOptions
 }
 
 export function formatMessage(
-  message: string,
-  ...params: any[]
-): string
+    message: string,
+    ...params: any[]
+  ): string
 {
   return message.replace(
     /%[sdo]/g,
@@ -54,9 +54,9 @@ export function formatMessage(
 }
 
 export function tmpDirConsoleLogFunction(
-  message: string,
-  ...params: any[]
-): void
+    message: string,
+    ...params: any[]
+  ): void
 {
   console.error(
     formatMessage(
@@ -67,9 +67,9 @@ export function tmpDirConsoleLogFunction(
 }
 
 export function tmpDirThrowErrorFunction(
-  message: string,
-  ...params: any[]
-): void
+    message: string,
+    ...params: any[]
+  ): void
 {
   throw new Error(
     formatMessage(

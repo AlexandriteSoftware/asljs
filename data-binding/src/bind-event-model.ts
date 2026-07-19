@@ -13,16 +13,16 @@ type ActionFn = (
 ) => unknown;
 
 export function bindEventModel(
-  element: HTMLElement,
-  spec: EventBindingSpec,
-  model: DataModel,
-  warnPrefix: string,
-  warnOnce: (
+    element: HTMLElement,
+    spec: EventBindingSpec,
+    model: DataModel,
+    warnPrefix: string,
+    warnOnce: (
     key: string,
     message: string,
     error?: unknown
   ) => void
-): () => void
+  ): () => void
 {
   let currentAction: unknown =
     readModelPath(

@@ -2,9 +2,9 @@ import { DataModel }
   from './types.js';
 
 export function readModelPath(
-  model: DataModel,
-  path: string
-): unknown
+    model: DataModel,
+    path: string
+  ): unknown
 {
   if (path === '') {
     return null;
@@ -21,16 +21,16 @@ export function readModelPath(
 }
 
 function hasGetMethod(
-  value: DataModel
-): value is DataModel & { get: (path: string) => unknown; }
+    value: DataModel
+  ): value is DataModel & { get: (path: string) => unknown; }
 {
   return typeof (value as { get?: unknown; }).get === 'function';
 }
 
 function readNestedPath(
-  source: Record<string, unknown>,
-  path: string
-): unknown
+    source: Record<string, unknown>,
+    path: string
+  ): unknown
 {
   const parts =
     path

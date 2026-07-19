@@ -1,4 +1,6 @@
-export function hasPendingPlanChanges(content: string): boolean
+export function hasPendingPlanChanges(
+    content: string
+  ): boolean
 {
   const normalized =
     normalizeWorkflowBody(
@@ -9,7 +11,9 @@ export function hasPendingPlanChanges(content: string): boolean
     && normalized !== 'Pending changes for the next generation cycle go here.';
 }
 
-export function hasPendingChangeItems(content: string): boolean
+export function hasPendingChangeItems(
+    content: string
+  ): boolean
 {
   const normalized =
     normalizeWorkflowBody(
@@ -21,7 +25,9 @@ export function hasPendingChangeItems(content: string): boolean
       !== 'Active implementation changes for the current generation cycle go here.';
 }
 
-export function buildChangeListFromPlan(content: string): string
+export function buildChangeListFromPlan(
+    content: string
+  ): string
 {
   const lines =
     normalizeWorkflowBody(
@@ -56,9 +62,9 @@ export function buildChangeListFromPlan(content: string): string
 }
 
 function normalizeWorkflowBody(
-  content: string,
-  heading: 'PLAN' | 'CHANGE'
-): string
+    content: string,
+    heading: 'PLAN' | 'CHANGE'
+  ): string
 {
   return content
     .replace(

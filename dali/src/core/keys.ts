@@ -5,16 +5,16 @@ export type KeyPath<R extends KeyRecord> =
   | (string & keyof R);
 
 function keyPathItemValid(
-  keyPathItem: string
-): boolean
+    keyPathItem: string
+  ): boolean
 {
   return typeof keyPathItem === 'string'
     && keyPathItem.length > 0;
 }
 
 export function keyPathValid(
-  keyPath: string | string[]
-): boolean
+    keyPath: string | string[]
+  ): boolean
 {
   if (Array.isArray(keyPath)) {
     if (keyPath.length < 1) {
@@ -30,8 +30,8 @@ export function keyPathValid(
 }
 
 export function keyPathAssert(
-  keyPath: string | string[]
-): asserts keyPath is string | string[]
+    keyPath: string | string[]
+  ): asserts keyPath is string | string[]
 {
   if (!keyPathValid(keyPath)) {
     throw new TypeError(
@@ -41,8 +41,8 @@ export function keyPathAssert(
 }
 
 export function keyValueValid(
-  value: any
-): boolean
+    value: any
+  ): boolean
 {
   if (
     value === null
@@ -95,8 +95,8 @@ export function keyValueValid(
 }
 
 export function keyValueAssert(
-  value: any
-): asserts value is IDBValidKey
+    value: any
+  ): asserts value is IDBValidKey
 {
   if (!keyValueValid(value)) {
     throw new TypeError(
@@ -106,9 +106,9 @@ export function keyValueAssert(
 }
 
 export function keyValid(
-  keyPath: string | string[],
-  key: IDBValidKey
-): boolean
+    keyPath: string | string[],
+    key: IDBValidKey
+  ): boolean
 {
   if (!Array.isArray(keyPath)) {
     return !Array.isArray(key)
@@ -126,9 +126,9 @@ export function keyValid(
 }
 
 export function keyAssert(
-  keyPath: string | string[],
-  key: IDBValidKey
-): asserts key is IDBValidKey
+    keyPath: string | string[],
+    key: IDBValidKey
+  ): asserts key is IDBValidKey
 {
   const keyPathLength =
     Array.isArray(keyPath)
@@ -150,9 +150,9 @@ export function keyAssert(
 }
 
 export function keyEqual(
-  a: IDBValidKey,
-  b: IDBValidKey
-): boolean
+    a: IDBValidKey,
+    b: IDBValidKey
+  ): boolean
 {
   if (Array.isArray(a) && Array.isArray(b)) {
     return a.length === b.length
@@ -173,9 +173,9 @@ export function keyEqual(
 }
 
 export function keyGet<R extends KeyRecord>(
-  keyPath: KeyPath<R>,
-  record: R
-): IDBValidKey
+    keyPath: KeyPath<R>,
+    record: R
+  ): IDBValidKey
 {
   if (!Array.isArray(keyPath)) {
     const keyValue =

@@ -1,7 +1,8 @@
 import { renderFirstApplicationDialog }
   from './first-application-dialog-ui.js';
 
-export function renderWorkspace(): string
+export function renderWorkspace(
+  ): string
 {
   return `
     <main id="workspace" class="d-flex flex-column min-vh-100 bg-body-tertiary">

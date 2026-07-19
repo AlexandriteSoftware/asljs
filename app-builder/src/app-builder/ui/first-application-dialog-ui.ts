@@ -8,7 +8,8 @@ import { AppBuilderButtonElement,
          writeControlValue }
   from './control-ui.js';
 
-export function renderFirstApplicationDialog(): string
+export function renderFirstApplicationDialog(
+  ): string
 {
   return `
     <section id="first-app-setup" class="hidden d-flex flex-grow-1 align-items-center justify-content-center p-3 p-lg-5">
@@ -62,7 +63,7 @@ export type FirstApplicationDialogUi = {
 };
 
 export function createFirstApplicationDialogUi(
-  options: {
+    options: {
     onCreateApplication: (
       values: FirstApplicationDialogValues
     ) => Promise<void>;
@@ -70,7 +71,7 @@ export function createFirstApplicationDialogUi(
       values: FirstApplicationDialogValues
     ) => Promise<void>;
   }
-): FirstApplicationDialogUi
+  ): FirstApplicationDialogUi
 {
   const elDialog =
     mustElement(
@@ -123,16 +124,18 @@ export function createFirstApplicationDialogUi(
     }
   );
 
-  function readValues(): FirstApplicationDialogValues
-  {
+  function readValues(
+    ): FirstApplicationDialogValues
+{
     return {
       name: readControlValue(elNameInput).trim(),
       apiKey: readControlValue(elApiKeyInput).trim()
     };
   }
 
-  async function createApplication(): Promise<void>
-  {
+  async function createApplication(
+    ): Promise<void>
+{
     const values =
       readValues();
 
@@ -144,15 +147,17 @@ export function createFirstApplicationDialogUi(
     await options.onCreateApplication(values);
   }
 
-  async function createTodoSample(): Promise<void>
-  {
+  async function createTodoSample(
+    ): Promise<void>
+{
     await options.onCreateTodoSample(
       readValues()
     );
   }
 
-  function clear(): void
-  {
+  function clear(
+    ): void
+{
     writeControlValue(
       elApiKeyInput,
       ''

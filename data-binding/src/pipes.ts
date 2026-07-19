@@ -35,8 +35,8 @@ const DATE_STYLE_NAMES =
  * ```
  */
 export function createBuiltInPipes(
-  locale?: string
-): Record<string, PipeFn>
+    locale?: string
+  ): Record<string, PipeFn>
 {
   return {
     string: value =>
@@ -246,8 +246,8 @@ export function createBuiltInPipes(
  * ```
  */
 export function mergePipes(
-  options: BindDataModelOptions | undefined
-): Record<string, PipeFn>
+    options: BindDataModelOptions | undefined
+  ): Record<string, PipeFn>
 {
   const builtIns =
     createBuiltInPipes();
@@ -259,11 +259,11 @@ export function mergePipes(
 }
 
 function formatDateOrIntl(
-  value: unknown,
-  format: string,
-  locale: string | undefined,
-  withTime: boolean
-): string
+    value: unknown,
+    format: string,
+    locale: string | undefined,
+    withTime: boolean
+  ): string
 {
   const dt =
     asDate(value);
@@ -296,8 +296,8 @@ function formatDateOrIntl(
 }
 
 function asDate(
-  value: unknown
-): Date | null
+    value: unknown
+  ): Date | null
 {
   if (value instanceof Date) {
     return Number.isNaN(

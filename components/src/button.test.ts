@@ -364,7 +364,8 @@ test(
   }
 );
 
-async function ensureDom(): Promise<void>
+async function ensureDom(
+  ): Promise<void>
 {
   if (restoreDom === null) {
     const dom =
@@ -411,8 +412,8 @@ async function ensureDom(): Promise<void>
 }
 
 async function settle(
-  element: LitElementLike
-): Promise<void>
+    element: LitElementLike
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();

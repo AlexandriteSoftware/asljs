@@ -347,8 +347,8 @@ export interface AiChatOptions<
 }
 
 export function createAiChatModel(
-  initial: Partial<AiChatSerializableState> = {}
-): AiChatModel
+    initial: Partial<AiChatSerializableState> = {}
+  ): AiChatModel
 {
   const initialChoicePrompt =
     normalizeSerializableChoicePrompt(
@@ -492,8 +492,8 @@ export function createAiChatModel(
 }
 
 function createAiChatMessages(
-  initialMessages: AiChatMessage[] | undefined
-): AiChatMessages
+    initialMessages: AiChatMessage[] | undefined
+  ): AiChatMessages
 {
   const list =
     observable(
@@ -536,8 +536,8 @@ function createAiChatMessages(
 }
 
 export function serializeAiChatModelState(
-  model: AiChatModel
-): AiChatSerializableState
+    model: AiChatModel
+  ): AiChatSerializableState
 {
   const choicePrompt =
     model.choicePrompt;
@@ -1279,8 +1279,8 @@ export class AiChat extends LitElement
 }
 
 function defineModelMethod(
-  value: unknown
-): PropertyDescriptor
+    value: unknown
+  ): PropertyDescriptor
 {
   return {
     value,
@@ -1291,8 +1291,8 @@ function defineModelMethod(
 }
 
 function normalizeChoiceOptions(
-  options: string[] | AiChatChoiceOption[]
-): AiChatChoiceOption[]
+    options: string[] | AiChatChoiceOption[]
+  ): AiChatChoiceOption[]
 {
   return options
     .map(
@@ -1309,9 +1309,9 @@ function normalizeChoiceOptions(
 }
 
 function dismissChoices(
-  model: AiChatModel,
-  value: string | null
-): void
+    model: AiChatModel,
+    value: string | null
+  ): void
 {
   const internalState =
     getInternalChoiceState(model);
@@ -1327,8 +1327,8 @@ function dismissChoices(
 }
 
 function getInternalChoiceState(
-  model: AiChatModel
-): InternalChoiceState
+    model: AiChatModel
+  ): InternalChoiceState
 {
   const state =
     internalChoiceStateByModel.get(model);
@@ -1341,9 +1341,9 @@ function getInternalChoiceState(
 }
 
 function applyLoadedState(
-  model: AiChatModel,
-  loaded: Partial<AiChatSerializableState>
-): void
+    model: AiChatModel,
+    loaded: Partial<AiChatSerializableState>
+  ): void
 {
   if (
     Array.isArray(
@@ -1416,9 +1416,9 @@ function applyLoadedState(
 }
 
 function createStatePersistenceScheduler(
-  model: AiChatModel,
-  stateStore: AiChatStateStore | undefined
-): () => void
+    model: AiChatModel,
+    stateStore: AiChatStateStore | undefined
+  ): () => void
 {
   if (stateStore === undefined) {
     return () =>
@@ -1450,8 +1450,8 @@ function createStatePersistenceScheduler(
 }
 
 function resolveAiChatSessionStorageKey(
-  component: AiChat
-): string
+    component: AiChat
+  ): string
 {
   const path =
     typeof location !== 'undefined'
@@ -1473,8 +1473,8 @@ function resolveAiChatSessionStorageKey(
 }
 
 function resolveAiChatElementIndex(
-  component: AiChat
-): number
+    component: AiChat
+  ): number
 {
   if (typeof document === 'undefined') {
     return 0;
@@ -1493,8 +1493,8 @@ function resolveAiChatElementIndex(
 }
 
 function createSessionStorageStateStore(
-  storageKey: string
-): AiChatStateStore | undefined
+    storageKey: string
+  ): AiChatStateStore | undefined
 {
   if (typeof sessionStorage === 'undefined') {
     return undefined;
@@ -1531,8 +1531,8 @@ function createSessionStorageStateStore(
 }
 
 function normalizeSerializableState(
-  value: unknown
-): Partial<AiChatSerializableState>
+    value: unknown
+  ): Partial<AiChatSerializableState>
 {
   if (!value || typeof value !== 'object') {
     return {};
@@ -1596,8 +1596,8 @@ function normalizeSerializableState(
 }
 
 function normalizeSerializableChoicePrompt(
-  value: unknown
-): AiChatSerializableChoicePrompt | undefined
+    value: unknown
+  ): AiChatSerializableChoicePrompt | undefined
 {
   if (!value || typeof value !== 'object') {
     return undefined;
@@ -1654,8 +1654,8 @@ function normalizeSerializableChoicePrompt(
 }
 
 function normalizeSerializableProgressState(
-  value: unknown
-): AiChatProgressState | undefined
+    value: unknown
+  ): AiChatProgressState | undefined
 {
   if (!value || typeof value !== 'object') {
     return undefined;
@@ -1678,13 +1678,13 @@ function normalizeSerializableProgressState(
 }
 
 function bindModelListeners(
-  model: AiChatModel,
-  renderMessages: () => void,
-  renderProgress: () => void,
-  renderChoices: () => void,
-  syncSendingUi: () => void,
-  persistState: () => void
-): {
+    model: AiChatModel,
+    renderMessages: () => void,
+    renderProgress: () => void,
+    renderChoices: () => void,
+    syncSendingUi: () => void,
+    persistState: () => void
+  ): {
   dispose: () => void;
 }
 {
@@ -1817,11 +1817,11 @@ function bindModelListeners(
 }
 
 function createBeforeSendContext<TRequestContext>(
-  model: AiChatModel,
-  prompt: string,
-  requestContext: TRequestContext,
-  chatModel: string
-): AiChatBeforeSendContext<TRequestContext>
+    model: AiChatModel,
+    prompt: string,
+    requestContext: TRequestContext,
+    chatModel: string
+  ): AiChatBeforeSendContext<TRequestContext>
 {
   const context =
     {
@@ -1848,23 +1848,23 @@ function createBeforeSendContext<TRequestContext>(
 }
 
 async function runWithTools<TToolsContext>(
-  transport: AiChatTransport,
-  chatModel: string,
-  input: AiChatResponsesInputItem[],
-  tools: AiChatToolDefinition[],
-  model: AiChatModel,
-  executeTool:
+    transport: AiChatTransport,
+    chatModel: string,
+    input: AiChatResponsesInputItem[],
+    tools: AiChatToolDefinition[],
+    model: AiChatModel,
+    executeTool:
     | ((
       name: string,
       argumentsJson: string,
       context: TToolsContext
     ) => Promise<unknown>)
     | undefined,
-  toolsContext: TToolsContext | undefined,
-  provider: AiChatSecretsAndSettingsProvider,
-  toolStepExtension: number,
-  previousResponseId: string | null
-): Promise<
+    toolsContext: TToolsContext | undefined,
+    provider: AiChatSecretsAndSettingsProvider,
+    toolStepExtension: number,
+    previousResponseId: string | null
+  ): Promise<
   { text: string; responseId: string | null; }
 >
 {
@@ -1996,8 +1996,8 @@ async function runWithTools<TToolsContext>(
 }
 
 async function readInitialToolStepLimit(
-  provider: AiChatSecretsAndSettingsProvider
-): Promise<number>
+    provider: AiChatSecretsAndSettingsProvider
+  ): Promise<number>
 {
   const providedLimit =
     await provider.getInitialToolStepLimit?.()
@@ -2017,11 +2017,11 @@ async function readInitialToolStepLimit(
 }
 
 async function requestToolStepLimitExtension(
-  model: AiChatModel,
-  stepsCompleted: number,
-  stepLimit: number,
-  extension: number
-): Promise<boolean>
+    model: AiChatModel,
+    stepsCompleted: number,
+    stepLimit: number,
+    extension: number
+  ): Promise<boolean>
 {
   const context =
     {
@@ -2059,8 +2059,8 @@ async function requestToolStepLimitExtension(
 }
 
 function isFunctionCallResponseItem(
-  value: unknown
-): value is {
+    value: unknown
+  ): value is {
   type: string;
   name?: string;
   arguments?: string;
@@ -2075,9 +2075,9 @@ function isFunctionCallResponseItem(
 }
 
 function renderAssistantContent(
-  content: string,
-  renderAssistantMessage?: (content: string) => string
-): string
+    content: string,
+    renderAssistantMessage?: (content: string) => string
+  ): string
 {
   if (!renderAssistantMessage) {
     return escapeHtml(content);
@@ -2091,9 +2091,9 @@ function renderAssistantContent(
 }
 
 function resolveAiChatButtonClassName(
-  component: AiChat,
-  ...classNames: string[]
-): string
+    component: AiChat,
+    ...classNames: string[]
+  ): string
 {
   const themeClassName =
     resolveThemeText(
@@ -2121,8 +2121,8 @@ function resolveAiChatButtonClassName(
 }
 
 function escapeHtml(
-  value: string
-): string
+    value: string
+  ): string
 {
   return value
     .replace(
@@ -2140,8 +2140,8 @@ function escapeHtml(
 }
 
 function extractAssistantText(
-  response: Record<string, unknown>
-): string
+    response: Record<string, unknown>
+  ): string
 {
   if (
     typeof response.output_text === 'string'

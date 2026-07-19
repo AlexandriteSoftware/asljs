@@ -676,15 +676,15 @@ type MountedSelectControl = {
 };
 
 function normalizeText(
-  value: string | null | undefined
-): string
+    value: string | null | undefined
+  ): string
 {
   return value ?? '';
 }
 
 function normalizeOptionalText(
-  value: string | null | undefined
-): string | null
+    value: string | null | undefined
+  ): string | null
 {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -694,8 +694,8 @@ function normalizeOptionalText(
 }
 
 function normalizeItems(
-  items: SelectItem[]
-): SelectItem[]
+    items: SelectItem[]
+  ): SelectItem[]
 {
   return items
     .map(
@@ -711,8 +711,8 @@ function normalizeItems(
 }
 
 function resolveAriaDescribedBy(
-  model: SelectTemplateModel
-): string
+    model: SelectTemplateModel
+  ): string
 {
   const ids: string[] = [];
 
@@ -732,9 +732,9 @@ function resolveAriaDescribedBy(
 }
 
 function cloneNamedTemplate(
-  host: Element,
-  slotName: SelectSlotName
-): HTMLTemplateElement | null
+    host: Element,
+    slotName: SelectSlotName
+  ): HTMLTemplateElement | null
 {
   const element =
     host.querySelector(
@@ -758,9 +758,9 @@ function cloneNamedTemplate(
 }
 
 function resolveInitialControlClassName(
-  control: HTMLSelectElement,
-  controlHost: HTMLElement
-): string
+    control: HTMLSelectElement,
+    controlHost: HTMLElement
+  ): string
 {
   return control.className
     || controlHost.getAttribute(
@@ -770,9 +770,9 @@ function resolveInitialControlClassName(
 }
 
 function resolveInitialControlInvalidClassName(
-  control: HTMLSelectElement,
-  controlHost: HTMLElement
-): string | null
+    control: HTMLSelectElement,
+    controlHost: HTMLElement
+  ): string | null
 {
   return control.getAttribute(
     'data-control-invalid-class'
@@ -784,8 +784,8 @@ function resolveInitialControlInvalidClassName(
 }
 
 function createDefaultSelectTemplate(
-  slotName: SelectSlotName
-): HTMLTemplateElement
+    slotName: SelectSlotName
+  ): HTMLTemplateElement
 {
   const template =
     document.createElement('template');
@@ -814,8 +814,8 @@ function createDefaultSelectTemplate(
 }
 
 function createFallbackMountedControl(
-  controlHost: HTMLElement
-): MountedSelectControl
+    controlHost: HTMLElement
+  ): MountedSelectControl
 {
   const fragment =
     document.createDocumentFragment();
@@ -840,8 +840,8 @@ function createFallbackMountedControl(
 }
 
 function joinClassNames(
-  ...classNames: string[]
-): string
+    ...classNames: string[]
+  ): string
 {
   return classNames
     .flatMap(

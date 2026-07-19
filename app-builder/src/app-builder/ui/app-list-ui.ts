@@ -18,8 +18,8 @@ export type RenderAppListUiOptions = {
 };
 
 export function renderAppListUi(
-  options: RenderAppListUiOptions
-): void
+    options: RenderAppListUiOptions
+  ): void
 {
   const selectElement =
     options.selectElement;

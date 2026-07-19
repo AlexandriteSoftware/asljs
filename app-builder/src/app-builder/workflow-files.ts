@@ -9,10 +9,10 @@ const WORKFLOW_FILE_ORDER =
   [README_FILE, PLAN_FILE, CHANGE_FILE] as const;
 
 export function createDefaultWorkflowFiles(
-  appId: string,
-  appName: string,
-  createId: () => string
-): FileRecord[]
+    appId: string,
+    appName: string,
+    createId: () => string
+  ): FileRecord[]
 {
   return WORKFLOW_FILE_ORDER.map(
     fileName => ({
@@ -28,13 +28,13 @@ export function createDefaultWorkflowFiles(
 }
 
 export function ensureWorkflowFiles(
-  options: {
+    options: {
     files: FileRecord[];
     appId: string;
     appName: string;
     createId: () => string;
   }
-): { files: FileRecord[]; changed: boolean; }
+  ): { files: FileRecord[]; changed: boolean; }
 {
   const existingByName =
     new Set(
@@ -78,7 +78,9 @@ export function ensureWorkflowFiles(
   };
 }
 
-export function hasOnlyWorkflowFiles(fileNames: string[]): boolean
+export function hasOnlyWorkflowFiles(
+    fileNames: string[]
+  ): boolean
 {
   if (fileNames.length === 0) {
     return true;
@@ -92,7 +94,8 @@ export function hasOnlyWorkflowFiles(fileNames: string[]): boolean
   );
 }
 
-export function createEmptyPlanContent(): string
+export function createEmptyPlanContent(
+  ): string
 {
   return [
     '# PLAN',
@@ -101,7 +104,8 @@ export function createEmptyPlanContent(): string
   ].join('\n');
 }
 
-export function createEmptyChangeContent(): string
+export function createEmptyChangeContent(
+  ): string
 {
   return [
     '# CHANGE',
@@ -110,7 +114,9 @@ export function createEmptyChangeContent(): string
   ].join('\n');
 }
 
-function sortWorkflowFilesFirst(files: FileRecord[]): FileRecord[]
+function sortWorkflowFilesFirst(
+    files: FileRecord[]
+  ): FileRecord[]
 {
   const priority =
     new Map<string, number>(
@@ -142,9 +148,9 @@ function sortWorkflowFilesFirst(files: FileRecord[]): FileRecord[]
 }
 
 function buildDefaultWorkflowContent(
-  fileName: typeof WORKFLOW_FILE_ORDER[number],
-  appName: string
-): string
+    fileName: typeof WORKFLOW_FILE_ORDER[number],
+    appName: string
+  ): string
 {
   switch (fileName) {
     case README_FILE:

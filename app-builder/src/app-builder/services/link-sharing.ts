@@ -22,8 +22,8 @@ export type LinkSharingService = {
 const DEFAULT_TIMEOUT_MS = 6000;
 
 export function createLinkSharingService(
-  options: LinkSharingServiceOptions
-): LinkSharingService
+    options: LinkSharingServiceOptions
+  ): LinkSharingService
 {
   const timeoutMs =
     Number.isFinite(
@@ -38,9 +38,9 @@ export function createLinkSharingService(
     : DEFAULT_TIMEOUT_MS;
 
   async function createShareUrl(
-    payload: unknown
-  ): Promise<ShareLinkResult>
-  {
+      payload: unknown
+    ): Promise<ShareLinkResult>
+{
     const serialized =
       JSON.stringify(payload);
 
@@ -60,9 +60,9 @@ export function createLinkSharingService(
   }
 
   async function parsePayloadFromToken<TPayload>(
-    token: string
-  ): Promise<TPayload>
-  {
+      token: string
+    ): Promise<TPayload>
+{
     const decompressed =
       await withTimeout(
         options.codec.decompress(token),
@@ -72,8 +72,10 @@ export function createLinkSharingService(
     return JSON.parse(decompressed) as TPayload;
   }
 
-  function readTokenFromHash(hash: string): string | null
-  {
+  function readTokenFromHash(
+      hash: string
+    ): string | null
+{
     if (
       !hash.startsWith(
         options.hashPrefix
@@ -94,7 +96,8 @@ export function createLinkSharingService(
   };
 }
 
-export function createBrowserTextCompressionCodec(): TextCompressionCodec
+export function createBrowserTextCompressionCodec(
+  ): TextCompressionCodec
 {
   return {
     compress: compressTextInBrowser,
@@ -102,7 +105,9 @@ export function createBrowserTextCompressionCodec(): TextCompressionCodec
   };
 }
 
-async function compressTextInBrowser(text: string): Promise<string>
+async function compressTextInBrowser(
+    text: string
+  ): Promise<string>
 {
   const inputBytes =
     new TextEncoder().encode(text);
@@ -118,7 +123,9 @@ async function compressTextInBrowser(text: string): Promise<string>
   return output;
 }
 
-async function decompressTextInBrowser(value: string): Promise<string>
+async function decompressTextInBrowser(
+    value: string
+  ): Promise<string>
 {
   const compressedBytes =
     decodeBase64Url(value);
@@ -132,9 +139,9 @@ async function decompressTextInBrowser(value: string): Promise<string>
 }
 
 async function compressBytesInBrowser(
-  input: Uint8Array,
-  format: CompressionFormat
-): Promise<Uint8Array>
+    input: Uint8Array,
+    format: CompressionFormat
+  ): Promise<Uint8Array>
 {
   const stream =
     new Blob([toBlobPart(input)])
@@ -147,9 +154,9 @@ async function compressBytesInBrowser(
 }
 
 async function decompressBytesInBrowser(
-  input: Uint8Array,
-  format: CompressionFormat
-): Promise<Uint8Array>
+    input: Uint8Array,
+    format: CompressionFormat
+  ): Promise<Uint8Array>
 {
   const stream =
     new Blob([toBlobPart(input)])
@@ -161,7 +168,9 @@ async function decompressBytesInBrowser(
   return readAllBytes(stream);
 }
 
-function toBlobPart(input: Uint8Array): BlobPart
+function toBlobPart(
+    input: Uint8Array
+  ): BlobPart
 {
   const copy =
     new Uint8Array(input.byteLength);
@@ -172,8 +181,8 @@ function toBlobPart(input: Uint8Array): BlobPart
 }
 
 async function readAllBytes(
-  stream: ReadableStream<Uint8Array>
-): Promise<Uint8Array>
+    stream: ReadableStream<Uint8Array>
+  ): Promise<Uint8Array>
 {
   const reader =
     stream.getReader();
@@ -214,7 +223,9 @@ async function readAllBytes(
   return merged;
 }
 
-function encodeBase64Url(bytes: Uint8Array): string
+function encodeBase64Url(
+    bytes: Uint8Array
+  ): string
 {
   const segmentLength = 0x8000;
   let binary = '';
@@ -245,7 +256,9 @@ function encodeBase64Url(bytes: Uint8Array): string
     );
 }
 
-function decodeBase64Url(value: string): Uint8Array
+function decodeBase64Url(
+    value: string
+  ): Uint8Array
 {
   const normalized =
     value
@@ -289,10 +302,10 @@ function decodeBase64Url(value: string): Uint8Array
 }
 
 async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  timeoutMessage: string
-): Promise<T>
+    promise: Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string
+  ): Promise<T>
 {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 

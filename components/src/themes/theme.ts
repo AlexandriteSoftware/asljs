@@ -94,9 +94,9 @@ let defaultTheme: ComponentsTheme = {};
 function mergeSection<
   TSection extends object
 >(
-  baseSection: TSection | undefined,
-  overrideSection: TSection | undefined
-): TSection | undefined
+    baseSection: TSection | undefined,
+    overrideSection: TSection | undefined
+  ): TSection | undefined
 {
   if (
     baseSection === undefined
@@ -112,13 +112,13 @@ function mergeSection<
 }
 
 function mergeButtonVariants(
-  baseVariants:
+    baseVariants:
     | Record<string, ButtonVariantThemeDefinition | undefined>
     | undefined,
-  overrideVariants:
+    overrideVariants:
     | Record<string, ButtonVariantThemeDefinition | undefined>
     | undefined
-): Record<string, ButtonVariantThemeDefinition | undefined> | undefined
+  ): Record<string, ButtonVariantThemeDefinition | undefined> | undefined
 {
   if (
     baseVariants === undefined
@@ -153,9 +153,9 @@ function mergeButtonVariants(
 }
 
 function mergeButtonThemeDefinition(
-  baseTheme: ButtonThemeDefinition | undefined,
-  overrideTheme: ButtonThemeDefinition | undefined
-): ButtonThemeDefinition | undefined
+    baseTheme: ButtonThemeDefinition | undefined,
+    overrideTheme: ButtonThemeDefinition | undefined
+  ): ButtonThemeDefinition | undefined
 {
   if (
     baseTheme === undefined
@@ -174,7 +174,8 @@ function mergeButtonThemeDefinition(
   };
 }
 
-export function getDefaultTheme(): ComponentsTheme
+export function getDefaultTheme(
+  ): ComponentsTheme
 {
   return {
     button: mergeButtonThemeDefinition(
@@ -197,16 +198,16 @@ export function getDefaultTheme(): ComponentsTheme
 }
 
 export function setDefaultTheme(
-  theme: ComponentsTheme | null | undefined
-): void
+    theme: ComponentsTheme | null | undefined
+  ): void
 {
   defaultTheme = theme ?? {};
 }
 
 export function getComponentVariantList(
-  component: keyof ComponentsTheme,
-  theme?: ComponentsTheme | null
-): string[]
+    component: keyof ComponentsTheme,
+    theme?: ComponentsTheme | null
+  ): string[]
 {
   // Currently only button defines named variants in the theme surface.
   const resolvedTheme =
@@ -223,8 +224,8 @@ export function getComponentVariantList(
 }
 
 export function findThemeProvider(
-  element: Element
-): ThemeProviderLike | null
+    element: Element
+  ): ThemeProviderLike | null
 {
   return element.closest(
     THEME_PROVIDER_TAG_NAME
@@ -232,9 +233,9 @@ export function findThemeProvider(
 }
 
 export function resolveThemeTemplate(
-  source: ThemeTemplateValue,
-  component: HTMLElement
-): HTMLTemplateElement | null
+    source: ThemeTemplateValue,
+    component: HTMLElement
+  ): HTMLTemplateElement | null
 {
   if (
     source === null
@@ -275,9 +276,9 @@ export function resolveThemeTemplate(
 }
 
 export function resolveThemeText(
-  source: ThemeTextValue,
-  component: HTMLElement
-): string | null
+    source: ThemeTextValue,
+    component: HTMLElement
+  ): string | null
 {
   if (
     source === null

@@ -73,10 +73,10 @@ type WarnOnce = (
  * ```
  */
 export function bindDataModel(
-  root: ParentNode,
-  model: DataModel,
-  options: BindDataModelOptions = {}
-): () => void
+    root: ParentNode,
+    model: DataModel,
+    options: BindDataModelOptions = {}
+  ): () => void
 {
   const warned =
     new Set<string>();
@@ -119,12 +119,12 @@ export function bindDataModel(
 }
 
 function bindSubtree(
-  root: ParentNode,
-  model: DataModel,
-  options: BindDataModelOptions,
-  warnOnce: WarnOnce,
-  nextPrefix: () => string
-): () => void
+    root: ParentNode,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string
+  ): () => void
 {
   const disposers: Array<() => void> = [];
 
@@ -174,13 +174,13 @@ function bindSubtree(
 }
 
 function bindContextElement(
-  element: HTMLElement,
-  contextPath: string,
-  model: DataModel,
-  options: BindDataModelOptions,
-  warnOnce: WarnOnce,
-  nextPrefix: () => string
-): () => void
+    element: HTMLElement,
+    contextPath: string,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string
+  ): () => void
 {
   const ownDisposers: Array<() => void> = [];
 
@@ -250,14 +250,14 @@ function bindContextElement(
 }
 
 function bindElementAttributes(
-  element: HTMLElement,
-  model: DataModel,
-  options: BindDataModelOptions,
-  warnOnce: WarnOnce,
-  nextPrefix: () => string,
-  disposers: Array<() => void>,
-  skipAttr?: string
-): void
+    element: HTMLElement,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string,
+    disposers: Array<() => void>,
+    skipAttr?: string
+  ): void
 {
   for (const attribute of [...element.attributes]) {
     if (!attribute.name.startsWith(BIND_PREFIX)) {
@@ -322,9 +322,9 @@ function bindElementAttributes(
 }
 
 function createBindingSpec(
-  suffix: string,
-  expression: string
-): BindingSpec
+    suffix: string,
+    expression: string
+  ): BindingSpec
 {
   if (suffix.startsWith('on') && suffix.length > 2) {
     return parseEventBindingExpression(
@@ -340,8 +340,8 @@ function createBindingSpec(
 }
 
 function resolveValueTarget(
-  suffix: string
-): BindingTarget
+    suffix: string
+  ): BindingTarget
 {
   if (suffix === 'text') {
     return { kind: 'text' };

@@ -16,11 +16,11 @@ import { writeBindingValue }
 type CompiledPipe = { args: string[]; formatter: PipeFn; };
 
 export function bindValueModel(
-  element: HTMLElement,
-  spec: ValueBindingSpec,
-  model: DataModel,
-  options: BindDataModelOptions
-): () => void
+    element: HTMLElement,
+    spec: ValueBindingSpec,
+    model: DataModel,
+    options: BindDataModelOptions
+  ): () => void
 {
   const pipeRegistry =
     mergePipes(options);
@@ -72,9 +72,9 @@ export function bindValueModel(
 }
 
 function compilePipes(
-  pipes: PipeSpec[],
-  registry: Record<string, PipeFn>
-): CompiledPipe[]
+    pipes: PipeSpec[],
+    registry: Record<string, PipeFn>
+  ): CompiledPipe[]
 {
   const compiled: CompiledPipe[] = [];
 
@@ -97,9 +97,9 @@ function compilePipes(
 }
 
 function applyPipes(
-  value: unknown,
-  pipes: CompiledPipe[]
-): unknown
+    value: unknown,
+    pipes: CompiledPipe[]
+  ): unknown
 {
   let current = value;
 

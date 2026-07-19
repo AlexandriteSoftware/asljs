@@ -182,11 +182,11 @@ type ToolParameterSchema = {
 };
 
 function openAiToolDefinition(
-  name: string,
-  description: string,
-  properties?: Record<string, ToolParameterSchema>,
-  required?: string[]
-): OpenAiToolDefinition
+    name: string,
+    description: string,
+    properties?: Record<string, ToolParameterSchema>,
+    required?: string[]
+  ): OpenAiToolDefinition
 {
   return {
     name,
@@ -352,11 +352,12 @@ export const OPENAI_TOOLS: OpenAiToolDefinition[] =
 const DEFAULT_DIAGNOSTICS_DELAY_MS = 350;
 
 export function createAppRuntimeTools(
-  context: AiToolsRuntimeContext
-): AiTools
+    context: AiToolsRuntimeContext
+  ): AiTools
 {
-  async function listFilesetTool(): Promise<string[]>
-  {
+  async function listFilesetTool(
+    ): Promise<string[]>
+{
     return [...context.getFiles()]
       .map(
         file => file.name
@@ -367,10 +368,10 @@ export function createAppRuntimeTools(
   }
 
   async function listFilesByMaskTool(
-    mask: string,
-    maxFiles = 100
-  ): Promise<string[]>
-  {
+      mask: string,
+      maxFiles = 100
+    ): Promise<string[]>
+{
     return getMatchingPaths(
       context,
       mask,
@@ -378,8 +379,10 @@ export function createAppRuntimeTools(
     );
   }
 
-  async function readFileTool(path: string): Promise<string>
-  {
+  async function readFileTool(
+      path: string
+    ): Promise<string>
+{
     const resolvedPath =
       resolveExistingPath(
         context,
@@ -400,10 +403,10 @@ export function createAppRuntimeTools(
   }
 
   async function readFilesTool(
-    paths: string[],
-    maxCharsPerFile = 0
-  ): Promise<Record<string, string>>
-  {
+      paths: string[],
+      maxCharsPerFile = 0
+    ): Promise<Record<string, string>>
+{
     const result: Record<string, string> = {};
 
     for (const path of paths) {
@@ -417,11 +420,11 @@ export function createAppRuntimeTools(
   }
 
   async function readFilesByMaskTool(
-    mask: string,
-    maxFiles = 100,
-    maxCharsPerFile = 0
-  ): Promise<Record<string, string>>
-  {
+      mask: string,
+      maxFiles = 100,
+      maxCharsPerFile = 0
+    ): Promise<Record<string, string>>
+{
     return readFilesTool(
       await listFilesByMaskTool(
         mask,
@@ -432,21 +435,21 @@ export function createAppRuntimeTools(
   }
 
   async function readFileDataTool(
-    path: string
-  ): Promise<
+      path: string
+    ): Promise<
     { mimeType: string; base64: string; dataUrl: string; } | null
   >
-  {
+{
     return readFileDataInfo(
       await readFileTool(path)
     );
   }
 
   async function setFileContentTool(
-    path: string,
-    content: string
-  ): Promise<void>
-  {
+      path: string,
+      content: string
+    ): Promise<void>
+{
     const appId =
       requireCurrentAppId(context);
 
@@ -512,11 +515,11 @@ export function createAppRuntimeTools(
   }
 
   async function setFileDataTool(
-    path: string,
-    mimeType: string,
-    base64: string
-  ): Promise<void>
-  {
+      path: string,
+      mimeType: string,
+      base64: string
+    ): Promise<void>
+{
     await setFileContentTool(
       path,
       `data:${normalizeMimeType(mimeType)};base64,${
@@ -526,9 +529,9 @@ export function createAppRuntimeTools(
   }
 
   async function setFilesContentTool(
-    files: FileContentEntry[]
-  ): Promise<void>
-  {
+      files: FileContentEntry[]
+    ): Promise<void>
+{
     for (const file of files) {
       await setFileContentTool(
         file.path,
@@ -537,8 +540,10 @@ export function createAppRuntimeTools(
     }
   }
 
-  async function deleteFileTool(path: string): Promise<void>
-  {
+  async function deleteFileTool(
+      path: string
+    ): Promise<void>
+{
     const resolvedPath =
       resolveExistingPath(
         context,
@@ -573,12 +578,12 @@ export function createAppRuntimeTools(
   }
 
   async function replaceFilePartTool(
-    path: string,
-    search: string,
-    replacement: string,
-    replaceAll = false
-  ): Promise<void>
-  {
+      path: string,
+      search: string,
+      replacement: string,
+      replaceAll = false
+    ): Promise<void>
+{
     if (search === '') {
       throw new Error('Search text cannot be empty.');
     }
@@ -634,8 +639,10 @@ export function createAppRuntimeTools(
     );
   }
 
-  async function evalInAppTool(code: string): Promise<unknown>
-  {
+  async function evalInAppTool(
+      code: string
+    ): Promise<unknown>
+{
     if (context.getFiles().length === 0) {
       throw new Error('No files available to run.');
     }
@@ -651,16 +658,16 @@ export function createAppRuntimeTools(
   }
 
   async function grepTool(
-    mask: string,
-    pattern: string,
-    flags = '',
-    maxMatches = 100
-  ): Promise<
+      mask: string,
+      pattern: string,
+      flags = '',
+      maxMatches = 100
+    ): Promise<
     Array<
       { path: string; line: number; text: string; }
     >
   >
-  {
+{
     const matches: Array<
       { path: string; line: number; text: string; }
     > = [];
@@ -712,10 +719,10 @@ export function createAppRuntimeTools(
   }
 
   async function chooseTool(
-    question: string,
-    options: string[]
-  ): Promise<void>
-  {
+      question: string,
+      options: string[]
+    ): Promise<void>
+{
     const normalizedQuestion =
       question.trim();
 
@@ -743,10 +750,10 @@ export function createAppRuntimeTools(
   }
 
   async function assertInAppTool(
-    code: string,
-    message?: string
-  ): Promise<unknown>
-  {
+      code: string,
+      message?: string
+    ): Promise<unknown>
+{
     const result =
       await evalInAppTool(code);
 
@@ -758,8 +765,8 @@ export function createAppRuntimeTools(
   }
 
   async function runAppTestsTool(
-    path = 'app.tests.js'
-  ): Promise<
+      path = 'app.tests.js'
+    ): Promise<
     {
       path: string;
       total: number;
@@ -768,7 +775,7 @@ export function createAppRuntimeTools(
       results: AppTestResult[];
     }
   >
-  {
+{
     const resolvedPath =
       resolveExistingPath(
         context,
@@ -847,13 +854,15 @@ export function createAppRuntimeTools(
     };
   }
 
-  async function getAppDiagnosticsTool(): Promise<unknown>
-  {
+  async function getAppDiagnosticsTool(
+    ): Promise<unknown>
+{
     return context.getAppDiagnostics();
   }
 
-  async function runAppAndCollectDiagnosticsTool(): Promise<unknown>
-  {
+  async function runAppAndCollectDiagnosticsTool(
+    ): Promise<unknown>
+{
     context.runApp();
 
     await context.wait(
@@ -863,8 +872,9 @@ export function createAppRuntimeTools(
     return context.getAppDiagnostics();
   }
 
-  async function startGenerationTool(): Promise<string>
-  {
+  async function startGenerationTool(
+    ): Promise<string>
+{
     if (context.startGeneration === undefined) {
       throw new Error('Generation control is not available in this lane.');
     }
@@ -895,7 +905,9 @@ export function createAppRuntimeTools(
   };
 }
 
-function requireCurrentAppId(context: AiToolsRuntimeContext): string
+function requireCurrentAppId(
+    context: AiToolsRuntimeContext
+  ): string
 {
   const appId =
     context.getCurrentAppId();
@@ -907,7 +919,9 @@ function requireCurrentAppId(context: AiToolsRuntimeContext): string
   return appId;
 }
 
-function normalizeToolPath(path: string): string
+function normalizeToolPath(
+    path: string
+  ): string
 {
   const normalized =
     path
@@ -936,12 +950,16 @@ function normalizeToolPath(path: string): string
   return normalized;
 }
 
-function isHiddenToolPath(path: string): boolean
+function isHiddenToolPath(
+    path: string
+  ): boolean
 {
   return normalizeToolPath(path).startsWith('.');
 }
 
-function normalizeMimeType(mimeType: string): string
+function normalizeMimeType(
+    mimeType: string
+  ): string
 {
   const normalized =
     mimeType.trim().toLowerCase();
@@ -957,7 +975,9 @@ function normalizeMimeType(mimeType: string): string
   return normalized;
 }
 
-function normalizeBase64Data(base64: string): string
+function normalizeBase64Data(
+    base64: string
+  ): string
 {
   const trimmed =
     base64
@@ -983,9 +1003,9 @@ function normalizeBase64Data(base64: string): string
 }
 
 function limitToolText(
-  value: string,
-  maxCharsPerFile: number
-): string
+    value: string,
+    maxCharsPerFile: number
+  ): string
 {
   if (
     !Number.isFinite(
@@ -1010,10 +1030,10 @@ function limitToolText(
 }
 
 function getMatchingPaths(
-  context: AiToolsRuntimeContext,
-  mask: string,
-  maxFiles: number
-): string[]
+    context: AiToolsRuntimeContext,
+    mask: string,
+    maxFiles: number
+  ): string[]
 {
   const regex =
     createMaskRegex(mask);
@@ -1042,7 +1062,9 @@ function getMatchingPaths(
     );
 }
 
-function createMaskRegex(mask: string): RegExp
+function createMaskRegex(
+    mask: string
+  ): RegExp
 {
   const normalizedMask =
     normalizeToolPath(mask);
@@ -1074,9 +1096,9 @@ function createMaskRegex(mask: string): RegExp
 }
 
 function createSearchRegex(
-  pattern: string,
-  flags: string
-): RegExp
+    pattern: string,
+    flags: string
+  ): RegExp
 {
   const normalizedFlags =
     Array.from(
@@ -1092,9 +1114,9 @@ function createSearchRegex(
 }
 
 function normalizePositiveInteger(
-  value: number,
-  fallback: number
-): number
+    value: number,
+    fallback: number
+  ): number
 {
   if (!Number.isFinite(value) || value <= 0) {
     return fallback;
@@ -1104,16 +1126,18 @@ function normalizePositiveInteger(
 }
 
 async function loadAppTests(
-  path: string,
-  content: string
-): Promise<AppTestCase[]>
+    path: string,
+    content: string
+  ): Promise<AppTestCase[]>
 {
   return path.toLowerCase().endsWith('.json')
     ? parseLegacyJsonAppTests(content)
     : parseJavaScriptAppTests(content);
 }
 
-async function parseJavaScriptAppTests(content: string): Promise<AppTestCase[]>
+async function parseJavaScriptAppTests(
+    content: string
+  ): Promise<AppTestCase[]>
 {
   const moduleUrl =
     `data:text/javascript;charset=utf-8,${
@@ -1146,9 +1170,9 @@ async function parseJavaScriptAppTests(content: string): Promise<AppTestCase[]>
 }
 
 function normalizeModuleTestCase(
-  value: unknown,
-  index: number
-): AppTestCase
+    value: unknown,
+    index: number
+  ): AppTestCase
 {
   if (value === null || typeof value !== 'object') {
     throw new Error(`Invalid test case at index ${index}.`);
@@ -1177,7 +1201,9 @@ function normalizeModuleTestCase(
   };
 }
 
-function parseLegacyJsonAppTests(content: string): AppTestCase[]
+function parseLegacyJsonAppTests(
+    content: string
+  ): AppTestCase[]
 {
   let parsed: unknown;
 
@@ -1233,15 +1259,17 @@ function parseLegacyJsonAppTests(content: string): AppTestCase[]
   );
 }
 
-function pickVisibleFileName(files: AiToolFileRecord[]): string | null
+function pickVisibleFileName(
+    files: AiToolFileRecord[]
+  ): string | null
 {
   return files[0]?.name ?? null;
 }
 
 function resolveExistingPath(
-  context: AiToolsRuntimeContext,
-  path: string
-): string | null
+    context: AiToolsRuntimeContext,
+    path: string
+  ): string | null
 {
   const normalizedPath =
     normalizeToolPath(path);
@@ -1257,8 +1285,8 @@ function resolveExistingPath(
 }
 
 export function isResponseFunctionCall(
-  value: unknown
-): value is ResponseFunctionCall
+    value: unknown
+  ): value is ResponseFunctionCall
 {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -1268,8 +1296,8 @@ export function isResponseFunctionCall(
 }
 
 export function readFunctionName(
-  toolCall: ResponseFunctionCall
-): string
+    toolCall: ResponseFunctionCall
+  ): string
 {
   if (typeof toolCall.name !== 'string' || toolCall.name.trim() === '') {
     throw new Error('Tool call missing function name.');
@@ -1279,8 +1307,8 @@ export function readFunctionName(
 }
 
 export function readCallId(
-  toolCall: ResponseFunctionCall
-): string
+    toolCall: ResponseFunctionCall
+  ): string
 {
   if (typeof toolCall.call_id !== 'string' || toolCall.call_id.trim() === '') {
     throw new Error('Tool call missing call_id.');
@@ -1290,9 +1318,9 @@ export function readCallId(
 }
 
 export async function executeToolCall(
-  toolCall: ResponseFunctionCall,
-  tools: AiTools
-): Promise<string>
+    toolCall: ResponseFunctionCall,
+    tools: AiTools
+  ): Promise<string>
 {
   const name =
     readFunctionName(toolCall);
@@ -1563,8 +1591,8 @@ export async function executeToolCall(
 }
 
 function parseToolArguments(
-  raw: string | Record<string, unknown> | undefined
-): Record<string, unknown>
+    raw: string | Record<string, unknown> | undefined
+  ): Record<string, unknown>
 {
   if (raw === undefined) {
     return {};
@@ -1593,10 +1621,10 @@ function parseToolArguments(
 }
 
 function readStringArg(
-  args: Record<string, unknown>,
-  key: string,
-  defaultValue?: string
-): string
+    args: Record<string, unknown>,
+    key: string,
+    defaultValue?: string
+  ): string
 {
   const value =
     args[key];
@@ -1613,9 +1641,9 @@ function readStringArg(
 }
 
 function readStringArrayArg(
-  args: Record<string, unknown>,
-  key: string
-): string[]
+    args: Record<string, unknown>,
+    key: string
+  ): string[]
 {
   const value =
     args[key];
@@ -1632,9 +1660,9 @@ function readStringArrayArg(
 }
 
 function readFileContentEntriesArg(
-  args: Record<string, unknown>,
-  key: string
-): FileContentEntry[]
+    args: Record<string, unknown>,
+    key: string
+  ): FileContentEntry[]
 {
   const value =
     args[key];
@@ -1672,10 +1700,10 @@ function readFileContentEntriesArg(
 }
 
 function readNumberArg(
-  args: Record<string, unknown>,
-  key: string,
-  defaultValue: number
-): number
+    args: Record<string, unknown>,
+    key: string,
+    defaultValue: number
+  ): number
 {
   const value =
     args[key];
@@ -1692,10 +1720,10 @@ function readNumberArg(
 }
 
 function readBooleanArg(
-  args: Record<string, unknown>,
-  key: string,
-  defaultValue: boolean
-): boolean
+    args: Record<string, unknown>,
+    key: string,
+    defaultValue: boolean
+  ): boolean
 {
   const value =
     args[key];
@@ -1711,7 +1739,9 @@ function readBooleanArg(
   return value;
 }
 
-function toolSuccess(value: unknown): string
+function toolSuccess(
+    value: unknown
+  ): string
 {
   return stringifyToolPayload(
     {
@@ -1721,7 +1751,9 @@ function toolSuccess(value: unknown): string
   );
 }
 
-function toolFailure(error: string): string
+function toolFailure(
+    error: string
+  ): string
 {
   return stringifyToolPayload(
     {
@@ -1731,7 +1763,9 @@ function toolFailure(error: string): string
   );
 }
 
-function stringifyToolPayload(payload: Record<string, unknown>): string
+function stringifyToolPayload(
+    payload: Record<string, unknown>
+  ): string
 {
   try {
     return JSON.stringify(payload);

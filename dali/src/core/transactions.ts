@@ -5,8 +5,8 @@ export const TxMode =
 };
 
 export function txDone(
-  tx: IDBTransaction
-): Promise<void>
+    tx: IDBTransaction
+  ): Promise<void>
 {
   return new Promise(
     (
@@ -46,11 +46,11 @@ export function txDone(
 }
 
 export function txReuseOrCreate(
-  tx: IDBTransaction | null,
-  storeNames: string | string[],
-  mode: IDBTransactionMode,
-  db: IDBDatabase
-): IDBTransaction
+    tx: IDBTransaction | null,
+    storeNames: string | string[],
+    mode: IDBTransactionMode,
+    db: IDBDatabase
+  ): IDBTransaction
 {
   if (tx) {
     const storeNamesArray =
@@ -76,10 +76,10 @@ export function txReuseOrCreate(
 }
 
 export function txEnsure(
-  tx: IDBTransaction,
-  storeName: string,
-  mode: IDBTransactionMode
-): void
+    tx: IDBTransaction,
+    storeName: string,
+    mode: IDBTransactionMode
+  ): void
 {
   if (!tx.objectStoreNames.contains(storeName)) {
     throw new TransactionStoreAccessError(storeName);
@@ -161,10 +161,10 @@ export class TransactionStoreAccessError extends Error
 }
 
 export function txRead(
-  db: IDBDatabase,
-  storeName: string,
-  tx: IDBTransaction | null = null
-): IDBTransaction
+    db: IDBDatabase,
+    storeName: string,
+    tx: IDBTransaction | null = null
+  ): IDBTransaction
 {
   if (tx !== null) {
     txEnsure(
@@ -183,10 +183,10 @@ export function txRead(
 }
 
 export function txWrite(
-  db: IDBDatabase,
-  storeName: string,
-  tx: IDBTransaction | null = null
-): IDBTransaction
+    db: IDBDatabase,
+    storeName: string,
+    tx: IDBTransaction | null = null
+  ): IDBTransaction
 {
   if (tx !== null) {
     txEnsure(

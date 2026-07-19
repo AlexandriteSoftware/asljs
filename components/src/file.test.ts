@@ -260,7 +260,8 @@ test(
   }
 );
 
-async function ensureDomAndFileLoaded(): Promise<void>
+async function ensureDomAndFileLoaded(
+  ): Promise<void>
 {
   if (domRestore === null) {
     const dom =
@@ -336,7 +337,8 @@ async function ensureDomAndFileLoaded(): Promise<void>
   }
 }
 
-async function getFileModule(): Promise<FileModule>
+async function getFileModule(
+  ): Promise<FileModule>
 {
   await ensureDomAndFileLoaded();
 
@@ -347,12 +349,15 @@ async function getFileModule(): Promise<FileModule>
   return fileModule;
 }
 
-function resetDomBody(): void
+function resetDomBody(
+  ): void
 {
   document.body.replaceChildren();
 }
 
-async function settle(element: FileViewElement): Promise<void>
+async function settle(
+    element: FileViewElement
+  ): Promise<void>
 {
   await element.updateComplete;
   await Promise.resolve();
@@ -360,9 +365,9 @@ async function settle(element: FileViewElement): Promise<void>
 }
 
 async function waitFor(
-  predicate: () => boolean,
-  maxTries: number = 20
-): Promise<void>
+    predicate: () => boolean,
+    maxTries: number = 20
+  ): Promise<void>
 {
   for (let index = 0; index < maxTries; index++) {
     if (predicate()) {
