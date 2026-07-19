@@ -244,3 +244,16 @@ function isFormatterDefinition(
   return typeof value === 'object';
 }
 ```
+
+```ts focus
+function test<T>(value: T): T {
+  return value;
+}
+// ---
+function test<T>(
+    value: T
+  ): T
+{
+  return value;
+}
+```

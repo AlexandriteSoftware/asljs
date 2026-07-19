@@ -102,13 +102,30 @@ function checkLayout(
   const id =
     node.id;
 
-  const openingParen =
-    context.sourceCode.getTokenAfter(
-      id as unknown as ESTree.Node);
+  const typeParameters =
+    node.typeParameters;
+
+  let openingParen: AST.Token | null = null;
+
+  if (typeParameters) {
+    openingParen = context.sourceCode.getTokenAfter(
+      typeParameters as unknown as ESTree.Node
+    );
+  } else {
+    openingParen = context.sourceCode.getTokenAfter(
+      id as unknown as ESTree.Node
+    );
+  }
 
   ensureNodeAndLocation(
     openingParen
   );
+
+  if (openingParen.value !== '(') {
+    throw new Error(
+      'Expected opening parenthesis after function name.'
+    );
+  }
 
   const openingParenEndLine =
     openingParen.loc.end.line;
@@ -237,6 +254,9 @@ export function buildFunctionDeclaration(
   const name =
     node.id?.name ?? '';
 
+  const typeParameters =
+    node.typeParameters;
+
   const body =
     node.body;
 
@@ -262,6 +282,16 @@ export function buildFunctionDeclaration(
 
   if (name) {
     code.push(name);
+  }
+
+  if (typeParameters) {
+    const typeParametersCode =
+      context.sourceCode.getText(
+        typeParameters as unknown as ESTree.Node);
+
+    code.push(
+      typeParametersCode
+    );
   }
 
   code.push('(');
