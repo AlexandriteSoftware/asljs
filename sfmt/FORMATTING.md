@@ -87,8 +87,8 @@ Examples:
 
 Indentation is 2 spaces per level. Tabs are not allowed.
 
-However, when a line is broken into multiple lines, the second and subsequent
-lines are aligned with the first line.
+When a line is broken into multiple lines, the second and subsequent
+lines are aligned with the first line. The line is broken before the operator.
 
 ```js
 if (
@@ -106,16 +106,13 @@ indented one level from the variable declaration, unless the statement is
 simple.
 
 ```js
-const code =
-  getCode(
-    declaration);
-
 const output = [ ];
 
 const map = new Map();
 
-const layout =
-  new Layout({ });
+const code =
+  getCode(
+    declaration);
 ```
 
 ### For
@@ -206,4 +203,50 @@ if (success) {
   print(
     'Success!');
 }
+```
+
+Operators, punctuation, and keywords are almost always surrounded by a single
+space.
+
+### Arrays
+
+The first item in an array is on the same line as the opening bracket.
+
+The second and subsequent items are on separate lines, aligned with the first
+item.
+
+The closing bracket is on the same line as the last item.
+
+```js
+const array =
+  [ 1,
+    2,
+    3 ];
+```
+
+### Objects
+
+The first property in an object is on the same line as the opening brace.
+
+The second and subsequent properties are on separate lines, aligned with the first
+property.
+
+The closing brace is on the same line as the last property.
+
+```js
+const object =
+  { a: 1,
+    b: 2,
+    c: 3 };
+```
+
+Multiline properties are on separate lines, indented one level from the property
+name.
+
+```js
+const object =
+  { a: 1,
+    b:
+      { c: 2,
+        d: 3 } };
 ```

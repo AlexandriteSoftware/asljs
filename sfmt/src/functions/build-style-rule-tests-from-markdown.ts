@@ -243,7 +243,7 @@ function testWithCrNl(
 
   const withDifferentLineEndings: TestCase =
     {
-    title: `${testCase.title} (with different line endings)`,
+    title: `${testCase.title} (with \\r\\n)`,
     source: crNlLineEndingSource,
     expected: crNlLineEndingExpected,
     tags: testCase.tags

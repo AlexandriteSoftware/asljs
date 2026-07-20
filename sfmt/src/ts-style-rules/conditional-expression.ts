@@ -8,8 +8,9 @@ import { Rule,
   from 'eslint';
 import { createFormatter }
   from '../formatter.js';
-
-type FormattingContext = { newLine: string; };
+import { createFormattingContext,
+         FormattingContext }
+  from '../formatting-context.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   {
@@ -23,10 +24,14 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         const tsNode =
           node as unknown as TSESTree.ConditionalExpression;
 
+        const fmtCtx =
+          createFormattingContext(
+            context.sourceCode);
+
         const correctLayout =
           checkLayout(
             tsNode,
-            context.sourceCode);
+            fmtCtx);
 
         if (correctLayout) {
           return;
@@ -38,22 +43,10 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
             message: 'Use asljs conditional expression style.',
             fix(fixer: Rule.RuleFixer): Rule.Fix
             {
-              const sourceCode =
-                context.sourceCode;
-
-              const newLine =
-                sourceCode.text.includes('\r\n')
-                ? '\r\n'
-                : '\n';
-
-              const formattingContext =
-                { newLine };
-
               const replacement =
                 buildConditionalExpression(
                   tsNode,
-                  sourceCode,
-                  formattingContext);
+                  fmtCtx);
 
               return fixer.replaceText(
                 node,
@@ -78,17 +71,17 @@ export default conditionalExpressionFormatter.eslintRule;
 
 function checkLayout(
     node: TSESTree.ConditionalExpression,
-    sourceCode: SourceCode
+    context: FormattingContext
   ): boolean
 {
   const questionMark =
-    sourceCode.getTokenAfter(
+    context.sourceCode.getTokenAfter(
       asTokenTarget(
         node.test),
       token => token.value === '?');
 
   const colon =
-    sourceCode.getTokenAfter(
+    context.sourceCode.getTokenAfter(
       asTokenTarget(
         node.consequent),
       token => token.value === ':');
@@ -118,34 +111,33 @@ function checkLayout(
 
 function buildConditionalExpression(
     node: TSESTree.ConditionalExpression,
-    sourceCode: SourceCode,
-    formattingContext: FormattingContext
+    context: FormattingContext
   ): string
 {
   const indent =
     getIndentation(
-      sourceCode,
+      context.sourceCode,
       node);
 
   const branchIndent =
     indent + '  ';
 
   const testText =
-    sourceCode.getText(
+    context.sourceCode.getText(
       asTextNode(
         node.test));
 
   const consequentText =
-    sourceCode.getText(
+    context.sourceCode.getText(
       asTextNode(
         node.consequent));
 
   const alternateText =
-    sourceCode.getText(
+    context.sourceCode.getText(
       asTextNode(
         node.alternate));
 
-  return `${testText}${formattingContext.newLine}${branchIndent}? ${consequentText}${formattingContext.newLine}${branchIndent}: ${alternateText}`;
+  return `${testText}${context.newLine}${branchIndent}? ${consequentText}${context.newLine}${branchIndent}: ${alternateText}`;
 }
 
 function getIndentation(

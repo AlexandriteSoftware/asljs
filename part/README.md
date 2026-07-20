@@ -65,14 +65,14 @@ export async function validate(artefact, context)
 }
 ```
 
-Create an artefact in `Todo Items/Buy milk.md`:
+Create an artefact in `Todo Items/Review Requirements.md`:
 
 ```markdown
-# Buy milk
+# Review Requirements
 
 - Due date: 2026-07-01
 
-Buy milk on the way home.
+Review the project requirements.
 ```
 
 Run inventory:
@@ -90,9 +90,9 @@ part init --definitions artefacts
 Example output:
 
 ```text
-| File                   | Definitions |
-| ---------------------- | ----------- |
-| Todo Items/Buy milk.md | Todo Item   |
+| File                              | Definitions |
+| --------------------------------- | ----------- |
+| Todo Items/Review Requirements.md | Todo Item   |
 ```
 
 If you want to embed PART in your own tooling instead of shelling out, import

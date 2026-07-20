@@ -10,8 +10,12 @@ import { createFormatter }
   from '../formatter.js';
 import { expressionIsShort }
   from '../functions/short-expression.js';
+import { Expression }
+  from 'estree';
+import { createFormattingContext,
+         FormattingContext }
+  from '../formatting-context.js';
 
-type FormattingContext = { newLine: string; };
 type Locatable = { loc: TSESTree.SourceLocation | null | undefined; };
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
@@ -35,28 +39,20 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
           return;
         }
 
+        const fmtCtx =
+          createFormattingContext(
+            context.sourceCode);
+
         context.report(
           {
             node,
             message: 'Use asljs call expression style.',
             fix(fixer: Rule.RuleFixer): Rule.Fix
             {
-              const sourceCode =
-                context.sourceCode;
-
-              const newLine =
-                sourceCode.text.includes('\r\n')
-                ? '\r\n'
-                : '\n';
-
-              const formattingContext =
-                { newLine };
-
               const replacement =
                 buildCallExpression(
                   tsNode,
-                  sourceCode,
-                  formattingContext);
+                  fmtCtx);
 
               return fixer.replaceText(
                 node,
@@ -86,10 +82,6 @@ export default callExpressionFormatter.eslintRule;
  *   - single variable or literal that is longer than 15 characters, or
  *   - expression that is not a single variable or literal.
  * - Multiple function call parameters are on separate lines
- *
- * @param {TSESTree.CallExpression} node
- * @param {RuleContext} context
- * @returns {boolean} true if the layout is correct, false otherwise
  */
 function checkLayout(
     node: TSESTree.CallExpression,
@@ -134,7 +126,7 @@ function checkLayout(
 
     const isShortParameter =
       expressionIsShort(
-        argument as Parameters<typeof expressionIsShort>[0]);
+        argument as Expression);
 
     if (
       isShortParameter
@@ -199,25 +191,24 @@ function checkLayout(
 
 function buildCallExpression(
     node: TSESTree.CallExpression,
-    sourceCode: SourceCode,
-    formattingContext: FormattingContext
+    context: FormattingContext
   ): string
 {
   const openingParenthesis =
-    sourceCode.getTokenAfter(
+    context.sourceCode.getTokenAfter(
       asTokenAfterTarget(
         node.callee),
       token => token.value === '(');
 
   if (openingParenthesis === null) {
-    return sourceCode.getText(
+    return context.sourceCode.getText(
       asTextNode(node)
     );
   }
 
   const indent =
     getIndentation(
-      sourceCode,
+      context.sourceCode,
       openingParenthesis);
 
   const requiredArgumentIndent =
@@ -226,7 +217,7 @@ function buildCallExpression(
   const code = [];
 
   const callee =
-    sourceCode.getText(
+    context.sourceCode.getText(
       asTextNode(
         node.callee));
 
@@ -238,7 +229,7 @@ function buildCallExpression(
       node.arguments[0];
 
     const argumentText =
-      sourceCode.getText(
+      context.sourceCode.getText(
         asTextNode(argument));
 
     const argumentStartLine =
@@ -254,7 +245,7 @@ function buildCallExpression(
       ) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
-            formattingContext.newLine
+            context.newLine
           );
 
           code.push(
@@ -265,7 +256,7 @@ function buildCallExpression(
         code.push(argumentText);
       } else {
         code.push(
-          formattingContext.newLine
+          context.newLine
         );
 
         code.push(
@@ -285,11 +276,11 @@ function buildCallExpression(
         node.arguments[index];
 
       const argumentText =
-        sourceCode.getText(
+        context.sourceCode.getText(
           asTextNode(argument));
 
       code.push(
-        formattingContext.newLine
+        context.newLine
       );
 
       code.push(

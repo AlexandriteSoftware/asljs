@@ -11,7 +11,8 @@ import * as ESTree
   from 'estree';
 import { createFormatter }
   from '../formatter.js';
-import { FormattingContext }
+import { createFormattingContext,
+         FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
@@ -33,21 +34,13 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         const sourceCode =
           context.sourceCode as SourceCode;
 
-        const newLine =
-          context.sourceCode.text.includes('\r\n')
-          ? '\r\n'
-          : '\n';
-
-        const formattingContext: FormattingContext =
-          {
-          newLine,
-          sourceCode
-        };
+        const fmtCtx =
+          createFormattingContext(sourceCode);
 
         const correctLayout =
           checkLayout(
             tsNode,
-            formattingContext);
+            fmtCtx);
 
         if (correctLayout) {
           return;
@@ -62,7 +55,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               const replacement =
                 buildFunctionDeclaration(
                   tsNode,
-                  formattingContext);
+                  fmtCtx);
 
               return fixer.replaceText(
                 node,

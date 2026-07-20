@@ -7,16 +7,14 @@ import { Rule }
   from 'eslint';
 import { createFormatter }
   from '../formatter.js';
+import { createFormattingContext,
+         FormattingContext }
+  from '../formatting-context.js';
 
 type Import =
   | TSESTree.ImportSpecifier
   | TSESTree.ImportDefaultSpecifier
   | TSESTree.ImportNamespaceSpecifier;
-
-interface FormattingContext
-{
-  newLine: string;
-}
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   {
@@ -30,13 +28,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         const tsNode =
           node as unknown as TSESTree.ImportDeclaration;
 
-        const newLine =
-          context.sourceCode.text.includes('\r\n')
-          ? '\r\n'
-          : '\n';
-
-        const formattingContext =
-          { newLine };
+        const fmtCtx =
+          createFormattingContext(
+            context.sourceCode);
 
         const sourceCode =
           context.sourceCode.getText(node);
@@ -44,8 +38,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         const replacement =
           formatImportNode(
             tsNode,
-            context,
-            formattingContext);
+            fmtCtx);
 
         if (sourceCode === replacement) {
           return;
@@ -80,8 +73,7 @@ export default importFormatter.eslintRule;
 
 function formatImportNode(
     node: TSESTree.ImportDeclaration,
-    context: Rule.RuleContext,
-    formattingContext: FormattingContext
+    context: FormattingContext
   ): string
 {
   const code =
@@ -108,7 +100,7 @@ function formatImportNode(
         code.push(';');
       } else if (/^\s*import[\r\n\s]+from\s*$/.test(importPart)) {
         code.push(
-          formattingContext.newLine
+          context.newLine
         );
 
         code.push('  from ');
@@ -124,7 +116,7 @@ function formatImportNode(
         code.push('{ }');
 
         code.push(
-          formattingContext.newLine
+          context.newLine
         );
 
         code.push('  from ');
@@ -136,13 +128,13 @@ function formatImportNode(
         code.push(';');
       } else {
         code.push(
-          formattingContext.newLine
+          context.newLine
         );
 
         code.push(
           formatSource(
             node.source,
-            formattingContext
+            context
           )
         );
       }
@@ -152,7 +144,7 @@ function formatImportNode(
       code.push(
         formatSource(
           node.source,
-          formattingContext
+          context
         )
       );
     }
@@ -167,7 +159,7 @@ function formatImportNode(
         code.push(',');
 
         code.push(
-          formattingContext.newLine
+          context.newLine
         );
 
         code.push('       ');
@@ -190,7 +182,7 @@ function formatImportNode(
         code.push(
           formatImportSpecifierGroup(
             importSpecifierGroup,
-            formattingContext
+            context
           )
         );
 
@@ -201,7 +193,7 @@ function formatImportNode(
     code.push(
       formatSource(
         node.source,
-        formattingContext
+        context
       )
     );
   }

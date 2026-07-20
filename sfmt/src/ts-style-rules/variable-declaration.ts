@@ -3,18 +3,23 @@ import { RuleDefinition,
   from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { Rule,
-         SourceCode }
+import { Rule }
   from 'eslint';
+import { expressionIsShort }
+  from '../functions/short-expression.js';
 import { createFormatter }
   from '../formatter.js';
-
-interface FormattingContext
-{
-  newLine: string;
-}
-
-const LONG_IDENTIFIER_LENGTH = 15;
+import { Expression,
+         Node }
+  from 'estree';
+import { getIndentation }
+  from '../functions/indentations.js';
+import { ensureNodeAndLocation,
+         LocationIncompleteError }
+  from '../functions/location.js';
+import { FormattingContext,
+         createFormattingContext }
+  from '../formatting-context.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   {
@@ -32,10 +37,14 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
           return;
         }
 
+        const fmtCtx =
+          createFormattingContext(
+            context.sourceCode);
+
         const correctLayout =
           checkLayout(
             tsNode,
-            context);
+            fmtCtx);
 
         if (correctLayout) {
           return;
@@ -47,22 +56,10 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
             message: 'Use asljs variable declaration style.',
             fix(fixer)
             {
-              const sourceCode =
-                context.sourceCode;
-
-              const newLine =
-                sourceCode.text.includes('\r\n')
-                ? '\r\n'
-                : '\n';
-
-              const formattingContext =
-                { newLine };
-
               const replacement =
                 buildVariableDeclarator(
                   tsNode,
-                  sourceCode,
-                  formattingContext);
+                  fmtCtx);
 
               return fixer.replaceText(
                 node,
@@ -87,108 +84,57 @@ export default variableDeclarationFormatter.eslintRule;
 
 function checkLayout(
     node: TSESTree.VariableDeclarator,
-    context: Rule.RuleContext
+    context: FormattingContext
   ): boolean
 {
-  const nodeInitialiser =
-    node.init;
+  try {
+    const nodeInitialiser =
+      node.init;
 
-  if (nodeInitialiser === undefined || nodeInitialiser === null) {
-    return true;
-  }
+    ensureNodeAndLocation(
+      nodeInitialiser);
 
-  if (
-    initialiserIsShortEnoughToStayOnSameLine(
-      nodeInitialiser
-    )
-  ) {
-    return true;
-  }
-
-  const equalsToken =
-    context.sourceCode.getTokenBefore(
-      asTokenTarget(
-        nodeInitialiser),
-      token => token.value === '=');
-
-  if (equalsToken === undefined || equalsToken === null) {
-    return true;
-  }
-
-  const initialiserLocation =
-    nodeInitialiser.loc;
-
-  if (initialiserLocation === undefined || initialiserLocation === null) {
-    return true;
-  }
-
-  return equalsToken.loc.end.line < initialiserLocation.start.line;
-}
-
-function initialiserIsShortEnoughToStayOnSameLine(
-    initialiser: TSESTree.Expression
-  ): boolean
-{
-  if (initialiser.type === 'Identifier') {
-    const identifier = initialiser;
-
-    return identifier.name.length < LONG_IDENTIFIER_LENGTH;
-  }
-
-  if (initialiser.type === 'Literal') {
-    const literal = initialiser;
-
-    const literalRawContent =
-      literal.raw;
-
-    if (literalRawContent === undefined) {
-      return false;
+    if (
+      expressionIsShort(
+        nodeInitialiser as Expression)
+    ) {
+      return true;
     }
 
-    return literalRawContent.length < LONG_IDENTIFIER_LENGTH;
+    const equalsToken =
+      context.sourceCode.getTokenBefore(
+        nodeInitialiser as unknown as Node,
+        token => token.value === '=');
+
+    ensureNodeAndLocation(
+      equalsToken);
+
+    const equalsTokenLocEndLine =
+      equalsToken.loc.end.line;
+
+    const nodeInitialiserLocStartLine =
+      nodeInitialiser.loc.start.line;
+
+    return equalsTokenLocEndLine < nodeInitialiserLocStartLine;
+  } catch (error) {
+    if (error instanceof LocationIncompleteError) {
+      return true;
+    }
+
+    throw error;
   }
-
-  if (initialiser.type === 'ObjectExpression') {
-    const objectExpression = initialiser;
-
-    return objectExpression.properties.length === 0;
-  }
-
-  if (initialiser.type === 'ArrayExpression') {
-    const arrayExpression = initialiser;
-
-    return arrayExpression.elements.length === 0;
-  }
-
-  if (initialiser.type === 'UnaryExpression') {
-    const unaryExpression = initialiser;
-
-    return initialiserIsShortEnoughToStayOnSameLine(
-      unaryExpression.argument
-    );
-  }
-
-  return false;
 }
 
-/**
- * @param {TSESTree.VariableDeclarator} node
- * @param {SourceCode} sourceCode
- * @param {FormattingContext} formattingContext
- * @returns {string}
- */
 function buildVariableDeclarator(
     node: TSESTree.VariableDeclarator,
-    sourceCode: SourceCode,
-    formattingContext: FormattingContext
+    context: FormattingContext
   ): string
 {
   const code = [];
 
   const idText =
-    sourceCode.getText(
-      asTextNode(
-        node.id));
+    context.sourceCode.getText(
+      node.id as unknown as Node);
 
   code.push(idText);
   code.push(' =');
@@ -196,22 +142,25 @@ function buildVariableDeclarator(
   const nodeInit =
     node.init;
 
-  if (nodeInit !== undefined && nodeInit !== null) {
+  if (nodeInit) {
     const initText =
-      sourceCode.getText(
-        asTextNode(nodeInit));
+      context.sourceCode.getText(
+        nodeInit as unknown as Node);
 
-    if (initialiserIsShortEnoughToStayOnSameLine(nodeInit)) {
+    if (
+      expressionIsShort(
+        nodeInit as Expression)
+    ) {
       code.push(' ');
       code.push(initText);
     } else {
       const indentation =
-        getIndentation(
-          sourceCode,
-          node);
+        getVariableDeclaratorIndentation(
+          node,
+          context);
 
       code.push(
-        formattingContext.newLine
+        context.newLine
       );
 
       code.push(indentation);
@@ -223,49 +172,27 @@ function buildVariableDeclarator(
   return code.join('');
 }
 
-function getIndentation(
-    sourceCode: SourceCode,
-    node: TSESTree.VariableDeclarator
+function getVariableDeclaratorIndentation(
+    node: TSESTree.VariableDeclarator,
+    context: FormattingContext
   ): string
 {
   const nodeInit =
     node.init;
 
-  if (nodeInit === undefined || nodeInit === null) {
+  if (!nodeInit) {
     return '';
   }
 
   const equalsToken =
-    sourceCode.getTokenBefore(
-      asTokenTarget(nodeInit),
+    context.sourceCode.getTokenBefore(
+      nodeInit as unknown as Node,
       token => token.value === '=');
 
-  const equalsTokenLocation =
-    equalsToken?.loc;
+  ensureNodeAndLocation(
+    equalsToken);
 
-  if (equalsTokenLocation === undefined || equalsTokenLocation === null) {
-    return '';
-  }
-
-  const line =
-    sourceCode.lines[equalsTokenLocation.start.line - 1];
-
-  const match =
-    /^[ \t]*/.exec(line);
-
-  return match?.[0] ?? '';
-}
-
-function asTokenTarget(
-    node: unknown
-  ): NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>
-{
-  return node as NonNullable<Parameters<SourceCode['getTokenBefore']>[0]>;
-}
-
-function asTextNode(
-    node: unknown
-  ): Parameters<SourceCode['getText']>[0]
-{
-  return node as Parameters<SourceCode['getText']>[0];
+  return getIndentation(
+    context.sourceCode,
+    equalsToken);
 }
