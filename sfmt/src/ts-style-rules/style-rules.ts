@@ -1,6 +1,6 @@
 import { FormatterDefinition }
   from '../formatter.js';
-import { callExpressionFormatter }
+import { tsCallExpressionFormatter }
   from './call-expression.js';
 import { conditionalExpressionFormatter }
   from './conditional-expression.js';
@@ -18,7 +18,7 @@ export const tsStyleFormatters: FormatterDefinition[] =
   importFormatter,
   functionDeclarationFormatter,
   conditionalExpressionFormatter,
-  callExpressionFormatter,
+  tsCallExpressionFormatter,
   variableDeclarationFormatter,
   statementSpacingFormatter
 ];

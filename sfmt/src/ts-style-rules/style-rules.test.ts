@@ -6,7 +6,7 @@ import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import callExpressionStyleRule
+import { tsCallExpressionEslintRule }
   from './call-expression.js';
 import conditionalExpressionStyleRule
   from './conditional-expression.js';
@@ -35,7 +35,7 @@ const eslint =
           'import-style': importStyleRule,
           'function-declaration-style': functionDeclarationStyleRule,
           'conditional-expression-style': conditionalExpressionStyleRule,
-          'call-expression-style': callExpressionStyleRule,
+          'call-expression-style': tsCallExpressionEslintRule,
           'variable-declaration-style': variableDeclarationStyleRule,
           'statement-spacing': statementSpacingStyleRule
         }

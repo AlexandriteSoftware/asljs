@@ -16,7 +16,7 @@ import { createFormattingContext,
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { ensureNodeAndLocation }
+import { tryGetLocation }
   from '../functions/location.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
@@ -92,6 +92,9 @@ function checkLayout(
       context.sourceCode,
       node);
 
+  const parametersIndent =
+    baseIndent.increase(2);
+
   const id =
     node.id;
 
@@ -110,14 +113,24 @@ function checkLayout(
     );
   }
 
-  ensureNodeAndLocation(
-    openingParen,
-    'Punctuator',
-    '('
-  );
+  if (
+    !openingParen
+    || openingParen.type !== 'Punctuator'
+    || openingParen.value !== '('
+  ) {
+    return true;
+  }
+
+  const openingParenLocation =
+    tryGetLocation(
+      openingParen);
+
+  if (!openingParenLocation) {
+    return true;
+  }
 
   const openingParenEndLine =
-    openingParen.loc.end.line;
+    openingParenLocation.end.line;
 
   const parameters =
     node.params;
@@ -126,12 +139,16 @@ function checkLayout(
     const firstParameter =
       parameters[0];
 
-    ensureNodeAndLocation(
-      firstParameter
-    );
+    const tryGetFirstParameterLocation =
+      tryGetLocation(
+        firstParameter);
+
+    if (!tryGetFirstParameterLocation) {
+      return true;
+    }
 
     const firstParameterStartLine =
-      firstParameter.loc.start.line;
+      tryGetFirstParameterLocation.start.line;
 
     if (openingParenEndLine === firstParameterStartLine) {
       return false;
@@ -142,7 +159,7 @@ function checkLayout(
         context.sourceCode,
         firstParameter);
 
-    if (parameterIndent !== baseIndent + '    ') {
+    if (parameterIndent.value !== parametersIndent.value) {
       return false;
     }
   }
@@ -151,22 +168,30 @@ function checkLayout(
     const previousParameter =
       parameters[index - 1];
 
-    ensureNodeAndLocation(
-      previousParameter
-    );
+    const previousParameterLocation =
+      tryGetLocation(
+        previousParameter);
+
+    if (!previousParameterLocation) {
+      return true;
+    }
 
     const currentParameter =
       parameters[index];
 
-    ensureNodeAndLocation(
-      currentParameter
-    );
+    const currentParameterLocation =
+      tryGetLocation(
+        currentParameter);
+
+    if (!currentParameterLocation) {
+      return true;
+    }
 
     const previousParameterEndLine =
-      previousParameter.loc.end.line;
+      previousParameterLocation.end.line;
 
     const currentParameterStartLine =
-      currentParameter.loc.start.line;
+      currentParameterLocation.start.line;
 
     if (previousParameterEndLine === currentParameterStartLine) {
       return false;
@@ -177,7 +202,7 @@ function checkLayout(
         context.sourceCode,
         currentParameter);
 
-    if (parameterIndent !== baseIndent + '    ') {
+    if (parameterIndent.value !== parametersIndent.value) {
       return false;
     }
   }
@@ -188,44 +213,68 @@ function checkLayout(
     const lastParameter =
       parameters[parameters.length - 1];
 
-    ensureNodeAndLocation(
-      lastParameter
-    );
+    const lastParameterLocation =
+      tryGetLocation(
+        lastParameter);
+
+    if (!lastParameterLocation) {
+      return true;
+    }
 
     closingParen = context.sourceCode
       .getTokenAfter(
         lastParameter as unknown as ESTree.Node
       );
 
-    ensureNodeAndLocation(
-      closingParen,
-      'Punctuator',
-      ')'
-    );
+    if (
+      !closingParen
+      || closingParen.type !== 'Punctuator'
+      || closingParen.value !== ')'
+    ) {
+      return true;
+    }
+
+    const closingParenLocation =
+      tryGetLocation(
+        closingParen);
+
+    if (!closingParenLocation) {
+      return true;
+    }
 
     const closingParenEndLine =
-      closingParen.loc.end.line;
+      closingParenLocation.end.line;
 
-    if (closingParenEndLine === lastParameter.loc.end.line) {
+    if (closingParenEndLine === lastParameterLocation.end.line) {
       return false;
     }
   } else {
     const openingParenEndLine =
-      openingParen.loc.end.line;
+      openingParenLocation.end.line;
 
     closingParen = context.sourceCode
       .getTokenAfter(
         openingParen as unknown as ESTree.Node
       );
 
-    ensureNodeAndLocation(
-      closingParen,
-      'Punctuator',
-      ')'
-    );
+    if (
+      !closingParen
+      || closingParen.type !== 'Punctuator'
+      || closingParen.value !== ')'
+    ) {
+      return true;
+    }
+
+    const closingParenLocation =
+      tryGetLocation(
+        closingParen);
+
+    if (!closingParenLocation) {
+      return true;
+    }
 
     const closingParenStartLine =
-      closingParen.loc.start.line;
+      closingParenLocation.start.line;
 
     if (openingParenEndLine === closingParenStartLine) {
       return false;
@@ -233,11 +282,14 @@ function checkLayout(
   }
 
   const closingParenIndent =
+    baseIndent.increase();
+
+  const actualClosingParenIndent =
     getIndentation(
       context.sourceCode,
       closingParen);
 
-  if (closingParenIndent !== baseIndent + '  ') {
+  if (closingParenIndent.value !== actualClosingParenIndent.value) {
     return false;
   }
 
@@ -253,6 +305,12 @@ export function buildFunctionDeclaration(
     getIndentation(
       context.sourceCode,
       node);
+
+  const parameterIndent =
+    baseIndent.increase(2);
+
+  const closeParenIndent =
+    baseIndent.increase();
 
   const name =
     node.id?.name ?? '';
@@ -275,7 +333,7 @@ export function buildFunctionDeclaration(
         parameter as unknown as ESTree.Node
       ));
 
-  const code = [];
+  const code: string[] = [];
 
   if (node.async) {
     code.push('async ');
@@ -304,8 +362,9 @@ export function buildFunctionDeclaration(
       context.newLine
     );
 
-    code.push(baseIndent);
-    code.push('    ');
+    code.push(
+      parameterIndent.value
+    );
 
     code.push(
       parameters[index]
@@ -320,8 +379,10 @@ export function buildFunctionDeclaration(
     context.newLine
   );
 
-  code.push(baseIndent);
-  code.push('  ');
+  code.push(
+    closeParenIndent.value
+  );
+
   code.push(')');
   code.push(returnTypeText);
 

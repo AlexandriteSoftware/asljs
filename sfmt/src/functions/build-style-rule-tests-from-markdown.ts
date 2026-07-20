@@ -27,6 +27,14 @@ export interface TestCase
   tags: string[];
 }
 
+/**
+ * Reads a markdown file with test cases and sets up tests for each test case.
+ *
+ * When the test has a tag `focus`, only tests with that tag will be run.
+ *
+ * If test case has line endings with `\n`, an additional test case will be
+ * added with `\r\n` line endings.
+ */
 export async function buildStyleRuleTestsFromMarkdown(
     filePath: string,
     eslint: ESLint

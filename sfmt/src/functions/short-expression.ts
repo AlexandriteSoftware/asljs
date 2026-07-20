@@ -1,3 +1,5 @@
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import * as acorn
   from 'acorn';
 import { ArrayExpression,
@@ -14,7 +16,7 @@ import { ArrayExpression,
 const LONG_EXPRESSION_LENGTH = 15;
 
 export function expressionIsShort(
-    expression: Expression | SpreadElement
+    expression: Expression | SpreadElement | TSESTree.Expression
   ): boolean
 {
   if (expression.type === 'ObjectExpression') {
@@ -69,7 +71,7 @@ export function expressionIsShort(
 }
 
 function getLength(
-    expression: Expression | SpreadElement
+    expression: Expression | SpreadElement | TSESTree.Expression
   ): number | null
 {
   if (expression.type === 'Identifier') {

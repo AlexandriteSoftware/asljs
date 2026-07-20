@@ -1,8 +1,3 @@
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
-import { AST }
-  from 'eslint';
-
 export class LocationIncompleteError extends Error
 {
   public readonly code: string;
@@ -10,61 +5,40 @@ export class LocationIncompleteError extends Error
   constructor()
   {
     super(
-      'Node does not have location information.'
+      "Property 'loc' is undefined or null."
     );
 
     this.code = 'LOCATION_INCOMPLETE';
   }
 }
 
-export type WithLocation = {
-  loc: {
-    start: { line: number; column: number; };
-    end: { line: number; column: number; };
-  };
+export type Location = {
+  start: { line: number; column: number; };
+  end: { line: number; column: number; };
 };
 
-export type NodeOrTokenWithLocation =
-  & (
-    | TSESTree.Node
-    | AST.Token
-  )
-  & WithLocation;
+export type WithLocation = {
+  loc: Location;
+};
 
-export function ensureNodeAndLocation(
-    node:
-    | TSESTree.Node
-    | AST.Token
-    | null,
-    nodeType?: string,
-    nodeValue?: string
-  ): asserts node is NodeOrTokenWithLocation
+export function tryGetLocation(
+    value: unknown
+  ): Location | undefined
 {
-  if (
-    !node
-    || !node.loc
-    || !node.loc.start
-    || !node.loc.end
-  ) {
-    throw new LocationIncompleteError();
+  if (!value) {
+    return undefined;
   }
 
-  if (
-    nodeType
-    && node.type !== nodeType
-  ) {
-    throw new Error(
-      `Expected node of type "${nodeType}", but found "${node.type}".`
-    );
-  }
+  const location =
+    (value as WithLocation).loc;
 
   if (
-    nodeValue
-    && 'value' in node
-    && node.value !== nodeValue
+    location === undefined
+    || location.start === undefined
+    || location.end === undefined
   ) {
-    throw new Error(
-      `Expected node with value "${nodeValue}", but found "${node.value}".`
-    );
+    return undefined;
   }
+
+  return location;
 }

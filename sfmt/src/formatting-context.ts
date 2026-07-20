@@ -1,8 +1,7 @@
 import { SourceCode }
   from 'eslint';
 
-export type FormattingContext =
-  { sourceCode: SourceCode; newLine: string; };
+export type FormattingContext = { sourceCode: SourceCode; newLine: string; };
 
 export function createFormattingContext(
     sourceCode: SourceCode
@@ -10,9 +9,8 @@ export function createFormattingContext(
 {
   const newLine =
     sourceCode.text.includes('\r\n')
-      ? '\r\n'
-      : '\n';
-      
-  return { sourceCode,
-           newLine };
+    ? '\r\n'
+    : '\n';
+
+  return { sourceCode, newLine };
 }

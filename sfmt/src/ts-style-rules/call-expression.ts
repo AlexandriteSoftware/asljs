@@ -1,79 +1,77 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
 import { Rule,
          SourceCode }
   from 'eslint';
-import { createFormatter }
-  from '../formatter.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
-import { Expression }
+import { Expression,
+         SimpleCallExpression }
   from 'estree';
+import { FormatterDefinition }
+  from '../formatter.js';
 import { createFormattingContext,
          FormattingContext }
   from '../formatting-context.js';
+import { WithLocation }
+  from '../functions/location.js';
+import { expressionIsShort }
+  from '../functions/short-expression.js';
 
-type Locatable = { loc: TSESTree.SourceLocation | null | undefined; };
-
-const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+export const tsCallExpressionEslintRule: Rule.RuleModule =
   {
   meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
-  {
-    const listener: Rule.RuleListener =
-      {
-      CallExpression(node): void
-      {
-        const tsNode =
-          node as unknown as TSESTree.CallExpression;
-
-        const correctLayout =
-          checkLayout(
-            tsNode,
-            context);
-
-        if (correctLayout) {
-          return;
-        }
-
-        const fmtCtx =
-          createFormattingContext(
-            context.sourceCode);
-
-        context.report(
-          {
-            node,
-            message: 'Use asljs call expression style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
-            {
-              const replacement =
-                buildCallExpression(
-                  tsNode,
-                  fmtCtx);
-
-              return fixer.replaceText(
-                node,
-                replacement
-              );
-            }
-          }
-        );
-      }
-    };
-
-    return listener;
-  }
+  create
 };
 
-export const callExpressionFormatter =
-  createFormatter(
-    'call-expression-style',
-    ruleDefinition);
+export const tsCallExpressionFormatter: FormatterDefinition =
+  {
+  name: 'call-expression',
+  eslintRule: tsCallExpressionEslintRule
+};
 
-export default callExpressionFormatter.eslintRule;
+function create(
+    context: Rule.RuleContext
+  ): Rule.RuleListener
+{
+  const listener: Rule.RuleListener =
+    {
+    CallExpression(node): void
+    {
+      const fmtCtx =
+        createFormattingContext(
+          context.sourceCode);
+
+      const correctLayout =
+        checkLayout(
+          node,
+          fmtCtx);
+
+      if (correctLayout) {
+        return;
+      }
+
+      context.report(
+        {
+          node,
+          message: 'Use asljs call expression style.',
+          fix(
+            fixer: Rule.RuleFixer
+          ): Rule.Fix
+          {
+            const replacement =
+              buildCallExpression(
+                node,
+                fmtCtx);
+
+            return fixer.replaceText(
+              node,
+              replacement
+            );
+          }
+        }
+      );
+    }
+  };
+
+  return listener;
+}
 
 /**
  * Checks that:
@@ -84,8 +82,8 @@ export default callExpressionFormatter.eslintRule;
  * - Multiple function call parameters are on separate lines
  */
 function checkLayout(
-    node: TSESTree.CallExpression,
-    context: Rule.RuleContext
+    node: SimpleCallExpression,
+    context: FormattingContext
   ): boolean
 {
   const argumentsList =
@@ -138,7 +136,7 @@ function checkLayout(
     const argumentIndent =
       getIndentation(
         context.sourceCode,
-        argument);
+        argument as unknown as WithLocation);
 
     return requiredArgumentIndent === argumentIndent;
   }
@@ -179,7 +177,7 @@ function checkLayout(
     const argumentIndent =
       getIndentation(
         context.sourceCode,
-        argument);
+        argument as unknown as WithLocation);
 
     if (requiredArgumentIndent !== argumentIndent) {
       return false;
@@ -190,7 +188,7 @@ function checkLayout(
 }
 
 function buildCallExpression(
-    node: TSESTree.CallExpression,
+    node: SimpleCallExpression,
     context: FormattingContext
   ): string
 {
@@ -298,7 +296,7 @@ function buildCallExpression(
 
 function getIndentation(
     sourceCode: SourceCode,
-    node: Locatable
+    node: WithLocation
   ): string
 {
   const nodeLocation =

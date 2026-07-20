@@ -18,7 +18,7 @@ import jsStatementSpacingStyleRule
   from './js-style-rules/statement-spacing.js';
 import jsVariableDeclarationStyleRule
   from './js-style-rules/variable-declaration.js';
-import tsCallExpressionStyleRule
+import { tsCallExpressionEslintRule }
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionStyleRule
   from './ts-style-rules/conditional-expression.js';
@@ -53,7 +53,7 @@ const typescriptConfig: Linter.Config =
         'import-style': tsImportStyleRule,
         'function-declaration-style': tsFunctionDeclarationStyleRule,
         'conditional-expression-style': tsConditionalExpressionStyleRule,
-        'call-expression-style': tsCallExpressionStyleRule,
+        'call-expression-style': tsCallExpressionEslintRule,
         'variable-declaration-style': tsVariableDeclarationStyleRule,
         'statement-spacing': tsStatementSpacingStyleRule
       }

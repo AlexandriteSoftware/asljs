@@ -5,21 +5,21 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { Rule }
   from 'eslint';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
-import { createFormatter }
-  from '../formatter.js';
 import { Expression,
          Node }
   from 'estree';
-import { getIndentation }
-  from '../functions/indentations.js';
-import { ensureNodeAndLocation,
-         LocationIncompleteError }
-  from '../functions/location.js';
-import { FormattingContext,
-         createFormattingContext }
+import { createFormatter }
+  from '../formatter.js';
+import { createFormattingContext,
+         FormattingContext }
   from '../formatting-context.js';
+import { getIndentation,
+         Indentation }
+  from '../functions/indentations.js';
+import { tryGetLocation }
+  from '../functions/location.js';
+import { expressionIsShort }
+  from '../functions/short-expression.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   {
@@ -87,42 +87,49 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  try {
-    const nodeInitialiser =
-      node.init;
+  const nodeInitialiser =
+    node.init;
 
-    ensureNodeAndLocation(
+  if (!nodeInitialiser) {
+    return true;
+  }
+
+  const nodeInitialiserLocation =
+    tryGetLocation(
       nodeInitialiser);
 
-    if (
-      expressionIsShort(
-        nodeInitialiser as Expression)
-    ) {
-      return true;
-    }
+  if (!nodeInitialiserLocation) {
+    return true;
+  }
 
-    const equalsToken =
-      context.sourceCode.getTokenBefore(
-        nodeInitialiser as unknown as Node,
-        token => token.value === '=');
+  const nodeInitialiserLocStartLine =
+    nodeInitialiserLocation.start.line;
 
-    ensureNodeAndLocation(
+  if (
+    expressionIsShort(
+      nodeInitialiser
+    )
+  ) {
+    return true;
+  }
+
+  const equalsToken =
+    context.sourceCode.getTokenBefore(
+      nodeInitialiser as unknown as Node,
+      token => token.value === '=');
+
+  const equalsTokenLocation =
+    tryGetLocation(
       equalsToken);
 
-    const equalsTokenLocEndLine =
-      equalsToken.loc.end.line;
-
-    const nodeInitialiserLocStartLine =
-      nodeInitialiser.loc.start.line;
-
-    return equalsTokenLocEndLine < nodeInitialiserLocStartLine;
-  } catch (error) {
-    if (error instanceof LocationIncompleteError) {
-      return true;
-    }
-
-    throw error;
+  if (!equalsTokenLocation) {
+    return true;
   }
+
+  const equalsTokenLocEndLine =
+    equalsTokenLocation.end.line;
+
+  return equalsTokenLocEndLine < nodeInitialiserLocStartLine;
 }
 
 function buildVariableDeclarator(
@@ -130,7 +137,7 @@ function buildVariableDeclarator(
     context: FormattingContext
   ): string
 {
-  const code = [];
+  const code: string[] = [];
 
   const idText =
     context.sourceCode.getText(
@@ -149,22 +156,25 @@ function buildVariableDeclarator(
 
     if (
       expressionIsShort(
-        nodeInit as Expression)
+        nodeInit as Expression
+      )
     ) {
       code.push(' ');
       code.push(initText);
     } else {
+      code.push(
+        context.newLine
+      );
+
       const indentation =
         getVariableDeclaratorIndentation(
           node,
           context);
 
       code.push(
-        context.newLine
+        indentation.increase().value
       );
 
-      code.push(indentation);
-      code.push('  ');
       code.push(initText);
     }
   }
@@ -175,13 +185,13 @@ function buildVariableDeclarator(
 function getVariableDeclaratorIndentation(
     node: TSESTree.VariableDeclarator,
     context: FormattingContext
-  ): string
+  ): Indentation
 {
   const nodeInit =
     node.init;
 
   if (!nodeInit) {
-    return '';
+    return Indentation.INITIAL;
   }
 
   const equalsToken =
@@ -189,10 +199,20 @@ function getVariableDeclaratorIndentation(
       nodeInit as unknown as Node,
       token => token.value === '=');
 
-  ensureNodeAndLocation(
-    equalsToken);
+  if (!equalsToken) {
+    return Indentation.INITIAL;
+  }
+
+  const equalsTokenLocation =
+    tryGetLocation(
+      equalsToken);
+
+  if (!equalsTokenLocation) {
+    return Indentation.INITIAL;
+  }
 
   return getIndentation(
     context.sourceCode,
-    equalsToken);
+    equalsToken
+  );
 }

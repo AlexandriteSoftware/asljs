@@ -20,8 +20,7 @@ export function createEnvironment(
   const cwd =
     process.cwd();
 
-  const registry =
-    new Map();
+  const registry = new Map();
 
   const disposeActions: (() => Promise<void>)[] = [];
 
