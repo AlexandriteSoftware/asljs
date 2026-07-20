@@ -57,11 +57,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 
@@ -236,23 +234,19 @@ function buildCallExpression(
       if (expressionIsShort(argument)) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
-            formattingContext.newLine
-          );
+            formattingContext.newLine);
 
           code.push(
-            requiredArgumentIndent
-          );
+            requiredArgumentIndent);
         }
 
         code.push(argumentText);
       } else {
         code.push(
-          formattingContext.newLine
-        );
+          formattingContext.newLine);
 
         code.push(
-          requiredArgumentIndent
-        );
+          requiredArgumentIndent);
 
         code.push(argumentText);
       }
@@ -274,12 +268,10 @@ function buildCallExpression(
         sourceCode.getText(argument);
 
       code.push(
-        formattingContext.newLine
-      );
+        formattingContext.newLine);
 
       code.push(
-        requiredArgumentIndent
-      );
+        requiredArgumentIndent);
 
       code.push(argumentText);
     }

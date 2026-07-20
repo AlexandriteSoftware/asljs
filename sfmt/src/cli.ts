@@ -26,8 +26,7 @@ export async function runCli(
   try {
     await cli.parseAsync(
       args,
-      { from: 'user' }
-    );
+      { from: 'user' });
 
     return 0;
   } catch (error) {
@@ -35,8 +34,7 @@ export async function runCli(
       writeCommanderError(
         environment,
         error,
-        cli
-      )
+        cli)
     ) {
       return 1;
     }
@@ -70,12 +68,10 @@ function createCli(
   cli
     .name('sfmt')
     .description(
-      '`sfmt` is a script (js, ts) formatting tool.'
-    )
+      '`sfmt` is a script (js, ts) formatting tool.')
     .argument(
       '[pattern]',
-      'Glob pattern of files to format'
-    )
+      'Glob pattern of files to format')
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
@@ -84,14 +80,12 @@ function createCli(
         writeErr: value => environment.stderr.write(value),
         outputError: () =>
         {}
-      }
-    )
+      })
     .exitOverride(
       error =>
       {
         throw error;
-      }
-    )
+      })
     .hook(
       'preAction',
       () =>
@@ -100,10 +94,8 @@ function createCli(
           async (): Promise<void> =>
           {
             // for logging
-          }
-        );
-      }
-    )
+          });
+      })
     .action(
       async (pattern?: string): Promise<void> =>
       {
@@ -114,10 +106,8 @@ function createCli(
 
         await format(
           environment,
-          ...fnArgs
-        );
-      }
-    );
+          ...fnArgs);
+      });
 
   return cli;
 }
@@ -171,20 +161,17 @@ function writeCommanderError(
 
   if (code === 'commander.unknownCommand') {
     environment.stderr.write(
-      `Unknown command.\n`
-    );
+      `Unknown command.\n`);
 
     cli.outputHelp(
-      { error: true }
-    );
+      { error: true });
 
     return true;
   }
 
   if (code === 'commander.help') {
     cli.outputHelp(
-      { error: true }
-    );
+      { error: true });
 
     return true;
   }

@@ -38,6 +38,17 @@ test(
   a);
 ```
 
+And the closing parenthesis should be on the same line:
+
+```js
+test(
+  a
+);
+// ---
+test(
+  a);
+```
+
 Two parameters require chopping:
 
 ```js

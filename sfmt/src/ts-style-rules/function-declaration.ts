@@ -4,15 +4,13 @@ import { RuleDefinition,
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { AST,
-         Rule,
-         SourceCode }
+         Rule }
   from 'eslint';
 import * as ESTree
   from 'estree';
 import { createFormatter }
   from '../formatter.js';
-import { createFormattingContext,
-         FormattingContext }
+import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
@@ -32,10 +30,12 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
           node as unknown as TSESTree.FunctionDeclaration;
 
         const sourceCode =
-          context.sourceCode as SourceCode;
+          context.sourceCode;
 
         const fmtCtx =
-          createFormattingContext(sourceCode);
+          new FormattingContext(
+          sourceCode
+        );
 
         const correctLayout =
           checkLayout(
@@ -59,11 +59,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 
@@ -105,12 +103,10 @@ function checkLayout(
 
   if (typeParameters) {
     openingParen = context.sourceCode.getTokenAfter(
-      typeParameters as unknown as ESTree.Node
-    );
+      typeParameters as unknown as ESTree.Node);
   } else {
     openingParen = context.sourceCode.getTokenAfter(
-      id as unknown as ESTree.Node
-    );
+      id as unknown as ESTree.Node);
   }
 
   if (
@@ -223,8 +219,7 @@ function checkLayout(
 
     closingParen = context.sourceCode
       .getTokenAfter(
-        lastParameter as unknown as ESTree.Node
-      );
+        lastParameter as unknown as ESTree.Node);
 
     if (
       !closingParen
@@ -254,8 +249,7 @@ function checkLayout(
 
     closingParen = context.sourceCode
       .getTokenAfter(
-        openingParen as unknown as ESTree.Node
-      );
+        openingParen as unknown as ESTree.Node);
 
     if (
       !closingParen
@@ -330,8 +324,7 @@ export function buildFunctionDeclaration(
     node.params.map(
       parameter =>
       context.sourceCode.getText(
-        parameter as unknown as ESTree.Node
-      ));
+        parameter as unknown as ESTree.Node));
 
   const code: string[] = [];
 
@@ -351,24 +344,20 @@ export function buildFunctionDeclaration(
         typeParameters as unknown as ESTree.Node);
 
     code.push(
-      typeParametersCode
-    );
+      typeParametersCode);
   }
 
   code.push('(');
 
   for (let index = 0; index < parameters.length; index++) {
     code.push(
-      context.newLine
-    );
+      context.newLine);
 
     code.push(
-      parameterIndent.value
-    );
+      parameterIndent.value);
 
     code.push(
-      parameters[index]
-    );
+      parameters[index]);
 
     if (index < parameters.length - 1) {
       code.push(',');
@@ -376,25 +365,23 @@ export function buildFunctionDeclaration(
   }
 
   code.push(
-    context.newLine
-  );
+    context.newLine);
 
   code.push(
-    closeParenIndent.value
-  );
+    closeParenIndent.value);
 
   code.push(')');
   code.push(returnTypeText);
 
   code.push(
-    context.newLine
-  );
+    context.newLine);
+
+  code.push(
+    baseIndent.value);
 
   code.push(
     context.sourceCode.getText(
-      body as unknown as ESTree.Node
-    )
-  );
+      body as unknown as ESTree.Node));
 
   return code.join('');
 }

@@ -71,11 +71,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 
@@ -104,8 +102,7 @@ function checkLayout(
 
   if (
     initialiserIsShortEnoughToStayOnSameLine(
-      nodeInitialiser
-    )
+      nodeInitialiser)
   ) {
     return true;
   }
@@ -168,8 +165,7 @@ function initialiserIsShortEnoughToStayOnSameLine(
     const unaryExpression = /** @type {UnaryExpression} */ initialiser;
 
     return initialiserIsShortEnoughToStayOnSameLine(
-      unaryExpression.argument
-    );
+      unaryExpression.argument);
   }
 
   return false;
@@ -213,8 +209,7 @@ function buildVariableDeclarator(
           node);
 
       code.push(
-        formattingContext.newLine
-      );
+        formattingContext.newLine);
 
       code.push(indentation);
       code.push('  ');

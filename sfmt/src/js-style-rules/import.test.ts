@@ -37,12 +37,9 @@ test(
 
     assert.strictEqual(
       result.output,
-      undefined
-    );
-  }
-);
+      undefined);
+  });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
-  eslint
-);
+  eslint);

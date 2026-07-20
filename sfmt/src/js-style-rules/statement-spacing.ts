@@ -23,15 +23,13 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
       {
         checkStatements(
           node.body,
-          context
-        );
+          context);
       },
       BlockStatement(node: BlockStatement): void
       {
         checkStatements(
           node.body,
-          context
-        );
+          context);
       }
     };
 
@@ -86,8 +84,7 @@ function checkStatements(
     if (
       !shouldSpace(
         statement,
-        nextStatement
-      )
+        nextStatement)
     ) {
       continue;
     }
@@ -108,11 +105,9 @@ function checkStatements(
 
           return fixer.replaceTextRange(
             range,
-            newLine + newLine + nextStatementIndentation
-          );
+            newLine + newLine + nextStatementIndentation);
         }
-      }
-    );
+      });
   }
 }
 

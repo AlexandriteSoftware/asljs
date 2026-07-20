@@ -55,11 +55,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 

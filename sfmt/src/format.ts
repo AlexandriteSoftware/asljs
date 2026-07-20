@@ -60,8 +60,7 @@ export async function formatFile(
   await fs.writeFile(
     path,
     formatted,
-    'utf8'
-  );
+    'utf8');
 }
 
 export async function formatText(
@@ -76,8 +75,7 @@ export async function formatText(
   return applyFormatters(
     normalised,
     path,
-    formatters ?? getFormattersForPath(path)
-  );
+    formatters ?? getFormattersForPath(path));
 }
 
 function getFormattersForPath(
@@ -116,8 +114,7 @@ function normaliseWhitespace(
     {
       return formatter(text);
     },
-    text
-  );
+    text);
 }
 
 function normaliseLineEndings(
@@ -126,8 +123,7 @@ function normaliseLineEndings(
 {
   return text.replace(
     /\r\n/g,
-    '\n'
-  );
+    '\n');
 }
 
 function normaliseTrailingWhitespace(
@@ -136,8 +132,7 @@ function normaliseTrailingWhitespace(
 {
   return text.replace(
     /[ \t]+$/gm,
-    ''
-  );
+    '');
 }
 
 function normaliseFinalNewline(
@@ -161,6 +156,5 @@ function normaliseIndentationCharacters(
 {
   return text.replace(
     /\t/g,
-    '  '
-  );
+    '  ');
 }

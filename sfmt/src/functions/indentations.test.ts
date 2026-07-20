@@ -11,9 +11,6 @@ test(
   {
     assert.deepEqual(
       getIndentationFromLine(
-        '    indented line'
-      ),
-      '    '
-    );
-  }
-);
+        '    indented line'),
+      '    ');
+  });

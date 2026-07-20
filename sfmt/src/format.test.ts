@@ -34,8 +34,7 @@ test(
 
     await format(
       environment,
-      '**/*.js'
-    );
+      '**/*.js');
 
     const formatted =
       await fs.readFile(
@@ -58,10 +57,8 @@ test(
         + '  b);\n'
         + '\n'
         + 'return value;\n'
-        + '}\n'
-    );
-  }
-);
+        + '}\n');
+  });
 
 test(
   'format rewrites TypeScript files with the registered formatters',
@@ -81,8 +78,7 @@ test(
 
     await format(
       environment,
-      '**/*.ts'
-    );
+      '**/*.ts');
 
     const formatted =
       await fs.readFile(
@@ -91,7 +87,5 @@ test(
 
     assert.strictEqual(
       formatted,
-      'import { type writeFile }\n' + "  from 'import-type';\n"
-    );
-  }
-);
+      'import { type writeFile }\n' + "  from 'import-type';\n");
+  });

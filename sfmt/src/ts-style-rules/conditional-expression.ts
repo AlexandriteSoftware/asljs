@@ -8,8 +8,7 @@ import { Rule,
   from 'eslint';
 import { createFormatter }
   from '../formatter.js';
-import { createFormattingContext,
-         FormattingContext }
+import { FormattingContext }
   from '../formatting-context.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
@@ -25,8 +24,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
           node as unknown as TSESTree.ConditionalExpression;
 
         const fmtCtx =
-          createFormattingContext(
-            context.sourceCode);
+          new FormattingContext(
+          context.sourceCode
+        );
 
         const correctLayout =
           checkLayout(
@@ -50,11 +50,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 

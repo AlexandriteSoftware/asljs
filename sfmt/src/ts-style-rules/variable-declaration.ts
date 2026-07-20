@@ -10,8 +10,7 @@ import { Expression,
   from 'estree';
 import { createFormatter }
   from '../formatter.js';
-import { createFormattingContext,
-         FormattingContext }
+import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation,
          Indentation }
@@ -38,8 +37,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         const fmtCtx =
-          createFormattingContext(
-            context.sourceCode);
+          new FormattingContext(
+          context.sourceCode
+        );
 
         const correctLayout =
           checkLayout(
@@ -63,11 +63,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 
@@ -107,8 +105,7 @@ function checkLayout(
 
   if (
     expressionIsShort(
-      nodeInitialiser
-    )
+      nodeInitialiser)
   ) {
     return true;
   }
@@ -156,15 +153,13 @@ function buildVariableDeclarator(
 
     if (
       expressionIsShort(
-        nodeInit as Expression
-      )
+        nodeInit as Expression)
     ) {
       code.push(' ');
       code.push(initText);
     } else {
       code.push(
-        context.newLine
-      );
+        context.newLine);
 
       const indentation =
         getVariableDeclaratorIndentation(
@@ -172,8 +167,7 @@ function buildVariableDeclarator(
           context);
 
       code.push(
-        indentation.increase().value
-      );
+        indentation.increase().value);
 
       code.push(initText);
     }
@@ -213,6 +207,5 @@ function getVariableDeclaratorIndentation(
 
   return getIndentation(
     context.sourceCode,
-    equalsToken
-  );
+    equalsToken);
 }

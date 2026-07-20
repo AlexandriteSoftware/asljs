@@ -30,5 +30,4 @@ const eslint =
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
-  eslint
-);
+  eslint);

@@ -68,8 +68,6 @@ for (const [code, expectedResult] of testExpressions) {
 
       assert.equal(
         expressionIsShort(expression),
-        expectedResult
-      );
-    }
-  );
+        expectedResult);
+    });
 }

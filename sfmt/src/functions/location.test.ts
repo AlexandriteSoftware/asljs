@@ -16,7 +16,5 @@ test(
 
     assert.strictEqual(
       location,
-      undefined
-    );
-  }
-);
+      undefined);
+  });

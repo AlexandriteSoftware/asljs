@@ -50,11 +50,9 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
               return fixer.replaceText(
                 node,
-                replacement
-              );
+                replacement);
             }
-          }
-        );
+          });
       }
     };
 
@@ -173,13 +171,11 @@ function buildFunctionDeclaration(
     code.push(')');
   } else {
     code.push(
-      formattingContext.newLine
-    );
+      formattingContext.newLine);
 
     for (let index = 0; index < parameters.length; index++) {
       code.push(
-        `  ${parameters[index]}`
-      );
+        `  ${parameters[index]}`);
 
       if (index < parameters.length - 1) {
         code.push(',');
@@ -187,8 +183,7 @@ function buildFunctionDeclaration(
 
       if (index < parameters.length - 1) {
         code.push(
-          formattingContext.newLine
-        );
+          formattingContext.newLine);
       }
     }
 
@@ -196,12 +191,10 @@ function buildFunctionDeclaration(
   }
 
   code.push(
-    formattingContext.newLine
-  );
+    formattingContext.newLine);
 
   code.push(
-    context.sourceCode.getText(body)
-  );
+    context.sourceCode.getText(body));
 
   return code.join('');
 }

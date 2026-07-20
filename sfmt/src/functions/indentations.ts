@@ -20,6 +20,13 @@ export class Indentation
     return this.#indentation;
   }
 
+  equals(
+    other: Indentation
+  ): boolean
+  {
+    return this.#indentation === other.#indentation;
+  }
+
   increase(
     size: number = 1
   ): Indentation
@@ -42,8 +49,7 @@ export class Indentation
     return new Indentation(
       this.#indentation.slice(
         0,
-        -2 * size
-      )
+        -2 * size)
     );
   }
 }

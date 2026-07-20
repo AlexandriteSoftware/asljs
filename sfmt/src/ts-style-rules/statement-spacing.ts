@@ -4,8 +4,7 @@ import { RuleDefinition,
   from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { AST,
-         Rule,
+import { Rule,
          SourceCode }
   from 'eslint';
 import { createFormatter }
@@ -25,8 +24,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         checkStatements(
           tsNode.body,
-          context
-        );
+          context);
       },
       BlockStatement(node): void
       {
@@ -35,8 +33,7 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
 
         checkStatements(
           tsNode.body,
-          context
-        );
+          context);
       }
     };
 
@@ -91,8 +88,7 @@ function checkStatements(
     if (
       !shouldSpace(
         statement,
-        nextStatement
-      )
+        nextStatement)
     ) {
       continue;
     }
@@ -113,11 +109,9 @@ function checkStatements(
 
           return fixer.replaceTextRange(
             range,
-            newLine + newLine + nextStatementIndentation
-          );
+            newLine + newLine + nextStatementIndentation);
         }
-      }
-    );
+      });
   }
 }
 

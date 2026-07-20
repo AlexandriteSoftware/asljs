@@ -1,15 +1,21 @@
-import { Rule,
-         SourceCode }
+import { ViolationReport }
+  from '@eslint/core';
+import { JSSyntaxElement,
+         Rule }
   from 'eslint';
 import { Expression,
+         Node,
          SimpleCallExpression }
   from 'estree';
 import { FormatterDefinition }
   from '../formatter.js';
-import { createFormattingContext,
-         FormattingContext }
+import { FormattingContext,
+         FormattingContextPredicates }
   from '../formatting-context.js';
-import { WithLocation }
+import { getIndentation }
+  from '../functions/indentations.js';
+import { ensureLocation,
+         tryGetLocation }
   from '../functions/location.js';
 import { expressionIsShort }
   from '../functions/short-expression.js';
@@ -17,7 +23,7 @@ import { expressionIsShort }
 export const tsCallExpressionEslintRule: Rule.RuleModule =
   {
   meta: { type: 'layout', fixable: 'code', schema: [] },
-  create
+  create: createRule
 };
 
 export const tsCallExpressionFormatter: FormatterDefinition =
@@ -26,101 +32,134 @@ export const tsCallExpressionFormatter: FormatterDefinition =
   eslintRule: tsCallExpressionEslintRule
 };
 
-function create(
+function createRule(
     context: Rule.RuleContext
   ): Rule.RuleListener
 {
-  const listener: Rule.RuleListener =
-    {
-    CallExpression(node): void
-    {
-      const fmtCtx =
-        createFormattingContext(
-          context.sourceCode);
+  return createCallExpressionListener(context);
+}
 
-      const correctLayout =
-        checkLayout(
+function createCallExpressionListener(
+    context: Rule.RuleContext
+  ): Rule.RuleListener
+{
+  const ruleListener =
+    { CallExpression: callExpressionListener };
+
+  return ruleListener;
+
+  function callExpressionListener(
+      node: SimpleCallExpression & Rule.NodeParentExtension
+    ): void
+  {
+    const fmtCtx =
+      new FormattingContext(
+        context.sourceCode
+      );
+
+    const correctLayout =
+      checkLayout(
+        node,
+        fmtCtx);
+
+    if (correctLayout) {
+      return;
+    }
+
+    const report: ViolationReport<JSSyntaxElement, string> =
+      {
+      node,
+      message: 'Use asljs call expression style.',
+      fix
+    };
+
+    context.report(report);
+
+    function fix(
+        fixer: Rule.RuleFixer
+      ): Rule.Fix
+    {
+      const replacement =
+        buildCallExpression(
           node,
           fmtCtx);
 
-      if (correctLayout) {
-        return;
-      }
-
-      context.report(
-        {
-          node,
-          message: 'Use asljs call expression style.',
-          fix(
-            fixer: Rule.RuleFixer
-          ): Rule.Fix
-          {
-            const replacement =
-              buildCallExpression(
-                node,
-                fmtCtx);
-
-            return fixer.replaceText(
-              node,
-              replacement
-            );
-          }
-        }
-      );
+      return fixer.replaceText(
+        node,
+        replacement);
     }
-  };
-
-  return listener;
+  }
 }
 
-/**
- * Checks that:
- *
- * - Complex function call expressions are on a separate line. Complex is:
- *   - single variable or literal that is longer than 15 characters, or
- *   - expression that is not a single variable or literal.
- * - Multiple function call parameters are on separate lines
- */
 function checkLayout(
     node: SimpleCallExpression,
     context: FormattingContext
   ): boolean
 {
+  const callee =
+    node.callee;
+
+  ensureLocation(
+    callee);
+
+  const openingParenthesis =
+    context.next(
+      callee,
+      FormattingContextPredicates.isOpeningParenthesis);
+
+  if (!openingParenthesis) {
+    // no opening parenthesis found, cannot check the layout
+    return true;
+  }
+
+  if (openingParenthesis.loc.start.line !== callee.loc.end.line) {
+    // FAIL: opening parenthesis is not on the same line as the callee
+    return false;
+  }
+
   const argumentsList =
     node.arguments;
 
   if (argumentsList.length === 0) {
+    // no arguments
+
+    const closingParenthesis =
+      context.next(
+        openingParenthesis,
+        FormattingContextPredicates.isClosingParenthesis);
+
+    if (!closingParenthesis) {
+      // no closing parenthesis found, cannot check the layout
+      return true;
+    }
+
+    if (closingParenthesis.loc.start.line !== openingParenthesis.loc.end.line) {
+      // FAIL: opening and closing parenthesis are not on the same line
+      return false;
+    }
+
     return true;
   }
 
-  const openingParenthesis =
-    context.sourceCode.getTokenAfter(
-      asTokenAfterTarget(
-        node.callee),
-      token => token.value === '(');
-
-  if (openingParenthesis === null) {
-    return true;
-  }
-
-  const indent =
+  // base indentation is of the line with the opening parenthesis
+  const baseIndent =
     getIndentation(
       context.sourceCode,
       openingParenthesis);
 
-  const requiredArgumentIndent =
-    indent + '  ';
+  const argumentIndent =
+    baseIndent.increase();
 
   if (argumentsList.length === 1) {
+    // one argument: if short enough, can be kept on the same line,
+    // otherwise must be on a new line with increased indentation
     const argument =
       argumentsList[0];
 
-    const argumentStartLine =
-      argument.loc?.start.line;
+    ensureLocation(argument);
 
-    if (argumentStartLine === undefined) {
-      return true;
-    }
+    const argumentStartLine =
+      argument.loc.start.line;
 
     const isShortParameter =
       expressionIsShort(
@@ -132,27 +171,19 @@ function checkLayout(
     ) {
       return true;
     }
-
-    const argumentIndent =
-      getIndentation(
-        context.sourceCode,
-        argument as unknown as WithLocation);
-
-    return requiredArgumentIndent === argumentIndent;
   }
 
-  // Multiple arguments: each argument must start
-  // on a separate line.
+  // If not captured by one short argument before, continue with checking that
+  // each argument starts on a separate line.
+
   for (let index = 0; index < argumentsList.length; index++) {
     const argument =
       argumentsList[index];
 
-    const argumentStartLine =
-      argument.loc?.start.line;
+    ensureLocation(argument);
 
-    if (argumentStartLine === undefined) {
-      return true;
-    }
+    const argumentStartLine =
+      argument.loc.start.line;
 
     if (index === 0) {
       if (openingParenthesis.loc.end.line === argumentStartLine) {
@@ -162,26 +193,50 @@ function checkLayout(
       const previousArgument =
         argumentsList[index - 1];
 
-      const previousArgumentEndLine =
-        previousArgument.loc?.end.line;
+      ensureLocation(
+        previousArgument);
 
-      if (previousArgumentEndLine === undefined) {
-        return true;
-      }
+      const previousArgumentEndLine =
+        previousArgument.loc.end.line;
 
       if (previousArgumentEndLine === argumentStartLine) {
         return false;
       }
     }
 
-    const argumentIndent =
+    const currentArgumentIndent =
       getIndentation(
         context.sourceCode,
-        argument as unknown as WithLocation);
+        argument);
 
-    if (requiredArgumentIndent !== argumentIndent) {
+    const correctIndent =
+      argumentIndent.equals(
+        currentArgumentIndent);
+
+    if (!correctIndent) {
       return false;
     }
+  }
+
+  const lastArgument =
+    argumentsList[argumentsList.length - 1];
+
+  ensureLocation(
+    lastArgument);
+
+  const closingParenthesis =
+    context.next(
+      lastArgument,
+      FormattingContextPredicates.isClosingParenthesis);
+
+  if (!closingParenthesis) {
+    // no closing parenthesis found, cannot check the layout
+    return true;
+  }
+
+  if (closingParenthesis.loc.start.line !== lastArgument.loc.end.line) {
+    // FAIL: closing parenthesis is not on the same line as the last argument
+    return false;
   }
 
   return true;
@@ -194,14 +249,14 @@ function buildCallExpression(
 {
   const openingParenthesis =
     context.sourceCode.getTokenAfter(
-      asTokenAfterTarget(
-        node.callee),
+      node.callee,
       token => token.value === '(');
 
   if (openingParenthesis === null) {
-    return context.sourceCode.getText(
-      asTextNode(node)
-    );
+    const expressionCode =
+      context.sourceCode.getText(node);
+
+    return expressionCode;
   }
 
   const indent =
@@ -210,58 +265,59 @@ function buildCallExpression(
       openingParenthesis);
 
   const requiredArgumentIndent =
-    indent + '  ';
+    indent.increase();
 
-  const code = [];
+  const code: string[] = [];
 
   const callee =
     context.sourceCode.getText(
-      asTextNode(
-        node.callee));
+      node.callee as unknown as Node);
 
   code.push(callee);
   code.push('(');
 
   if (node.arguments.length === 1) {
-    const argument =
+    const firstArgument =
       node.arguments[0];
 
-    const argumentText =
+    const firstArgumentText =
       context.sourceCode.getText(
-        asTextNode(argument));
+        firstArgument);
+
+    const firstArgumentLocation =
+      tryGetLocation(
+        firstArgument);
 
     const argumentStartLine =
-      argument.loc?.start.line;
+      firstArgumentLocation?.start.line;
 
     if (argumentStartLine === undefined) {
-      code.push(argumentText);
+      code.push(
+        firstArgumentText);
     } else {
       if (
         expressionIsShort(
-          argument as Parameters<typeof expressionIsShort>[0]
-        )
+          firstArgument)
       ) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
-            context.newLine
-          );
+            context.newLine);
 
           code.push(
-            requiredArgumentIndent
-          );
+            requiredArgumentIndent.value);
         }
 
-        code.push(argumentText);
+        code.push(
+          firstArgumentText);
       } else {
         code.push(
-          context.newLine
-        );
+          context.newLine);
 
         code.push(
-          requiredArgumentIndent
-        );
+          requiredArgumentIndent.value);
 
-        code.push(argumentText);
+        code.push(
+          firstArgumentText);
       }
     }
   } else if (node.arguments.length > 1) {
@@ -275,15 +331,13 @@ function buildCallExpression(
 
       const argumentText =
         context.sourceCode.getText(
-          asTextNode(argument));
+          argument);
 
       code.push(
-        context.newLine
-      );
+        context.newLine);
 
       code.push(
-        requiredArgumentIndent
-      );
+        requiredArgumentIndent.value);
 
       code.push(argumentText);
     }
@@ -292,39 +346,4 @@ function buildCallExpression(
   code.push(')');
 
   return code.join('');
-}
-
-function getIndentation(
-    sourceCode: SourceCode,
-    node: WithLocation
-  ): string
-{
-  const nodeLocation =
-    node.loc;
-
-  if (nodeLocation === undefined || nodeLocation === null) {
-    return '';
-  }
-
-  const line =
-    sourceCode.lines[nodeLocation.start.line - 1];
-
-  const match =
-    /^[ \t]*/.exec(line);
-
-  return match?.[0] ?? '';
-}
-
-function asTokenAfterTarget(
-    node: unknown
-  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
-{
-  return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
-}
-
-function asTextNode(
-    node: unknown
-  ): Parameters<SourceCode['getText']>[0]
-{
-  return node as Parameters<SourceCode['getText']>[0];
 }

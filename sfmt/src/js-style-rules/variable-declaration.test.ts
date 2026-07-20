@@ -37,12 +37,9 @@ test(
 
     assert.strictEqual(
       result.output,
-      'const a =\r\n  "12345678901234567890";\r\n'
-    );
-  }
-);
+      'const a =\r\n  "12345678901234567890";\r\n');
+  });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,
-  eslint
-);
+  eslint);

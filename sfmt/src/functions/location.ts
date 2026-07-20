@@ -5,8 +5,7 @@ export class LocationIncompleteError extends Error
   constructor()
   {
     super(
-      "Property 'loc' is undefined or null."
-    );
+      "Property 'loc' is undefined or null.");
 
     this.code = 'LOCATION_INCOMPLETE';
   }
@@ -41,4 +40,24 @@ export function tryGetLocation(
   }
 
   return location;
+}
+
+export function ensureLocation(
+    value: unknown
+  ): asserts value is WithLocation
+{
+  if (!value) {
+    throw new LocationIncompleteError();
+  }
+
+  const location =
+    (value as WithLocation).loc;
+
+  if (
+    location === undefined
+    || location.start === undefined
+    || location.end === undefined
+  ) {
+    throw new LocationIncompleteError();
+  }
 }

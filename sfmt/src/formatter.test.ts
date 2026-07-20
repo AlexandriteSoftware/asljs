@@ -28,10 +28,8 @@ test(
       formatted,
       'import { readFile,\n'
         + '         writeFile }\n'
-        + "  from 'node:fs/promises';\n"
-    );
-  }
-);
+        + "  from 'node:fs/promises';\n");
+  });
 
 test(
   'applyFormatters applies a single TypeScript formatter independently',
@@ -50,7 +48,5 @@ test(
 
     assert.strictEqual(
       formatted,
-      'import { type writeFile }\n' + "  from 'import-type';\n"
-    );
-  }
-);
+      'import { type writeFile }\n' + "  from 'import-type';\n");
+  });

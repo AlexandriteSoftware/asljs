@@ -15,8 +15,13 @@ import { ArrayExpression,
 
 const LONG_EXPRESSION_LENGTH = 15;
 
+export type ExpressionParameter =
+  | Expression
+  | SpreadElement
+  | TSESTree.Expression;
+
 export function expressionIsShort(
-    expression: Expression | SpreadElement | TSESTree.Expression
+    expression: ExpressionParameter
   ): boolean
 {
   if (expression.type === 'ObjectExpression') {
@@ -71,7 +76,7 @@ export function expressionIsShort(
 }
 
 function getLength(
-    expression: Expression | SpreadElement | TSESTree.Expression
+    expression: ExpressionParameter
   ): number | null
 {
   if (expression.type === 'Identifier') {

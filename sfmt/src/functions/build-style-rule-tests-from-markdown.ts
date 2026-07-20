@@ -109,8 +109,7 @@ export async function buildStyleRuleTestsFromMarkdown(
     testCasesToRun = focusedTests;
   } else {
     testCasesToRun = addNoiseToTestCase(
-      testCases
-    );
+      testCases);
   }
 
   for (const testCase of testCasesToRun) {
@@ -125,16 +124,13 @@ export async function buildStyleRuleTestsFromMarkdown(
         if (testCase.source === testCase.expected) {
           assert.strictEqual(
             result.output,
-            undefined
-          );
+            undefined);
         } else {
           assert.strictEqual(
             result.output,
-            testCase.expected
-          );
+            testCase.expected);
         }
-      }
-    );
+      });
   }
 }
 
@@ -189,8 +185,7 @@ export function parseTests(
         source);
 
     tests.push(
-      { title, source, expected, tags }
-    );
+      { title, source, expected, tags });
   }
 
   return tests;
@@ -223,8 +218,7 @@ function addNoiseToTestCase(
 
     testWithCrNl(
       testCase,
-      result
-    );
+      result);
   }
 
   return result;
@@ -258,8 +252,7 @@ function testWithCrNl(
   };
 
   result.push(
-    withDifferentLineEndings
-  );
+    withDifferentLineEndings);
 }
 
 /**
@@ -278,8 +271,7 @@ async function findPackageRootDir(
     try {
       await fs.access(
         packageJsonPath,
-        fs.constants.F_OK
-      );
+        fs.constants.F_OK);
     } catch (err) {
       const parentDir =
         path.dirname(dir);

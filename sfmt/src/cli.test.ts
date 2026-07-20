@@ -39,12 +39,9 @@ test(
 
     assert.strictEqual(
       exitCode,
-      0
-    );
+      0);
 
     assert.strictEqual(
       formatted,
-      'import { readFile }\n' + "  from 'node:fs/promises';\n"
-    );
-  }
-);
+      'import { readFile }\n' + "  from 'node:fs/promises';\n");
+  });
