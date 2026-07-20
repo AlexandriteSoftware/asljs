@@ -10,11 +10,9 @@ export function resolveBackupPath(
 {
   return join(
     dirname(
-      envelopePath
-    ),
+      envelopePath),
     '.cog',
-    'backup.json'
-  );
+    'backup.json');
 }
 
 export function ensureBackupFileDoesNotExist(
@@ -23,8 +21,7 @@ export function ensureBackupFileDoesNotExist(
 {
   if (
     existsSync(
-      backupPath
-    )
+      backupPath)
   ) {
     throw new Error(
       `backup.json exists: run cog restore or delete ${backupPath} before applying a patch`

@@ -376,8 +376,7 @@ export function createAiChatModel(
         : {
           message: initialChoicePrompt.message,
           options: initialChoicePrompt.options.map(
-            option => ({ value: option.value, label: option.label })
-          )
+            option => ({ value: option.value, label: option.label }))
         },
       progress: initialProgress === undefined
         ? null
@@ -394,8 +393,7 @@ export function createAiChatModel(
       behavior: initialChoicePrompt?.behavior
         ?? 'resolve',
       resolver: null
-    }
-  );
+    });
 
   Object.defineProperties(
     model,
@@ -408,32 +406,26 @@ export function createAiChatModel(
         {
           model.messages.save(
             role,
-            content
-          );
-        }
-      ),
+            content);
+        }),
       clearMessages: defineModelMethod(
         (): void =>
         {
           model.messages.clear();
           model.lastResponseId = null;
-        }
-      ),
+        }),
       clearProgress: defineModelMethod(
         (): void =>
         {
           model.progress = null;
-        }
-      ),
+        }),
       dismissChoices: defineModelMethod(
         (): void =>
         {
           dismissChoices(
             model,
-            null
-          );
-        }
-      ),
+            null);
+        }),
       presentChoices: defineModelMethod(
         async (
           message: string,
@@ -446,8 +438,7 @@ export function createAiChatModel(
 
           dismissChoices(
             model,
-            null
-          );
+            null);
 
           if (normalizedOptions.length === 0) {
             model.choicePrompt = null;
@@ -472,8 +463,7 @@ export function createAiChatModel(
               internalState.resolver = resolve;
             }
           );
-        }
-      ),
+        }),
       setProgress: defineModelMethod(
         (
           message: string,
@@ -483,10 +473,8 @@ export function createAiChatModel(
           model.progress = visible
             ? { message, visible: true }
             : null;
-        }
-      )
-    }
-  );
+        })
+    });
 
   return model;
 }
@@ -499,8 +487,7 @@ function createAiChatMessages(
     observable(
       (initialMessages ?? [])
       .map(
-        message => ({ role: message.role, content: message.content })
-      )) as unknown as ObservableArray<AiChatMessage>;
+        message => ({ role: message.role, content: message.content }))) as unknown as ObservableArray<AiChatMessage>;
 
   return {
     list,
@@ -511,27 +498,23 @@ function createAiChatMessages(
     ): void =>
     {
       list.push(
-        { role, content }
-      );
+        { role, content });
     },
     clear: (): void =>
     {
       list.splice(
         0,
-        list.length
-      );
+        list.length);
     },
     toResponsesInput: () =>
       list
         .filter(
           message =>
             message.role === 'user'
-            || message.role === 'assistant'
-        )
+            || message.role === 'assistant')
         .slice(-24)
         .map(
-          message => ({ role: message.role, content: message.content })
-        )
+          message => ({ role: message.role, content: message.content }))
   };
 }
 
@@ -547,8 +530,7 @@ export function serializeAiChatModelState(
 
   return {
     messages: model.messages.read().map(
-      message => ({ role: message.role, content: message.content })
-    ),
+      message => ({ role: message.role, content: message.content })),
     promptDraft: model.promptDraft,
     messagesScrollTop: model.messagesScrollTop,
     hasMessagesScrollTop: model.hasMessagesScrollTop,
@@ -559,8 +541,7 @@ export function serializeAiChatModelState(
       : {
         message: choicePrompt.message,
         options: choicePrompt.options.map(
-          option => ({ value: option.value, label: option.label })
-        ),
+          option => ({ value: option.value, label: option.label })),
         behavior: getInternalChoiceState(model).behavior
       },
     progress: progress === null
@@ -571,8 +552,7 @@ export function serializeAiChatModelState(
 }
 
 @customElement(
-  'asljs-ai-chat'
-)
+  'asljs-ai-chat')
 export class AiChat extends LitElement
 {
   #bindings: { dispose: () => void; } | null = null;
@@ -584,8 +564,7 @@ export class AiChat extends LitElement
   #shouldScrollMessagesToBottom = false;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor options: AiChatOptions | null = null;
 
   get messages(): AiChatMessages {
@@ -594,8 +573,7 @@ export class AiChat extends LitElement
   set messages(value: AiChatMessages) {
     this.#setModelProperty(
       'messages',
-      value
-    );
+      value);
   }
 
   get promptDraft(): string {
@@ -604,8 +582,7 @@ export class AiChat extends LitElement
   set promptDraft(value: string) {
     this.#setModelProperty(
       'promptDraft',
-      value
-    );
+      value);
   }
 
   get messagesScrollTop(): number {
@@ -614,8 +591,7 @@ export class AiChat extends LitElement
   set messagesScrollTop(value: number) {
     this.#setModelProperty(
       'messagesScrollTop',
-      value
-    );
+      value);
   }
 
   get hasMessagesScrollTop(): boolean {
@@ -624,8 +600,7 @@ export class AiChat extends LitElement
   set hasMessagesScrollTop(value: boolean) {
     this.#setModelProperty(
       'hasMessagesScrollTop',
-      value
-    );
+      value);
   }
 
   get missingKeyMessageShown(): boolean {
@@ -634,8 +609,7 @@ export class AiChat extends LitElement
   set missingKeyMessageShown(value: boolean) {
     this.#setModelProperty(
       'missingKeyMessageShown',
-      value
-    );
+      value);
   }
 
   get lastResponseId(): string | null {
@@ -644,8 +618,7 @@ export class AiChat extends LitElement
   set lastResponseId(value: string | null) {
     this.#setModelProperty(
       'lastResponseId',
-      value
-    );
+      value);
   }
 
   get choicePrompt(): AiChatChoicePrompt | null {
@@ -654,8 +627,7 @@ export class AiChat extends LitElement
   set choicePrompt(value: AiChatChoicePrompt | null) {
     this.#setModelProperty(
       'choicePrompt',
-      value
-    );
+      value);
   }
 
   get progress(): AiChatProgressState | null {
@@ -664,8 +636,7 @@ export class AiChat extends LitElement
   set progress(value: AiChatProgressState | null) {
     this.#setModelProperty(
       'progress',
-      value
-    );
+      value);
   }
 
   get sending(): boolean {
@@ -674,8 +645,7 @@ export class AiChat extends LitElement
   set sending(value: boolean) {
     this.#setModelProperty(
       'sending',
-      value
-    );
+      value);
   }
 
   override createRenderRoot(): this
@@ -760,15 +730,12 @@ export class AiChat extends LitElement
               ? unsafeHTML(
                 renderAssistantContent(
                   message.content,
-                  this.options?.renderAssistantMessage
-                )
-              )
+                  this.options?.renderAssistantMessage))
               : message.content
           }
                     </div>
                   </div>
-                `
-      )
+                `)
     }
           </div>
           <div class="asljs-ai-chat-progress"
@@ -821,8 +788,7 @@ export class AiChat extends LitElement
           resolveAiChatButtonClassName(
             this,
             'asljs-ai-chat-button',
-            'asljs-ai-chat-choice-submit'
-          )
+            'asljs-ai-chat-choice-submit')
         }
                           @click=${this.#handleChoiceSubmit}>
                       </asljs-button>
@@ -855,8 +821,7 @@ export class AiChat extends LitElement
       resolveAiChatButtonClassName(
         this,
         'asljs-ai-chat-button',
-        'asljs-ai-chat-send'
-      )
+        'asljs-ai-chat-send')
     }
               @click=${this.#handleSendClick}>
           </asljs-button>
@@ -877,9 +842,7 @@ export class AiChat extends LitElement
       options?.stateStore
       ?? createSessionStorageStateStore(
         resolveAiChatSessionStorageKey(
-          this
-        )
-      );
+          this));
 
     const version =
       ++this.#setupVersion;
@@ -888,14 +851,12 @@ export class AiChat extends LitElement
 
     this.#persistState = createStatePersistenceScheduler(
       model,
-      stateStore
-    );
+      stateStore);
 
     if (stateStore) {
       applyLoadedState(
         model,
-        await stateStore.load()
-      );
+        await stateStore.load());
 
       if (version !== this.#setupVersion) {
         return;
@@ -921,13 +882,11 @@ export class AiChat extends LitElement
       {
         this.requestUpdate();
       },
-      this.#persistState
-    );
+      this.#persistState);
 
     await model.emitAsync(
       'initialize',
-      { model }
-    );
+      { model });
 
     if (version !== this.#setupVersion) {
       return;
@@ -977,22 +936,19 @@ export class AiChat extends LitElement
 
   get #messagesElement(): HTMLElement | null {
     return this.querySelector(
-      '[data-role="messages"]'
-    ) as HTMLElement | null;
+      '[data-role="messages"]') as HTMLElement | null;
   }
 
   get #promptElement(): TextInputElement | null {
     return this.querySelector(
-      '[data-role="prompt"]'
-    ) as
+      '[data-role="prompt"]') as
       | TextInputElement
       | null;
   }
 
   get #choiceSelectElement(): SelectElement | null {
     return this.querySelector(
-      '[data-role="choice-select"]'
-    ) as
+      '[data-role="choice-select"]') as
       | SelectElement
       | null;
   }
@@ -1060,8 +1016,7 @@ export class AiChat extends LitElement
       this.#model,
       behavior === 'resolve'
         ? selectedValue
-        : null
-    );
+        : null);
 
     this.#persistState();
 
@@ -1079,8 +1034,7 @@ export class AiChat extends LitElement
 
     if (
       prompt.options.some(
-        option => option.value === currentValue
-      )
+        option => option.value === currentValue)
     ) {
       return currentValue;
     }
@@ -1125,8 +1079,7 @@ export class AiChat extends LitElement
           model.appendMessage(
             'system',
             options.missingKeyMessage
-              ?? defaultMissingCredentialsMessage
-          );
+              ?? defaultMissingCredentialsMessage);
 
           model.missingKeyMessageShown = true;
           this.#persistState();
@@ -1154,8 +1107,7 @@ export class AiChat extends LitElement
 
     await model.emitAsync(
       'beforeSend',
-      beforeSendContext as AiChatBeforeSendContext
-    );
+      beforeSendContext as AiChatBeforeSendContext);
 
     if (beforeSendContext.canceled) {
       if (
@@ -1164,8 +1116,7 @@ export class AiChat extends LitElement
       ) {
         model.appendMessage(
           'system',
-          beforeSendContext.cancelMessage
-        );
+          beforeSendContext.cancelMessage);
       }
 
       this.#persistState();
@@ -1186,8 +1137,7 @@ export class AiChat extends LitElement
 
     model.appendMessage(
       'user',
-      prompt
-    );
+      prompt);
 
     model.promptDraft = '';
     model.sending = true;
@@ -1201,8 +1151,7 @@ export class AiChat extends LitElement
 
     try {
       model.setProgress(
-        'Requesting assistant response...'
-      );
+        'Requesting assistant response...');
 
       const requestInput =
         await options.buildRequestInput(
@@ -1228,8 +1177,7 @@ export class AiChat extends LitElement
 
       model.appendMessage(
         'assistant',
-        assistantText
-      );
+        assistantText);
 
       model.lastResponseId = result.responseId;
 
@@ -1242,13 +1190,11 @@ export class AiChat extends LitElement
           requestContext,
           requestInput,
           chatModel
-        } as AiChatAfterResponseContext
-      );
+        } as AiChatAfterResponseContext);
     } catch (error) {
       model.appendMessage(
         'system',
-        `Failed to send message: ${String(error)}`
-      );
+        `Failed to send message: ${String(error)}`);
     } finally {
       model.sending = false;
       model.clearProgress();
@@ -1267,8 +1213,7 @@ export class AiChat extends LitElement
     if (
       Object.is(
         model[propertyName],
-        value
-      )
+        value)
     ) {
       return;
     }
@@ -1299,13 +1244,11 @@ function normalizeChoiceOptions(
       option =>
         typeof option === 'string'
           ? { value: option, label: option }
-          : { value: option.value, label: option.label }
-    )
+          : { value: option.value, label: option.label })
     .filter(
       option =>
         option.value.trim() !== ''
-        && option.label.trim() !== ''
-    );
+        && option.label.trim() !== '');
 }
 
 function dismissChoices(
@@ -1347,16 +1290,13 @@ function applyLoadedState(
 {
   if (
     Array.isArray(
-      loaded.messages
-    )
+      loaded.messages)
   ) {
     (model.messages.list as ObservableArray<AiChatMessage>).splice(
       0,
       model.messages.list.length,
       ...loaded.messages.map(
-        message => ({ role: message.role, content: message.content })
-      )
-    );
+        message => ({ role: message.role, content: message.content })));
   }
 
   if (typeof loaded.promptDraft === 'string') {
@@ -1384,8 +1324,7 @@ function applyLoadedState(
   if (loaded.choicePrompt === null) {
     dismissChoices(
       model,
-      null
-    );
+      null);
   } else if (loaded.choicePrompt !== undefined) {
     const internalState =
       getInternalChoiceState(model);
@@ -1396,8 +1335,7 @@ function applyLoadedState(
     model.choicePrompt = {
       message: loaded.choicePrompt.message,
       options: loaded.choicePrompt.options.map(
-        option => ({ value: option.value, label: option.label })
-      )
+        option => ({ value: option.value, label: option.label }))
     };
   }
 
@@ -1442,10 +1380,8 @@ function createStatePersistenceScheduler(
         queued = false;
 
         void stateStore.save(
-          serializeAiChatModelState(model)
-        );
-      }
-    );
+          serializeAiChatModelState(model));
+      });
   };
 }
 
@@ -1458,15 +1394,13 @@ function resolveAiChatSessionStorageKey(
       && location !== null
       && typeof location.pathname === 'string'
     ? encodeURIComponent(
-      location.pathname
-    )
+      location.pathname)
     : '';
 
   const id =
     component.id.trim() !== ''
     ? encodeURIComponent(
-      component.id.trim()
-    )
+      component.id.trim())
     : `default-${resolveAiChatElementIndex(component)}`;
 
   return `asljs-ai-chat:${path}:${id}`;
@@ -1512,8 +1446,7 @@ function createSessionStorageStateStore(
         }
 
         return normalizeSerializableState(
-          JSON.parse(raw)
-        );
+          JSON.parse(raw));
       } catch {
         return {};
       }
@@ -1524,8 +1457,7 @@ function createSessionStorageStateStore(
     {
       sessionStorage.setItem(
         storageKey,
-        JSON.stringify(state)
-      );
+        JSON.stringify(state));
     }
   };
 }
@@ -1554,14 +1486,12 @@ function normalizeSerializableState(
               || (message as { role?: unknown; }).role === 'assistant'
               || (message as { role?: unknown; }).role === 'system'
             )
-            && typeof (message as { content?: unknown; }).content === 'string'
-        )
+            && typeof (message as { content?: unknown; }).content === 'string')
         .map(
           message => ({
             role: (message as { role: AiChatMessageRole; }).role,
             content: (message as { content: string; }).content
-          })
-        )
+          }))
       : undefined,
     promptDraft: typeof source.promptDraft === 'string'
       ? source.promptDraft
@@ -1582,13 +1512,11 @@ function normalizeSerializableState(
     choicePrompt: source.choicePrompt === null
       ? null
       : normalizeSerializableChoicePrompt(
-        source.choicePrompt
-      ),
+        source.choicePrompt),
     progress: source.progress === null
       ? null
       : normalizeSerializableProgressState(
-        source.progress
-      ),
+        source.progress),
     sending: typeof source.sending === 'boolean'
       ? source.sending
       : undefined
@@ -1609,8 +1537,7 @@ function normalizeSerializableChoicePrompt(
   if (
     typeof source.message !== 'string'
     || !Array.isArray(
-      source.options
-    )
+      source.options)
   ) {
     return undefined;
   }
@@ -1632,19 +1559,16 @@ function normalizeSerializableChoicePrompt(
         !!option
         && typeof option === 'object'
         && typeof (option as { value?: unknown; }).value === 'string'
-        && typeof (option as { label?: unknown; }).label === 'string'
-    )
+        && typeof (option as { label?: unknown; }).label === 'string')
     .map(
       option => ({
         value: (option as { value: string; }).value,
         label: (option as { label: string; }).label
-      })
-    )
+      }))
     .filter(
       option =>
         option.value.trim() !== ''
-        && option.label.trim() !== ''
-    );
+        && option.label.trim() !== '');
 
   return {
     message: source.message,
@@ -1708,24 +1632,21 @@ function bindModelListeners(
         {
           renderMessages();
           persistState();
-        }
-      ),
+        }),
       messages.on(
         'delete',
         () =>
         {
           renderMessages();
           persistState();
-        }
-      ),
+        }),
       messages.on(
         'define',
         () =>
         {
           renderMessages();
           persistState();
-        }
-      )
+        })
     ];
   };
 
@@ -1739,68 +1660,58 @@ function bindModelListeners(
         bindMessagesArray();
         renderMessages();
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:progress',
       () =>
       {
         renderProgress();
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:choicePrompt',
       () =>
       {
         renderChoices();
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:promptDraft',
       () =>
       {
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:missingKeyMessageShown',
       () =>
       {
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:messagesScrollTop',
       () =>
       {
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:hasMessagesScrollTop',
       () =>
       {
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:lastResponseId',
       () =>
       {
         persistState();
-      }
-    ),
+      }),
     model.on(
       'set:sending',
       () =>
       {
         syncSendingUi();
         persistState();
-      }
-    )
-  );
+      }));
 
   return {
     dispose: (): void =>
@@ -1890,21 +1801,18 @@ async function runWithTools<TToolsContext>(
   while (true) {
     const output =
       Array.isArray(
-        response.output
-      )
+        response.output)
       ? response.output
       : [];
 
     const functionCalls =
       output
       .filter(
-        (item: unknown) => isFunctionCallResponseItem(item)
-      );
+        (item: unknown) => isFunctionCallResponseItem(item));
 
     if (functionCalls.length === 0) {
       model.setProgress(
-        `Completed in ${stepsCompleted} step(s).`
-      );
+        `Completed in ${stepsCompleted} step(s).`);
 
       return {
         text: extractAssistantText(response),
@@ -1941,8 +1849,7 @@ async function runWithTools<TToolsContext>(
       stepsCompleted + 1;
 
     model.setProgress(
-      `Step ${stepNumber}: running ${functionCalls.length} tool call(s)...`
-    );
+      `Step ${stepNumber}: running ${functionCalls.length} tool call(s)...`);
 
     const functionOutputs: Array<Record<string, unknown>> = [];
 
@@ -1963,24 +1870,20 @@ async function runWithTools<TToolsContext>(
             output: typeof result === 'string'
               ? result
               : JSON.stringify(result)
-          }
-        );
+          });
       } catch (e) {
         functionOutputs.push(
           {
             type: 'function_call_output',
             call_id: call.call_id,
             output: JSON.stringify(
-              { error: String(e) }
-            )
-          }
-        );
+              { error: String(e) })
+          });
       }
     }
 
     model.setProgress(
-      `Step ${stepNumber}: submitting ${functionOutputs.length} tool result(s)...`
-    );
+      `Step ${stepNumber}: submitting ${functionOutputs.length} tool result(s)...`);
 
     response = await transport.postRequest(
       {
@@ -1988,8 +1891,7 @@ async function runWithTools<TToolsContext>(
         previous_response_id: response.id,
         input: functionOutputs,
         tools
-      }
-    );
+      });
 
     stepsCompleted += 1;
   }
@@ -2042,8 +1944,7 @@ async function requestToolStepLimitExtension(
 
   await model.emitAsync(
     'toolStepLimit',
-    context
-  );
+    context);
 
   if (context.approved !== null) {
     return context.approved;
@@ -2101,22 +2002,18 @@ function resolveAiChatButtonClassName(
       component)
     ?? resolveThemeText(
       getDefaultTheme().button?.className,
-      component
-    )
+      component)
     ?? '';
 
   return [themeClassName, ...classNames]
     .flatMap(
-      value => value.split(/\s+/u)
-    )
+      value => value.split(/\s+/u))
     .map(
-      value => value.trim()
-    )
+      value => value.trim())
     .filter(
       (value, index, values) =>
         value !== ''
-        && values.indexOf(value) === index
-    )
+        && values.indexOf(value) === index)
     .join(' ');
 }
 
@@ -2127,16 +2024,13 @@ function escapeHtml(
   return value
     .replace(
       /&/g,
-      '&amp;'
-    )
+      '&amp;')
     .replace(
       /</g,
-      '&lt;'
-    )
+      '&lt;')
     .replace(
       />/g,
-      '&gt;'
-    );
+      '&gt;');
 }
 
 function extractAssistantText(
@@ -2152,8 +2046,7 @@ function extractAssistantText(
 
   const output =
     Array.isArray(
-      response.output
-    )
+      response.output)
     ? response.output
     : [];
 
@@ -2168,8 +2061,7 @@ function extractAssistantText(
 
     const content =
       Array.isArray(
-        (item as { content?: unknown; }).content
-      )
+        (item as { content?: unknown; }).content)
       ? (item as { content: unknown[]; }).content
       : [];
 
@@ -2182,14 +2074,11 @@ function extractAssistantText(
           && (
             (part as { type?: unknown; }).type === 'output_text'
             || (part as { type?: unknown; }).type === 'text'
-          )
-      )
+          ))
       .map(
-        (part: unknown): unknown => (part as { text?: unknown; }).text
-      )
+        (part: unknown): unknown => (part as { text?: unknown; }).text)
       .filter(
-        (text: unknown): text is string => typeof text === 'string'
-      );
+        (text: unknown): text is string => typeof text === 'string');
 
     if (textParts.length > 0) {
       return textParts.join('\n');

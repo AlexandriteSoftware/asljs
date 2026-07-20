@@ -30,11 +30,9 @@ function splitPath(
   return path
     .split('.')
     .map(
-      segment => segment.trim()
-    )
+      segment => segment.trim())
     .filter(
-      segment => segment !== ''
-    );
+      segment => segment !== '');
 }
 
 function readPathValue(
@@ -107,9 +105,7 @@ export const watchImpl: ObservableWatchFn =
       property =>
         readPathValue(
           target,
-          property
-        )
-    ) as any;
+          property)) as any;
 
   const unwatchers: Array<() => boolean> = [];
 
@@ -150,8 +146,7 @@ export const watchImpl: ObservableWatchFn =
               () =>
             {
               callback(
-                ...getValues()
-              );
+                ...getValues());
 
               if (
                 index < segments.length - 1
@@ -168,21 +163,18 @@ export const watchImpl: ObservableWatchFn =
         if (index < segments.length - 1) {
           bindFrom(
             (current as Record<string, unknown>)[segment],
-            index + 1
-          );
+            index + 1);
         }
       };
 
       bindFrom(
         target,
-        0
-      );
+        0);
 
       return (): boolean =>
         localUnwatchers.reduce(
           (result, unwatch) => unwatch() || result,
-          false
-        );
+          false);
     };
 
     unwatchPath = bindPath();
@@ -191,19 +183,16 @@ export const watchImpl: ObservableWatchFn =
       () =>
         unwatchPath
           ? unwatchPath()
-          : false
-    );
+          : false);
   }
 
   callback(
-    ...getValues()
-  );
+    ...getValues());
 
   return (): boolean =>
     unwatchers.reduce(
       (result, unwatch) => unwatch() || result,
-      false
-    );
+      false);
 };
 
 export function ensureWatchMethod(
@@ -231,16 +220,13 @@ export function ensureWatchMethod(
           return watchFn(
             this as any,
             properties,
-            callback
-          );
+            callback);
         }
 
         return watchFn(
           this as any,
           properties,
-          callback
-        );
+          callback);
       }
-    }
-  );
+    });
 }

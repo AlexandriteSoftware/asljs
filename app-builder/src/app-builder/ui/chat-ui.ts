@@ -20,8 +20,7 @@ export function setChatProgressUi(
 
   progressElement.classList.toggle(
     'hidden',
-    !visible
-  );
+    !visible);
 }
 
 export function appendChatMessageUi(
@@ -77,8 +76,7 @@ export function renderChatChoicesUi(
   questionElement.textContent = question;
 
   containerElement.appendChild(
-    questionElement
-  );
+    questionElement);
 
   const optionsElement =
     document.createElement('div');
@@ -98,8 +96,7 @@ export function renderChatChoicesUi(
       () =>
       {
         onChoose(option);
-      }
-    );
+      });
 
     optionsElement.appendChild(button);
   }

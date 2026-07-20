@@ -35,8 +35,7 @@ export class LocationResolver
     this.logger = logger;
 
     this.rootPath = path.normalize(
-      path.resolve(rootPath)
-    );
+      path.resolve(rootPath));
 
     this.gitIgnore = new GitIgnore(
       this.logger
@@ -60,8 +59,7 @@ export class LocationResolver
     this.logger.trace(
       `FilesystemLocationResolver.resolve(${JSON.stringify(basePath)}, ${
         JSON.stringify(patterns)
-      }, ${JSON.stringify(exclude)}, ${JSON.stringify(filters)})`
-    );
+      }, ${JSON.stringify(exclude)}, ${JSON.stringify(filters)})`);
 
     const normalisedBasePath =
       path.normalize(
@@ -84,17 +82,14 @@ export class LocationResolver
       );
     }
 
-    const matches: Set<string> =
-      new Set();
+    const matches: Set<string> = new Set();
 
     const rootPathPatterns =
       patterns
       .filter(
-        pattern => pattern.startsWith('/')
-      )
+        pattern => pattern.startsWith('/'))
       .map(
-        pattern => pattern.slice(1)
-      );
+        pattern => pattern.slice(1));
 
     if (rootPathPatterns.length > 0) {
       const rootPathMatches =
@@ -114,8 +109,7 @@ export class LocationResolver
     const basePathPatterns =
       patterns
       .filter(
-        pattern => !pattern.startsWith('/')
-      );
+        pattern => !pattern.startsWith('/'));
 
     if (basePathPatterns.length > 0) {
       const basePathMatches =
@@ -128,8 +122,7 @@ export class LocationResolver
         });
 
       this.logger.trace(
-        `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`
-      );
+        `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`);
 
       for (const match of basePathMatches) {
         matches.add(match);
@@ -139,11 +132,9 @@ export class LocationResolver
     const rootExcludePatterns =
       exclude
       .filter(
-        pattern => pattern.startsWith('/')
-      )
+        pattern => pattern.startsWith('/'))
       .map(
-        pattern => pattern.slice(1)
-      );
+        pattern => pattern.slice(1));
 
     if (rootExcludePatterns.length > 0) {
       const rootExcludeMatches =
@@ -159,8 +150,7 @@ export class LocationResolver
     const basePathExcludePatterns =
       exclude
       .filter(
-        pattern => !pattern.startsWith('/')
-      );
+        pattern => !pattern.startsWith('/'));
 
     if (basePathExcludePatterns.length > 0) {
       const basePathExcludeMatches =
@@ -181,8 +171,7 @@ export class LocationResolver
         case 'GitIgnore':
           result = this.gitIgnore
             .filter(
-              result
-            );
+              result);
           break;
         default:
           throw new Error(
@@ -192,12 +181,10 @@ export class LocationResolver
     }
 
     result.sort(
-      (a, b) => a.localeCompare(b)
-    );
+      (a, b) => a.localeCompare(b));
 
     this.logger.trace(
-      `FilesystemLocationResolver.resolve() => ${result.length} matches`
-    );
+      `FilesystemLocationResolver.resolve() => ${result.length} matches`);
 
     return result;
   }
@@ -243,15 +230,13 @@ export class LocationResolver
           return minimatch(
             relativeToRoot,
             pattern.slice(1),
-            { dot: true }
-          );
+            { dot: true });
         }
 
         return minimatch(
           relativeToBase,
           pattern,
-          { dot: true }
-        );
+          { dot: true });
       });
 
     if (!included) {
@@ -266,15 +251,13 @@ export class LocationResolver
           return minimatch(
             relativeToRoot,
             pattern.slice(1),
-            { dot: true }
-          );
+            { dot: true });
         }
 
         return minimatch(
           relativeToBase,
           pattern,
-          { dot: true }
-        );
+          { dot: true });
       });
 
     if (excluded) {

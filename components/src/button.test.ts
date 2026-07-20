@@ -38,25 +38,20 @@ test(
 
     assert.equal(
       button?.getAttribute('type'),
-      'button'
-    );
+      'button');
 
     assert.equal(
       button?.className,
-      ''
-    );
+      '');
 
     assert.equal(
       icon?.className,
-      'bi bi-star'
-    );
+      'bi bi-star');
 
     assert.equal(
       text?.textContent,
-      'Save'
-    );
-  }
-);
+      'Save');
+  });
 
 test(
   'button: model definition includes the variant property metadata',
@@ -77,10 +72,8 @@ test(
         title: 'Variant',
         description:
           'Variant key used to resolve theme defaults such as add or delete.'
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'button: resolves variant icon and text from theme provider',
@@ -117,15 +110,12 @@ test(
 
     assert.equal(
       icon?.className,
-      'bi bi-plus'
-    );
+      'bi bi-plus');
 
     assert.equal(
       text?.textContent,
-      'Add'
-    );
-  }
-);
+      'Add');
+  });
 
 test(
   'button: prefers explicit icon and text over variant theme defaults',
@@ -159,15 +149,12 @@ test(
 
     assert.equal(
       icon?.className,
-      'bi bi-star'
-    );
+      'bi bi-star');
 
     assert.equal(
       text?.textContent,
-      'Save'
-    );
-  }
-);
+      'Save');
+  });
 
 test(
   'button: provides default add icon and text for the add variant',
@@ -193,15 +180,12 @@ test(
 
     assert.equal(
       icon?.textContent,
-      '\uF26E'
-    );
+      '\uF26E');
 
     assert.equal(
       text?.textContent,
-      'Add'
-    );
-  }
-);
+      'Add');
+  });
 
 test(
   'button: provides default delete icon and text for the delete variant',
@@ -227,15 +211,12 @@ test(
 
     assert.equal(
       icon?.textContent,
-      '\uF5DE'
-    );
+      '\uF5DE');
 
     assert.equal(
       text?.textContent,
-      'Delete'
-    );
-  }
-);
+      'Delete');
+  });
 
 test(
   'button: provides default settings icon and text for the settings variant',
@@ -261,15 +242,12 @@ test(
 
     assert.equal(
       icon?.textContent,
-      '\uF3E5'
-    );
+      '\uF3E5');
 
     assert.equal(
       text?.textContent,
-      'Settings'
-    );
-  }
-);
+      'Settings');
+  });
 
 test(
   'button: resolves bootstrap icon from theme provider for the add variant',
@@ -301,10 +279,8 @@ test(
 
     assert.equal(
       icon?.className,
-      'bi bi-plus'
-    );
-  }
-);
+      'bi bi-plus');
+  });
 
 test(
   'button: resolves bootstrap button class from theme provider for the add variant',
@@ -333,10 +309,8 @@ test(
 
     assert.equal(
       button?.className,
-      'btn btn-primary'
-    );
-  }
-);
+      'btn btn-primary');
+  });
 
 test(
   'button: prefers explicit button class name over theme class',
@@ -359,10 +333,8 @@ test(
 
     assert.equal(
       button?.className,
-      'btn btn-ghost'
-    );
-  }
-);
+      'btn btn-ghost');
+  });
 
 async function ensureDom(
   ): Promise<void>

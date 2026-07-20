@@ -67,51 +67,42 @@ test(
           {
             confirmed.push(value);
           }
-        }
-      );
+        });
 
       assert.equal(
         modal.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.equal(
         title.textContent,
-        'Rename App'
-      );
+        'Rename App');
 
       assert.equal(
         input.value,
-        ' Old Name '
-      );
+        ' Old Name ');
 
       assert.equal(
         focused,
-        true
-      );
+        true);
 
       input.value = '  New Name  ';
 
       confirmButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         confirmed,
-        ['New Name']
-      );
+        ['New Name']);
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'createNameModalUi closes on overlay click and blocks blank confirmation',
@@ -161,44 +152,36 @@ test(
           {
             confirmed = true;
           }
-        }
-      );
+        });
 
       input.value = '   ';
 
       confirmButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.equal(
         confirmed,
-        false
-      );
+        false);
 
       assert.equal(
         focused,
-        true
-      );
+        true);
 
       modal.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
 
       ui.close();
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

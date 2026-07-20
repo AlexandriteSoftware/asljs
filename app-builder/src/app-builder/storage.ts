@@ -23,8 +23,7 @@ async function getDb(
     {
       db.createObjectStore(
         'apps',
-        { keyPath: 'id' }
-      );
+        { keyPath: 'id' });
 
       const filesStore =
         db.createObjectStore(
@@ -34,16 +33,13 @@ async function getDb(
       filesStore.createIndex(
         'byAppId',
         'appId',
-        { unique: false }
-      );
+        { unique: false });
     }, db =>
     {
       db.createObjectStore(
         'chatSecrets',
-        { keyPath: 'appId' }
-      );
-    }, ensureStores]
-  );
+        { keyPath: 'appId' });
+    }, ensureStores]);
 
   return dbRef;
 }
@@ -55,8 +51,7 @@ function ensureStores(
   if (!db.objectStoreNames.contains('apps')) {
     db.createObjectStore(
       'apps',
-      { keyPath: 'id' }
-    );
+      { keyPath: 'id' });
   }
 
   if (!db.objectStoreNames.contains('files')) {
@@ -68,15 +63,13 @@ function ensureStores(
     filesStore.createIndex(
       'byAppId',
       'appId',
-      { unique: false }
-    );
+      { unique: false });
   }
 
   if (!db.objectStoreNames.contains('chatSecrets')) {
     db.createObjectStore(
       'chatSecrets',
-      { keyPath: 'appId' }
-    );
+      { keyPath: 'appId' });
   }
 }
 
@@ -92,8 +85,7 @@ export async function listApps(
       'readonly');
 
   return dbRequestAsync(
-    tx.objectStore('apps').getAll()
-  );
+    tx.objectStore('apps').getAll());
 }
 
 export async function saveApp(
@@ -109,8 +101,7 @@ export async function saveApp(
       'readwrite');
 
   await dbRequestAsync(
-    tx.objectStore('apps').put(app)
-  );
+    tx.objectStore('apps').put(app));
 }
 
 export async function deleteApp(
@@ -126,8 +117,7 @@ export async function deleteApp(
       'readwrite');
 
   await dbRequestAsync(
-    tx.objectStore('apps').delete(id)
-  );
+    tx.objectStore('apps').delete(id));
 
   const filesStore =
     tx.objectStore('files');
@@ -138,13 +128,11 @@ export async function deleteApp(
 
   for (const key of fileKeys) {
     await dbRequestAsync(
-      filesStore.delete(key)
-    );
+      filesStore.delete(key));
   }
 
   await dbRequestAsync(
-    tx.objectStore('chatSecrets').delete(id)
-  );
+    tx.objectStore('chatSecrets').delete(id));
 }
 
 export async function listFiles(
@@ -162,8 +150,7 @@ export async function listFiles(
   return dbRequestAsync(
     tx.objectStore('files')
       .index('byAppId')
-      .getAll(appId)
-  );
+      .getAll(appId));
 }
 
 export async function saveFile(
@@ -179,8 +166,7 @@ export async function saveFile(
       'readwrite');
 
   await dbRequestAsync(
-    tx.objectStore('files').put(file)
-  );
+    tx.objectStore('files').put(file));
 }
 
 export async function deleteFile(
@@ -196,8 +182,7 @@ export async function deleteFile(
       'readwrite');
 
   await dbRequestAsync(
-    tx.objectStore('files').delete(fileId)
-  );
+    tx.objectStore('files').delete(fileId));
 }
 
 export async function replaceFiles(
@@ -222,14 +207,12 @@ export async function replaceFiles(
 
   for (const key of existingKeys) {
     await dbRequestAsync(
-      store.delete(key)
-    );
+      store.delete(key));
   }
 
   for (const file of files) {
     await dbRequestAsync(
-      store.put(file)
-    );
+      store.put(file));
   }
 }
 
@@ -271,7 +254,5 @@ export async function saveAppOpenAiApiKey(
 
   await dbRequestAsync(
     tx.objectStore('chatSecrets').put(
-      { appId, openAiApiKey: apiKey }
-    )
-  );
+      { appId, openAiApiKey: apiKey }));
 }

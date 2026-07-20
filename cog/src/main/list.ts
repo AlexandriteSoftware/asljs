@@ -18,11 +18,9 @@ export function configureListCommand(
 {
   program
     .command(
-      'list'
-    )
+      'list')
     .description(
-      'print a markdown table of envelope files'
-    )
+      'print a markdown table of envelope files')
     .action(
       async () =>
       {
@@ -35,12 +33,9 @@ export function configureListCommand(
           context,
           {
             envelopePath: resolveEnvelopePath(
-              options.envelope
-            )
-          }
-        );
-      }
-    );
+              options.envelope)
+          });
+      });
 }
 
 async function listCmd(
@@ -63,16 +58,13 @@ async function listCmd(
 
   for (
     const line of formatFileList(
-      envelope
-    )
+      envelope)
       .trimEnd()
       .split(
-        '\n'
-      )
+        '\n')
   ) {
     context.console.writeLine(
-      line
-    );
+      line);
   }
 }
 
@@ -89,24 +81,19 @@ export function formatFileList(
         file =>
           `| ${
             escapeMarkdownTableCell(
-              file.path
-            )
+              file.path)
           } | ${
             formatComplete(
-              file
-            )
+              file)
           } | ${
             escapeMarkdownTableCell(
-              file.type
-            )
-          } |`
-      )
+              file.type)
+          } |`)
   ];
 
   return `${
     lines.join(
-      '\n'
-    )
+      '\n')
   }\n`;
 }
 
@@ -128,14 +115,11 @@ function escapeMarkdownTableCell(
   return value
     .replace(
       /\\/g,
-      '\\\\'
-    )
+      '\\\\')
     .replace(
       /\|/g,
-      '\\|'
-    )
+      '\\|')
     .replace(
       /\r?\n/g,
-      ' '
-    );
+      ' ');
 }

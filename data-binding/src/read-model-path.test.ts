@@ -19,10 +19,8 @@ test(
 
     assert.equal(
       value,
-      'Hi'
-    );
-  }
-);
+      'Hi');
+  });
 
 test(
   `${TEST_SUITE}: uses get(path) when provided`,
@@ -40,10 +38,8 @@ test(
 
     assert.equal(
       value,
-      'value:name'
-    );
-  }
-);
+      'value:name');
+  });
 
 test(
   `${TEST_SUITE}: returns null for missing path`,
@@ -56,7 +52,5 @@ test(
 
     assert.equal(
       value,
-      null
-    );
-  }
-);
+      null);
+  });

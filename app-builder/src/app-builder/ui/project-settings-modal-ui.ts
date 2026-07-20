@@ -100,78 +100,69 @@ export function createProjectSettingsModalUi(
     {
       icon: '<i class="bi bi-x-lg"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnSave,
     {
       text: 'Save',
       className: 'btn btn-primary'
-    }
-  );
+    });
 
   configureButton(
     elBtnDelete,
     {
       text: 'Delete',
       className: 'btn btn-danger'
-    }
-  );
+    });
 
   configureButton(
     elBtnClose,
     {
       text: 'Cancel',
       className: 'btn btn-outline-secondary'
-    }
-  );
+    });
 
   configureTextInput(
     elNameInput,
     {
       placeholder: 'Project name'
-    }
-  );
+    });
 
   configureTextInput(
     elAuthorNameInput,
     {
       placeholder: 'Jane Doe'
-    }
-  );
+    });
 
   configureTextInput(
     elAuthorEmailInput,
     {
       placeholder: 'jane@example.com',
       inputType: 'email'
-    }
-  );
+    });
 
   function close(
     ): void
-{
+  {
     elModal.classList.add('hidden');
   }
 
   function readValues(
     ): ProjectSettingsModalValues
-{
+  {
     return {
       name: readControlValue(elNameInput).trim(),
       authorName: readControlValue(
-        elAuthorNameInput
-      ).trim(),
+        elAuthorNameInput).trim(),
       authorEmail: readControlValue(
-        elAuthorEmailInput
-      ).trim()
+        elAuthorEmailInput).trim()
     };
   }
 
   async function save(
     ): Promise<void>
-{
+  {
     const values =
       readValues();
 
@@ -186,7 +177,7 @@ export function createProjectSettingsModalUi(
 
   async function deleteProject(
     ): Promise<void>
-{
+  {
     close();
     await options.onDelete();
   }
@@ -196,26 +187,22 @@ export function createProjectSettingsModalUi(
     () =>
     {
       void save();
-    }
-  );
+    });
 
   elBtnDelete.addEventListener(
     'click',
     () =>
     {
       void deleteProject();
-    }
-  );
+    });
 
   elBtnClose.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elBtnCloseX.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elNameInput.addEventListener(
     'keydown',
@@ -225,8 +212,7 @@ export function createProjectSettingsModalUi(
         event.preventDefault();
         void save();
       }
-    }
-  );
+    });
 
   elModal.addEventListener(
     'click',
@@ -235,26 +221,22 @@ export function createProjectSettingsModalUi(
       if (event.target === elModal) {
         close();
       }
-    }
-  );
+    });
 
   return {
     open(values: ProjectSettingsModalValues): void
     {
       writeControlValue(
         elNameInput,
-        values.name
-      );
+        values.name);
 
       writeControlValue(
         elAuthorNameInput,
-        values.authorName
-      );
+        values.authorName);
 
       writeControlValue(
         elAuthorEmailInput,
-        values.authorEmail
-      );
+        values.authorEmail);
 
       elModal.classList.remove('hidden');
       selectInnerTextControl(elNameInput);

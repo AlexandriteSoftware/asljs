@@ -46,32 +46,25 @@ test(
       ['Alice', 7];
 
     assert.ok(
-      options.shallow
-    );
+      options.shallow);
 
     assert.equal(
       globalOptions.trace,
-      null
-    );
+      null);
 
     assert.equal(
       typeof traceFn,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof watchFn,
-      'function'
-    );
+      'function');
 
     assert.equal(
       boxed,
-      null
-    );
+      null);
 
     assert.deepEqual(
       picked,
-      ['Alice', 7]
-    );
-  }
-);
+      ['Alice', 7]);
+  });

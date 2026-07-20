@@ -72,8 +72,7 @@ const ROWS: readonly KeyboardRowDefinition[] =
 ], [{ key: ' ', label: 'Space', className: 'space' }]];
 
 @customElement(
-  'asljs-keyboard'
-)
+  'asljs-keyboard')
 export class Keyboard extends AssistedInput
 {
   static override styles = css`
@@ -155,12 +154,10 @@ export class Keyboard extends AssistedInput
           <div class="row">
             ${
             row.map(
-              button => this.#renderButton(button)
-            )
+              button => this.#renderButton(button))
           }
           </div>
-        `
-      )
+        `)
     }
     `;
   }
@@ -177,7 +174,6 @@ export class Keyboard extends AssistedInput
     return this.renderAssistedInputButton(
       button,
       html`<span class="label">${button.label ?? ''}</span>`,
-      { ariaLabel }
-    );
+      { ariaLabel });
   }
 }

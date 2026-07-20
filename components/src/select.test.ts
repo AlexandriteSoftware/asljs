@@ -44,25 +44,20 @@ test(
 
     assert.equal(
       label.textContent,
-      'Theme'
-    );
+      'Theme');
 
     assert.equal(
       select.value,
-      'light'
-    );
+      'light');
 
     assert.equal(
       select.options.length,
-      2
-    );
+      2);
 
     assert.equal(
       description.textContent,
-      'Choose one'
-    );
-  }
-);
+      'Choose one');
+  });
 
 test(
   'select: bootstrap theme supplies bootstrap template and classes',
@@ -92,15 +87,12 @@ test(
 
     assert.equal(
       select.classList.contains('form-select'),
-      true
-    );
+      true);
 
     assert.equal(
       select.value,
-      'gpt-4.1'
-    );
-  }
-);
+      'gpt-4.1');
+  });
 
 test(
   'select: bootstrap theme renders shared invalid feedback from the outer template',
@@ -135,20 +127,16 @@ test(
 
     assert.equal(
       select.nextElementSibling,
-      null
-    );
+      null);
 
     assert.equal(
       error.textContent,
-      'Pick a supported model'
-    );
+      'Pick a supported model');
 
     assert.equal(
       error.hidden,
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   'select: emits input and change details',
@@ -175,10 +163,8 @@ test(
       event =>
       {
         received.push(
-          ((event as unknown) as CustomEvent<SelectChangeDetail>).detail
-        );
-      }
-    );
+          ((event as unknown) as CustomEvent<SelectChangeDetail>).detail);
+      });
 
     const select =
       element.querySelector('select') as HTMLSelectElement;
@@ -189,30 +175,24 @@ test(
       new window.Event(
         'change',
         { bubbles: true }
-      )
-    );
+      ));
 
     assert.equal(
       element.value,
-      'chat'
-    );
+      'chat');
 
     assert.equal(
       element.draftValue,
-      'code'
-    );
+      'code');
 
     assert.equal(
       received[0]?.value,
-      'code'
-    );
+      'code');
 
     assert.equal(
       received[0]?.dirty,
-      true
-    );
-  }
-);
+      true);
+  });
 
 async function createElement(
   ): Promise<Select>

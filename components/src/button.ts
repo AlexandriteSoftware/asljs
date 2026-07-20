@@ -67,38 +67,31 @@ export class Button extends LitElement
   #themeProvider: ThemeProviderLike | null = null;
 
   @property(
-    { reflect: true }
-  )
+    { reflect: true })
   accessor variant = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor icon = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor buttonClassName = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor theme: ComponentsTheme | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor text = '';
 
   @property(
-    { reflect: true }
-  )
+    { reflect: true })
   accessor disabled = false;
 
   @property(
-    { reflect: true }
-  )
+    { reflect: true })
   accessor type: 'button' | 'submit' | 'reset' = 'button';
 
   override createRenderRoot(): this
@@ -172,8 +165,7 @@ export class Button extends LitElement
               ?hidden=${this.resolvedIcon === ''}
               aria-hidden="true">${
       unsafeHTML(
-        this.resolvedIcon
-      )
+        this.resolvedIcon)
     }</span>
         <span class="text"
               ?hidden=${this.resolvedText === ''}>${this.resolvedText}</span>
@@ -246,21 +238,18 @@ export class Button extends LitElement
     this.#disposeThemeProvider();
 
     this.#themeProvider = findThemeProvider(
-      this
-    );
+      this);
 
     this.#themeProvider?.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
   }
 
   #disposeThemeProvider(): void
   {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
 
     this.#themeProvider = null;
   }

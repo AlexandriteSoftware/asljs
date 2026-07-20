@@ -28,15 +28,12 @@ test(
       root,
       {
         createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      }
-    );
+      });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      `<\'2026|04|10\' "13:14:15">`
-    );
-  }
-);
+      `<\'2026|04|10\' "13:14:15">`);
+  });
 
 test(
   `${TEST_SUITE}: exports createBuiltInPipes`,
@@ -47,7 +44,5 @@ test(
 
     assert.equal(
       typeof pipes.currency,
-      'function'
-    );
-  }
-);
+      'function');
+  });

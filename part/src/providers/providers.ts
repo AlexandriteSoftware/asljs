@@ -39,8 +39,7 @@ export function providersFactory(
   const filesystemLocationResolver =
     new FilesystemLocationResolver(
     loggerProvider.getLogger(
-      'FilesystemLocationResolver'
-    ),
+      'FilesystemLocationResolver'),
     projectPath
   );
 
@@ -51,15 +50,13 @@ export function providersFactory(
   const gitIgnore =
     new GitIgnore(
     loggerProvider.getLogger(
-      'GitIgnore'
-    )
+      'GitIgnore')
   );
 
   const markdownDocumentProvider =
     new MarkdownDocumentProvider(
     loggerProvider.getLogger(
-      'MarkdownDocumentProvider'
-    )
+      'MarkdownDocumentProvider')
   );
 
   const artefactDefinitionProvider =
@@ -73,8 +70,7 @@ export function providersFactory(
   const artefactProvider =
     new ArtefactProvider(
     loggerProvider.getLogger(
-      'ArtefactProvider'
-    ),
+      'ArtefactProvider'),
     artefactDefinitionProvider,
     projectPath
   );
@@ -82,8 +78,7 @@ export function providersFactory(
   const artefactDataProvider =
     new ArtefactDataProvider(
     loggerProvider.getLogger(
-      'ArtefactDataProvider'
-    ),
+      'ArtefactDataProvider'),
     markdownDocumentProvider,
     definitionsPath
   );
@@ -91,8 +86,7 @@ export function providersFactory(
   const artefactDefinitionRuleProvider =
     new ArtefactDefinitionRuleProvider(
     loggerProvider.getLogger(
-      'ArtefactDefinitionRuleProvider'
-    ),
+      'ArtefactDefinitionRuleProvider'),
     artefactDefinitionProvider
   );
 

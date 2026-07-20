@@ -20,8 +20,7 @@ test.after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -51,8 +50,7 @@ A todo item.
         { path: workspace.resolve('Todo Item.md') });
 
     assert.ok(definition);
-  }
-);
+  });
 
 test(
   'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
@@ -65,8 +63,7 @@ test(
 
     await workspace.writeText(
       '.gitignore',
-      'hidden/\n'
-    );
+      'hidden/\n');
 
     await workspace.writeText(
       'Todo Item.md',
@@ -77,16 +74,14 @@ A todo item.
 ## Location
 
 - Folders: Todo Items
-`
-    );
+`);
 
     await workspace.writeText(
       'Notes.md',
       `# Notes
 
 This is not a PART definition.
-`
-    );
+`);
 
     await workspace.writeText(
       'hidden/Hidden Item.md',
@@ -97,8 +92,7 @@ Hidden definition.
 ## Location
 
 - Folders: Hidden Items
-`
-    );
+`);
 
     const { artefactDefinitionProvider } =
       providersFactory(
@@ -111,15 +105,12 @@ Hidden definition.
 
     assert.equal(
       definitions.length,
-      1
-    );
+      1);
 
     assert.equal(
       definitions[0].name,
-      'Todo Item'
-    );
-  }
-);
+      'Todo Item');
+  });
 
 test(
   'RQ202: DefinitionProvider loads definition from markdown',
@@ -135,8 +126,7 @@ test(
     throw new Error('Due date must be in the future.');
   }
 }
-`
-    );
+`);
 
     await workspace.writeText(
       'Todo Item.md',
@@ -159,8 +149,7 @@ A todo item is a task that needs to be done.
 ### R1
 
 Due date must be in the future.
-`
-    );
+`);
 
     const { artefactDefinitionProvider } =
       providersFactory(
@@ -176,13 +165,11 @@ Due date must be in the future.
 
     assert.equal(
       definition.name,
-      'Todo Item'
-    );
+      'Todo Item');
 
     assert.equal(
       definition.description,
-      'A todo item is a task that needs to be done.'
-    );
+      'A todo item is a task that needs to be done.');
 
     const expectedLocations: Location[] =
       [{
@@ -193,8 +180,7 @@ Due date must be in the future.
 
     assert.deepEqual(
       definition.locations,
-      expectedLocations
-    );
+      expectedLocations);
 
     const expectedRules: ArtefactDefinitionRule[] =
       [{
@@ -207,10 +193,8 @@ Due date must be in the future.
 
     assert.deepEqual(
       definition.rules,
-      expectedRules
-    );
-  }
-);
+      expectedRules);
+  });
 
 test(
   'RQ203: fromFile throws when content does not match the definition format',
@@ -226,8 +210,7 @@ test(
       `# Different Name
 
 This file should not be treated as a definition.
-`
-    );
+`);
 
     const providers =
       providersFactory(
@@ -241,8 +224,5 @@ This file should not be treated as a definition.
     assert.rejects(
       async () =>
         await provider.fromFile(
-          workspace.resolve(definitionPath)
-        )
-    );
-  }
-);
+          workspace.resolve(definitionPath)));
+  });

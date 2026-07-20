@@ -44,8 +44,7 @@ export class RuleRunner
     this.logger.trace(
       'runRule(%s, %s) { start }',
       rule.name,
-      artefact.name
-    );
+      artefact.name);
 
     const ruleFile =
       await this.resolveRuleFile(
@@ -58,8 +57,7 @@ export class RuleRunner
       this.logger.trace(
         'runRule(%s, %s): rule file is missing',
         rule.name,
-        artefact.name
-      );
+        artefact.name);
 
       return {
         rule,
@@ -70,14 +68,12 @@ export class RuleRunner
 
     try {
       await access(
-        rulePath
-      );
+        rulePath);
     } catch {
       this.logger.trace(
         'runRule(%s, %s): cannot access rule file',
         rule.name,
-        artefact.name
-      );
+        artefact.name);
 
       return {
         rule,
@@ -95,13 +91,11 @@ export class RuleRunner
     if (ruleFileExtension.toLowerCase() === '.js') {
       result = await this.runJavaScriptRule(
         rule,
-        artefact
-      );
+        artefact);
     } else {
       result = await this.runExecutableRule(
         rule,
-        artefact
-      );
+        artefact);
     }
 
     if (result.result === 'Fail') {
@@ -109,8 +103,7 @@ export class RuleRunner
         'runRule(%s, %s): %s',
         rule.name,
         artefact.name,
-        result.message
-      );
+        result.message);
     }
 
     return result;
@@ -185,8 +178,7 @@ export class RuleRunner
       try {
         await validateFunction(
           artefact,
-          validationContext
-        );
+          validationContext);
       } catch (error) {
         result = error
           ?? new Error('Unknown error');
@@ -247,8 +239,7 @@ export class RuleRunner
       let stderr = '';
 
       child.stdin.write(
-        `${JSON.stringify(artefact)}\n`
-      );
+        `${JSON.stringify(artefact)}\n`);
 
       child.stdin.end();
 
@@ -257,8 +248,7 @@ export class RuleRunner
         chunk =>
         {
           stderr += String(chunk);
-        }
-      );
+        });
 
       child.on(
         'error',
@@ -269,10 +259,8 @@ export class RuleRunner
               rule,
               result: 'Fail',
               message: this.formatError(error)
-            }
-          );
-        }
-      );
+            });
+        });
 
       child.on(
         'close',
@@ -293,10 +281,8 @@ export class RuleRunner
               rule,
               result,
               message
-            }
-          );
-        }
-      );
+            });
+        });
     });
   }
 
@@ -307,8 +293,7 @@ export class RuleRunner
     if (error instanceof Error) {
       return error.message.replaceAll(
         '\n',
-        ' '
-      );
+        ' ');
     }
 
     return String(error);
@@ -322,8 +307,7 @@ export class RuleRunner
       await this.providers
       .artefactDefinitionProvider
       .findDefinition(
-        rule.definition
-      );
+        rule.definition);
 
     if (!definition) {
       return null;
@@ -334,7 +318,6 @@ export class RuleRunner
       .resolveRuleFile(
         rule.id,
         definition.name,
-        definition.path
-      );
+        definition.path);
   }
 }

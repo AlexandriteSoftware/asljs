@@ -16,8 +16,7 @@ export function readModelPath(
 
   return readNestedPath(
     model,
-    path
-  );
+    path);
 }
 
 function hasGetMethod(
@@ -36,11 +35,9 @@ function readNestedPath(
     path
     .split('.')
     .map(
-      part => part.trim()
-    )
+      part => part.trim())
     .filter(
-      part => part !== ''
-    );
+      part => part !== '');
 
   let current: unknown = source;
 

@@ -28,12 +28,9 @@ test(
       workspace,
       await resolver.resolve(
         workspace.path,
-        { patterns: ['**/*.txt'] }
-      ),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']
-    );
-  }
-);
+        { patterns: ['**/*.txt'] }),
+      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+  });
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = d1',
@@ -53,14 +50,10 @@ test(
       await resolver.resolve(
         path.join(
           workspace.path,
-          'd1'
-        ),
-        { patterns: ['**/*.txt'] }
-      ),
-      ['d1/f2.txt', 'd1/d11/f3.txt']
-    );
-  }
-);
+          'd1'),
+        { patterns: ['**/*.txt'] }),
+      ['d1/f2.txt', 'd1/d11/f3.txt']);
+  });
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: absolute',
@@ -79,12 +72,9 @@ test(
       workspace,
       await resolver.resolve(
         workspace.path,
-        { patterns: ['/**/*.txt'] }
-      ),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']
-    );
-  }
-);
+        { patterns: ['/**/*.txt'] }),
+      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+  });
 
 async function getTestTmpFolder(
   ): Promise<TmpDir>
@@ -106,8 +96,7 @@ async function getTestTmpFolder(
   for (const file of files) {
     await tmpDir.writeText(
       file,
-      file
-    );
+      file);
   }
 
   return tmpDir;
@@ -125,16 +114,12 @@ function checkResolvedFiles(
       filePath =>
         path.relative(
           tmpDir.path,
-          filePath
-        )
-    )
+          filePath))
     .map(
       filePath =>
         filePath.replace(
           /\\/g,
-          '/'
-        )
-    )
+          '/'))
     .sort();
 
   const normalisedExpectedFiles =
@@ -142,6 +127,5 @@ function checkResolvedFiles(
 
   assert.deepEqual(
     normalisedResolvedFiles,
-    normalisedExpectedFiles
-  );
+    normalisedExpectedFiles);
 }

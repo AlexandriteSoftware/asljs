@@ -22,14 +22,11 @@ test(
 
     assert.equal(
       enhanced,
-      original
-    );
+      original);
 
     assertEventfulMethods(
-      enhanced
-    );
-  }
-);
+      enhanced);
+  });
 
 test(
   `${TEST_SUITE}: eventful extends a function`,
@@ -44,14 +41,11 @@ test(
 
     assert.equal(
       enhanced,
-      original
-    );
+      original);
 
     assertEventfulMethods(
-      enhanced
-    );
-  }
-);
+      enhanced);
+  });
 
 test(
   `${TEST_SUITE}: eventful can be called without arguments`,
@@ -61,14 +55,11 @@ test(
       eventful();
 
     assert.ok(
-      enhanced !== null
-    );
+      enhanced !== null);
 
     assertEventfulMethods(
-      enhanced
-    );
-  }
-);
+      enhanced);
+  });
 
 test(
   `${TEST_SUITE}: eventful can be extended by inheritance`,
@@ -95,8 +86,7 @@ test(
       {
         this.emit(
           'greet',
-          `Hello, ${this.name}`
-        );
+          `Hello, ${this.name}`);
       }
     }
 
@@ -107,17 +97,14 @@ test(
 
     instance.on(
       'greet',
-      message => greeting = message
-    );
+      message => greeting = message);
 
     instance.greet();
 
     assert.equal(
       greeting,
-      'Hello, Alice'
-    );
-  }
-);
+      'Hello, Alice');
+  });
 
 test(
   `${TEST_SUITE}: eventful can be added during construction`,
@@ -143,8 +130,7 @@ test(
       )
       {
         eventful(
-          this
-        );
+          this);
 
         this.name = name;
       }
@@ -153,8 +139,7 @@ test(
       {
         this.emit(
           'greet',
-          `Hello, ${this.name}`
-        );
+          `Hello, ${this.name}`);
       }
     }
 
@@ -165,17 +150,14 @@ test(
 
     instance.on(
       'greet',
-      message => greeting = message
-    );
+      message => greeting = message);
 
     instance.greet();
 
     assert.equal(
       greeting,
-      'Hello, Alice'
-    );
-  }
-);
+      'Hello, Alice');
+  });
 
 test(
   `${TEST_SUITE}: trace is called on creation with action "new"`,
@@ -197,10 +179,8 @@ test(
 
     assert.equal(
       creation.payload.object,
-      object
-    );
-  }
-);
+      object);
+  });
 
 test(
   `${TEST_SUITE}: global trace is called on creation with action "new"`,
@@ -215,8 +195,7 @@ test(
         (...args: unknown[]) =>
         recorder.write(
           'new',
-          args[0] as TraceRecord['payload']
-        ));
+          args[0] as TraceRecord['payload']));
 
     try {
       const object =
@@ -229,18 +208,15 @@ test(
           item => item.action === 'new');
 
       assert.ok(
-        creation
-      );
+        creation);
 
       assert.equal(
         creation.payload.object,
-        object
-      );
+        object);
     } finally {
       off();
     }
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: eventful throws when an object has one of the event emitter methods`,
@@ -253,12 +229,9 @@ test(
             {
               [method]: () =>
               {}
-            }
-          )
-      );
+            }));
     }
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: exceptions in listeners are suppressed in async emit by default`,
@@ -272,14 +245,11 @@ test(
       () =>
       {
         throw new Error('test error');
-      }
-    );
+      });
 
     await assert.doesNotReject(
-      () => obj.emitAsync('test')
-    );
-  }
-);
+      () => obj.emitAsync('test'));
+  });
 
 function assertEventfulMethods(
     object: unknown
@@ -296,28 +266,23 @@ function assertEventfulMethods(
 
   assert.equal(
     typeof candidate.on,
-    'function'
-  );
+    'function');
 
   assert.equal(
     typeof candidate.off,
-    'function'
-  );
+    'function');
 
   assert.equal(
     typeof candidate.emit,
-    'function'
-  );
+    'function');
 
   assert.equal(
     typeof candidate.emitAsync,
-    'function'
-  );
+    'function');
 
   assert.equal(
     typeof candidate.has,
-    'function'
-  );
+    'function');
 }
 
 test(
@@ -332,14 +297,11 @@ test(
       () =>
       {
         throw new Error('test error');
-      }
-    );
+      });
 
     await assert.doesNotReject(
-      () => obj.emitAsync('test')
-    );
-  }
-);
+      () => obj.emitAsync('test'));
+  });
 
 test(
   `${TEST_SUITE}: exceptions in listeners are suppressed in emit by default`,
@@ -353,14 +315,11 @@ test(
       () =>
       {
         throw new Error('test error');
-      }
-    );
+      });
 
     assert.doesNotThrow(
-      () => obj.emit('test')
-    );
-  }
-);
+      () => obj.emit('test'));
+  });
 
 test(
   `${TEST_SUITE}: strict mode propagates exceptions in listeners in async emit`,
@@ -380,14 +339,11 @@ test(
       () =>
       {
         throw new Error('test error');
-      }
-    );
+      });
 
     await assert.rejects(
-      () => obj.emitAsync('test')
-    );
-  }
-);
+      () => obj.emitAsync('test'));
+  });
 
 test(
   `${TEST_SUITE}: strict mode propagates exceptions in listeners in emit`,
@@ -407,15 +363,12 @@ test(
       () =>
       {
         throw new Error('test error');
-      }
-    );
+      });
 
     assert.throws(
       () => obj.emit('test'),
-      Error
-    );
-  }
-);
+      Error);
+  });
 
 test(
   `${TEST_SUITE}: non-strict runs other listeners even if one fails`,
@@ -433,32 +386,26 @@ test(
 
     obj.on(
       'test',
-      () => ran += 1
-    );
+      () => ran += 1);
 
     obj.on(
       'test',
       () =>
       {
         throw new Error('boom');
-      }
-    );
+      });
 
     obj.on(
       'test',
-      () => ran += 1
-    );
+      () => ran += 1);
 
     await assert.doesNotReject(
-      () => obj.emitAsync('test')
-    );
+      () => obj.emitAsync('test'));
 
     assert.equal(
       ran,
-      2
-    );
-  }
-);
+      2);
+  });
 
 test(
   `${TEST_SUITE}: trace receives safe payload and action names`,
@@ -481,34 +428,26 @@ test(
     obj.emit(
       'e',
       1,
-      2
-    );
+      2);
 
     await obj.emitAsync(
       'e',
       3,
-      4
-    );
+      4);
 
     off();
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'on'
-      )
-    );
+        item => item.action === 'on'));
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'emit'
-      )
-    );
+        item => item.action === 'emit'));
 
     assert.ok(
       recorder.records().find(
-        item => item.action === 'emitAsync'
-      )
-    );
+        item => item.action === 'emitAsync'));
 
     const emitTrace =
       recorder.records().find(
@@ -518,19 +457,15 @@ test(
 
     assert.ok(
       Array.isArray(
-        emitTrace.payload.listeners
-      )
-    );
+        emitTrace.payload.listeners));
 
     assert.equal(
       emitTrace.payload.event,
-      'e'
-    );
+      'e');
 
     assert.deepEqual(
       emitTrace.payload.args,
-      [1, 2]
-    );
+      [1, 2]);
 
     const emitAsyncTrace =
       recorder.records().find(
@@ -540,21 +475,16 @@ test(
 
     assert.ok(
       Array.isArray(
-        emitAsyncTrace.payload.listeners
-      )
-    );
+        emitAsyncTrace.payload.listeners));
 
     assert.equal(
       emitAsyncTrace.payload.event,
-      'e'
-    );
+      'e');
 
     assert.deepEqual(
       emitAsyncTrace.payload.args,
-      [3, 4]
-    );
-  }
-);
+      [3, 4]);
+  });
 
 test(
   `${TEST_SUITE}: error hook runs for async rejection (non-strict)`,
@@ -572,19 +502,15 @@ test(
       async () =>
       {
         throw new Error('reject');
-      }
-    );
+      });
 
     await assert.doesNotReject(
-      () => obj.emitAsync('e')
-    );
+      () => obj.emitAsync('e'));
 
     assert.equal(
       errors,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   `${TEST_SUITE}: has reflects subscribe and unsubscribe`,
@@ -595,8 +521,7 @@ test(
 
     assert.equal(
       obj.has('x'),
-      false
-    );
+      false);
 
     const off =
       obj.on(
@@ -606,17 +531,14 @@ test(
 
     assert.equal(
       obj.has('x'),
-      true
-    );
+      true);
 
     off();
 
     assert.equal(
       obj.has('x'),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: strict mode propagates async rejections`,
@@ -636,14 +558,11 @@ test(
       async () =>
       {
         throw new Error('nope');
-      }
-    );
+      });
 
     await assert.rejects(
-      () => obj.emitAsync('e')
-    );
-  }
-);
+      () => obj.emitAsync('e'));
+  });
 
 test(
   `${TEST_SUITE}: emit ignores errors when no error hook (non-strict)`,
@@ -657,14 +576,11 @@ test(
       () =>
       {
         throw new Error('boom');
-      }
-    );
+      });
 
     assert.doesNotThrow(
-      () => obj.emit('x')
-    );
-  }
-);
+      () => obj.emit('x'));
+  });
 
 test(
   `${TEST_SUITE}: throw in global error listener does not loop`,
@@ -695,23 +611,19 @@ test(
         () =>
         {
           throw new Error('listener failed');
-        }
-      );
+        });
 
       assert.throws(
         () => obj.emit('e'),
-        Error
-      );
+        Error);
 
       assert.equal(
         globalErrorCalls,
-        1
-      );
+        1);
     } finally {
       off();
     }
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: event must be string or symbol`,
@@ -725,18 +637,14 @@ test(
         obj.on(
           123 as unknown as never,
           () =>
-          {}
-        ),
-      TypeError
-    );
+          {}),
+      TypeError);
 
     assert.throws(
       () =>
         obj.emit(
-          123 as unknown as never
-        ),
-      TypeError
-    );
+          123 as unknown as never),
+      TypeError);
 
     const s =
       Symbol('e');
@@ -746,15 +654,11 @@ test(
         obj.on(
           s,
           () =>
-          {}
-        )
-    );
+          {}));
 
     assert.doesNotThrow(
-      () => obj.emit(s)
-    );
-  }
-);
+      () => obj.emit(s));
+  });
 
 type TraceRecord = {
   action: string;
@@ -784,8 +688,7 @@ export function createRecorder(
     ): void =>
     {
       records.push(
-        { action, payload }
-      );
+        { action, payload });
     },
     records: (): TraceRecord[] => records
   };

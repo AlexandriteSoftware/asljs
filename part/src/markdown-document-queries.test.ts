@@ -24,8 +24,7 @@ test.after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 test(
   'getMarkup returns markup from a markdown document #1',
@@ -42,10 +41,8 @@ test(
 
     assert.equal(
       markup,
-      '# Heading 1'
-    );
-  }
-);
+      '# Heading 1');
+  });
 
 test(
   'getMarkup returns markup from a markdown document #2',
@@ -64,10 +61,8 @@ test`);
 
     assert.equal(
       markup,
-      'test'
-    );
-  }
-);
+      'test');
+  });
 
 test(
   'getMarkup returns markup from a markdown document #3',
@@ -88,17 +83,14 @@ test`;
 
     assert.equal(
       markup,
-      content
-    );
-  }
-);
+      content);
+  });
 
 test(
   'getSections returns sections from a markdown document #1',
   async () =>
   {
-    const content =
-      `# Heading 1`;
+    const content = `# Heading 1`;
 
     const document =
       parse(
@@ -110,20 +102,16 @@ test(
 
     assert.equal(
       sections[0].heading,
-      'Heading 1'
-    );
+      'Heading 1');
 
     assert.equal(
       sections[0].level,
-      1
-    );
+      1);
 
     assert.equal(
       sections[0].markup,
-      content
-    );
-  }
-);
+      content);
+  });
 
 test(
   'getSections returns sections from a markdown document #2',
@@ -144,20 +132,16 @@ text`;
 
     assert.equal(
       sections[0].heading,
-      'Heading 1'
-    );
+      'Heading 1');
 
     assert.equal(
       sections[0].level,
-      1
-    );
+      1);
 
     assert.equal(
       sections[0].markup,
-      content
-    );
-  }
-);
+      content);
+  });
 
 function parse(
     content: string

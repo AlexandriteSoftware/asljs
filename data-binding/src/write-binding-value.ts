@@ -15,8 +15,7 @@ export function writeBindingValue(
   if (target.kind === 'class') {
     element.classList.toggle(
       target.name,
-      Boolean(value)
-    );
+      Boolean(value));
 
     return;
   }
@@ -36,16 +35,14 @@ export function writeBindingValue(
       || value === undefined
     ) {
       element.removeAttribute(
-        target.name
-      );
+        target.name);
 
       return;
     }
 
     element.setAttribute(
       target.name,
-      coerceDisplayValue(value)
-    );
+      coerceDisplayValue(value));
 
     return;
   }

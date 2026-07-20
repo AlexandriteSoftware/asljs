@@ -34,7 +34,7 @@
     "@types/node": "^26.1.1",
     "@types/yargs": "^17.0.35",
     "acorn": "^8.17.0",
-    "asljs-sfmt": "^0.1.1",
+    "asljs-sfmt": "^0.1.5",
     "asljs-tmpdir": "^0.1.9",
     "dprint": "^0.55.2",
     "eslint": "^10.7.0",

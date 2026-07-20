@@ -48,25 +48,21 @@ export const PropertiesModelDefinition: ComponentModelDefinition =
 };
 
 @customElement(
-  'asljs-properties'
-)
+  'asljs-properties')
 export class Properties extends LitElement
 {
   static readonly modelDefinition = PropertiesModelDefinition;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor definition: ComponentModelDefinition | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor target: Record<string, unknown> | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor theme: ComponentsTheme | null = null;
 
   override createRenderRoot(): this
@@ -87,9 +83,7 @@ export class Properties extends LitElement
       this.definition.properties.map(
         propertyDefinition =>
           this.#renderProperty(
-            propertyDefinition
-          )
-      )
+            propertyDefinition))
     }
       </div>
     `;
@@ -112,8 +106,7 @@ export class Properties extends LitElement
     const isEditable =
       propertyDefinition.editable
       ?? isPrimitiveEditable(
-        propertyDefinition.type
-      );
+        propertyDefinition.type);
 
     if (propertyDefinition.type === 'boolean') {
       return html`
@@ -132,8 +125,7 @@ export class Properties extends LitElement
             @input=${(event: Event) =>
         this.#handleBooleanInput(
           propertyDefinition,
-          event
-        )}>
+          event)}>
         </asljs-select>
       `;
     }
@@ -147,8 +139,7 @@ export class Properties extends LitElement
           .value=${
       formatPropertyValue(
         propertyDefinition.type,
-        propertyValue
-      )
+        propertyValue)
     }
           .inputType=${
       propertyDefinition.type === 'number'
@@ -159,8 +150,7 @@ export class Properties extends LitElement
           @input=${(event: Event) =>
       this.#handleTextInput(
         propertyDefinition,
-        event
-      )}>
+        event)}>
       </asljs-text-input>
     `;
   }

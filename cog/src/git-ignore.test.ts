@@ -13,8 +13,7 @@ const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose()
-);
+  () => logger.dispose());
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
@@ -26,18 +25,15 @@ test(
     );
 
     await workspace.mkdir(
-      'docs/drafts'
-    );
+      'docs/drafts');
 
     await workspace.writeText(
       '.gitignore',
-      'ignored.md\n'
-    );
+      'ignored.md\n');
 
     await workspace.writeText(
       'docs/.gitignore',
-      'drafts/\n'
-    );
+      'drafts/\n');
 
     const gitIgnore =
       new GitIgnore(
@@ -60,30 +56,21 @@ test(
 
     assert.equal(
       gitIgnore.isIgnored(
-        filePaths['ignored.md']
-      ),
-      true
-    );
+        filePaths['ignored.md']),
+      true);
 
     assert.equal(
       gitIgnore.isIgnored(
-        filePaths['docs/drafts/draft.md']
-      ),
-      true
-    );
+        filePaths['docs/drafts/draft.md']),
+      true);
 
     assert.equal(
       gitIgnore.isIgnored(
-        filePaths['docs/guide.md']
-      ),
-      false
-    );
+        filePaths['docs/guide.md']),
+      false);
 
     assert.deepEqual(
       gitIgnore.filter(
-        Object.values(filePaths)
-      ),
-      [filePaths['keep.md'], filePaths['docs/guide.md']]
-    );
-  }
-);
+        Object.values(filePaths)),
+      [filePaths['keep.md'], filePaths['docs/guide.md']]);
+  });

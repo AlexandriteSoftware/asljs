@@ -28,15 +28,12 @@ test(
 
     bindDataModel(
       root,
-      { name: 'alex' }
-    );
+      { name: 'alex' });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'ALEX'
-    );
-  }
-);
+      'ALEX');
+  });
 
 test(
   `${TEST_SUITE}: subscribes only to main path`,
@@ -58,23 +55,19 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'unknown'
-    );
+      'unknown');
 
     model.name = 'Bob';
     model.emit('set:name');
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Bob'
-    );
-  }
-);
+      'Bob');
+  });
 
 test(
   `${TEST_SUITE}: updates nested value path via watch when ancestor and leaf change`,
@@ -96,29 +89,24 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Alice'
-    );
+      'Alice');
 
     model.user.name = 'Bob';
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Bob'
-    );
+      'Bob');
 
     model.user = { name: 'Carol' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Carol'
-    );
-  }
-);
+      'Carol');
+  });
 
 test(
   `${TEST_SUITE}: supports custom pipe injection`,
@@ -144,15 +132,12 @@ test(
               ? 'Yes'
               : 'No'
         }
-      }
-    );
+      });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Yes'
-    );
-  }
-);
+      'Yes');
+  });
 
 test(
   `${TEST_SUITE}: throws on unknown value pipe during setup`,
@@ -172,12 +157,9 @@ test(
       () =>
         bindDataModel(
           root,
-          { name: 'Alex' }
-        ),
-      /Unknown pipe: missing/
-    );
-  }
-);
+          { name: 'Alex' }),
+      /Unknown pipe: missing/);
+  });
 
 test(
   `${TEST_SUITE}: supports multiple quoted pipe args`,
@@ -204,15 +186,12 @@ test(
             after
           ) => `${before}${value}${after}`
         }
-      }
-    );
+      });
 
     assert.equal(
       root.querySelector('div')?.innerHTML,
-      '<span>Hello</span>'
-    );
-  }
-);
+      '<span>Hello</span>');
+  });
 
 test(
   `${TEST_SUITE}: formats date using literal with pipes and mixed quotes`,
@@ -232,8 +211,7 @@ test(
 
     span.setAttribute(
       'data-bind-text',
-      'createdAt | date:"<\'yyyy|MM|dd\' \\"hh:mm:ss\\">"'
-    );
+      'createdAt | date:"<\'yyyy|MM|dd\' \\"hh:mm:ss\\">"');
 
     root.appendChild(span);
 
@@ -241,15 +219,12 @@ test(
       root,
       {
         createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      }
-    );
+      });
 
     assert.equal(
       span.textContent,
-      `<\'2026|04|10\' "13:14:15">`
-    );
-  }
-);
+      `<\'2026|04|10\' "13:14:15">`);
+  });
 
 test(
   `${TEST_SUITE}: formats date using single-quoted literal with pipes`,
@@ -269,15 +244,12 @@ test(
       root,
       {
         createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      }
-    );
+      });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      '<2026|04|10 "13:14:15">'
-    );
-  }
-);
+      '<2026|04|10 "13:14:15">');
+  });
 
 test(
   `${TEST_SUITE}: removes attribute when path or pipe resolves to nullish`,
@@ -311,23 +283,19 @@ test(
             return value;
           }
         }
-      }
-    );
+      });
 
     const links =
       root.querySelectorAll('a');
 
     assert.equal(
       links[0].hasAttribute('href'),
-      false
-    );
+      false);
 
     assert.equal(
       links[1].hasAttribute('title'),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: supports event binding and reactive action updates`,
@@ -356,15 +324,13 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     const button =
       root.querySelector('button') as HTMLElement;
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.activate = () =>
     {
@@ -374,15 +340,12 @@ test(
     model.emit('set:activate');
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second']
-    );
-  }
-);
+      ['first', 'second']);
+  });
 
 test(
   `${TEST_SUITE}: updates nested event action path via watch when ancestor and leaf change`,
@@ -413,15 +376,13 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     const button =
       root.querySelector('button') as HTMLElement;
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.user.activate = () =>
     {
@@ -429,8 +390,7 @@ test(
     };
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.user = {
       activate: () =>
@@ -440,15 +400,12 @@ test(
     };
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second', 'third']
-    );
-  }
-);
+      ['first', 'second', 'third']);
+  });
 
 test(
   `${TEST_SUITE}: disposer removes event listeners`,
@@ -486,15 +443,12 @@ test(
       root.querySelector('button') as HTMLElement;
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      []
-    );
-  }
-);
+      []);
+  });
 
 test(
   `${TEST_SUITE}: supports multiple bindings on same element`,
@@ -530,26 +484,22 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     const anchor =
       root.querySelector('a') as HTMLAnchorElement;
 
     assert.equal(
       anchor.getAttribute('href'),
-      'https://example.com'
-    );
+      'https://example.com');
 
     assert.equal(
       anchor.textContent,
-      'DETAILS'
-    );
+      'DETAILS');
 
     assert.equal(
       anchor.classList.contains('active'),
-      true
-    );
+      true);
 
     const clickEvent =
       new dom.window.MouseEvent('click', { cancelable: true });
@@ -558,15 +508,12 @@ test(
 
     assert.equal(
       clicks,
-      1
-    );
+      1);
 
     assert.equal(
       clickEvent.defaultPrevented,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context switches model context for text binding`,
@@ -586,15 +533,12 @@ test(
 
     bindDataModel(
       root,
-      { user: { name: 'Alice' } }
-    );
+      { user: { name: 'Alice' } });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Alice'
-    );
-  }
-);
+      'Alice');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context switches model context for attribute binding`,
@@ -614,23 +558,19 @@ test(
 
     bindDataModel(
       root,
-      { link: { url: 'https://example.com', label: 'Example' } }
-    );
+      { link: { url: 'https://example.com', label: 'Example' } });
 
     const anchor =
       root.querySelector('a') as HTMLAnchorElement;
 
     assert.equal(
       anchor.getAttribute('href'),
-      'https://example.com'
-    );
+      'https://example.com');
 
     assert.equal(
       anchor.textContent,
-      'Example'
-    );
-  }
-);
+      'Example');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context switches model context for prop and class bindings`,
@@ -650,23 +590,19 @@ test(
 
     bindDataModel(
       root,
-      { item: { selected: true, locked: false } }
-    );
+      { item: { selected: true, locked: false } });
 
     const button =
       root.querySelector('button') as HTMLButtonElement;
 
     assert.equal(
       button.classList.contains('active'),
-      true
-    );
+      true);
 
     assert.equal(
       (button as HTMLButtonElement & Record<string, unknown>)['disabled'],
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context switches model context for event binding`,
@@ -688,22 +624,18 @@ test(
 
     bindDataModel(
       root,
-      { item: { save: () => calls.push('saved') } }
-    );
+      { item: { save: () => calls.push('saved') } });
 
     const button =
       root.querySelector('button') as HTMLButtonElement;
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['saved']
-    );
-  }
-);
+      ['saved']);
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context supports nested contexts`,
@@ -725,15 +657,12 @@ test(
 
     bindDataModel(
       root,
-      { item: { author: { name: 'Bob' } } }
-    );
+      { item: { author: { name: 'Bob' } } });
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Bob'
-    );
-  }
-);
+      'Bob');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context rebinds descendants when context object changes`,
@@ -757,22 +686,18 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Alice'
-    );
+      'Alice');
 
     model.user = { name: 'Carol' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Carol'
-    );
-  }
-);
+      'Carol');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context rebinds correctly when nested context value changes`,
@@ -796,17 +721,14 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     model.user.name = 'Bob';
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Bob'
-    );
-  }
-);
+      'Bob');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context handles null context without throwing`,
@@ -828,16 +750,12 @@ test(
       () =>
         bindDataModel(
           root,
-          { item: null as unknown as Record<string, unknown> }
-        )
-    );
+          { item: null as unknown as Record<string, unknown> }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context handles undefined context without throwing`,
@@ -859,16 +777,12 @@ test(
       () =>
         bindDataModel(
           root,
-          { item: undefined as unknown as Record<string, unknown> }
-        )
-    );
+          { item: undefined as unknown as Record<string, unknown> }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context cleans up old watchers on context replacement`,
@@ -892,8 +806,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     const oldUser =
       model.user;
@@ -905,10 +818,8 @@ test(
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Carol'
-    );
-  }
-);
+      'Carol');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context disposer cleans up subtree bindings`,
@@ -941,10 +852,8 @@ test(
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Alice'
-    );
-  }
-);
+      'Alice');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context null context becomes active when path becomes object`,
@@ -968,22 +877,18 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>
-    );
+      model as unknown as Record<string, unknown>);
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      ''
-    );
+      '');
 
     model.user = { name: 'Dave' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
-      'Dave'
-    );
-  }
-);
+      'Dave');
+  });
 
 test(
   `${TEST_SUITE}: data-bind-context does not affect bindings outside the subtree`,
@@ -1004,23 +909,19 @@ test(
 
     bindDataModel(
       root,
-      { title: 'Hello', user: { name: 'Alice' } }
-    );
+      { title: 'Hello', user: { name: 'Alice' } });
 
     const spans =
       root.querySelectorAll('span');
 
     assert.equal(
       spans[0].textContent,
-      'Hello'
-    );
+      'Hello');
 
     assert.equal(
       spans[1].textContent,
-      'Alice'
-    );
-  }
-);
+      'Alice');
+  });
 
 type ReactiveModel =
   & Record<string, unknown>
@@ -1039,8 +940,7 @@ function createReactiveModel(
     initial: Record<string, unknown>
   ): ReactiveModel
 {
-  const listeners =
-    new Map<string, Set<(...args: unknown[]) => void>>();
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
   const model: ReactiveModel =
     {
@@ -1050,8 +950,7 @@ function createReactiveModel(
       if (!listeners.has(event)) {
         listeners.set(
           event,
-          new Set()
-        );
+          new Set());
       }
 
       listeners.get(event)?.add(listener);
@@ -1069,8 +968,7 @@ function createReactiveModel(
 
       for (const listener of registered) {
         listener(
-          ...args
-        );
+          ...args);
       }
     }
   };

@@ -28,8 +28,7 @@ export class ArtefactDataProvider
   {
     if (
       !path.isAbsolute(
-        definitionsPath
-      )
+        definitionsPath)
     ) {
       throw new Error(
         `'definitionsPath' must be absolute: ${definitionsPath}`
@@ -45,8 +44,7 @@ export class ArtefactDataProvider
     this.logger.trace(
       'tryGetArtefactData(%s, %s)',
       artefact.relativePath,
-      definition
-    );
+      definition);
 
     const dataProviderFilePath =
       path.join(
@@ -56,8 +54,7 @@ export class ArtefactDataProvider
 
     if (
       !(await fs.stat(
-        dataProviderFilePath
-      )).isFile()
+        dataProviderFilePath)).isFile()
     ) {
       return null;
     }
@@ -74,8 +71,7 @@ export class ArtefactDataProvider
       );
     } catch (error) {
       this.logger.error(
-        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`
-      );
+        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`);
 
       return null;
     }
@@ -98,12 +94,10 @@ export class ArtefactDataProvider
     try {
       return await getDataFunction(
         artefact,
-        context
-      );
+        context);
     } catch (error) {
       this.logger.error(
-        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`
-      );
+        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`);
 
       return null;
     }

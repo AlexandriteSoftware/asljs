@@ -19,8 +19,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -51,13 +50,11 @@ A statement about the system that must be true.
 
 - RL10 - At least one test file has requirement ID in its content.
 - RL11 - Requirement passes a second rule.
-`
-    );
+`);
 
     await workspace.writeText(
       'parts/Requirement_RL10.js',
-      'export async function validate() { }\n'
-    );
+      'export async function validate() { }\n');
 
     const environment =
       createEnvironment(
@@ -70,17 +67,13 @@ A statement about the system that must be true.
 
     await execDefinition(
       environment,
-      { target: 'Requirement' }
-    );
+      { target: 'Requirement' });
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /- name: Requirement/
-    );
-  }
-);
+      /- name: Requirement/);
+  });

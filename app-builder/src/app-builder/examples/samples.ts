@@ -19,11 +19,9 @@ function getSamples(
 {
   return SAMPLE_JSON_SOURCES
     .map(
-      normalizeSampleSource
-    )
+      normalizeSampleSource)
     .map(
-      parseImportedPayloadText
-    );
+      parseImportedPayloadText);
 }
 
 export function listSamples(
@@ -61,15 +59,13 @@ export function buildSampleFiles(
   ): FileRecord[]
 {
   return Object.entries(
-    sample.files
-  ).map(
-    ([fileName, content]) => ({
+    sample.files).map(
+      ([fileName, content]) => ({
       id: createId(),
       appId,
       name: fileName,
       content
-    })
-  );
+    }));
 }
 
 function normalizeSampleSource(

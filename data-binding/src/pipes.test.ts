@@ -16,39 +16,30 @@ test(
 
     assert.equal(
       pipes.upper('abc'),
-      'ABC'
-    );
+      'ABC');
 
     assert.equal(
       pipes.lower('ABC'),
-      'abc'
-    );
+      'abc');
 
     assert.equal(
       pipes.default(
         '',
-        'N/A'
-      ),
-      'N/A'
-    );
+        'N/A'),
+      'N/A');
 
     assert.equal(
       pipes.default(
         null,
-        'N/A'
-      ),
-      null
-    );
+        'N/A'),
+      null);
 
     assert.equal(
       pipes.default(
         undefined,
-        'N/A'
-      ),
-      undefined
-    );
-  }
-);
+        'N/A'),
+      undefined);
+  });
 
 test(
   `${TEST_SUITE}: preserves nullish values in built-in pipes`,
@@ -59,60 +50,46 @@ test(
 
     assert.equal(
       pipes.string(null),
-      null
-    );
+      null);
 
     assert.equal(
       pipes.upper(undefined),
-      undefined
-    );
+      undefined);
 
     assert.equal(
       pipes.number(null),
-      null
-    );
+      null);
 
     assert.equal(
       pipes.currency(
         undefined,
-        'GBP'
-      ),
-      undefined
-    );
+        'GBP'),
+      undefined);
 
     assert.equal(
       pipes.fixed(
         null,
-        '2'
-      ),
-      null
-    );
+        '2'),
+      null);
 
     assert.equal(
       pipes.date(
         undefined,
-        'yyyy-MM-dd'
-      ),
-      undefined
-    );
+        'yyyy-MM-dd'),
+      undefined);
 
     assert.equal(
       pipes.datetime(
         null,
-        'short'
-      ),
-      null
-    );
+        'short'),
+      null);
 
     assert.equal(
       pipes.json(
         undefined,
-        '2'
-      ),
-      undefined
-    );
-  }
-);
+        '2'),
+      undefined);
+  });
 
 test(
   `${TEST_SUITE}: supports fixed and number formatting`,
@@ -124,17 +101,13 @@ test(
     assert.equal(
       pipes.fixed(
         12.345,
-        '2'
-      ),
-      '12.35'
-    );
+        '2'),
+      '12.35');
 
     assert.equal(
       pipes.number(1234.5),
-      '1,234.5'
-    );
-  }
-);
+      '1,234.5');
+  });
 
 test(
   `${TEST_SUITE}: supports currency and date formatting`,
@@ -147,21 +120,15 @@ test(
       String(
         pipes.currency(
           12.5,
-          'GBP'
-        )
-      ),
-      /\u00A3|GBP/
-    );
+          'GBP')),
+      /\u00A3|GBP/);
 
     assert.equal(
       pipes.date(
         '2026-02-03',
-        'yyyy-MM-dd'
-      ),
-      '2026-02-03'
-    );
-  }
-);
+        'yyyy-MM-dd'),
+      '2026-02-03');
+  });
 
 test(
   `${TEST_SUITE}: supports custom pipes overriding built-ins`,
@@ -177,7 +144,5 @@ test(
 
     assert.equal(
       pipes.upper('x'),
-      'custom:x'
-    );
-  }
-);
+      'custom:x');
+  });

@@ -61,23 +61,19 @@ test(
     await settle(element);
 
     await waitFor(
-      () => element.querySelector('iframe') !== null
-    );
+      () => element.querySelector('iframe') !== null);
 
     const frame =
       element.querySelector('iframe') as HTMLIFrameElement;
 
     assert.equal(
       frame !== null,
-      true
-    );
+      true);
 
     assert.equal(
       frame.src.startsWith('blob:'),
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'file-view: renders image handler for data url images',
@@ -108,25 +104,20 @@ test(
     await settle(element);
 
     await waitFor(
-      () => element.querySelector('img') !== null
-    );
+      () => element.querySelector('img') !== null);
 
     const image =
       element.querySelector('img') as HTMLImageElement;
 
     assert.equal(
       image !== null,
-      true
-    );
+      true);
 
     assert.equal(
       image.src.endsWith(
-        'data:image/png;base64,AQID'
-      ),
-      true
-    );
-  }
-);
+        'data:image/png;base64,AQID'),
+      true);
+  });
 
 test(
   'file-view: renders text handler for text files',
@@ -153,18 +144,15 @@ test(
     await settle(element);
 
     await waitFor(
-      () => element.querySelector('pre') !== null
-    );
+      () => element.querySelector('pre') !== null);
 
     const pre =
       element.querySelector('pre') as HTMLElement;
 
     assert.equal(
       pre.textContent,
-      '# hello'
-    );
-  }
-);
+      '# hello');
+  });
 
 test(
   'file-view: text editor handler saves through provider on blur',
@@ -186,8 +174,7 @@ test(
       saveText: async (fileName, text) =>
       {
         saved.push(
-          { fileName, text }
-        );
+          { fileName, text });
       }
     };
 
@@ -199,8 +186,7 @@ test(
     await settle(element);
 
     await waitFor(
-      () => element.querySelector('textarea') !== null
-    );
+      () => element.querySelector('textarea') !== null);
 
     const textArea =
       element.querySelector('textarea') as HTMLTextAreaElement;
@@ -208,15 +194,12 @@ test(
     textArea.value = 'console.log(2);';
 
     textArea.dispatchEvent(
-      new window.Event('blur')
-    );
+      new window.Event('blur'));
 
     assert.deepEqual(
       saved,
-      [{ fileName: 'app.js', text: 'console.log(2);' }]
-    );
-  }
-);
+      [{ fileName: 'app.js', text: 'console.log(2);' }]);
+  });
 
 test(
   'file-view: shows fallback open link when no handler matches',
@@ -250,15 +233,12 @@ test(
 
     assert.equal(
       link.textContent,
-      'Open'
-    );
+      'Open');
 
     assert.equal(
       link.href.startsWith('blob:'),
-      true
-    );
-  }
-);
+      true);
+  });
 
 async function ensureDomAndFileLoaded(
   ): Promise<void>

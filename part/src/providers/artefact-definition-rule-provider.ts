@@ -36,8 +36,7 @@ export class ArtefactDefinitionRuleProvider
     this.logger.trace(
       'isRuleInSync(%s, %s) { Checking if rule is in sync }',
       definition,
-      ruleId
-    );
+      ruleId);
 
     const definitionObj =
       await this.definitions.findDefinition(definition);
@@ -51,8 +50,7 @@ export class ArtefactDefinitionRuleProvider
     const rule =
       definitionObj.rules
       .find(
-        item => item.id === ruleId
-      );
+        item => item.id === ruleId);
 
     if (!rule) {
       throw new Error(
@@ -83,8 +81,7 @@ export class ArtefactDefinitionRuleProvider
         'isRuleInSync(%s, %s) { Rule JS file %s does not exist }',
         definition,
         ruleId,
-        ruleJsFilePath
-      );
+        ruleJsFilePath);
 
       return false;
     }
@@ -107,8 +104,7 @@ export class ArtefactDefinitionRuleProvider
       'isRuleInSync(%s, %s) { returning %s }',
       definition,
       ruleId,
-      result
-    );
+      result);
 
     return result;
   }
@@ -132,8 +128,7 @@ export class ArtefactDefinitionRuleProvider
       'resolveRuleFile { ruleId=%s, definition=%s, definitionPath=%s }',
       ruleId,
       definition,
-      definitionPath
-    );
+      definitionPath);
 
     if (
       !definition
@@ -154,22 +149,19 @@ export class ArtefactDefinitionRuleProvider
     this.logger.trace(
       'resolveRuleFile { looking for rule file in %s with baseName=%s }',
       directoryPath,
-      baseName
-    );
+      baseName);
 
     let entries;
 
     try {
       entries = await readdir(
         directoryPath,
-        { withFileTypes: true }
-      );
+        { withFileTypes: true });
     } catch (error) {
       this.logger.trace(
         'resolveRuleFile { failed to read directory %s. Exception: %s }',
         directoryPath,
-        error
-      );
+        error);
 
       return null;
     }
@@ -199,11 +191,8 @@ export class ArtefactDefinitionRuleProvider
         relativePath: toPosixPath(
           path.relative(
             path.dirname(
-              definitionPath
-            ),
-            absoluteFilePath
-          )
-        )
+              definitionPath),
+            absoluteFilePath))
       };
     }
 
@@ -275,8 +264,7 @@ export class ArtefactDefinitionRuleProvider
       value
       .replace(
         /[\r?\n\s]+/g,
-        ' '
-      )
+        ' ')
       .toUpperCase()
       .trim();
 

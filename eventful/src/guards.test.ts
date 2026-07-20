@@ -15,17 +15,13 @@ test(
   () =>
   {
     assert.doesNotThrow(
-      () => eventNameTypeGuard('event')
-    );
+      () => eventNameTypeGuard('event'));
 
     assert.doesNotThrow(
       () =>
         eventNameTypeGuard(
-          Symbol('event')
-        )
-    );
-  }
-);
+          Symbol('event')));
+  });
 
 test(
   `${TEST_SUITE}: eventNameTypeGuard throws for invalid values`,
@@ -33,15 +29,12 @@ test(
   {
     assert.throws(
       () => eventNameTypeGuard(42),
-      TypeError
-    );
+      TypeError);
 
     assert.throws(
       () => eventNameTypeGuard(null),
-      TypeError
-    );
-  }
-);
+      TypeError);
+  });
 
 test(
   `${TEST_SUITE}: isFunction returns expected result`,
@@ -50,17 +43,13 @@ test(
     assert.equal(
       isFunction(
         () =>
-        {}
-      ),
-      true
-    );
+        {}),
+      true);
 
     assert.equal(
       isFunction({}),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: isObject returns expected result`,
@@ -68,25 +57,19 @@ test(
   {
     assert.equal(
       isObject(
-        { key: 'value' }
-      ),
-      true
-    );
+        { key: 'value' }),
+      true);
 
     assert.equal(
       isObject(null),
-      false
-    );
+      false);
 
     assert.equal(
       isObject(
         () =>
-        {}
-      ),
-      false
-    );
-  }
-);
+        {}),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: functionTypeGuard validates value`,
@@ -96,13 +79,9 @@ test(
       () =>
         functionTypeGuard(
           () =>
-          {}
-        )
-    );
+          {}));
 
     assert.throws(
       () => functionTypeGuard('nope'),
-      TypeError
-    );
-  }
-);
+      TypeError);
+  });

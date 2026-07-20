@@ -24,11 +24,9 @@ export function parseValueBindingExpression(
       expression,
       '|')
     .map(
-      segment => segment.trim()
-    )
+      segment => segment.trim())
     .filter(
-      segment => segment !== ''
-    );
+      segment => segment !== '');
 
   const path =
     segments[0] ?? '';
@@ -38,8 +36,7 @@ export function parseValueBindingExpression(
     .slice(1)
     .map(parsePipe)
     .filter(
-      (pipe): pipe is PipeSpec => pipe !== null
-    );
+      (pipe): pipe is PipeSpec => pipe !== null);
 
   return {
     kind: 'value',
@@ -89,8 +86,7 @@ function parsePipe(
     ? trimmed
     : trimmed.slice(
       0,
-      firstColon
-    ))
+      firstColon))
     .trim();
 
   if (name === '') {
@@ -188,8 +184,7 @@ function parsePipeArgs(
       }
 
       args.push(
-        value.trim()
-      );
+        value.trim());
     }
 
     while (

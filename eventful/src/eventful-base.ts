@@ -20,7 +20,6 @@ export class EventfulBase<E extends EventMap = EventMap> implements Eventful<E>
   {
     eventful(
       this,
-      options
-    );
+      options);
   }
 }

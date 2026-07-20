@@ -14,22 +14,17 @@ test(
   {
     assert.equal(
       typeof dbOpen,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof Table,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof IncrementTableVersionStrategy,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof UuidSoftDeleteTableDeleteStrategy,
-      'function'
-    );
-  }
-);
+      'function');
+  });

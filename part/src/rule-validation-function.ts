@@ -62,8 +62,7 @@ export function createRuleValidationContext(
   const context: RuleValidationContext =
     {
     logger: loggerProvider.getLogger(
-      'RuleValidationContext'
-    ),
+      'RuleValidationContext'),
     rootPath: projectPath,
     definitions: artefactDefinitionProvider,
     artefacts: artefactProvider,

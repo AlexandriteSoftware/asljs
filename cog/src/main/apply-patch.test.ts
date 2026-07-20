@@ -19,8 +19,7 @@ const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose()
-);
+  () => logger.dispose());
 
 test(
   'apply-patch accepts a patch when --patch-verify-cmd exits with zero',
@@ -40,9 +39,7 @@ test(
       JSON.stringify(
         { instruction: '', files: [] },
         null,
-        2
-      )
-    );
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -61,9 +58,7 @@ test(
           ]
         },
         null,
-        2
-      )
-    );
+        2));
 
     await main(
       argv(
@@ -74,28 +69,19 @@ test(
         'apply-patch',
         '--patch-verify-cmd',
         nodeCommand(
-          'process.exit(0)'
-        )
-      )
-    );
+          'process.exit(0)')));
 
     assert.equal(
       await workspace.readText(
-        'file.txt'
-      ),
-      'new\n'
-    );
+        'file.txt'),
+      'new\n');
 
     assert.equal(
       existsSync(
         workspace.resolve(
-          '.cog/backup.json'
-        )
-      ),
-      false
-    );
-  }
-);
+          '.cog/backup.json')),
+      false);
+  });
 
 test(
   'apply-patch rolls back when --patch-verify-cmd exits non-zero',
@@ -115,9 +101,7 @@ test(
       JSON.stringify(
         { instruction: '', files: [] },
         null,
-        2
-      )
-    );
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -129,8 +113,7 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'old\n'
-    );
+      'old\n');
 
     await workspace.writeText(
       'patch.json',
@@ -142,10 +125,8 @@ test(
             ]
           },
           null,
-          2
-        )
-      }\n`
-    );
+          2)
+      }\n`);
 
     await assert.rejects(
       () =>
@@ -158,30 +139,20 @@ test(
             'apply-patch',
             '--patch-verify-cmd',
             nodeCommand(
-              'process.exit(7)'
-            )
-          )
-        ),
-      /Patch verify command failed with exit code 7/
-    );
+              'process.exit(7)'))),
+      /Patch verify command failed with exit code 7/);
 
     assert.equal(
       await workspace.readText(
-        'file.txt'
-      ),
-      'old\n'
-    );
+        'file.txt'),
+      'old\n');
 
     assert.equal(
       existsSync(
         workspace.resolve(
-          '.cog/backup.json'
-        )
-      ),
-      false
-    );
-  }
-);
+          '.cog/backup.json')),
+      false);
+  });
 
 test(
   'apply-patch uses COG_PATCH_VERIFY_CMD when --patch-verify-cmd is omitted',
@@ -201,9 +172,7 @@ test(
       JSON.stringify(
         { instruction: '', files: [] },
         null,
-        2
-      )
-    );
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -215,8 +184,7 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'old\n'
-    );
+      'old\n');
 
     await workspace.writeText(
       'patch.json',
@@ -228,16 +196,13 @@ test(
             ]
           },
           null,
-          2
-        )
-      }\n`
-    );
+          2)
+      }\n`);
 
     await withEnv(
       {
         COG_PATCH_VERIFY_CMD: nodeCommand(
-          'process.exit(3)'
-        )
+          'process.exit(3)')
       },
       async () =>
       {
@@ -249,22 +214,15 @@ test(
                 envelopePath,
                 '--patch',
                 patchPath,
-                'apply-patch'
-              )
-            ),
-          /Patch verify command failed with exit code 3/
-        );
-      }
-    );
+                'apply-patch')),
+          /Patch verify command failed with exit code 3/);
+      });
 
     assert.equal(
       await workspace.readText(
-        'file.txt'
-      ),
-      'old\n'
-    );
-  }
-);
+        'file.txt'),
+      'old\n');
+  });
 
 test(
   '--patch-verify-cmd takes precedence over COG_PATCH_VERIFY_CMD',
@@ -284,9 +242,7 @@ test(
       JSON.stringify(
         { instruction: '', files: [] },
         null,
-        2
-      )
-    );
+        2));
 
     const patchPath =
       workspace.resolve(
@@ -306,16 +262,13 @@ test(
             ]
           },
           null,
-          2
-        )
-      }\n`
-    );
+          2)
+      }\n`);
 
     await withEnv(
       {
         COG_PATCH_VERIFY_CMD: nodeCommand(
-          'process.exit(9)'
-        )
+          'process.exit(9)')
       },
       async () =>
       {
@@ -328,18 +281,11 @@ test(
             'apply-patch',
             '--patch-verify-cmd',
             nodeCommand(
-              'process.exit(0)'
-            )
-          )
-        );
-      }
-    );
+              'process.exit(0)')));
+      });
 
     assert.equal(
       await workspace.readText(
-        'file.txt'
-      ),
-      'new\n'
-    );
-  }
-);
+        'file.txt'),
+      'new\n');
+  });

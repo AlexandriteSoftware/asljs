@@ -38,8 +38,7 @@ test(
           currentAppId: 'a2',
           newActionValue: '__new__',
           importActionValue: '__import__'
-        }
-      );
+        });
 
       const values =
         select.items.map(
@@ -53,15 +52,12 @@ test(
           '__separator__',
           '__new__',
           '__import__'
-        ]
-      );
+        ]);
 
       assert.equal(
         select.value,
-        'a2'
-      );
+        'a2');
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

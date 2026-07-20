@@ -89,24 +89,20 @@ export async function read(
     const fileIndex =
       envelope.files
       .findIndex(
-        file => file.path === target.path
-      );
+        file => file.path === target.path);
 
     if (fileIndex === -1) {
       envelope.files
         .push(
-          file
-        );
+          file);
 
       context?.console.writeLine(
-        `added ${target.path}`
-      );
+        `added ${target.path}`);
     } else {
       envelope.files[fileIndex] = file;
 
       context?.console.writeLine(
-        `refreshed ${target.path}`
-      );
+        `refreshed ${target.path}`);
     }
   }
 }
@@ -146,8 +142,7 @@ function getUpdateCommand(
     ...command,
     pattern: target.path.replace(
       /\\/g,
-      '/'
-    )
+      '/')
   };
 }
 
@@ -175,19 +170,15 @@ async function getReadTargets(
       .map(
         match =>
           path.resolve(
-            match
-          )
-      )
+            match))
       .sort()
       .map(
         diskPath => ({
           path: toDisplayPath(
             diskPath,
-            pattern
-          ),
+            pattern),
           diskPath
-        })
-      );
+        }));
   } finally {
     logger.dispose();
   }
@@ -200,8 +191,7 @@ function toDisplayPath(
 {
   if (
     path.isAbsolute(
-      pattern
-    )
+      pattern)
   ) {
     return diskPath;
   }
@@ -210,10 +200,7 @@ function toDisplayPath(
     normalizeSlashes(
       path.relative(
         process.cwd(),
-        diskPath
-      )
-    )
-  );
+        diskPath)));
 }
 
 async function getEnvelopeFile(
@@ -230,16 +217,14 @@ async function getEnvelopeFile(
 
   try {
     content = textDecoder.decode(
-      data
-    );
+      data);
   } catch {
     if (limits.withBinaryB64) {
       return {
         path: target.path,
         type: 'binary',
         content: data.toString(
-          'base64'
-        ),
+          'base64'),
         complete: true,
         update
       };
@@ -293,15 +278,12 @@ function limitText(
   if (length > maxBytes) {
     limitedContent = Buffer.from(
       limitedContent,
-      'utf8'
-    )
+      'utf8')
       .subarray(
         0,
-        maxBytes
-      )
+        maxBytes)
       .toString(
-        'utf8'
-      );
+        'utf8');
 
     complete = false;
   }
@@ -314,11 +296,9 @@ function limitText(
     limitedContent = lines
       .slice(
         0,
-        limits.lines
-      )
+        limits.lines)
       .join(
-        '\n'
-      );
+        '\n');
 
     complete = false;
   }
@@ -335,8 +315,7 @@ function normalizeSlashes(
 {
   return value.replace(
     /\\/g,
-    '/'
-  );
+    '/');
 }
 
 function stripDotSlash(
@@ -345,6 +324,5 @@ function stripDotSlash(
 {
   return value.replace(
     /^\.\//,
-    ''
-  );
+    '');
 }

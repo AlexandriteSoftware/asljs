@@ -22,8 +22,7 @@ export function execVersion(
   })();
 
   environment.stdout.write(
-    `${packageVersion}\n`
-  );
+    `${packageVersion}\n`);
 
   return Promise.resolve(0);
 }

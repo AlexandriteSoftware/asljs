@@ -14,12 +14,9 @@ test(
   {
     assert.equal(
       typeof observable,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof ObservableObject,
-      'function'
-    );
-  }
-);
+      'function');
+  });

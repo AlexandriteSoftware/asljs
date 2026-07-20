@@ -19,8 +19,7 @@ async function storePeek(
       store.index('by_sequence')
       .openCursor(
         null,
-        'prev'
-      ));
+        'prev'));
 
   if (cursor === null) {
     return null;
@@ -90,8 +89,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
       throw new EventSourceConflictError(
         `${this.name}: expected previous transaction ${
           String(
-            expectedPreviousTransactionId
-          )
+            expectedPreviousTransactionId)
         }, actual ${String(actualPrevious)}.`
       );
     }
@@ -115,8 +113,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
     }
 
     await dbRequestAsync(
-      store.add(transaction)
-    );
+      store.add(transaction));
 
     await txDone(tx);
   }
@@ -165,9 +162,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
         .getAll(
           IDBKeyRange.lowerBound(
             current.sequence,
-            true
-          )
-        ));
+            true)));
 
     await txDone(tx);
 

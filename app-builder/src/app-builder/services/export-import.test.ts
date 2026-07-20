@@ -51,10 +51,8 @@ test(
         files: {
           'index.html': '<h1>Hi</h1>'
         }
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'parseImportedPayloadText parses valid payload',
@@ -79,25 +77,20 @@ test(
 
     assert.equal(
       payload.name,
-      'Imported'
-    );
+      'Imported');
 
     assert.equal(
       payload.id,
-      'a-imported'
-    );
+      'a-imported');
 
     assert.equal(
       payload.author?.name,
-      'Alex'
-    );
+      'Alex');
 
     assert.equal(
       payload.files['index.html'],
-      'ok'
-    );
-  }
-);
+      'ok');
+  });
 
 test(
   'parseImportedPayloadText throws for invalid payload',
@@ -106,12 +99,9 @@ test(
     assert.throws(
       () =>
         parseImportedPayloadText(
-          '{"app":{},"files":{}}'
-        ),
-      /Invalid app JSON format\./
-    );
-  }
-);
+          '{"app":{},"files":{}}'),
+      /Invalid app JSON format\./);
+  });
 
 test(
   'parseImportedPayloadText throws for invalid author',
@@ -120,12 +110,9 @@ test(
     assert.throws(
       () =>
         parseImportedPayloadText(
-          '{"id":"a1","name":"Demo","author":{"name":1},"files":{"index.html":"ok"}}'
-        ),
-      /Invalid app JSON format\./
-    );
-  }
-);
+          '{"id":"a1","name":"Demo","author":{"name":1},"files":{"index.html":"ok"}}'),
+      /Invalid app JSON format\./);
+  });
 
 test(
   'createImportPlan returns existing app when ID exists and navigation is allowed',
@@ -161,10 +148,8 @@ test(
 
     assert.deepEqual(
       plan,
-      { kind: 'existing', appId: 'a-existing' }
-    );
-  }
-);
+      { kind: 'existing', appId: 'a-existing' });
+  });
 
 test(
   'createImportPlan returns duplicate when ID exists and navigation is not allowed',
@@ -200,10 +185,8 @@ test(
 
     assert.deepEqual(
       plan,
-      { kind: 'duplicate' }
-    );
-  }
-);
+      { kind: 'duplicate' });
+  });
 
 test(
   'createImportPlan creates new app/files with imported ID',
@@ -241,8 +224,7 @@ test(
 
     assert.equal(
       plan.kind,
-      'new'
-    );
+      'new');
 
     if (plan.kind !== 'new') {
       return;
@@ -250,37 +232,29 @@ test(
 
     assert.equal(
       plan.app.id,
-      'app-id'
-    );
+      'app-id');
 
     assert.equal(
       plan.app.uuid,
-      'generated-uuid'
-    );
+      'generated-uuid');
 
     assert.equal(
       plan.app.name,
-      'Imported'
-    );
+      'Imported');
 
     assert.equal(
       plan.app.author?.name,
-      'Author Name'
-    );
+      'Author Name');
 
     assert.equal(
       plan.files.length,
-      2
-    );
+      2);
 
     assert.equal(
       plan.files[0].id,
-      'file-id-1'
-    );
+      'file-id-1');
 
     assert.equal(
       plan.files[0].appId,
-      'app-id'
-    );
-  }
-);
+      'app-id');
+  });

@@ -30,8 +30,7 @@ export class FilesystemLocationResolver
     this.logger = logger;
 
     this.rootPath = path.normalize(
-      path.resolve(rootPath)
-    );
+      path.resolve(rootPath));
 
     this.gitIgnore = new GitIgnore(
       this.logger
@@ -52,16 +51,14 @@ export class FilesystemLocationResolver
           location);
 
       results.push(
-        ...resolved
-      );
+        ...resolved);
     }
 
     const uniqueResults =
       [...new Set(results)];
 
     uniqueResults.sort(
-      (a, b) => a.localeCompare(b)
-    );
+      (a, b) => a.localeCompare(b));
 
     return uniqueResults;
   }
@@ -83,8 +80,7 @@ export class FilesystemLocationResolver
     this.logger.trace(
       'FilesystemLocationResolver.resolve(%s, %s)',
       basePath,
-      JSON.stringify(location)
-    );
+      JSON.stringify(location));
 
     const normalisedBasePath =
       path.normalize(
@@ -105,17 +101,14 @@ export class FilesystemLocationResolver
       );
     }
 
-    const matches =
-      new Set<string>();
+    const matches = new Set<string>();
 
     const rootPathPatterns =
       [pattern]
       .filter(
-        pattern => pattern.startsWith('/')
-      )
+        pattern => pattern.startsWith('/'))
       .map(
-        pattern => pattern.slice(1)
-      );
+        pattern => pattern.slice(1));
 
     if (rootPathPatterns.length > 0) {
       const rootPathMatches =
@@ -135,8 +128,7 @@ export class FilesystemLocationResolver
     const basePathPatterns =
       [pattern]
       .filter(
-        pattern => !pattern.startsWith('/')
-      );
+        pattern => !pattern.startsWith('/'));
 
     if (basePathPatterns.length > 0) {
       const basePathMatches =
@@ -151,8 +143,7 @@ export class FilesystemLocationResolver
       this.logger.trace(
         'FilesystemLocationResolver.resolve() => %d in %s',
         basePathMatches.length,
-        normalisedBasePath
-      );
+        normalisedBasePath);
 
       for (const match of basePathMatches) {
         matches.add(match);
@@ -162,11 +153,9 @@ export class FilesystemLocationResolver
     const rootExcludePatterns =
       exclude
       .filter(
-        pattern => pattern.startsWith('/')
-      )
+        pattern => pattern.startsWith('/'))
       .map(
-        pattern => pattern.slice(1)
-      );
+        pattern => pattern.slice(1));
 
     if (rootExcludePatterns.length > 0) {
       const rootExcludeMatches =
@@ -182,8 +171,7 @@ export class FilesystemLocationResolver
     const basePathExcludePatterns =
       exclude
       .filter(
-        pattern => !pattern.startsWith('/')
-      );
+        pattern => !pattern.startsWith('/'));
 
     if (basePathExcludePatterns.length > 0) {
       const basePathExcludeMatches =
@@ -204,8 +192,7 @@ export class FilesystemLocationResolver
         case 'GitIgnore':
           result = this.gitIgnore
             .filter(
-              result
-            );
+              result);
           break;
         default:
           throw new Error(
@@ -215,13 +202,11 @@ export class FilesystemLocationResolver
     }
 
     result.sort(
-      (a, b) => a.localeCompare(b)
-    );
+      (a, b) => a.localeCompare(b));
 
     this.logger.trace(
       'FilesystemLocationResolver.resolve() => %d matches',
-      result.length
-    );
+      result.length);
 
     return result;
   }
@@ -288,15 +273,13 @@ export class FilesystemLocationResolver
           return minimatch(
             relativeToRoot,
             pattern.slice(1),
-            { dot: true }
-          );
+            { dot: true });
         }
 
         return minimatch(
           relativeToBase,
           pattern,
-          { dot: true }
-        );
+          { dot: true });
       });
 
     if (!included) {
@@ -311,15 +294,13 @@ export class FilesystemLocationResolver
           return minimatch(
             relativeToRoot,
             pattern.slice(1),
-            { dot: true }
-          );
+            { dot: true });
         }
 
         return minimatch(
           relativeToBase,
           pattern,
-          { dot: true }
-        );
+          { dot: true });
       });
 
     if (excluded) {

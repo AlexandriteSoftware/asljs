@@ -79,8 +79,7 @@ export class LiveRecord<T extends Record<string, any>>
 
     keyAssert(
       keyPath,
-      key
-    );
+      key);
 
     this.#key = key;
     this.#keyPath = keyPath;
@@ -124,8 +123,7 @@ export class LiveRecord<T extends Record<string, any>>
           this.#loadVersion++;
           this.#setRecord(null);
         }
-      }
-    );
+      });
 
     // Load initial state asynchronously.
     // If a relevant committed event fires before this load settles,
@@ -135,8 +133,7 @@ export class LiveRecord<T extends Record<string, any>>
       this.#loadVersion;
 
     loadFn(
-      this.#key
-    )
+      this.#key)
       .then(
         record =>
         {
@@ -149,17 +146,14 @@ export class LiveRecord<T extends Record<string, any>>
           }
 
           this.#setRecord(record);
-        }
-      )
+        })
       .catch(
         error =>
         {
           console.error(
             'LiveRecord: initial load failed',
-            error
-          );
-        }
-      );
+            error);
+        });
   }
 
   /**
@@ -195,8 +189,7 @@ export class LiveRecord<T extends Record<string, any>>
     return observable.watch(
       this as any,
       property,
-      callback
-    );
+      callback);
   }
 
   /**
@@ -220,8 +213,7 @@ export class LiveRecord<T extends Record<string, any>>
 
     return keyEqual(
       recordKey,
-      this.#key
-    );
+      this.#key);
   }
 
   #setRecord(
@@ -257,28 +249,24 @@ export class LiveRecord<T extends Record<string, any>>
 
     (this as any).emit(
       'set:record',
-      payload
-    );
+      payload);
 
     (this as any).emit(
       'set',
-      payload
-    );
+      payload);
 
     // Emit ASLJS eventful domain events.
     if (value === null) {
       if (previous !== null) {
         this.emit(
           'deleted',
-          previous
-        );
+          previous);
       }
     } else {
       this.emit(
         'changed',
         value,
-        previous
-      );
+        previous);
     }
   }
 }

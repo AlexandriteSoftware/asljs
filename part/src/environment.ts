@@ -57,8 +57,7 @@ export function createEnvironment(
   const cwd =
     process.cwd();
 
-  const registry =
-    new Map();
+  const registry = new Map();
 
   const disposeActions: (() => Promise<void>)[] = [];
 
@@ -74,8 +73,7 @@ export function createEnvironment(
     register: (type, value) =>
       registry.set(
         type,
-        value
-      ),
+        value),
     definitions: cwd,
     project: cwd,
     getProviders: function (): Providers
@@ -83,8 +81,7 @@ export function createEnvironment(
       return providersFactory(
         this.loggerProvider,
         this.project,
-        this.definitions
-      );
+        this.definitions);
     },
     onDispose: action => disposeActions.push(action),
     dispose: async () =>

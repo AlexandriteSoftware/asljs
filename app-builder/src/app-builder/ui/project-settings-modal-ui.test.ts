@@ -72,36 +72,30 @@ test(
           name: 'Starter',
           authorName: 'Jane',
           authorEmail: 'jane@example.com'
-        }
-      );
+        });
 
       assert.equal(
         modal.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.equal(
         nameInput.value,
-        'Starter'
-      );
+        'Starter');
 
       assert.equal(
         authorNameInput.value,
-        'Jane'
-      );
+        'Jane');
 
       assert.equal(
         authorEmailInput.value,
-        'jane@example.com'
-      );
+        'jane@example.com');
 
       nameInput.value = '  Updated App  ';
       authorNameInput.value = '  Alex  ';
       authorEmailInput.value = '  alex@example.com  ';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -113,18 +107,15 @@ test(
             authorName: 'Alex',
             authorEmail: 'alex@example.com'
           }
-        ]
-      );
+        ]);
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'createProjectSettingsModalUi deletes and blocks blank project names',
@@ -185,44 +176,36 @@ test(
           name: '',
           authorName: '',
           authorEmail: ''
-        }
-      );
+        });
 
       nameInput.value = '   ';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.equal(
         saved,
-        false
-      );
+        false);
 
       assert.equal(
         focused,
-        true
-      );
+        true);
 
       deleteButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.equal(
         deleted,
-        true
-      );
+        true);
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

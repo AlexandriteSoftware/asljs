@@ -333,8 +333,7 @@ function configureShellControls(
     elBtnSettings,
     {
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnNewApp,
@@ -342,23 +341,20 @@ function configureShellControls(
       text: 'New',
       icon: '<i class="bi bi-plus-lg"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnImport,
     {
       text: 'Import',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnProjectSettings,
     {
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnToggleChat,
@@ -366,8 +362,7 @@ function configureShellControls(
       text: 'Chat',
       icon: '<i class="bi bi-chevron-down"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnToggleFiles,
@@ -375,8 +370,7 @@ function configureShellControls(
       text: 'Files',
       icon: '<i class="bi bi-chevron-down"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnRun,
@@ -384,8 +378,7 @@ function configureShellControls(
       text: 'Run',
       icon: '<i class="bi bi-play-fill"></i>',
       className: 'btn btn-success btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elMobileTabChat,
@@ -393,8 +386,7 @@ function configureShellControls(
       text: 'Chat',
       icon: '<i class="bi bi-chat-dots"></i>',
       className: 'btn btn-outline-secondary flex-fill'
-    }
-  );
+    });
 
   configureButton(
     elMobileTabFiles,
@@ -402,8 +394,7 @@ function configureShellControls(
       text: 'Files',
       icon: '<i class="bi bi-folder2-open"></i>',
       className: 'btn btn-outline-secondary flex-fill'
-    }
-  );
+    });
 
   configureButton(
     elMobileTabRun,
@@ -411,60 +402,52 @@ function configureShellControls(
       text: 'Run',
       icon: '<i class="bi bi-play-fill"></i>',
       className: 'btn btn-outline-secondary flex-fill'
-    }
-  );
+    });
 
   configureButton(
     elBtnShare,
     {
       text: 'Share',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnStartGeneration,
     {
       text: 'Generate',
       className: 'btn btn-primary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnStopGeneration,
     {
       text: 'Stop',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureSelect(
     elAppSelect,
     {
       className: 'form-select form-select-sm bootstrap-select app-select'
-    }
-  );
+    });
 
   configureSelect(
     elFileSelect,
     {
       className: 'form-select form-select-sm bootstrap-select file-select'
-    }
-  );
+    });
 
   configureSelect(
     elChatModelSelect,
     {
       className: 'form-select form-select-sm bootstrap-select lane-model-select'
-    }
-  );
+    });
 
   configureSelect(
     elGenerationModelSelect,
     {
       className: 'form-select form-select-sm bootstrap-select lane-model-select'
-    }
-  );
+    });
 }
 
 function isMobileViewport(
@@ -480,12 +463,10 @@ function setMobileWorkspaceTab(
   elPanels.classList.remove(
     'mobile-tab-chat',
     'mobile-tab-files',
-    'mobile-tab-run'
-  );
+    'mobile-tab-run');
 
   elPanels.classList.add(
-    `mobile-tab-${tab}`
-  );
+    `mobile-tab-${tab}`);
 
   const tabs: {
     tab: MobileWorkspaceTab;
@@ -507,8 +488,7 @@ function setMobileWorkspaceTab(
 
     item.button.setAttribute(
       'aria-selected',
-      String(active)
-    );
+      String(active));
   }
 }
 
@@ -528,8 +508,7 @@ function getLinkSharingService(
         baseUrl: SHARE_BASE_URL,
         hashPrefix: IMPORT_HASH_PREFIX,
         maxUrlLength: SHARE_MAX_URL_LENGTH
-      }
-    );
+      });
 
   return linkSharingService;
 }
@@ -553,8 +532,7 @@ function saveSettings(
 {
   localStorage.setItem(
     SETTINGS_KEY,
-    JSON.stringify(settings)
-  );
+    JSON.stringify(settings));
 }
 
 async function refreshCurrentAppOpenAiApiKey(
@@ -566,8 +544,7 @@ async function refreshCurrentAppOpenAiApiKey(
   }
 
   currentAppOpenAiApiKey = await loadAppOpenAiApiKey(
-    state.currentAppId
-  );
+    state.currentAppId);
 
   return currentAppOpenAiApiKey;
 }
@@ -583,8 +560,7 @@ function getChatModel(
 {
   return pickSavedOrDefaultModel(
     loadSettings().chatModel,
-    DEFAULT_CHAT_MODEL
-  );
+    DEFAULT_CHAT_MODEL);
 }
 
 function getCodeGenerationModel(
@@ -592,8 +568,7 @@ function getCodeGenerationModel(
 {
   return pickSavedOrDefaultModel(
     loadSettings().generationModel,
-    DEFAULT_CODE_MODEL
-  );
+    DEFAULT_CODE_MODEL);
 }
 
 function getMaxToolSteps(
@@ -654,8 +629,7 @@ function applyAppearanceSettings(
 {
   document.documentElement.setAttribute(
     'data-bs-theme',
-    getTheme()
-  );
+    getTheme());
 
   document.documentElement.style.fontSize = `${getFontSize()}px`;
 }
@@ -686,8 +660,7 @@ async function ensureAppsHaveUniqueUuids(
     apps: AppRecord[]
   ): Promise<AppRecord[]>
 {
-  const used =
-    new Set<string>();
+  const used = new Set<string>();
 
   const normalized: AppRecord[] = [];
 
@@ -725,8 +698,7 @@ function getCurrentApp(
   ): AppRecord | undefined
 {
   return state.apps.find(
-    item => item.id === state.currentAppId
-  );
+    item => item.id === state.currentAppId);
 }
 
 async function saveAppAndReplaceInState(
@@ -740,8 +712,7 @@ async function saveAppAndReplaceInState(
       item.id === app.id
         ? app
         : item
-    )
-  );
+    ));
 }
 
 async function regenerateCurrentAppUuidForFileChange(
@@ -842,8 +813,7 @@ const appRuntimeTools =
     evaluateInApp: code =>
       evaluateInPreview(
         elPreviewFrame,
-        code
-      ),
+        code),
     getAppDiagnostics: () => getPreviewDiagnostics(elPreviewFrame),
     showChoicePrompt: showChoicePrompt,
     wait: milliseconds =>
@@ -851,8 +821,7 @@ const appRuntimeTools =
       {
         window.setTimeout(
           resolve,
-          milliseconds
-        );
+          milliseconds);
       })
   });
 
@@ -866,8 +835,7 @@ function renderAppList(
       currentAppId: state.currentAppId,
       newActionValue: APP_ACTION_NEW,
       importActionValue: APP_ACTION_IMPORT
-    }
-  );
+    });
 }
 
 function renderWorkspace(
@@ -878,13 +846,11 @@ function renderWorkspace(
   const hasApp =
     state.currentAppId !== null
     && state.apps.some(
-      item => item.id === state.currentAppId
-    );
+      item => item.id === state.currentAppId);
 
   elPanels.classList.toggle(
     'hidden',
-    !hasApp
-  );
+    !hasApp);
 
   if (!hasApp) {
     firstApplicationDialog.show();
@@ -919,8 +885,7 @@ async function createFirstApp(
   if (values.apiKey !== '') {
     await saveAppOpenAiApiKey(
       app.id,
-      values.apiKey
-    );
+      values.apiKey);
   }
 
   await replaceFiles(
@@ -928,15 +893,12 @@ async function createFirstApp(
     createDefaultWorkflowFiles(
       app.id,
       app.name,
-      randomId
-    )
-  );
+      randomId));
 
   state.apps = [...state.apps, app];
 
   await openApp(
-    app.id
-  );
+    app.id);
 }
 
 async function createTodoSampleApp(
@@ -951,8 +913,7 @@ async function createTodoSampleApp(
 
   if (sample === null) {
     alert(
-      'TODO sample is not available.'
-    );
+      'TODO sample is not available.');
 
     return;
   }
@@ -983,20 +944,17 @@ async function createTodoSampleApp(
   if (values.apiKey !== '') {
     await saveAppOpenAiApiKey(
       app.id,
-      values.apiKey
-    );
+      values.apiKey);
   }
 
   await replaceFiles(
     app.id,
-    files
-  );
+    files);
 
   state.apps = [...state.apps, app];
 
   await openApp(
-    app.id
-  );
+    app.id);
 }
 
 function renderFileSelect(
@@ -1007,8 +965,7 @@ function renderFileSelect(
       selectElement: elFileSelect,
       files: state.files,
       activeFileName: state.activeFileName
-    }
-  );
+    });
 }
 
 function renderFileContent(
@@ -1033,8 +990,7 @@ function renderFileContent(
         await saveFile(file);
         await regenerateCurrentAppUuidForFileChange();
       }
-    }
-  );
+    });
 }
 
 function setGenerating(
@@ -1069,8 +1025,7 @@ function appendChatMessage(
 {
   currentAiChatModel?.appendMessage(
     role,
-    text
-  );
+    text);
 
   syncStateChatMessagesFromAiChatModel();
 }
@@ -1093,8 +1048,7 @@ function showChoicePrompt(
   void currentAiChatModel.presentChoices(
     question,
     options,
-    'send'
-  );
+    'send');
 }
 
 function resetChatConversation(
@@ -1114,11 +1068,9 @@ function syncStateChatMessagesFromAiChatModel(
     : currentAiChatModel.messages
       .read()
       .filter(
-        isUserOrAssistantMessage
-      )
+        isUserOrAssistantMessage)
       .map(
-        message => ({ role: message.role, text: message.content })
-      );
+        message => ({ role: message.role, text: message.content }));
 }
 
 function isUserOrAssistantMessage(
@@ -1160,8 +1112,7 @@ async function mountAiChatForCurrentApp(
           appId,
           readChatModel: getChatModel,
           readInitialToolStepLimit: getMaxToolSteps
-        }
-      ),
+        }),
       ...(transport !== null
         ? { transport }
         : {}),
@@ -1176,14 +1127,12 @@ async function mountAiChatForCurrentApp(
             chatModel.messages
             .read()
             .filter(
-              isUserOrAssistantMessage
-            )
+              isUserOrAssistantMessage)
             .map(
               (message: { role: 'user' | 'assistant'; content: string; }) => ({
                 role: message.role,
                 text: message.content
-              })
-            ));
+              })));
 
         return [
           { role: 'system', content: CHAT_SYSTEM_PROMPT },
@@ -1202,8 +1151,7 @@ async function mountAiChatForCurrentApp(
             arguments: argumentsJson,
             call_id: `app-chat:${name}`
           },
-          appRuntimeTools
-        )
+          appRuntimeTools)
     }
   );
 
@@ -1216,8 +1164,7 @@ async function mountAiChatForCurrentApp(
 
   if (apiKey !== '') {
     component.options = buildChatOptions(
-      new OpenAiTransport(apiKey)
-    );
+      new OpenAiTransport(apiKey));
 
     elChatRoot.replaceChildren(component);
   } else {
@@ -1246,22 +1193,18 @@ async function mountAiChatForCurrentApp(
 
         void saveAppOpenAiApiKey(
           appId,
-          submittedKey
-        )
+          submittedKey)
           .then(
             () =>
             {
               currentAppOpenAiApiKey = submittedKey;
 
               component.options = buildChatOptions(
-                new OpenAiTransport(submittedKey)
-              );
+                new OpenAiTransport(submittedKey));
 
               keyPrompt.remove();
-            }
-          );
-      }
-    );
+            });
+      });
 
     const container =
       document.createElement('div');
@@ -1335,15 +1278,13 @@ async function openApp(
   if (ensured.changed) {
     await replaceFiles(
       id,
-      ensured.files
-    );
+      ensured.files);
   }
 
   state.files = ensured.files;
 
   state.activeFileName = pickFirstFileName(
-    ensured.files
-  );
+    ensured.files);
 
   await refreshCurrentAppOpenAiApiKey();
   await refreshAvailableModels();
@@ -1383,18 +1324,14 @@ function promptNewApp(
           createDefaultWorkflowFiles(
             app.id,
             app.name,
-            randomId
-          )
-        );
+            randomId));
 
         state.apps = [...state.apps, app];
 
         await openApp(
-          app.id
-        );
+          app.id);
       }
-    }
-  );
+    });
 }
 
 function promptRenameApp(
@@ -1429,11 +1366,9 @@ function promptRenameApp(
             item.id === app.id
               ? updated
               : item
-          )
-        );
+          ));
       }
-    }
-  );
+    });
 }
 
 function openProjectSettings(
@@ -1452,8 +1387,7 @@ function openProjectSettings(
       name: app.name,
       authorName: app.author?.name ?? '',
       authorEmail: app.author?.email ?? ''
-    }
-  );
+    });
 }
 
 async function saveProjectSettings(
@@ -1499,8 +1433,7 @@ async function saveProjectSettings(
       item.id === app.id
         ? updated
         : item
-    )
-  );
+    ));
 }
 
 async function confirmDeleteApp(
@@ -1516,19 +1449,16 @@ async function confirmDeleteApp(
 
   if (
     !confirm(
-      `Delete "${app.name}"? This cannot be undone.`
-    )
+      `Delete "${app.name}"? This cannot be undone.`)
   ) {
     return;
   }
 
   await deleteApp(
-    app.id
-  );
+    app.id);
 
   state.apps = state.apps.filter(
-    item => item.id !== app.id
-  );
+    item => item.id !== app.id);
 
   state.currentAppId = null;
   state.files = [];
@@ -1542,8 +1472,7 @@ async function handleStartGeneration(
 {
   if (state.generating) {
     setGenerationStatus(
-      'Wait for the chat response before starting generation.'
-    );
+      'Wait for the chat response before starting generation.');
 
     return;
   }
@@ -1554,8 +1483,7 @@ async function handleStartGeneration(
 
   if (state.currentAppId === null) {
     setGenerationStatus(
-      'Open or create an app first.'
-    );
+      'Open or create an app first.');
 
     return;
   }
@@ -1565,8 +1493,7 @@ async function handleStartGeneration(
 
   if (apiKey === '') {
     setGenerationStatus(
-      'Add an OpenAI API key in Settings first.'
-    );
+      'Add an OpenAI API key in Settings first.');
 
     return;
   }
@@ -1578,8 +1505,7 @@ async function handleStartGeneration(
 
   if (!hasPendingPlanChanges(planContent)) {
     setGenerationStatus(
-      'No pending changes in PLAN.md.'
-    );
+      'No pending changes in PLAN.md.');
 
     return;
   }
@@ -1589,15 +1515,13 @@ async function handleStartGeneration(
 
   await writeCurrentFileContent(
     CHANGE_FILE,
-    changeContent
-  );
+    changeContent);
 
   generationStopRequested = false;
   setGenerationBusy(true);
 
   setGenerationStatus(
-    'Starting generation cycle...'
-  );
+    'Starting generation cycle...');
 
   try {
     const result =
@@ -1617,8 +1541,7 @@ async function handleStartGeneration(
         shouldStop: () => generationStopRequested,
         onToolStepLimit: async ({ stepsCompleted }) =>
           confirm(
-            `Generation reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`
-          ),
+            `Generation reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`),
         onProgress: message =>
         {
           setGenerationStatus(message);
@@ -1627,24 +1550,20 @@ async function handleStartGeneration(
 
     await writeCurrentFileContent(
       CHANGE_FILE,
-      '# CHANGE\n'
-    );
+      '# CHANGE\n');
 
     setGenerationStatus(
-      result.summary
-    );
+      result.summary);
 
     appendChatMessage(
       'assistant',
-      result.summary
-    );
+      result.summary);
 
     handleRun();
   } catch (error) {
     if (error instanceof GenerationStoppedError) {
       setGenerationStatus(
-        'Generation stopped.'
-      );
+        'Generation stopped.');
 
       return;
     }
@@ -1655,13 +1574,11 @@ async function handleStartGeneration(
       : String(error);
 
     setGenerationStatus(
-      `Generation error: ${message}`
-    );
+      `Generation error: ${message}`);
 
     appendChatMessage(
       'assistant',
-      `Generation error: ${message}`
-    );
+      `Generation error: ${message}`);
   } finally {
     generationStopRequested = false;
     setGenerationBusy(false);
@@ -1678,8 +1595,7 @@ function handleStopGeneration(
   generationStopRequested = true;
 
   setGenerationStatus(
-    'Stopping generation after the current step...'
-  );
+    'Stopping generation after the current step...');
 }
 
 function handleRun(
@@ -1697,10 +1613,8 @@ function handleRun(
         state.files,
         {
           hostOpenAiApiKey: getCurrentAppOpenAiApiKey()
-        }
-      );
-    }
-  );
+        });
+    });
 }
 
 async function buildExportPayload(
@@ -1719,8 +1633,7 @@ async function buildExportPayload(
     {
       app,
       files: state.files
-    }
-  );
+    });
 }
 
 function downloadExportPayload(
@@ -1743,8 +1656,7 @@ function downloadExportPayload(
   link.download = `${
     payload.name.replace(
       /\s+/g,
-      '-'
-    )
+      '-')
   }.json`;
 
   link.click();
@@ -1766,12 +1678,9 @@ async function buildSharePayload(
       ...payload,
       files: Object.fromEntries(
         Object.entries(
-          payload.files
-        )
+          payload.files)
           .filter(
-            ([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName)
-          )
-      )
+            ([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName)))
     };
   }
 
@@ -1781,8 +1690,7 @@ async function buildSharePayload(
 
   return minifySharePayload(
     payload,
-    transformWithBrowserEsbuild
-  );
+    transformWithBrowserEsbuild);
 }
 
 async function transformWithBrowserEsbuild(
@@ -1815,8 +1723,7 @@ async function getBrowserEsbuildApi(
   browserEsbuildApiPromise = (async () =>
   {
     await esbuildWasm.initialize(
-      { wasmURL: esbuildWasmUrl, worker: true }
-    );
+      { wasmURL: esbuildWasmUrl, worker: true });
 
     return {
       transform: esbuildWasm.transform
@@ -1857,13 +1764,11 @@ function confirmImportSafetyNotice(
     'Security warning: You are about to import an application.\n\n'
       + `${
         formatImportAuthor(
-          payload.author
-        )
+          payload.author)
       }\n\n`
       + 'Although apps run in an isolated browser context, imported code can still be harmful. '
       + 'Be vigilant and only open apps from sources you trust.\n\n'
-      + 'Do you want to continue?'
-  );
+      + 'Do you want to continue?');
 }
 
 function setWorkspaceMode(
@@ -1875,13 +1780,11 @@ function setWorkspaceMode(
 
   elPanels.classList.toggle(
     'chat-collapsed',
-    collapsed
-  );
+    collapsed);
 
   elPanels.classList.toggle(
     'files-collapsed',
-    collapsed
-  );
+    collapsed);
 
   setButtonContent(
     elBtnToggleChat,
@@ -1890,8 +1793,7 @@ function setWorkspaceMode(
       icon: collapsed
         ? '<i class="bi bi-chevron-right"></i>'
         : '<i class="bi bi-chevron-down"></i>'
-    }
-  );
+    });
 
   setButtonContent(
     elBtnToggleFiles,
@@ -1900,18 +1802,15 @@ function setWorkspaceMode(
       icon: collapsed
         ? '<i class="bi bi-chevron-right"></i>'
         : '<i class="bi bi-chevron-down"></i>'
-    }
-  );
+    });
 
   elBtnToggleChat.setAttribute(
     'aria-expanded',
-    String(!collapsed)
-  );
+    String(!collapsed));
 
   elBtnToggleFiles.setAttribute(
     'aria-expanded',
-    String(!collapsed)
-  );
+    String(!collapsed));
 
   if (isMobileViewport()) {
     if (mode === 'run') {
@@ -1967,8 +1866,7 @@ async function importPayload(
   if (plan.kind === 'duplicate') {
     if (options.showDuplicateAlert) {
       alert(
-        'Import stopped: an app with the same ID already exists.'
-      );
+        'Import stopped: an app with the same ID already exists.');
     }
 
     return null;
@@ -1976,26 +1874,22 @@ async function importPayload(
 
   if (plan.kind === 'existing') {
     await openApp(
-      plan.appId
-    );
+      plan.appId);
 
     return plan.appId;
   }
 
   await saveApp(
-    plan.app
-  );
+    plan.app);
 
   await replaceFiles(
     plan.app.id,
-    plan.files
-  );
+    plan.files);
 
   state.apps = [...state.apps, plan.app];
 
   await openApp(
-    plan.app.id
-  );
+    plan.app.id);
 
   return plan.app.id;
 }
@@ -2026,8 +1920,7 @@ async function handleImportFile(
       {
         navigateToExistingById: false,
         showDuplicateAlert: true
-      }
-    );
+      });
   } catch (error) {
     const message =
       error instanceof Error
@@ -2035,8 +1928,7 @@ async function handleImportFile(
       : String(error);
 
     alert(
-      `Import failed: ${message}`
-    );
+      `Import failed: ${message}`);
   }
 }
 
@@ -2044,8 +1936,7 @@ function getImportHashToken(
   ): string | null
 {
   return getLinkSharingService().readTokenFromHash(
-    window.location.hash
-  );
+    window.location.hash);
 }
 
 function clearImportHashFromUrl(
@@ -2054,8 +1945,7 @@ function clearImportHashFromUrl(
   window.history.pushState(
     null,
     '',
-    `${window.location.pathname}${window.location.search}`
-  );
+    `${window.location.pathname}${window.location.search}`);
 }
 
 async function handleImportFromHashOnStartup(
@@ -2150,8 +2040,7 @@ async function handleImportFromHashOnStartup(
         : String(error);
 
       alert(
-        `Could not import from share link: ${message}`
-      );
+        `Could not import from share link: ${message}`);
     }
 
     clearImportHashFromUrl();
@@ -2176,17 +2065,14 @@ async function withTimeout<T>(
       () =>
       {
         reject(
-          new Error(timeoutMessage)
-        );
+          new Error(timeoutMessage));
       },
-      timeoutMs
-    );
+      timeoutMs);
   });
 
   try {
     return await Promise.race(
-      [promise, timeoutPromise]
-    );
+      [promise, timeoutPromise]);
   } finally {
     if (timeoutId !== undefined) {
       globalThis.clearTimeout(timeoutId);
@@ -2232,8 +2118,7 @@ async function prepareShareLink(
     status: buildShareStatusMessage(
       linkResult.url.length,
       SHARE_PRACTICAL_URL_LENGTH,
-      SHARE_MAX_URL_LENGTH
-    )
+      SHARE_MAX_URL_LENGTH)
   };
 }
 
@@ -2298,8 +2183,7 @@ async function saveSettingsFromModal(
 
     await saveAppOpenAiApiKey(
       state.currentAppId,
-      currentAppOpenAiApiKey
-    );
+      currentAppOpenAiApiKey);
 
     if (prevKey !== currentAppOpenAiApiKey) {
       await mountAiChatForCurrentApp();
@@ -2323,14 +2207,12 @@ function syncModelSelectOptions(
     modelId => ({
       value: modelId,
       label: modelId
-    })
-  );
+    }));
 
   if (modelIds.includes(currentValue)) {
     writeControlValue(
       selectElement,
-      currentValue
-    );
+      currentValue);
 
     return;
   }
@@ -2339,8 +2221,7 @@ function syncModelSelectOptions(
     selectElement,
     modelIds.includes(selectedValue)
       ? selectedValue
-      : modelIds[0] ?? selectedValue
-  );
+      : modelIds[0] ?? selectedValue);
 }
 
 function refreshLaneModelSelectOptions(
@@ -2358,14 +2239,12 @@ function refreshLaneModelSelectOptions(
   syncModelSelectOptions(
     elChatModelSelect,
     modelIds,
-    getChatModel()
-  );
+    getChatModel());
 
   syncModelSelectOptions(
     elGenerationModelSelect,
     modelIds,
-    getCodeGenerationModel()
-  );
+    getCodeGenerationModel());
 }
 
 function pickSavedOrDefaultModel(
@@ -2396,8 +2275,7 @@ function saveChatModelSelection(
     loadSettings();
 
   settings.chatModel = readControlValue(
-    elChatModelSelect
-  );
+    elChatModelSelect);
 
   saveSettings(settings);
 }
@@ -2409,8 +2287,7 @@ function saveGenerationModelSelection(
     loadSettings();
 
   settings.generationModel = readControlValue(
-    elGenerationModelSelect
-  );
+    elGenerationModelSelect);
 
   saveSettings(settings);
 }
@@ -2420,8 +2297,7 @@ function readCurrentFileContent(
   ): string
 {
   return state.files.find(
-    file => file.name === fileName
-  )?.content ?? '';
+    file => file.name === fileName)?.content ?? '';
 }
 
 async function writeCurrentFileContent(
@@ -2475,8 +2351,7 @@ async function refreshAvailableModels(
         { id: DEFAULT_CHAT_MODEL },
         { id: DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
-      ]
-    );
+      ]);
 
     refreshLaneModelSelectOptions();
     return;
@@ -2492,13 +2367,11 @@ async function refreshAvailableModels(
         { id: DEFAULT_CHAT_MODEL },
         { id: DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
-      ]
-    );
+      ]);
   } catch (error) {
     console.warn(
       'Could not load OpenAI models:',
-      error
-    );
+      error);
 
     availableModels = dedupeModels(
       [
@@ -2506,8 +2379,7 @@ async function refreshAvailableModels(
         { id: DEFAULT_CHAT_MODEL },
         { id: DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
-      ]
-    );
+      ]);
   }
 
   refreshLaneModelSelectOptions();
@@ -2531,8 +2403,7 @@ function toggleAppsCollapsed(
       collapsedText: 'Chat',
       expandedIcon: '<i class="bi bi-chevron-down"></i>',
       collapsedIcon: '<i class="bi bi-chevron-right"></i>'
-    }
-  );
+    });
 }
 
 function toggleFilesCollapsed(
@@ -2553,8 +2424,7 @@ function toggleFilesCollapsed(
       collapsedText: 'Files',
       expandedIcon: '<i class="bi bi-chevron-down"></i>',
       collapsedIcon: '<i class="bi bi-chevron-right"></i>'
-    }
-  );
+    });
 }
 
 state.on(
@@ -2563,8 +2433,7 @@ state.on(
   {
     renderAppList();
     renderPreviewTitle();
-  }
-);
+  });
 
 state.on(
   'set:currentAppId',
@@ -2573,8 +2442,7 @@ state.on(
     renderAppList();
     renderWorkspace();
     renderPreviewTitle();
-  }
-);
+  });
 
 state.on(
   'set:files',
@@ -2582,8 +2450,7 @@ state.on(
   {
     renderFileSelect();
     renderFileContent();
-  }
-);
+  });
 
 state.on(
   'set:activeFileName',
@@ -2591,83 +2458,70 @@ state.on(
   {
     renderFileSelect();
     renderFileContent();
-  }
-);
+  });
 
 elBtnNewApp.addEventListener(
   'click',
-  promptNewApp
-);
+  promptNewApp);
 
 elBtnImport.addEventListener(
   'click',
-  handleImportClick
-);
+  handleImportClick);
 
 elBtnProjectSettings.addEventListener(
   'click',
-  openProjectSettings
-);
+  openProjectSettings);
 
 elBtnShare.addEventListener(
   'click',
   () =>
   {
     shareModal.open();
-  }
-);
+  });
 
 elBtnStartGeneration.addEventListener(
   'click',
   () =>
   {
     void handleStartGeneration();
-  }
-);
+  });
 
 elBtnStopGeneration.addEventListener(
   'click',
-  handleStopGeneration
-);
+  handleStopGeneration);
 
 elBtnRun.addEventListener(
   'click',
-  handleRun
-);
+  handleRun);
 
 elBtnSettings.addEventListener(
   'click',
   () =>
   {
     void settingsModal.open();
-  }
-);
+  });
 
 elBtnToggleChat.addEventListener(
   'click',
-  toggleAppsCollapsed
-);
+  toggleAppsCollapsed);
 
 elBtnToggleFiles.addEventListener(
   'click',
-  toggleFilesCollapsed
-);
+  toggleFilesCollapsed);
 
 elMobileTabChat.addEventListener(
   'click',
   () =>
   {
     setMobileWorkspaceTab('chat');
-  }
-);
+  });
 
 elMobileTabFiles.addEventListener(
   'click',
   () =>
   {
     setMobileWorkspaceTab('files');
-  }
-);
+  });
 
 elMobileTabRun.addEventListener(
   'click',
@@ -2682,18 +2536,15 @@ elMobileTabRun.addEventListener(
     if (!isRunTabAlreadyActive) {
       handleRun();
     }
-  }
-);
+  });
 
 elChatModelSelect.addEventListener(
   'change',
-  saveChatModelSelection
-);
+  saveChatModelSelection);
 
 elGenerationModelSelect.addEventListener(
   'change',
-  saveGenerationModelSelection
-);
+  saveGenerationModelSelection);
 
 elAppSelect.addEventListener(
   'change',
@@ -2717,8 +2568,7 @@ elAppSelect.addEventListener(
     if (value !== '' && value !== state.currentAppId) {
       void openApp(value);
     }
-  }
-);
+  });
 
 elFileSelect.addEventListener(
   'change',
@@ -2733,16 +2583,14 @@ elFileSelect.addEventListener(
 
     void persistCurrentFile();
     state.activeFileName = next;
-  }
-);
+  });
 
 elImportFile.addEventListener(
   'change',
   () =>
   {
     void handleImportFile();
-  }
-);
+  });
 
 window.listFileset = appRuntimeTools.listFileset;
 window.listFilesByMask = appRuntimeTools.listFilesByMask;
@@ -2770,8 +2618,7 @@ window.addEventListener(
   () =>
   {
     void handleImportFromHashOnStartup();
-  }
-);
+  });
 
 async function init(
   ): Promise<void>
@@ -2799,12 +2646,10 @@ async function init(
       [...apps].sort(
         (a, b) =>
         b.updatedAt.localeCompare(
-          a.updatedAt
-        ));
+          a.updatedAt));
 
     await openApp(
-      sorted[0].id
-    );
+      sorted[0].id);
   } else {
     state.currentAppId = null;
     state.files = [];
@@ -2819,7 +2664,5 @@ init().catch(
   {
     console.error(
       'App Builder init failed:',
-      error
-    );
-  }
-);
+      error);
+  });

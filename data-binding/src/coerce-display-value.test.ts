@@ -14,15 +14,12 @@ test(
   {
     assert.equal(
       coerceDisplayValue(null),
-      ''
-    );
+      '');
 
     assert.equal(
       coerceDisplayValue(undefined),
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   `${TEST_SUITE}: converts Date to ISO string`,
@@ -34,10 +31,8 @@ test(
 
     assert.equal(
       result,
-      '2026-01-02T03:04:05.000Z'
-    );
-  }
-);
+      '2026-01-02T03:04:05.000Z');
+  });
 
 test(
   `${TEST_SUITE}: converts scalar values to string`,
@@ -45,12 +40,9 @@ test(
   {
     assert.equal(
       coerceDisplayValue(10),
-      '10'
-    );
+      '10');
 
     assert.equal(
       coerceDisplayValue(true),
-      'true'
-    );
-  }
-);
+      'true');
+  });

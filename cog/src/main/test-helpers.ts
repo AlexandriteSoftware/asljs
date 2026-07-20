@@ -16,8 +16,7 @@ export function quoteShellArg(
   return `"${
     value.replace(
       /"/g,
-      '"'
-    )
+      '"')
   }"`;
 }
 
@@ -27,12 +26,10 @@ export function nodeCommand(
 {
   return `${
     quoteShellArg(
-      process.execPath
-    )
+      process.execPath)
   } -e ${
     quoteShellArg(
-      source
-    )
+      source)
   }`;
 }
 
@@ -41,18 +38,15 @@ export function withEnv(
     action: () => void | Promise<void>
   ): Promise<void>
 {
-  const previous =
-    new Map<string, string | undefined>();
+  const previous = new Map<string, string | undefined>();
 
   for (
     const name of Object.keys(
-      updates
-    )
+      updates)
   ) {
     previous.set(
       name,
-      process.env[name]
-    );
+      process.env[name]);
 
     const value =
       updates[name];
@@ -66,8 +60,7 @@ export function withEnv(
 
   return Promise.resolve()
     .then(
-      action
-    )
+      action)
     .finally(
       () =>
       {
@@ -78,6 +71,5 @@ export function withEnv(
             process.env[name] = value;
           }
         }
-      }
-    );
+      });
 }

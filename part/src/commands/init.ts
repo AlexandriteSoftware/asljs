@@ -30,8 +30,7 @@ export async function execInit(
 
   await mkdir(
     definitionsPath,
-    { recursive: true }
-  );
+    { recursive: true });
 
   const artefactEntries =
     await readdir(
@@ -39,23 +38,18 @@ export async function execInit(
 
   for (const entryName of artefactEntries) {
     environment.stdout.write(
-      `Copying ${entryName}\n`
-    );
+      `Copying ${entryName}\n`);
 
     await cp(
       path.join(
         ARTEFACTS_DIRECTORY,
-        entryName
-      ),
+        entryName),
       path.join(
         definitionsPath,
-        entryName
-      ),
-      { recursive: true, force: true }
-    );
+        entryName),
+      { recursive: true, force: true });
   }
 
   environment.stdout.write(
-    `Initialised definitions directory: ${definitionsPath}\n`
-  );
+    `Initialised definitions directory: ${definitionsPath}\n`);
 }

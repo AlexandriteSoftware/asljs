@@ -22,8 +22,7 @@ export function keyPathValid(
     }
 
     return keyPath.every(
-      keyPathItemValid
-    );
+      keyPathItemValid);
   }
 
   return keyPathItemValid(keyPath);
@@ -61,8 +60,7 @@ export function keyValueValid(
 
   if (value instanceof Date) {
     return !Number.isNaN(
-      value.getTime()
-    );
+      value.getTime());
   }
 
   if (value instanceof ArrayBuffer) {
@@ -81,8 +79,7 @@ export function keyValueValid(
 
       if (
         !keyValueValid(
-          value[i]
-        )
+          value[i])
       ) {
         return false;
       }
@@ -138,8 +135,7 @@ export function keyAssert(
   if (
     !keyValid(
       keyPath,
-      key
-    )
+      key)
   ) {
     throw new TypeError(
       keyPathLength === 1
@@ -160,9 +156,7 @@ export function keyEqual(
         (v, i) =>
           keyEqual(
             v,
-            (b as IDBValidKey[])[i]!
-          )
-      );
+            (b as IDBValidKey[])[i]!));
   }
 
   if (a instanceof Date && b instanceof Date) {

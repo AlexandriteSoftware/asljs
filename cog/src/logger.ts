@@ -117,8 +117,7 @@ export class PinoLoggerAdapter implements RootLogger
       args as Parameters<pino.LogFn>;
 
     this.logger.trace(
-      ...params
-    );
+      ...params);
   }
 
   debug(
@@ -129,8 +128,7 @@ export class PinoLoggerAdapter implements RootLogger
       args as Parameters<pino.LogFn>;
 
     this.logger.debug(
-      ...params
-    );
+      ...params);
   }
 
   info(
@@ -141,8 +139,7 @@ export class PinoLoggerAdapter implements RootLogger
       args as Parameters<pino.LogFn>;
 
     this.logger.info(
-      ...params
-    );
+      ...params);
   }
 
   warn(
@@ -153,8 +150,7 @@ export class PinoLoggerAdapter implements RootLogger
       args as Parameters<pino.LogFn>;
 
     this.logger.warn(
-      ...params
-    );
+      ...params);
   }
 
   error(
@@ -165,8 +161,7 @@ export class PinoLoggerAdapter implements RootLogger
       args as Parameters<pino.LogFn>;
 
     this.logger.error(
-      ...params
-    );
+      ...params);
   }
 
   dispose(): void
@@ -240,12 +235,10 @@ export function createLogger(
           ignore: 'instanceId',
           colorize: true
         }
-      }
-    );
+      });
   } else {
     transport = pino.transport(
-      { target: 'pino/file', options: { destination: file, mkdir: true } }
-    );
+      { target: 'pino/file', options: { destination: file, mkdir: true } });
   }
 
   const logger =

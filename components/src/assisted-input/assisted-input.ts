@@ -37,8 +37,7 @@ export const AssistedInputModelDefinition: ComponentModelDefinition =
 export abstract class AssistedInput extends LitElement
 {
   @property(
-    { reflect: true }
-  )
+    { reflect: true })
   accessor characters = '';
 
   protected abstract get defaultAriaLabel(): string;
@@ -50,15 +49,13 @@ export abstract class AssistedInput extends LitElement
     if (!this.hasAttribute('role')) {
       this.setAttribute(
         'role',
-        'group'
-      );
+        'group');
     }
 
     if (!this.hasAttribute('aria-label')) {
       this.setAttribute(
         'aria-label',
-        this.defaultAriaLabel
-      );
+        this.defaultAriaLabel);
     }
   }
 
@@ -75,8 +72,7 @@ export abstract class AssistedInput extends LitElement
     }
 
     return this.isKeyAllowed(
-      button.key
-    );
+      button.key);
   }
 
   protected isKeyAllowed(
@@ -141,8 +137,7 @@ export abstract class AssistedInput extends LitElement
       new CustomEvent<AssistedInputKeyDetail>(
         'key',
         { detail: { key }, bubbles: true, composed: true }
-      )
-    );
+      ));
   }
 
   protected dispatchSubmit(): void
@@ -151,8 +146,7 @@ export abstract class AssistedInput extends LitElement
       new CustomEvent(
         'submit',
         { detail: {}, bubbles: true, composed: true }
-      )
-    );
+      ));
   }
 
   protected handleAction(
@@ -184,8 +178,7 @@ export abstract class AssistedInput extends LitElement
       && this.handleAction(
         action,
         event,
-        button
-      )
+        button)
     ) {
       return;
     }

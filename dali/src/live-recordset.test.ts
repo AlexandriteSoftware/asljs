@@ -22,10 +22,8 @@ async function openTestDb(
     {
       db.createObjectStore(
         'items',
-        { keyPath: 'id' }
-      );
-    }]
-  );
+        { keyPath: 'id' });
+    }]);
 }
 
 async function waitFor(
@@ -44,8 +42,7 @@ async function waitFor(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        0
-      )
+        0)
     );
   }
 }
@@ -56,8 +53,7 @@ function sortedIds(
 {
   return records
     .map(
-      r => r.id
-    )
+      r => r.id)
     .sort();
 }
 
@@ -72,35 +68,28 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: '10' }
-    );
+      { id: 'a', value: '10' });
 
     await table.add(
-      { id: 'b', value: '20' }
-    );
+      { id: 'b', value: '20' });
 
     await table.add(
-      { id: 'c', value: '30' }
-    );
+      { id: 'c', value: '30' });
 
     const live =
       table.recordset(
         record => record.value !== '20');
 
     await waitFor(
-      () => live.records.length >= 2
-    );
+      () => live.records.length >= 2);
 
     assert.deepEqual(
       sortedIds(
-        live.records
-      ),
-      ['a', 'c']
-    );
+        live.records),
+      ['a', 'c']);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: initial load returns empty set when nothing matches`,
@@ -113,8 +102,7 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: '10' }
-    );
+      { id: 'a', value: '10' });
 
     const live =
       table.recordset(
@@ -124,18 +112,15 @@ test(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: add inserts newly matching record`,
@@ -155,31 +140,25 @@ test(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     assert.deepEqual(
       live.records[0],
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: add ignores non-matching record`,
@@ -198,29 +177,24 @@ test(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     await table.add(
-      { id: 'a', value: 'other' }
-    );
+      { id: 'a', value: 'other' });
 
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: update keeps matching record updated`,
@@ -233,33 +207,27 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     await table.update(
-      { id: 'a', value: 'v2' }
-    );
+      { id: 'a', value: 'v2' });
 
     await waitFor(
-      () => live.records[0]?.value === 'v2'
-    );
+      () => live.records[0]?.value === 'v2');
 
     assert.deepEqual(
       live.records[0],
-      { id: 'a', value: 'v2' }
-    );
+      { id: 'a', value: 'v2' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: update removes record that stops matching`,
@@ -272,33 +240,27 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     await table.update(
-      { id: 'a', value: 'other' }
-    );
+      { id: 'a', value: 'other' });
 
     await waitFor(
-      () => live.records.length === 0
-    );
+      () => live.records.length === 0);
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: update adds record that becomes matching`,
@@ -311,8 +273,7 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'other' }
-    );
+      { id: 'a', value: 'other' });
 
     const live =
       table.recordset(
@@ -321,31 +282,25 @@ test(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     await table.update(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     assert.deepEqual(
       live.records[0],
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: delete removes matching record`,
@@ -358,35 +313,29 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await table.add(
-      { id: 'b', value: 'v2' }
-    );
+      { id: 'b', value: 'v2' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 2
-    );
+      () => live.records.length === 2);
 
     await table.delete('a');
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     assert.deepEqual(
       live.records[0],
-      { id: 'b', value: 'v2' }
-    );
+      { id: 'b', value: 'v2' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: clear empties the set`,
@@ -399,35 +348,29 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await table.add(
-      { id: 'b', value: 'v2' }
-    );
+      { id: 'b', value: 'v2' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 2
-    );
+      () => live.records.length === 2);
 
     await table.clear();
 
     await waitFor(
-      () => live.records.length === 0
-    );
+      () => live.records.length === 0);
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: "added" event fires when a record enters the set`,
@@ -446,8 +389,7 @@ test(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     const added: TestRecord[] = [];
@@ -457,47 +399,38 @@ test(
       record =>
       {
         added.push(record);
-      }
-    );
+      });
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await waitFor(
-      () => added.length >= 1
-    );
+      () => added.length >= 1);
 
     assert.equal(
       added.length,
-      1
-    );
+      1);
 
     assert.deepEqual(
       added[0],
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     // Non-matching add must not fire 'added'
     await table.add(
-      { id: 'b', value: 'other' }
-    );
+      { id: 'b', value: 'other' });
 
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.equal(
       added.length,
-      1
-    );
+      1);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: "removed" event fires when a record leaves the set`,
@@ -510,16 +443,14 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     const removed: TestRecord[] = [];
 
@@ -528,28 +459,23 @@ test(
       record =>
       {
         removed.push(record);
-      }
-    );
+      });
 
     await table.delete('a');
 
     await waitFor(
-      () => removed.length >= 1
-    );
+      () => removed.length >= 1);
 
     assert.equal(
       removed.length,
-      1
-    );
+      1);
 
     assert.deepEqual(
       removed[0],
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: "updated" event fires when a matching record is updated in place`,
@@ -562,16 +488,14 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     const updated: Array<[TestRecord, TestRecord]> = [];
 
@@ -580,37 +504,29 @@ test(
       (record, previous) =>
       {
         updated.push(
-          [record, previous]
-        );
-      }
-    );
+          [record, previous]);
+      });
 
     await table.update(
-      { id: 'a', value: 'v2' }
-    );
+      { id: 'a', value: 'v2' });
 
     await waitFor(
-      () => updated.length >= 1
-    );
+      () => updated.length >= 1);
 
     assert.equal(
       updated.length,
-      1
-    );
+      1);
 
     assert.deepEqual(
       updated[0]![0],
-      { id: 'a', value: 'v2' }
-    );
+      { id: 'a', value: 'v2' });
 
     assert.deepEqual(
       updated[0]![1],
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: "cleared" event fires on table clear`,
@@ -623,16 +539,14 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     let clearedCount = 0;
 
@@ -641,28 +555,23 @@ test(
       () =>
       {
         clearedCount++;
-      }
-    );
+      });
 
     await table.clear();
 
     await waitFor(
-      () => clearedCount >= 1
-    );
+      () => clearedCount >= 1);
 
     assert.equal(
       clearedCount,
-      1
-    );
+      1);
 
     assert.deepEqual(
       live.records,
-      []
-    );
+      []);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: "changed" event fires after any mutation`,
@@ -686,31 +595,24 @@ test(
       records =>
       {
         lengths.push(
-          records.length
-        );
-      }
-    );
+          records.length);
+      });
 
     await waitFor(
-      () => lengths.length >= 1
-    );
+      () => lengths.length >= 1);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await waitFor(
-      () => lengths.length >= 2
-    );
+      () => lengths.length >= 2);
 
     assert.equal(
       lengths[lengths.length - 1],
-      1
-    );
+      1);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: watch on "records.length" path fires when set changes`,
@@ -734,36 +636,28 @@ test(
       r =>
       {
         lengths.push(
-          (r as readonly TestRecord[] ?? []).length
-        );
-      }
-    );
+          (r as readonly TestRecord[] ?? []).length);
+      });
 
     assert.equal(
       lengths.length,
-      1
-    );
+      1);
 
     await waitFor(
-      () => lengths.length >= 1
-    );
+      () => lengths.length >= 1);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     await waitFor(
-      () => lengths[lengths.length - 1] === 1
-    );
+      () => lengths[lengths.length - 1] === 1);
 
     assert.equal(
       lengths[lengths.length - 1],
-      1
-    );
+      1);
 
     live.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: disposing stops further events`,
@@ -776,16 +670,14 @@ test(
       new Table<TestRecord>('items', db);
 
     await table.add(
-      { id: 'a', value: 'v1' }
-    );
+      { id: 'a', value: 'v1' });
 
     const live =
       table.recordset(
         record => record.value.startsWith('v'));
 
     await waitFor(
-      () => live.records.length === 1
-    );
+      () => live.records.length === 1);
 
     const fired: number[] = [];
 
@@ -794,30 +686,24 @@ test(
       records =>
       {
         fired.push(
-          records.length
-        );
-      }
-    );
+          records.length);
+      });
 
     live.dispose();
 
     await table.add(
-      { id: 'b', value: 'v2' }
-    );
+      { id: 'b', value: 'v2' });
 
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        20
-      )
+        20)
     );
 
     assert.equal(
       fired.length,
-      0
-    );
-  }
-);
+      0);
+  });
 
 test(
   `${TEST_SUITE}: LiveRecordSet is exported directly from index`,
@@ -825,7 +711,5 @@ test(
   {
     assert.equal(
       typeof LiveRecordSet,
-      'function'
-    );
-  }
-);
+      'function');
+  });

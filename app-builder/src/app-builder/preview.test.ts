@@ -36,17 +36,13 @@ test(
           name: 'assets/logo.png',
           content: 'data:image/png;base64,AQID'
         }
-      ]
-    );
+      ]);
 
     assert.match(
       frame.srcdoc ?? '',
-      /<img src="data:image\/png;base64,AQID" alt="Logo">/
-    );
+      /<img src="data:image\/png;base64,AQID" alt="Logo">/);
 
     assert.match(
       frame.srcdoc ?? '',
-      /background-image: url\("data:image\/png;base64,AQID"\);/
-    );
-  }
-);
+      /background-image: url\("data:image\/png;base64,AQID"\);/);
+  });

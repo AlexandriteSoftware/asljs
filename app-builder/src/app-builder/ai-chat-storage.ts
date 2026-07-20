@@ -19,8 +19,7 @@ export function createAppBuilderAiChatSecretsAndSettingsProvider(
   return {
     getOpenAiApiKey: async () =>
       loadAppOpenAiApiKey(
-        options.appId
-      ),
+        options.appId),
     getChatModel: async () => options.readChatModel(),
     getInitialToolStepLimit: async () => options.readInitialToolStepLimit()
   };
@@ -55,8 +54,7 @@ export function createSessionStorageAiChatStateStore(
     {
       sessionStorage.setItem(
         storageKey,
-        JSON.stringify(state)
-      );
+        JSON.stringify(state));
     }
   };
 }

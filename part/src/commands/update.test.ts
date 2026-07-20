@@ -21,8 +21,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -31,8 +30,7 @@ const tmpDir =
 const execUpdateLogger =
   loggerProvider
   .getLogger(
-    'execUpdate'
-  );
+    'execUpdate');
 
 test(
   'RQ125: update creates missing JS rule files via the Copilot runner',
@@ -60,8 +58,7 @@ test(
 
           await workspace.writeText(
             `artefacts/parts/${ruleFileName}`,
-            `${request.comment}\n\nexport async function validate() {}\n`
-          );
+            `${request.comment}\n\nexport async function validate() {}\n`);
 
           return `all done`;
         }
@@ -82,37 +79,29 @@ Requirement definition.
 ### RL10
 
 Requirement rule.
-`
-    );
+`);
 
     await execUpdate(
       execUpdateLogger,
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /all done/
-    );
+      /all done/);
 
     assert.match(
       requestPrompt,
-      /Requirement_RL10/
-    );
+      /Requirement_RL10/);
 
     assert.match(
       await workspace.readText(
-        'artefacts/parts/Requirement_RL10.js'
-      ),
-      /### RL10\n\nRequirement rule\./
-    );
-  }
-);
+        'artefacts/parts/Requirement_RL10.js'),
+      /### RL10\n\nRequirement rule\./);
+  });
 
 test(
   'RQ125: update dry-run prints prompts without invoking Copilot or writing files',
@@ -149,38 +138,30 @@ Requirement definition.
 ### RL10
 
 Requirement rule.
-`
-    );
+`);
 
     await execUpdate(
       execUpdateLogger,
       environment,
-      { dryRun: true }
-    );
+      { dryRun: true });
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /Would create artefacts\/parts\/Requirement_RL10\.js/
-    );
+      /Would create artefacts\/parts\/Requirement_RL10\.js/);
 
     assert.match(
       environment.stdout.toString(),
-      /--- CREATE artefacts\/parts\/Requirement_RL10\.js ---/
-    );
+      /--- CREATE artefacts\/parts\/Requirement_RL10\.js ---/);
 
     assert.rejects(
       async () =>
         await workspace.stat(
-          'artefacts/parts/Requirement_RL10.js'
-        )
-    );
-  }
-);
+          'artefacts/parts/Requirement_RL10.js'));
+  });
 
 test(
   'RQ125: update refreshes stale JS comments and warns on non-JS rules',
@@ -203,8 +184,7 @@ test(
 
           await workspace.writeText(
             `artefacts/parts/${ruleFileName}`,
-            `${request.comment}\n\nexport async function validate() {}\n`
-          );
+            `${request.comment}\n\nexport async function validate() {}\n`);
 
           return 'all done';
         }
@@ -229,34 +209,26 @@ Requirement rule.
 ### RL11
 
 External rule.
-`
-    );
+`);
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL10.js',
-      '/**\n### RL10\n\nOld rule text.\n*/\n\nexport async function validate() {}\n'
-    );
+      '/**\n### RL10\n\nOld rule text.\n*/\n\nexport async function validate() {}\n');
 
     await workspace.writeText(
       'artefacts/parts/Requirement_RL11.ps1',
-      'Write-Output test\n'
-    );
+      'Write-Output test\n');
 
     await execUpdate(
       execUpdateLogger,
-      environment
-    );
+      environment);
 
     assert.match(
       environment.stdout.toString(),
-      /all done/
-    );
+      /all done/);
 
     assert.match(
       await workspace.readText(
-        'artefacts/parts/Requirement_RL10.js'
-      ),
-      /### RL10\n\nRequirement rule\./
-    );
-  }
-);
+        'artefacts/parts/Requirement_RL10.js'),
+      /### RL10\n\nRequirement rule\./);
+  });

@@ -23,15 +23,12 @@ test(
     writeBindingValue(
       element,
       { kind: 'text' },
-      42
-    );
+      42);
 
     assert.equal(
       element.textContent,
-      '42'
-    );
-  }
-);
+      '42');
+  });
 
 test(
   `${TEST_SUITE}: writes html target to innerHTML`,
@@ -46,15 +43,12 @@ test(
     writeBindingValue(
       element,
       { kind: 'html' },
-      '<b>x</b>'
-    );
+      '<b>x</b>');
 
     assert.equal(
       element.innerHTML,
-      '<b>x</b>'
-    );
-  }
-);
+      '<b>x</b>');
+  });
 
 test(
   `${TEST_SUITE}: writes and removes attribute target`,
@@ -69,43 +63,35 @@ test(
     writeBindingValue(
       element,
       { kind: 'attr', name: 'href' },
-      'https://example.com'
-    );
+      'https://example.com');
 
     assert.equal(
       element.getAttribute('href'),
-      'https://example.com'
-    );
+      'https://example.com');
 
     writeBindingValue(
       element,
       { kind: 'attr', name: 'href' },
-      null
-    );
+      null);
 
     assert.equal(
       element.hasAttribute('href'),
-      false
-    );
+      false);
 
     writeBindingValue(
       element,
       { kind: 'attr', name: 'href' },
-      'https://example.com'
-    );
+      'https://example.com');
 
     writeBindingValue(
       element,
       { kind: 'attr', name: 'href' },
-      undefined
-    );
+      undefined);
 
     assert.equal(
       element.hasAttribute('href'),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: writes property target`,
@@ -121,15 +107,12 @@ test(
     writeBindingValue(
       element,
       { kind: 'prop', name: 'value' },
-      'abc'
-    );
+      'abc');
 
     assert.equal(
       element.value,
-      'abc'
-    );
-  }
-);
+      'abc');
+  });
 
 test(
   `${TEST_SUITE}: toggles class target`,
@@ -144,23 +127,18 @@ test(
     writeBindingValue(
       element,
       { kind: 'class', name: 'active' },
-      true
-    );
+      true);
 
     assert.equal(
       element.classList.contains('active'),
-      true
-    );
+      true);
 
     writeBindingValue(
       element,
       { kind: 'class', name: 'active' },
-      false
-    );
+      false);
 
     assert.equal(
       element.classList.contains('active'),
-      false
-    );
-  }
-);
+      false);
+  });

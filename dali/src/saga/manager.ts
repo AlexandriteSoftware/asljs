@@ -66,8 +66,7 @@ export class SagaManager
         status: 'started',
         createdAt: nowIso(),
         updatedAt: nowIso()
-      }
-    );
+      });
 
     let sequence = 0;
     const unsubscribeActions: Array<() => boolean> = [];
@@ -92,8 +91,7 @@ export class SagaManager
           } catch (error) {
             queueError = error;
           }
-        }
-      );
+        });
     };
 
     for (const table of tables) {
@@ -110,8 +108,7 @@ export class SagaManager
               tableName: table.storeName,
               key: keyGet(
                 table.key,
-                record
-              )
+                record)
             };
 
             const forward: SagaForwardOperation =
@@ -133,10 +130,8 @@ export class SagaManager
                     forward,
                     undo,
                     createdAt: nowIso()
-                  }
-                );
-              }
-            );
+                  });
+              });
           },
           update: (
             record,
@@ -172,10 +167,8 @@ export class SagaManager
                     forward,
                     undo,
                     createdAt: nowIso()
-                  }
-                );
-              }
-            );
+                  });
+              });
           },
           delete: record =>
           {
@@ -207,10 +200,8 @@ export class SagaManager
                     forward,
                     undo,
                     createdAt: nowIso()
-                  }
-                );
-              }
-            );
+                  });
+              });
           },
           clear: records =>
           {
@@ -242,10 +233,8 @@ export class SagaManager
                     forward,
                     undo,
                     createdAt: nowIso()
-                  }
-                );
-              }
-            );
+                  });
+              });
           }
         });
 
@@ -257,8 +246,7 @@ export class SagaManager
 
       await this.#waitForCapturedEvents(
         () => sequence,
-        () => queue
-      );
+        () => queue);
 
       if (queueError !== null) {
         throw queueError;
@@ -266,8 +254,7 @@ export class SagaManager
     } catch (error) {
       await this.#waitForCapturedEvents(
         () => sequence,
-        () => queue
-      );
+        () => queue);
 
       for (const unsubscribe of unsubscribeActions) {
         unsubscribe();
@@ -294,14 +281,12 @@ export class SagaManager
           updatedAt: nowIso(),
           eventTransactionId,
           error: undefined
-        }
-      );
+        });
     } catch (error) {
       // Saga remains started and recoverPending() may roll it back on restart.
       await this.#updateSaga(
         sagaId,
-        { status: 'started', updatedAt: nowIso(), error: String(error) }
-      );
+        { status: 'started', updatedAt: nowIso(), error: String(error) });
 
       throw error;
     }
@@ -331,12 +316,10 @@ export class SagaManager
 
     for (const saga of pending) {
       await this.rollbackSaga(
-        saga.id
-      );
+        saga.id);
 
       rolledBack.push(
-        saga.id
-      );
+        saga.id);
     }
 
     return rolledBack;
@@ -353,15 +336,13 @@ export class SagaManager
       entries
       .slice()
       .sort(
-        (left, right) => right.sequence - left.sequence
-      );
+        (left, right) => right.sequence - left.sequence);
 
     const storeNames =
       Array.from(
         new Set(
         reversed.map(
-          entry => entry.undo.tableName
-        )
+          entry => entry.undo.tableName)
       ));
 
     const tx =
@@ -383,26 +364,20 @@ export class SagaManager
         case 'delete':
           await dbRequestAsync(
             store.delete(
-              undo.key
-            )
-          );
+              undo.key));
           break;
         case 'put':
           await dbRequestAsync(
             store.put(
-              undo.record
-            )
-          );
+              undo.record));
           break;
         case 'clear':
           await dbRequestAsync(
-            store.clear()
-          );
+            store.clear());
 
           for (const record of undo.records) {
             await dbRequestAsync(
-              store.add(record)
-            );
+              store.add(record));
           }
           break;
       }
@@ -424,9 +399,7 @@ export class SagaManager
             status: 'rolled_back',
             rollbackAt: nowIso(),
             updatedAt: nowIso()
-          }
-        )
-      );
+          }));
     }
 
     await txDone(tx);
@@ -445,10 +418,8 @@ export class SagaManager
 
     await dbRequestAsync(
       tx.objectStore(
-        this.#sagaStoreName
-      )
-        .add(record)
-    );
+        this.#sagaStoreName)
+        .add(record));
 
     await txDone(tx);
   }
@@ -480,9 +451,7 @@ export class SagaManager
 
     await dbRequestAsync(
       store.put(
-        { ...current, ...patch }
-      )
-    );
+        { ...current, ...patch }));
 
     await txDone(tx);
   }
@@ -500,10 +469,8 @@ export class SagaManager
 
     await dbRequestAsync(
       tx.objectStore(
-        this.#entryStoreName
-      )
-        .add(entry)
-    );
+        this.#entryStoreName)
+        .add(entry));
 
     const sagaStore =
       tx.objectStore(
@@ -517,9 +484,7 @@ export class SagaManager
     if (saga !== undefined) {
       await dbRequestAsync(
         sagaStore.put(
-          { ...saga, updatedAt: nowIso() }
-        )
-      );
+          { ...saga, updatedAt: nowIso() }));
     }
 
     await txDone(tx);
@@ -546,8 +511,7 @@ export class SagaManager
         tx.objectStore(
           this.#entryStoreName)
         .index(
-          'by_saga_sequence'
-        )
+          'by_saga_sequence')
         .getAll(keyRange));
 
     await txDone(tx);
@@ -569,16 +533,14 @@ export class SagaManager
     const events: EventSourceEvent[] =
       entries
       .sort(
-        (left, right) => left.sequence - right.sequence
-      )
+        (left, right) => left.sequence - right.sequence)
       .map(
         entry => ({
           tableName: entry.tableName,
           eventName: entry.eventName,
           forward: entry.forward,
           undo: entry.undo
-        })
-      );
+        }));
 
     const transaction =
       await this.#eventSource.appendTransaction(
@@ -621,8 +583,7 @@ export class SagaManager
         resolve =>
           setTimeout(
             resolve,
-            0
-          )
+            0)
       );
 
       await getQueue();

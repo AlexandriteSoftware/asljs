@@ -40,11 +40,8 @@ test(
         '| docs/partial.md | no | text |',
         ''
       ].join(
-        '\n'
-      )
-    );
-  }
-);
+        '\n'));
+  });
 
 test(
   'formatFileList escapes markdown table cell separators',
@@ -67,8 +64,5 @@ test(
         String.raw`| docs/a\|b.md | yes | text |`,
         ''
       ].join(
-        '\n'
-      )
-    );
-  }
-);
+        '\n'));
+  });

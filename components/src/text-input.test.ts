@@ -43,35 +43,28 @@ test(
 
     assert.equal(
       label.textContent,
-      'Title'
-    );
+      'Title');
 
     assert.equal(
       textarea,
-      null
-    );
+      null);
 
     assert.equal(
       input.value,
-      'Hello'
-    );
+      'Hello');
 
     assert.equal(
       description.textContent,
-      'Shown below'
-    );
+      'Shown below');
 
     assert.equal(
       label.className,
-      ''
-    );
+      '');
 
     assert.equal(
       input.className,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   'text-input: model definition exposes critical runtime properties with types and captions',
@@ -87,8 +80,7 @@ test(
     const propertyByName =
       new Map(
       TextInputModelDefinition.properties.map(
-        property => [property.name, property]
-      )
+        property => [property.name, property])
     );
 
     assert.deepEqual(
@@ -99,20 +91,16 @@ test(
         title: 'Error message',
         description: 'Current validation message or null.',
         editable: false
-      }
-    );
+      });
 
     assert.deepEqual(
       propertyByName.get('rows'),
-      { name: 'rows', type: 'number', title: 'Rows' }
-    );
+      { name: 'rows', type: 'number', title: 'Rows' });
 
     assert.deepEqual(
       propertyByName.get('multiline'),
-      { name: 'multiline', type: 'boolean', title: 'Multiline' }
-    );
-  }
-);
+      { name: 'multiline', type: 'boolean', title: 'Multiline' });
+  });
 
 test(
   'text-input: validator sets aria-invalid and shows error message',
@@ -141,25 +129,20 @@ test(
 
     assert.equal(
       input.hasAttribute('aria-invalid'),
-      true
-    );
+      true);
 
     assert.equal(
       error.hidden,
-      false
-    );
+      false);
 
     assert.equal(
       error.textContent,
-      'Value is invalid'
-    );
+      'Value is invalid');
 
     assert.equal(
       element.isValid,
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   'text-input: bootstrap theme supplies bootstrap template and classes',
@@ -202,40 +185,32 @@ test(
 
     assert.equal(
       label.textContent,
-      'Title'
-    );
+      'Title');
 
     assert.equal(
       input.value,
-      'Hello'
-    );
+      'Hello');
 
     assert.equal(
       input.classList.contains('form-control'),
-      true
-    );
+      true);
 
     assert.equal(
       input.nextElementSibling,
-      null
-    );
+      null);
 
     assert.equal(
       description.textContent,
-      'Shown below'
-    );
+      'Shown below');
 
     assert.equal(
       input.classList.contains('is-invalid'),
-      true
-    );
+      true);
 
     assert.equal(
       error.textContent,
-      'Value is invalid'
-    );
-  }
-);
+      'Value is invalid');
+  });
 
 test(
   'text-input: bootstrap theme supplies bootstrap textarea control in multiline mode',
@@ -265,25 +240,20 @@ test(
 
     assert.equal(
       textarea.value,
-      'Hello'
-    );
+      'Hello');
 
     assert.equal(
       textarea.classList.contains('form-control'),
-      true
-    );
+      true);
 
     assert.equal(
       textarea.nextElementSibling,
-      null
-    );
+      null);
 
     assert.equal(
       error.textContent,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   'text-input: package default theme applies bootstrap control classes',
@@ -299,8 +269,7 @@ test(
       await import('./themes/bootstrap-theme.js');
 
     themeModule.setDefaultTheme(
-      bootstrapThemeModule.createBootstrapTheme()
-    );
+      bootstrapThemeModule.createBootstrapTheme());
 
     try {
       element.label = 'Project name';
@@ -315,13 +284,11 @@ test(
 
       assert.equal(
         input.classList.contains('form-control'),
-        true
-      );
+        true);
     } finally {
       themeModule.setDefaultTheme(null);
     }
-  }
-);
+  });
 
 test(
   'text-input: emits input details and keeps value property as reset value',
@@ -343,10 +310,8 @@ test(
       event =>
       {
         received.push(
-          ((event as unknown) as CustomEvent<TextInputChangeDetail>).detail
-        );
-      }
-    );
+          ((event as unknown) as CustomEvent<TextInputChangeDetail>).detail);
+      });
 
     const input =
       element.querySelector('input') as HTMLInputElement;
@@ -357,39 +322,32 @@ test(
       new window.Event(
         'input',
         { bubbles: true }
-      )
-    );
+      ));
 
     const receivedDetail =
       received[0];
 
     if (receivedDetail === undefined) {
       assert.fail(
-        'Expected text input to emit an input event with detail.'
-      );
+        'Expected text input to emit an input event with detail.');
     }
 
     assert.equal(
       element.value,
-      'Initial'
-    );
+      'Initial');
 
     assert.equal(
       element.draftValue,
-      'Changed'
-    );
+      'Changed');
 
     assert.equal(
       receivedDetail.value,
-      'Changed'
-    );
+      'Changed');
 
     assert.equal(
       receivedDetail.dirty,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'text-input: multiline Enter keeps newline but Ctrl+Enter finishes editing',
@@ -412,8 +370,7 @@ test(
       () =>
       {
         changes += 1;
-      }
-    );
+      });
 
     const textarea =
       element.querySelector('textarea') as HTMLTextAreaElement;
@@ -422,27 +379,22 @@ test(
       new window.KeyboardEvent(
         'keydown',
         { key: 'Enter', bubbles: true }
-      )
-    );
+      ));
 
     assert.equal(
       changes,
-      0
-    );
+      0);
 
     textarea.dispatchEvent(
       new window.KeyboardEvent(
         'keydown',
         { key: 'Enter', ctrlKey: true, bubbles: true }
-      )
-    );
+      ));
 
     assert.equal(
       changes,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   'text-input: autoextend applies textarea height with max rows limit',
@@ -465,10 +417,8 @@ test(
 
     assert.notEqual(
       textarea.style.height,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   'text-input: local template can move label and description around control host',
@@ -499,10 +449,8 @@ test(
 
     assert.equal(
       after.textContent,
-      'Moved'
-    );
-  }
-);
+      'Moved');
+  });
 
 test(
   'text-input: local input control template can provide themed control markup',
@@ -537,22 +485,17 @@ test(
 
     assert.equal(
       shell.contains(input),
-      true
-    );
+      true);
 
     assert.equal(
       input.value,
-      'Hello'
-    );
+      'Hello');
 
     assert.equal(
       input.classList.contains(
-        'custom-invalid'
-      ),
-      true
-    );
-  }
-);
+        'custom-invalid'),
+      true);
+  });
 
 async function createElement(
   ): Promise<TextInput>
@@ -560,8 +503,7 @@ async function createElement(
   await ensureDomAndModuleLoaded();
 
   return document.createElement(
-    'asljs-text-input'
-  ) as TextInput;
+    'asljs-text-input') as TextInput;
 }
 
 async function ensureDomAndModuleLoaded(
@@ -603,32 +545,27 @@ async function ensureDomAndModuleLoaded(
       Object.defineProperty(
         style,
         'lineHeight',
-        { value: '20px' }
-      );
+        { value: '20px' });
 
       Object.defineProperty(
         style,
         'paddingTop',
-        { value: '4px' }
-      );
+        { value: '4px' });
 
       Object.defineProperty(
         style,
         'paddingBottom',
-        { value: '4px' }
-      );
+        { value: '4px' });
 
       Object.defineProperty(
         style,
         'borderTopWidth',
-        { value: '1px' }
-      );
+        { value: '1px' });
 
       Object.defineProperty(
         style,
         'borderBottomWidth',
-        { value: '1px' }
-      );
+        { value: '1px' });
 
       return style;
     }) as typeof globalThis.getComputedStyle;

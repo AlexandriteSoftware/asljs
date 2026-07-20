@@ -13,10 +13,8 @@ export function dbRequestAsync<T>(
         () =>
         {
           resolve(
-            request.result
-          );
-        }
-      );
+            request.result);
+        });
 
       request.addEventListener(
         'error',
@@ -26,10 +24,8 @@ export function dbRequestAsync<T>(
             request.error
               ?? new Error(
                 'IndexedDB request failed'
-              )
-          );
-        }
-      );
+              ));
+        });
     }
   );
 }
@@ -62,21 +58,17 @@ export function dbOpen(
 
           for (const update of updates) {
             update(
-              request.result
-            );
+              request.result);
           }
-        }
-      );
+        });
 
       request.addEventListener(
         'success',
         () =>
         {
           resolve(
-            request.result
-          );
-        }
-      );
+            request.result);
+        });
 
       request.addEventListener(
         'blocked',
@@ -85,10 +77,8 @@ export function dbOpen(
           reject(
             new Error(
               'Database opening is blocked'
-            )
-          );
-        }
-      );
+            ));
+        });
 
       request.addEventListener(
         'error',
@@ -98,10 +88,8 @@ export function dbOpen(
             request.error
               ?? new Error(
                 'Failed to open database'
-              )
-          );
-        }
-      );
+              ));
+        });
     }
   );
 }
@@ -124,8 +112,7 @@ export function dbDelete(
         () =>
         {
           resolve();
-        }
-      );
+        });
 
       request.addEventListener(
         'blocked',
@@ -134,10 +121,8 @@ export function dbDelete(
           reject(
             new Error(
               'Database deletion is blocked'
-            )
-          );
-        }
-      );
+            ));
+        });
 
       request.addEventListener(
         'error',
@@ -147,10 +132,8 @@ export function dbDelete(
             request.error
               ?? new Error(
                 'Failed to delete database'
-              )
-          );
-        }
-      );
+              ));
+        });
     }
   );
 }

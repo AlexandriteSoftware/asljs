@@ -23,8 +23,7 @@ export async function execInventory(
   ): Promise<void>
 {
   logger.trace(
-    'Inventory command: start'
-  );
+    'Inventory command: start');
 
   const { artefactDefinitionProvider, artefactProvider } =
     environment
@@ -47,11 +46,9 @@ export async function execInventory(
     definitions.filter(
       definition =>
       inventoryDefinitions.includes(
-        definition.name
-      ));
+        definition.name));
 
-  const artefactIndex =
-    new Map<
+  const artefactIndex = new Map<
     string,
     { location: string; definitions: string[]; }
   >();
@@ -59,8 +56,7 @@ export async function execInventory(
   for (const definition of filteredDefinitions) {
     logger.trace(
       'Inventory command: collecting items for definition "%s"',
-      definition.name
-    );
+      definition.name);
 
     const definitionArtefacts =
       await artefactProvider.getArtefacts(
@@ -69,8 +65,7 @@ export async function execInventory(
     logger.trace(
       'Inventory command: collected %d artefacts for definition "%s"',
       definitionArtefacts.length,
-      definition.name
-    );
+      definition.name);
 
     for (const artefact of definitionArtefacts) {
       const existingEntry =
@@ -86,17 +81,14 @@ export async function execInventory(
       }
 
       entry.definitions.push(
-        definition.name
-      );
+        definition.name);
 
       entry.definitions.sort(
-        (left, right) => left.localeCompare(right)
-      );
+        (left, right) => left.localeCompare(right));
 
       artefactIndex.set(
         artefact.relativePath,
-        entry
-      );
+        entry);
     }
   }
 
@@ -114,9 +106,7 @@ export async function execInventory(
   items.sort(
     (left, right) =>
       left.location.localeCompare(
-        right.location
-      )
-  );
+        right.location));
 
   const table =
     renderObjectsToMarkdownTable(
@@ -127,6 +117,5 @@ export async function execInventory(
       items);
 
   environment.stdout.write(
-    `${table}\n`
-  );
+    `${table}\n`);
 }

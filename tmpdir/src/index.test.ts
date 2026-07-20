@@ -11,19 +11,14 @@ test(
       await import('./index.js');
 
     assert.ok(
-      indexModule.TmpDir
-    );
+      indexModule.TmpDir);
 
     assert.ok(
-      indexModule.tmpDirFormatMessage
-    );
+      indexModule.tmpDirFormatMessage);
 
     assert.ok(
-      indexModule.tmpDirThrowErrorFunction
-    );
+      indexModule.tmpDirThrowErrorFunction);
 
     assert.ok(
-      indexModule.tmpDirConsoleLogFunction
-    );
-  }
-);
+      indexModule.tmpDirConsoleLogFunction);
+  });

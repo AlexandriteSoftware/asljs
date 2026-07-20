@@ -29,9 +29,7 @@ export function renderAppListUi(
     .sort(
       (left, right) =>
         right.updatedAt.localeCompare(
-          left.updatedAt
-        )
-    );
+          left.updatedAt));
 
   const items: SelectItem[] =
     apps.map(
@@ -46,14 +44,12 @@ export function renderAppListUi(
         value: '__separator__',
         label: '────────',
         disabled: true
-      }
-    );
+      });
   }
 
   items.push(
     { value: options.newActionValue, label: 'New...' },
-    { value: options.importActionValue, label: 'Import...' }
-  );
+    { value: options.importActionValue, label: 'Import...' });
 
   selectElement.items = items;
   selectElement.disabled = items.length === 0;

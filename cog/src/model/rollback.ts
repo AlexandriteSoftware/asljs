@@ -46,10 +46,8 @@ export class BackupRollbackFeed implements RollbackFeed
 
     await mkdir(
       dirname(
-        backupPath
-      ),
-      { recursive: true }
-    );
+        backupPath),
+      { recursive: true });
 
     await writeFile(
       backupPath,
@@ -57,11 +55,9 @@ export class BackupRollbackFeed implements RollbackFeed
         JSON.stringify(
           backup,
           null,
-          2
-        )
+          2)
       }\n`,
-      'utf8'
-    );
+      'utf8');
 
     return new BackupRollbackFeed(
       backupPath
@@ -85,8 +81,7 @@ export class BackupRollbackFeed implements RollbackFeed
   {
     await rm(
       this.backupPath,
-      { force: true }
-    );
+      { force: true });
   }
 
   async saveFileState(
@@ -98,8 +93,7 @@ export class BackupRollbackFeed implements RollbackFeed
 
     if (
       existsSync(
-        filePath
-      )
+        filePath)
     ) {
       backup.files
         .push(
@@ -107,23 +101,18 @@ export class BackupRollbackFeed implements RollbackFeed
             path: filePath,
             existed: true,
             content: (await readFile(
-              filePath
-            ))
+              filePath))
               .toString(
-                'base64'
-              )
-          }
-        );
+                'base64')
+          });
     } else {
       backup.files
         .push(
-          { path: filePath, existed: false }
-        );
+          { path: filePath, existed: false });
     }
 
     await this.save(
-      backup
-    );
+      backup);
   }
 
   async rollbackLast(): Promise<void>
@@ -139,12 +128,10 @@ export class BackupRollbackFeed implements RollbackFeed
     }
 
     await restoreFile(
-      file
-    );
+      file);
 
     await this.save(
-      backup
-    );
+      backup);
   }
 
   async rollbackAll(): Promise<void>
@@ -158,15 +145,13 @@ export class BackupRollbackFeed implements RollbackFeed
       ].reverse()
     ) {
       await restoreFile(
-        file
-      );
+        file);
     }
 
     backup.files = [];
 
     await this.save(
-      backup
-    );
+      backup);
   }
 
   private async load(): Promise<Backup>
@@ -174,9 +159,7 @@ export class BackupRollbackFeed implements RollbackFeed
     return JSON.parse(
       await readFile(
         this.backupPath,
-        'utf8'
-      )
-    ) as Backup;
+        'utf8')) as Backup;
   }
 
   private async save(
@@ -189,11 +172,9 @@ export class BackupRollbackFeed implements RollbackFeed
         JSON.stringify(
           backup,
           null,
-          2
-        )
+          2)
       }\n`,
-      'utf8'
-    );
+      'utf8');
   }
 }
 
@@ -204,22 +185,17 @@ async function restoreFile(
   if (file.existed) {
     await mkdir(
       dirname(
-        file.path
-      ),
-      { recursive: true }
-    );
+        file.path),
+      { recursive: true });
 
     await writeFile(
       file.path,
       Buffer.from(
         file.content ?? '',
-        'base64'
-      )
-    );
+        'base64'));
   } else {
     await rm(
       file.path,
-      { recursive: true, force: true }
-    );
+      { recursive: true, force: true });
   }
 }

@@ -25,20 +25,16 @@ test(
 
     demo.on(
       'ping',
-      value => seen = value
-    );
+      value => seen = value);
 
     demo.emit(
       'ping',
-      7
-    );
+      7);
 
     assert.equal(
       seen,
-      7
-    );
-  }
-);
+      7);
+  });
 
 test(
   `${TEST_SUITE}: EventfulBase passes options to eventful setup`,
@@ -64,12 +60,9 @@ test(
       () =>
       {
         throw new Error('boom');
-      }
-    );
+      });
 
     assert.throws(
       () => demo.emit('boom'),
-      Error
-    );
-  }
-);
+      Error);
+  });

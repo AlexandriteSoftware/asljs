@@ -77,42 +77,38 @@ export function createNameModalUi(
     {
       icon: '<i class="bi bi-x-lg"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnConfirm,
     {
       text: 'OK',
       className: 'btn btn-primary'
-    }
-  );
+    });
 
   configureButton(
     elBtnCancel,
     {
       text: 'Cancel',
       className: 'btn btn-outline-secondary'
-    }
-  );
+    });
 
   configureTextInput(
     elInput,
     {
       placeholder: 'My App'
-    }
-  );
+    });
 
   function close(
     ): void
-{
+  {
     activeRequest = null;
     elModal.classList.add('hidden');
   }
 
   async function confirm(
     ): Promise<void>
-{
+  {
     if (activeRequest === null) {
       return;
     }
@@ -135,18 +131,15 @@ export function createNameModalUi(
     () =>
     {
       void confirm();
-    }
-  );
+    });
 
   elBtnCancel.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elBtnClose.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elInput.addEventListener(
     'keydown',
@@ -156,8 +149,7 @@ export function createNameModalUi(
         event.preventDefault();
         void confirm();
       }
-    }
-  );
+    });
 
   elModal.addEventListener(
     'click',
@@ -166,8 +158,7 @@ export function createNameModalUi(
       if (event.target === elModal) {
         close();
       }
-    }
-  );
+    });
 
   return {
     open(request: NameModalRequest): void
@@ -177,8 +168,7 @@ export function createNameModalUi(
 
       writeControlValue(
         elInput,
-        request.initialValue
-      );
+        request.initialValue);
 
       elModal.classList.remove('hidden');
 

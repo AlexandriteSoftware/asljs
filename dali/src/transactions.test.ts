@@ -21,10 +21,8 @@ async function openTestDb(
     {
       db.createObjectStore(
         'records',
-        { keyPath: 'id' }
-      );
-    }]
-  );
+        { keyPath: 'id' });
+    }]);
 }
 
 test(
@@ -44,11 +42,8 @@ test(
         txEnsure(
           tx,
           'records',
-          TxMode.read
-        )
-    );
-  }
-);
+          TxMode.read));
+  });
 
 test(
   `${TEST_SUITE}: txEnsure throws for inaccessible store`,
@@ -67,16 +62,12 @@ test(
         txEnsure(
           tx,
           'missing_store',
-          TxMode.read
-        ),
+          TxMode.read),
       (error: unknown) =>
       {
         assert.ok(
-          error instanceof TransactionStoreAccessError
-        );
+          error instanceof TransactionStoreAccessError);
 
         return true;
-      }
-    );
-  }
-);
+      });
+  });

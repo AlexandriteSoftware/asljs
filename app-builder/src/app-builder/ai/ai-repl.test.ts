@@ -72,15 +72,12 @@ test(
 
     assert.equal(
       result.summary,
-      'Completed summary'
-    );
+      'Completed summary');
 
     assert.equal(
       requests.length,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   'generateApp executes tool calls and sends function_call_output via transport',
@@ -94,8 +91,7 @@ test(
       createResponse: async request =>
       {
         requests.push(
-          request as Record<string, unknown>
-        );
+          request as Record<string, unknown>);
 
         callCount += 1;
 
@@ -118,23 +114,19 @@ test(
 
         assert.equal(
           Array.isArray(toolOutputs),
-          true
-        );
+          true);
 
         assert.equal(
           toolOutputs[0]?.type,
-          'function_call_output'
-        );
+          'function_call_output');
 
         assert.equal(
           toolOutputs[0]?.call_id,
-          'call-1'
-        );
+          'call-1');
 
         assert.equal(
           toolOutputs[0]?.output,
-          '{"ok":true,"value":["index.html"]}'
-        );
+          '{"ok":true,"value":["index.html"]}');
 
         return {
           output: [
@@ -163,25 +155,20 @@ test(
 
     assert.equal(
       result.summary,
-      'Applied update.'
-    );
+      'Applied update.');
 
     assert.equal(
       callCount,
-      2
-    );
+      2);
 
     assert.equal(
       requests[0]?.previous_response_id,
-      undefined
-    );
+      undefined);
 
     assert.equal(
       requests[1]?.previous_response_id,
-      'resp-1'
-    );
-  }
-);
+      'resp-1');
+  });
 
 test(
   'generateApp propagates transport errors',
@@ -202,12 +189,9 @@ test(
           'test-key',
           DEFAULT_MODEL,
           TEST_TOOLS,
-          { transport }
-        ),
-      /Transport failed/
-    );
-  }
-);
+          { transport }),
+      /Transport failed/);
+  });
 
 test(
   'generateApp throws a typed error when tool step continuation is declined',
@@ -239,12 +223,9 @@ test(
             initialToolStepLimit: 0,
             onToolStepLimit: async () => false,
             transport
-          }
-        ),
-      error => error instanceof ToolStepLimitExceededError
-    );
-  }
-);
+          }),
+      error => error instanceof ToolStepLimitExceededError);
+  });
 
 test(
   'generateApp extends tool step limit when approved',
@@ -298,15 +279,12 @@ test(
 
     assert.equal(
       result.summary,
-      'done'
-    );
+      'done');
 
     assert.equal(
       onToolStepLimitCalls,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   'listAvailableModels returns model ids from transport',
@@ -318,8 +296,7 @@ test(
       {
         assert.equal(
           apiKey,
-          'test-key'
-        );
+          'test-key');
 
         return [
           { id: 'gpt-5-mini', created: 1 },
@@ -331,15 +308,12 @@ test(
     assert.deepEqual(
       await listAvailableModels(
         'test-key',
-        transport
-      ),
+        transport),
       [
         { id: 'gpt-5-mini', created: 1 },
         { id: 'gpt-5.4-codex', created: 2 }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 test(
   'listAvailableModels returns empty list without api key',
@@ -356,9 +330,6 @@ test(
     assert.deepEqual(
       await listAvailableModels(
         '',
-        transport
-      ),
-      []
-    );
-  }
-);
+        transport),
+      []);
+  });

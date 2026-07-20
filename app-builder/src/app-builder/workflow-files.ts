@@ -21,10 +21,8 @@ export function createDefaultWorkflowFiles(
       name: fileName,
       content: buildDefaultWorkflowContent(
         fileName,
-        appName
-      )
-    })
-  );
+        appName)
+    }));
 }
 
 export function ensureWorkflowFiles(
@@ -39,8 +37,7 @@ export function ensureWorkflowFiles(
   const existingByName =
     new Set(
     options.files.map(
-      file => file.name.toLowerCase()
-    )
+      file => file.name.toLowerCase())
   );
 
   const nextFiles =
@@ -51,8 +48,7 @@ export function ensureWorkflowFiles(
   for (const fileName of WORKFLOW_FILE_ORDER) {
     if (
       existingByName.has(
-        fileName.toLowerCase()
-      )
+        fileName.toLowerCase())
     ) {
       continue;
     }
@@ -64,10 +60,8 @@ export function ensureWorkflowFiles(
         name: fileName,
         content: buildDefaultWorkflowContent(
           fileName,
-          options.appName
-        )
-      }
-    );
+          options.appName)
+      });
 
     changed = true;
   }
@@ -89,9 +83,7 @@ export function hasOnlyWorkflowFiles(
   return fileNames.every(
     fileName =>
       WORKFLOW_FILE_ORDER.includes(
-        fileName as typeof WORKFLOW_FILE_ORDER[number]
-      )
-  );
+        fileName as typeof WORKFLOW_FILE_ORDER[number]));
 }
 
 export function createEmptyPlanContent(
@@ -121,8 +113,7 @@ function sortWorkflowFilesFirst(
   const priority =
     new Map<string, number>(
     WORKFLOW_FILE_ORDER.map(
-      (name, index) => [name, index]
-    )
+      (name, index) => [name, index])
   );
 
   return [...files].sort(
@@ -141,10 +132,8 @@ function sortWorkflowFilesFirst(
       }
 
       return left.name.localeCompare(
-        right.name
-      );
-    }
-  );
+        right.name);
+    });
 }
 
 function buildDefaultWorkflowContent(

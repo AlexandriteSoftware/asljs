@@ -243,8 +243,7 @@ export function renderPreview(
     files.find(
       file => file.name === 'index.html')
     ?? files.find(
-      file => file.name.endsWith('.html')
-    )
+      file => file.name.endsWith('.html'))
     ?? null;
 
   if (htmlFile === null) {
@@ -263,8 +262,7 @@ export function renderPreview(
     files.find(
       file => file.name === 'style.css')
     ?? files.find(
-      file => file.name.endsWith('.css')
-    )
+      file => file.name.endsWith('.css'))
     ?? null;
 
   const resolvedCssContent =
@@ -273,19 +271,16 @@ export function renderPreview(
     : replaceCssAssetUrls(
       cssFile.content,
       cssFile.name,
-      assetUrls
-    );
+      assetUrls);
 
   if (cssFile !== null) {
     html = html.replace(
       /<link[^>]+href=["']style\.css["'][^>]*>/gi,
-      `<style>${resolvedCssContent}</style>`
-    );
+      `<style>${resolvedCssContent}</style>`);
 
     html = html.replace(
       /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
-      `<style>${resolvedCssContent}</style>`
-    );
+      `<style>${resolvedCssContent}</style>`);
   }
 
   for (const file of files) {
@@ -318,25 +313,21 @@ export function renderPreview(
         return isModule
           ? `<script type="module">${file.content}</script>`
           : `<script>${file.content}</script>`;
-      }
-    );
+      });
   }
 
   html = replaceHtmlAssetReferences(
     html,
     htmlFile.name,
-    assetUrls
-  );
+    assetUrls);
 
   html = injectPackageImportMap(
     html,
-    files
-  );
+    files);
 
   html = injectHostContext(
     html,
-    options
-  );
+    options);
 
   html = injectEvalBridge(html);
   frame.srcdoc = html;
@@ -419,8 +410,7 @@ async function requestPreviewPayload(
         cleanup();
 
         reject(
-          new Error('Timed out waiting for app evaluation result.')
-        );
+          new Error('Timed out waiting for app evaluation result.'));
       },
         5000);
 
@@ -447,19 +437,17 @@ async function requestPreviewPayload(
 
     function cleanup(
       ): void
-{
+    {
       window.clearTimeout(timeoutId);
 
       window.removeEventListener(
         'message',
-        onMessage
-      );
+        onMessage);
     }
 
     window.addEventListener(
       'message',
-      onMessage
-    );
+      onMessage);
 
     frameWindow.postMessage(
       {
@@ -467,8 +455,7 @@ async function requestPreviewPayload(
         id: requestId,
         ...requestBody
       },
-      '*'
-    );
+      '*');
   });
 }
 
@@ -478,8 +465,7 @@ function injectEvalBridge(
 {
   if (
     html.includes(
-      EVAL_REQUEST_TYPE
-    )
+      EVAL_REQUEST_TYPE)
   ) {
     return html;
   }
@@ -487,8 +473,7 @@ function injectEvalBridge(
   if (html.includes('</body>')) {
     return html.replace(
       '</body>',
-      `${EVAL_BRIDGE_SCRIPT}</body>`
-    );
+      `${EVAL_BRIDGE_SCRIPT}</body>`);
   }
 
   return `${html}\n${EVAL_BRIDGE_SCRIPT}`;
@@ -527,15 +512,13 @@ function injectPackageImportMap(
   const importMap =
     `<script type="importmap">${
     JSON.stringify(
-      { imports }
-    )
+      { imports })
   }</script>`;
 
   if (/<head[^>]*>/i.test(html)) {
     return html.replace(
       /<head[^>]*>/i,
-      match => `${match}\n${importMap}`
-    );
+      match => `${match}\n${importMap}`);
   }
 
   return `${importMap}\n${html}`;
@@ -578,8 +561,7 @@ function readImportMapVersions(
         (name): [string, string] => [
         name,
         normalizeNpmVersion(
-          source[name]
-        )
+          source[name])
       ]);
 
     return versions;
@@ -626,8 +608,7 @@ function injectHostContext(
 {
   if (
     html.includes(
-      '__ASLJS_APP_BUILDER_HOST__'
-    )
+      '__ASLJS_APP_BUILDER_HOST__')
   ) {
     return html;
   }
@@ -640,22 +621,19 @@ function injectHostContext(
             || options.hostOpenAiApiKey.trim() === ''
           ? null
           : options.hostOpenAiApiKey
-      }
-    )
+      })
   };</script>`;
 
   if (html.includes('</head>')) {
     return html.replace(
       '</head>',
-      `${script}</head>`
-    );
+      `${script}</head>`);
   }
 
   if (html.includes('<body')) {
     return html.replace(
       /<body[^>]*>/i,
-      match => `${match}\n${script}`
-    );
+      match => `${match}\n${script}`);
   }
 
   return `${script}\n${html}`;
@@ -665,8 +643,7 @@ function createVirtualAssetUrlMap(
     files: GeneratedFile[]
   ): Map<string, string>
 {
-  const assetUrls =
-    new Map<string, string>();
+  const assetUrls = new Map<string, string>();
 
   for (const file of files) {
     const assetUrl =
@@ -679,10 +656,8 @@ function createVirtualAssetUrlMap(
 
     assetUrls.set(
       normalizeVirtualPath(
-        file.name
-      ),
-      assetUrl
-    );
+        file.name),
+      assetUrl);
   }
 
   return assetUrls;
@@ -721,8 +696,7 @@ function replaceHtmlAssetReferences(
         : `${String(attributeName)}=${String(quote)}${resolved}${
           String(quote)
         }`;
-    }
-  );
+    });
 }
 
 function replaceCssAssetUrls(
@@ -744,8 +718,7 @@ function replaceCssAssetUrls(
       return resolved === null
         ? match
         : `url(${String(quote)}${resolved}${String(quote)})`;
-    }
-  );
+    });
 }
 
 function resolveVirtualAssetReference(
@@ -818,8 +791,7 @@ function normalizeVirtualPath(
     path
     .replace(
       /\\/g,
-      '/'
-    )
+      '/')
     .split('/');
 
   const normalized: string[] = [];

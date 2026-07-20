@@ -26,8 +26,7 @@ test(
     const options =
       { tmpDir: baseTmpDir, prefix: 'case-' };
 
-    const tmpDirs =
-      new Map<string, TmpDir>();
+    const tmpDirs = new Map<string, TmpDir>();
 
     try {
       for (
@@ -43,33 +42,26 @@ test(
             tmpDir.path);
 
         assert.ok(
-          tmpDirs.has(name) === false
-        );
+          tmpDirs.has(name) === false);
 
         tmpDirs.set(
           name,
-          tmpDir
-        );
+          tmpDir);
 
         assert.ok(
-          name.startsWith('case-')
-        );
+          name.startsWith('case-'));
 
         await assert.doesNotReject(
           async () =>
             await fs.access(
-              tmpDir.path
-            )
-        );
+              tmpDir.path));
       }
     } finally {
       await fs.rm(
         baseTmpDir,
-        { recursive: true, force: true }
-      );
+        { recursive: true, force: true });
     }
-  }
-);
+  });
 
 test(
   'helpers create subdirectories and files inside the temporary directory',
@@ -101,23 +93,18 @@ test(
 
     assert.strictEqual(
       path.dirname(filePath),
-      directoryPath
-    );
+      directoryPath);
 
     assert.strictEqual(
       fileContent,
-      'hello tmpdir'
-    );
+      'hello tmpdir');
 
     assert.ok(
-      directoryStats.isDirectory()
-    );
+      directoryStats.isDirectory());
 
     assert.ok(
-      fileStats.isFile()
-    );
-  }
-);
+      fileStats.isFile());
+  });
 
 test(
   'cleanup removes the temporary directory',
@@ -131,8 +118,7 @@ test(
 
     await tmpDir.writeText(
       'content.txt',
-      'cleanup me'
-    );
+      'cleanup me');
 
     await tmpDir.cleanup();
 
@@ -140,21 +126,16 @@ test(
       async () =>
       {
         await fs.access(
-          tmpDirectoryPath
-        );
-      }
-    );
+          tmpDirectoryPath);
+      });
 
     await assert.rejects(
       async () =>
       {
         await fs.stat(
-          tmpDirectoryPath
-        );
-      }
-    );
-  }
-);
+          tmpDirectoryPath);
+      });
+  });
 
 test(
   'path helpers reject attempts to escape the temporary directory',
@@ -181,41 +162,31 @@ test(
         () =>
           tmpDir.resolve(
             '..',
-            'escaped.txt'
-          )
-      );
+            'escaped.txt'));
 
       await assert.rejects(
         async () =>
           await tmpDir.mkdir(
-            '../escaped-dir'
-          )
-      );
+            '../escaped-dir'));
 
       await assert.rejects(
         async () =>
           await tmpDir.writeText(
             '../escaped.txt',
-            'bad path'
-          )
-      );
+            'bad path'));
 
       await assert.rejects(
         async () =>
           await fs.access(
-            escapedFilePath
-          )
-      );
+            escapedFilePath));
     } finally {
       await tmpDir.cleanup();
 
       await fs.rm(
         parentDirectoryPath,
-        { recursive: true, force: true }
-      );
+        { recursive: true, force: true });
     }
-  }
-);
+  });
 
 test(
   'using statement cleans the temporary directory',
@@ -229,8 +200,7 @@ test(
 
       await tmpDir.writeText(
         'content.txt',
-        ''
-      );
+        '');
 
       return tmpDir.path;
     };
@@ -242,12 +212,9 @@ test(
       async () =>
       {
         await fs.access(
-          tmpDirPath
-        );
-      }
-    );
-  }
-);
+          tmpDirPath);
+      });
+  });
 
 test(
   'await using statement cleans the temporary directory',
@@ -261,8 +228,7 @@ test(
 
       await tmpDir.writeText(
         'content.txt',
-        ''
-      );
+        '');
 
       return tmpDir.path;
     };
@@ -274,12 +240,9 @@ test(
       async () =>
       {
         await fs.access(
-          tmpDirPath
-        );
-      }
-    );
-  }
-);
+          tmpDirPath);
+      });
+  });
 
 test(
   'TmpDir traces calls to its methods',
@@ -308,11 +271,8 @@ test(
 
     await tmpDir.writeText(
       'content.txt',
-      ''
-    );
+      '');
 
     assert.ok(
-      traceMessages.length > 0
-    );
-  }
-);
+      traceMessages.length > 0);
+  });

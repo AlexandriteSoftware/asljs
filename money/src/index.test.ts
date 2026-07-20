@@ -11,17 +11,13 @@ test(
   {
     assert.equal(
       typeof money,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof money.fromString,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof money.fromNumber,
-      'function'
-    );
-  }
-);
+      'function');
+  });

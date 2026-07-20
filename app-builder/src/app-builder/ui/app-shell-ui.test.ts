@@ -39,11 +39,9 @@ test(
         assert.notEqual(
           document.getElementById(id),
           null,
-          `Expected #${id} to exist.`
-        );
+          `Expected #${id} to exist.`);
       }
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

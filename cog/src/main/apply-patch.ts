@@ -40,15 +40,12 @@ export function configureApplyPatchCommand(
 {
   program
     .command(
-      'apply-patch'
-    )
+      'apply-patch')
     .description(
-      'apply the selected patch to the selected envelope'
-    )
+      'apply the selected patch to the selected envelope')
     .option(
       '--patch-verify-cmd <command>',
-      'command used to verify the applied patch'
-    )
+      'command used to verify the applied patch')
     .action(
       async (
         applyPatchOptions: {
@@ -66,17 +63,13 @@ export function configureApplyPatchCommand(
           context,
           {
             envelopePath: resolveEnvelopePath(
-              options.envelope
-            ),
+              options.envelope),
             patchPath: resolvePatchPath(
-              options.patch
-            ),
+              options.patch),
             patchVerifyCmd: applyPatchOptions.patchVerifyCmd
               ?? process.env.COG_PATCH_VERIFY_CMD
-          }
-        );
-      }
-    );
+          });
+      });
 }
 
 async function applyPatch(
@@ -97,12 +90,10 @@ async function applyPatch(
       envelopePath);
 
   ensureBackupFileDoesNotExist(
-    backupPath
-  );
+    backupPath);
 
   ensurePatchFileExists(
-    patchPath
-  );
+    patchPath);
 
   const rollbackFeed =
     await BackupRollbackFeed.create(
@@ -127,17 +118,14 @@ async function applyPatch(
         context,
         envelope,
         command,
-        rollbackFeed
-      );
+        rollbackFeed);
     }
 
     await verifyPatch(
-      options.patchVerifyCmd
-    );
+      options.patchVerifyCmd);
 
     await updateEnvelopeFiles(
-      envelope
-    );
+      envelope);
 
     await envelopeContainer.saveEnvelope(envelopePath);
 
@@ -162,21 +150,18 @@ async function applyPatchCommand(
       envelope,
       command as unknown as ReadParameters,
       rollbackFeed,
-      context
-    );
+      context);
   } else if (command.command === 'write') {
     await write(
       envelope,
       command as unknown as Write,
-      rollbackFeed
-    );
+      rollbackFeed);
   } else if (command.command === 'remove') {
     await remove(
       envelope,
       command as unknown as Remove,
       rollbackFeed,
-      context
-    );
+      context);
   } else {
     throw new Error(
       `Unknown patch command ${command.command}`
@@ -220,13 +205,11 @@ async function runCommand(
 
       child.on(
         'error',
-        reject
-      );
+        reject);
 
       child.on(
         'close',
-        resolve
-      );
+        resolve);
     }
   );
 }

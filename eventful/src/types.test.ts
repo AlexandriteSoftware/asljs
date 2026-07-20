@@ -31,37 +31,29 @@ test(
     );
 
     assert.ok(
-      error instanceof Error
-    );
+      error instanceof Error);
 
     assert.equal(
       error.name,
-      'ListenerError'
-    );
+      'ListenerError');
 
     assert.equal(
       error.message,
-      'failed'
-    );
+      'failed');
 
     assert.equal(
       error.error,
-      inner
-    );
+      inner);
 
     assert.equal(
       error.object,
-      object
-    );
+      object);
 
     assert.equal(
       error.event,
-      'test'
-    );
+      'test');
 
     assert.equal(
       error.listener,
-      listener
-    );
-  }
-);
+      listener);
+  });

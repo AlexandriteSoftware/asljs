@@ -24,14 +24,12 @@ export function sagaSetup(
     sagaStore.createIndex(
       'by_status',
       'status',
-      { unique: false }
-    );
+      { unique: false });
 
     sagaStore.createIndex(
       'by_updatedAt',
       'updatedAt',
-      { unique: false }
-    );
+      { unique: false });
   }
 
   if (!db.objectStoreNames.contains(entryStoreName)) {
@@ -43,13 +41,11 @@ export function sagaSetup(
     entryStore.createIndex(
       'by_saga_sequence',
       ['sagaId', 'sequence'],
-      { unique: true }
-    );
+      { unique: true });
 
     entryStore.createIndex(
       'by_saga',
       'sagaId',
-      { unique: false }
-    );
+      { unique: false });
   }
 }

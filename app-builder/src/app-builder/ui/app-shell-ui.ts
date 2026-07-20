@@ -33,6 +33,5 @@ export function renderAppBuilderShell(
   `;
 
   root.replaceChildren(
-    template.content.cloneNode(true)
-  );
+    template.content.cloneNode(true));
 }

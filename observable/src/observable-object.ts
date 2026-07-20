@@ -46,8 +46,7 @@ export class ObservableObject<T extends object>
     return observable.watch(
       this as any,
       propertiesList,
-      callback as any
-    );
+      callback as any);
   }
 
   protected setAndEmit<
@@ -62,8 +61,7 @@ export class ObservableObject<T extends object>
     if (
       Object.is(
         previous,
-        value
-      )
+        value)
     ) {
       return false;
     }
@@ -73,8 +71,7 @@ export class ObservableObject<T extends object>
     this.emitSet(
       property,
       previous,
-      value
-    );
+      value);
 
     return true;
   }
@@ -92,13 +89,11 @@ export class ObservableObject<T extends object>
 
     (this as any).emit(
       `set:${property}`,
-      payload
-    );
+      payload);
 
     (this as any).emit(
       'set',
-      payload
-    );
+      payload);
 
     return true;
   }

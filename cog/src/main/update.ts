@@ -20,11 +20,9 @@ export function configureUpdateCommand(
 {
   program
     .command(
-      'update'
-    )
+      'update')
     .description(
-      'refresh envelope files using their update commands'
-    )
+      'refresh envelope files using their update commands')
     .action(
       async () =>
       {
@@ -37,12 +35,9 @@ export function configureUpdateCommand(
           context,
           {
             envelopePath: resolveEnvelopePath(
-              options.envelope
-            )
-          }
-        );
-      }
-    );
+              options.envelope)
+          });
+      });
 }
 
 async function updateCmd(
@@ -65,12 +60,10 @@ async function updateCmd(
 
   await updateEnvelopeFiles(
     envelope,
-    context
-  );
+    context);
 
   await envelopeContainer.saveEnvelope(
-    envelopePath
-  );
+    envelopePath);
 }
 
 export async function updateEnvelopeFiles(
@@ -81,20 +74,16 @@ export async function updateEnvelopeFiles(
   const updateCommands =
     envelope.files
     .map(
-      file => file.update
-    )
+      file => file.update)
     .filter(
-      (command): command is ReadParameters => command !== undefined
-    );
+      (command): command is ReadParameters => command !== undefined);
 
   for (const command of updateCommands) {
     await read(
       envelope,
-      command
-    );
+      command);
 
     context?.console.writeLine(
-      `refreshed ${command.pattern}`
-    );
+      `refreshed ${command.pattern}`);
   }
 }

@@ -62,8 +62,7 @@ export function configureButton(
     {
       text: options.text ?? '',
       icon: options.icon ?? ''
-    }
-  );
+    });
 }
 
 export function setButtonContent(

@@ -11,7 +11,5 @@ test(
   {
     assert.equal(
       typeof main,
-      'function'
-    );
-  }
-);
+      'function');
+  });

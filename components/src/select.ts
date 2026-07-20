@@ -141,8 +141,7 @@ export class Select extends LitElement
       inputId: `${this.#idBase}-control`,
       descriptionId: `${this.#idBase}-description`,
       errorId: `${this.#idBase}-error`
-    }
-  );
+    });
 
   readonly status: SelectStatus = observable(
     {
@@ -151,52 +150,42 @@ export class Select extends LitElement
       isValid: true,
       errorMessage: null,
       dirty: false
-    }
-  );
+    });
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor label: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor description: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor validator: SelectValidator | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor theme: ComponentsTheme | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor value: string | null = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor placeholder: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor items: SelectItem[] = [];
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor disabled = false;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor controlClassName = '';
 
   get draftValue(): string {
@@ -272,8 +261,7 @@ export class Select extends LitElement
       || changedProperties.has('disabled')
       || changedProperties.has('items')
       || changedProperties.has(
-        'controlClassName'
-      )
+        'controlClassName')
     ) {
       this.#syncControlState();
     }
@@ -285,13 +273,11 @@ export class Select extends LitElement
   {
     this.#templateElement = cloneNamedTemplate(
       this,
-      'template'
-    );
+      'template');
 
     this.#selectTemplateElement = cloneNamedTemplate(
       this,
-      'select'
-    );
+      'select');
   }
 
   #syncThemeProvider(): void
@@ -299,8 +285,7 @@ export class Select extends LitElement
     this.#disposeThemeProvider();
 
     this.#themeProvider = findThemeProvider(
-      this
-    );
+      this);
 
     if (this.#themeProvider === null) {
       return;
@@ -308,16 +293,14 @@ export class Select extends LitElement
 
     this.#themeProvider.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
   }
 
   #disposeThemeProvider(): void
   {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
 
     this.#themeProvider = null;
   }
@@ -330,8 +313,7 @@ export class Select extends LitElement
   #applyExternalValue(): void
   {
     this.status.draftValue = normalizeText(
-      this.value
-    );
+      this.value);
 
     this.#syncModelState();
     this.#syncControlState();
@@ -354,8 +336,7 @@ export class Select extends LitElement
 
     if (validator !== null) {
       errorMessage = validator(
-        this.status.draftValue
-      );
+        this.status.draftValue);
     }
 
     const isEmpty =
@@ -413,8 +394,7 @@ export class Select extends LitElement
 
     this.#templateDispose = bindDataModel(
       fragment,
-      this.#model as unknown as Record<string, unknown>
-    );
+      this.#model as unknown as Record<string, unknown>);
 
     templateHost.replaceChildren(fragment);
     this.#mountControl();
@@ -452,8 +432,7 @@ export class Select extends LitElement
       slotName === 'template'
         ? theme.select?.template
         : theme.select?.select,
-      this
-    );
+      this);
   }
 
   #mountControl(): void
@@ -473,12 +452,10 @@ export class Select extends LitElement
 
     this.#controlTemplateDispose = bindDataModel(
       mountedControl.fragment,
-      this.#model as unknown as Record<string, unknown>
-    );
+      this.#model as unknown as Record<string, unknown>);
 
     controlHost.replaceChildren(
-      mountedControl.fragment
-    );
+      mountedControl.fragment);
 
     this.#control = mountedControl.control;
     this.#controlBaseClassName = mountedControl.className;
@@ -499,15 +476,13 @@ export class Select extends LitElement
 
     this.#control.addEventListener(
       'change',
-      changeListener
-    );
+      changeListener);
 
     this.#controlChangeListener = () =>
     {
       this.#control?.removeEventListener(
         'change',
-        changeListener
-      );
+        changeListener);
     };
 
     this.#syncControlState();
@@ -539,8 +514,7 @@ export class Select extends LitElement
 
     for (
       const item of normalizeItems(
-        this.items
-      )
+        this.items)
     ) {
       const option =
         document.createElement('option');
@@ -558,8 +532,7 @@ export class Select extends LitElement
 
     const nextValue =
       candidateValues.includes(
-        this.status.draftValue
-      )
+        this.status.draftValue)
       ? this.status.draftValue
       : placeholder !== null
       ? ''
@@ -576,26 +549,21 @@ export class Select extends LitElement
 
     control.className = joinClassNames(
       this.#controlBaseClassName,
-      this.controlClassName
-    );
+      this.controlClassName);
 
     if (this.#controlInvalidClassName !== null && !this.status.isValid) {
       control.classList.add(
-        this.#controlInvalidClassName
-      );
+        this.#controlInvalidClassName);
     }
 
     control.toggleAttribute(
       'aria-invalid',
-      !this.status.isValid
-    );
+      !this.status.isValid);
 
     control.setAttribute(
       'aria-describedby',
       resolveAriaDescribedBy(
-        this.#model
-      )
-    );
+        this.#model));
   }
 
   #createMountedControl(
@@ -624,12 +592,10 @@ export class Select extends LitElement
       control,
       className: resolveInitialControlClassName(
         control,
-        controlHost
-      ),
+        controlHost),
       invalidClassName: resolveInitialControlInvalidClassName(
         control,
-        controlHost
-      )
+        controlHost)
     };
   }
 
@@ -650,8 +616,7 @@ export class Select extends LitElement
       new CustomEvent(
         name,
         { detail, bubbles: true, composed: true }
-      )
-    );
+      ));
   }
 
   #disposeControlBindings(): void
@@ -703,11 +668,9 @@ function normalizeItems(
         value: item.value,
         label: item.label,
         disabled: item.disabled ?? false
-      })
-    )
+      }))
     .filter(
-      item => item.label.trim() !== ''
-    );
+      item => item.label.trim() !== '');
 }
 
 function resolveAriaDescribedBy(
@@ -718,14 +681,12 @@ function resolveAriaDescribedBy(
 
   if (!model.hideDescription) {
     ids.push(
-      model.descriptionId
-    );
+      model.descriptionId);
   }
 
   if (!model.hideError) {
     ids.push(
-      model.errorId
-    );
+      model.errorId);
   }
 
   return ids.join(' ');
@@ -751,8 +712,7 @@ function cloneNamedTemplate(
     document.createElement('template');
 
   clonedTemplate.content.append(
-    templateElement.content.cloneNode(true)
-  );
+    templateElement.content.cloneNode(true));
 
   return clonedTemplate;
 }
@@ -764,8 +724,7 @@ function resolveInitialControlClassName(
 {
   return control.className
     || controlHost.getAttribute(
-      'data-control-class'
-    )
+      'data-control-class')
     || '';
 }
 
@@ -775,11 +734,9 @@ function resolveInitialControlInvalidClassName(
   ): string | null
 {
   return control.getAttribute(
-    'data-control-invalid-class'
-  )
+    'data-control-invalid-class')
     ?? controlHost.getAttribute(
-      'data-control-invalid-class'
-    )
+      'data-control-invalid-class')
     ?? null;
 }
 
@@ -830,12 +787,10 @@ function createFallbackMountedControl(
     control,
     className: resolveInitialControlClassName(
       control,
-      controlHost
-    ),
+      controlHost),
     invalidClassName: resolveInitialControlInvalidClassName(
       control,
-      controlHost
-    )
+      controlHost)
   };
 }
 
@@ -845,13 +800,10 @@ function joinClassNames(
 {
   return classNames
     .flatMap(
-      className => className.split(/\s+/)
-    )
+      className => className.split(/\s+/))
     .map(
-      className => className.trim()
-    )
+      className => className.trim())
     .filter(
-      className => className !== ''
-    )
+      className => className !== '')
     .join(' ');
 }

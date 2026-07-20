@@ -24,28 +24,23 @@ type TextInputElement =
   };
 
 @customElement(
-  'asljs-ai-chat-key'
-)
+  'asljs-ai-chat-key')
 export class AiChatKeyPrompt extends LitElement
 {
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor label: string = 'OpenAI API Key';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor placeholder: string = 'sk-…';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor submitLabel: string = 'Save key';
 
   @property(
-    { type: Boolean, attribute: false }
-  )
+    { type: Boolean, attribute: false })
   accessor disabled: boolean = false;
 
   override createRenderRoot(): this
@@ -116,7 +111,6 @@ export class AiChatKeyPrompt extends LitElement
       new CustomEvent<AiChatKeySubmitDetail>(
         'key-submit',
         { detail: { key }, bubbles: true, composed: true }
-      )
-    );
+      ));
   }
 }

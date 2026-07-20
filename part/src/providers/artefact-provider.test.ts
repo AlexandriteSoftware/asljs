@@ -16,8 +16,7 @@ test.after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -43,28 +42,23 @@ Requirement.
 
     await workspace.writeText(
       'artefacts/Requirement.md',
-      requriementDefinitionContent
-    );
+      requriementDefinitionContent);
 
     await workspace.writeText(
       'development/.gitignore',
-      'hidden'
-    );
+      'hidden');
 
     await workspace.writeText(
       'development/visible/RQ101 Example.md',
-      '# RQ101 Example\n'
-    );
+      '# RQ101 Example\n');
 
     await workspace.writeText(
       'development/hidden/RQ999 Hidden.md',
-      '# RQ999 Hidden\n'
-    );
+      '# RQ999 Hidden\n');
 
     await workspace.writeText(
       'development/hidden/RQ999 Hidden.md',
-      '# RQ999 Hidden\n'
-    );
+      '# RQ999 Hidden\n');
 
     const { artefactDefinitionProvider, artefactProvider } =
       providersFactory(
@@ -83,29 +77,22 @@ Requirement.
     assert.deepEqual(
       requirementArtefacts
         .map(
-          artefact => artefact.relativePath
-        )
+          artefact => artefact.relativePath)
         .sort(),
-      ['development/visible/RQ101 Example.md']
-    );
+      ['development/visible/RQ101 Example.md']);
 
     assert.equal(
       await artefactProvider.isArtefactOfDefinition(
         'development/visible/RQ101 Example.md',
-        requirementDefinition
-      ),
-      true
-    );
+        requirementDefinition),
+      true);
 
     assert.equal(
       await artefactProvider.isArtefactOfDefinition(
         'development/hidden/RQ999 Hidden.md',
-        requirementDefinition
-      ),
-      false
-    );
-  }
-);
+        requirementDefinition),
+      false);
+  });
 
 test(
   'RQ205: ArtefactProvider returns all matching definitions for an artefact',
@@ -123,8 +110,7 @@ Article.
 ## Location
 
 - Pattern: ../docs/**/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'artefacts/Specification.md',
@@ -135,13 +121,11 @@ Specification.
 ## Location
 
 - Pattern: ../docs/specs/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'docs/specs/Example.md',
-      '# Example\n'
-    );
+      '# Example\n');
 
     const { artefactProvider } =
       providersFactory(
@@ -152,14 +136,10 @@ Specification.
     const matchingDefinitions =
       await artefactProvider
       .getDefinitionsForArtefact(
-        'docs/specs/Example.md'
-      );
+        'docs/specs/Example.md');
 
     assert.deepEqual(
       matchingDefinitions.map(
-        definition => definition.name
-      ).sort(),
-      ['Article', 'Specification']
-    );
-  }
-);
+        definition => definition.name).sort(),
+      ['Article', 'Specification']);
+  });

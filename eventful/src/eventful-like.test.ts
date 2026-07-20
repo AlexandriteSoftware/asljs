@@ -21,10 +21,8 @@ test(
 
     assert.equal(
       isEventfulLike(value),
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   `${TEST_SUITE}: asEventfulLike returns value when compatible`,
@@ -38,16 +36,13 @@ test(
 
     assert.equal(
       converted,
-      value
-    );
+      value);
 
     const typed: EventfulLike | undefined = converted;
 
     assert.ok(
-      typed
-    );
-  }
-);
+      typed);
+  });
 
 test(
   `${TEST_SUITE}: asEventfulLike returns undefined when incompatible`,
@@ -55,12 +50,9 @@ test(
   {
     assert.equal(
       asEventfulLike({}),
-      undefined
-    );
+      undefined);
 
     assert.equal(
       asEventfulLike(42),
-      undefined
-    );
-  }
-);
+      undefined);
+  });

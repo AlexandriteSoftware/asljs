@@ -19,8 +19,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -42,47 +41,37 @@ test(
       });
 
     await execInit(
-      environment
-    );
+      environment);
 
     assert.match(
       environment.stdout.toString(),
-      /Initialised definitions directory:/
-    );
+      /Initialised definitions directory:/);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       await workspace.readText(
-        'definitions/Artefact Definition.md'
-      ),
-      /# Artefact Definition/
-    );
+        'definitions/Artefact Definition.md'),
+      /# Artefact Definition/);
 
     assert.match(
       await workspace.readText(
-        'definitions/Rule File.md'
-      ),
-      /# Rule File/
-    );
+        'definitions/Rule File.md'),
+      /# Rule File/);
 
     const ruleFile1Stat =
       await workspace.stat(
         'definitions/parts/Rule File_RL1.js');
 
     assert.ok(
-      ruleFile1Stat.isFile()
-    );
+      ruleFile1Stat.isFile());
 
     const artefactDefinitionStat =
       await workspace.stat(
         'definitions/parts/Artefact Definition_RL1.js');
 
     assert.ok(
-      artefactDefinitionStat.isFile()
-    );
-  }
-);
+      artefactDefinitionStat.isFile());
+  });

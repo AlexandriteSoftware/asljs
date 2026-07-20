@@ -23,13 +23,11 @@ test(
 
     assert.equal(
       typeof (obj as any).watch,
-      'function'
-    );
+      'function');
 
     assert.equal(
       Object.keys(obj).includes('watch'),
-      false
-    );
+      false);
 
     const calls: Array<[number, number]> = [];
 
@@ -38,19 +36,15 @@ test(
       (a: number, b: number) =>
       {
         calls.push(
-          [a, b]
-        );
-      }
-    );
+          [a, b]);
+      });
 
     obj.b = 4;
 
     assert.deepEqual(
       calls,
-      [[1, 2], [1, 4]]
-    );
-  }
-);
+      [[1, 2], [1, 4]]);
+  });
 
 /**
  * Pre-existing watch implementations must be preserved to avoid breaking
@@ -70,10 +64,8 @@ test(
 
     assert.equal(
       obj.watch,
-      originalWatch
-    );
-  }
-);
+      originalWatch);
+  });
 
 /**
  * Attempting watch() on array targets must fail explicitly so unsupported
@@ -93,22 +85,17 @@ test(
           arr as any,
           ['0'] as const,
           () =>
-          {}
-        ),
-      /Watching arrays is not supported\./
-    );
+          {}),
+      /Watching arrays is not supported\./);
 
     assert.throws(
       () =>
         (arr as any).watch(
           ['0'],
           () =>
-          {}
-        ),
-      /Watching arrays is not supported\./
-    );
-  }
-);
+          {}),
+      /Watching arrays is not supported\./);
+  });
 
 /**
  * Multi-field watchers need an initial snapshot and updates only when selected
@@ -130,10 +117,8 @@ test(
       (a: number, b: number) =>
       {
         calls.push(
-          [a, b]
-        );
-      }
-    );
+          [a, b]);
+      });
 
     obj.a = 10;
     obj.c = 30;
@@ -141,10 +126,8 @@ test(
 
     assert.deepEqual(
       calls,
-      [[1, 2], [10, 2], [10, 20]]
-    );
-  }
-);
+      [[1, 2], [10, 2], [10, 20]]);
+  });
 
 /**
  * One-path subscriptions should work without forcing callers to allocate an
@@ -166,18 +149,15 @@ test(
       (a: number) =>
       {
         calls.push(a);
-      }
-    );
+      });
 
     obj.b = 20;
     obj.a = 10;
 
     assert.deepEqual(
       calls,
-      [1, 10]
-    );
-  }
-);
+      [1, 10]);
+  });
 
 /**
  * Injected instance watch() should mirror function API support for a single
@@ -198,18 +178,15 @@ test(
       (a: number) =>
       {
         calls.push(a);
-      }
-    );
+      });
 
     obj.b = 20;
     obj.a = 10;
 
     assert.deepEqual(
       calls,
-      [1, 10]
-    );
-  }
-);
+      [1, 10]);
+  });
 
 /**
  * Deep path subscriptions must react to leaf edits while independent paths
@@ -231,20 +208,16 @@ test(
       (userName: string | undefined, active: boolean) =>
       {
         calls.push(
-          [userName, active]
-        );
-      }
-    );
+          [userName, active]);
+      });
 
     state.active = true;
     state.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [['Alice', false], ['Alice', true], ['Bob', true]]
-    );
-  }
-);
+      [['Alice', false], ['Alice', true], ['Bob', true]]);
+  });
 
 /**
  * Replacing an ancestor object should rebind deep listeners so future leaf
@@ -266,10 +239,8 @@ test(
       (userName: string | undefined, active: boolean) =>
       {
         calls.push(
-          [userName, active]
-        );
-      }
-    );
+          [userName, active]);
+      });
 
     state.user = { name: 'Carol' } as any;
 
@@ -277,10 +248,8 @@ test(
 
     assert.deepEqual(
       calls,
-      [['Alice', false], ['Carol', false], ['Dan', false]]
-    );
-  }
-);
+      [['Alice', false], ['Carol', false], ['Dan', false]]);
+  });
 
 /**
  * The disposer must detach every listener and remain idempotent across
@@ -303,30 +272,25 @@ test(
         (a: number, b: number) =>
       {
         calls.push(
-          [a, b]
-        );
+          [a, b]);
       });
 
     obj.a = 10;
 
     assert.equal(
       unwatch(),
-      true
-    );
+      true);
 
     obj.b = 20;
 
     assert.equal(
       unwatch(),
-      false
-    );
+      false);
 
     assert.deepEqual(
       calls,
-      [[1, 2], [10, 2]]
-    );
-  }
-);
+      [[1, 2], [10, 2]]);
+  });
 
 /**
  * Malformed paths should be rejected immediately to prevent hidden no-op
@@ -360,13 +324,10 @@ test(
           observable.watch(
             state,
             [path],
-            callback
-          ),
-        TypeError
-      );
+            callback),
+        TypeError);
     }
-  }
-);
+  });
 
 /**
  * Plain roots should still support an immediate snapshot even without any
@@ -387,17 +348,14 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     plainState.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      ['Alice']
-    );
-  }
-);
+      ['Alice']);
+  });
 
 /**
  * Even when the root is plain, nested eventful objects should still drive
@@ -423,24 +381,20 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     user.name = 'Bob';
 
     plainState.user = observable(
       { name: 'Carol' },
-      { shallow: true }
-    );
+      { shallow: true });
 
     (plainState.user as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Bob']
-    );
-  }
-);
+      ['Alice', 'Bob']);
+  });
 
 /**
  * Non-string or non-array path selectors must fail fast to keep watch input
@@ -460,12 +414,9 @@ test(
           state,
           123 as any,
           () =>
-          {}
-        ),
-      /Expect properties to be a string or an array of strings\./
-    );
-  }
-);
+          {}),
+      /Expect properties to be a string or an array of strings\./);
+  });
 
 /**
  * Mixed-type selector arrays should throw before binding so partial
@@ -485,12 +436,9 @@ test(
           state,
           ['a', 1 as any],
           () =>
-          {}
-        ),
-      /Expect properties to be a string or an array of strings\./
-    );
-  }
-);
+          {}),
+      /Expect properties to be a string or an array of strings\./);
+  });
 
 /**
  * Nested watchers should become active after a missing ancestor object is
@@ -512,8 +460,7 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     state.user = { name: 'Alice' };
 
@@ -521,10 +468,8 @@ test(
 
     assert.deepEqual(
       calls,
-      [undefined, 'Alice', 'Bob']
-    );
-  }
-);
+      [undefined, 'Alice', 'Bob']);
+  });
 
 /**
  * Watching partially initialised model should emit undefined once at start,
@@ -546,22 +491,18 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     assert.deepEqual(
       calls,
-      [undefined]
-    );
+      [undefined]);
 
     state.user.info = { name: 'Alice' };
 
     assert.deepEqual(
       calls,
-      [undefined, 'Alice']
-    );
-  }
-);
+      [undefined, 'Alice']);
+  });
 
 /**
  * Paths that traverse only plain nested objects (no eventful segments beyond
@@ -585,8 +526,7 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     // Leaf edits do not emit without eventful objects along nested segments.
     state.user.info.name = 'Bob';
@@ -596,10 +536,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Carol']
-    );
-  }
-);
+      ['Alice', 'Carol']);
+  });
 
 /**
  * Mixed path segments should still work: updates at observable boundaries must
@@ -628,8 +566,7 @@ test(
       (name: string | undefined) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     // info is not observable yet, but user is; changing info should refresh.
     user.info = { name: 'Bob' };
@@ -637,17 +574,14 @@ test(
     // swap to observable info; path should rebind to set:name.
     user.info = observable(
       { name: 'Carol' },
-      { shallow: true }
-    ) as any;
+      { shallow: true }) as any;
 
     (user.info as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Bob', 'Carol', 'Dan']
-    );
-  }
-);
+      ['Alice', 'Bob', 'Carol', 'Dan']);
+  });
 
 /**
  * ObservableObject with setAndEmit should deliver deduplicated change
@@ -667,8 +601,7 @@ test(
       (name: string) =>
       {
         calls.push(name);
-      }
-    );
+      });
 
     obj.name = 'Alice';
     obj.name = 'Alice';
@@ -676,10 +609,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['', 'Alice', 'Bob']
-    );
-  }
-);
+      ['', 'Alice', 'Bob']);
+  });
 
 /**
  * Class-based watch() must provide a disposer that reliably detaches listeners
@@ -706,17 +637,14 @@ test(
 
     assert.equal(
       unwatch(),
-      true
-    );
+      true);
 
     obj.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      ['', 'Alice']
-    );
-  }
-);
+      ['', 'Alice']);
+  });
 
 /**
  * ObservableObject watch() should accept a single property key string for
@@ -733,8 +661,7 @@ test(
 
     obj.watch(
       'name',
-      (name: string) => calls.push(name)
-    );
+      (name: string) => calls.push(name));
 
     obj.name = 'Alice';
     obj.name = 'Alice';
@@ -742,10 +669,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['', 'Alice', 'Bob']
-    );
-  }
-);
+      ['', 'Alice', 'Bob']);
+  });
 
 class ObjWithName extends ObservableObject<{ name: string; }>
 {
@@ -765,7 +690,6 @@ class ObjWithName extends ObservableObject<{ name: string; }>
       'name',
       this.#name,
       value,
-      (next: string) => this.#name = next
-    );
+      (next: string) => this.#name = next);
   }
 }

@@ -34,8 +34,7 @@ export function bindEventModel(
   {
     currentAction = readModelPath(
       model,
-      spec.actionPath
-    );
+      spec.actionPath);
   };
 
   const listener =
@@ -44,8 +43,7 @@ export function bindEventModel(
     if (typeof currentAction !== 'function') {
       warnOnce(
         `${warnPrefix}:missing-action:${spec.actionPath}`,
-        `${warnPrefix}: action '${spec.actionPath}' is not a function`
-      );
+        `${warnPrefix}: action '${spec.actionPath}' is not a function`);
 
       return;
     }
@@ -60,15 +58,13 @@ export function bindEventModel(
       warnOnce(
         `${warnPrefix}:action-error:${spec.actionPath}`,
         `${warnPrefix}: action '${spec.actionPath}' failed`,
-        error
-      );
+        error);
     }
   };
 
   element.addEventListener(
     spec.eventName,
-    listener
-  );
+    listener);
 
   let unsubscribe: (() => boolean) | null = null;
 
@@ -88,8 +84,7 @@ export function bindEventModel(
   {
     element.removeEventListener(
       spec.eventName,
-      listener
-    );
+      listener);
 
     unsubscribe?.();
   };

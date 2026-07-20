@@ -37,8 +37,7 @@ test(
           choicePrompt: null,
           progress: null,
           sending: false
-        }
-      );
+        });
 
       assert.deepEqual(
         await store.load(),
@@ -52,10 +51,8 @@ test(
           choicePrompt: null,
           progress: null,
           sending: false
-        }
-      );
+        });
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
     }
-  }
-);
+  });

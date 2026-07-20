@@ -27,9 +27,7 @@ export async function execDefinitions(
       path: toPosixPath(
         path.relative(
           rootDirectory,
-          definition.path
-        )
-      )
+          definition.path))
     }));
 
   const markdown =
@@ -41,6 +39,5 @@ export async function execDefinitions(
       objects);
 
   environment.stdout.write(
-    `${markdown}\n`
-  );
+    `${markdown}\n`);
 }

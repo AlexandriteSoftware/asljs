@@ -17,27 +17,21 @@ test(
   {
     assert.equal(
       typeof eventful,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof EventfulBase,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof asEventfulLike,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof isEventfulLike,
-      'function'
-    );
+      'function');
 
     assert.equal(
       typeof ListenerError,
-      'function'
-    );
-  }
-);
+      'function');
+  });

@@ -39,10 +39,8 @@ async function openTestDb(
       store.createIndex(
         'by_value',
         'value',
-        { unique: false }
-      );
-    }]
-  );
+        { unique: false });
+    }]);
 }
 
 async function seed(
@@ -81,8 +79,7 @@ async function waitFor(
     await new Promise(resolve =>
       setTimeout(
         resolve,
-        0
-      )
+        0)
     );
   }
 }
@@ -99,8 +96,7 @@ test(
       [
         { id: 'a', value: '10' },
         { id: 'b', value: '20' }
-      ]
-    );
+      ]);
 
     const table =
       new Table<TestRecordFields>(
@@ -113,22 +109,18 @@ test(
 
     assert.equal(
       rows.length,
-      2
-    );
+      2);
 
     const ids =
       rows
       .map(
-        row => row.id
-      )
+        row => row.id)
       .sort();
 
     assert.deepEqual(
       ids,
-      ['a', 'b']
-    );
-  }
-);
+      ['a', 'b']);
+  });
 
 test(
   `${TEST_SUITE}: notify receiver receives events and supports unsubscribe`,
@@ -150,26 +142,22 @@ test(
       add(record)
       {
         events.push(
-          `add:${record.id}`
-        );
+          `add:${record.id}`);
       },
       update(record)
       {
         events.push(
-          `update:${record.id}:${record.value}`
-        );
+          `update:${record.id}:${record.value}`);
       },
       delete(record)
       {
         events.push(
-          `delete:${record.id}`
-        );
+          `delete:${record.id}`);
       },
       clear(records)
       {
         events.push(
-          `clear:${records.length}`
-        );
+          `clear:${records.length}`);
       }
     };
 
@@ -178,54 +166,43 @@ test(
         receiver);
 
     await table.add(
-      { id: 'a', value: '10' }
-    );
+      { id: 'a', value: '10' });
 
     await table.update(
-      { id: 'a', value: '20' }
-    );
+      { id: 'a', value: '20' });
 
     await table.delete('a');
 
     await table.add(
-      { id: 'b', value: '30' }
-    );
+      { id: 'b', value: '30' });
 
     await table.add(
-      { id: 'c', value: '40' }
-    );
+      { id: 'c', value: '40' });
 
     await table.clear();
 
     await waitFor(
-      () => events.length === 6
-    );
+      () => events.length === 6);
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']
-    );
+      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']);
 
     assert.equal(
       unsubscribe(),
-      true
-    );
+      true);
 
     await table.add(
-      { id: 'd', value: '50' }
-    );
+      { id: 'd', value: '50' });
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']
-    );
+      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']);
 
     assert.equal(
       unsubscribe(),
-      false
-    );
-  }
-);
+      false);
+  });
 
 type VersionedRecordFields = { id: string; value: string; version: number; };
 
@@ -244,10 +221,8 @@ async function openVersionedTestDb(
     {
       db.createObjectStore(
         'items',
-        { keyPath: 'id' }
-      );
-    }]
-  );
+        { keyPath: 'id' });
+    }]);
 }
 
 test(
@@ -270,18 +245,15 @@ test(
 
     assert.equal(
       result.version,
-      1
-    );
+      1);
 
     const stored =
       await table.getOne('a');
 
     assert.equal(
       stored?.version,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   `${TEST_SUITE}: increment strategy add preserves valid existing version`,
@@ -303,10 +275,8 @@ test(
 
     assert.equal(
       result.version,
-      5
-    );
-  }
-);
+      5);
+  });
 
 test(
   `${TEST_SUITE}: increment strategy update requires expectedVersion`,
@@ -323,18 +293,14 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await assert.rejects(
       () =>
         table.update(
-          { id: 'a', value: '20', version: 1 }
-        ),
-      /expectedVersion is required/
-    );
-  }
-);
+          { id: 'a', value: '20', version: 1 }),
+      /expectedVersion is required/);
+  });
 
 test(
   `${TEST_SUITE}: increment strategy update throws conflict on version mismatch`,
@@ -351,38 +317,31 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await assert.rejects(
       () =>
         table.update(
           { id: 'a', value: '20', version: 1 },
-          999
-        ),
+          999),
       (error: unknown) =>
       {
         assert.ok(
-          error instanceof TableVersionConflictError
-        );
+          error instanceof TableVersionConflictError);
 
         if (error instanceof TableVersionConflictError) {
           assert.equal(
             error.expectedVersion,
-            999
-          );
+            999);
 
           assert.equal(
             error.actualVersion,
-            1
-          );
+            1);
         }
 
         return true;
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: increment strategy update increments version`,
@@ -399,8 +358,7 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     const result =
       await table.update(
@@ -409,23 +367,19 @@ test(
 
     assert.equal(
       result.version,
-      2
-    );
+      2);
 
     assert.equal(
       result.value,
-      '20'
-    );
+      '20');
 
     const stored =
       await table.getOne('a');
 
     assert.equal(
       stored?.version,
-      2
-    );
-  }
-);
+      2);
+  });
 
 test(
   `${TEST_SUITE}: increment strategy delete requires expectedVersion`,
@@ -442,15 +396,12 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await assert.rejects(
       () => table.delete('a'),
-      /expectedVersion is required/
-    );
-  }
-);
+      /expectedVersion is required/);
+  });
 
 test(
   `${TEST_SUITE}: increment strategy delete throws conflict on version mismatch`,
@@ -467,26 +418,21 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await assert.rejects(
       () =>
         table.delete(
           'a',
-          999
-        ),
+          999),
       (error: unknown) =>
       {
         assert.ok(
-          error instanceof TableVersionConflictError
-        );
+          error instanceof TableVersionConflictError);
 
         return true;
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: increment strategy delete succeeds with correct version`,
@@ -503,23 +449,19 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await table.delete(
       'a',
-      1
-    );
+      1);
 
     const stored =
       await table.getOne('a');
 
     assert.equal(
       stored,
-      null
-    );
-  }
-);
+      null);
+  });
 
 test(
   `${TEST_SUITE}: uuid strategy add assigns initial uuid version`,
@@ -541,10 +483,8 @@ test(
 
     assert.match(
       result.version,
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    );
-  }
-);
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  });
 
 test(
   `${TEST_SUITE}: uuid strategy update replaces version`,
@@ -571,15 +511,12 @@ test(
 
     assert.notEqual(
       updated.version,
-      added.version
-    );
+      added.version);
 
     assert.match(
       updated.version,
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    );
-  }
-);
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  });
 
 test(
   `${TEST_SUITE}: no strategy update and delete work without expectedVersion`,
@@ -595,12 +532,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 }
-    );
+      { id: 'a', value: '10', version: 1 });
 
     await table.update(
-      { id: 'a', value: '20', version: 1 }
-    );
+      { id: 'a', value: '20', version: 1 });
 
     await table.delete('a');
 
@@ -609,10 +544,8 @@ test(
 
     assert.equal(
       stored,
-      null
-    );
-  }
-);
+      null);
+  });
 
 type SoftDeleteRecordFields = {
   id: string;
@@ -638,18 +571,15 @@ async function openSoftDeleteTestDb(
       store.createIndex(
         'by_customer',
         'customerId',
-        { unique: false }
-      );
+        { unique: false });
 
       if (includeDeletedAwareIndex) {
         store.createIndex(
           'deleted:by_customer',
           ['deleted', 'customerId'],
-          { unique: false }
-        );
+          { unique: false });
       }
-    }]
-  );
+    }]);
 }
 
 async function getRawRecord(
@@ -689,12 +619,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 }
-    );
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
 
     await table.delete('b');
 
@@ -709,22 +637,17 @@ test(
 
     assert.equal(
       active?.id,
-      'a'
-    );
+      'a');
 
     assert.equal(
       deleted,
-      null
-    );
+      null);
 
     assert.deepEqual(
       all.map(
-        record => record.id
-      ),
-      ['a']
-    );
-  }
-);
+        record => record.id),
+      ['a']);
+  });
 
 test(
   `${TEST_SUITE}: soft delete scan only evaluates active records`,
@@ -741,12 +664,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 }
-    );
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
 
     await table.delete('b');
 
@@ -756,20 +677,16 @@ test(
       {
         assert.notEqual(
           record.id,
-          'b'
-        );
+          'b');
 
         return true;
       });
 
     assert.deepEqual(
       records.map(
-        record => record.id
-      ),
-      ['a']
-    );
-  }
-);
+        record => record.id),
+      ['a']);
+  });
 
 test(
   `${TEST_SUITE}: soft delete get uses rewritten active index when available`,
@@ -808,12 +725,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 }
-    );
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
 
     await table.delete('b');
 
@@ -824,12 +739,9 @@ test(
 
     assert.deepEqual(
       records.map(
-        record => record.id
-      ),
-      ['a']
-    );
-  }
-);
+        record => record.id),
+      ['a']);
+  });
 
 test(
   `${TEST_SUITE}: soft delete get falls back when rewritten index is missing`,
@@ -865,12 +777,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 }
-    );
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
 
     await table.delete('b');
 
@@ -881,12 +791,9 @@ test(
 
     assert.deepEqual(
       records.map(
-        record => record.id
-      ),
-      ['a']
-    );
-  }
-);
+        record => record.id),
+      ['a']);
+  });
 
 test(
   `${TEST_SUITE}: soft delete get filters when delete strategy has no index mapping`,
@@ -922,12 +829,10 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 }
-    );
+      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
 
     await table.delete('b');
 
@@ -938,12 +843,9 @@ test(
 
     assert.deepEqual(
       records.map(
-        record => record.id
-      ),
-      ['a']
-    );
-  }
-);
+        record => record.id),
+      ['a']);
+  });
 
 test(
   `${TEST_SUITE}: uuid soft delete strategy without mapper returns null mapping`,
@@ -961,10 +863,8 @@ test(
 
     assert.equal(
       mapped,
-      null
-    );
-  }
-);
+      null);
+  });
 
 test(
   `${TEST_SUITE}: soft delete with version strategy verifies and bumps version`,
@@ -991,22 +891,18 @@ test(
         {
           events.push(record);
         }
-      }
-    );
+      });
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await assert.rejects(
       () => table.delete('a'),
-      /expectedVersion is required/
-    );
+      /expectedVersion is required/);
 
     await table.delete(
       'a',
-      1
-    );
+      1);
 
     const hidden =
       await table.getOne('a');
@@ -1018,35 +914,28 @@ test(
 
     assert.equal(
       hidden,
-      null
-    );
+      null);
 
     assert.equal(
       stored?.version,
-      2
-    );
+      2);
 
     assert.equal(
       typeof stored?.deleted,
-      'string'
-    );
+      'string');
 
     assert.equal(
       events.length,
-      1
-    );
+      1);
 
     assert.equal(
       events[0]?.version,
-      2
-    );
+      2);
 
     assert.equal(
       typeof events[0]?.deleted,
-      'string'
-    );
-  }
-);
+      'string');
+  });
 
 test(
   `${TEST_SUITE}: soft delete already deleted record is a no-op`,
@@ -1066,13 +955,11 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.delete(
       'a',
-      1
-    );
+      1);
 
     const firstDelete =
       await getRawRecord(
@@ -1088,20 +975,16 @@ test(
 
     assert.equal(
       firstDelete?.version,
-      2
-    );
+      2);
 
     assert.equal(
       secondDelete?.version,
-      2
-    );
+      2);
 
     assert.equal(
       firstDelete?.deleted,
-      secondDelete?.deleted
-    );
-  }
-);
+      secondDelete?.deleted);
+  });
 
 test(
   `${TEST_SUITE}: clear remains a hard clear with soft delete strategy`,
@@ -1118,8 +1001,7 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 }
-    );
+      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
 
     await table.delete('a');
     await table.clear();
@@ -1137,10 +1019,8 @@ test(
 
     assert.equal(
       records.length,
-      0
-    );
-  }
-);
+      0);
+  });
 
 // ---------------------------------------------------------------------------
 // Broadcast / observe tests
@@ -1178,8 +1058,7 @@ function createTestBroadcastService(
         if (idx >= 0) {
           handlers.splice(
             idx,
-            1
-          );
+            1);
         }
       };
     }
@@ -1219,36 +1098,29 @@ test(
         add(record)
         {
           localEvents.push(
-            `add:${record.id}`
-          );
+            `add:${record.id}`);
         }
-      }
-    );
+      });
 
     // Remote tab adds a record; its broadcast reaches localTable.
     await remoteTable.add(
-      { id: 'r1', value: 'remote' }
-    );
+      { id: 'r1', value: 'remote' });
 
     await waitFor(
       () => localEvents.length > 0,
-      50
-    )
+      50)
       .catch(
         () =>
-        {/* expected timeout */}
-      );
+        {/* expected timeout */});
 
     // The local-only subscriber must NOT have been called.
     assert.deepEqual(
       localEvents,
-      []
-    );
+      []);
 
     remoteTable.dispose();
     localTable.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: observe subscribers receive both local and remote events`,
@@ -1281,25 +1153,20 @@ test(
       {
         if (event.eventType === 'add') {
           observed.push(
-            { source: event.source, event: 'add', id: event.record.id }
-          );
+            { source: event.source, event: 'add', id: event.record.id });
         }
-      }
-    );
+      });
 
     // Local write — observed as 'local'.
     await localTable.add(
-      { id: 'l1', value: 'local' }
-    );
+      { id: 'l1', value: 'local' });
 
     // Remote write — observed as 'remote'.
     await remoteTable.add(
-      { id: 'r1', value: 'remote' }
-    );
+      { id: 'r1', value: 'remote' });
 
     await waitFor(
-      () => observed.length === 2
-    );
+      () => observed.length === 2);
 
     assert.deepEqual(
       observed,
@@ -1307,13 +1174,11 @@ test(
         source: 'remote',
         event: 'add',
         id: 'r1'
-      }]
-    );
+      }]);
 
     remoteTable.dispose();
     localTable.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: observe unsubscribe stops delivery`,
@@ -1340,50 +1205,40 @@ test(
       {
         if (event.eventType === 'add') {
           events.push(
-            event.record.id
-          );
+            event.record.id);
         }
       });
 
     await table.add(
-      { id: 'a', value: '1' }
-    );
+      { id: 'a', value: '1' });
 
     await waitFor(
-      () => events.length === 1
-    );
+      () => events.length === 1);
 
     assert.equal(
       unsubscribe(),
-      true
-    );
+      true);
 
     assert.equal(
       unsubscribe(),
-      false
-    );
+      false);
 
     await table.add(
-      { id: 'b', value: '2' }
-    );
+      { id: 'b', value: '2' });
 
     await waitFor(
       () => events.length > 1,
-      50
-    )
+      50)
       .catch(
         () =>
-        {/* expected timeout */}
-      );
+        {/* expected timeout */});
 
     assert.deepEqual(
       events,
-      ['a']
-    );
+      ['a']);
 
     table.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: remote messages are not re-broadcast`,
@@ -1428,34 +1283,28 @@ test(
     const observed: TableObservedEvent<TestRecordFields>[] = [];
 
     localTable.observe(
-      event => observed.push(event)
-    );
+      event => observed.push(event));
 
     // Remote publishes one message.
     await remoteTable.add(
-      { id: 'r1', value: 'x' }
-    );
+      { id: 'r1', value: 'x' });
 
     await waitFor(
-      () => observed.length === 1
-    );
+      () => observed.length === 1);
 
     // Only one publish should have occurred (from remoteTable).
     // localTable must NOT re-publish on receiving the remote message.
     assert.equal(
       published.length,
-      1
-    );
+      1);
 
     assert.equal(
       published[0]?.originId !== undefined,
-      true
-    );
+      true);
 
     remoteTable.dispose();
     localTable.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: echo suppression — a table ignores its own broadcast messages`,
@@ -1477,32 +1326,26 @@ test(
     const observed: TableObservedEvent<TestRecordFields>[] = [];
 
     table.observe(
-      event => observed.push(event)
-    );
+      event => observed.push(event));
 
     await table.add(
-      { id: 'a', value: '1' }
-    );
+      { id: 'a', value: '1' });
 
     await waitFor(
-      () => observed.length === 1
-    );
+      () => observed.length === 1);
 
     // Exactly one observed event: the local one.  The table's own broadcast
     // echo must not produce a second 'remote' event.
     assert.equal(
       observed.length,
-      1
-    );
+      1);
 
     assert.equal(
       observed[0]?.source,
-      'local'
-    );
+      'local');
 
     table.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: no broadcast published when broadcastService is absent`,
@@ -1525,27 +1368,21 @@ test(
         add(record)
         {
           events.push(
-            record.id
-          );
+            record.id);
         }
-      }
-    );
+      });
 
     await table.add(
-      { id: 'a', value: '1' }
-    );
+      { id: 'a', value: '1' });
 
     await waitFor(
-      () => events.length === 1
-    );
+      () => events.length === 1);
 
     assert.deepEqual(
       events,
-      ['a']
-    );
+      ['a']);
     // No errors thrown; no broadcast machinery involved.
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: observe receives all four event types from a remote table`,
@@ -1578,53 +1415,42 @@ test(
       {
         if (event.eventType === 'add') {
           observed.push(
-            `add:${event.record.id}`
-          );
+            `add:${event.record.id}`);
         } else if (event.eventType === 'update') {
           observed.push(
-            `update:${event.record.id}:${event.record.value}`
-          );
+            `update:${event.record.id}:${event.record.value}`);
         } else if (event.eventType === 'delete') {
           observed.push(
-            `delete:${event.record.id}`
-          );
+            `delete:${event.record.id}`);
         } else if (event.eventType === 'clear') {
           observed.push(
-            `clear:${event.records.length}`
-          );
+            `clear:${event.records.length}`);
         }
-      }
-    );
+      });
 
     await remoteTable.add(
-      { id: 'a', value: '10' }
-    );
+      { id: 'a', value: '10' });
 
     await remoteTable.update(
-      { id: 'a', value: '20' }
-    );
+      { id: 'a', value: '20' });
 
     await remoteTable.delete('a');
 
     await remoteTable.add(
-      { id: 'b', value: '30' }
-    );
+      { id: 'b', value: '30' });
 
     await remoteTable.clear();
 
     await waitFor(
-      () => observed.length === 5
-    );
+      () => observed.length === 5);
 
     assert.deepEqual(
       observed,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']
-    );
+      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']);
 
     remoteTable.dispose();
     localTable.dispose();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: backward compatibility — existing local notify still works without broadcastService`,
@@ -1648,62 +1474,50 @@ test(
         add(record)
         {
           events.push(
-            `add:${record.id}`
-          );
+            `add:${record.id}`);
         },
         update(record)
         {
           events.push(
-            `update:${record.id}:${record.value}`
-          );
+            `update:${record.id}:${record.value}`);
         },
         delete(record)
         {
           events.push(
-            `delete:${record.id}`
-          );
+            `delete:${record.id}`);
         },
         clear(records)
         {
           events.push(
-            `clear:${records.length}`
-          );
+            `clear:${records.length}`);
         }
       });
 
     await table.add(
-      { id: 'a', value: '10' }
-    );
+      { id: 'a', value: '10' });
 
     await table.update(
-      { id: 'a', value: '20' }
-    );
+      { id: 'a', value: '20' });
 
     await table.delete('a');
 
     await table.add(
-      { id: 'b', value: '30' }
-    );
+      { id: 'b', value: '30' });
 
     await table.clear();
 
     await waitFor(
-      () => events.length === 5
-    );
+      () => events.length === 5);
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']
-    );
+      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']);
 
     assert.equal(
       unsubscribe(),
-      true
-    );
+      true);
 
     assert.equal(
       unsubscribe(),
-      false
-    );
-  }
-);
+      false);
+  });

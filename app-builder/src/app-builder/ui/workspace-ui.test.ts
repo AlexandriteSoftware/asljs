@@ -32,8 +32,6 @@ test(
       assert.equal(
         html.includes(fragment),
         true,
-        `Expected workspace markup to contain ${fragment}.`
-      );
+        `Expected workspace markup to contain ${fragment}.`);
     }
-  }
-);
+  });

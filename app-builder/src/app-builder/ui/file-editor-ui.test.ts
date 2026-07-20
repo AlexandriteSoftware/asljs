@@ -83,52 +83,44 @@ test(
           selectElement: select,
           files,
           activeFileName: 'app.js'
-        }
-      );
+        });
 
       ui.renderFileContentUi(
         {
           fileElement: fileElement as never,
           files,
           activeFileName: 'app.js'
-        }
-      );
+        });
 
       assert.equal(
         select.disabled,
-        false
-      );
+        false);
 
       assert.equal(
         select.value,
-        'app.js'
-      );
+        'app.js');
 
       assert.equal(
         fileElement.fileName,
-        'app.js'
-      );
+        'app.js');
 
       assert.equal(
         fileElement.handlers.length,
-        3
-      );
+        3);
 
       const loaded =
         await fileElement.provider?.loadFile('app.js');
 
       assert.deepEqual(
         loaded,
-        { name: 'app.js', text: 'console.log(1);' }
-      );
+        { name: 'app.js', text: 'console.log(1);' });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;
       globalThis.customElements = previousCustomElements;
       globalThis.HTMLElement = previousHTMLElement;
     }
-  }
-);
+  });
 
 test(
   'renderFileSelectUi includes dotfiles and keeps the active file when selected',
@@ -165,30 +157,24 @@ test(
           selectElement: select,
           files,
           activeFileName: '.README.md'
-        }
-      );
+        });
 
       assert.equal(
         select.disabled,
-        false
-      );
+        false);
 
       assert.deepEqual(
         select.items.map(
-          option => option.value
-        ),
-        ['.README.md', 'README.md', 'app.js']
-      );
+          option => option.value),
+        ['.README.md', 'README.md', 'app.js']);
 
       assert.equal(
         select.value,
-        '.README.md'
-      );
+        '.README.md');
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'renderFileContentUi shows image preview for image data files',
@@ -232,8 +218,7 @@ test(
             { name: 'assets/logo.png', content: 'data:image/png;base64,AQID' }
           ],
           activeFileName: 'assets/logo.png'
-        }
-      );
+        });
 
       const imagePreview =
         await fileElement.provider?.loadFile(
@@ -245,16 +230,14 @@ test(
           name: 'assets/logo.png',
           mimeType: 'image/png',
           dataUrl: 'data:image/png;base64,AQID'
-        }
-      );
+        });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;
       globalThis.customElements = previousCustomElements;
       globalThis.HTMLElement = previousHTMLElement;
     }
-  }
-);
+  });
 
 async function importFileEditorUi(
   ): Promise<FileEditorUiModule>

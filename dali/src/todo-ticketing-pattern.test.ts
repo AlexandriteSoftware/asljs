@@ -66,8 +66,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
       throw new EventSourceConflictError(
         `${this.name}: head mismatch expected ${
           String(
-            expectedPreviousTransactionId
-          )
+            expectedPreviousTransactionId)
         } actual ${String(actualPrevious)}.`
       );
     }
@@ -108,8 +107,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
     }
 
     return this.#items.slice(
-      index + 1
-    );
+      index + 1);
   }
 }
 
@@ -128,25 +126,21 @@ async function openTicketingDb(
       tickets.createIndex(
         'by_deleted',
         'deleted',
-        { unique: false }
-      );
+        { unique: false });
 
       tickets.createIndex(
         'by_assignee_deleted',
         ['assigneeId', 'deleted'],
-        { unique: false }
-      );
+        { unique: false });
 
       db.createObjectStore(
         'ticket_read_model',
-        { keyPath: 'assigneeId' }
-      );
+        { keyPath: 'assigneeId' });
 
       sagaSetup(db);
       eventSourceSetup(db);
       eventSourceProjectionSetup(db);
-    }]
-  );
+    }]);
 }
 
 function ticketDeleteMapper(
@@ -245,46 +239,38 @@ test(
 
         await table.update(
           { ...t1, title: 'First updated' },
-          t1.version
-        );
+          t1.version);
 
         await table.delete(
           t2.id,
-          t2.version
-        );
-      }
-    );
+          t2.version);
+      });
 
     const active =
       await table.getAll();
 
     assert.equal(
       active.length,
-      1
-    );
+      1);
 
     assert.equal(
       active[0]?.id,
-      't1'
-    );
+      't1');
 
     const sagas =
       await sagaGetAll(db);
 
     assert.equal(
       sagas.length,
-      1
-    );
+      1);
 
     assert.equal(
       sagas[0]?.status,
-      'completed'
-    );
+      'completed');
 
     assert.equal(
       typeof sagas[0]?.eventTransactionId,
-      'string'
-    );
+      'string');
 
     const localTransactions =
       await eventSourceGetAll(db);
@@ -294,21 +280,17 @@ test(
 
     assert.equal(
       localTransactions.length,
-      1
-    );
+      1);
 
     assert.equal(
       remoteTransactions.length,
-      1
-    );
+      1);
 
     assert.equal(
       localTransactions[0]?.id,
-      remoteTransactions[0]?.id
-    );
+      remoteTransactions[0]?.id);
 
-    const projectedCounts =
-      new Map<string, number>();
+    const projectedCounts = new Map<string, number>();
 
     const projection =
       new EventSourceProjectionManager(
@@ -341,8 +323,7 @@ test(
 
             projectedCounts.set(
               assigneeId,
-              current + 1
-            );
+              current + 1);
           }
 
           if (event.eventName === 'delete') {
@@ -361,22 +342,18 @@ test(
               assigneeId,
               Math.max(
                 current - 1,
-                0
-              )
-            );
+                0));
           }
         }
       },
       () =>
         eventSourceProjectionGet(
           db,
-          'ticket-read-model-v1'
-        ),
+          'ticket-read-model-v1'),
       record =>
         eventSourceProjectionSet(
           db,
-          record
-        )
+          record)
     );
 
     const firstApplied =
@@ -387,13 +364,11 @@ test(
 
     assert.equal(
       firstApplied,
-      1
-    );
+      1);
 
     assert.equal(
       secondApplied,
-      0
-    );
+      0);
 
     const beforeRemoteAhead =
       projectedCounts.get('u1')
@@ -401,8 +376,7 @@ test(
 
     assert.equal(
       beforeRemoteAhead,
-      0
-    );
+      0);
 
     const remoteHead =
       await remoteAdapter.peek();
@@ -421,8 +395,7 @@ test(
           undo: { id: 't3' }
         }]
       },
-      remoteHead?.id ?? null
-    );
+      remoteHead?.id ?? null);
 
     await source.synchronize();
 
@@ -435,12 +408,9 @@ test(
 
     assert.equal(
       afterSyncApplied,
-      1
-    );
+      1);
 
     assert.equal(
       afterRemoteAhead,
-      1
-    );
-  }
-);
+      1);
+  });

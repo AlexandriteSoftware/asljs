@@ -110,68 +110,58 @@ export class LiveRecordSet<T extends Record<string, any>>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'add', record }
-            );
+              { type: 'add', record });
 
             return;
           }
 
           this.#applyAndNotify(
-            { type: 'add', record }
-          );
+            { type: 'add', record });
         },
 
         update: (record, _previousRecord) =>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'update', record }
-            );
+              { type: 'update', record });
 
             return;
           }
 
           this.#applyAndNotify(
-            { type: 'update', record }
-          );
+            { type: 'update', record });
         },
 
         delete: record =>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'delete', record }
-            );
+              { type: 'delete', record });
 
             return;
           }
 
           this.#applyAndNotify(
-            { type: 'delete', record }
-          );
+            { type: 'delete', record });
         },
 
         clear: () =>
         {
           if (!this.#loaded) {
             this.#pendingEvents.push(
-              { type: 'clear' }
-            );
+              { type: 'clear' });
 
             return;
           }
 
           this.#applyAndNotify(
-            { type: 'clear' }
-          );
+            { type: 'clear' });
         }
-      }
-    );
+      });
 
     // Initial scan: load all matching records, then replay buffered events.
     scanFn(
-      this.#predicate
-    )
+      this.#predicate)
       .then(
         records =>
         {
@@ -181,8 +171,7 @@ export class LiveRecordSet<T extends Record<string, any>>
 
           this.#current = new Map(
             records.map(
-              record => [this.#keyString(record), record]
-            )
+              record => [this.#keyString(record), record])
           );
 
           // Replay events that arrived while the scan was in flight.
@@ -197,17 +186,14 @@ export class LiveRecordSet<T extends Record<string, any>>
           this.#loaded = true;
 
           this.#emitRecordsChanged();
-        }
-      )
+        })
       .catch(
         error =>
         {
           console.error(
             'LiveRecordSet: initial scan failed',
-            error
-          );
-        }
-      );
+            error);
+        });
   }
 
   /**
@@ -240,8 +226,7 @@ export class LiveRecordSet<T extends Record<string, any>>
     return observable.watch(
       this as any,
       property,
-      callback
-    );
+      callback);
   }
 
   /**
@@ -261,9 +246,7 @@ export class LiveRecordSet<T extends Record<string, any>>
     return JSON.stringify(
       keyGet(
         this.#keyPath,
-        record
-      )
-    );
+        record));
   }
 
   /**
@@ -292,20 +275,17 @@ export class LiveRecordSet<T extends Record<string, any>>
   {
     if (event.type === 'add') {
       return this.#handleAdd(
-        event.record
-      );
+        event.record);
     }
 
     if (event.type === 'update') {
       return this.#handleUpdate(
-        event.record
-      );
+        event.record);
     }
 
     if (event.type === 'delete') {
       return this.#handleDelete(
-        event.record
-      );
+        event.record);
     }
 
     return this.#handleClear();
@@ -324,8 +304,7 @@ export class LiveRecordSet<T extends Record<string, any>>
 
     this.#current.set(
       key,
-      record
-    );
+      record);
 
     return { changed: true, domainEvent: 'added', record };
   }
@@ -356,8 +335,7 @@ export class LiveRecordSet<T extends Record<string, any>>
     if (matches) {
       this.#current.set(
         key,
-        record
-      );
+        record);
 
       return wasPresent
         ? { changed: true, domainEvent: 'updated', record, previous }
@@ -403,19 +381,16 @@ export class LiveRecordSet<T extends Record<string, any>>
     if (result.domainEvent === 'added') {
       this.emit(
         'added',
-        result.record
-      );
+        result.record);
     } else if (result.domainEvent === 'removed') {
       this.emit(
         'removed',
-        result.record
-      );
+        result.record);
     } else if (result.domainEvent === 'updated') {
       this.emit(
         'updated',
         result.record,
-        result.previous
-      );
+        result.previous);
     } else {
       this.emit('cleared');
     }
@@ -446,19 +421,16 @@ export class LiveRecordSet<T extends Record<string, any>>
 
     (this as any).emit(
       'set:records',
-      payload
-    );
+      payload);
 
     (this as any).emit(
       'set',
-      payload
-    );
+      payload);
 
     // Emit the catch-all domain event.
     this.emit(
       'changed',
-      snapshot
-    );
+      snapshot);
   }
 }
 

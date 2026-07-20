@@ -45,8 +45,7 @@ export function buildExportPayload(
     id: options.app.id,
     name: options.app.name,
     author: normalizeAuthor(
-      options.app.author
-    ),
+      options.app.author),
     files
   };
 }
@@ -68,8 +67,7 @@ export function createImportPlan(
   ): ImportPlan
 {
   validateImportedPayload(
-    options.payload
-  );
+    options.payload);
 
   const existingById =
     options.existingApps.find(
@@ -94,8 +92,7 @@ export function createImportPlan(
     uuid: options.createUuid(),
     name: options.payload.name,
     author: normalizeAuthor(
-      options.payload.author
-    ),
+      options.payload.author),
     createdAt: options.now,
     updatedAt: options.now
   };
@@ -109,8 +106,7 @@ export function createImportPlan(
         appId: app.id,
         name,
         content
-      })
-    );
+      }));
 
   return {
     kind: 'new',
@@ -137,16 +133,14 @@ function validateImportedPayload(
 
   if (
     !isValidAuthor(
-      payload.author
-    )
+      payload.author)
   ) {
     throw new Error('Invalid app JSON format.');
   }
 
   for (
     const [fileName, content] of Object.entries(
-      payload.files
-    )
+      payload.files)
   ) {
     if (fileName.trim() === '' || typeof content !== 'string') {
       throw new Error('Invalid app JSON format.');

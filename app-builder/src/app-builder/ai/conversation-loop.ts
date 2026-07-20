@@ -24,16 +24,13 @@ export function buildConversationPrompt(
   const transcript =
     messages
     .slice(
-      -MAX_TRANSCRIPT_MESSAGES
-    )
+      -MAX_TRANSCRIPT_MESSAGES)
     .map(
       message =>
         `${
           formatRoleLabel(
-            message.role
-          )
-        }: ${message.text}`
-    )
+            message.role)
+        }: ${message.text}`)
     .join('\n\n');
 
   return [

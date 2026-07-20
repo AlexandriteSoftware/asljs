@@ -16,14 +16,12 @@ export function eventSourceSetup(
     store.createIndex(
       'by_sequence',
       'sequence',
-      { unique: true }
-    );
+      { unique: true });
 
     store.createIndex(
       'by_previous',
       'previousTransactionId',
-      { unique: false }
-    );
+      { unique: false });
   }
 }
 
@@ -38,6 +36,5 @@ export function eventSourceProjectionSetup(
 
   db.createObjectStore(
     storeName,
-    { keyPath: 'projectionId' }
-  );
+    { keyPath: 'projectionId' });
 }

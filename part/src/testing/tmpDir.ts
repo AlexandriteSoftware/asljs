@@ -16,14 +16,12 @@ export function tmpDirFactory(
     const error =
       tmpDirLogger.error
       .bind(
-        tmpDirLogger
-      );
+        tmpDirLogger);
 
     const trace =
       tmpDirLogger.trace
       .bind(
-        tmpDirLogger
-      );
+        tmpDirLogger);
 
     const tmpDirOptions: Partial<TmpDirOptions> =
       { error, trace };

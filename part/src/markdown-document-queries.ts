@@ -36,8 +36,7 @@ export function getSections(
   };
 
   sections.push(
-    currentSection
-  );
+    currentSection);
 
   for (const node of document.root.children) {
     if (node.type !== 'heading') {
@@ -58,8 +57,7 @@ export function getSections(
     if (sections.length > 0) {
       updateMarkupForSection(
         document,
-        sections[sections.length - 1]
-      );
+        sections[sections.length - 1]);
     }
 
     const markup =
@@ -84,8 +82,7 @@ export function getSections(
   if (sections.length > 0) {
     updateMarkupForSection(
       document,
-      sections[sections.length - 1]
-    );
+      sections[sections.length - 1]);
   }
 
   return sections;
@@ -94,7 +91,7 @@ export function getSections(
       document: MarkdownDocument,
       section: Section
     ): void
-{
+  {
     const sectionMarkup =
       getMarkup(
         document,
@@ -230,8 +227,7 @@ export function getMarkup(
 
   return document.content.slice(
     startOffset,
-    endOffset
-  );
+    endOffset);
 }
 
 export function getText(
@@ -250,9 +246,7 @@ export function getText(
         node =>
           getText(
             document,
-            node
-          )
-      )
+            node))
       .join('');
 
     return text;
@@ -278,9 +272,7 @@ export function getText(
         childNode =>
           getText(
             document,
-            childNode
-          )
-      )
+            childNode))
       .join('');
 
     return text;

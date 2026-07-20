@@ -46,8 +46,7 @@ export function bindValueModel(
     writeBindingValue(
       element,
       spec.target,
-      formattedValue
-    );
+      formattedValue);
   };
 
   update();
@@ -89,8 +88,7 @@ function compilePipes(
     }
 
     compiled.push(
-      { args: [...pipe.args], formatter }
-    );
+      { args: [...pipe.args], formatter });
   }
 
   return compiled;
@@ -106,8 +104,7 @@ function applyPipes(
   for (const pipe of pipes) {
     current = pipe.formatter(
       current,
-      ...pipe.args
-    );
+      ...pipe.args);
   }
 
   return current;

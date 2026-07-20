@@ -91,8 +91,7 @@ export class ArtefactDefinitionProviderImpl
   {
     if (
       !path.isAbsolute(
-        definitionsPath
-      )
+        definitionsPath)
     ) {
       throw new Error(
         `'definitionsPath' must be absolute: ${definitionsPath}`
@@ -106,8 +105,7 @@ export class ArtefactDefinitionProviderImpl
   {
     this.logger.trace(
       'findDefinition() { %s }',
-      definitionName
-    );
+      definitionName);
 
     const definitions =
       await this.#getDefinitions();
@@ -115,8 +113,7 @@ export class ArtefactDefinitionProviderImpl
     const definition =
       definitions
       .find(
-        item => item.name === definitionName
-      );
+        item => item.name === definitionName);
 
     const definitionFoundStatus =
       definition
@@ -126,8 +123,7 @@ export class ArtefactDefinitionProviderImpl
     this.logger.trace(
       'findDefinition() { %s => %s }',
       definitionName,
-      definitionFoundStatus
-    );
+      definitionFoundStatus);
 
     return definition;
   }
@@ -138,8 +134,7 @@ export class ArtefactDefinitionProviderImpl
   {
     this.logger.trace(
       'getDefinition() { %s }',
-      definitionName
-    );
+      definitionName);
 
     const definitions =
       await this.#getDefinitions();
@@ -147,8 +142,7 @@ export class ArtefactDefinitionProviderImpl
     const definition =
       definitions
       .find(
-        item => item.name === definitionName
-      );
+        item => item.name === definitionName);
 
     if (!definition) {
       throw new Error(
@@ -158,8 +152,7 @@ export class ArtefactDefinitionProviderImpl
 
     this.logger.trace(
       'getDefinition() { return definition %s }',
-      definitionName
-    );
+      definitionName);
 
     return definition;
   }
@@ -167,16 +160,14 @@ export class ArtefactDefinitionProviderImpl
   async getDefinitions(): Promise<ArtefactDefinition[]>
   {
     this.logger.trace(
-      'getDefinitions() { start }'
-    );
+      'getDefinitions() { start }');
 
     const definitions =
       await this.#getDefinitions();
 
     this.logger.trace(
       'getDefinitions() { return %d definitions }',
-      definitions.length
-    );
+      definitions.length);
 
     return definitions;
   }
@@ -189,8 +180,7 @@ export class ArtefactDefinitionProviderImpl
 
     this.logger.trace(
       '#getDefinitions() { scanning for definitions in %s }',
-      this.definitionsPath
-    );
+      this.definitionsPath);
 
     const markdownPaths =
       await glob(
@@ -222,13 +212,11 @@ export class ArtefactDefinitionProviderImpl
       }
 
       definitions.push(
-        artefactDefinition
-      );
+        artefactDefinition);
     }
 
     definitions.sort(
-      sortDefinitionsByName
-    );
+      sortDefinitionsByName);
 
     this.cache = definitions;
 
@@ -247,8 +235,7 @@ export class ArtefactDefinitionProviderImpl
 
     this.logger.trace(
       'fromFile(...) { %s }',
-      filePath
-    );
+      filePath);
 
     let content =
       await readFile(
@@ -272,8 +259,7 @@ export class ArtefactDefinitionProviderImpl
 
     this.logger.trace(
       'fromFile(...) { return definition %s }',
-      artefactDefinition.name
-    );
+      artefactDefinition.name);
 
     return artefactDefinition;
   }
@@ -286,8 +272,7 @@ export class ArtefactDefinitionProviderImpl
     this.logger.trace(
       'tryParse(...%d chars, %o)',
       content.length,
-      context
-    );
+      context);
 
     const name =
       path.basename(
@@ -298,8 +283,7 @@ export class ArtefactDefinitionProviderImpl
     const document =
       this.markdownDocumentProvider
       .parse(
-        content
-      );
+        content);
 
     const sections =
       getSections(
@@ -308,8 +292,7 @@ export class ArtefactDefinitionProviderImpl
     if (sections.length === 0) {
       this.logger.trace(
         'tryParse(...): no sections found in %s',
-        context.path
-      );
+        context.path);
 
       return;
     }
@@ -324,8 +307,7 @@ export class ArtefactDefinitionProviderImpl
       this.logger.trace(
         'tryParse(...): top-level heading "%s" not found in %s',
         name,
-        context.path
-      );
+        context.path);
 
       return;
     }
@@ -336,14 +318,12 @@ export class ArtefactDefinitionProviderImpl
     const locationSection =
       sections
       .find(
-        section => section.heading === 'Location'
-      );
+        section => section.heading === 'Location');
 
     if (!locationSection) {
       this.logger.trace(
         'tryParse(...): no location section found in %s',
-        context.path
-      );
+        context.path);
 
       return;
     }
@@ -356,8 +336,7 @@ export class ArtefactDefinitionProviderImpl
     if (!locations) {
       this.logger.warning(
         'tryParse(...): no locations found in %s',
-        context.path
-      );
+        context.path);
 
       return;
     }
@@ -392,8 +371,7 @@ export class ArtefactDefinitionProviderImpl
         this.logger.warning(
           'tryParse(...): invalid rule heading "%s" in %s',
           ruleSection.heading,
-          context.path
-        );
+          context.path);
 
         continue;
       }
@@ -432,8 +410,7 @@ export class ArtefactDefinitionProviderImpl
       'parse() { name: %s, rules: %d, locations: %d }',
       name,
       rules.length,
-      locations.length
-    );
+      locations.length);
 
     return definition;
   }
@@ -446,11 +423,9 @@ export class ArtefactDefinitionProviderImpl
     const locationLists =
       nodes
       .filter(
-        node => node.type === 'list'
-      )
+        node => node.type === 'list')
       .map(
-        node => node as List
-      );
+        node => node as List);
 
     const locations: Location[] = [];
 
@@ -461,13 +436,10 @@ export class ArtefactDefinitionProviderImpl
           item =>
             getText(
               document,
-              item
-            )
-              .trim()
-        )
+              item)
+              .trim())
         .filter(
-          itemText => itemText.length > 0
-        );
+          itemText => itemText.length > 0);
 
       if (listItems.length === 0) {
         continue;
@@ -496,16 +468,14 @@ export class ArtefactDefinitionProviderImpl
 
         if (excludeMatch) {
           exclude.push(
-            excludeMatch[1].trim()
-          );
+            excludeMatch[1].trim());
 
           continue;
         }
 
         if (/^GitIgnore$/i.test(itemText)) {
           filters.push(
-            { name: 'GitIgnore' }
-          );
+            { name: 'GitIgnore' });
         }
       }
 

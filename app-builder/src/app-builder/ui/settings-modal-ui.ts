@@ -119,48 +119,42 @@ export function createSettingsModalUi(
     {
       icon: '<i class="bi bi-x-lg"></i>',
       className: 'btn btn-outline-secondary btn-sm'
-    }
-  );
+    });
 
   configureButton(
     elBtnSave,
     {
       text: 'Save',
       className: 'btn btn-primary'
-    }
-  );
+    });
 
   configureButton(
     elBtnCancel,
     {
       text: 'Cancel',
       className: 'btn btn-outline-secondary'
-    }
-  );
+    });
 
   configureTextInput(
     elApiKeyInput,
     {
       placeholder: 'sk-…  (optional, stored locally)',
       inputType: 'password'
-    }
-  );
+    });
 
   configureTextInput(
     elFontSizeInput,
     {
       placeholder: '14',
       inputType: 'number'
-    }
-  );
+    });
 
   configureTextInput(
     elMaxToolStepsInput,
     {
       placeholder: '20',
       inputType: 'number'
-    }
-  );
+    });
 
   configureSelect(
     elThemeSelect,
@@ -170,51 +164,44 @@ export function createSettingsModalUi(
         { value: 'dark', label: 'Dark' },
         { value: 'light', label: 'Light' }
       ]
-    }
-  );
+    });
 
   function close(
     ): void
-{
+  {
     elModal.classList.add('hidden');
   }
 
   async function save(
     ): Promise<void>
-{
+  {
     await options.onSave(
       {
         apiKey: readControlValue(elApiKeyInput).trim(),
         theme: readControlValue(elThemeSelect),
         fontSizeText: readControlValue(
-          elFontSizeInput
-        ),
+          elFontSizeInput),
         maxToolStepsText: readControlValue(
-          elMaxToolStepsInput
-        )
-      }
-    );
+          elMaxToolStepsInput)
+      });
 
     close();
   }
 
   elBtnClose.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elBtnSave.addEventListener(
     'click',
     () =>
     {
       void save();
-    }
-  );
+    });
 
   elBtnCancel.addEventListener(
     'click',
-    close
-  );
+    close);
 
   elModal.addEventListener(
     'click',
@@ -223,8 +210,7 @@ export function createSettingsModalUi(
       if (event.target === elModal) {
         close();
       }
-    }
-  );
+    });
 
   return {
     async open(): Promise<void>
@@ -234,27 +220,21 @@ export function createSettingsModalUi(
 
       writeControlValue(
         elApiKeyInput,
-        values.apiKey
-      );
+        values.apiKey);
 
       writeControlValue(
         elThemeSelect,
-        values.theme
-      );
+        values.theme);
 
       writeControlValue(
         elFontSizeInput,
         String(
-          values.fontSize
-        )
-      );
+          values.fontSize));
 
       writeControlValue(
         elMaxToolStepsInput,
         String(
-          values.maxToolSteps
-        )
-      );
+          values.maxToolSteps));
 
       elModal.classList.remove('hidden');
       focusInnerControl(elApiKeyInput);

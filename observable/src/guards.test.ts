@@ -16,17 +16,13 @@ test(
     assert.equal(
       isFunction(
         () =>
-        {}
-      ),
-      true
-    );
+        {}),
+      true);
 
     assert.equal(
       isFunction({}),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   `${TEST_SUITE}: isObject detects non-null objects only`,
@@ -34,25 +30,19 @@ test(
   {
     assert.equal(
       isObject(
-        { a: 1 }
-      ),
-      true
-    );
+        { a: 1 }),
+      true);
 
     assert.equal(
       isObject(null),
-      false
-    );
+      false);
 
     assert.equal(
       isObject(
         () =>
-        {}
-      ),
-      false
-    );
-  }
-);
+        {}),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: functionTypeGuard throws for non-functions`,
@@ -62,13 +52,9 @@ test(
       () =>
         functionTypeGuard(
           () =>
-          {}
-        )
-    );
+          {}));
 
     assert.throws(
       () => functionTypeGuard(1),
-      /Expect a function\./
-    );
-  }
-);
+      /Expect a function\./);
+  });

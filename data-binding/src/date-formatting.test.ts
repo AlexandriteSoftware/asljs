@@ -18,12 +18,9 @@ test(
     assert.equal(
       formatDate(
         date,
-        'yyyy'
-      ),
-      '2026'
-    );
-  }
-);
+        'yyyy'),
+      '2026');
+  });
 
 test(
   `${TEST_SUITE}: formats yy MM dd`,
@@ -32,28 +29,21 @@ test(
     assert.equal(
       formatDate(
         date,
-        'yy'
-      ),
-      '26'
-    );
+        'yy'),
+      '26');
 
     assert.equal(
       formatDate(
         date,
-        'MM'
-      ),
-      '01'
-    );
+        'MM'),
+      '01');
 
     assert.equal(
       formatDate(
         date,
-        'dd'
-      ),
-      '05'
-    );
-  }
-);
+        'dd'),
+      '05');
+  });
 
 test(
   `${TEST_SUITE}: formats hh mm ss`,
@@ -62,28 +52,21 @@ test(
     assert.equal(
       formatDate(
         date,
-        'hh'
-      ),
-      '08'
-    );
+        'hh'),
+      '08');
 
     assert.equal(
       formatDate(
         date,
-        'mm'
-      ),
-      '09'
-    );
+        'mm'),
+      '09');
 
     assert.equal(
       formatDate(
         date,
-        'ss'
-      ),
-      '04'
-    );
-  }
-);
+        'ss'),
+      '04');
+  });
 
 test(
   `${TEST_SUITE}: formats mixed tokens`,
@@ -92,20 +75,15 @@ test(
     assert.equal(
       formatDate(
         date,
-        'yyyy-MM-dd hh:mm:ss'
-      ),
-      '2026-01-05 08:09:04'
-    );
+        'yyyy-MM-dd hh:mm:ss'),
+      '2026-01-05 08:09:04');
 
     assert.equal(
       formatDate(
         date,
-        'yy/MM/dd'
-      ),
-      '26/01/05'
-    );
-  }
-);
+        'yy/MM/dd'),
+      '26/01/05');
+  });
 
 test(
   `${TEST_SUITE}: escapes literals with backslash`,
@@ -114,20 +92,15 @@ test(
     assert.equal(
       formatDate(
         date,
-        'yyyy\\y'
-      ),
-      '2026y'
-    );
+        'yyyy\\y'),
+      '2026y');
 
     assert.equal(
       formatDate(
         date,
-        'dd\\d'
-      ),
-      '05d'
-    );
-  }
-);
+        'dd\\d'),
+      '05d');
+  });
 
 test(
   `${TEST_SUITE}: handles unknown tokens as literals`,
@@ -136,12 +109,9 @@ test(
     assert.equal(
       formatDate(
         date,
-        'yyyy-XX'
-      ),
-      '2026-XX'
-    );
-  }
-);
+        'yyyy-XX'),
+      '2026-XX');
+  });
 
 test(
   `${TEST_SUITE}: returns Date.toString when format is null`,
@@ -150,9 +120,6 @@ test(
     assert.equal(
       formatDate(
         date,
-        null
-      ),
-      date.toString()
-    );
-  }
-);
+        null),
+      date.toString());
+  });

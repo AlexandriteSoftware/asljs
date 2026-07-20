@@ -20,19 +20,14 @@ test(
   {
     assert.equal(
       keyPathValid(
-        ['id']
-      ),
-      true
-    );
+        ['id']),
+      true);
 
     assert.equal(
       keyPathValid(
-        ['projectId', 'date']
-      ),
-      true
-    );
-  }
-);
+        ['projectId', 'date']),
+      true);
+  });
 
 test(
   `${TEST_SUITE}: keyPathValid rejects empty and blank entries`,
@@ -40,17 +35,13 @@ test(
   {
     assert.equal(
       keyPathValid([]),
-      false
-    );
+      false);
 
     assert.equal(
       keyPathValid(
-        ['']
-      ),
-      false
-    );
-  }
-);
+        ['']),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: keyPathValid accepts a single string`,
@@ -58,10 +49,8 @@ test(
   {
     assert.equal(
       keyPathValid('id'),
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   `${TEST_SUITE}: keyPathAssert throws for invalid path`,
@@ -69,10 +58,8 @@ test(
   {
     assert.throws(
       () => keyPathAssert(''),
-      TypeError
-    );
-  }
-);
+      TypeError);
+  });
 
 test(
   `${TEST_SUITE}: keyValueValid accepts IndexedDB key types`,
@@ -80,36 +67,27 @@ test(
   {
     assert.equal(
       keyValueValid('a'),
-      true
-    );
+      true);
 
     assert.equal(
       keyValueValid(1),
-      true
-    );
+      true);
 
     assert.equal(
       keyValueValid(
-        new Date('2026-03-27T00:00:00.000Z')
-      ),
-      true
-    );
+        new Date('2026-03-27T00:00:00.000Z')),
+      true);
 
     assert.equal(
       keyValueValid(
-        new Uint8Array([1, 2, 3])
-      ),
-      true
-    );
+        new Uint8Array([1, 2, 3])),
+      true);
 
     assert.equal(
       keyValueValid(
-        ['a', 1]
-      ),
-      true
-    );
-  }
-);
+        ['a', 1]),
+      true);
+  });
 
 test(
   `${TEST_SUITE}: keyValueValid rejects invalid IndexedDB key types`,
@@ -117,34 +95,26 @@ test(
   {
     assert.equal(
       keyValueValid(null),
-      false
-    );
+      false);
 
     assert.equal(
       keyValueValid(undefined),
-      false
-    );
+      false);
 
     assert.equal(
       keyValueValid(
-        Number.NaN
-      ),
-      false
-    );
+        Number.NaN),
+      false);
 
     assert.equal(
       keyValueValid({}),
-      false
-    );
+      false);
 
     assert.equal(
       keyValueValid(
-        ['a', undefined]
-      ),
-      false
-    );
-  }
-);
+        ['a', undefined]),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: keyValueAssert throws for invalid value`,
@@ -152,10 +122,8 @@ test(
   {
     assert.throws(
       () => keyValueAssert(undefined),
-      TypeError
-    );
-  }
-);
+      TypeError);
+  });
 
 test(
   `${TEST_SUITE}: keyGet returns scalar key for single-part keyDef`,
@@ -172,12 +140,9 @@ test(
     assert.equal(
       keyGet(
         keyDef,
-        record
-      ),
-      'a'
-    );
-  }
-);
+        record),
+      'a');
+  });
 
 test(
   `${TEST_SUITE}: keyGet returns composite key for multi-part keyDef`,
@@ -194,12 +159,9 @@ test(
     assert.deepEqual(
       keyGet(
         keyDef,
-        record
-      ),
-      ['a', 'v1']
-    );
-  }
-);
+        record),
+      ['a', 'v1']);
+  });
 
 test(
   `${TEST_SUITE}: keyGet throws when key value is invalid`,
@@ -221,12 +183,9 @@ test(
       () =>
         keyGet(
           keyDef,
-          record
-        ),
-      TypeError
-    );
-  }
-);
+          record),
+      TypeError);
+  });
 
 test(
   `${TEST_SUITE}: keyValid validates single-value keys`,
@@ -235,20 +194,15 @@ test(
     assert.equal(
       keyValid(
         ['id'],
-        'a'
-      ),
-      true
-    );
+        'a'),
+      true);
 
     assert.equal(
       keyValid(
         ['id'],
-        ['a']
-      ),
-      false
-    );
-  }
-);
+        ['a']),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: keyValid validates composite keys by length`,
@@ -257,28 +211,21 @@ test(
     assert.equal(
       keyValid(
         ['id', 'version'],
-        ['a', 'v1']
-      ),
-      true
-    );
+        ['a', 'v1']),
+      true);
 
     assert.equal(
       keyValid(
         ['id', 'version'],
-        ['a']
-      ),
-      false
-    );
+        ['a']),
+      false);
 
     assert.equal(
       keyValid(
         ['id', 'version'],
-        'a'
-      ),
-      false
-    );
-  }
-);
+        'a'),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: keyAssert throws for invalid key shape`,
@@ -288,9 +235,6 @@ test(
       () =>
         keyAssert(
           ['id', 'version'],
-          'a'
-        ),
-      TypeError
-    );
-  }
-);
+          'a'),
+      TypeError);
+  });

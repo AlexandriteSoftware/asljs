@@ -26,8 +26,7 @@ class Person extends ObservableObject<PersonModel>
       'name',
       this.nameValue,
       value,
-      next => this.nameValue = next
-    );
+      next => this.nameValue = next);
   }
 
   get age(): number {
@@ -41,8 +40,7 @@ class Person extends ObservableObject<PersonModel>
       'age',
       this.ageValue,
       value,
-      next => this.ageValue = next
-    );
+      next => this.ageValue = next);
   }
 
   public forceEmit(
@@ -55,15 +53,13 @@ class Person extends ObservableObject<PersonModel>
       return this.emitSet(
         'name',
         previous as string,
-        value as string
-      );
+        value as string);
     }
 
     return this.emitSet(
       'age',
       previous as number,
-      value as number
-    );
+      value as number);
   }
 }
 
@@ -78,8 +74,7 @@ test(
 
     (person as any).on(
       'set:name',
-      () => count += 1
-    );
+      () => count += 1);
 
     person.name = 'Alice';
     person.name = 'Alice';
@@ -87,10 +82,8 @@ test(
 
     assert.equal(
       count,
-      2
-    );
-  }
-);
+      2);
+  });
 
 test(
   `${TEST_SUITE}: emitSet emits keyed and aggregate events`,
@@ -104,31 +97,25 @@ test(
 
     (person as any).on(
       'set:age',
-      () => keyedCount += 1
-    );
+      () => keyedCount += 1);
 
     (person as any).on(
       'set',
-      () => aggregateCount += 1
-    );
+      () => aggregateCount += 1);
 
     person.forceEmit(
       'age',
       1,
-      2
-    );
+      2);
 
     assert.equal(
       keyedCount,
-      1
-    );
+      1);
 
     assert.equal(
       aggregateCount,
-      1
-    );
-  }
-);
+      1);
+  });
 
 test(
   `${TEST_SUITE}: watch observes selected properties`,
@@ -145,8 +132,7 @@ test(
         (name: string, age: number) =>
       {
         values.push(
-          [name, age]
-        );
+          [name, age]);
       });
 
     person.name = 'Alice';
@@ -159,12 +145,9 @@ test(
 
     assert.equal(
       disposed,
-      true
-    );
+      true);
 
     assert.deepEqual(
       values,
-      [['', 0], ['Alice', 0], ['Alice', 7]]
-    );
-  }
-);
+      [['', 0], ['Alice', 0], ['Alice', 7]]);
+  });

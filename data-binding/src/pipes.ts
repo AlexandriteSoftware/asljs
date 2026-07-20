@@ -110,8 +110,7 @@ export function createBuiltInPipes(
         value,
         format,
         locale,
-        false
-      );
+        false);
     },
     datetime: (
       value,
@@ -129,8 +128,7 @@ export function createBuiltInPipes(
         value,
         format,
         locale,
-        true
-      );
+        true);
     },
     fixed: (
       value,
@@ -291,8 +289,7 @@ function formatDateOrIntl(
 
   return formatDate(
     dt,
-    format
-  );
+    format);
 }
 
 function asDate(

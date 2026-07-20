@@ -22,10 +22,8 @@ async function openBasicDb(
     {
       db.createObjectStore(
         'records',
-        { keyPath: 'id' }
-      );
-    }]
-  );
+        { keyPath: 'id' });
+    }]);
 }
 
 test(
@@ -49,10 +47,8 @@ test(
 
     assert.equal(
       reused,
-      tx
-    );
-  }
-);
+      tx);
+  });
 
 test(
   `${TEST_SUITE}: txReuseOrCreate throws for inaccessible store`,
@@ -72,19 +68,15 @@ test(
           tx,
           'missing',
           TxMode.read,
-          db
-        ),
+          db),
       (error: unknown) =>
       {
         assert.ok(
-          error instanceof TransactionStoreAccessError
-        );
+          error instanceof TransactionStoreAccessError);
 
         return true;
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: dbDelete removes existing database`,
@@ -100,8 +92,7 @@ test(
       {
         db.createObjectStore(
           'records',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }]);
 
     opened.close();
@@ -119,18 +110,15 @@ test(
 
         db.createObjectStore(
           'records',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }]);
 
     assert.equal(
       upgraded,
-      true
-    );
+      true);
 
     reopened.close();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: dbOpen runs all migrations for a new database`,
@@ -143,29 +131,24 @@ test(
       {
         database.createObjectStore(
           'first',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }, database =>
       {
         database.createObjectStore(
           'second',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }]);
 
     assert.equal(
       db.objectStoreNames.contains('first'),
-      true
-    );
+      true);
 
     assert.equal(
       db.objectStoreNames.contains('second'),
-      true
-    );
+      true);
 
     db.close();
-  }
-);
+  });
 
 test(
   `${TEST_SUITE}: dbOpen starts migrations after existing oldVersion`,
@@ -181,8 +164,7 @@ test(
       {
         database.createObjectStore(
           'first',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }]);
 
     firstVersion.close();
@@ -194,26 +176,21 @@ test(
       {
         database.createObjectStore(
           'first',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }, database =>
       {
         database.createObjectStore(
           'second',
-          { keyPath: 'id' }
-        );
+          { keyPath: 'id' });
       }]);
 
     assert.equal(
       secondVersion.objectStoreNames.contains('first'),
-      true
-    );
+      true);
 
     assert.equal(
       secondVersion.objectStoreNames.contains('second'),
-      true
-    );
+      true);
 
     secondVersion.close();
-  }
-);
+  });

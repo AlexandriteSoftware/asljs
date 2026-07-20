@@ -35,20 +35,16 @@ test(
 
     assert.equal(
       exitCode,
-      0
-    );
+      0);
 
     assert.equal(
       environment.stdout.toString(),
-      `${packageVersion}\n`
-    );
+      `${packageVersion}\n`);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   'RQ111: cli accepts --definitions=value syntax',
@@ -65,16 +61,14 @@ test(
       {
         definitions = e.definitions;
         return Promise.resolve(0);
-      }
-    );
+      });
 
     await runCli(
       [
         'version',
         '--definitions=artefacts'
       ],
-      environment
-    );
+      environment);
 
     const definitionsPath =
       path.resolve(
@@ -82,15 +76,12 @@ test(
 
     assert.equal(
       environment.definitions,
-      definitionsPath
-    );
+      definitionsPath);
 
     assert.equal(
       definitions,
-      definitionsPath
-    );
-  }
-);
+      definitionsPath);
+  });
 
 test(
   'RQ132: cli accepts --project=value syntax',
@@ -107,16 +98,14 @@ test(
       {
         project = e.project;
         return Promise.resolve(0);
-      }
-    );
+      });
 
     await runCli(
       [
         'version',
         '--project=artefacts'
       ],
-      environment
-    );
+      environment);
 
     const projectPath =
       path.resolve(
@@ -124,15 +113,12 @@ test(
 
     assert.equal(
       environment.project,
-      projectPath
-    );
+      projectPath);
 
     assert.equal(
       project,
-      projectPath
-    );
-  }
-);
+      projectPath);
+  });
 
 test(
   'RQ131: cli initialises logger',
@@ -146,20 +132,16 @@ test(
       async (): Promise<number> =>
       {
         return Promise.resolve(0);
-      }
-    );
+      });
 
     await runCli(
       ['version', '--loglevel=silent'],
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.loggerProvider.getLogger().level,
-      'silent'
-    );
-  }
-);
+      'silent');
+  });
 
 test(
   'RQ101: unknown options are rejected by the command parser',
@@ -178,15 +160,12 @@ test(
 
     assert.equal(
       exitCode,
-      1
-    );
+      1);
 
     assert.match(
       environment.stderr.toString(),
-      /Unknown option: --unsupported/
-    );
-  }
-);
+      /Unknown option: --unsupported/);
+  });
 
 test(
   'RQ101: cli reports missing option values as command errors',
@@ -202,15 +181,12 @@ test(
 
     assert.equal(
       missingValueExitCode,
-      1
-    );
+      1);
 
     assert.match(
       environment.stderr.toString(),
-      /Option --definitions requires a value\./
-    );
-  }
-);
+      /Option --definitions requires a value\./);
+  });
 
 test(
   'RQ101: cli rejects unsupported long options',
@@ -226,15 +202,12 @@ test(
 
     assert.equal(
       exitCode,
-      1
-    );
+      1);
 
     assert.match(
       environment.stderr.toString(),
-      /Unknown option: --verbose/
-    );
-  }
-);
+      /Unknown option: --verbose/);
+  });
 
 test(
   'RQ112: cli reads definitions path from environment variable PART_DEFINITIONS',
@@ -247,15 +220,12 @@ test(
 
     await runCli(
       ['version'],
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.definitions,
-      path.resolve('artefacts')
-    );
-  }
-);
+      path.resolve('artefacts'));
+  });
 
 test(
   'RQ133: cli reads project path from environment variable PART_PROJECT',
@@ -268,12 +238,9 @@ test(
 
     await runCli(
       ['version'],
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.project,
-      path.resolve('project')
-    );
-  }
-);
+      path.resolve('project'));
+  });

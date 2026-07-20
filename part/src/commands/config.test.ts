@@ -19,8 +19,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -42,12 +41,9 @@ test(
       });
 
     await execConfig(
-      environment
-    );
+      environment);
 
     assert.match(
       environment.stdout.toString(),
-      /Environment:/
-    );
-  }
-);
+      /Environment:/);
+  });

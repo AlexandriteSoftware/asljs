@@ -16,85 +16,67 @@ test(
 
     assert.equal(
       theme.button?.className,
-      'btn btn-primary'
-    );
+      'btn btn-primary');
 
     assert.equal(
       theme.button?.variants?.add?.icon,
-      '<i class="bi bi-plus"></i>'
-    );
+      '<i class="bi bi-plus"></i>');
 
     assert.equal(
       theme.button?.variants?.delete?.icon,
-      '<i class="bi bi-trash"></i>'
-    );
+      '<i class="bi bi-trash"></i>');
 
     assert.equal(
       theme.button?.variants?.settings?.icon,
-      '<i class="bi bi-gear"></i>'
-    );
+      '<i class="bi bi-gear"></i>');
 
     assert.equal(
       theme.button?.variants?.add?.text,
-      'Add'
-    );
+      'Add');
 
     assert.match(
       theme.textInput?.template as string,
-      /form-label/
-    );
+      /form-label/);
 
     assert.match(
       theme.textInput?.template as string,
-      /data-role="control-host"/
-    );
+      /data-role="control-host"/);
 
     assert.match(
       theme.textInput?.template as string,
-      /invalid-feedback/
-    );
+      /invalid-feedback/);
 
     assert.match(
       theme.textInput?.input as string,
-      /form-control/
-    );
+      /form-control/);
 
     assert.match(
       theme.textInput?.textarea as string,
-      /form-control/
-    );
+      /form-control/);
 
     assert.doesNotMatch(
       theme.textInput?.input as string,
-      /invalid-feedback/
-    );
+      /invalid-feedback/);
 
     assert.doesNotMatch(
       theme.textInput?.textarea as string,
-      /invalid-feedback/
-    );
+      /invalid-feedback/);
 
     assert.match(
       theme.select?.template as string,
-      /invalid-feedback/
-    );
+      /invalid-feedback/);
 
     assert.doesNotMatch(
       theme.select?.select as string,
-      /invalid-feedback/
-    );
+      /invalid-feedback/);
 
     assert.match(
       theme.list?.container as string,
-      /list-group/
-    );
+      /list-group/);
 
     assert.deepEqual(
       getComponentVariantList(
         'button',
-        theme
-      ),
-      ['add', 'delete', 'settings']
-    );
-  }
-);
+        theme),
+      ['add', 'delete', 'settings']);
+  });

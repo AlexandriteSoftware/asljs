@@ -65,26 +65,21 @@ test(
     for (const tool of OPENAI_TOOLS) {
       assert.equal(
         tool.type,
-        'function'
-      );
+        'function');
 
       assert.equal(
         tool.strict,
-        true
-      );
+        true);
 
       assert.equal(
         tool.parameters.type,
-        'object'
-      );
+        'object');
 
       assert.equal(
         tool.parameters.additionalProperties,
-        false
-      );
+        false);
     }
-  }
-);
+  });
 
 test(
   'required includes every property key for each tool schema',
@@ -101,11 +96,9 @@ test(
       assert.deepEqual(
         requiredKeys,
         propertyKeys,
-        `${tool.name}: required must exactly match properties keys`
-      );
+        `${tool.name}: required must exactly match properties keys`);
     }
-  }
-);
+  });
 
 test(
   'setFilesContent schema uses array entries instead of free-form object maps',
@@ -117,8 +110,7 @@ test(
 
     assert.notEqual(
       tool,
-      undefined
-    );
+      undefined);
 
     if (tool === undefined) {
       throw new Error('setFilesContent tool is missing');
@@ -129,20 +121,16 @@ test(
 
     assert.equal(
       filesProperty?.type,
-      'array'
-    );
+      'array');
 
     assert.equal(
       filesProperty?.items?.type,
-      'object'
-    );
+      'object');
 
     assert.equal(
       filesProperty?.items?.additionalProperties,
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   'replaceFilePart schema requires replaceAll',
@@ -151,13 +139,11 @@ test(
     const tool =
       OPENAI_TOOLS
       .find(
-        item => item.name === 'replaceFilePart'
-      );
+        item => item.name === 'replaceFilePart');
 
     assert.notEqual(
       tool,
-      undefined
-    );
+      undefined);
 
     if (tool === undefined) {
       throw new Error(
@@ -167,10 +153,8 @@ test(
 
     assert.deepEqual(
       [...tool.parameters.required].sort(),
-      ['path', 'replaceAll', 'replacement', 'search']
-    );
-  }
-);
+      ['path', 'replaceAll', 'replacement', 'search']);
+  });
 
 test(
   'executeToolCall handles startGeneration',
@@ -197,15 +181,12 @@ test(
 
     assert.equal(
       called,
-      true
-    );
+      true);
 
     assert.equal(
       output,
-      '{"ok":true,"value":"queued"}'
-    );
-  }
-);
+      '{"ok":true,"value":"queued"}');
+  });
 
 test(
   'isResponseFunctionCall returns true only for function_call payload',
@@ -213,24 +194,18 @@ test(
   {
     assert.equal(
       isResponseFunctionCall(
-        { type: 'function_call' }
-      ),
-      true
-    );
+        { type: 'function_call' }),
+      true);
 
     assert.equal(
       isResponseFunctionCall(
-        { type: 'message' }
-      ),
-      false
-    );
+        { type: 'message' }),
+      false);
 
     assert.equal(
       isResponseFunctionCall(null),
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   'readFunctionName and readCallId read valid tool call fields',
@@ -245,15 +220,12 @@ test(
 
     assert.equal(
       readFunctionName(toolCall),
-      'readFile'
-    );
+      'readFile');
 
     assert.equal(
       readCallId(toolCall),
-      'c_1'
-    );
-  }
-);
+      'c_1');
+  });
 
 test(
   'readFunctionName throws for missing name',
@@ -262,12 +234,9 @@ test(
     assert.throws(
       () =>
         readFunctionName(
-          { type: 'function_call' }
-        ),
-      /Tool call missing function name\./
-    );
-  }
-);
+          { type: 'function_call' }),
+      /Tool call missing function name\./);
+  });
 
 test(
   'executeToolCall handles readFile with JSON string arguments',
@@ -296,15 +265,12 @@ test(
 
     assert.deepEqual(
       seenPaths,
-      ['app.js']
-    );
+      ['app.js']);
 
     assert.equal(
       output,
-      '{"ok":true,"value":"content:app.js"}'
-    );
-  }
-);
+      '{"ok":true,"value":"content:app.js"}');
+  });
 
 test(
   'executeToolCall returns tool failure for unknown tool',
@@ -320,10 +286,8 @@ test(
 
     assert.equal(
       output,
-      '{"ok":false,"error":"Unknown tool: not-real-tool"}'
-    );
-  }
-);
+      '{"ok":false,"error":"Unknown tool: not-real-tool"}');
+  });
 
 test(
   'executeToolCall returns tool failure when tool throws',
@@ -345,10 +309,8 @@ test(
 
     assert.equal(
       output,
-      '{"ok":false,"error":"boom"}'
-    );
-  }
-);
+      '{"ok":false,"error":"boom"}');
+  });
 
 test(
   'executeToolCall handles setFilesContent',
@@ -362,8 +324,7 @@ test(
         setFilesContent: async files =>
         {
           seen.push(
-            ...files
-          );
+            ...files);
         }
       });
 
@@ -386,15 +347,12 @@ test(
       [
         { path: 'README.md', content: '# demo' },
         { path: 'app.js', content: 'console.log(1);' }
-      ]
-    );
+      ]);
 
     assert.equal(
       output,
-      '{"ok":true,"value":"ok"}'
-    );
-  }
-);
+      '{"ok":true,"value":"ok"}');
+  });
 
 test(
   'executeToolCall handles readFileData',
@@ -425,10 +383,8 @@ test(
 
     assert.equal(
       output,
-      '{"ok":true,"value":{"mimeType":"image/png","base64":"AQID","dataUrl":"data:image/png;base64:AQID"}}'
-    );
-  }
-);
+      '{"ok":true,"value":{"mimeType":"image/png","base64":"AQID","dataUrl":"data:image/png;base64:AQID"}}');
+  });
 
 test(
   'executeToolCall handles setFileData',
@@ -442,8 +398,7 @@ test(
         setFileData: async (path, mimeType, base64) =>
         {
           calls.push(
-            { path, mimeType, base64 }
-          );
+            { path, mimeType, base64 });
         }
       });
 
@@ -468,15 +423,12 @@ test(
           mimeType: 'image/png',
           base64: 'AQID'
         }
-      ]
-    );
+      ]);
 
     assert.equal(
       output,
-      '{"ok":true,"value":"ok"}'
-    );
-  }
-);
+      '{"ok":true,"value":"ok"}');
+  });
 
 test(
   'createAppRuntimeTools readFilesByMask returns bounded matching files',
@@ -488,14 +440,11 @@ test(
         getCurrentAppId: () => 'app-1',
         getFiles: () => [
           makeFile(
-            { name: 'src/app.js', content: 'alpha beta gamma' }
-          ),
+            { name: 'src/app.js', content: 'alpha beta gamma' }),
           makeFile(
-            { id: 'f2', name: 'src/util.js', content: 'delta epsilon' }
-          ),
+            { id: 'f2', name: 'src/util.js', content: 'delta epsilon' }),
           makeFile(
-            { id: 'f3', name: 'README.md', content: '# readme' }
-          )
+            { id: 'f3', name: 'README.md', content: '# readme' })
         ],
         setFiles: () => undefined,
         getActiveFileName: () => null,
@@ -514,15 +463,12 @@ test(
       await tools.readFilesByMask(
         'src/*.js',
         10,
-        5
-      ),
+        5),
       {
         'src/app.js': 'alpha\n...[truncated]',
         'src/util.js': 'delta\n...[truncated]'
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'createAppRuntimeTools grep returns matching lines with file and line numbers',
@@ -534,11 +480,9 @@ test(
         getCurrentAppId: () => 'app-1',
         getFiles: () => [
           makeFile(
-            { name: 'src/app.js', content: 'alpha\nbeta\ngamma' }
-          ),
+            { name: 'src/app.js', content: 'alpha\nbeta\ngamma' }),
           makeFile(
-            { id: 'f2', name: 'src/util.js', content: 'delta\nbeta util' }
-          )
+            { id: 'f2', name: 'src/util.js', content: 'delta\nbeta util' })
         ],
         setFiles: () => undefined,
         getActiveFileName: () => null,
@@ -558,15 +502,12 @@ test(
         'src/*.js',
         'beta',
         '',
-        10
-      ),
+        10),
       [
         { path: 'src/app.js', line: 2, text: 'beta' },
         { path: 'src/util.js', line: 2, text: 'beta util' }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 test(
   'createAppRuntimeTools choose forwards question and options to host UI',
@@ -591,8 +532,7 @@ test(
         showChoicePrompt: (question, options) =>
         {
           seen.push(
-            { question, options }
-          );
+            { question, options });
         },
         wait: async () => undefined
       });
@@ -602,8 +542,7 @@ test(
       [
         'glowing ring',
         'spinning block'
-      ]
-    );
+      ]);
 
     assert.deepEqual(
       seen,
@@ -612,10 +551,8 @@ test(
           question: 'How should it look?',
           options: ['glowing ring', 'spinning block']
         }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 test(
   'createAppRuntimeTools runAppTests executes JavaScript test modules and reports failures',
@@ -648,8 +585,7 @@ test(
                 },
               },
             ];`
-            }
-          )
+            })
         ],
         setFiles: () => undefined,
         getActiveFileName: () => null,
@@ -669,8 +605,7 @@ test(
             : 'first';
 
           calls.push(
-            `eval:${currentTest}`
-          );
+            `eval:${currentTest}`);
 
           return currentTest === 'first';
         },
@@ -694,33 +629,27 @@ test(
         'run',
         'wait',
         'eval:second'
-      ]
-    );
+      ]);
 
     assert.equal(
       result.total,
-      2
-    );
+      2);
 
     assert.equal(
       result.passed,
-      1
-    );
+      1);
 
     assert.equal(
       result.failed,
-      1
-    );
+      1);
 
     assert.deepEqual(
       result.results,
       [
         { name: 'first', ok: true },
         { name: 'second', ok: false, error: 'second should pass' }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 test(
   'createAppRuntimeTools runAppTests still supports legacy JSON suites',
@@ -737,10 +666,8 @@ test(
               content: JSON.stringify(
                 [
                   { name: 'legacy', code: 'true;' }
-                ]
-              )
-            }
-          )
+                ])
+            })
         ],
         setFiles: () => undefined,
         getActiveFileName: () => null,
@@ -761,20 +688,16 @@ test(
 
     assert.equal(
       result.path,
-      'app.tests.json'
-    );
+      'app.tests.json');
 
     assert.equal(
       result.passed,
-      1
-    );
+      1);
 
     assert.equal(
       result.failed,
-      0
-    );
-  }
-);
+      0);
+  });
 
 test(
   'createAppRuntimeTools setFileContent creates file with normalized path',
@@ -813,40 +736,32 @@ test(
 
     await tools.setFileContent(
       './src\\app.js',
-      'console.log(1);'
-    );
+      'console.log(1);');
 
     assert.equal(
       files.length,
-      1
-    );
+      1);
 
     assert.equal(
       files[0].name,
-      'src/app.js'
-    );
+      'src/app.js');
 
     assert.equal(
       files[0].content,
-      'console.log(1);'
-    );
+      'console.log(1);');
 
     assert.equal(
       activeFileName,
-      'src/app.js'
-    );
+      'src/app.js');
 
     assert.equal(
       savedFiles.length,
-      1
-    );
+      1);
 
     assert.equal(
       savedFiles[0].id,
-      'new-file-id'
-    );
-  }
-);
+      'new-file-id');
+  });
 
 test(
   'createAppRuntimeTools setFileData stores data url content with normalized path',
@@ -878,25 +793,20 @@ test(
     await tools.setFileData(
       './assets\\logo.png',
       'image/png',
-      'AQID'
-    );
+      'AQID');
 
     assert.equal(
       files.length,
-      1
-    );
+      1);
 
     assert.equal(
       files[0].name,
-      'assets/logo.png'
-    );
+      'assets/logo.png');
 
     assert.equal(
       files[0].content,
-      'data:image/png;base64,AQID'
-    );
-  }
-);
+      'data:image/png;base64,AQID');
+  });
 
 test(
   'createAppRuntimeTools readFileData returns parsed file data for data urls',
@@ -911,8 +821,7 @@ test(
             {
               name: 'assets/logo.png',
               content: 'data:image/png;base64,AQID'
-            }
-          )
+            })
         ],
         setFiles: () => undefined,
         getActiveFileName: () => null,
@@ -929,16 +838,13 @@ test(
 
     assert.deepEqual(
       await tools.readFileData(
-        'assets/logo.png'
-      ),
+        'assets/logo.png'),
       {
         mimeType: 'image/png',
         base64: 'AQID',
         dataUrl: 'data:image/png;base64,AQID'
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'createAppRuntimeTools setFileContent activates dotfiles like any other file',
@@ -973,25 +879,20 @@ test(
 
     await tools.setFileContent(
       '.README.md',
-      '# previous'
-    );
+      '# previous');
 
     assert.equal(
       files.length,
-      1
-    );
+      1);
 
     assert.equal(
       files[0].name,
-      '.README.md'
-    );
+      '.README.md');
 
     assert.equal(
       activeFileName,
-      '.README.md'
-    );
-  }
-);
+      '.README.md');
+  });
 
 test(
   'createAppRuntimeTools replaceFilePart throws when search is ambiguous',
@@ -1003,8 +904,7 @@ test(
         {
           name: 'README.md',
           content: 'x marker x marker'
-        }
-      )
+        })
     ];
 
     const tools =
@@ -1033,12 +933,9 @@ test(
         tools.replaceFilePart(
           'README.md',
           'marker',
-          'MARKER'
-        ),
-      /Search text is ambiguous\./
-    );
-  }
-);
+          'MARKER'),
+      /Search text is ambiguous\./);
+  });
 
 test(
   'createAppRuntimeTools evalInApp retries once after run',
@@ -1082,20 +979,16 @@ test(
 
     assert.equal(
       result,
-      'ok'
-    );
+      'ok');
 
     assert.equal(
       runCount,
-      2
-    );
+      2);
 
     assert.equal(
       evalCount,
-      2
-    );
-  }
-);
+      2);
+  });
 
 test(
   'createAppRuntimeTools runAppAndCollectDiagnostics uses wait and diagnostics',
@@ -1128,8 +1021,7 @@ test(
         wait: async milliseconds =>
         {
           calls.push(
-            `wait:${milliseconds}`
-          );
+            `wait:${milliseconds}`);
         },
         diagnosticsDelayMs: 123
       });
@@ -1139,12 +1031,9 @@ test(
 
     assert.deepEqual(
       calls,
-      ['run', 'wait:123', 'diag']
-    );
+      ['run', 'wait:123', 'diag']);
 
     assert.deepEqual(
       result,
-      { ok: true }
-    );
-  }
-);
+      { ok: true });
+  });

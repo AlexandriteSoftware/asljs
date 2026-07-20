@@ -11,10 +11,8 @@ test(
   {
     assert.equal(
       typeof machine,
-      'function'
-    );
-  }
-);
+      'function');
+  });
 
 test(
   'state transitions',
@@ -39,41 +37,32 @@ test(
           event as { value: { name: string | undefined; }; };
 
         events.push(
-          `state:${stateEvent.value.name}`
-        );
-      }
-    );
+          `state:${stateEvent.value.name}`);
+      });
 
     select.on(
       'activating',
       () =>
       {
         events.push(
-          'select:activating'
-        );
-      }
-    );
+          'select:activating');
+      });
 
     select.on(
       'completed',
       () =>
       {
         events.push(
-          'select:completed'
-        );
-      }
-    );
+          'select:completed');
+      });
 
     select.activate();
 
     assert.strictEqual(
       currentMachine.state.name,
-      'selected'
-    );
+      'selected');
 
     assert.deepStrictEqual(
       events,
-      ['select:activating', 'state:selected', 'select:completed']
-    );
-  }
-);
+      ['select:activating', 'state:selected', 'select:completed']);
+  });

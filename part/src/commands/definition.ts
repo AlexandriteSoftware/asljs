@@ -35,8 +35,7 @@ export async function execDefinition(
       rootDirectory);
 
   environment.stdout.write(
-    `${markdown}\n`
-  );
+    `${markdown}\n`);
 }
 
 function resolveDefinition(
@@ -57,17 +56,13 @@ function resolveDefinition(
     definitions.find(
       definition =>
       path.resolve(
-        definition.path
-      ) === absoluteTarget)
+        definition.path) === absoluteTarget)
     ?? definitions.find(
       definition =>
         toPosixPath(
           path.relative(
             rootDirectory,
-            definition.path
-          )
-        ) === normalizedTarget
-    );
+            definition.path)) === normalizedTarget);
 
   if (byPath) {
     return byPath;
@@ -99,16 +94,12 @@ function formatDefinitionDetails(
       description: definition.description,
       location: definition.locations,
       rules: definition.rules.map(
-        rule => ({ id: rule.id, description: rule.content })
-      ),
+        rule => ({ id: rule.id, description: rule.content })),
       path: toPosixPath(
         path.relative(
           rootDirectory,
-          definition.path
-        )
-      )
-    }
-  );
+          definition.path))
+    });
 }
 
 function serializeMarkdownList(
@@ -122,9 +113,7 @@ function serializeMarkdownList(
         entry =>
           serializeArrayEntry(
             entry,
-            indent
-          )
-      )
+            indent))
       .join('\n');
   }
 
@@ -134,9 +123,7 @@ function serializeMarkdownList(
         serializeObjectEntry(
           key,
           entry,
-          indent
-        )
-    )
+          indent))
     .join('\n');
 }
 
@@ -179,8 +166,7 @@ function serializeArrayEntry(
         entry =>
         serializeArrayEntry(
           entry,
-          indent + 2
-        )).join('\n');
+          indent + 2)).join('\n');
 
     return `${prefix}-\n${nested}`;
   }
@@ -192,9 +178,7 @@ function serializeArrayEntry(
         serializeObjectEntry(
           key,
           entry,
-          indent + 2
-        )
-    )
+          indent + 2))
     .join('\n');
 
   return `${prefix}-\n${nested}`;

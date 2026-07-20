@@ -25,8 +25,7 @@ const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose()
-);
+  () => logger.dispose());
 
 function emptyEnvelope(
   ): Envelope
@@ -50,12 +49,9 @@ test(
           envelope,
           { command: 'read', path: 'file.txt' } as unknown as Parameters<
             typeof read
-          >[1]
-        ),
-      /Read command pattern is required/
-    );
-  }
-);
+          >[1]),
+      /Read command pattern is required/);
+  });
 
 test(
   'read treats pattern as a glob and reads an exact file match through LocationResolver',
@@ -77,31 +73,26 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'one\ntwo\nthree\n'
-    );
+      'one\ntwo\nthree\n');
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read', pattern: filePattern, lines: 2, sizeKb: 1 }
-    );
+      { command: 'read', pattern: filePattern, lines: 2, sizeKb: 1 });
 
     assert.equal(
       envelope.files[0].type,
-      'text'
-    );
+      'text');
 
     assert.equal(
       envelope.files[0].content,
-      'one\ntwo'
-    );
+      'one\ntwo');
 
     assert.equal(
       envelope.files[0].complete,
-      false
-    );
+      false);
 
     assert.deepEqual(
       envelope.files[0].update,
@@ -113,10 +104,8 @@ test(
         sizeKb: 1,
         readToEnd: false,
         withBinaryB64: false
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'read includes complete text when readToEnd is true',
@@ -138,8 +127,7 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'one\ntwo\nthree\n'
-    );
+      'one\ntwo\nthree\n');
 
     const envelope =
       emptyEnvelope();
@@ -152,18 +140,15 @@ test(
         lines: 1,
         sizeKb: 1,
         readToEnd: true
-      }
-    );
+      });
 
     assert.equal(
       envelope.files[0].content,
-      'one\ntwo\nthree\n'
-    );
+      'one\ntwo\nthree\n');
 
     assert.equal(
       envelope.files[0].complete,
-      true
-    );
+      true);
 
     assert.deepEqual(
       envelope.files[0].update,
@@ -175,10 +160,8 @@ test(
         sizeKb: 1,
         readToEnd: true,
         withBinaryB64: false
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'read can include binary content as base64',
@@ -195,34 +178,28 @@ test(
 
     await workspace.write(
       'file.bin',
-      testBinaryFileContent
-    );
+      testBinaryFileContent);
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, withBinaryB64: true }
-    );
+      { command: 'read', pattern: filePath, withBinaryB64: true });
 
     assert.equal(
       envelope.files[0].type,
-      'binary'
-    );
+      'binary');
 
     assert.equal(
       envelope.files[0].content,
       testBinaryFileContent
-        .toString('base64')
-    );
+        .toString('base64'));
 
     assert.equal(
       envelope.files[0].complete,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'read omits binary content when withBinaryB64 is false',
@@ -239,33 +216,27 @@ test(
 
     await workspace.write(
       'file.bin',
-      testBinaryFileContent
-    );
+      testBinaryFileContent);
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath }
-    );
+      { command: 'read', pattern: filePath });
 
     assert.equal(
       envelope.files[0].type,
-      'binary'
-    );
+      'binary');
 
     assert.equal(
       envelope.files[0].content,
-      undefined
-    );
+      undefined);
 
     assert.equal(
       envelope.files[0].complete,
-      undefined
-    );
-  }
-);
+      undefined);
+  });
 
 test(
   'read treats folder paths as glob patterns and does not expand them specially',
@@ -279,18 +250,14 @@ test(
     await workspace.writeText(
       join(
         'src',
-        'one.txt'
-      ),
-      'one\n'
-    );
+        'one.txt'),
+      'one\n');
 
     await workspace.writeText(
       join(
         'src',
-        'two.txt'
-      ),
-      'two\n'
-    );
+        'two.txt'),
+      'two\n');
 
     const envelope =
       emptyEnvelope();
@@ -300,17 +267,13 @@ test(
       {
         command: 'read',
         pattern: workspace.resolve(
-          'src'
-        )
-      }
-    );
+          'src')
+      });
 
     assert.deepEqual(
       envelope.files,
-      []
-    );
-  }
-);
+      []);
+  });
 
 test(
   'read uses LocationResolver glob matching and excludes',
@@ -324,27 +287,21 @@ test(
     await workspace.writeText(
       join(
         'src',
-        'one.ts'
-      ),
-      'one\n'
-    );
+        'one.ts'),
+      'one\n');
 
     await workspace.writeText(
       join(
         'src',
-        'two.test.ts'
-      ),
-      'two\n'
-    );
+        'two.test.ts'),
+      'two\n');
 
     await workspace.writeText(
       join(
         'src',
         'nested',
-        'three.ts'
-      ),
-      'three\n'
-    );
+        'three.ts'),
+      'three\n');
 
     const envelope =
       emptyEnvelope();
@@ -355,54 +312,42 @@ test(
         command: 'read',
         pattern: `${
           workspace.resolve(
-            'src'
-          )
+            'src')
         }/**/*.ts`,
         exclude: [`${
           workspace.resolve(
-            'src'
-          )
+            'src')
         }/**/*.test.ts`],
         readToEnd: true
-      }
-    );
+      });
 
     assert.deepEqual(
       envelope.files
         .map(
-          file => file.path
-        )
+          file => file.path)
         .sort(),
       [
         workspace.resolve(
           join(
             'src',
             'nested',
-            'three.ts'
-          )
-        ),
+            'three.ts')),
         workspace.resolve(
           join(
             'src',
-            'one.ts'
-          )
-        )
-      ].sort()
-    );
+            'one.ts'))
+      ].sort());
 
     assert.deepEqual(
       envelope.files
         .map(
-          file => file.content
-        )
+          file => file.content)
         .sort(),
       [
         'one\n',
         'three\n'
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 test(
   'read updates existing envelope file for matched glob target',
@@ -419,35 +364,28 @@ test(
 
     await workspace.writeText(
       'file.txt',
-      'old\n'
-    );
+      'old\n');
 
     const envelope =
       emptyEnvelope();
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, readToEnd: true }
-    );
+      { command: 'read', pattern: filePath, readToEnd: true });
 
     await workspace.writeText(
       'file.txt',
-      'new\n'
-    );
+      'new\n');
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, readToEnd: true }
-    );
+      { command: 'read', pattern: filePath, readToEnd: true });
 
     assert.equal(
       envelope.files.length,
-      1
-    );
+      1);
 
     assert.equal(
       envelope.files[0].content,
-      'new\n'
-    );
-  }
-);
+      'new\n');
+  });

@@ -46,36 +46,27 @@ test(
 
     assert.equal(
       collapsed,
-      true
-    );
+      true);
 
     assert.equal(
       panel.classList.contains('collapsed'),
-      true
-    );
+      true);
 
     assert.equal(
       panels.classList.contains(
-        'chat-collapsed'
-      ),
-      true
-    );
+        'chat-collapsed'),
+      true);
 
     assert.equal(
       button.getAttribute(
-        'aria-expanded'
-      ),
-      'false'
-    );
+        'aria-expanded'),
+      'false');
 
     assert.equal(
       button.text,
-      'Chat'
-    );
+      'Chat');
 
     assert.equal(
       button.icon,
-      '<i class="bi bi-chevron-right"></i>'
-    );
-  }
-);
+      '<i class="bi bi-chevron-right"></i>');
+  });

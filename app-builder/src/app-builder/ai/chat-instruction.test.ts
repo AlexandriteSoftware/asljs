@@ -34,32 +34,25 @@ test(
 
     assert.match(
       source,
-      /You are the chat lane for the ASLJS app builder\./
-    );
+      /You are the chat lane for the ASLJS app builder\./);
 
     assert.match(
       source,
-      /README\.md is the current implemented app state/i
-    );
+      /README\.md is the current implemented app state/i);
 
     assert.match(
       source,
-      /PLAN\.md is where the next changeset is drafted/i
-    );
+      /PLAN\.md is where the next changeset is drafted/i);
 
     assert.match(
       source,
-      /During normal chat turns, only edit PLAN\.md\./i
-    );
+      /During normal chat turns, only edit PLAN\.md\./i);
 
     assert.match(
       source,
-      /call startGeneration\(\)/i
-    );
+      /call startGeneration\(\)/i);
 
     assert.match(
       source,
-      /Do not use runAppTests\(\), evalInApp\(\), assertInApp\(\), setFileData\(\), or\s+deleteFile\(\)/i
-    );
-  }
-);
+      /Do not use runAppTests\(\), evalInApp\(\), assertInApp\(\), setFileData\(\), or\s+deleteFile\(\)/i);
+  });

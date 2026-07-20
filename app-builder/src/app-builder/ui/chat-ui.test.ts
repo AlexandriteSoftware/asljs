@@ -40,60 +40,49 @@ test(
     try {
       renderGeneratingButtonUi(
         button,
-        true
-      );
+        true);
 
       setChatProgressUi(
         progress,
         'Working',
-        true
-      );
+        true);
 
       appendChatMessageUi(
         messages,
         'assistant',
-        'Done.'
-      );
+        'Done.');
 
       assert.equal(
         button.disabled,
-        true
-      );
+        true);
 
       assert.match(
         button.innerHTML,
-        /Sending/
-      );
+        /Sending/);
 
       assert.equal(
         progress.textContent,
-        'Working'
-      );
+        'Working');
 
       assert.equal(
         progress.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.equal(
         messages.children.length,
-        1
-      );
+        1);
 
       assert.match(
         messages.textContent ?? '',
-        /Assistant/
-      );
+        /Assistant/);
 
       assert.match(
         messages.textContent ?? '',
-        /Done\./
-      );
+        /Done\./);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'chat choice UI renders options and clears',
@@ -123,8 +112,7 @@ test(
         value =>
         {
           seen.push(value);
-        }
-      );
+        });
 
       const buttons =
         Array.from(
@@ -132,39 +120,32 @@ test(
 
       assert.equal(
         choices.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.match(
         choices.textContent ?? '',
-        /How should it look\?/
-      );
+        /How should it look\?/);
 
       assert.equal(
         buttons.length,
-        2
-      );
+        2);
 
       (buttons[0] as HTMLButtonElement).click();
 
       assert.deepEqual(
         seen,
-        ['glowing ring']
-      );
+        ['glowing ring']);
 
       clearChatChoicesUi(choices);
 
       assert.equal(
         choices.classList.contains('hidden'),
-        true
-      );
+        true);
 
       assert.equal(
         choices.children.length,
-        0
-      );
+        0);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

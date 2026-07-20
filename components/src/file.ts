@@ -79,18 +79,15 @@ export class FileView extends LitElement
   #renderRequestId = 0;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor provider: FileViewProvider | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor handlers: FileHandler[] = [];
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor fileName: string | null = null;
 
   createRenderRoot(): this
@@ -144,9 +141,7 @@ export class FileView extends LitElement
     if (this.fileName === null || this.fileName.trim() === '') {
       contentHost.replaceChildren(
         createMessageElement(
-          'Select a file to preview.'
-        )
-      );
+          'Select a file to preview.'));
 
       return;
     }
@@ -157,18 +152,14 @@ export class FileView extends LitElement
     if (provider === null) {
       contentHost.replaceChildren(
         createMessageElement(
-          'File provider is not configured.'
-        )
-      );
+          'File provider is not configured.'));
 
       return;
     }
 
     contentHost.replaceChildren(
       createMessageElement(
-        'Loading preview...'
-      )
-    );
+        'Loading preview...'));
 
     const file =
       await provider.loadFile(
@@ -181,9 +172,7 @@ export class FileView extends LitElement
     if (file === null) {
       contentHost.replaceChildren(
         createMessageElement(
-          'File content is not available.'
-        )
-      );
+          'File content is not available.'));
 
       return;
     }
@@ -204,8 +193,7 @@ export class FileView extends LitElement
       this.#activeRenderState = { dispose: fallback.dispose };
 
       contentHost.replaceChildren(
-        fallback.element
-      );
+        fallback.element);
 
       return;
     }
@@ -222,8 +210,7 @@ export class FileView extends LitElement
     this.#activeRenderState = { dispose: result.dispose };
 
     contentHost.replaceChildren(
-      result.element
-    );
+      result.element);
   }
 
   #disposeActiveRender(): void
@@ -369,8 +356,7 @@ export function createTextEditorFileHandler(
               fileName,
               textArea.value
             );
-          }
-        );
+          });
       }
 
       return {
@@ -412,8 +398,7 @@ function createUnavailableResult(
 {
   return {
     element: createMessageElement(
-      'Preview unavailable for this file type.'
-    )
+      'Preview unavailable for this file type.')
   };
 }
 
@@ -557,8 +542,7 @@ function isImageFile(
 
   return mimeType.startsWith('image/')
     || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(
-      file.name
-    );
+      file.name);
 }
 
 function isTextFile(
@@ -575,11 +559,9 @@ function isTextFile(
 
   return mimeType.startsWith('text/')
     || ['application/json', 'application/xml', 'image/svg+xml'].includes(
-      mimeType
-    )
+      mimeType)
     || /\.(txt|csv|json|xml|html|htm|md|markdown|svg)$/i.test(
-      file.name
-    );
+      file.name);
 }
 
 function normalizeMimeType(

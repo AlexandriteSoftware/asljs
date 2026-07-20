@@ -55,12 +55,9 @@ test(
       () =>
         chatTools.setFileContent(
           'app.js',
-          'console.log(1);'
-        ),
-      /only edit PLAN\.md/i
-    );
-  }
-);
+          'console.log(1);'),
+      /only edit PLAN\.md/i);
+  });
 
 test(
   'createChatLaneTools forwards startGeneration',
@@ -85,12 +82,9 @@ test(
 
     assert.equal(
       called,
-      true
-    );
+      true);
 
     assert.equal(
       result,
-      'queued'
-    );
-  }
-);
+      'queued');
+  });

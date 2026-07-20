@@ -58,8 +58,7 @@ test(
 
     assert.equal(
       rows.length,
-      2
-    );
+      2);
 
     const firstLink =
       rows[0]?.querySelector('a') as HTMLAnchorElement;
@@ -69,43 +68,35 @@ test(
 
     assert.equal(
       firstLink.getAttribute('href'),
-      '/first'
-    );
+      '/first');
 
     assert.equal(
       firstLink.textContent,
-      'First'
-    );
+      'First');
 
     assert.equal(
       secondLink.getAttribute('href'),
-      '/second'
-    );
+      '/second');
 
     assert.equal(
       secondLink.textContent,
-      'Second'
-    );
+      'Second');
 
     assert.equal(
       rows[0]?.classList.contains('even'),
-      true
-    );
+      true);
 
     assert.equal(
       rows[0]?.classList.contains('odd'),
-      false
-    );
+      false);
 
     assert.equal(
       rows[1]?.classList.contains('odd'),
-      true
-    );
+      true);
 
     assert.equal(
       rows[1]?.classList.contains('even'),
-      false
-    );
+      false);
 
     const row0Spans =
       rows[0]?.querySelectorAll('span') as NodeListOf<
@@ -114,25 +105,20 @@ test(
 
     assert.equal(
       row0Spans[0]?.textContent,
-      '0'
-    );
+      '0');
 
     assert.equal(
       row0Spans[1]?.textContent,
-      '2'
-    );
+      '2');
 
     assert.equal(
       row0Spans[2]?.textContent,
-      'true'
-    );
+      'true');
 
     assert.equal(
       row0Spans[3]?.textContent,
-      'false'
-    );
-  }
-);
+      'false');
+  });
 
 test(
   `${CONTEXT_NAME}: renders empty slot when items are empty`,
@@ -169,10 +155,8 @@ test(
 
     assert.equal(
       emptyValue.textContent,
-      'No rows'
-    );
-  }
-);
+      'No rows');
+  });
 
 test(
   `${CONTEXT_NAME}: rerenders on observable collection change`,
@@ -206,38 +190,29 @@ test(
 
     assert.equal(
       list.querySelectorAll(
-        '[data-bind-text="item.title"]'
-      ).length,
-      1
-    );
+        '[data-bind-text="item.title"]').length,
+      1);
 
     items.push(
-      { title: 'B' }
-    );
+      { title: 'B' });
 
     await waitFor(
       () =>
         list.querySelectorAll(
-          '[data-bind-text="item.title"]'
-        ).length === 2
-    );
+          '[data-bind-text="item.title"]').length === 2);
 
     const renderedTitles =
       [
       ...list.querySelectorAll(
-        '[data-bind-text="item.title"]'
-      )
+        '[data-bind-text="item.title"]')
     ]
       .map(
-        element => element.textContent
-      );
+        element => element.textContent);
 
     assert.deepEqual(
       renderedTitles,
-      ['A', 'B']
-    );
-  }
-);
+      ['A', 'B']);
+  });
 
 test(
   `${CONTEXT_NAME}: default fallback container is plain HTML`,
@@ -271,10 +246,8 @@ test(
 
     assert.equal(
       container.className,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   `${CONTEXT_NAME}: supports context.select with row-local this.item`,
@@ -304,8 +277,7 @@ test(
       select(this: { item: { id: string; }; })
       {
         selectedIds.push(
-          this.item.id
-        );
+          this.item.id);
       }
     };
 
@@ -322,19 +294,15 @@ test(
       list.querySelectorAll('button');
 
     buttons[0]?.dispatchEvent(
-      new window.Event('click')
-    );
+      new window.Event('click'));
 
     buttons[1]?.dispatchEvent(
-      new window.Event('click')
-    );
+      new window.Event('click'));
 
     assert.deepEqual(
       selectedIds,
-      ['a', 'b']
-    );
-  }
-);
+      ['a', 'b']);
+  });
 
 test(
   `${CONTEXT_NAME}: renders item template from package default theme`,
@@ -351,8 +319,7 @@ test(
         list: {
           item: '<div class="theme-row" data-bind-text="item.title"></div>'
         }
-      }
-    );
+      });
 
     try {
       const list =
@@ -372,13 +339,11 @@ test(
 
       assert.equal(
         themedRow.textContent,
-        'From default theme'
-      );
+        'From default theme');
     } finally {
       setDefaultTheme(null);
     }
-  }
-);
+  });
 
 test(
   `${CONTEXT_NAME}: renders templates from nearest theme provider`,
@@ -426,15 +391,12 @@ test(
 
     assert.equal(
       container !== null,
-      true
-    );
+      true);
 
     assert.equal(
       card.textContent,
-      'From provider theme'
-    );
-  }
-);
+      'From provider theme');
+  });
 
 test(
   `${CONTEXT_NAME}: bootstrap theme provides list-group container`,
@@ -471,15 +433,12 @@ test(
 
     assert.equal(
       container !== null,
-      true
-    );
+      true);
 
     assert.equal(
       container.getAttribute('data-role'),
-      'items'
-    );
-  }
-);
+      'items');
+  });
 
 test(
   `${CONTEXT_NAME}: local slot template overrides themed item template`,
@@ -496,8 +455,7 @@ test(
         list: {
           item: '<div class="theme-row" data-bind-text="item.title"></div>'
         }
-      }
-    );
+      });
 
     try {
       const list =
@@ -520,21 +478,18 @@ test(
 
       assert.equal(
         list.querySelector('.theme-row'),
-        null
-      );
+        null);
 
       const localRow =
         list.querySelector('.local-row') as HTMLElement;
 
       assert.equal(
         localRow.textContent,
-        'Local wins'
-      );
+        'Local wins');
     } finally {
       setDefaultTheme(null);
     }
-  }
-);
+  });
 
 test(
   `${CONTEXT_NAME}: context.select without context warns and does not invoke handler`,
@@ -553,9 +508,7 @@ test(
     {
       warnings.push(
         String(
-          args[0] ?? ''
-        )
-      );
+          args[0] ?? ''));
     };
 
     try {
@@ -584,23 +537,18 @@ test(
         list.querySelector('button') as HTMLButtonElement;
 
       button.dispatchEvent(
-        new window.Event('click')
-      );
+        new window.Event('click'));
 
       assert.equal(
         warnings.some(
           message =>
             message.includes(
-              "action 'context.select' is not a function"
-            )
-        ),
-        true
-      );
+              "action 'context.select' is not a function")),
+        true);
     } finally {
       console.warn = previousWarn;
     }
-  }
-);
+  });
 
 test(
   `${CONTEXT_NAME}: warns for missing item slot`,
@@ -619,9 +567,7 @@ test(
     {
       warnings.push(
         String(
-          args[0] ?? ''
-        )
-      );
+          args[0] ?? ''));
     };
 
     try {
@@ -641,16 +587,12 @@ test(
         warnings.some(
           message =>
             message.includes(
-              'missing required template[data-slot="item"]'
-            )
-        ),
-        true
-      );
+              'missing required template[data-slot="item"]')),
+        true);
     } finally {
       console.warn = previousWarn;
     }
-  }
-);
+  });
 
 test(
   `${CONTEXT_NAME}: warns for invalid container template and does not render items`,
@@ -669,9 +611,7 @@ test(
     {
       warnings.push(
         String(
-          args[0] ?? ''
-        )
-      );
+          args[0] ?? ''));
     };
 
     try {
@@ -700,23 +640,17 @@ test(
         warnings.some(
           message =>
             message.includes(
-              'container template must include [data-role="items"]'
-            )
-        ),
-        true
-      );
+              'container template must include [data-role="items"]')),
+        true);
 
       assert.equal(
         list.querySelector(
-          '[data-bind-text="item.title"]'
-        ),
-        null
-      );
+          '[data-bind-text="item.title"]'),
+        null);
     } finally {
       console.warn = previousWarn;
     }
-  }
-);
+  });
 
 async function ensureDomAndListLoaded(
   ): Promise<void>
@@ -771,8 +705,7 @@ function nextTick(
       {
         resolve();
       },
-      0
-    );
+      0);
   });
 }
 
@@ -815,11 +748,9 @@ function installDom(
         () =>
         {
           callback(
-            Date.now()
-          );
+            Date.now());
         },
-        0
-      ) as unknown as number;
+        0) as unknown as number;
     };
   }
 

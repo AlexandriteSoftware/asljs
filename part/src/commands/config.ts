@@ -8,33 +8,27 @@ export function execConfig(
   const output: string[] = [];
 
   output.push(
-    'Environment:'
-  );
+    'Environment:');
 
   output.push(
-    `  definitions=${environment.definitions}`
-  );
+    `  definitions=${environment.definitions}`);
 
   output.push(
-    `  project=${environment.project}`
-  );
+    `  project=${environment.project}`);
 
   output.push();
 
   output.push(
-    'Environment Variables:'
-  );
+    'Environment Variables:');
 
   outputEnvVars(
     'PART_LOG_LEVEL',
     'PART_LOG_FILE',
     'PART_DEFINITIONS',
-    'PART_PROJECT'
-  );
+    'PART_PROJECT');
 
   environment.stdout.write(
-    output.join('\n')
-  );
+    output.join('\n'));
 
   environment.stdout.write('\n');
 
@@ -43,7 +37,7 @@ export function execConfig(
   function outputEnvVars(
       ...names: string[]
     ): void
-{
+  {
     for (const name of names) {
       outputEnvVar(name);
     }
@@ -52,13 +46,12 @@ export function execConfig(
   function outputEnvVar(
       name: string
     ): void
-{
+  {
     const value =
       process.env[name]
       || '';
 
     output.push(
-      `  ${name}=${value}`
-    );
+      `  ${name}=${value}`);
   }
 }

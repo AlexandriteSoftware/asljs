@@ -7,8 +7,7 @@ export class VersionConflictError extends Error
   )
   {
     super(
-      `Version conflict for key ${String(key)}.`
-    );
+      `Version conflict for key ${String(key)}.`);
 
     this.name = 'VersionConflictError';
   }

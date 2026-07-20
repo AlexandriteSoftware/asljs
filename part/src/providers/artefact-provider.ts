@@ -45,8 +45,7 @@ export class ArtefactProvider
   {
     this.logger.trace(
       'tryGetArtefact() { %s }',
-      artefactPath
-    );
+      artefactPath);
 
     const artefactFullPath =
       path.resolve(
@@ -57,8 +56,7 @@ export class ArtefactProvider
       this.logger.trace(
         'tryGetArtefact() { %s is resolved to %s }',
         artefactPath,
-        artefactFullPath
-      );
+        artefactFullPath);
     }
 
     const definitions =
@@ -68,8 +66,7 @@ export class ArtefactProvider
     if (definitions.length === 0) {
       this.logger.trace(
         'tryGetArtefact() { %s is not matched by any artefact definition }',
-        artefactPath
-      );
+        artefactPath);
 
       return null;
     }
@@ -77,8 +74,7 @@ export class ArtefactProvider
     return await this.buildArtefact(
       this.projectPath,
       definitions,
-      artefactFullPath
-    );
+      artefactFullPath);
   }
 
   async getArtefacts(
@@ -91,8 +87,7 @@ export class ArtefactProvider
       if (definitions) {
         definitionsList = definitions
           .map(
-            definition => definition.name
-          )
+            definition => definition.name)
           .join(', ');
       } else {
         definitionsList = '';
@@ -100,26 +95,22 @@ export class ArtefactProvider
 
       this.logger.trace(
         'getArtefacts(%s)',
-        definitionsList
-      );
+        definitionsList);
     }
 
     if (definitions === null) {
       definitions = await this.artefactDefinitionProvider.getDefinitions();
     }
 
-    const artefactPaths =
-      new Set<string>();
+    const artefactPaths = new Set<string>();
 
     for (const definition of definitions || []) {
       const paths =
         await this.locationResolver
         .resolve(
           path.dirname(
-            definition.path
-          ),
-          definition.locations
-        );
+            definition.path),
+          definition.locations);
 
       for (const artefactPath of paths) {
         artefactPaths.add(artefactPath);
@@ -137,17 +128,13 @@ export class ArtefactProvider
         await this.buildArtefact(
           this.projectPath,
           artefactDefinitions,
-          artefactPath
-        )
-      );
+          artefactPath));
     }
 
     artefacts.sort(
       (left, right) =>
         left.relativePath.localeCompare(
-          right.relativePath
-        )
-    );
+          right.relativePath));
 
     return artefacts;
   }
@@ -168,10 +155,8 @@ export class ArtefactProvider
       .check(
         artifactFullPath,
         path.dirname(
-          definition.path
-        ),
-        definition.locations
-      );
+          definition.path),
+        definition.locations);
 
     return match;
   }
@@ -189,8 +174,7 @@ export class ArtefactProvider
       if (
         await this.isArtefactOfDefinition(
           artefactFilePath,
-          definition
-        )
+          definition)
       ) {
         matchingDefinitions.push(definition);
       }
@@ -211,18 +195,14 @@ export class ArtefactProvider
       relativePath: toPosixPath(
         path.relative(
           projectDirectory,
-          artefactPath
-        )
-      ),
+          artefactPath)),
       basePath: projectDirectory,
       name: path.basename(
         artefactPath,
-        path.extname(artefactPath)
-      ),
+        path.extname(artefactPath)),
       definitions: definitions
         .map(
-          definition => definition.name
-        )
+          definition => definition.name)
     };
 
     return artefact;

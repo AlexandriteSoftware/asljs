@@ -19,8 +19,7 @@ export function dedupeModels(
     models: AvailableAiModel[]
   ): AvailableAiModel[]
 {
-  const seen =
-    new Set<string>();
+  const seen = new Set<string>();
 
   const normalized: AvailableAiModel[] = [];
 
@@ -32,15 +31,13 @@ export function dedupeModels(
 
     if (
       id === '' || seen.has(
-        id.toLowerCase()
-      )
+        id.toLowerCase())
     ) {
       continue;
     }
 
     seen.add(
-      id.toLowerCase()
-    );
+      id.toLowerCase());
 
     normalized.push(
       {
@@ -49,8 +46,7 @@ export function dedupeModels(
           model.created)
           ? model.created
           : 0
-      }
-    );
+      });
   }
 
   return normalized;
@@ -70,8 +66,7 @@ export function shouldUseCodeGenerationModel(
 
   if (
     IMPLEMENTATION_PROMPT_PATTERN.test(
-      normalizedPrompt
-    )
+      normalizedPrompt)
   ) {
     return true;
   }
@@ -80,17 +75,14 @@ export function shouldUseCodeGenerationModel(
     [...messages]
     .reverse()
     .find(
-      message => message.role === 'assistant'
-    )
+      message => message.role === 'assistant')
     ?.text
     ?? '';
 
   return /Shall I build these changes\?/i.test(
-    lastAssistantMessage
-  )
+    lastAssistantMessage)
     && AFFIRMATIVE_REPLY_PATTERN.test(
-      normalizedPrompt
-    );
+      normalizedPrompt);
 }
 
 export function selectPreferredChatModel(
@@ -100,8 +92,7 @@ export function selectPreferredChatModel(
   const generalModels =
     filterGeneralPurposeModels(models)
     .sort(
-      compareChatModels
-    );
+      compareChatModels);
 
   return generalModels[0]?.id ?? DEFAULT_CHAT_MODEL;
 }
@@ -113,8 +104,7 @@ export function selectPreferredCodeModel(
   const codexModels =
     filterCodexModels(models)
     .sort(
-      compareLatestModels
-    );
+      compareLatestModels);
 
   if (codexModels.length > 0) {
     return codexModels[0].id;
@@ -123,8 +113,7 @@ export function selectPreferredCodeModel(
   const generalModels =
     filterGeneralPurposeModels(models)
     .sort(
-      compareLatestModels
-    );
+      compareLatestModels);
 
   return generalModels[0]?.id ?? DEFAULT_CODE_MODEL;
 }
@@ -137,11 +126,8 @@ function filterCodexModels(
     .filter(
       model =>
         isSupportedChatModel(
-          model.id
-        ) && /codex/i.test(
-          model.id
-        )
-    );
+          model.id) && /codex/i.test(
+            model.id));
 }
 
 function filterGeneralPurposeModels(
@@ -152,11 +138,8 @@ function filterGeneralPurposeModels(
     .filter(
       model =>
         isSupportedChatModel(
-          model.id
-        ) && !/codex/i.test(
-          model.id
-        )
-    );
+          model.id) && !/codex/i.test(
+            model.id));
 }
 
 function isSupportedChatModel(
@@ -187,8 +170,7 @@ function compareChatModels(
 
   return compareLatestModels(
     left,
-    right
-  );
+    right);
 }
 
 function compareLatestModels(
@@ -215,8 +197,7 @@ function compareLatestModels(
   return compareVariantPriority(
     left.id,
     right.id,
-    getLatestVariantPriority
-  );
+    getLatestVariantPriority);
 }
 
 function compareVariantPriority(
@@ -301,7 +282,5 @@ function extractNumericTokens(
     match =>
       Number.parseInt(
         match[0],
-        10
-      )
-  );
+        10));
 }

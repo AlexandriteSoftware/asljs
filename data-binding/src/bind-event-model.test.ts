@@ -52,12 +52,10 @@ test(
       model,
       'event[0]',
       () =>
-      {}
-    );
+      {});
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.activate = () =>
     {
@@ -67,15 +65,12 @@ test(
     model.emit('set:activate');
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second']
-    );
-  }
-);
+      ['first', 'second']);
+  });
 
 test(
   `${TEST_SUITE}: disposer removes listener and subscription`,
@@ -124,15 +119,12 @@ test(
     model.emit('set:activate');
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      []
-    );
-  }
-);
+      []);
+  });
 
 test(
   `${TEST_SUITE}: refreshes nested action path when leaf and ancestor change`,
@@ -170,12 +162,10 @@ test(
       model as unknown as Record<string, unknown>,
       'event[3]',
       () =>
-      {}
-    );
+      {});
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.user.activate = () =>
     {
@@ -183,8 +173,7 @@ test(
     };
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     model.user = {
       activate: () =>
@@ -194,15 +183,12 @@ test(
     };
 
     button.dispatchEvent(
-      new dom.window.Event('click')
-    );
+      new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second', 'third']
-    );
-  }
-);
+      ['first', 'second', 'third']);
+  });
 
 type ReactiveModel =
   & Record<string, unknown>
@@ -221,8 +207,7 @@ function createReactiveModel(
     initial: Record<string, unknown>
   ): ReactiveModel
 {
-  const listeners =
-    new Map<string, Set<(...args: unknown[]) => void>>();
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
   const model: ReactiveModel =
     {
@@ -232,8 +217,7 @@ function createReactiveModel(
       if (!listeners.has(event)) {
         listeners.set(
           event,
-          new Set()
-        );
+          new Set());
       }
 
       listeners.get(event)?.add(listener);
@@ -251,8 +235,7 @@ function createReactiveModel(
 
       for (const listener of registered) {
         listener(
-          ...args
-        );
+          ...args);
       }
     }
   };

@@ -39,8 +39,7 @@ export function formatMessage(
             return String(param);
           case '%d':
             return String(
-              Number(param)
-            );
+              Number(param));
           case '%o':
             return JSON.stringify(param);
         }
@@ -49,8 +48,7 @@ export function formatMessage(
       }
 
       return param;
-    }
-  );
+    });
 }
 
 export function tmpDirConsoleLogFunction(
@@ -61,9 +59,7 @@ export function tmpDirConsoleLogFunction(
   console.error(
     formatMessage(
       message,
-      ...params
-    )
-  );
+      ...params));
 }
 
 export function tmpDirThrowErrorFunction(
@@ -74,8 +70,7 @@ export function tmpDirThrowErrorFunction(
   throw new Error(
     formatMessage(
       message,
-      ...params
-    )
+      ...params)
   );
 }
 
@@ -109,13 +104,10 @@ export class TmpDir
     this.path = fs.mkdtempSync(
       path.join(
         tmpDir,
-        prefix
-      )
-    );
+        prefix));
 
     this.#trace(
-      `constructor() { this.path=${this.path} }`
-    );
+      `constructor() { this.path=${this.path} }`);
 
     this.#disposed = false;
   }
@@ -149,8 +141,7 @@ export class TmpDir
     if (
       relativePath === '..'
       || relativePath.startsWith(
-        `..${path.sep}`
-      )
+        `..${path.sep}`)
       || path.isAbsolute(relativePath)
     ) {
       throw new Error(
@@ -166,8 +157,7 @@ export class TmpDir
   ): Promise<string>
   {
     this.#trace(
-      `mkdir(${directoryPath})`
-    );
+      `mkdir(${directoryPath})`);
 
     const resolvedDirectoryPath =
       this.resolve(
@@ -175,8 +165,7 @@ export class TmpDir
 
     await fsp.mkdir(
       resolvedDirectoryPath,
-      { recursive: true }
-    );
+      { recursive: true });
 
     return resolvedDirectoryPath;
   }
@@ -187,8 +176,7 @@ export class TmpDir
   ): Promise<string>
   {
     this.#trace(
-      `write(${filePath}, ...)`
-    );
+      `write(${filePath}, ...)`);
 
     this.#throwIfDisposed();
 
@@ -198,15 +186,12 @@ export class TmpDir
 
     await fsp.mkdir(
       path.dirname(
-        resolvedFilePath
-      ),
-      { recursive: true }
-    );
+        resolvedFilePath),
+      { recursive: true });
 
     await fsp.writeFile(
       resolvedFilePath,
-      content
-    );
+      content);
 
     return resolvedFilePath;
   }
@@ -217,8 +202,7 @@ export class TmpDir
   ): Promise<string>
   {
     this.#trace(
-      `writeText(${filePath}, ...)`
-    );
+      `writeText(${filePath}, ...)`);
 
     this.#throwIfDisposed();
 
@@ -228,16 +212,13 @@ export class TmpDir
 
     await fsp.mkdir(
       path.dirname(
-        resolvedFilePath
-      ),
-      { recursive: true }
-    );
+        resolvedFilePath),
+      { recursive: true });
 
     await fsp.writeFile(
       resolvedFilePath,
       content,
-      'utf8'
-    );
+      'utf8');
 
     return resolvedFilePath;
   }
@@ -247,8 +228,7 @@ export class TmpDir
   ): Promise<string>
   {
     this.#trace(
-      `readText(${filePath})`
-    );
+      `readText(${filePath})`);
 
     this.#throwIfDisposed();
 
@@ -258,8 +238,7 @@ export class TmpDir
 
     return await fsp.readFile(
       resolvedFilePath,
-      'utf8'
-    );
+      'utf8');
   }
 
   async stat(
@@ -267,8 +246,7 @@ export class TmpDir
   ): Promise<fs.Stats>
   {
     this.#trace(
-      `stat(${path})`
-    );
+      `stat(${path})`);
 
     this.#throwIfDisposed();
 
@@ -277,15 +255,13 @@ export class TmpDir
         path);
 
     return await fsp.stat(
-      resolvedPath
-    );
+      resolvedPath);
   }
 
   async cleanup(): Promise<void>
   {
     this.#trace(
-      `cleanup()`
-    );
+      `cleanup()`);
 
     await this.#cleanup();
   }
@@ -293,8 +269,7 @@ export class TmpDir
   cleanupSync(): void
   {
     this.#trace(
-      `cleanupSync()`
-    );
+      `cleanupSync()`);
 
     this.#cleanupSync();
   }
@@ -327,13 +302,11 @@ export class TmpDir
     try {
       await fsp.rm(
         this.path,
-        { recursive: true, force: true }
-      );
+        { recursive: true, force: true });
     } catch (error) {
       this.#error(
         `cleanup error: %s`,
-        error
-      );
+        error);
     }
 
     this.#disposed = true;
@@ -348,13 +321,11 @@ export class TmpDir
     try {
       fs.rmSync(
         this.path,
-        { recursive: true, force: true }
-      );
+        { recursive: true, force: true });
     } catch (error) {
       this.#error(
         `cleanupSync() error: %s`,
-        error
-      );
+        error);
     }
 
     this.#disposed = true;

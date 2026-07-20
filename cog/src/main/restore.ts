@@ -19,11 +19,9 @@ export function configureRestoreCommand(
 {
   program
     .command(
-      'restore'
-    )
+      'restore')
     .description(
-      'restore files from backup.json'
-    )
+      'restore files from backup.json')
     .action(
       async () =>
       {
@@ -35,12 +33,9 @@ export function configureRestoreCommand(
         await restoreCmd(
           {
             envelopePath: resolveEnvelopePath(
-              options.envelope
-            )
-          }
-        );
-      }
-    );
+              options.envelope)
+          });
+      });
 }
 
 async function restoreCmd(
@@ -57,8 +52,7 @@ async function restoreCmd(
 
   if (
     !existsSync(
-      backupPath
-    )
+      backupPath)
   ) {
     throw new Error(
       `backup.json does not exist: ${backupPath}`
@@ -66,6 +60,5 @@ async function restoreCmd(
   }
 
   await BackupRollbackFeed.restoreAndDelete(
-    backupPath
-  );
+    backupPath);
 }

@@ -47,8 +47,7 @@ export async function runCli(
   try {
     await cli.parseAsync(
       args,
-      { from: 'user' }
-    );
+      { from: 'user' });
 
     return 0;
   } catch (error) {
@@ -56,8 +55,7 @@ export async function runCli(
       writeCommanderError(
         environment,
         error,
-        cli
-      )
+        cli)
     ) {
       return 1;
     }
@@ -72,8 +70,7 @@ export async function runCli(
     }
 
     environment.stderr.write(
-      `${message}\n`
-    );
+      `${message}\n`);
 
     return 1;
   } finally {
@@ -92,8 +89,7 @@ function createCli(
 
   cli.name('part')
     .description(
-      '`part` is a project artefact tracing tool.'
-    )
+      '`part` is a project artefact tracing tool.')
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
@@ -102,30 +98,24 @@ function createCli(
         writeErr: value => environment.stderr.write(value),
         outputError: () =>
         {}
-      }
-    )
+      })
     .exitOverride(
       error =>
       {
         throw error;
-      }
-    )
+      })
     .option(
       '--loglevel <level>',
-      'Log level: trace, debug, information, warning, error'
-    )
+      'Log level: trace, debug, information, warning, error')
     .option(
       '--logfile <path>',
-      'Write logs to file'
-    )
+      'Write logs to file')
     .option(
       '--definitions <path>',
-      'Path to artefact definitions directory. Defaults to the current working directory.'
-    )
+      'Path to artefact definitions directory. Defaults to the current working directory.')
     .option(
       '--project <path>',
-      'Path to artefact directory. Defaults to the current working directory.'
-    )
+      'Path to artefact directory. Defaults to the current working directory.')
     .hook(
       'preAction',
       (_, actionCommand) =>
@@ -154,8 +144,7 @@ function createCli(
           async (): Promise<void> =>
           {
             await loggerProvider.dispose();
-          }
-        );
+          });
 
         environment.loggerProvider = loggerProvider;
 
@@ -166,9 +155,7 @@ function createCli(
         if (optDefinitions !== '') {
           environment.definitions = path.normalize(
             path.resolve(
-              optDefinitions
-            )
-          );
+              optDefinitions));
         } else {
           const envDefinitions =
             filterStringOption(
@@ -177,9 +164,7 @@ function createCli(
           if (envDefinitions !== '') {
             environment.definitions = path.normalize(
               path.resolve(
-                envDefinitions
-              )
-            );
+                envDefinitions));
           } else {
             environment.definitions = environment.cwd;
           }
@@ -192,9 +177,7 @@ function createCli(
         if (optProject !== '') {
           environment.project = path.normalize(
             path.resolve(
-              optProject
-            )
-          );
+              optProject));
         } else {
           const envProject =
             filterStringOption(
@@ -203,24 +186,19 @@ function createCli(
           if (envProject !== '') {
             environment.project = path.normalize(
               path.resolve(
-                envProject
-              )
-            );
+                envProject));
           } else {
             environment.project = environment.cwd;
           }
         }
-      }
-    );
+      });
 
   cli.command('inventory')
     .description(
-      'Scan the current folder and print artefact inventory'
-    )
+      'Scan the current folder and print artefact inventory')
     .option(
       '--inventory-definitions <definitions>',
-      'Comma-separated definition names to get inventory for'
-    )
+      'Comma-separated definition names to get inventory for')
     .action(
       async options =>
       {
@@ -232,28 +210,22 @@ function createCli(
           environment
           .loggerProvider
           .getLogger(
-            'execInventory'
-          );
+            'execInventory');
 
         await method(
           logger,
           environment,
           {
             inventoryDefinitions: splitCommaSeparatedOption(
-              options.inventoryDefinitions
-            )
-          }
-        );
-      }
-    );
+              options.inventoryDefinitions)
+          });
+      });
 
   cli.command('definition')
     .description(
-      'List definitions and their locations'
-    )
+      'List definitions and their locations')
     .argument(
-      'target'
-    )
+      'target')
     .action(
       async target =>
       {
@@ -263,15 +235,12 @@ function createCli(
 
         await method(
           environment,
-          { target }
-        );
-      }
-    );
+          { target });
+      });
 
   cli.command('definitions')
     .description(
-      'List definitions and their locations'
-    )
+      'List definitions and their locations')
     .action(
       async () =>
       {
@@ -280,15 +249,12 @@ function createCli(
             execDefinitions);
 
         await method(
-          environment
-        );
-      }
-    );
+          environment);
+      });
 
   cli.command('init')
     .description(
-      'Initialize an artefact definitions directory'
-    )
+      'Initialize an artefact definitions directory')
     .action(
       async () =>
       {
@@ -297,19 +263,15 @@ function createCli(
             execInit);
 
         await method(
-          environment
-        );
-      }
-    );
+          environment);
+      });
 
   cli.command('update')
     .description(
-      'Create or refresh JS rule files from artefact definitions'
-    )
+      'Create or refresh JS rule files from artefact definitions')
     .option(
       '--dry-run',
-      'Print Copilot prompts without running them or writing files'
-    )
+      'Print Copilot prompts without running them or writing files')
     .action(
       async options =>
       {
@@ -321,34 +283,27 @@ function createCli(
           environment
           .loggerProvider
           .getLogger(
-            'execUpdate'
-          );
+            'execUpdate');
 
         await method(
           logger,
           environment,
-          options
-        );
-      }
-    );
+          options);
+      });
 
   cli.command('check')
     .description(
-      'Run rules for artefacts matching a pattern'
-    )
+      'Run rules for artefacts matching a pattern')
     .argument('[pattern]')
     .option(
       '--check-definitions <definitions>',
-      'Comma-separated definition names to run checks for'
-    )
+      'Comma-separated definition names to run checks for')
     .option(
       '--check-rules <rules>',
-      'Comma-separated rule names to check'
-    )
+      'Comma-separated rule names to check')
     .option(
       '--with-positives',
-      'Show passing and failing check rows'
-    )
+      'Show passing and failing check rows')
     .action(
       async (pattern, options) =>
       {
@@ -360,8 +315,7 @@ function createCli(
           environment
           .loggerProvider
           .getLogger(
-            'execCheck'
-          );
+            'execCheck');
 
         await method(
           logger,
@@ -369,21 +323,16 @@ function createCli(
           {
             pattern,
             checkDefinitions: splitCommaSeparatedOption(
-              options.checkDefinitions
-            ),
+              options.checkDefinitions),
             checkRules: splitCommaSeparatedOption(
-              options.checkRules
-            ),
+              options.checkRules),
             withPositives: options.withPositives === true
-          }
-        );
-      }
-    );
+          });
+      });
 
   cli.command('version')
     .description(
-      'Print the current package version'
-    )
+      'Print the current package version')
     .action(
       async () =>
       {
@@ -392,15 +341,12 @@ function createCli(
             execVersion);
 
         await method(
-          environment
-        );
-      }
-    );
+          environment);
+      });
 
   cli.command('config')
     .description(
-      'Print the configuration'
-    )
+      'Print the configuration')
     .action(
       async () =>
       {
@@ -409,10 +355,8 @@ function createCli(
             execConfig);
 
         await method(
-          environment
-        );
-      }
-    );
+          environment);
+      });
 
   return cli;
 }
@@ -446,8 +390,7 @@ function writeCommanderError(
 
     environment.stderr
       .write(
-        `${text}\n`
-      );
+        `${text}\n`);
 
     return true;
   }
@@ -464,8 +407,7 @@ function writeCommanderError(
 
     environment.stderr
       .write(
-        `${text}\n`
-      );
+        `${text}\n`);
 
     return true;
   }
@@ -473,20 +415,17 @@ function writeCommanderError(
   if (code === 'commander.unknownCommand') {
     environment.stderr
       .write(
-        `Unknown command.\n`
-      );
+        `Unknown command.\n`);
 
     cli.outputHelp(
-      { error: true }
-    );
+      { error: true });
 
     return true;
   }
 
   if (code === 'commander.help') {
     cli.outputHelp(
-      { error: true }
-    );
+      { error: true });
 
     return true;
   }
@@ -543,11 +482,9 @@ function splitCommaSeparatedOption(
   return value
     .split(',')
     .map(
-      entry => entry.trim()
-    )
+      entry => entry.trim())
     .filter(
-      entry => entry.length > 0
-    );
+      entry => entry.length > 0);
 }
 
 /**

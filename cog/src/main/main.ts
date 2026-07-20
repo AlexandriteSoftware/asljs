@@ -37,46 +37,37 @@ export async function main(
 
     program
       .name(
-        'cog'
-      )
+        'cog')
       .allowExcessArguments(
-        false
-      )
+        false)
       .exitOverride()
       .option(
         '--envelope <path>',
-        'path to the envelope JSON file'
-      )
+        'path to the envelope JSON file')
       .option(
         '--patch <path>',
-        'path to the patch JSON file'
-      )
+        'path to the patch JSON file')
       .showHelpAfterError();
 
     configureReadCommand(
       program,
-      context
-    );
+      context);
 
     configureListCommand(
       program,
-      context
-    );
+      context);
 
     configureUpdateCommand(
       program,
-      context
-    );
+      context);
 
     configureRestoreCommand(
       program,
-      context
-    );
+      context);
 
     configureApplyPatchCommand(
       program,
-      context
-    );
+      context);
 
     program
       .action(
@@ -85,12 +76,10 @@ export async function main(
           throw new Error(
             'Usage: cog <read|list|update|restore|apply-patch> [args...]'
           );
-        }
-      );
+        });
 
     await program.parseAsync(
-      argv
-    );
+      argv);
   } finally {
     context.dispose?.();
   }

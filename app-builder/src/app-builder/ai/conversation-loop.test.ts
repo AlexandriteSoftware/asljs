@@ -13,10 +13,8 @@ test(
   {
     assert.equal(
       getConversationKickoffMessage([]),
-      'What would you like to create? You can describe it in simple words, and I will help shape the plan first.'
-    );
-  }
-);
+      'What would you like to create? You can describe it in simple words, and I will help shape the plan first.');
+  });
 
 test(
   'getConversationKickoffMessage asks to add or change when files exist',
@@ -24,12 +22,9 @@ test(
   {
     assert.equal(
       getConversationKickoffMessage(
-        ['README.md', 'app.js']
-      ),
-      'What would you like to add or change? I will keep README.md as the current app state and put new ideas into PLAN.md.'
-    );
-  }
-);
+        ['README.md', 'app.js']),
+      'What would you like to add or change? I will keep README.md as the current app state and put new ideas into PLAN.md.');
+  });
 
 test(
   'getConversationKickoffMessage still asks to create for workflow-only files',
@@ -37,12 +32,9 @@ test(
   {
     assert.equal(
       getConversationKickoffMessage(
-        ['README.md', 'PLAN.md', 'CHANGE.md']
-      ),
-      'What would you like to create? You can describe it in simple words, and I will help shape the plan first.'
-    );
-  }
-);
+        ['README.md', 'PLAN.md', 'CHANGE.md']),
+      'What would you like to create? You can describe it in simple words, and I will help shape the plan first.');
+  });
 
 test(
   'buildConversationPrompt keeps recent transcript context for follow-up answers',
@@ -59,25 +51,20 @@ test(
 
     assert.match(
       prompt,
-      /Conversation transcript:/
-    );
+      /Conversation transcript:/);
 
     assert.match(
       prompt,
-      /Assistant: What should the ball game be about\?/
-    );
+      /Assistant: What should the ball game be about\?/);
 
     assert.match(
       prompt,
-      /User: 2 players\./
-    );
+      /User: 2 players\./);
 
     assert.match(
       prompt,
-      /The last user message is the newest/
-    );
-  }
-);
+      /The last user message is the newest/);
+  });
 
 test(
   'README snapshot file name stays stable for the AI loop contract',
@@ -85,7 +72,5 @@ test(
   {
     assert.equal(
       README_SNAPSHOT_FILE,
-      '.README.md'
-    );
-  }
-);
+      '.README.md');
+  });

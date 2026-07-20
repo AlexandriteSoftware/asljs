@@ -29,36 +29,27 @@ test(
     assert.equal(
       getButton(
         element,
-        'a'
-      ).disabled,
-      false
-    );
+        'a').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        'c'
-      ).disabled,
-      true
-    );
+        'c').disabled,
+      true);
 
     assert.equal(
       getButton(
         element,
-        'Backspace'
-      ).disabled,
-      false
-    );
+        'Backspace').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        'Enter'
-      ).disabled,
-      false
-    );
-  }
-);
+        'Enter').disabled,
+      false);
+  });
 
 test(
   'letterpad: toggles collapsed state with the keyboard button',
@@ -84,15 +75,12 @@ test(
 
     assert.equal(
       element.collapsed,
-      true
-    );
+      true);
 
     assert.equal(
       toggle.getAttribute('aria-label'),
-      'Show letterpad'
-    );
-  }
-);
+      'Show letterpad');
+  });
 
 test(
   'letterpad: emits key and submit events',
@@ -117,38 +105,31 @@ test(
       event =>
       {
         receivedKey = (event as CustomEvent<{ key: string; }>).detail.key;
-      }
-    );
+      });
 
     element.addEventListener(
       'submit',
       () =>
       {
         submitted = true;
-      }
-    );
+      });
 
     getButton(
       element,
-      'q'
-    ).click();
+      'q').click();
 
     getButton(
       element,
-      'Enter'
-    ).click();
+      'Enter').click();
 
     assert.equal(
       receivedKey,
-      'q'
-    );
+      'q');
 
     assert.equal(
       submitted,
-      true
-    );
-  }
-);
+      true);
+  });
 
 async function ensureDomAndModuleLoaded(
   ): Promise<void>
@@ -215,8 +196,7 @@ function getButton(
   ): HTMLButtonElement
 {
   return element.shadowRoot?.querySelector(
-    `button[data-key="${key}"]`
-  ) as HTMLButtonElement;
+    `button[data-key="${key}"]`) as HTMLButtonElement;
 }
 
 async function settle(

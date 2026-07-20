@@ -61,14 +61,12 @@ export class EventSourceManager
 
           await adapter.append(
             transaction,
-            previousTransactionId
-          );
+            previousTransactionId);
         }
 
         await this.local.append(
           transaction,
-          previousTransactionId
-        );
+          previousTransactionId);
 
         return transaction;
       } catch (error) {
@@ -144,8 +142,7 @@ export class EventSourceManager
 
       await this.local.append(
         transaction,
-        expected
-      );
+        expected);
 
       expected = transaction.id;
     }

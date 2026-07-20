@@ -29,40 +29,32 @@ export function configureReadCommand(
 {
   program
     .command(
-      'read'
-    )
+      'read')
     .argument(
-      '<path>'
-    )
+      '<path>')
     .description(
-      'read files into the envelope'
-    )
+      'read files into the envelope')
     .option(
       '--lines <N>',
       'if file is a text file, only read first N lines',
-      '150'
-    )
+      '150')
     .option(
       '--sizeKb <M>',
       'if file is a text file, only read first M kilobytes',
-      '15'
-    )
+      '15')
     .option(
       '--read-to-end',
       'if file is a text file, read to the end',
-      false
-    )
+      false)
     .option(
       '--with-binary-b64',
       'if file is a binary file, read it as base64',
-      false
-    )
+      false)
     .option(
       '--exclude <path>',
       'file, folder, or glob pattern to exclude',
       collect,
-      []
-    )
+      [])
     .action(
       async (
         path: string,
@@ -80,12 +72,9 @@ export function configureReadCommand(
           readOptions,
           {
             envelopePath: resolveEnvelopePath(
-              options.envelope
-            )
-          }
-        );
-      }
-    );
+              options.envelope)
+          });
+      });
 }
 
 async function readCmd(
@@ -138,31 +127,26 @@ async function readCmd(
     exclude: normalisedExcludes ?? [],
     lines: parsePositiveInteger(
       readOptions.lines,
-      'lines'
-    ),
+      'lines'),
     sizeKb: parsePositiveInteger(
       readOptions.sizeKb,
-      'sizeKb'
-    ),
+      'sizeKb'),
     readToEnd: readOptions.readToEnd ?? false,
     withBinaryB64: readOptions.withBinaryB64 ?? false
   };
 
   logger.trace(
     'calling read() with parameters: %o',
-    parameters
-  );
+    parameters);
 
   await read(
     envelope,
     parameters,
     undefined,
-    context
-  );
+    context);
 
   await envelopeContainer.saveEnvelope(
-    envelopePath
-  );
+    envelopePath);
 }
 
 function collect(
@@ -188,8 +172,7 @@ function parsePositiveInteger(
 
   if (
     !Number.isInteger(
-      parsed
-    )
+      parsed)
     || parsed <= 0
     || parsed.toString() !== value
   ) {
@@ -207,6 +190,5 @@ function normaliseGlobPattern(
 {
   return pattern.replace(
     /\\/g,
-    '/'
-  );
+    '/');
 }

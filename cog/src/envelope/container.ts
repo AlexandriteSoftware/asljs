@@ -20,8 +20,7 @@ export class EnvelopeContainer
   )
   {
     this.logger = logger.scope(
-      { instanceId: 'EnvelopeContainer' }
-    );
+      { instanceId: 'EnvelopeContainer' });
   }
 
   public async tryLoadEnvelope(
@@ -30,8 +29,7 @@ export class EnvelopeContainer
   {
     this.logger.trace(
       'tryLoadEnvelope(%s)',
-      filePath
-    );
+      filePath);
 
     try {
       await this._loadEnvelope(filePath);
@@ -51,8 +49,7 @@ export class EnvelopeContainer
   {
     this.logger.trace(
       'loadEnvelope(%s)',
-      filePath
-    );
+      filePath);
 
     await this._loadEnvelope(filePath);
 
@@ -90,8 +87,7 @@ export class EnvelopeContainer
   async initializeEnvelope(): Promise<Envelope>
   {
     this.logger.trace(
-      'initializeEnvelope()'
-    );
+      'initializeEnvelope()');
 
     const instruction =
       await this.loadInstruction();
@@ -127,8 +123,7 @@ export class EnvelopeContainer
   {
     this.logger.trace(
       'saveEnvelope(%s)',
-      filePath
-    );
+      filePath);
 
     const json =
       JSON.stringify(
@@ -138,13 +133,11 @@ export class EnvelopeContainer
 
     await fs.mkdir(
       path.dirname(filePath),
-      { recursive: true }
-    );
+      { recursive: true });
 
     await fs.writeFile(
       filePath,
       json,
-      'utf-8'
-    );
+      'utf-8');
   }
 }

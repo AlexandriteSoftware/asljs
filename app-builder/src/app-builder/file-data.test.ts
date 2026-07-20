@@ -20,10 +20,8 @@ test(
         mimeType: 'image/png',
         base64: 'AQID',
         dataUrl: 'data:image/png;base64,AQID'
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'readFileDataInfo returns null for plain text content',
@@ -31,12 +29,9 @@ test(
   {
     assert.equal(
       readFileDataInfo(
-        'console.log(1);'
-      ),
-      null
-    );
-  }
-);
+        'console.log(1);'),
+      null);
+  });
 
 test(
   'isImageMimeType recognizes image mime types',
@@ -44,12 +39,9 @@ test(
   {
     assert.equal(
       isImageMimeType('image/png'),
-      true
-    );
+      true);
 
     assert.equal(
       isImageMimeType('text/plain'),
-      false
-    );
-  }
-);
+      false);
+  });

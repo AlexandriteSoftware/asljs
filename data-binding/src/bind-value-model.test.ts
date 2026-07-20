@@ -47,15 +47,12 @@ test(
           add: (value, amount) => Number(value) + Number(amount),
           mul: (value, factor) => Number(value) * Number(factor)
         }
-      }
-    );
+      });
 
     assert.equal(
       element.textContent,
-      '18'
-    );
-  }
-);
+      '18');
+  });
 
 test(
   `${TEST_SUITE}: throws for unknown pipe during binding setup`,
@@ -86,12 +83,9 @@ test(
           element,
           spec,
           model,
-          {}
-        ),
-      /Unknown pipe: missing/
-    );
-  }
-);
+          {}),
+      /Unknown pipe: missing/);
+  });
 
 test(
   `${TEST_SUITE}: pipe error propagates to caller`,
@@ -129,12 +123,9 @@ test(
                 throw new Error('broken');
               }
             }
-          }
-        ),
-      /broken/
-    );
-  }
-);
+          }),
+      /broken/);
+  });
 
 test(
   `${TEST_SUITE}: renders nullish values as empty string for text and html`,
@@ -171,8 +162,7 @@ test(
         pipes: []
       },
       model,
-      {}
-    );
+      {});
 
     bindValueModel(
       htmlElement,
@@ -183,20 +173,16 @@ test(
         pipes: []
       },
       model,
-      {}
-    );
+      {});
 
     assert.equal(
       textElement.textContent,
-      ''
-    );
+      '');
 
     assert.equal(
       htmlElement.innerHTML,
-      ''
-    );
-  }
-);
+      '');
+  });
 
 test(
   `${TEST_SUITE}: updates nested path via watch when leaf and ancestor change`,
@@ -229,22 +215,19 @@ test(
 
     assert.equal(
       element.textContent,
-      'Alice'
-    );
+      'Alice');
 
     model.user.name = 'Bob';
 
     assert.equal(
       element.textContent,
-      'Bob'
-    );
+      'Bob');
 
     model.user = { name: 'Carol' };
 
     assert.equal(
       element.textContent,
-      'Carol'
-    );
+      'Carol');
 
     dispose();
 
@@ -252,7 +235,5 @@ test(
 
     assert.equal(
       element.textContent,
-      'Carol'
-    );
-  }
-);
+      'Carol');
+  });

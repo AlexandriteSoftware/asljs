@@ -24,17 +24,13 @@ test(
 
     assert.deepEqual(
       files.map(
-        file => file.name
-      ),
-      [README_FILE, PLAN_FILE, CHANGE_FILE]
-    );
+        file => file.name),
+      [README_FILE, PLAN_FILE, CHANGE_FILE]);
 
     assert.match(
       files[0].content,
-      /This app is empty\./
-    );
-  }
-);
+      /This app is empty\./);
+  });
 
 test(
   'ensureWorkflowFiles adds missing workflow files without replacing existing README',
@@ -58,22 +54,17 @@ test(
 
     assert.equal(
       result.changed,
-      true
-    );
+      true);
 
     assert.equal(
       result.files[0].content,
-      '# Existing README'
-    );
+      '# Existing README');
 
     assert.deepEqual(
       result.files.map(
-        file => file.name
-      ),
-      [README_FILE, PLAN_FILE, CHANGE_FILE]
-    );
-  }
-);
+        file => file.name),
+      [README_FILE, PLAN_FILE, CHANGE_FILE]);
+  });
 
 test(
   'hasOnlyWorkflowFiles treats workflow-only apps as empty project state',
@@ -81,21 +72,15 @@ test(
   {
     assert.equal(
       hasOnlyWorkflowFiles([]),
-      true
-    );
+      true);
 
     assert.equal(
       hasOnlyWorkflowFiles(
-        [README_FILE, PLAN_FILE, CHANGE_FILE]
-      ),
-      true
-    );
+        [README_FILE, PLAN_FILE, CHANGE_FILE]),
+      true);
 
     assert.equal(
       hasOnlyWorkflowFiles(
-        [README_FILE, 'app.js']
-      ),
-      false
-    );
-  }
-);
+        [README_FILE, 'app.js']),
+      false);
+  });

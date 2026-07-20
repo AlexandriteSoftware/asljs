@@ -39,8 +39,7 @@ export async function execCheck(
 {
   logger.trace(
     'Check command: start with %s',
-    JSON.stringify(options)
-  );
+    JSON.stringify(options));
 
   const { artefactDefinitionProvider } =
     environment.getProviders();
@@ -50,8 +49,7 @@ export async function execCheck(
 
   logger.trace(
     'Check command: found %d definitions',
-    definitions.length
-  );
+    definitions.length);
 
   const filteredDefinitions =
     filterDefinitions(
@@ -62,29 +60,23 @@ export async function execCheck(
     'Check command: list of definitions after filtering %s',
     JSON.stringify(
       filteredDefinitions.map(
-        definition => definition.name
-      )
-    )
-  );
+        definition => definition.name)));
 
   const rules =
     filteredDefinitions
     .flatMap(
-      definition => definition.rules
-    );
+      definition => definition.rules);
 
   const selectedRules =
     filterRules(
       rules,
       options.checkRules);
 
-  const definitionsWithRules =
-    new Set<string>();
+  const definitionsWithRules = new Set<string>();
 
   for (const rule of selectedRules) {
     definitionsWithRules.add(
-      rule.definition
-    );
+      rule.definition);
   }
 
   const selectedDefinitions =
@@ -99,9 +91,7 @@ export async function execCheck(
   logger.trace(
     'Check command: found %s definitions',
     JSON.stringify(
-      selectedDefinitionNames
-    )
-  );
+      selectedDefinitionNames));
 
   const artefactProvider =
     environment.getProviders().artefactProvider;
@@ -117,8 +107,7 @@ export async function execCheck(
   if (options.pattern) {
     logger.trace(
       'Check command: using pattern=%s',
-      options.pattern
-    );
+      options.pattern);
 
     const paths =
       await glob(
@@ -142,8 +131,7 @@ export async function execCheck(
       const artefactSelectedDefinitions =
         artefact.definitions
         .filter(
-          definition => selectedDefinitionNames.includes(definition)
-        );
+          definition => selectedDefinitionNames.includes(definition));
 
       if (artefactSelectedDefinitions.length === 0) {
         continue;
@@ -159,26 +147,22 @@ export async function execCheck(
         selectedDefinitions);
 
     artefacts.push(
-      ...definitionArtefacts
-    );
+      ...definitionArtefacts);
 
     for (const artefact of artefacts) {
       definitionNamesForArtefact[artefact.path] = artefact.definitions
         .filter(
-          definition => selectedDefinitionNames.includes(definition)
-        );
+          definition => selectedDefinitionNames.includes(definition));
     }
   }
 
   logger.trace(
     'Check command: found %d artefact(s) to check',
-    artefacts.length
-  );
+    artefacts.length);
 
   logger.trace(
     'Check command: found %d rule(s) to apply',
-    selectedRules.length
-  );
+    selectedRules.length);
 
   const results = [];
 
@@ -204,8 +188,7 @@ export async function execCheck(
         'Check command: checking artefact "%s" against rule "%s" (applicable=%s)',
         artefact.path,
         rule.name,
-        applicable
-      );
+        applicable);
 
       if (!applicable) {
         continue;
@@ -263,10 +246,8 @@ export async function execCheck(
 
       return left.rule
         .localeCompare(
-          right.rule
-        );
-    }
-  );
+          right.rule);
+    });
 
   const table =
     renderObjectsToMarkdownTable(
@@ -278,8 +259,7 @@ export async function execCheck(
 
   environment.stdout
     .write(
-      table
-    );
+      table);
 }
 
 export function filterDefinitions(
@@ -297,9 +277,7 @@ export function filterDefinitions(
   return definitions.filter(
     definition =>
       allowedNames.has(
-        definition.name
-      )
-  );
+        definition.name));
 }
 
 export function filterRules(
@@ -317,7 +295,5 @@ export function filterRules(
   return rules.filter(
     rule =>
       allowedNames.has(
-        rule.name
-      )
-  );
+        rule.name));
 }

@@ -20,11 +20,9 @@ test(
       output += typeof chunk === 'string'
         ? chunk
         : Buffer.from(
-          chunk
-        )
+          chunk)
           .toString(
-            'utf8'
-          );
+            'utf8');
 
       return true;
     }) as typeof process.stdout.write;
@@ -34,15 +32,12 @@ test(
         new DefaultHostConsole();
 
       hostConsole.writeLine(
-        'hello'
-      );
+        'hello');
 
       assert.equal(
         output,
-        'hello\n'
-      );
+        'hello\n');
     } finally {
       process.stdout.write = originalWrite;
     }
-  }
-);
+  });

@@ -88,8 +88,7 @@ class PinoLoggerProvider implements LoggerProvider
 
     if (file) {
       this.#transport = pino.transport(
-        { target: 'pino/file', options: { destination: file, mkdir: true } }
-      );
+        { target: 'pino/file', options: { destination: file, mkdir: true } });
     } else {
       this.#transport = pino.transport(
         {
@@ -99,14 +98,12 @@ class PinoLoggerProvider implements LoggerProvider
             ignore: 'context',
             colorize: true
           }
-        }
-      );
+        });
     }
 
     this.#logger = pino(
       { base: null, level: pinoLogLevel },
-      this.#transport
-    );
+      this.#transport);
   }
 
   getLogger(
@@ -119,8 +116,7 @@ class PinoLoggerProvider implements LoggerProvider
     ) {
       return new PinoLogger(
         this.#logger.child(
-          { context }
-        ),
+          { context }),
         this.#level
       );
     }
@@ -173,8 +169,7 @@ class PinoLogger implements Logger
 
     return this.#logger
       .isLevelEnabled(
-        pinoLogLevel
-      );
+        pinoLogLevel);
   }
 
   trace(
@@ -184,8 +179,7 @@ class PinoLogger implements Logger
   {
     this.#logger.trace(
       message,
-      ...params
-    );
+      ...params);
   }
 
   debug(
@@ -195,8 +189,7 @@ class PinoLogger implements Logger
   {
     this.#logger.debug(
       message,
-      ...params
-    );
+      ...params);
   }
 
   information(
@@ -206,8 +199,7 @@ class PinoLogger implements Logger
   {
     this.#logger.info(
       message,
-      ...params
-    );
+      ...params);
   }
 
   warning(
@@ -217,8 +209,7 @@ class PinoLogger implements Logger
   {
     this.#logger.warn(
       message,
-      ...params
-    );
+      ...params);
   }
 
   error(
@@ -228,7 +219,6 @@ class PinoLogger implements Logger
   {
     this.#logger.error(
       message,
-      ...params
-    );
+      ...params);
   }
 }

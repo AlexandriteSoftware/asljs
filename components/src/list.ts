@@ -80,18 +80,15 @@ export class List extends LitElement
   };
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor items: ListItemsSource = [];
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor context: unknown = undefined;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor theme: ComponentsTheme | null = null;
 
   createRenderRoot(): this
@@ -190,8 +187,7 @@ export class List extends LitElement
         document.createElement('template');
 
       clonedTemplate.content.append(
-        templateElement.content.cloneNode(true)
-      );
+        templateElement.content.cloneNode(true));
 
       if (slotName === 'empty') {
         this.#emptyTemplate = clonedTemplate;
@@ -231,8 +227,7 @@ export class List extends LitElement
     }
 
     host.replaceChildren(
-      emptyTemplate.content.cloneNode(true)
-    );
+      emptyTemplate.content.cloneNode(true));
   }
 
   #renderItemTemplates(): void
@@ -272,8 +267,7 @@ export class List extends LitElement
         index,
         context: this.#createRowScopeContext(
           item,
-          index
-        ),
+          index),
         first: index === 0,
         last: index === count - 1,
         odd: index % 2 === 1,
@@ -286,17 +280,14 @@ export class List extends LitElement
 
       this.#bindFragmentModel(
         fragment,
-        rowContext
-      );
+        rowContext);
 
       rowNodes.push(
-        ...[...fragment.childNodes]
-      );
+        ...[...fragment.childNodes]);
     }
 
     itemsHost.replaceChildren(
-      ...rowNodes
-    );
+      ...rowNodes);
   }
 
   #resolveItemsHost(): ParentNode | null
@@ -372,8 +363,7 @@ export class List extends LitElement
 
     return resolveThemeTemplate(
       activeTheme.list?.[slotName],
-      this
-    );
+      this);
   }
 
   #bindFragmentModel(
@@ -462,8 +452,7 @@ export class List extends LitElement
         () =>
         {
           unsubscribe();
-        }
-      );
+        });
     }
 
     this.#itemsObserverDispose = () =>
@@ -488,8 +477,7 @@ export class List extends LitElement
       this.theme
       ? null
       : findThemeProvider(
-        this
-      );
+        this);
 
     if (this.#themeProvider === nextProvider) {
       return;
@@ -501,16 +489,14 @@ export class List extends LitElement
 
     this.#themeProvider?.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
   }
 
   #disposeThemeProvider(): void
   {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
 
     this.#themeProvider = null;
   }
@@ -524,8 +510,7 @@ export class List extends LitElement
     this.#warnedMissingItemTemplate = true;
 
     console.warn(
-      'asljs-list: missing required template[data-slot="item"] for non-empty items.'
-    );
+      'asljs-list: missing required template[data-slot="item"] for non-empty items.');
   }
 
   #warnInvalidContainer(): void
@@ -537,8 +522,7 @@ export class List extends LitElement
     this.#warnedInvalidContainer = true;
 
     console.warn(
-      'asljs-list: container template must include [data-role="items"].'
-    );
+      'asljs-list: container template must include [data-role="items"].');
   }
 }
 

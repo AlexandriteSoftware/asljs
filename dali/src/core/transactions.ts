@@ -19,28 +19,23 @@ export function txDone(
         () =>
         {
           resolve();
-        }
-      );
+        });
 
       tx.addEventListener(
         'abort',
         () =>
         {
           reject(
-            tx.error
-          );
-        }
-      );
+            tx.error);
+        });
 
       tx.addEventListener(
         'error',
         () =>
         {
           reject(
-            tx.error
-          );
-        }
-      );
+            tx.error);
+        });
     }
   );
 }
@@ -62,8 +57,7 @@ export function txReuseOrCreate(
       txEnsure(
         tx,
         storeName,
-        mode
-      );
+        mode);
     }
 
     return tx;
@@ -71,8 +65,7 @@ export function txReuseOrCreate(
 
   return db.transaction(
     storeNames,
-    mode
-  );
+    mode);
 }
 
 export function txEnsure(
@@ -111,8 +104,7 @@ export class UnsupportedTransactionModeError extends Error
   )
   {
     super(
-      `Unsupported transaction mode "${mode}"`
-    );
+      `Unsupported transaction mode "${mode}"`);
 
     this.name = 'UnsupportedTransactionModeError';
   }
@@ -125,8 +117,7 @@ export class TransactionReadModeRequiredError extends Error
   )
   {
     super(
-      `Transaction does not have read access to the store "${storeName}".`
-    );
+      `Transaction does not have read access to the store "${storeName}".`);
 
     this.name = 'TransactionReadModeRequiredError';
   }
@@ -139,8 +130,7 @@ export class TransactionWriteModeRequiredError extends Error
   )
   {
     super(
-      `Transaction does not have write access to the store "${storeName}".`
-    );
+      `Transaction does not have write access to the store "${storeName}".`);
 
     this.name = 'TransactionWriteModeRequiredError';
   }
@@ -153,8 +143,7 @@ export class TransactionStoreAccessError extends Error
   )
   {
     super(
-      `Transaction does not have access to the store "${storeName}".`
-    );
+      `Transaction does not have access to the store "${storeName}".`);
 
     this.name = 'TransactionStoreAccessError';
   }
@@ -170,16 +159,14 @@ export function txRead(
     txEnsure(
       tx,
       storeName,
-      TxMode.read
-    );
+      TxMode.read);
 
     return tx;
   }
 
   return db.transaction(
     [storeName],
-    TxMode.read
-  );
+    TxMode.read);
 }
 
 export function txWrite(
@@ -192,14 +179,12 @@ export function txWrite(
     txEnsure(
       tx,
       storeName,
-      TxMode.readWrite
-    );
+      TxMode.readWrite);
 
     return tx;
   }
 
   return db.transaction(
     [storeName],
-    TxMode.readWrite
-  );
+    TxMode.readWrite);
 }

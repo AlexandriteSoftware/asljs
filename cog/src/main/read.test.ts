@@ -17,8 +17,7 @@ const logger =
   createLogger();
 
 test.after(
-  () => logger.dispose()
-);
+  () => logger.dispose());
 
 test(
   'read CLI normalises Windows path separators in stored update pattern',
@@ -35,8 +34,7 @@ test(
 
     await workspace.writeText(
       'docs/one.txt',
-      'one\n'
-    );
+      'one\n');
 
     const pattern =
       workspace.resolve(
@@ -44,8 +42,7 @@ test(
         '*.txt')
       .replace(
         /\//g,
-        '\\'
-      );
+        '\\');
 
     await main(
       argv(
@@ -53,9 +50,7 @@ test(
         envelopePath,
         'read',
         pattern,
-        '--read-to-end'
-      )
-    );
+        '--read-to-end'));
 
     const envelope =
       JSON.parse(
@@ -64,13 +59,11 @@ test(
 
     assert.equal(
       envelope.files.length,
-      1
-    );
+      1);
 
     assert.equal(
       envelope.files[0].content,
-      'one\n'
-    );
+      'one\n');
 
     assert.deepEqual(
       envelope.files[0].update,
@@ -78,18 +71,14 @@ test(
         command: 'read',
         pattern: workspace.resolve(
           'docs',
-          'one.txt'
-        )
+          'one.txt')
           .replace(
             /\\/g,
-            '/'
-          ),
+            '/'),
         exclude: [],
         lines: 150,
         sizeKb: 15,
         readToEnd: true,
         withBinaryB64: false
-      }
-    );
-  }
-);
+      });
+  });

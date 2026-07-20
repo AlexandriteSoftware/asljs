@@ -17,8 +17,7 @@ test(
       listSamples();
 
     assert.ok(
-      samples.length > 0
-    );
+      samples.length > 0);
 
     const service =
       createLinkSharingService(
@@ -40,8 +39,7 @@ test(
 
       assert.ok(
         token,
-        `Expected token for sample ${sample.name}`
-      );
+        `Expected token for sample ${sample.name}`);
 
       const decoded =
         await service.parsePayloadFromToken(
@@ -50,8 +48,6 @@ test(
       assert.deepEqual(
         decoded,
         sample,
-        `Roundtrip failed for ${sample.name}`
-      );
+        `Roundtrip failed for ${sample.name}`);
     }
-  }
-);
+  });

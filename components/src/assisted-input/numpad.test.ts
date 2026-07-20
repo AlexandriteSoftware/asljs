@@ -28,36 +28,27 @@ test(
     assert.equal(
       getButton(
         element,
-        '1'
-      ).disabled,
-      false
-    );
+        '1').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        '3'
-      ).disabled,
-      true
-    );
+        '3').disabled,
+      true);
 
     assert.equal(
       getButton(
         element,
-        'Backspace'
-      ).disabled,
-      false
-    );
+        'Backspace').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        'Enter'
-      ).disabled,
-      false
-    );
-  }
-);
+        'Enter').disabled,
+      false);
+  });
 
 test(
   'numpad: dispatches key events for allowed buttons',
@@ -80,20 +71,16 @@ test(
       event =>
       {
         receivedKey = (event as CustomEvent<{ key: string; }>).detail.key;
-      }
-    );
+      });
 
     getButton(
       element,
-      '7'
-    ).click();
+      '7').click();
 
     assert.equal(
       receivedKey,
-      '7'
-    );
-  }
-);
+      '7');
+  });
 
 async function ensureDomAndModuleLoaded(
   ): Promise<void>
@@ -160,8 +147,7 @@ function getButton(
   ): HTMLButtonElement
 {
   return element.shadowRoot?.querySelector(
-    `button[data-key="${key}"]`
-  ) as HTMLButtonElement;
+    `button[data-key="${key}"]`) as HTMLButtonElement;
 }
 
 async function settle(

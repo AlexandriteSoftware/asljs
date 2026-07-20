@@ -35,15 +35,12 @@ test(
         choicePrompt: null,
         progress: null,
         sending: false
-      }
-    );
+      });
 
     assert.deepEqual(
       model.messages.read(),
-      []
-    );
-  }
-);
+      []);
+  });
 
 test(
   'createAiChatModel preserves persisted fields when restoring state',
@@ -74,50 +71,40 @@ test(
 
     assert.equal(
       model.messages.read().length,
-      1
-    );
+      1);
 
     assert.equal(
       model.promptDraft,
-      'next prompt'
-    );
+      'next prompt');
 
     assert.equal(
       model.messagesScrollTop,
-      42
-    );
+      42);
 
     assert.equal(
       model.hasMessagesScrollTop,
-      true
-    );
+      true);
 
     assert.equal(
       model.missingKeyMessageShown,
-      true
-    );
+      true);
 
     assert.equal(
       model.lastResponseId,
-      'resp_1'
-    );
+      'resp_1');
 
     assert.deepEqual(
       model.choicePrompt,
-      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] }
-    );
+      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] });
 
     assert.deepEqual(
       model.progress,
-      { message: 'Waiting...', visible: true }
-    );
+      { message: 'Waiting...', visible: true });
 
     assert.equal(
       model.sending,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'createAiChatModel exposes model-level choice and progress helpers',
@@ -136,8 +123,7 @@ test(
 
     assert.equal(
       model.progress?.message,
-      'Working'
-    );
+      'Working');
 
     const choicePromise =
       model.presentChoices(
@@ -146,20 +132,17 @@ test(
 
     assert.equal(
       model.choicePrompt?.options.length,
-      2
-    );
+      2);
 
     model.dismissChoices();
 
     assert.equal(
       await choicePromise,
-      null
-    );
+      null);
 
     assert.equal(
       model.choicePrompt,
-      null
-    );
+      null);
 
     const state =
       serializeAiChatModelState(model);
@@ -176,10 +159,8 @@ test(
         choicePrompt: null,
         progress: { message: 'Working', visible: true },
         sending: false
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   'serializeAiChatModelState stores operational state including choice behavior',
@@ -197,8 +178,7 @@ test(
     await model.presentChoices(
       'Pick one',
       ['a', 'b'],
-      'send'
-    );
+      'send');
 
     model.setProgress('Working');
     model.sending = true;
@@ -212,20 +192,16 @@ test(
         message: 'Pick one',
         options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }],
         behavior: 'send'
-      }
-    );
+      });
 
     assert.deepEqual(
       state.progress,
-      { message: 'Working', visible: true }
-    );
+      { message: 'Working', visible: true });
 
     assert.equal(
       state.sending,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'ai-chat: custom element exposes messages store and draft as direct properties',
@@ -240,8 +216,7 @@ test(
 
     chat.messages.save(
       'assistant',
-      'Hello there'
-    );
+      'Hello there');
 
     chat.promptDraft = 'Draft prompt';
 
@@ -250,29 +225,22 @@ test(
 
     assert.equal(
       chat.messages.read().length,
-      1
-    );
+      1);
 
     assert.equal(
       chat.messages.read()[0].content,
-      'Hello there'
-    );
+      'Hello there');
 
     assert.equal(
       chat.promptDraft,
-      'Draft prompt'
-    );
+      'Draft prompt');
 
     assert.equal(
       chat.querySelector(
-        '.asljs-ai-chat-bubble'
-      )?.textContent?.includes(
-        'Hello there'
-      ),
-      true
-    );
-  }
-);
+        '.asljs-ai-chat-bubble')?.textContent?.includes(
+          'Hello there'),
+      true);
+  });
 
 test(
   'ai-chat: direct state properties render restored chat values',
@@ -304,20 +272,16 @@ test(
 
     assert.equal(
       chat.messages.read().length,
-      1
-    );
+      1);
 
     assert.equal(
       chat.messages.read()[0].content,
-      'Restored'
-    );
+      'Restored');
 
     assert.equal(
       chat.promptDraft,
-      'restored draft'
-    );
-  }
-);
+      'restored draft');
+  });
 
 test(
   'ai-chat: auto session storage restores messages by component id',
@@ -338,8 +302,7 @@ test(
 
     first.messages.save(
       'assistant',
-      'Persisted session message'
-    );
+      'Persisted session message');
 
     first.choicePrompt = {
       message: 'Pick one',
@@ -363,30 +326,24 @@ test(
 
     assert.equal(
       restored.messages.read().length,
-      1
-    );
+      1);
 
     assert.equal(
       restored.messages.read()[0].content,
-      'Persisted session message'
-    );
+      'Persisted session message');
 
     assert.deepEqual(
       restored.choicePrompt,
-      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] }
-    );
+      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] });
 
     assert.deepEqual(
       restored.progress,
-      { message: 'Waiting...', visible: true }
-    );
+      { message: 'Waiting...', visible: true });
 
     assert.equal(
       restored.sending,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'ai-chat: send button keeps theme button classes alongside chat classes',
@@ -426,20 +383,16 @@ test(
 
     assert.match(
       sendButtonClassName,
-      /\bbtn\b/
-    );
+      /\bbtn\b/);
 
     assert.match(
       sendButtonClassName,
-      /\bbtn-primary\b/
-    );
+      /\bbtn-primary\b/);
 
     assert.match(
       sendButtonClassName,
-      /\basljs-ai-chat-send\b/
-    );
-  }
-);
+      /\basljs-ai-chat-send\b/);
+  });
 
 test(
   'ai-chat-key: custom element renders label and emits key-submit on submit',
@@ -465,15 +418,12 @@ test(
 
     assert.ok(
       labelEl !== null,
-      'key label element is present'
-    );
+      'key label element is present');
 
     assert.ok(
       labelEl?.textContent?.includes(
-        'Enter your key'
-      ),
-      'key label text is rendered'
-    );
+        'Enter your key'),
+      'key label text is rendered');
 
     let submittedKey: string | null = null;
 
@@ -482,8 +432,7 @@ test(
       (event: Event) =>
       {
         submittedKey = (event as CustomEvent<{ key: string; }>).detail.key;
-      }
-    );
+      });
 
     const textInput =
       keyPrompt.querySelector(
@@ -493,8 +442,7 @@ test(
 
     assert.ok(
       textInput !== null,
-      'asljs-text-input is rendered inside key prompt'
-    );
+      'asljs-text-input is rendered inside key prompt');
 
     if (textInput !== null) {
       const innerInput =
@@ -506,8 +454,7 @@ test(
         innerInput.value = 'sk-test-key';
 
         innerInput.dispatchEvent(
-          new Event('input', { bubbles: true })
-        );
+          new Event('input', { bubbles: true }));
 
         await Promise.resolve();
       }
@@ -519,18 +466,15 @@ test(
       | null;
 
     button?.dispatchEvent(
-      new Event('click', { bubbles: true })
-    );
+      new Event('click', { bubbles: true }));
 
     await Promise.resolve();
 
     assert.equal(
       submittedKey,
       'sk-test-key',
-      'key-submit event carries the entered key'
-    );
-  }
-);
+      'key-submit event carries the entered key');
+  });
 
 test(
   'OpenAiTransport: postRequest sends to openai and returns parsed JSON',
@@ -553,8 +497,7 @@ test(
     ): Promise<Response> =>
     {
       capturedRequests.push(
-        { url, init: init ?? {} }
-      );
+        { url, init: init ?? {} });
 
       return {
         ok: true,
@@ -575,14 +518,12 @@ test(
 
       assert.equal(
         capturedRequests.length,
-        1
-      );
+        1);
 
       assert.equal(
         capturedRequests[0].url,
         'https://api.openai.com/v1/responses',
-        'request sent to correct OpenAI endpoint'
-      );
+        'request sent to correct OpenAI endpoint');
 
       const headers =
         capturedRequests[0].init.headers as Record<
@@ -592,18 +533,15 @@ test(
 
       assert.ok(
         headers.Authorization.includes('sk-test'),
-        'Authorization header includes API key'
-      );
+        'Authorization header includes API key');
 
       assert.equal(
         result.id,
-        'resp_1'
-      );
+        'resp_1');
     } finally {
       globalThis.fetch = originalFetch;
     }
-  }
-);
+  });
 
 async function loadModules(
   ): Promise<void>
@@ -682,8 +620,7 @@ async function ensureDom(
     globalThis.Node = dom.window.Node;
 
     globalThis.getComputedStyle = dom.window.getComputedStyle.bind(
-      dom.window
-    );
+      dom.window);
 
     globalThis.sessionStorage = dom.window.sessionStorage;
     globalThis.location = dom.window.location;

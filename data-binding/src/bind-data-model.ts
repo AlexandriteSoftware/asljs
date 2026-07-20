@@ -78,8 +78,7 @@ export function bindDataModel(
     options: BindDataModelOptions = {}
   ): () => void
 {
-  const warned =
-    new Set<string>();
+  const warned = new Set<string>();
 
   const warnOnce: WarnOnce =
     (
@@ -99,8 +98,7 @@ export function bindDataModel(
     } else {
       console.warn(
         message,
-        error
-      );
+        error);
     }
   };
 
@@ -114,8 +112,7 @@ export function bindDataModel(
     model,
     options,
     warnOnce,
-    nextPrefix
-  );
+    nextPrefix);
 }
 
 function bindSubtree(
@@ -140,9 +137,7 @@ function bindSubtree(
           model,
           options,
           warnOnce,
-          nextPrefix
-        )
-      );
+          nextPrefix));
     } else {
       bindElementAttributes(
         child,
@@ -150,8 +145,7 @@ function bindSubtree(
         options,
         warnOnce,
         nextPrefix,
-        disposers
-      );
+        disposers);
 
       disposers.push(
         bindSubtree(
@@ -159,9 +153,7 @@ function bindSubtree(
           model,
           options,
           warnOnce,
-          nextPrefix
-        )
-      );
+          nextPrefix));
     }
   }
 
@@ -191,8 +183,7 @@ function bindContextElement(
     warnOnce,
     nextPrefix,
     ownDisposers,
-    CONTEXT_ATTR
-  );
+    CONTEXT_ATTR);
 
   let childDisposer: (() => void) | null = null;
 
@@ -218,8 +209,7 @@ function bindContextElement(
       childModel,
       options,
       warnOnce,
-      nextPrefix
-    );
+      nextPrefix);
   };
 
   bindChildren();
@@ -293,9 +283,7 @@ function bindElementAttributes(
             element,
             spec,
             model,
-            options
-          )
-        );
+            options));
       } else {
         disposers.push(
           bindEventModel(
@@ -303,9 +291,7 @@ function bindElementAttributes(
             spec,
             model,
             prefix,
-            warnOnce
-          )
-        );
+            warnOnce));
       }
     } catch (error) {
       if (spec.kind === 'value') {
@@ -315,8 +301,7 @@ function bindElementAttributes(
       warnOnce(
         `${prefix}:bind-error`,
         `${prefix}: binding setup failed`,
-        error
-      );
+        error);
     }
   }
 }
@@ -329,14 +314,12 @@ function createBindingSpec(
   if (suffix.startsWith('on') && suffix.length > 2) {
     return parseEventBindingExpression(
       suffix.slice(2),
-      expression
-    );
+      expression);
   }
 
   return parseValueBindingExpression(
     resolveValueTarget(suffix),
-    expression
-  );
+    expression);
 }
 
 function resolveValueTarget(
@@ -355,8 +338,7 @@ function resolveValueTarget(
     return {
       kind: 'class',
       name: suffix.slice(
-        'class-'.length
-      )
+        'class-'.length)
     };
   }
 
@@ -364,8 +346,7 @@ function resolveValueTarget(
     return {
       kind: 'prop',
       name: suffix.slice(
-        'prop-'.length
-      )
+        'prop-'.length)
     };
   }
 

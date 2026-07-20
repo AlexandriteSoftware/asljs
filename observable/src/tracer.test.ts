@@ -16,22 +16,18 @@ test(
 
     tracer.trace(
       'new',
-      { object: { id: 1 } }
-    );
+      { object: { id: 1 } });
 
     assert.equal(
       tracer.getTraces().length,
-      1
-    );
+      1);
 
     tracer.clear();
 
     assert.equal(
       tracer.getTraces().length,
-      0
-    );
-  }
-);
+      0);
+  });
 
 test(
   `${TEST_SUITE}: getMinimalTraces strips listeners and define args`,
@@ -47,8 +43,7 @@ test(
         listeners: [() =>
         {}],
         args: [{ value: 2 }]
-      }
-    );
+      });
 
     tracer.trace(
       'emit',
@@ -57,8 +52,7 @@ test(
         listeners: [() =>
         {}],
         args: [{ value: 3 }]
-      }
-    );
+      });
 
     const minimal =
       tracer.getMinimalTraces();
@@ -68,32 +62,25 @@ test(
         .hasOwnProperty
         .call(
           minimal[0].payload,
-          'listeners'
-        ),
-      false
-    );
+          'listeners'),
+      false);
 
     assert.equal(
       Object.prototype
         .hasOwnProperty
         .call(
           minimal[1].payload,
-          'listeners'
-        ),
-      false
-    );
+          'listeners'),
+      false);
 
     assert.equal(
       Object.prototype
         .hasOwnProperty
         .call(
           minimal[1].payload,
-          'args'
-        ),
-      false
-    );
-  }
-);
+          'args'),
+      false);
+  });
 
 test(
   `${TEST_SUITE}: getFirstEventParameters returns first emit arg`,
@@ -104,17 +91,13 @@ test(
 
     tracer.trace(
       'emit',
-      { event: 'set:a', args: [{ value: 42 }] }
-    );
+      { event: 'set:a', args: [{ value: 42 }] });
 
     assert.deepEqual(
       tracer.getFirstEventParameters('set:a'),
-      { value: 42 }
-    );
+      { value: 42 });
 
     assert.throws(
       () => tracer.getFirstEventParameters('set:b'),
-      /No emit trace found/
-    );
-  }
-);
+      /No emit trace found/);
+  });

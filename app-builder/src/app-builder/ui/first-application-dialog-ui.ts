@@ -98,35 +98,31 @@ export function createFirstApplicationDialogUi(
     {
       text: 'Create Application',
       className: 'btn btn-primary'
-    }
-  );
+    });
 
   configureButton(
     elBtnCreateSample,
     {
       text: 'Create TODO Sample App',
       className: 'btn btn-outline-secondary'
-    }
-  );
+    });
 
   configureTextInput(
     elApiKeyInput,
     {
       placeholder: 'sk-...',
       inputType: 'password'
-    }
-  );
+    });
 
   configureTextInput(
     elNameInput,
     {
       placeholder: 'My App'
-    }
-  );
+    });
 
   function readValues(
     ): FirstApplicationDialogValues
-{
+  {
     return {
       name: readControlValue(elNameInput).trim(),
       apiKey: readControlValue(elApiKeyInput).trim()
@@ -135,7 +131,7 @@ export function createFirstApplicationDialogUi(
 
   async function createApplication(
     ): Promise<void>
-{
+  {
     const values =
       readValues();
 
@@ -149,24 +145,21 @@ export function createFirstApplicationDialogUi(
 
   async function createTodoSample(
     ): Promise<void>
-{
+  {
     await options.onCreateTodoSample(
-      readValues()
-    );
+      readValues());
   }
 
   function clear(
     ): void
-{
+  {
     writeControlValue(
       elApiKeyInput,
-      ''
-    );
+      '');
 
     writeControlValue(
       elNameInput,
-      ''
-    );
+      '');
   }
 
   elBtnCreate.addEventListener(
@@ -174,16 +167,14 @@ export function createFirstApplicationDialogUi(
     () =>
     {
       void createApplication();
-    }
-  );
+    });
 
   elBtnCreateSample.addEventListener(
     'click',
     () =>
     {
       void createTodoSample();
-    }
-  );
+    });
 
   elNameInput.addEventListener(
     'keydown',
@@ -193,8 +184,7 @@ export function createFirstApplicationDialogUi(
         event.preventDefault();
         void createApplication();
       }
-    }
-  );
+    });
 
   return {
     show(): void

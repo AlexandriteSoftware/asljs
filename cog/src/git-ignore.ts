@@ -43,14 +43,11 @@ export class GitIgnore
 
     if (isDirectory) {
       this.loadMatchers(
-        normalisedPath
-      );
+        normalisedPath);
     } else {
       this.loadMatchers(
         path.dirname(
-          normalisedPath
-        )
-      );
+          normalisedPath));
     }
 
     for (const matcher of this.matchers) {
@@ -74,8 +71,7 @@ export class GitIgnore
 
       if (
         matcher.matcher.ignores(
-          testRelativePath
-        )
+          testRelativePath)
       ) {
         return true;
       }
@@ -95,8 +91,7 @@ export class GitIgnore
     this.logger.trace(
       'filter(paths[%d]) { filtered out %d items }',
       paths.length,
-      paths.length - result.length
-    );
+      paths.length - result.length);
 
     return result;
   }
@@ -111,8 +106,7 @@ export class GitIgnore
 
     this.visitedPaths
       .add(
-        directoryPath
-      );
+        directoryPath);
 
     const gitIgnorePath =
       path.join(
@@ -142,12 +136,10 @@ export class GitIgnore
       const matcher =
         ignore()
         .add(
-          gitIgnoreContent
-        );
+          gitIgnoreContent);
 
       this.matchers.push(
-        { path: directoryPath, matcher }
-      );
+        { path: directoryPath, matcher });
     }
 
     const parentPath =
@@ -156,8 +148,7 @@ export class GitIgnore
 
     if (parentPath !== directoryPath) {
       this.loadMatchers(
-        parentPath
-      );
+        parentPath);
     }
   }
 }

@@ -35,11 +35,9 @@ export function buildChangeListFromPlan(
       'PLAN')
     .split(/\r?\n/)
     .map(
-      line => line.trim()
-    )
+      line => line.trim())
     .filter(
-      line => line !== ''
-    );
+      line => line !== '');
 
   if (lines.length === 0) {
     return '# CHANGE\n';
@@ -69,7 +67,6 @@ function normalizeWorkflowBody(
   return content
     .replace(
       new RegExp(`^#\\s+${heading}\\s*$`, 'im'),
-      ''
-    )
+      '')
     .trim();
 }

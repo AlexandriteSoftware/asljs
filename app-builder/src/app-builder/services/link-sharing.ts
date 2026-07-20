@@ -27,20 +27,17 @@ export function createLinkSharingService(
 {
   const timeoutMs =
     Number.isFinite(
-      options.timeoutMs
-    )
+      options.timeoutMs)
     ? Math.max(
       1,
       Math.floor(
-        options.timeoutMs as number
-      )
-    )
+        options.timeoutMs as number))
     : DEFAULT_TIMEOUT_MS;
 
   async function createShareUrl(
       payload: unknown
     ): Promise<ShareLinkResult>
-{
+  {
     const serialized =
       JSON.stringify(payload);
 
@@ -62,7 +59,7 @@ export function createLinkSharingService(
   async function parsePayloadFromToken<TPayload>(
       token: string
     ): Promise<TPayload>
-{
+  {
     const decompressed =
       await withTimeout(
         options.codec.decompress(token),
@@ -75,18 +72,16 @@ export function createLinkSharingService(
   function readTokenFromHash(
       hash: string
     ): string | null
-{
+  {
     if (
       !hash.startsWith(
-        options.hashPrefix
-      )
+        options.hashPrefix)
     ) {
       return null;
     }
 
     return hash.slice(
-      options.hashPrefix.length
-    );
+      options.hashPrefix.length);
   }
 
   return {
@@ -147,8 +142,7 @@ async function compressBytesInBrowser(
     new Blob([toBlobPart(input)])
     .stream()
     .pipeThrough(
-      new CompressionStream(format)
-    );
+      new CompressionStream(format));
 
   return readAllBytes(stream);
 }
@@ -162,8 +156,7 @@ async function decompressBytesInBrowser(
     new Blob([toBlobPart(input)])
     .stream()
     .pipeThrough(
-      new DecompressionStream(format)
-    );
+      new DecompressionStream(format));
 
   return readAllBytes(stream);
 }
@@ -214,8 +207,7 @@ async function readAllBytes(
   for (const chunk of chunks) {
     merged.set(
       chunk,
-      offset
-    );
+      offset);
 
     offset += chunk.length;
   }
@@ -237,23 +229,19 @@ function encodeBase64Url(
         index + segmentLength);
 
     binary += String.fromCharCode(
-      ...segment
-    );
+      ...segment);
   }
 
   return btoa(binary)
     .replace(
       /\+/g,
-      '-'
-    )
+      '-')
     .replace(
       /\//g,
-      '_'
-    )
+      '_')
     .replace(
       /=+$/g,
-      ''
-    );
+      '');
 }
 
 function decodeBase64Url(
@@ -264,12 +252,10 @@ function decodeBase64Url(
     value
     .replace(
       /-/g,
-      '+'
-    )
+      '+')
     .replace(
       /_/g,
-      '/'
-    );
+      '/');
 
   const padLength =
     normalized.length % 4;
@@ -279,8 +265,7 @@ function decodeBase64Url(
     ? normalized
     : `${normalized}${
       '='.repeat(
-        4 - padLength
-      )
+        4 - padLength)
     }`;
 
   let binary = '';
@@ -316,17 +301,14 @@ async function withTimeout<T>(
       () =>
       {
         reject(
-          new Error(timeoutMessage)
-        );
+          new Error(timeoutMessage));
       },
-      timeoutMs
-    );
+      timeoutMs);
   });
 
   try {
     return await Promise.race(
-      [promise, timeoutPromise]
-    );
+      [promise, timeoutPromise]);
   } finally {
     if (timeoutId !== undefined) {
       globalThis.clearTimeout(timeoutId);

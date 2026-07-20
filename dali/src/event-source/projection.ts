@@ -76,8 +76,7 @@ export async function eventSourceProjectionSet(
 
   await dbRequestAsync(
     tx.objectStore(storeName)
-      .put(projection)
-  );
+      .put(projection));
 
   await txDone(tx);
 }
@@ -122,8 +121,7 @@ export class EventSourceProjectionManager
           projectionId: this.projectionId,
           appliedTransactionId: transaction.id,
           updatedAt: new Date().toISOString()
-        }
-      );
+        });
 
       applied += 1;
     }

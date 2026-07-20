@@ -83,28 +83,23 @@ test(
 
       assert.equal(
         modal.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.equal(
         apiKeyInput.value,
-        'sk-demo'
-      );
+        'sk-demo');
 
       assert.equal(
         themeSelect.value,
-        'light'
-      );
+        'light');
 
       assert.equal(
         fontSizeInput.value,
-        '16'
-      );
+        '16');
 
       assert.equal(
         maxToolStepsInput.value,
-        '30'
-      );
+        '30');
 
       apiKeyInput.value = '  sk-next  ';
       themeSelect.value = 'dark';
@@ -112,8 +107,7 @@ test(
       maxToolStepsInput.value = '42';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -126,18 +120,15 @@ test(
             fontSizeText: '18',
             maxToolStepsText: '42'
           }
-        ]
-      );
+        ]);
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'createSettingsModalUi closes from overlay and cancel controls',
@@ -176,26 +167,21 @@ test(
       await ui.open();
 
       cancelButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
 
       await ui.open();
 
       modal.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

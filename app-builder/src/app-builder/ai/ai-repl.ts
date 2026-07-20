@@ -38,8 +38,7 @@ export class ToolStepLimitExceededError extends Error
   constructor(info: ToolStepLimitInfo)
   {
     super(
-      TOOL_STEP_LIMIT_EXCEEDED_MESSAGE
-    );
+      TOOL_STEP_LIMIT_EXCEEDED_MESSAGE);
 
     this.name = 'ToolStepLimitExceededError';
     this.stepsCompleted = info.stepsCompleted;
@@ -52,8 +51,7 @@ export class GenerationStoppedError extends Error
   constructor()
   {
     super(
-      GENERATION_STOPPED_MESSAGE
-    );
+      GENERATION_STOPPED_MESSAGE);
 
     this.name = 'GenerationStoppedError';
   }
@@ -131,16 +129,14 @@ const DEFAULT_TRANSPORT: AiResponsesTransport =
             previous_response_id: request.previous_response_id,
             input: request.input,
             tools: request.tools
-          }
-        )
+          })
       });
 
     if (!response.ok) {
       const errorPayload =
         await response.json()
         .catch(
-          () => ({} as Record<string, unknown>)
-        );
+          () => ({} as Record<string, unknown>));
 
       const message =
         getOpenAiErrorMessage(errorPayload)
@@ -173,8 +169,7 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
       const errorPayload =
         await response.json()
         .catch(
-          () => ({} as Record<string, unknown>)
-        );
+          () => ({} as Record<string, unknown>));
 
       const message =
         getOpenAiErrorMessage(errorPayload)
@@ -188,8 +183,7 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
 
     if (
       !Array.isArray(
-        payload.data
-      )
+        payload.data)
     ) {
       throw new Error('OpenAI returned an unexpected model list format.');
     }
@@ -197,8 +191,7 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
     return payload.data
       .filter(
         (value): value is { id?: unknown; created?: unknown; } =>
-          typeof value === 'object' && value !== null
-      )
+          typeof value === 'object' && value !== null)
       .map(
         value => ({
           id: typeof value.id === 'string'
@@ -207,11 +200,9 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
           created: typeof value.created === 'number'
             ? value.created
             : 0
-        })
-      )
+        }))
       .filter(
-        value => value.id !== ''
-      );
+        value => value.id !== '');
   }
 };
 
@@ -257,8 +248,7 @@ export async function generateApp(
 
     await reportProgress(
       options,
-      `Step ${step + 1}: requesting assistant response...`
-    );
+      `Step ${step + 1}: requesting assistant response...`);
 
     if (step >= stepLimit) {
       const shouldContinue =
@@ -280,8 +270,7 @@ export async function generateApp(
 
       await reportProgress(
         options,
-        `Extended step limit to ${stepLimit}. Continuing...`
-      );
+        `Extended step limit to ${stepLimit}. Continuing...`);
     }
 
     const data =
@@ -298,8 +287,7 @@ export async function generateApp(
 
     if (
       !Array.isArray(
-        data.output
-      )
+        data.output)
     ) {
       throw new Error(
         'AI returned an unexpected response format.'
@@ -313,8 +301,7 @@ export async function generateApp(
     if (toolCalls.length === 0) {
       await reportProgress(
         options,
-        `Completed in ${step + 1} step(s). Finalizing summary...`
-      );
+        `Completed in ${step + 1} step(s). Finalizing summary...`);
 
       const summary =
         extractResponsesSummary(data);
@@ -335,8 +322,7 @@ export async function generateApp(
 
       await reportProgress(
         options,
-        `Step ${step + 1}: running ${readFunctionName(toolCall)}...`
-      );
+        `Step ${step + 1}: running ${readFunctionName(toolCall)}...`);
 
       const output =
         await executeToolCall(
@@ -348,14 +334,12 @@ export async function generateApp(
           type: 'function_call_output',
           call_id: readCallId(toolCall),
           output
-        }
-      );
+        });
     }
 
     await reportProgress(
       options,
-      `Step ${step + 1}: submitted ${toolOutputs.length} tool result(s).`
-    );
+      `Step ${step + 1}: submitted ${toolOutputs.length} tool result(s).`);
 
     previousResponseId = typeof data.id === 'string'
       ? data.id
@@ -393,8 +377,7 @@ async function reportProgress(
   }
 
   await Promise.resolve(
-    options.onProgress(message)
-  );
+    options.onProgress(message));
 }
 
 function getOpenAiErrorMessage(
@@ -419,8 +402,7 @@ function extractResponsesSummary(
 
   if (
     !Array.isArray(
-      data.output
-    )
+      data.output)
   ) {
     return '';
   }
@@ -428,20 +410,15 @@ function extractResponsesSummary(
   const parts =
     data.output
     .filter(
-      (item): item is ResponsesOutputMessage => item.type === 'message'
-    )
+      (item): item is ResponsesOutputMessage => item.type === 'message')
     .flatMap(
-      item => item.content ?? []
-    )
+      item => item.content ?? [])
     .map(
-      item => item.text ?? ''
-    )
+      item => item.text ?? '')
     .map(
-      text => text.trim()
-    )
+      text => text.trim())
     .filter(
-      text => text !== ''
-    );
+      text => text !== '');
 
   return parts.join('\n');
 }

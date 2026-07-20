@@ -67,8 +67,7 @@ const BUTTONS: readonly AssistedInputButtonDefinition[] =
 ];
 
 @customElement(
-  'asljs-letterpad'
-)
+  'asljs-letterpad')
 export class Letterpad extends AssistedInput
 {
   static override styles = css`
@@ -133,8 +132,7 @@ export class Letterpad extends AssistedInput
     `;
 
   @property(
-    { reflect: true, type: Boolean }
-  )
+    { reflect: true, type: Boolean })
   accessor collapsed = false;
 
   protected override get defaultAriaLabel(): string {
@@ -147,8 +145,7 @@ export class Letterpad extends AssistedInput
       <div class="grid" part="grid">
         ${
       BUTTONS.map(
-        button => this.#renderButton(button)
-      )
+        button => this.#renderButton(button))
     }
       </div>
     `;
@@ -178,16 +175,13 @@ export class Letterpad extends AssistedInput
       return this.renderAssistedInputButton(
         button,
         unsafeHTML(
-          KEYBOARD_ICON_SVG
-        ),
-        { ariaLabel: this.#toggleLabel, title: this.#toggleLabel }
-      );
+          KEYBOARD_ICON_SVG),
+        { ariaLabel: this.#toggleLabel, title: this.#toggleLabel });
     }
 
     return this.renderAssistedInputButton(
       button,
-      html`<span class="label">${button.label ?? ''}</span>`
-    );
+      html`<span class="label">${button.label ?? ''}</span>`);
   }
 
   get #toggleLabel(): string {

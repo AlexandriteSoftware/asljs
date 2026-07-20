@@ -130,11 +130,9 @@ function mergeButtonVariants(
   const variantNames =
     new Set([
     ...Object.keys(
-      baseVariants ?? {}
-    ),
+      baseVariants ?? {}),
     ...Object.keys(
-      overrideVariants ?? {}
-    )
+      overrideVariants ?? {})
   ]);
 
   const mergedVariants: Record<
@@ -145,8 +143,7 @@ function mergeButtonVariants(
   for (const variantName of variantNames) {
     mergedVariants[variantName] = mergeSection(
       baseVariants?.[variantName],
-      overrideVariants?.[variantName]
-    );
+      overrideVariants?.[variantName]);
   }
 
   return mergedVariants;
@@ -169,8 +166,7 @@ function mergeButtonThemeDefinition(
     ...(overrideTheme ?? {}),
     variants: mergeButtonVariants(
       baseTheme?.variants,
-      overrideTheme?.variants
-    )
+      overrideTheme?.variants)
   };
 }
 
@@ -180,20 +176,16 @@ export function getDefaultTheme(
   return {
     button: mergeButtonThemeDefinition(
       PACKAGE_DEFAULT_THEME.button,
-      defaultTheme.button
-    ),
+      defaultTheme.button),
     list: mergeSection(
       PACKAGE_DEFAULT_THEME.list,
-      defaultTheme.list
-    ),
+      defaultTheme.list),
     textInput: mergeSection(
       PACKAGE_DEFAULT_THEME.textInput,
-      defaultTheme.textInput
-    ),
+      defaultTheme.textInput),
     select: mergeSection(
       PACKAGE_DEFAULT_THEME.select,
-      defaultTheme.select
-    )
+      defaultTheme.select)
   };
 }
 
@@ -216,8 +208,7 @@ export function getComponentVariantList(
   switch (component) {
     case 'button':
       return Object.keys(
-        resolvedTheme.button?.variants ?? {}
-      );
+        resolvedTheme.button?.variants ?? {});
     default:
       return [];
   }
@@ -228,8 +219,7 @@ export function findThemeProvider(
   ): ThemeProviderLike | null
 {
   return element.closest(
-    THEME_PROVIDER_TAG_NAME
-  ) as ThemeProviderLike | null;
+    THEME_PROVIDER_TAG_NAME) as ThemeProviderLike | null;
 }
 
 export function resolveThemeTemplate(
@@ -269,8 +259,7 @@ export function resolveThemeTemplate(
     document.createElement('template');
 
   template.content.append(
-    resolvedSource.content.cloneNode(true)
-  );
+    resolvedSource.content.cloneNode(true));
 
   return template;
 }

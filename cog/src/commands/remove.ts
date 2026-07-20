@@ -22,29 +22,24 @@ export async function remove(
   ): Promise<void>
 {
   await rollbackFeed?.saveFileState(
-    command.path
-  );
+    command.path);
 
   await fs.rm(
     command.path,
-    { force: true }
-  );
+    { force: true });
 
   const fileIndex =
     envelope.files
     .findIndex(
-      file => file.path === command.path
-    );
+      file => file.path === command.path);
 
   if (fileIndex !== -1) {
     envelope.files.splice(
       fileIndex,
-      1
-    );
+      1);
 
     context?.console.writeLine(
-      `removed ${command.path}`
-    );
+      `removed ${command.path}`);
   }
 }
 

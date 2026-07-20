@@ -89,75 +89,60 @@ test(
 
     assert.equal(
       titleInput.theme,
-      theme
-    );
+      theme);
 
     assert.equal(
       enabledSelect.theme,
-      theme
-    );
+      theme);
 
     assert.equal(
       countInput.theme,
-      theme
-    );
+      theme);
 
     assert.equal(
       titleInput.querySelector('input')?.classList.contains('form-control'),
-      true
-    );
+      true);
 
     assert.equal(
       enabledSelect.querySelector('select')?.classList.contains('form-select'),
-      true
-    );
+      true);
 
     assert.equal(
       titleInput.value,
-      'Preview'
-    );
+      'Preview');
 
     assert.equal(
       enabledSelect.value,
-      'yes'
-    );
+      'yes');
 
     assert.equal(
       countInput.value,
-      '3'
-    );
+      '3');
 
     assert.equal(
       itemsInput.value,
-      '[2 items]'
-    );
+      '[2 items]');
 
     assert.equal(
       handlerInput.value,
-      '[Function]'
-    );
+      '[Function]');
 
     assert.equal(
       optionsInput.value,
-      '[Object]'
-    );
+      '[Object]');
 
     assert.equal(
       itemsInput.disabled,
-      true
-    );
+      true);
 
     assert.equal(
       handlerInput.disabled,
-      true
-    );
+      true);
 
     assert.equal(
       optionsInput.disabled,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'properties: updates target from nested text and boolean input events',
@@ -202,41 +187,34 @@ test(
       new window.CustomEvent(
         'input',
         { detail: { value: 'After' }, bubbles: true }
-      )
-    );
+      ));
 
     enabledSelect.dispatchEvent(
       new window.CustomEvent(
         'input',
         { detail: { value: 'yes' }, bubbles: true }
-      )
-    );
+      ));
 
     countInput.dispatchEvent(
       new window.CustomEvent(
         'input',
         { detail: { value: '42' }, bubbles: true }
-      )
-    );
+      ));
 
     await settleTree(element);
 
     assert.equal(
       target.title,
-      'After'
-    );
+      'After');
 
     assert.equal(
       target.enabled,
-      true
-    );
+      true);
 
     assert.equal(
       target.count,
-      42
-    );
-  }
-);
+      42);
+  });
 
 test(
   'properties: explicit editable false blocks updates for primitive properties',
@@ -275,41 +253,34 @@ test(
 
     assert.equal(
       titleInput.disabled,
-      true
-    );
+      true);
 
     assert.equal(
       enabledSelect.disabled,
-      true
-    );
+      true);
 
     titleInput.dispatchEvent(
       new window.CustomEvent(
         'input',
         { detail: { value: 'Changed' }, bubbles: true }
-      )
-    );
+      ));
 
     enabledSelect.dispatchEvent(
       new window.CustomEvent(
         'input',
         { detail: { value: 'yes' }, bubbles: true }
-      )
-    );
+      ));
 
     await settleTree(element);
 
     assert.equal(
       target.title,
-      'Locked'
-    );
+      'Locked');
 
     assert.equal(
       target.enabled,
-      false
-    );
-  }
-);
+      false);
+  });
 
 test(
   'properties: updates string and boolean target properties from button model controls',
@@ -356,8 +327,7 @@ test(
       new window.Event(
         'input',
         { bubbles: true }
-      )
-    );
+      ));
 
     disabledControl.value = 'yes';
 
@@ -365,22 +335,18 @@ test(
       new window.Event(
         'change',
         { bubbles: true }
-      )
-    );
+      ));
 
     await settleTree(element);
 
     assert.equal(
       target.text,
-      'Save'
-    );
+      'Save');
 
     assert.equal(
       target.disabled,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'properties: updates number target properties and keeps text-input read-only properties disabled',
@@ -433,13 +399,11 @@ test(
 
     assert.equal(
       errorControl.disabled,
-      true
-    );
+      true);
 
     assert.equal(
       errorControl.value,
-      'Value is invalid'
-    );
+      'Value is invalid');
 
     rowsControl.value = '6';
 
@@ -447,17 +411,14 @@ test(
       new window.Event(
         'input',
         { bubbles: true }
-      )
-    );
+      ));
 
     await settleTree(element);
 
     assert.equal(
       target.rows,
-      6
-    );
-  }
-);
+      6);
+  });
 
 async function createElement(
   ): Promise<Properties>
@@ -470,8 +431,7 @@ async function createElement(
   }
 
   return document.createElement(
-    'asljs-properties'
-  ) as Properties;
+    'asljs-properties') as Properties;
 }
 
 function queryPropertyTextInput(
@@ -571,20 +531,17 @@ async function settleTree(
   ): Promise<void>
 {
   await settle(
-    element
-  );
+    element);
 
   const nestedElements =
     [
     ...element.querySelectorAll(
-      'asljs-text-input, asljs-select'
-    )
+      'asljs-text-input, asljs-select')
   ] as LitElementLike[];
 
   for (const nestedElement of nestedElements) {
     await settle(
-      nestedElement
-    );
+      nestedElement);
   }
 }
 

@@ -140,8 +140,7 @@ export class Numpad extends AssistedInput
       <div class="grid" part="grid">
         ${
       BUTTONS.map(
-        button => this.#renderButton(button)
-      )
+        button => this.#renderButton(button))
     }
       </div>
     `;
@@ -153,7 +152,6 @@ export class Numpad extends AssistedInput
   {
     return this.renderAssistedInputButton(
       button,
-      html`<span class="label">${button.label ?? ''}</span>`
-    );
+      html`<span class="label">${button.label ?? ''}</span>`);
   }
 }

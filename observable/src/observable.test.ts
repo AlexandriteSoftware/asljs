@@ -32,17 +32,14 @@ test(
       ({ value }: any) =>
       {
         seenValue = value;
-      }
-    );
+      });
 
     proxy.a.b = 2;
 
     assert.equal(
       seenValue,
-      2
-    );
-  }
-);
+      2);
+  });
 
 /**
  * Values introduced through defineProperty must follow the same deep
@@ -59,8 +56,7 @@ test(
     Object.defineProperty(
       proxy,
       'x',
-      { value: { y: 1 }, writable: true, configurable: true, enumerable: true }
-    );
+      { value: { y: 1 }, writable: true, configurable: true, enumerable: true });
 
     let seenValue = 0;
 
@@ -69,17 +65,14 @@ test(
       ({ value }: any) =>
       {
         seenValue = value;
-      }
-    );
+      });
 
     (proxy.x as any).y = 2;
 
     assert.equal(
       seenValue,
-      2
-    );
-  }
-);
+      2);
+  });
 
 /**
  * Shallow mode keeps child objects raw when callers need explicit control over
@@ -99,10 +92,8 @@ test(
 
     assert.equal(
       typeof (proxy.a as any).on,
-      'undefined'
-    );
-  }
-);
+      'undefined');
+  });
 
 /**
  * Nested entries inside arrays remain observable by default so item-level
@@ -125,17 +116,14 @@ test(
       ({ value }: any) =>
       {
         seenValue = value;
-      }
-    );
+      });
 
     proxy.items[0].name = 'B';
 
     assert.equal(
       seenValue,
-      'B'
-    );
-  }
-);
+      'B');
+  });
 
 /**
  * In shallow mode, array items stay plain objects so nested wrapping is not
@@ -155,10 +143,8 @@ test(
 
     assert.equal(
       typeof (proxy.items[0] as any).on,
-      'undefined'
-    );
-  }
-);
+      'undefined');
+  });
 
 /**
  * Object field updates should emit both keyed and generic set events so
@@ -181,8 +167,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     proxy.a = 2;
@@ -212,10 +197,8 @@ test(
             args: [{ previous: 1, property: 'a', value: 2 }]
           }
         }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 /**
  * Defining fields at runtime should emit define events for both targeted and
@@ -235,15 +218,13 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     Object.defineProperty(
       obj,
       'a',
-      { value: 3, writable: true, configurable: true, enumerable: true }
-    );
+      { value: 3, writable: true, configurable: true, enumerable: true });
 
     const eventParameters =
       {
@@ -264,15 +245,12 @@ test(
 
     assert.deepEqual(
       tracer.getFirstEventParameters('define'),
-      eventParameters
-    );
+      eventParameters);
 
     assert.deepEqual(
       tracer.getFirstEventParameters('define:a'),
-      eventParameters
-    );
-  }
-);
+      eventParameters);
+  });
 
 /**
  * Removing a field must emit delete signals so dependent consumers can drop
@@ -295,8 +273,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     delete (obj as any).a;
@@ -320,10 +297,8 @@ test(
           event: 'delete',
           args: [{ previous: 1, property: 'a' }]
         }
-      }]
-    );
-  }
-);
+      }]);
+  });
 
 /**
  * Changing an item index should emit index-aware payloads so consumers can
@@ -346,8 +321,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     arr['0'] = 10;
@@ -411,10 +385,8 @@ test(
             args: [{ previous: undefined, property: 'test1', value: 30 }]
           }
         }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 /**
  * Trimming a collection through length should emit a property payload for
@@ -437,8 +409,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     // setting length does not delete items
@@ -463,10 +434,8 @@ test(
           event: 'set',
           args: [{ previous: 2, property: 'length', value: 1 }]
         }
-      }]
-    );
-  }
-);
+      }]);
+  });
 
 /**
  * Deleting an item index must emit delete metadata while preserving native
@@ -489,8 +458,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     // deleting items does not change length
@@ -501,8 +469,7 @@ test(
 
     assert.equal(
       arr.length,
-      2
-    );
+      2);
 
     assert.deepEqual(
       traces,
@@ -520,10 +487,8 @@ test(
           event: 'delete',
           args: [{ previous: 20, index: 1 }]
         }
-      }]
-    );
-  }
-);
+      }]);
+  });
 
 /**
  * Keys like '01' are metadata keys, not canonical numeric indexes, and should
@@ -546,8 +511,7 @@ test(
         eventful: (value: any) =>
           eventful(
             value,
-            tracer
-          )
+            tracer)
       });
 
     (arr as any)['01'] = 99;
@@ -577,10 +541,8 @@ test(
             args: [{ previous: undefined, property: '01', value: 99 }]
           }
         }
-      ]
-    );
-  }
-);
+      ]);
+  });
 
 /**
  * Starting without an initial value should still allow later assignment and
@@ -597,17 +559,14 @@ test(
 
     obj.on(
       'set',
-      (v: any) => newValue = v.value
-    );
+      (v: any) => newValue = v.value);
 
     obj.value = 43;
 
     assert.strictEqual(
       newValue,
-      43
-    );
-  }
-);
+      43);
+  });
 
 /**
  * Misconfigured eventful factories must fail fast so startup issues are
@@ -621,12 +580,9 @@ test(
       () =>
         observable(
           { a: 1 },
-          { eventful: 123 as any }
-        ),
-      /Expect a function\./
-    );
-  }
-);
+          { eventful: 123 as any }),
+      /Expect a function\./);
+  });
 
 /**
  * Wrapping an already-eventful object should preserve existing wiring and
@@ -657,17 +613,14 @@ test(
       ({ value }: any) =>
       {
         seen = value;
-      }
-    );
+      });
 
     observed.name = 'Bob';
 
     assert.equal(
       seen,
-      'Bob'
-    );
-  }
-);
+      'Bob');
+  });
 
 /**
  * Passing a per-instance trace hook should capture object lifecycle actions
@@ -695,15 +648,12 @@ test(
 
     assert.deepEqual(
       actions,
-      ['new', 'define', 'set']
-    );
+      ['new', 'define', 'set']);
 
     assert.deepEqual(
       payloads[payloads.length - 1],
-      { property: 'a', value: 2, previous: 1 }
-    );
-  }
-);
+      { property: 'a', value: 2, previous: 1 });
+  });
 
 /**
  * A global trace hook should capture lifecycle events when a local trace is
@@ -735,10 +685,8 @@ test(
 
     assert.deepEqual(
       actions,
-      ['new', 'define', 'set']
-    );
-  }
-);
+      ['new', 'define', 'set']);
+  });
 
 /**
  * Telemetry gauge S5.1: a primitive reading wrapped as observable should emit
@@ -755,14 +703,11 @@ test(
 
     obj.on(
       'set',
-      (v: any) => newValue = v.value
-    );
+      (v: any) => newValue = v.value);
 
     obj.value = 43;
 
     assert.strictEqual(
       newValue,
-      43
-    );
-  }
-);
+      43);
+  });

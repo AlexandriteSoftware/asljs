@@ -40,8 +40,7 @@ export class MarkdownDocumentProvider
   {
     this.logger.trace(
       'load(...) { %s }',
-      path
-    );
+      path);
 
     let content =
       await readFile(

@@ -47,8 +47,7 @@ export class ThemeProvider extends ThemeProviderBase
         new Event(
           THEME_CHANGED_EVENT_NAME,
           { bubbles: false }
-        )
-      );
+        ));
     }
   }
 }
@@ -56,11 +55,9 @@ export class ThemeProvider extends ThemeProviderBase
 if (
   globalThis.customElements
   && !customElements.get(
-    'asljs-theme-provider'
-  )
+    'asljs-theme-provider')
 ) {
   customElements.define(
     'asljs-theme-provider',
-    ThemeProvider
-  );
+    ThemeProvider);
 }

@@ -29,52 +29,39 @@ test(
     assert.equal(
       getButton(
         element,
-        'a'
-      ).disabled,
-      false
-    );
+        'a').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        '1'
-      ).disabled,
-      false
-    );
+        '1').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        ' '
-      ).disabled,
-      false
-    );
+        ' ').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        'q'
-      ).disabled,
-      true
-    );
+        'q').disabled,
+      true);
 
     assert.equal(
       getButton(
         element,
-        'Backspace'
-      ).disabled,
-      false
-    );
+        'Backspace').disabled,
+      false);
 
     assert.equal(
       getButton(
         element,
-        'Enter'
-      ).disabled,
-      false
-    );
-  }
-);
+        'Enter').disabled,
+      false);
+  });
 
 test(
   'keyboard: emits key and submit events',
@@ -99,38 +86,31 @@ test(
       event =>
       {
         receivedKey = (event as CustomEvent<{ key: string; }>).detail.key;
-      }
-    );
+      });
 
     element.addEventListener(
       'submit',
       () =>
       {
         submitted = true;
-      }
-    );
+      });
 
     getButton(
       element,
-      ' '
-    ).click();
+      ' ').click();
 
     getButton(
       element,
-      'Enter'
-    ).click();
+      'Enter').click();
 
     assert.equal(
       receivedKey,
-      ' '
-    );
+      ' ');
 
     assert.equal(
       submitted,
-      true
-    );
-  }
-);
+      true);
+  });
 
 async function ensureDomAndModuleLoaded(
   ): Promise<void>
@@ -197,8 +177,7 @@ function getButton(
   ): HTMLButtonElement
 {
   return element.shadowRoot?.querySelector(
-    `button[data-key="${key}"]`
-  ) as HTMLButtonElement;
+    `button[data-key="${key}"]`) as HTMLButtonElement;
 }
 
 async function settle(

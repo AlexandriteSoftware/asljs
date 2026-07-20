@@ -42,16 +42,13 @@ export function renderObjectsToMarkdownTable(
         });
 
       columnWidths.push(
-        property.length
-      );
+        property.length);
 
       columnWidths.push(
-        minWidth
-      );
+        minWidth);
 
       return Math.max(
-        ...columnWidths
-      );
+        ...columnWidths);
     });
 
   const lines = [];
@@ -59,18 +56,13 @@ export function renderObjectsToMarkdownTable(
   lines.push(
     renderRow(
       headers,
-      widths
-    )
-  );
+      widths));
 
   lines.push(
     renderRow(
       widths.map(
-        width => '-'.repeat(width)
-      ),
-      widths
-    )
-  );
+        width => '-'.repeat(width)),
+      widths));
 
   for (const obj of objects) {
     lines.push(
@@ -78,12 +70,8 @@ export function renderObjectsToMarkdownTable(
         properties.map(
           property =>
             String(
-              obj[property]
-            )
-        ),
-        widths
-      )
-    );
+              obj[property])),
+        widths));
   }
 
   return lines.join('\n');
@@ -108,8 +96,7 @@ function renderRow(
       widths[index];
 
     md.push(
-      cell.padEnd(width)
-    );
+      cell.padEnd(width));
   }
 
   return `| ${md.join(' | ')} |`;

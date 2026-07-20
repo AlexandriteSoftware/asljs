@@ -12,7 +12,6 @@ export class DefaultHostConsole implements HostConsole
   ): void
   {
     process.stdout.write(
-      `${line}\n`
-    );
+      `${line}\n`);
   }
 }

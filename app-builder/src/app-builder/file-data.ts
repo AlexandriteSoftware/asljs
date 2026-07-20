@@ -33,6 +33,5 @@ export function isImageMimeType(
   ): boolean
 {
   return /^image\//i.test(
-    mimeType.trim()
-  );
+    mimeType.trim());
 }

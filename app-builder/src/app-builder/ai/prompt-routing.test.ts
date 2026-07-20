@@ -35,22 +35,17 @@ test(
 
     assert.match(
       source,
-      /import\s*\{\s*GENERATION_SYSTEM_PROMPT,\s*\}\s*from '\.\/ai\/ai-instruction\.js';/
-    );
+      /import\s*\{\s*GENERATION_SYSTEM_PROMPT,\s*\}\s*from '\.\/ai\/ai-instruction\.js';/);
 
     assert.match(
       source,
-      /import\s*\{\s*CHAT_SYSTEM_PROMPT,\s*\}\s*from '\.\/ai\/chat-instruction\.js';/
-    );
+      /import\s*\{\s*CHAT_SYSTEM_PROMPT,\s*\}\s*from '\.\/ai\/chat-instruction\.js';/);
 
     assert.match(
       source,
-      /content:\s*CHAT_SYSTEM_PROMPT/
-    );
+      /content:\s*CHAT_SYSTEM_PROMPT/);
 
     assert.match(
       source,
-      /systemPrompt:\s*GENERATION_SYSTEM_PROMPT/
-    );
-  }
-);
+      /systemPrompt:\s*GENERATION_SYSTEM_PROMPT/);
+  });

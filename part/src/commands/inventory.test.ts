@@ -19,8 +19,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -50,8 +49,7 @@ A todo item is a task that needs to be done.
 ## Location
 
 - Pattern: Todo Items/*.md
-`
-    );
+`);
 
     const futureYear =
       new Date().getUTCFullYear() + 1;
@@ -63,8 +61,7 @@ A todo item is a task that needs to be done.
 - Due date: ${futureYear}-07-01
 
 I need to buy milk.
-`
-    );
+`);
 
     const environment =
       createEnvironment(
@@ -77,25 +74,20 @@ I need to buy milk.
 
     await execInventory(
       execInventoryLogger,
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| Location\s+\| Definitions\s+\|/
-    );
+      /\| Location\s+\| Definitions\s+\|/);
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/
-    );
-  }
-);
+      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
+  });
 
 test(
   'RQ121: inventory resolves artefact locations relative to the definition file',
@@ -105,8 +97,7 @@ test(
       tmpDir();
 
     await workspace.mkdir(
-      'artefacts/parts'
-    );
+      'artefacts/parts');
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -117,13 +108,11 @@ A statement about the system that must be true.
 ## Location
 
 - Pattern: ../development/**/RQ*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'development/RQ101 Example.md',
-      '# RQ101 Example\n'
-    );
+      '# RQ101 Example\n');
 
     const environment =
       createEnvironment(
@@ -136,20 +125,16 @@ A statement about the system that must be true.
 
     await execInventory(
       execInventoryLogger,
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| development\/RQ101 Example\.md \| Requirement\s+\|/
-    );
-  }
-);
+      /\| development\/RQ101 Example\.md \| Requirement\s+\|/);
+  });
 
 test(
   'RQ121: inventory lists all definitions applied to the same artefact',
@@ -167,8 +152,7 @@ Markdown article.
 ## Location
 
 - Pattern: **/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'definitions/Artefact Definition.md',
@@ -179,13 +163,11 @@ Definition file.
 ## Location
 
 - Pattern: ../definitions/**/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'definitions/Requirement.md',
-      '# Requirement\n'
-    );
+      '# Requirement\n');
 
     const environment =
       createEnvironment(
@@ -198,20 +180,16 @@ Definition file.
 
     await execInventory(
       execInventoryLogger,
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| definitions\/Requirement\.md\s+\| Artefact Definition,Article\s+\|/
-    );
-  }
-);
+      /\| definitions\/Requirement\.md\s+\| Artefact Definition,Article\s+\|/);
+  });
 
 test(
   'RQ121: inventory lists artefacts for selected definitions',
@@ -229,8 +207,7 @@ Markdown article.
 ## Location
 
 - Pattern: **/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'definitions/Artefact Definition.md',
@@ -241,13 +218,11 @@ Definition file.
 ## Location
 
 - Pattern: ../definitions/**/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'definitions/Requirement.md',
-      '# Requirement\n'
-    );
+      '# Requirement\n');
 
     const environment =
       createEnvironment(
@@ -261,20 +236,16 @@ Definition file.
     await execInventory(
       execInventoryLogger,
       environment,
-      { inventoryDefinitions: ['Article'] }
-    );
+      { inventoryDefinitions: ['Article'] });
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| definitions\/Requirement\.md\s+\| Article\s+\|/
-    );
-  }
-);
+      /\| definitions\/Requirement\.md\s+\| Article\s+\|/);
+  });
 
 test(
   'RQ121: inventory respects Definitions parameter',
@@ -296,16 +267,14 @@ A todo item is a task that needs to be done.
 ## Location
 
 - Pattern: ../Todo Items/*.md
-`
-    );
+`);
 
     await workspace.writeText(
       'Todo Items/Buy milk.md',
       `# Buy milk
 
 - Due date: 2020-07-01
-`
-    );
+`);
 
     const environment =
       createEnvironment(
@@ -317,17 +286,13 @@ A todo item is a task that needs to be done.
 
     await execInventory(
       execInventoryLogger,
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/
-    );
-  }
-);
+      /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
+  });

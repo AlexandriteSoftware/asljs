@@ -19,8 +19,7 @@ after(
   () =>
   {
     loggerProvider.dispose();
-  }
-);
+  });
 
 const tmpDir =
   tmpDirFactory(
@@ -42,8 +41,7 @@ A todo item is a task that needs to be done.
 ## Location
 
 - Folders: Todo Items
-`
-    );
+`);
 
     await workspace.writeText(
       'Todo Item.md',
@@ -54,8 +52,7 @@ This top-level definition should be ignored by the Definitions parameter.
 ## Location
 
 - Folders: Wrong Items
-`
-    );
+`);
 
     const environment =
       createEnvironment(
@@ -67,27 +64,21 @@ This top-level definition should be ignored by the Definitions parameter.
       });
 
     await execDefinitions(
-      environment
-    );
+      environment);
 
     assert.equal(
       environment.stderr.toString(),
-      ''
-    );
+      '');
 
     assert.match(
       environment.stdout.toString(),
-      /\| Name\s+\| Location\s+\|/
-    );
+      /\| Name\s+\| Location\s+\|/);
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Item \| definitions\/Todo Item\.md \|/
-    );
+      /\| Todo Item \| definitions\/Todo Item\.md \|/);
 
     assert.doesNotMatch(
       environment.stdout.toString(),
-      /Wrong Items/
-    );
-  }
-);
+      /Wrong Items/);
+  });

@@ -36,8 +36,7 @@ test(
 
     assert.equal(
       share.exceedsMaxUrlLength,
-      false
-    );
+      false);
 
     const token =
       service.readTokenFromHash(
@@ -51,10 +50,8 @@ test(
 
     assert.deepEqual(
       parsed,
-      payload
-    );
-  }
-);
+      payload);
+  });
 
 test(
   'createLinkSharingService flags when URL exceeds maximum length',
@@ -82,10 +79,8 @@ test(
 
     assert.equal(
       share.exceedsMaxUrlLength,
-      true
-    );
-  }
-);
+      true);
+  });
 
 test(
   'readTokenFromHash returns null for non-import hash',
@@ -106,15 +101,12 @@ test(
 
     assert.equal(
       service.readTokenFromHash('#other'),
-      null
-    );
+      null);
 
     assert.equal(
       service.readTokenFromHash('#I!abc'),
-      'abc'
-    );
-  }
-);
+      'abc');
+  });
 
 test(
   'createLinkSharingService times out if compression does not resolve',
@@ -140,9 +132,6 @@ test(
 
     await assert.rejects(
       service.createShareUrl(
-        { app: { name: 'Demo' } }
-      ),
-      /timed out/i
-    );
-  }
-);
+        { app: { name: 'Demo' } }),
+      /timed out/i);
+  });

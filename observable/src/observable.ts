@@ -22,8 +22,7 @@ function hasOwn(
     .hasOwnProperty
     .call(
       object,
-      key
-    );
+      key);
 }
 
 function isArrayIndexProperty(
@@ -63,8 +62,7 @@ function isEventfulObject(
   }
 
   return isFunction(
-    (value as EventfulLike & { emit?: unknown; }).emit
-  );
+    (value as EventfulLike & { emit?: unknown; }).emit);
 }
 
 /**
@@ -130,8 +128,7 @@ const observableImpl =
 
     conversionCache.set(
       input,
-      converted
-    );
+      converted);
 
     return converted;
   };
@@ -148,8 +145,7 @@ const observableImpl =
     if (Array.isArray(target)) {
       for (let i = 0; i < target.length; i++) {
         target[i] = convertNestedValue(
-          target[i]
-        );
+          target[i]);
       }
 
       return;
@@ -159,15 +155,13 @@ const observableImpl =
       if (
         !hasOwn(
           target,
-          key
-        )
+          key)
       ) {
         continue;
       }
 
       target[key] = convertNestedValue(
-        target[key]
-      );
+        target[key]);
     }
   };
 
@@ -183,8 +177,7 @@ const observableImpl =
 
     ensureWatchMethod(
       target,
-      watchImpl
-    );
+      watchImpl);
 
     let proxy: any = null;
 
@@ -229,8 +222,7 @@ const observableImpl =
             if (
               !Object.is(
                 previous,
-                current
-              )
+                current)
             ) {
               const payload =
                 isArrayIndex
@@ -243,21 +235,18 @@ const observableImpl =
 
               proxy.emit(
                 `set:${String(property)}`,
-                payload
-              );
+                payload);
 
               if (isFunction(traceFn)) {
                 traceFn(
                   proxy,
                   'set',
-                  payload
-                );
+                  payload);
               }
 
               proxy.emit(
                 'set',
-                payload
-              );
+                payload);
             }
           }
 
@@ -304,21 +293,18 @@ const observableImpl =
 
             proxy.emit(
               `delete:${String(property)}`,
-              payload
-            );
+              payload);
 
             if (isFunction(traceFn)) {
               traceFn(
                 proxy,
                 'delete',
-                payload
-              );
+                payload);
             }
 
             proxy.emit(
               'delete',
-              payload
-            );
+              payload);
           }
 
           return ok;
@@ -341,13 +327,11 @@ const observableImpl =
               .hasOwnProperty
               .call(
                 descriptor,
-                'value'
-              )
+                'value')
             ? {
               ...descriptor,
               value: convertNestedValue(
-                descriptor.value
-              )
+                descriptor.value)
             }
             : descriptor;
 
@@ -380,21 +364,18 @@ const observableImpl =
 
             proxy.emit(
               `define:${String(property)}`,
-              payload
-            );
+              payload);
 
             if (isFunction(traceFn)) {
               traceFn(
                 proxy,
                 'define',
-                payload
-              );
+                payload);
             }
 
             proxy.emit(
               'define',
-              payload
-            );
+              payload);
           }
 
           return ok;
@@ -423,8 +404,7 @@ const observableImpl =
     if (isFunction(traceFn)) {
       traceFn(
         proxy,
-        'new'
-      );
+        'new');
     }
 
     return proxy;
@@ -443,8 +423,7 @@ const observableImpl =
       traceFn(
         proxy,
         'new',
-        { object: proxy }
-      );
+        { object: proxy });
     }
 
     return proxy;
@@ -461,8 +440,7 @@ const observableImpl =
         if (
           Object.is(
             v,
-            value
-          )
+            value)
         ) {
           return;
         }
@@ -476,21 +454,18 @@ const observableImpl =
 
         (boxed as any).emit(
           'set:value',
-          payload
-        );
+          payload);
 
         if (isFunction(traceFn)) {
           traceFn(
             boxed,
             'set',
-            payload
-          );
+            payload);
         }
 
         (boxed as any).emit(
           'set',
-          payload
-        );
+          payload);
       }
     });
 
@@ -498,8 +473,7 @@ const observableImpl =
     traceFn(
       boxed,
       'new',
-      { object: boxed }
-    );
+      { object: boxed });
   }
 
   return boxed;

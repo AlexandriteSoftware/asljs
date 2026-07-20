@@ -59,8 +59,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
       throw new EventSourceConflictError(
         `${this.name}: expected previous ${
           String(
-            expectedPreviousTransactionId
-          )
+            expectedPreviousTransactionId)
         }, actual ${String(actualPrevious)}.`
       );
     }
@@ -101,8 +100,7 @@ class MemoryEventSourceAdapter implements EventSourceAdapter
     }
 
     return this.#items.slice(
-      index + 1
-    );
+      index + 1);
   }
 }
 
@@ -115,8 +113,7 @@ class RejectingAppendAdapter extends MemoryEventSourceAdapter
   {
     await super.append(
       transaction,
-      expectedPreviousTransactionId
-    );
+      expectedPreviousTransactionId);
 
     throw new Error('remote write failed');
   }
@@ -131,14 +128,12 @@ async function openSagaDb(
     {
       db.createObjectStore(
         'items',
-        { keyPath: 'id' }
-      );
+        { keyPath: 'id' });
 
       sagaSetup(db);
       eventSourceSetup(db);
       eventSourceProjectionSetup(db);
-    }]
-  );
+    }]);
 }
 
 test(
@@ -180,12 +175,9 @@ test(
           async () =>
           {
             await table.add(
-              { id: 'a', value: '1', deleted: '' }
-            );
-          }
-        ),
-      /remote write failed/
-    );
+              { id: 'a', value: '1', deleted: '' });
+          }),
+      /remote write failed/);
 
     const sagas =
       await sagaGetAll(db);
@@ -195,18 +187,15 @@ test(
 
     assert.equal(
       sagaRecord?.status,
-      'started'
-    );
+      'started');
 
     const events =
       await eventSourceGetAll(db);
 
     assert.equal(
       events.length,
-      0
-    );
-  }
-);
+      0);
+  });
 
 test(
   'event source: append succeeds only when all linked stores persist',
@@ -247,15 +236,12 @@ test(
 
     assert.equal(
       localHead?.id,
-      tx.id
-    );
+      tx.id);
 
     assert.equal(
       remoteHead?.id,
-      tx.id
-    );
-  }
-);
+      tx.id);
+  });
 
 test(
   'event source: pull remote ahead and append next transaction',
@@ -279,8 +265,7 @@ test(
         createdAt: new Date().toISOString(),
         events: []
       },
-      null
-    );
+      null);
 
     const source =
       new EventSourceManager(
@@ -308,30 +293,24 @@ test(
 
     assert.equal(
       localAll.length,
-      2
-    );
+      2);
 
     assert.equal(
       remoteAll.length,
-      2
-    );
+      2);
 
     assert.equal(
       appended.previousTransactionId,
-      'r1'
-    );
+      'r1');
 
     assert.equal(
       localAll[0]?.id,
-      'r1'
-    );
+      'r1');
 
     assert.equal(
       remoteAll[0]?.id,
-      'r1'
-    );
-  }
-);
+      'r1');
+  });
 
 test(
   'projection: apply pending transactions and persist checkpoint',
@@ -355,8 +334,7 @@ test(
           forward: { id: 'a' },
           undo: { id: 'a' }
         }]
-      }
-    );
+      });
 
     await source.appendTransaction(
       {
@@ -367,8 +345,7 @@ test(
           forward: { id: 'b' },
           undo: { id: 'b' }
         }]
-      }
-    );
+      });
 
     const applied: string[] = [];
 
@@ -379,19 +356,16 @@ test(
       async transaction =>
       {
         applied.push(
-          transaction.id
-        );
+          transaction.id);
       },
       () =>
         eventSourceProjectionGet(
           db,
-          'table-set-main'
-        ),
+          'table-set-main'),
       record =>
         eventSourceProjectionSet(
           db,
-          record
-        )
+          record)
     );
 
     const appliedCount =
@@ -407,25 +381,20 @@ test(
 
     assert.equal(
       appliedCount,
-      2
-    );
+      2);
 
     assert.equal(
       secondApplied,
-      0
-    );
+      0);
 
     assert.equal(
       applied.length,
-      2
-    );
+      2);
 
     assert.equal(
       checkpoint?.appliedTransactionId,
-      applied[1]
-    );
-  }
-);
+      applied[1]);
+  });
 
 test(
   'saga: recover pending rolls back unfinished saga',
@@ -441,8 +410,7 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '1', deleted: '' }
-    );
+      { id: 'a', value: '1', deleted: '' });
 
     const tx =
       db.transaction(
@@ -450,8 +418,7 @@ test(
         'readwrite');
 
     tx.objectStore(
-      'saga_transactions'
-    )
+      'saga_transactions')
       .add(
         {
           id: 's1',
@@ -459,8 +426,7 @@ test(
           status: 'started',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-        }
-      );
+        });
 
     tx.objectStore('saga_entries')
       .add(
@@ -476,8 +442,7 @@ test(
           },
           undo: { type: 'delete', tableName: 'items', key: 'a' },
           createdAt: new Date().toISOString()
-        }
-      );
+        });
 
     await new Promise<void>(
       (resolve, reject) =>
@@ -486,13 +451,11 @@ test(
 
         tx.onerror = () =>
           reject(
-            tx.error
-          );
+            tx.error);
 
         tx.onabort = () =>
           reject(
-            tx.error
-          );
+            tx.error);
       }
     );
 
@@ -514,20 +477,16 @@ test(
 
     assert.deepEqual(
       rolledBack,
-      ['s1']
-    );
+      ['s1']);
 
     assert.equal(
       record,
-      null
-    );
+      null);
 
     assert.equal(
       sagaRecord?.status,
-      'rolled_back'
-    );
-  }
-);
+      'rolled_back');
+  });
 
 // Keep named import used to validate public API compiles end-to-end.
 void sagaEntriesGetAll;

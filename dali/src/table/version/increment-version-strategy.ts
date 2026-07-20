@@ -55,8 +55,7 @@ export class IncrementVersionStrategy<T extends Record<string, any>>
       throw new Error(
         `Version field "${
           String(
-            this.field
-          )
+            this.field)
         }" does not contain a valid number.`
       );
     }

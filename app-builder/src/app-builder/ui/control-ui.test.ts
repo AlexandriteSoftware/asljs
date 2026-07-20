@@ -48,8 +48,7 @@ test(
           text: 'Save',
           icon: '✓',
           className: 'btn btn-primary'
-        }
-      );
+        });
 
       configureTextInput(
         input,
@@ -57,8 +56,7 @@ test(
           placeholder: 'Name',
           inputType: 'email',
           className: 'form-input-lg'
-        }
-      );
+        });
 
       configureSelect(
         select,
@@ -68,78 +66,64 @@ test(
             { value: 'light', label: 'Light' }
           ],
           placeholder: 'Choose'
-        }
-      );
+        });
 
       writeControlValue(
         input,
-        ' hello '
-      );
+        ' hello ');
 
       assert.equal(
         button.type,
-        'button'
-      );
+        'button');
 
       assert.equal(
         button.text,
-        'Save'
-      );
+        'Save');
 
       assert.equal(
         button.icon,
-        '✓'
-      );
+        '✓');
 
       assert.equal(
         button.buttonClassName,
-        'btn btn-primary'
-      );
+        'btn btn-primary');
 
       assert.equal(
         input.placeholder,
-        'Name'
-      );
+        'Name');
 
       assert.equal(
         input.inputType,
-        'email'
-      );
+        'email');
 
       assert.equal(
         input.controlClassName,
-        'form-input-lg'
-      );
+        'form-input-lg');
 
       assert.deepEqual(
         select.items,
         [
           { value: 'light', label: 'Light' }
-        ]
-      );
+        ]);
 
       assert.equal(
         select.placeholder,
-        'Choose'
-      );
+        'Choose');
 
       assert.equal(
         readControlValue(input),
-        ' hello '
-      );
+        ' hello ');
 
       assert.throws(
         () =>
         {
           mustElement('missing');
         },
-        /Missing element #missing/
-      );
+        /Missing element #missing/);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'control-ui updates custom and native button content',
@@ -167,36 +151,30 @@ test(
         {
           text: 'Run',
           icon: '<i class="bi bi-play-fill"></i>'
-        }
-      );
+        });
 
       setButtonContent(
         nativeButton,
         {
           text: 'Run',
           icon: '<i class="bi bi-play-fill"></i>'
-        }
-      );
+        });
 
       assert.equal(
         button.text,
-        'Run'
-      );
+        'Run');
 
       assert.equal(
         button.icon,
-        '<i class="bi bi-play-fill"></i>'
-      );
+        '<i class="bi bi-play-fill"></i>');
 
       assert.equal(
         nativeButton.textContent,
-        'Run'
-      );
+        'Run');
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'control-ui focuses nested controls and selects text controls',
@@ -237,17 +215,13 @@ test(
 
     assert.equal(
       containerFocused,
-      false
-    );
+      false);
 
     assert.equal(
       inputFocused,
-      true
-    );
+      true);
 
     assert.equal(
       inputSelected,
-      true
-    );
-  }
-);
+      true);
+  });

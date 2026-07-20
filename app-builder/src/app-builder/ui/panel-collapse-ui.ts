@@ -38,25 +38,21 @@ export function togglePanelUi(
       icon: collapsed
         ? options.collapsedIcon
         : options.expandedIcon
-    }
-  );
+    });
 
   options.toggleButtonElement.setAttribute(
     'aria-expanded',
     collapsed
       ? 'false'
-      : 'true'
-  );
+      : 'true');
 
   options.panelElement.classList.toggle(
     'collapsed',
-    collapsed
-  );
+    collapsed);
 
   options.panelsElement.classList.toggle(
     options.collapsedPanelsClass,
-    collapsed
-  );
+    collapsed);
 
   return collapsed;
 }

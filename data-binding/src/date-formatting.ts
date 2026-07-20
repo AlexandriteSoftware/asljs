@@ -6,54 +6,46 @@ const DATE_FORMATTERS: DateFormatToken[] =
   getter: (d: Date) =>
     d.getFullYear().toString().padStart(
       4,
-      '0'
-    )
+      '0')
 }, {
   token: 'yy',
   getter: (d: Date) =>
     d.getFullYear().toString().substring(2).padStart(
       2,
-      '0'
-    )
+      '0')
 }, {
   token: 'MM',
   getter: (d: Date) =>
     (d.getMonth() + 1).toString().padStart(
       2,
-      '0'
-    )
+      '0')
 }, {
   token: 'dd',
   getter: (d: Date) =>
     d.getDate().toString().padStart(
       2,
-      '0'
-    )
+      '0')
 }, {
   token: 'hh',
   getter: (d: Date) =>
     d.getHours().toString().padStart(
       2,
-      '0'
-    )
+      '0')
 }, {
   token: 'mm',
   getter: (d: Date) =>
     d.getMinutes().toString().padStart(
       2,
-      '0'
-    )
+      '0')
 }, {
   token: 'ss',
   getter: (d: Date) =>
     d.getSeconds().toString().padStart(
       2,
-      '0'
-    )
+      '0')
 }];
 
-const dateFormatterCache =
-  new Map<string, (dt: Date) => string>();
+const dateFormatterCache = new Map<string, (dt: Date) => string>();
 
 function createFormatter(
     format: string
@@ -82,22 +74,19 @@ function createFormatter(
       if (
         format.startsWith(
           item.token,
-          i
-        )
+          i)
       ) {
         if (part.length > 0) {
           const localPart = part;
 
           parts.push(
-            () => localPart
-          );
+            () => localPart);
 
           part = '';
         }
 
         parts.push(
-          item.getter
-        );
+          item.getter);
 
         i += item.token.length;
         matched = true;
@@ -113,14 +102,12 @@ function createFormatter(
 
   if (part.length > 0) {
     parts.push(
-      () => part
-    );
+      () => part);
   }
 
   return dt =>
     parts.map(
-      p => p(dt)
-    ).join('');
+      p => p(dt)).join('');
 }
 
 export function formatDate(
@@ -140,8 +127,7 @@ export function formatDate(
 
     dateFormatterCache.set(
       format,
-      formatter
-    );
+      formatter);
   }
 
   return formatter(dt);

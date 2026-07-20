@@ -68,25 +68,21 @@ test(
 
       assert.equal(
         dialog.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.equal(
         nameInput.value,
-        ''
-      );
+        '');
 
       assert.equal(
         apiKeyInput.value,
-        ''
-      );
+        '');
 
       nameInput.value = '  Demo App  ';
       apiKeyInput.value = '  sk-demo  ';
 
       createButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -94,20 +90,17 @@ test(
         calls,
         [
           { name: 'Demo App', apiKey: 'sk-demo' }
-        ]
-      );
+        ]);
 
       ui.hide();
 
       assert.equal(
         dialog.classList.contains('hidden'),
-        true
-      );
+        true);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });
 
 test(
   'createFirstApplicationDialogUi blocks blank names and allows sample creation',
@@ -169,27 +162,23 @@ test(
       nameInput.value = '   ';
 
       createButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.equal(
         createdApps.length,
-        0
-      );
+        0);
 
       assert.equal(
         focused,
-        true
-      );
+        true);
 
       nameInput.value = '  Sample App ';
       apiKeyInput.value = ' key ';
 
       sampleButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -197,10 +186,8 @@ test(
         createdSamples,
         [
           { name: 'Sample App', apiKey: 'key' }
-        ]
-      );
+        ]);
     } finally {
       globalThis.document = previousDocument;
     }
-  }
-);
+  });

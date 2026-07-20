@@ -18,7 +18,7 @@ export function createChatLaneTools(
   function assertPlanOnly(
       path: string
     ): void
-{
+  {
     if (normalizePath(path) !== normalizedPlanFileName) {
       throw new Error(
         'The chat lane may only edit PLAN.md. Ask the generation lane to implement runtime files.'
@@ -32,8 +32,7 @@ export function createChatLaneTools(
     {
       for (const file of files) {
         assertPlanOnly(
-          file.path
-        );
+          file.path);
       }
 
       await baseTools.setFilesContent(files);
@@ -50,8 +49,7 @@ export function createChatLaneTools(
 
       await baseTools.setFileContent(
         path,
-        content
-      );
+        content);
     },
     deleteFile: async path =>
     {
@@ -66,8 +64,7 @@ export function createChatLaneTools(
         path,
         search,
         replacement,
-        replaceAll
-      );
+        replaceAll);
     },
     evalInApp: async () =>
     {
@@ -109,6 +106,5 @@ function normalizePath(
 {
   return path.trim().replace(
     /\\/g,
-    '/'
-  ).toLowerCase();
+    '/').toLowerCase();
 }

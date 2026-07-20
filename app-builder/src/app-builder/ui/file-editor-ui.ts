@@ -64,14 +64,12 @@ export function renderFileSelectUi(
     file => ({
       value: file.name,
       label: file.name
-    })
-  );
+    }));
 
   const active =
     options.activeFileName !== null
       && visibleFiles.some(
-        file => file.name === options.activeFileName
-      )
+        file => file.name === options.activeFileName)
     ? options.activeFileName
     : visibleFiles[0].name;
 

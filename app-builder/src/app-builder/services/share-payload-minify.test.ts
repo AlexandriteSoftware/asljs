@@ -27,8 +27,7 @@ test(
         async (source: string, loader: SharePayloadMinifyLoader) =>
       {
         calls.push(
-          { source, loader }
-        );
+          { source, loader });
 
         return `${loader}:${source.trim()}`;
       });
@@ -38,25 +37,20 @@ test(
       [
         { source: 'const x = 1;\n', loader: 'js' },
         { source: 'h1 { color: red; }\n', loader: 'css' }
-      ]
-    );
+      ]);
 
     assert.equal(
       result.files['app.js'],
-      'js:const x = 1;'
-    );
+      'js:const x = 1;');
 
     assert.equal(
       result.files['style.css'],
-      'css:h1 { color: red; }'
-    );
+      'css:h1 { color: red; }');
 
     assert.equal(
       result.files['note.txt'],
-      'keep me'
-    );
-  }
-);
+      'keep me');
+  });
 
 test(
   'minifySharePayload compacts HTML while preserving script and style blocks',
@@ -93,30 +87,21 @@ test(
 
     assert.equal(
       html.includes(
-        '<!-- remove -->'
-      ),
-      false
-    );
+        '<!-- remove -->'),
+      false);
 
     assert.equal(
       html.includes(
-        '</head><body>'
-      ),
-      true
-    );
+        '</head><body>'),
+      true);
 
     assert.equal(
       html.includes(
-        'const a = 1;\n      const b = 2;'
-      ),
-      true
-    );
+        'const a = 1;\n      const b = 2;'),
+      true);
 
     assert.equal(
       html.includes(
-        'h1 { color: red; }\n    </style>'
-      ),
-      true
-    );
-  }
-);
+        'h1 { color: red; }\n    </style>'),
+      true);
+  });

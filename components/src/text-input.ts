@@ -125,8 +125,7 @@ export const TextInputModelDefinition: ComponentModelDefinition =
 };
 
 @customElement(
-  'asljs-text-input'
-)
+  'asljs-text-input')
 export class TextInput extends LitElement
 {
   #templateElement: HTMLTemplateElement | null = null;
@@ -157,8 +156,7 @@ export class TextInput extends LitElement
       inputId: `${this.#idBase}-control`,
       descriptionId: `${this.#idBase}-description`,
       errorId: `${this.#idBase}-error`
-    }
-  );
+    });
 
   readonly status: TextInputStatus = observable(
     {
@@ -167,77 +165,62 @@ export class TextInput extends LitElement
       isValid: true,
       errorMessage: null,
       dirty: false
-    }
-  );
+    });
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor label: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor description: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor validator: TextInputValidator | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor theme: ComponentsTheme | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor value: string | null = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor placeholder: string | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor inputType = 'text';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor controlClassName = '';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor multiline = false;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor autoExtend = false;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor autoExtendMaxRows: number | null = null;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor enterKeyBehavior: TextInputEnterKeyBehavior = 'finish';
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor disabled = false;
 
   @property(
-    { attribute: false }
-  )
+    { attribute: false })
   accessor rows = 3;
 
   get draftValue(): string {
@@ -313,17 +296,14 @@ export class TextInput extends LitElement
       changedProperties.has('placeholder')
       || changedProperties.has('inputType')
       || changedProperties.has(
-        'controlClassName'
-      )
+        'controlClassName')
       || changedProperties.has('disabled')
       || changedProperties.has('rows')
       || changedProperties.has('autoExtend')
       || changedProperties.has(
-        'autoExtendMaxRows'
-      )
+        'autoExtendMaxRows')
       || changedProperties.has(
-        'enterKeyBehavior'
-      )
+        'enterKeyBehavior')
     ) {
       this.#syncControlState();
     }
@@ -339,18 +319,15 @@ export class TextInput extends LitElement
 
     this.#templateElement = cloneNamedTemplate(
       this,
-      'template'
-    );
+      'template');
 
     this.#inputTemplateElement = cloneNamedTemplate(
       this,
-      'input'
-    );
+      'input');
 
     this.#textareaTemplateElement = cloneNamedTemplate(
       this,
-      'textarea'
-    );
+      'textarea');
   }
 
   #syncThemeProvider(): void
@@ -358,8 +335,7 @@ export class TextInput extends LitElement
     this.#disposeThemeProvider();
 
     this.#themeProvider = findThemeProvider(
-      this
-    );
+      this);
 
     if (this.#themeProvider === null) {
       return;
@@ -367,16 +343,14 @@ export class TextInput extends LitElement
 
     this.#themeProvider.addEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
   }
 
   #disposeThemeProvider(): void
   {
     this.#themeProvider?.removeEventListener(
       THEME_CHANGED_EVENT_NAME,
-      this.#handleThemeChanged
-    );
+      this.#handleThemeChanged);
 
     this.#themeProvider = null;
   }
@@ -414,8 +388,7 @@ export class TextInput extends LitElement
 
     if (validator !== null) {
       errorMessage = validator(
-        this.status.draftValue
-      );
+        this.status.draftValue);
     }
 
     const isEmpty =
@@ -474,8 +447,7 @@ export class TextInput extends LitElement
 
     this.#templateDispose = bindDataModel(
       fragment,
-      this.#model as unknown as Record<string, unknown>
-    );
+      this.#model as unknown as Record<string, unknown>);
 
     templateHost.replaceChildren(fragment);
 
@@ -521,8 +493,7 @@ export class TextInput extends LitElement
         : slotName === 'input'
         ? theme.textInput?.input
         : theme.textInput?.textarea,
-      this
-    );
+      this);
   }
 
   #mountControl(): void
@@ -545,12 +516,10 @@ export class TextInput extends LitElement
 
     this.#controlTemplateDispose = bindDataModel(
       mountedControl.fragment,
-      this.#model as unknown as Record<string, unknown>
-    );
+      this.#model as unknown as Record<string, unknown>);
 
     controlHost.replaceChildren(
-      mountedControl.fragment
-    );
+      mountedControl.fragment);
 
     this.#control = control;
     this.#controlBaseClassName = mountedControl.className;
@@ -602,41 +571,35 @@ export class TextInput extends LitElement
 
     control.addEventListener(
       'input',
-      inputListener
-    );
+      inputListener);
 
     control.addEventListener(
       'blur',
-      blurListener
-    );
+      blurListener);
 
     control.addEventListener(
       'keydown',
-      keydownListener
-    );
+      keydownListener);
 
     this.#controlInputListener = () =>
     {
       control.removeEventListener(
         'input',
-        inputListener
-      );
+        inputListener);
     };
 
     this.#controlBlurListener = () =>
     {
       control.removeEventListener(
         'blur',
-        blurListener
-      );
+        blurListener);
     };
 
     this.#controlKeydownListener = () =>
     {
       control.removeEventListener(
         'keydown',
-        keydownListener
-      );
+        keydownListener);
     };
 
     this.#syncControlState();
@@ -658,15 +621,13 @@ export class TextInput extends LitElement
     control.id = this.#model.inputId;
 
     control.placeholder = normalizeOptionalText(
-      this.placeholder
-    ) ?? '';
+      this.placeholder) ?? '';
 
     control.disabled = this.disabled;
 
     control.className = joinClassNames(
       this.#controlBaseClassName,
-      this.controlClassName
-    );
+      this.controlClassName);
 
     const invalidClassName =
       this.#controlInvalidClassName;
@@ -677,27 +638,22 @@ export class TextInput extends LitElement
 
     if (invalidClassName !== null && !this.status.isValid) {
       control.classList.add(
-        invalidClassName
-      );
+        invalidClassName);
     }
 
     control.toggleAttribute(
       'aria-invalid',
-      !this.status.isValid
-    );
+      !this.status.isValid);
 
     control.setAttribute(
       'aria-describedby',
       resolveAriaDescribedBy(
-        this.#model
-      )
-    );
+        this.#model));
 
     if (this.multiline && control instanceof HTMLTextAreaElement) {
       control.rows = Math.max(
         1,
-        this.rows
-      );
+        this.rows);
 
       this.#syncAutoExtend(control);
       return;
@@ -722,8 +678,7 @@ export class TextInput extends LitElement
     if (template === null) {
       return createFallbackMountedControl(
         this.multiline,
-        controlHost
-      );
+        controlHost);
     }
 
     const fragment =
@@ -737,8 +692,7 @@ export class TextInput extends LitElement
     if (control === null) {
       return createFallbackMountedControl(
         this.multiline,
-        controlHost
-      );
+        controlHost);
     }
 
     return {
@@ -746,12 +700,10 @@ export class TextInput extends LitElement
       control,
       className: resolveInitialControlClassName(
         control,
-        controlHost
-      ),
+        controlHost),
       invalidClassName: resolveInitialControlInvalidClassName(
         control,
-        controlHost
-      )
+        controlHost)
     };
   }
 
@@ -777,8 +729,7 @@ export class TextInput extends LitElement
       ? control.scrollHeight
       : Math.min(
         control.scrollHeight,
-        maxHeight
-      );
+        maxHeight);
 
     control.style.height = `${nextHeight}px`;
 
@@ -805,8 +756,7 @@ export class TextInput extends LitElement
       new CustomEvent(
         name,
         { detail, bubbles: true, composed: true }
-      )
-    );
+      ));
   }
 
   #disposeControlBindings(): void
@@ -860,14 +810,12 @@ function resolveAriaDescribedBy(
 
   if (!model.hideDescription) {
     ids.push(
-      model.descriptionId
-    );
+      model.descriptionId);
   }
 
   if (!model.hideError) {
     ids.push(
-      model.errorId
-    );
+      model.errorId);
   }
 
   return ids.join(' ');
@@ -936,8 +884,7 @@ function cloneNamedTemplate(
     document.createElement('template');
 
   clonedTemplate.content.append(
-    templateElement.content.cloneNode(true)
-  );
+    templateElement.content.cloneNode(true));
 
   return clonedTemplate;
 }
@@ -949,8 +896,7 @@ function resolveInitialControlClassName(
 {
   return control.className
     || controlHost.getAttribute(
-      'data-control-class'
-    )
+      'data-control-class')
     || '';
 }
 
@@ -960,11 +906,9 @@ function resolveInitialControlInvalidClassName(
   ): string | null
 {
   return control.getAttribute(
-    'data-control-invalid-class'
-  )
+    'data-control-invalid-class')
     ?? controlHost.getAttribute(
-      'data-control-invalid-class'
-    )
+      'data-control-invalid-class')
     ?? null;
 }
 
@@ -1058,38 +1002,32 @@ function createFallbackMountedControl(
       : createSingleLineInput();
 
     fragment.append(
-      fallbackControl
-    );
+      fallbackControl);
 
     return {
       fragment,
       control: fallbackControl,
       className: resolveInitialControlClassName(
         fallbackControl,
-        controlHost
-      ),
+        controlHost),
       invalidClassName: resolveInitialControlInvalidClassName(
         fallbackControl,
-        controlHost
-      )
+        controlHost)
     };
   }
 
   fragment.append(
-    templateFragment
-  );
+    templateFragment);
 
   return {
     fragment,
     control,
     className: resolveInitialControlClassName(
       control,
-      controlHost
-    ),
+      controlHost),
     invalidClassName: resolveInitialControlInvalidClassName(
       control,
-      controlHost
-    )
+      controlHost)
   };
 }
 
@@ -1099,13 +1037,10 @@ function joinClassNames(
 {
   return classNames
     .flatMap(
-      className => className.split(/\s+/)
-    )
+      className => className.split(/\s+/))
     .map(
-      className => className.trim()
-    )
+      className => className.trim())
     .filter(
-      className => className !== ''
-    )
+      className => className !== '')
     .join(' ');
 }

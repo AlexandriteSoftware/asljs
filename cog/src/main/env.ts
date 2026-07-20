@@ -7,8 +7,7 @@ export function resolveEnvelopePath(
 {
   return envelopePath
     ?? getRequiredEnv(
-      'COG_ENVELOPE_PATH'
-    );
+      'COG_ENVELOPE_PATH');
 }
 
 export function resolvePatchPath(
@@ -17,8 +16,7 @@ export function resolvePatchPath(
 {
   return patchPath
     ?? getRequiredEnv(
-      'COG_PATCH_PATH'
-    );
+      'COG_PATCH_PATH');
 }
 
 export function ensurePatchFileExists(
@@ -27,8 +25,7 @@ export function ensurePatchFileExists(
 {
   if (
     !existsSync(
-      patchPath
-    )
+      patchPath)
   ) {
     throw new Error(
       `Patch file does not exist: ${patchPath}`

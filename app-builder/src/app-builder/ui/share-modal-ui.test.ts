@@ -36,8 +36,7 @@ test(
       {
         configurable: true,
         value: dom.window.navigator
-      }
-    );
+      });
 
     try {
       const prepareCalls: Array<{
@@ -83,31 +82,26 @@ test(
 
       assert.equal(
         modal.classList.contains('hidden'),
-        false
-      );
+        false);
 
       assert.deepEqual(
         prepareCalls,
         [
           { minified: false, excludeNonApplicationFiles: false }
-        ]
-      );
+        ]);
 
       assert.equal(
         output.value,
-        'https://example.test/1'
-      );
+        'https://example.test/1');
 
       assert.equal(
         status.textContent,
-        'ready 1'
-      );
+        'ready 1');
 
       minified.checked = true;
 
       minified.dispatchEvent(
-        new dom.window.Event('change', { bubbles: true })
-      );
+        new dom.window.Event('change', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -116,18 +110,15 @@ test(
         [
           { minified: false, excludeNonApplicationFiles: false },
           { minified: true, excludeNonApplicationFiles: false }
-        ]
-      );
+        ]);
 
       assert.equal(
         output.value,
-        'https://example.test/2'
-      );
+        'https://example.test/2');
 
       assert.equal(
         status.textContent,
-        'ready 2'
-      );
+        'ready 2');
     } finally {
       globalThis.document = previousDocument;
 
@@ -137,11 +128,9 @@ test(
         {
           configurable: true,
           value: previousNavigator
-        }
-      );
+        });
     }
-  }
-);
+  });
 
 test(
   'createShareModalUi copies links, downloads exports, and respects canOpen',
@@ -181,8 +170,7 @@ test(
               }
             }
           }
-        }
-      );
+        });
 
       const ui =
         createShareModalUi(
@@ -219,29 +207,25 @@ test(
 
       assert.equal(
         modal.classList.contains('hidden'),
-        true
-      );
+        true);
 
       canOpen = true;
       ui.open();
       await flushMicrotasks();
 
       shareButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         copied,
-        ['https://example.test/shared']
-      );
+        ['https://example.test/shared']);
 
       excludeTests.checked = true;
 
       downloadButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true })
-      );
+        new dom.window.MouseEvent('click', { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -249,8 +233,7 @@ test(
         downloads,
         [
           { minified: false, excludeNonApplicationFiles: true }
-        ]
-      );
+        ]);
     } finally {
       globalThis.document = previousDocument;
 
@@ -260,8 +243,6 @@ test(
         {
           configurable: true,
           value: previousNavigator
-        }
-      );
+        });
     }
-  }
-);
+  });

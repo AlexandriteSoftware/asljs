@@ -34,162 +34,129 @@ test(
 
     assert.match(
       source,
-      /You are an expert ASLJS app generator\./
-    );
+      /You are an expert ASLJS app generator\./);
 
     assert.match(
       source,
-      /asljs-eventful/
-    );
+      /asljs-eventful/);
 
     assert.match(
       source,
-      /asljs-observable/
-    );
+      /asljs-observable/);
 
     assert.match(
       source,
-      /asljs-data-binding/
-    );
+      /asljs-data-binding/);
 
     assert.match(
       source,
-      /asljs-components/
-    );
+      /asljs-components/);
 
     assert.match(
       source,
-      /asljs-dali/
-    );
+      /asljs-dali/);
 
     assert.match(
       source,
-      /do not force every\s+package into every app/i
-    );
+      /do not force every\s+package into every app/i);
 
     assert.match(
       source,
-      /Package selection decision list:/
-    );
+      /Package selection decision list:/);
 
     assert.match(
       source,
-      /If the app needs reactive state.*asljs-eventful and asljs-observable together/i
-    );
+      /If the app needs reactive state.*asljs-eventful and asljs-observable together/i);
 
     assert.match(
       source,
-      /If plain browser APIs are enough for a feature, do not add an ASLJS package just to satisfy a checklist/i
-    );
+      /If plain browser APIs are enough for a feature, do not add an ASLJS package just to satisfy a checklist/i);
 
     assert.match(
       source,
-      /listFileset\(\)/
-    );
+      /listFileset\(\)/);
 
     assert.match(
       source,
-      /readFile\(path\)/
-    );
+      /readFile\(path\)/);
 
     assert.match(
       source,
-      /choose\(question, options\)/
-    );
+      /choose\(question, options\)/);
 
     assert.match(
       source,
-      /readFileData\(path\)/
-    );
+      /readFileData\(path\)/);
 
     assert.match(
       source,
-      /setFileData\(path, mimeType, base64\)/
-    );
+      /setFileData\(path, mimeType, base64\)/);
 
     assert.match(
       source,
-      /setFilesContent\(files\)/
-    );
+      /setFilesContent\(files\)/);
 
     assert.match(
       source,
-      /runAppTests\(path\?\)/
-    );
+      /runAppTests\(path\?\)/);
 
     assert.match(
       source,
-      /app\.tests\.js/
-    );
+      /app\.tests\.js/);
 
     assert.match(
       source,
-      /app\.tests\.js should contain normal JavaScript tests, not JSON-encoded test data/i
-    );
+      /app\.tests\.js should contain normal JavaScript tests, not JSON-encoded test data/i);
 
     assert.match(
       source,
-      /README\.md requirements changed intentionally, treat that as a required app\.tests\.js update/i
-    );
+      /README\.md requirements changed intentionally, treat that as a required app\.tests\.js update/i);
 
     assert.match(
       source,
-      /update app\.tests\.js for README requirement changes, run the app, interact with it, repair issues, run the tests, then clear CHANGE\.md/i
-    );
+      /update app\.tests\.js for README requirement changes, run the app, interact with it, repair issues, run the tests, then clear CHANGE\.md/i);
 
     assert.match(
       source,
-      /setFileContent\(path, content\)/
-    );
+      /setFileContent\(path, content\)/);
 
     assert.match(
       source,
-      /replaceFilePart\(path, search, replacement, replaceAll\?\)/
-    );
+      /replaceFilePart\(path, search, replacement, replaceAll\?\)/);
 
     assert.match(
       source,
-      /deleteFile\(path\)/
-    );
+      /deleteFile\(path\)/);
 
     assert.match(
       source,
-      /evalInApp\(code\)/
-    );
+      /evalInApp\(code\)/);
 
     assert.match(
       source,
-      /getAppDiagnostics\(\)/
-    );
+      /getAppDiagnostics\(\)/);
 
     assert.match(
       source,
-      /runAppAndCollectDiagnostics\(\)/
-    );
+      /runAppAndCollectDiagnostics\(\)/);
 
     assert.match(
       source,
-      /PLAN\.md/
-    );
+      /PLAN\.md/);
 
     assert.match(
       source,
-      /CHANGE\.md/
-    );
+      /CHANGE\.md/);
 
     assert.match(
       source,
-      /implementation cycle/i
-    );
+      /implementation cycle/i);
 
     assert.match(
       source,
-      /Assume the user is about 8 years old/i
-    );
+      /Assume the user is about 8 years old/i);
 
     assert.match(
       source,
-      /Do not ask clarification questions in this lane/i
-    );
-  }
-);
+      /Do not ask clarification questions in this lane/i);
+  });

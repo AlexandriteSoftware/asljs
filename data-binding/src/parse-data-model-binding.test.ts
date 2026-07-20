@@ -25,10 +25,8 @@ test(
         target: { kind: 'text' },
         path: 'name',
         pipes: []
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses value pipes with whitespace`,
@@ -49,10 +47,8 @@ test(
           { name: 'default', args: ['N/A'] },
           { name: 'upper', args: [] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses value expression for attribute target`,
@@ -72,10 +68,8 @@ test(
         pipes: [
           { name: 'date', args: ['yyyy-MM-dd'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses multiple quoted pipe args`,
@@ -95,10 +89,8 @@ test(
         pipes: [
           { name: 'wrap', args: ['<span>', '</span>'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses date format with pipes and mixed quotes`,
@@ -118,10 +110,8 @@ test(
         pipes: [
           { name: 'date', args: ['<\'yyyy|MM|dd\' "hh:mm:ss">'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses date format from single-quoted literal`,
@@ -141,10 +131,8 @@ test(
         pipes: [
           { name: 'date', args: ['<\'yyyy|MM|dd\' "hh:mm:ss">'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses unquoted args until colon or end`,
@@ -164,10 +152,8 @@ test(
         pipes: [
           { name: 'fixed', args: ['2', 'GBP'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: parses quoted arg with delimiters as one literal`,
@@ -187,10 +173,8 @@ test(
         pipes: [
           { name: 'date', args: ['yyyy|MM|dd hh:mm:ss'] }
         ]
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: ignores empty pipe segments`,
@@ -203,10 +187,8 @@ test(
 
     assert.deepEqual(
       spec.pipes,
-      [{ name: 'lower', args: [] }]
-    );
-  }
-);
+      [{ name: 'lower', args: [] }]);
+  });
 
 test(
   `${TEST_SUITE}: parses event expression as actionPath only`,
@@ -223,10 +205,8 @@ test(
         kind: 'event',
         eventName: 'click',
         actionPath: 'activate'
-      }
-    );
-  }
-);
+      });
+  });
 
 test(
   `${TEST_SUITE}: keeps full event expression as actionPath`,
@@ -243,7 +223,5 @@ test(
         kind: 'event',
         eventName: 'click',
         actionPath: 'activate | preventDefault | stopPropagation'
-      }
-    );
-  }
-);
+      });
+  });

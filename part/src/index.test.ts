@@ -18,7 +18,5 @@ test(
         'createPinoLoggerProvider',
         'createRuleValidationContext',
         'runCli'
-      ]
-    );
-  }
-);
+      ]);
+  });

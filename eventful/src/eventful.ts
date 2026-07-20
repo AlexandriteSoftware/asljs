@@ -70,21 +70,17 @@ const eventfulImpl =
     if (enhanced) {
       eventful.emit(
         action,
-        payload
-      );
+        payload);
     }
   };
 
   traceFn(
     'new',
-    { object }
-  );
+    { object });
 
-  const emptySet =
-    new Set<Function>();
+  const emptySet = new Set<Function>();
 
-  const map =
-    new Map<EventName, Set<Function>>();
+  const map = new Map<EventName, Set<Function>>();
 
   const properties =
     { enumerable: false, configurable: true, writable: true };
@@ -94,30 +90,23 @@ const eventfulImpl =
     {
       on: Object.assign(
         { value: on },
-        properties
-      ),
+        properties),
       once: Object.assign(
         { value: once },
-        properties
-      ),
+        properties),
       off: Object.assign(
         { value: off },
-        properties
-      ),
+        properties),
       emit: Object.assign(
         { value: emit },
-        properties
-      ),
+        properties),
       emitAsync: Object.assign(
         { value: emitAsync },
-        properties
-      ),
+        properties),
       has: Object.assign(
         { value: has },
-        properties
-      )
-    }
-  );
+        properties)
+    });
 
   return object as (T extends undefined ? {} : T) & Eventful;
 
@@ -125,15 +114,14 @@ const eventfulImpl =
       event: EventName,
       listener: Function
     ): void
-{
+  {
     let listeners =
       map.get(event);
 
     if (!listeners) {
       map.set(
         event,
-        listeners = new Set()
-      );
+        listeners = new Set());
     }
 
     listeners.add(listener);
@@ -143,7 +131,7 @@ const eventfulImpl =
       event: EventName,
       listener: Function
     ): boolean
-{
+  {
     const listeners =
       map.get(event);
 
@@ -166,7 +154,7 @@ const eventfulImpl =
       listener: Function,
       err: unknown
     ): void
-{
+  {
     const errorArgs: ListenerErrorArgs =
       {
       error: err,
@@ -192,27 +180,24 @@ const eventfulImpl =
 
     eventful.emit(
       'error',
-      errorArgs
-    );
+      errorArgs);
   }
 
   function on(
       event: EventName,
       listener: Function
     ): () => boolean
-{
+  {
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
     traceFn(
       'on',
-      { object, event, listener }
-    );
+      { object, event, listener });
 
     add(
       event,
-      listener
-    );
+      listener);
 
     let active = true;
 
@@ -221,8 +206,7 @@ const eventfulImpl =
         ? ((active = false),
           remove(
             event,
-            listener
-          ))
+            listener))
         : false;
   }
 
@@ -230,7 +214,7 @@ const eventfulImpl =
       event: EventName,
       listener: Function
     ): () => boolean
-{
+  {
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
@@ -242,8 +226,7 @@ const eventfulImpl =
         off();
 
         listener(
-          ...args
-        );
+          ...args);
       });
 
     return off;
@@ -253,25 +236,23 @@ const eventfulImpl =
       event: EventName,
       listener: Function
     ): boolean
-{
+  {
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
     traceFn(
       'off',
-      { object, event, listener }
-    );
+      { object, event, listener });
 
     return remove(
       event,
-      listener
-    );
+      listener);
   }
 
   function has(
       event: EventName
     ): boolean
-{
+  {
     eventNameTypeGuard(event);
 
     return (map.get(event)?.size ?? 0) > 0;
@@ -281,7 +262,7 @@ const eventfulImpl =
       event: EventName,
       ...args: unknown[]
     ): void
-{
+  {
     eventNameTypeGuard(event);
 
     const listeners =
@@ -290,8 +271,7 @@ const eventfulImpl =
 
     traceFn(
       'emit',
-      { object, listeners: [...listeners], event, args }
-    );
+      { object, listeners: [...listeners], event, args });
 
     if (listeners.size === 0) {
       return;
@@ -300,14 +280,12 @@ const eventfulImpl =
     for (const listener of listeners) {
       try {
         listener(
-          ...args
-        );
+          ...args);
       } catch (err) {
         reportListenerError(
           event,
           listener,
-          err
-        );
+          err);
 
         if (strict) {
           throw err;
@@ -320,7 +298,7 @@ const eventfulImpl =
       event: EventName,
       ...args: unknown[]
     ): Promise<void>
-{
+  {
     eventNameTypeGuard(event);
 
     const listeners =
@@ -329,8 +307,7 @@ const eventfulImpl =
 
     traceFn(
       'emitAsync',
-      { object, listeners: [...listeners], event, args }
-    );
+      { object, listeners: [...listeners], event, args });
 
     if (listeners.size === 0) {
       return;
@@ -342,14 +319,12 @@ const eventfulImpl =
       {
         try {
           await listener(
-            ...args
-          );
+            ...args);
         } catch (err) {
           reportListenerError(
             event,
             listener,
-            err
-          );
+            err);
 
           if (strict) {
             throw err;

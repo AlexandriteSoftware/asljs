@@ -130,13 +130,11 @@ export class Table<
         this.db,
         this.storeName)
       .objectStore(
-        this.storeName
-      )
+        this.storeName)
       .keyPath as KeyPath<T>;
 
     keyPathAssert(
-      key as KeyPath<T>
-    );
+      key as KeyPath<T>);
 
     this.key = key;
 
@@ -145,8 +143,7 @@ export class Table<
         message =>
         {
           this.#onBroadcastMessage(message);
-        }
-      );
+        });
     }
   }
 
@@ -157,8 +154,7 @@ export class Table<
   {
     keyAssert(
       this.key,
-      key
-    );
+      key);
 
     return new Promise<T | null>(
       (
@@ -172,8 +168,7 @@ export class Table<
             this.storeName,
             tx)
           .objectStore(
-            this.storeName
-          )
+            this.storeName)
           .get(key);
 
         request.onsuccess = () =>
@@ -200,8 +195,7 @@ export class Table<
             request.error
               ?? new Error(
                 `${this.storeName}: getOne request failed`
-              )
-          );
+              ));
         };
       }
     );
@@ -217,15 +211,13 @@ export class Table<
       return this.#getByIndex(
         index,
         key,
-        tx
-      );
+        tx);
     }
 
     return this.#getActiveByIndex(
       index,
       key,
-      tx
-    );
+      tx);
   }
 
   notify(
@@ -245,8 +237,7 @@ export class Table<
 
       this.#receivers.splice(
         index,
-        1
-      );
+        1);
 
       return true;
     };
@@ -283,8 +274,7 @@ export class Table<
 
       this.#observedReceivers.splice(
         index,
-        1
-      );
+        1);
 
       return true;
     };
@@ -376,8 +366,7 @@ export class Table<
           this.storeName,
           tx)
         .objectStore(
-          this.storeName
-        )
+          this.storeName)
         .getAll());
 
     return this.#activeRecords(records);
@@ -402,8 +391,7 @@ export class Table<
             this.storeName,
             tx)
           .objectStore(
-            this.storeName
-          )
+            this.storeName)
           .openCursor();
 
         const result: T[] = [];
@@ -444,8 +432,7 @@ export class Table<
             request.error
               ?? new Error(
                 `${this.storeName}: scan request failed`
-              )
-          );
+              ));
         };
       }
     );
@@ -472,8 +459,7 @@ export class Table<
         this.storeName);
 
     await dbRequestAsync(
-      store.add(storedRecord)
-    );
+      store.add(storedRecord));
 
     this.#onTransactionCompleted(
       store.transaction,
@@ -481,24 +467,19 @@ export class Table<
       {
         this.emit(
           'add',
-          storedRecord
-        );
+          storedRecord);
 
         this.#notify(
           'add',
-          [storedRecord]
-        );
+          [storedRecord]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'add', record: storedRecord }
-        );
+          { source: 'local', eventType: 'add', record: storedRecord });
 
         this.#publishBroadcast(
           'add',
-          { record: storedRecord }
-        );
-      }
-    );
+          { record: storedRecord });
+      });
 
     if (tx === null) {
       await txDone(ltx);
@@ -550,8 +531,7 @@ export class Table<
       if (
         !this.#versionStrategy.verify(
           existing,
-          expectedVersion
-        )
+          expectedVersion)
       ) {
         throw new VersionConflictError(
           key,
@@ -564,8 +544,7 @@ export class Table<
     }
 
     await dbRequestAsync(
-      store.put(storedRecord)
-    );
+      store.put(storedRecord));
 
     this.#onTransactionCompleted(
       store.transaction,
@@ -574,13 +553,11 @@ export class Table<
         this.emit(
           'update',
           storedRecord,
-          existing
-        );
+          existing);
 
         this.#notify(
           'update',
-          [storedRecord, existing]
-        );
+          [storedRecord, existing]);
 
         this.#notifyObserved(
           {
@@ -588,15 +565,12 @@ export class Table<
             eventType: 'update',
             record: storedRecord,
             previousRecord: existing
-          }
-        );
+          });
 
         this.#publishBroadcast(
           'update',
-          { record: storedRecord, previousRecord: existing }
-        );
-      }
-    );
+          { record: storedRecord, previousRecord: existing });
+      });
 
     if (tx === null) {
       await txDone(ltx);
@@ -613,8 +587,7 @@ export class Table<
   {
     keyAssert(
       this.key,
-      key
-    );
+      key);
 
     const ltx =
       txWrite(
@@ -645,8 +618,7 @@ export class Table<
         if (
           !this.#versionStrategy.verify(
             existing,
-            expectedVersion
-          )
+            expectedVersion)
         ) {
           throw new VersionConflictError(
             key,
@@ -657,8 +629,7 @@ export class Table<
       }
 
       await dbRequestAsync(
-        store.delete(key)
-      );
+        store.delete(key));
 
       this.#onTransactionCompleted(
         store.transaction,
@@ -666,24 +637,19 @@ export class Table<
         {
           this.emit(
             'delete',
-            existing
-          );
+            existing);
 
           this.#notify(
             'delete',
-            [existing]
-          );
+            [existing]);
 
           this.#notifyObserved(
-            { source: 'local', eventType: 'delete', record: existing }
-          );
+            { source: 'local', eventType: 'delete', record: existing });
 
           this.#publishBroadcast(
             'delete',
-            { record: existing }
-          );
-        }
-      );
+            { record: existing });
+        });
 
       if (tx === null) {
         await txDone(ltx);
@@ -706,8 +672,7 @@ export class Table<
       if (
         !this.#versionStrategy.verify(
           existing,
-          expectedVersion
-        )
+          expectedVersion)
       ) {
         throw new VersionConflictError(
           key,
@@ -725,8 +690,7 @@ export class Table<
     }
 
     await dbRequestAsync(
-      store.put(storedRecord)
-    );
+      store.put(storedRecord));
 
     this.#onTransactionCompleted(
       store.transaction,
@@ -734,24 +698,19 @@ export class Table<
       {
         this.emit(
           'delete',
-          storedRecord
-        );
+          storedRecord);
 
         this.#notify(
           'delete',
-          [storedRecord]
-        );
+          [storedRecord]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'delete', record: storedRecord }
-        );
+          { source: 'local', eventType: 'delete', record: storedRecord });
 
         this.#publishBroadcast(
           'delete',
-          { record: storedRecord }
-        );
-      }
-    );
+          { record: storedRecord });
+      });
 
     if (tx === null) {
       await txDone(ltx);
@@ -777,8 +736,7 @@ export class Table<
         store.getAll());
 
     await dbRequestAsync(
-      store.clear()
-    );
+      store.clear());
 
     this.#onTransactionCompleted(
       store.transaction,
@@ -786,24 +744,19 @@ export class Table<
       {
         this.emit(
           'clear',
-          records
-        );
+          records);
 
         this.#notify(
           'clear',
-          [records]
-        );
+          [records]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'clear', records }
-        );
+          { source: 'local', eventType: 'clear', records });
 
         this.#publishBroadcast(
           'clear',
-          { records }
-        );
-      }
-    );
+          { records });
+      });
 
     if (tx === null) {
       await txDone(ltx);
@@ -822,8 +775,7 @@ export class Table<
     }
 
     return records.filter(
-      record => !deleteStrategy.isDeleted(record)
-    );
+      record => !deleteStrategy.isDeleted(record));
   }
 
   async #getActiveByIndex(
@@ -841,8 +793,7 @@ export class Table<
       if (strategy.mapIndexQuery) {
         mapped = strategy.mapIndexQuery(
           index,
-          key
-        );
+          key);
       }
     }
 
@@ -886,8 +837,7 @@ export class Table<
         this.storeName,
         tx)
       .objectStore(
-        this.storeName
-      );
+        this.storeName);
 
     const idx =
       store.index(index);
@@ -897,13 +847,11 @@ export class Table<
 
     if (validateKey) {
       keyPathAssert(
-        keyPath as KeyPath<T>
-      );
+        keyPath as KeyPath<T>);
 
       keyAssert(
         keyPath,
-        key
-      );
+        key);
     }
 
     return new Promise<T[]>(
@@ -929,8 +877,7 @@ export class Table<
             request.error
               ?? new Error(
                 `${this.storeName}: get request failed for index ${index}`
-              )
-          );
+              ));
         };
       }
     );
@@ -970,12 +917,10 @@ export class Table<
         } catch (error) {
           console.error(
             `${this.storeName}: on complete action failed`,
-            error
-          );
+            error);
         }
       },
-      { once: true }
-    );
+      { once: true });
   }
 
   #notify<K extends keyof TableEvents<T>>(
@@ -1002,15 +947,13 @@ export class Table<
 
       try {
         tableEventHandler(
-          ...args
-        );
+          ...args);
       } catch (error) {
         console.error(
           `${this.storeName}: notify handler failed for event ${
             String(eventName)
           }`,
-          error
-        );
+          error);
       }
     }
   }
@@ -1029,8 +972,7 @@ export class Table<
       } catch (error) {
         console.error(
           `${this.storeName}: observe handler failed for event ${event.eventType}`,
-          error
-        );
+          error);
       }
     }
   }
@@ -1058,8 +1000,7 @@ export class Table<
     } catch (error) {
       console.error(
         `${this.storeName}: broadcast publish failed`,
-        error
-      );
+        error);
     }
   }
 

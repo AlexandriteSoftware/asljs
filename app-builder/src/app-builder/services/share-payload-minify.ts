@@ -23,8 +23,7 @@ export async function minifySharePayload(
 
   for (
     const [fileName, content] of Object.entries(
-      payload.files
-    )
+      payload.files)
   ) {
     const loader =
       resolveLoaderFromFileName(fileName);
@@ -32,8 +31,7 @@ export async function minifySharePayload(
     if (loader !== null) {
       files[fileName] = await transform(
         content,
-        loader
-      );
+        loader);
 
       continue;
     }
@@ -115,16 +113,13 @@ function compactHtml(
     withPlaceholders
     .replace(
       /<!--([\s\S]*?)-->/g,
-      ''
-    )
+      '')
     .replace(
       />\s+</g,
-      '><'
-    )
+      '><')
     .replace(
       /\s{2,}/g,
-      ' '
-    )
+      ' ')
     .trim();
 
   return compacted.replace(
@@ -133,8 +128,6 @@ function compactHtml(
       preservedBlocks[
         Number.parseInt(
           indexText,
-          10
-        )
-      ] ?? ''
-  );
+          10)
+      ] ?? '');
 }
