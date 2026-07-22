@@ -10,8 +10,20 @@ import { applyFormatters,
   from './formatter.js';
 import { jsStyleFormatters }
   from './js-style-rules/style-rules.js';
-import { tsStyleFormatters }
-  from './ts-style-rules/style-rules.js';
+import { tsCallExpressionFormatter }
+  from './ts-style-rules/call-expression.js';
+import { conditionalExpressionFormatter }
+  from './ts-style-rules/conditional-expression.js';
+import { functionDeclarationFormatter }
+  from './ts-style-rules/function-declaration.js';
+import { importFormatter }
+  from './ts-style-rules/import.js';
+import { tsExpressionFormatter }
+  from './ts-style-rules/object-expression.js';
+import { statementSpacingFormatter }
+  from './ts-style-rules/statement-spacing.js';
+import { variableDeclarationFormatter }
+  from './ts-style-rules/variable-declaration.js';
 
 export async function format(
     environment: Environment,
@@ -90,6 +102,17 @@ function getFormattersForPath(
       return jsStyleFormatters;
 
     case 'typescript':
+      const tsStyleFormatters: FormatterDefinition[] =
+        [
+        importFormatter,
+        functionDeclarationFormatter,
+        conditionalExpressionFormatter,
+        tsCallExpressionFormatter,
+        variableDeclarationFormatter,
+        statementSpacingFormatter,
+        tsExpressionFormatter
+      ];
+
       return tsStyleFormatters;
 
     default:

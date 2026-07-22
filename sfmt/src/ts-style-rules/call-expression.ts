@@ -20,11 +20,11 @@ import { ensureLocation,
 import { expressionIsShort }
   from '../functions/short-expression.js';
 
+const meta: Rule.RuleMetaData =
+  { type: 'layout', fixable: 'code', schema: [] };
+
 export const tsCallExpressionEslintRule: Rule.RuleModule =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create: createRule
-};
+  { meta, create };
 
 export const tsCallExpressionFormatter: FormatterDefinition =
   {
@@ -32,11 +32,15 @@ export const tsCallExpressionFormatter: FormatterDefinition =
   eslintRule: tsCallExpressionEslintRule
 };
 
-function createRule(
+function create(
     context: Rule.RuleContext
   ): Rule.RuleListener
 {
-  return createCallExpressionListener(context);
+  const listener =
+    createCallExpressionListener(
+      context);
+
+  return listener;
 }
 
 function createCallExpressionListener(
@@ -49,13 +53,15 @@ function createCallExpressionListener(
   return ruleListener;
 
   function callExpressionListener(
-      node: SimpleCallExpression & Rule.NodeParentExtension
+      node:
+      & SimpleCallExpression
+      & Rule.NodeParentExtension
     ): void
   {
     const fmtCtx =
       new FormattingContext(
-        context.sourceCode
-      );
+      context.sourceCode
+    );
 
     const correctLayout =
       checkLayout(

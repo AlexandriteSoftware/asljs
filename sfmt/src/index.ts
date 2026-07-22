@@ -21,7 +21,3 @@ export {
 export {
   jsStyleFormatters
 } from './js-style-rules/style-rules.js';
-
-export {
-  tsStyleFormatters
-} from './ts-style-rules/style-rules.js';
