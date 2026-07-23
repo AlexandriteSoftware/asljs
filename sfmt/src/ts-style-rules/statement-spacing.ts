@@ -11,13 +11,16 @@ import { createFormatter }
   from '../formatter.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'whitespace', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'whitespace',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      Program(node): void
+      { Program:
+          (node): void =>
       {
         const tsNode =
           node as unknown as TSESTree.Program;
@@ -26,7 +29,8 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
           tsNode.body,
           context);
       },
-      BlockStatement(node): void
+        BlockStatement:
+          (node): void =>
       {
         const tsNode =
           node as unknown as TSESTree.BlockStatement;
@@ -34,12 +38,10 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         checkStatements(
           tsNode.body,
           context);
-      }
-    };
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const statementSpacingFormatter =
   createFormatter(
@@ -94,10 +96,11 @@ function checkStatements(
     }
 
     context.report(
-      {
-        node: nextStatement,
-        message: 'Add a blank line between statements.',
-        fix(fixer: Rule.RuleFixer): Rule.Fix
+      { node: nextStatement,
+        message:
+          'Add a blank line between statements.',
+        fix:
+          (fixer: Rule.RuleFixer): Rule.Fix =>
         {
           const range: SourceRange =
             [statementRange[1], nextStatementRange[0]];
@@ -110,8 +113,7 @@ function checkStatements(
           return fixer.replaceTextRange(
             range,
             newLine + newLine + nextStatementIndentation);
-        }
-      });
+        } });
   }
 }
 

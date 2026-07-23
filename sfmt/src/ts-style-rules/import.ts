@@ -16,13 +16,14 @@ type Import =
   | TSESTree.ImportNamespaceSpecifier;
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { fixable: 'code' },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { fixable: 'code' },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      ImportDeclaration(node): void
+      { ImportDeclaration:
+          (node): void =>
       {
         const tsNode =
           node as unknown as TSESTree.ImportDeclaration;
@@ -45,22 +46,20 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs import style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
+          { node: node,
+            message:
+              'Use asljs import style.',
+            fix:
+              (fixer: Rule.RuleFixer): Rule.Fix =>
             {
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const importFormatter =
   createFormatter(

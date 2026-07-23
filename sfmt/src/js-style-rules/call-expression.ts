@@ -15,13 +15,16 @@ import { expressionIsShort }
 type FormattingContext = { newLine: string; };
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      CallExpression(node: SimpleCallExpression): void
+      { CallExpression:
+          (node: SimpleCallExpression): void =>
       {
         const correctLayout =
           isLayoutCorrect(
@@ -33,10 +36,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs call expression style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
+          { node: node,
+            message:
+              'Use asljs call expression style.',
+            fix:
+              (fixer: Rule.RuleFixer): Rule.Fix =>
             {
               const sourceCode =
                 context.sourceCode;
@@ -58,14 +62,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const callExpressionFormatter =
   createFormatter(

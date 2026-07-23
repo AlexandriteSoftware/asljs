@@ -1,64 +1,69 @@
 import { RuleDefinition,
          RuleDefinitionTypeOptions }
   from '@eslint/core';
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
 import { Rule,
          SourceCode }
   from 'eslint';
+import { ConditionalExpression }
+  from 'estree';
 import { createFormatter }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create: create };
+
+function create(
+    context: Rule.RuleContext
+  ): Rule.RuleListener
+{
+  const listener: Rule.RuleListener =
+    { ConditionalExpression:
+        conditionalExpressionListener };
+
+  return listener;
+
+  function conditionalExpressionListener(
+      node: ConditionalExpression
+    ): void
   {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
-  {
-    const listener: Rule.RuleListener =
-      {
-      ConditionalExpression(node): void
-      {
-        const tsNode =
-          node as unknown as TSESTree.ConditionalExpression;
+    const fmtCtx =
+      new FormattingContext(
+      context.sourceCode
+    );
 
-        const fmtCtx =
-          new FormattingContext(
-          context.sourceCode
-        );
+    const correctLayout =
+      checkLayout(
+        node,
+        fmtCtx);
 
-        const correctLayout =
-          checkLayout(
-            tsNode,
-            fmtCtx);
+    if (correctLayout) {
+      return;
+    }
 
-        if (correctLayout) {
-          return;
-        }
+    context.report(
+      { node: node,
+        message:
+          'Use asljs conditional expression style.',
+        fix:
+          (fixer: Rule.RuleFixer): Rule.Fix =>
+        {
+          const replacement =
+            buildConditionalExpression(
+              node,
+              fmtCtx);
 
-        context.report(
-          {
+          return fixer.replaceText(
             node,
-            message: 'Use asljs conditional expression style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
-            {
-              const replacement =
-                buildConditionalExpression(
-                  tsNode,
-                  fmtCtx);
-
-              return fixer.replaceText(
-                node,
-                replacement);
-            }
-          });
-      }
-    };
-
-    return listener;
+            replacement);
+        } });
   }
-};
+}
 
 export const conditionalExpressionFormatter =
   createFormatter(
@@ -68,7 +73,7 @@ export const conditionalExpressionFormatter =
 export default conditionalExpressionFormatter.eslintRule;
 
 function checkLayout(
-    node: TSESTree.ConditionalExpression,
+    node: ConditionalExpression,
     context: FormattingContext
   ): boolean
 {
@@ -108,7 +113,7 @@ function checkLayout(
 }
 
 function buildConditionalExpression(
-    node: TSESTree.ConditionalExpression,
+    node: ConditionalExpression,
     context: FormattingContext
   ): string
 {
@@ -140,7 +145,7 @@ function buildConditionalExpression(
 
 function getIndentation(
     sourceCode: SourceCode,
-    node: TSESTree.ConditionalExpression
+    node: ConditionalExpression
   ): string
 {
   const nodeLocation =

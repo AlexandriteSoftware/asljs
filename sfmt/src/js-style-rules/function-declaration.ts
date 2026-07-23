@@ -11,13 +11,16 @@ import { createFormatter }
 type FormattingContext = { newLine: string; };
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      FunctionDeclaration(node: FunctionDeclaration): void
+      { FunctionDeclaration:
+          (node: FunctionDeclaration): void =>
       {
         const correctLayout =
           checkLayout(
@@ -29,10 +32,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs function declaration style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
+          { node: node,
+            message:
+              'Use asljs function declaration style.',
+            fix:
+              (fixer: Rule.RuleFixer): Rule.Fix =>
             {
               const newLine =
                 context.sourceCode.text.includes('\r\n')
@@ -51,14 +55,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const functionDeclarationFormatter =
   createFormatter(

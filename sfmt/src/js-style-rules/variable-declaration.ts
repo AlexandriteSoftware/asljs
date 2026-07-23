@@ -25,13 +25,16 @@ interface FormattingContext
 const LONG_IDENTIFIER_LENGTH = 15;
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      VariableDeclarator(node: VariableDeclarator): void
+      { VariableDeclarator:
+          (node: VariableDeclarator): void =>
       {
         if (!node.init) {
           return;
@@ -47,10 +50,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs variable declaration style.',
-            fix(fixer)
+          { node: node,
+            message:
+              'Use asljs variable declaration style.',
+            fix:
+              fixer =>
             {
               const sourceCode =
                 context.sourceCode;
@@ -72,14 +76,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const variableDeclarationFormatter =
   createFormatter(

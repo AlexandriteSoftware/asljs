@@ -25,18 +25,20 @@ export function createEnvironment(
   const disposeActions: (() => Promise<void>)[] = [];
 
   const baseEnvironment: Environment =
-    {
-    cwd,
-    stdout: createInMemoryWritableBuffer(),
-    stderr: createInMemoryWritableBuffer(),
-    onDispose: action => disposeActions.push(action),
-    dispose: async () =>
+    { cwd: cwd,
+      stdout:
+        createInMemoryWritableBuffer(),
+      stderr:
+        createInMemoryWritableBuffer(),
+      onDispose:
+        action => disposeActions.push(action),
+      dispose:
+        async () =>
     {
       for (const action of disposeActions) {
         await action();
       }
-    }
-  };
+    } };
 
   const constructedEnvironment: Environment =
     Object.assign(
@@ -58,16 +60,16 @@ function createInMemoryWritableBuffer(
   const output: string[] = [];
 
   const buffer: WritableBuffer =
-    {
-    write(value: string): void
+    { write:
+        (value: string): void =>
     {
       output.push(value);
     },
-    toString(): string
+      toString:
+        (): string =>
     {
       return output.join('');
-    }
-  };
+    } };
 
   return buffer;
 }

@@ -18,13 +18,16 @@ import { tryGetLocation }
   from '../functions/location.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      FunctionDeclaration(node): void
+      { FunctionDeclaration:
+          (node): void =>
       {
         const tsNode =
           node as unknown as TSESTree.FunctionDeclaration;
@@ -47,10 +50,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs function declaration style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
+          { node: node,
+            message:
+              'Use asljs function declaration style.',
+            fix:
+              (fixer: Rule.RuleFixer): Rule.Fix =>
             {
               const replacement =
                 buildFunctionDeclaration(
@@ -60,14 +64,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const functionDeclarationFormatter =
   createFormatter(

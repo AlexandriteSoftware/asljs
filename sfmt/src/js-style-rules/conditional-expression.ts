@@ -13,13 +13,16 @@ import { createFormatter }
 type FormattingContext = { newLine: string; };
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  {
-  meta: { type: 'layout', fixable: 'code', schema: [] },
-  create(context: Rule.RuleContext): Rule.RuleListener
+  { meta:
+      { type: 'layout',
+        fixable: 'code',
+        schema: [] },
+    create:
+      (context: Rule.RuleContext): Rule.RuleListener =>
   {
     const listener: Rule.RuleListener =
-      {
-      ConditionalExpression(node: ConditionalExpression): void
+      { ConditionalExpression:
+          (node: ConditionalExpression): void =>
       {
         const correctLayout =
           checkLayout(
@@ -31,10 +34,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
         }
 
         context.report(
-          {
-            node,
-            message: 'Use asljs conditional expression style.',
-            fix(fixer: Rule.RuleFixer): Rule.Fix
+          { node: node,
+            message:
+              'Use asljs conditional expression style.',
+            fix:
+              (fixer: Rule.RuleFixer): Rule.Fix =>
             {
               const sourceCode =
                 context.sourceCode;
@@ -56,14 +60,11 @@ const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
               return fixer.replaceText(
                 node,
                 replacement);
-            }
-          });
-      }
-    };
+            } });
+      } };
 
     return listener;
-  }
-};
+  } };
 
 export const conditionalExpressionFormatter =
   createFormatter(
