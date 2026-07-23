@@ -18,15 +18,17 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    languageOptions: { parser: tsParser },
-    plugins: { asljs: { rules: { 'import-style': rule } } },
-    rules: { 'asljs/import-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { languageOptions:
+                     { parser: tsParser },
+                   plugins:
+                     { asljs:
+                         { rules:
+                             { 'import-style': rule } } },
+                   rules:
+                     { 'asljs/import-style': 'error' } } });
 
 test(
   'ts-style-rules/import: \\r\\n line endings',

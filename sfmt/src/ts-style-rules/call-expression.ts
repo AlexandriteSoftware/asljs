@@ -21,16 +21,19 @@ import { expressionIsShort }
   from '../functions/short-expression.js';
 
 const meta: Rule.RuleMetaData =
-  { type: 'layout', fixable: 'code', schema: [] };
+  { type: 'layout',
+    fixable: 'code',
+    schema: [] };
 
 export const tsCallExpressionEslintRule: Rule.RuleModule =
-  { meta, create };
+  { meta: meta,
+    create: create };
 
 export const tsCallExpressionFormatter: FormatterDefinition =
-  {
-  name: 'call-expression',
-  eslintRule: tsCallExpressionEslintRule
-};
+  { name:
+      'call-expression',
+    eslintRule:
+      tsCallExpressionEslintRule };
 
 function create(
     context: Rule.RuleContext
@@ -48,7 +51,8 @@ function createCallExpressionListener(
   ): Rule.RuleListener
 {
   const ruleListener =
-    { CallExpression: callExpressionListener };
+    { CallExpression:
+        callExpressionListener };
 
   return ruleListener;
 
@@ -73,11 +77,10 @@ function createCallExpressionListener(
     }
 
     const report: ViolationReport<JSSyntaxElement, string> =
-      {
-      node,
-      message: 'Use asljs call expression style.',
-      fix
-    };
+      { node: node,
+        message:
+          'Use asljs call expression style.',
+        fix: fix };
 
     context.report(report);
 

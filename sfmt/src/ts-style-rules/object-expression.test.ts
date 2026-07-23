@@ -14,17 +14,18 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    languageOptions: { parser: tsParser },
-    plugins: {
-      asljs: { rules: { 'expression-style': tsExpressionEslintRule } }
-    },
-    rules: { 'asljs/expression-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { languageOptions:
+                     { parser: tsParser },
+                   plugins:
+                     { asljs:
+                         { rules:
+                             { 'expression-style':
+                                 tsExpressionEslintRule } } },
+                   rules:
+                     { 'asljs/expression-style': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

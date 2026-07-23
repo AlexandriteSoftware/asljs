@@ -185,7 +185,10 @@ export function parseTests(
         source);
 
     tests.push(
-      { title, source, expected, tags });
+      { title: title,
+        source: source,
+        expected: expected,
+        tags: tags });
   }
 
   return tests;
@@ -244,12 +247,14 @@ function testWithCrNl(
       '\r\n');
 
   const withDifferentLineEndings: TestCase =
-    {
-    title: `${testCase.title} (with \\r\\n)`,
-    source: crNlLineEndingSource,
-    expected: crNlLineEndingExpected,
-    tags: testCase.tags
-  };
+    { title:
+        `${testCase.title} (with \\r\\n)`,
+      source:
+        crNlLineEndingSource,
+      expected:
+        crNlLineEndingExpected,
+      tags:
+        testCase.tags };
 
   result.push(
     withDifferentLineEndings);

@@ -16,14 +16,15 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    plugins: { asljs: { rules: { 'conditional-expression-style': rule } } },
-    rules: { 'asljs/conditional-expression-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { plugins:
+                     { asljs:
+                         { rules:
+                             { 'conditional-expression-style': rule } } },
+                   rules:
+                     { 'asljs/conditional-expression-style': 'error' } } });
 
 test(
   'conditional-expression: \r\n line endings',

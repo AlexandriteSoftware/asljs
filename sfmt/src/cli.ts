@@ -13,8 +13,7 @@ export async function runCli(
 {
   const ownEnvironment = !environment;
 
-  environment =
-    environment
+  environment = environment
     ?? createEnvironment();
 
   const cli =
@@ -77,12 +76,13 @@ function createCli(
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
-      {
-        writeOut: value => environment.stdout.write(value),
-        writeErr: value => environment.stderr.write(value),
-        outputError: () =>
-        {}
-      })
+      { writeOut:
+          value => environment.stdout.write(value),
+        writeErr:
+          value => environment.stderr.write(value),
+        outputError:
+          () =>
+        {} })
     .exitOverride(
       error =>
       {

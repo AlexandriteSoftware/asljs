@@ -3,11 +3,15 @@ import { type TSESTree }
 import * as acorn
   from 'acorn';
 import { ArrayExpression,
+         ArrayPattern,
+         AssignmentPattern,
          Expression,
          Identifier,
          Literal,
          NewExpression,
          ObjectExpression,
+         ObjectPattern,
+         RestElement,
          SpreadElement,
          TemplateLiteral,
          UnaryExpression }
@@ -18,6 +22,10 @@ const LONG_EXPRESSION_LENGTH = 15;
 export type ExpressionParameter =
   | Expression
   | SpreadElement
+  | ObjectPattern
+  | ArrayPattern
+  | RestElement
+  | AssignmentPattern
   | TSESTree.Expression;
 
 export function expressionIsShort(

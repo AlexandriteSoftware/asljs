@@ -9,24 +9,28 @@ import { FormatterDefinition }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { fmtObjectExpression }
-  from '../ts-fmt/fmt-object-expression.js';
-import { tryGetLocation }
-  from '../functions/location.js';
 import { Indentation }
   from '../functions/indentations.js';
+import { tryGetLocation }
+  from '../functions/location.js';
+import { expressionIsShort }
+  from '../functions/short-expression.js';
+import { fmtObjectExpression }
+  from '../ts-fmt/fmt-object-expression.js';
 
 const meta: Rule.RuleMetaData =
-  { type: 'layout', fixable: 'code', schema: [] };
+  { type: 'layout',
+    fixable: 'code',
+    schema: [] };
 
 export const tsExpressionEslintRule: Rule.RuleModule =
-  { meta, create };
+  { meta: meta,
+    create: create };
 
 export const tsExpressionFormatter: FormatterDefinition =
-  {
-  name: 'expression',
-  eslintRule: tsExpressionEslintRule
-};
+  { name: 'expression',
+    eslintRule:
+      tsExpressionEslintRule };
 
 function create(
     context: Rule.RuleContext
@@ -44,9 +48,8 @@ function createExpressionListener(
   ): Rule.RuleListener
 {
   const ruleListener: Rule.RuleListener =
-    {
-    ObjectExpression: objectExpressionListener
-  };
+    { ObjectExpression:
+        objectExpressionListener };
 
   return ruleListener;
 
@@ -69,11 +72,10 @@ function createExpressionListener(
     }
 
     const report: ViolationReport<JSSyntaxElement, string> =
-      {
-      node,
-      message: 'Use asljs expression style.',
-      fix
-    };
+      { node: node,
+        message:
+          'Use asljs expression style.',
+        fix: fix };
 
     context.report(report);
 
@@ -105,7 +107,7 @@ function checkLayout(
     // do not check if there are no tokens
     return true;
   }
-  
+
   const firstToken =
     tokens[0];
 
@@ -132,7 +134,7 @@ function checkLayout(
     // do not check if the last token has no location
     return true;
   }
-  
+
   if (node.properties.length === 0) {
     // the object expression without properties should be just `{ }`
     return firstTokenLocation.start.line === lastTokenLocation.end.line
@@ -141,7 +143,8 @@ function checkLayout(
 
   const baseIndentation =
     new Indentation(
-      firstTokenLocation.start.column);
+    firstTokenLocation.start.column
+  );
 
   const propertyIndentation =
     baseIndentation.increase();
@@ -162,6 +165,7 @@ function checkLayout(
     return false;
   }
 
+  // the properties should be indented one level deeper than the opening brace
   for (
     let index = 0;
     index < node.properties.length;
@@ -180,6 +184,38 @@ function checkLayout(
 
     if (propertyLocation.start.column !== propertyIndentation.column) {
       return false;
+    }
+
+    if (property.type === 'Property') {
+      const value =
+        property.value;
+
+      const valueLocation =
+        tryGetLocation(value);
+
+      if (!valueLocation) {
+        // do not check if the value has no location
+        return true;
+      }
+
+      if (expressionIsShort(value)) {
+        if (valueLocation.start.line !== propertyLocation.start.line) {
+          return false;
+        }
+      } else {
+        const expectedValueLine =
+          propertyLocation.start.line + 1;
+
+        const expectedValueColumn =
+          propertyIndentation.increase().column;
+
+        if (
+          valueLocation.start.line !== expectedValueLine
+          || valueLocation.start.column !== expectedValueColumn
+        ) {
+          return false;
+        }
+      }
     }
   }
 

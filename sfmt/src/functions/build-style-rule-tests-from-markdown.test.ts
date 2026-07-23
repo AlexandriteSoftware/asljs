@@ -29,11 +29,10 @@ true
     assert.deepEqual(
       testCases,
       [
-        {
-          expected: 'true',
+        { expected: 'true',
           source: 'true',
-          tags: ['js'],
-          title: '"true"'
-        }
+          tags:
+            ['js'],
+          title: '"true"' }
       ]);
   });

@@ -18,15 +18,17 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    languageOptions: { parser: tsParser },
-    plugins: { asljs: { rules: { 'variable-declaration-style': rule } } },
-    rules: { 'asljs/variable-declaration-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { languageOptions:
+                     { parser: tsParser },
+                   plugins:
+                     { asljs:
+                         { rules:
+                             { 'variable-declaration-style': rule } } },
+                   rules:
+                     { 'asljs/variable-declaration-style': 'error' } } });
 
 test(
   'ts-style-rules/variable-declaration: \r\n line endings',

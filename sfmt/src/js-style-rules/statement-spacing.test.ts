@@ -16,14 +16,15 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    plugins: { asljs: { rules: { 'statement-spacing': rule } } },
-    rules: { 'asljs/statement-spacing': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { plugins:
+                     { asljs:
+                         { rules:
+                             { 'statement-spacing': rule } } },
+                   rules:
+                     { 'asljs/statement-spacing': 'error' } } });
 
 test(
   'statement-spacing: \\r\\n line endings',

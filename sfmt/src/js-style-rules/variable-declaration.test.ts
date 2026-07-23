@@ -16,14 +16,15 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    plugins: { asljs: { rules: { 'variable-declaration-style': rule } } },
-    rules: { 'asljs/variable-declaration-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { plugins:
+                     { asljs:
+                         { rules:
+                             { 'variable-declaration-style': rule } } },
+                   rules:
+                     { 'asljs/variable-declaration-style': 'error' } } });
 
 test(
   'variable-declaration: \\r\\n line endings',

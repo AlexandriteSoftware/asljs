@@ -38,13 +38,13 @@ export async function format(
   const paths =
     await glob(
       pattern,
-      {
-      absolute: true,
-      cwd: environment.cwd,
-      dot: true,
-      nodir: true,
-      ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
-    });
+      { absolute: true,
+        cwd:
+          environment.cwd,
+        dot: true,
+        nodir: true,
+        ignore:
+          ['**/node_modules/**', '**/dist/**', '**/build/**'] });
 
   for (const path of paths) {
     await formatFile(path);

@@ -22,10 +22,8 @@ export function createFormatter(
     eslintRule: RuleDefinition<RuleDefinitionTypeOptions>
   ): FormatterDefinition
 {
-  return {
-    name,
-    eslintRule
-  };
+  return { name: name,
+           eslintRule: eslintRule };
 }
 
 export async function applyFormatters(
@@ -70,22 +68,22 @@ export async function applyFormatters(
 
   const overrideConfig: Linter.Config[] =
     [
-    {
-      files: getFilePatterns(fileType),
-      languageOptions: getLanguageOptions(fileType),
-      plugins: { sfmt: { rules } },
-      rules: enabledRules
-    }
+    { files:
+        getFilePatterns(fileType),
+      languageOptions:
+        getLanguageOptions(fileType),
+      plugins:
+        { sfmt:
+            { rules } },
+      rules: enabledRules }
   ];
 
   const eslint =
-    new ESLint({
-    cwd: eslintCwd,
-    overrideConfigFile: true,
-    fix: true,
-    ignore: false,
-    overrideConfig
-  });
+    new ESLint({ cwd: eslintCwd,
+                 overrideConfigFile: true,
+                 fix: true,
+                 ignore: false,
+                 overrideConfig: overrideConfig });
 
   const [result] =
     await eslint.lintText(
@@ -118,16 +116,14 @@ function getLanguageOptions(
   ): Linter.LanguageOptions
 {
   if (fileType === 'typescript') {
-    return {
-      parser: tsParser,
-      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' }
-    };
+    return { parser: tsParser,
+             parserOptions:
+               { ecmaVersion: 'latest',
+                 sourceType: 'module' } };
   }
 
-  return {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
-  };
+  return { ecmaVersion: 'latest',
+           sourceType: 'module' };
 }
 
 function getFilePatterns(

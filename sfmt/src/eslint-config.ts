@@ -32,142 +32,144 @@ import tsVariableDeclarationStyleRule
   from './ts-style-rules/variable-declaration.js';
 
 const ignores: Linter.Config =
-  {
-  ignores: ['**/dist/**', '**/build/**', '**/.tests/**', '**/node_modules/**']
-};
+  { ignores:
+      ['**/dist/**', '**/build/**', '**/.tests/**', '**/node_modules/**'] };
 
 const typescriptConfig: Linter.Config =
-  {
-  files: ['**/*.{ts,tsx}'],
-  languageOptions: {
-    parser: tsParser,
-    parserOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module'
-    }
-  },
-  plugins: {
-    '@typescript-eslint': tseslint.plugin,
-    asljs: {
-      rules: {
-        'import-style': tsImportStyleRule,
-        'function-declaration-style': tsFunctionDeclarationStyleRule,
-        'conditional-expression-style': tsConditionalExpressionStyleRule,
-        'call-expression-style': tsCallExpressionEslintRule,
-        'variable-declaration-style': tsVariableDeclarationStyleRule,
-        'statement-spacing': tsStatementSpacingStyleRule
-      }
-    }
-  },
-  rules: {
-    indent: 'off',
-    semi: ['error', 'always'],
-    eqeqeq: ['error', 'always'],
-    'prefer-const': 'error',
-    'no-var': 'error',
-    'function-call-argument-newline': ['error', 'consistent'],
-    'nonblock-statement-body-position': ['error', 'below'],
-    'multiline-ternary': ['error', 'always'],
-    'operator-linebreak': [
+  { files:
+      ['**/*.{ts,tsx}'],
+    languageOptions:
+      { parser: tsParser,
+        parserOptions:
+          { ecmaVersion: 'latest',
+            sourceType: 'module' } },
+    plugins:
+      { '@typescript-eslint':
+          tseslint.plugin,
+        asljs:
+          { rules:
+              { 'import-style':
+                  tsImportStyleRule,
+                'function-declaration-style':
+                  tsFunctionDeclarationStyleRule,
+                'conditional-expression-style':
+                  tsConditionalExpressionStyleRule,
+                'call-expression-style':
+                  tsCallExpressionEslintRule,
+                'variable-declaration-style':
+                  tsVariableDeclarationStyleRule,
+                'statement-spacing':
+                  tsStatementSpacingStyleRule } } },
+    rules:
+      { indent: 'off',
+        semi:
+          ['error', 'always'],
+        eqeqeq:
+          ['error', 'always'],
+        'prefer-const': 'error',
+        'no-var': 'error',
+        'function-call-argument-newline':
+          ['error', 'consistent'],
+        'nonblock-statement-body-position':
+          ['error', 'below'],
+        'multiline-ternary':
+          ['error', 'always'],
+        'operator-linebreak':
+          [
       'error',
       'before',
-      {
-        overrides: {
-          '=': 'after',
-          '&&': 'before',
-          '||': 'before',
-          '?': 'before',
-          ':': 'before'
-        }
-      }
+      { overrides:
+          { '=': 'after',
+            '&&': 'before',
+            '||': 'before',
+            '?': 'before',
+            ':': 'before' } }
     ],
-    quotes: [
+        quotes:
+          [
       'error',
       'single',
-      {
-        avoidEscape: true,
-        allowTemplateLiterals: true
-      }
+      { avoidEscape: true,
+        allowTemplateLiterals: true }
     ],
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unsafe-function-type': 'off',
-    '@typescript-eslint/no-empty-object-type': 'off',
-    '@typescript-eslint/explicit-function-return-type': [
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-function-type': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
+        '@typescript-eslint/explicit-function-return-type':
+          [
       'error',
-      {
-        allowExpressions: true,
+      { allowExpressions: true,
         allowTypedFunctionExpressions: true,
         allowHigherOrderFunctions: true,
-        allowDirectConstAssertionInArrowFunctions: true
-      }
+        allowDirectConstAssertionInArrowFunctions: true }
     ],
-    'asljs/import-style': 'error',
-    'asljs/function-declaration-style': 'error',
-    'asljs/conditional-expression-style': 'error',
-    'asljs/call-expression-style': 'error',
-    'asljs/variable-declaration-style': 'error',
-    'asljs/statement-spacing': 'error'
-  }
-};
+        'asljs/import-style': 'error',
+        'asljs/function-declaration-style': 'error',
+        'asljs/conditional-expression-style': 'error',
+        'asljs/call-expression-style': 'error',
+        'asljs/variable-declaration-style': 'error',
+        'asljs/statement-spacing': 'error' } };
 
 const javascriptConfig: Linter.Config =
-  {
-  files: ['**/*.{js,mjs,cjs}'],
-  languageOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
-  },
-  plugins: {
-    asljs: {
-      rules: {
-        'import-style': jsImportStyleRule,
-        'function-declaration-style': jsFunctionDeclarationStyleRule,
-        'conditional-expression-style': jsConditionalExpressionStyleRule,
-        'call-expression-style': jsCallExpressionStyleRule,
-        'variable-declaration-style': jsVariableDeclarationStyleRule,
-        'statement-spacing': jsStatementSpacingStyleRule
-      }
-    }
-  },
-  rules: {
-    ...js.configs.recommended.rules,
-    semi: ['error', 'always'],
-    eqeqeq: ['error', 'always'],
-    'prefer-const': 'error',
-    'no-var': 'error',
-    'no-duplicate-imports': 'error',
-    'function-call-argument-newline': ['error', 'consistent'],
-    'nonblock-statement-body-position': ['error', 'below'],
-    'multiline-ternary': ['error', 'always'],
-    'operator-linebreak': [
+  { files:
+      ['**/*.{js,mjs,cjs}'],
+    languageOptions:
+      { ecmaVersion: 'latest',
+        sourceType: 'module' },
+    plugins:
+      { asljs:
+          { rules:
+              { 'import-style':
+                  jsImportStyleRule,
+                'function-declaration-style':
+                  jsFunctionDeclarationStyleRule,
+                'conditional-expression-style':
+                  jsConditionalExpressionStyleRule,
+                'call-expression-style':
+                  jsCallExpressionStyleRule,
+                'variable-declaration-style':
+                  jsVariableDeclarationStyleRule,
+                'statement-spacing':
+                  jsStatementSpacingStyleRule } } },
+    rules:
+      { ...js.configs.recommended.rules,
+        semi:
+          ['error', 'always'],
+        eqeqeq:
+          ['error', 'always'],
+        'prefer-const': 'error',
+        'no-var': 'error',
+        'no-duplicate-imports': 'error',
+        'function-call-argument-newline':
+          ['error', 'consistent'],
+        'nonblock-statement-body-position':
+          ['error', 'below'],
+        'multiline-ternary':
+          ['error', 'always'],
+        'operator-linebreak':
+          [
       'error',
       'before',
-      {
-        overrides: {
-          '=': 'after',
-          '&&': 'before',
-          '||': 'before',
-          '?': 'before',
-          ':': 'before'
-        }
-      }
+      { overrides:
+          { '=': 'after',
+            '&&': 'before',
+            '||': 'before',
+            '?': 'before',
+            ':': 'before' } }
     ],
-    quotes: [
+        quotes:
+          [
       'error',
       'single',
-      {
-        avoidEscape: true,
-        allowTemplateLiterals: true
-      }
+      { avoidEscape: true,
+        allowTemplateLiterals: true }
     ],
-    'asljs/import-style': 'error',
-    'asljs/function-declaration-style': 'error',
-    'asljs/conditional-expression-style': 'error',
-    'asljs/call-expression-style': 'error',
-    'asljs/variable-declaration-style': 'error',
-    'asljs/statement-spacing': 'error'
-  }
-};
+        'asljs/import-style': 'error',
+        'asljs/function-declaration-style': 'error',
+        'asljs/conditional-expression-style': 'error',
+        'asljs/call-expression-style': 'error',
+        'asljs/variable-declaration-style': 'error',
+        'asljs/statement-spacing': 'error' } };
 
 const configs: Linter.Config[] =
   [ignores, typescriptConfig, javascriptConfig];

@@ -16,14 +16,15 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    plugins: { asljs: { rules: { 'call-expression-style': rule } } },
-    rules: { 'asljs/call-expression-style': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { plugins:
+                     { asljs:
+                         { rules:
+                             { 'call-expression-style': rule } } },
+                   rules:
+                     { 'asljs/call-expression-style': 'error' } } });
 
 test(
   'call-expression: \\r\\n line endings',

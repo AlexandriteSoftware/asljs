@@ -2,10 +2,12 @@ import { ObjectExpression }
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
-import { tryGetLocation }
-  from '../functions/location.js';
 import { Indentation }
   from '../functions/indentations.js';
+import { tryGetLocation }
+  from '../functions/location.js';
+import { expressionIsShort }
+  from '../functions/short-expression.js';
 
 export function fmtObjectExpression(
     node: ObjectExpression,
@@ -22,7 +24,7 @@ export function fmtObjectExpression(
     // do not rebuild if there are no tokens
     return original;
   }
-  
+
   const firstToken =
     tokens[0];
 
@@ -46,43 +48,77 @@ export function fmtObjectExpression(
 
   const baseIndentation =
     new Indentation(
-      firstTokenLocation.start.column);
+    firstTokenLocation.start.column
+  );
 
   const propertyIndentation =
     baseIndentation.increase();
-
-  const firstProperty =
-    node.properties[0];
 
   const code: string[] = [];
 
   code.push('{ ');
 
-  code.push(
-    context.sourceCode
-      .getText(
-        firstProperty));
-
   for (
-    let index = 1;
+    let index = 0;
     index < node.properties.length;
     index++
   ) {
     const property =
       node.properties[index];
 
-    code.push(',');
+    if (index > 0) {
+      code.push(',');
 
-    code.push(
-      context.newLine);
+      code.push(
+        context.newLine);
 
-    code.push(
-      propertyIndentation.value);
+      code.push(
+        propertyIndentation.value);
+    }
 
-    code.push(
-      context.sourceCode
-        .getText(
-          property));
+    if (property.type === 'Property') {
+      code.push(
+        context.sourceCode
+          .getText(
+            property.key));
+
+      code.push(':');
+
+      const propertyValue =
+        property.value;
+
+      const propertyValueIsShort =
+        expressionIsShort(
+          propertyValue);
+
+      if (propertyValueIsShort) {
+        code.push(' ');
+
+        code.push(
+          context.sourceCode
+            .getText(
+              propertyValue));
+      } else {
+        code.push(
+          context.newLine);
+
+        const valueIndentation =
+          propertyIndentation.increase();
+
+        code.push(
+          valueIndentation.value);
+
+        code.push(
+          context.sourceCode
+            .getText(
+              propertyValue));
+      }
+    } else {
+      code.push(
+        context.sourceCode
+          .getText(
+            property));
+    }
   }
 
   code.push(' }');

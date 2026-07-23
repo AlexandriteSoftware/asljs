@@ -18,15 +18,17 @@ const SCRIPT_FILE_PATH =
     import.meta.url);
 
 const eslint =
-  new ESLint({
-  overrideConfigFile: true,
-  fix: true,
-  overrideConfig: {
-    languageOptions: { parser: tsParser },
-    plugins: { asljs: { rules: { 'statement-spacing': rule } } },
-    rules: { 'asljs/statement-spacing': 'error' }
-  }
-});
+  new ESLint({ overrideConfigFile: true,
+               fix: true,
+               overrideConfig:
+                 { languageOptions:
+                     { parser: tsParser },
+                   plugins:
+                     { asljs:
+                         { rules:
+                             { 'statement-spacing': rule } } },
+                   rules:
+                     { 'asljs/statement-spacing': 'error' } } });
 
 test(
   'ts-style-rules/statement-spacing: \r\n line endings',

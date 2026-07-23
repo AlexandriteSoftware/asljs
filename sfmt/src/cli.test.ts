@@ -25,7 +25,8 @@ test(
 
     const environment =
       createEnvironment(
-        { cwd: workspace.path });
+        { cwd:
+            workspace.path });
 
     const exitCode =
       await runCli(

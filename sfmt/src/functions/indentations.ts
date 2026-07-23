@@ -13,10 +13,9 @@ export class Indentation
     indentation: string | number
   )
   {
-    this.#indentation =
-      typeof indentation === 'number'
-        ? ' '.repeat(indentation)
-        : indentation;
+    this.#indentation = typeof indentation === 'number'
+      ? ' '.repeat(indentation)
+      : indentation;
   }
 
   get value(): string {
