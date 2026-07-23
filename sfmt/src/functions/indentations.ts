@@ -10,14 +10,21 @@ export class Indentation
   public static readonly INITIAL = new Indentation('');
 
   constructor(
-    indentation: string
+    indentation: string | number
   )
   {
-    this.#indentation = indentation;
+    this.#indentation =
+      typeof indentation === 'number'
+        ? ' '.repeat(indentation)
+        : indentation;
   }
 
   get value(): string {
     return this.#indentation;
+  }
+
+  get column(): number {
+    return this.#indentation.length;
   }
 
   equals(

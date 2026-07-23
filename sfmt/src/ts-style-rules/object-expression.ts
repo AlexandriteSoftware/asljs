@@ -9,6 +9,12 @@ import { FormatterDefinition }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
+import { fmtObjectExpression }
+  from '../ts-fmt/fmt-object-expression.js';
+import { tryGetLocation }
+  from '../functions/location.js';
+import { Indentation }
+  from '../functions/indentations.js';
 
 const meta: Rule.RuleMetaData =
   { type: 'layout', fixable: 'code', schema: [] };
@@ -76,7 +82,7 @@ function createExpressionListener(
       ): Rule.Fix
     {
       const replacement =
-        buildExpression(
+        fmtObjectExpression(
           node,
           fmtCtx);
 
@@ -92,13 +98,90 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  return true;
-}
+  const tokens =
+    context.sourceCode.getTokens(node);
 
-function buildExpression(
-    node: ObjectExpression,
-    context: FormattingContext
-  ): string
-{
-  return context.sourceCode.getText(node);
+  if (tokens.length === 0) {
+    // do not check if there are no tokens
+    return true;
+  }
+  
+  const firstToken =
+    tokens[0];
+
+  if (firstToken.value !== '{') {
+    // do not check if the first token is not an opening brace
+    return true;
+  }
+
+  const firstTokenLocation =
+    tryGetLocation(firstToken);
+
+  if (!firstTokenLocation) {
+    // do not check if the first token has no location
+    return true;
+  }
+
+  const lastToken =
+    tokens[tokens.length - 1];
+
+  const lastTokenLocation =
+    tryGetLocation(lastToken);
+
+  if (!lastTokenLocation) {
+    // do not check if the last token has no location
+    return true;
+  }
+  
+  if (node.properties.length === 0) {
+    // the object expression without properties should be just `{ }`
+    return firstTokenLocation.start.line === lastTokenLocation.end.line
+      && firstTokenLocation.start.column === lastTokenLocation.end.column - 2;
+  }
+
+  const baseIndentation =
+    new Indentation(
+      firstTokenLocation.start.column);
+
+  const propertyIndentation =
+    baseIndentation.increase();
+
+  const firstProperty =
+    node.properties[0];
+
+  const firstPropertyLocation =
+    tryGetLocation(firstProperty);
+
+  if (!firstPropertyLocation) {
+    // do not check if the first property has no location
+    return true;
+  }
+
+  // first property should be on the same line as the opening brace
+  if (firstPropertyLocation.start.line !== firstTokenLocation.start.line) {
+    return false;
+  }
+
+  for (
+    let index = 0;
+    index < node.properties.length;
+    index++
+  ) {
+    const property =
+      node.properties[index];
+
+    const propertyLocation =
+      tryGetLocation(property);
+
+    if (!propertyLocation) {
+      // do not check if the property has no location
+      return true;
+    }
+
+    if (propertyLocation.start.column !== propertyIndentation.column) {
+      return false;
+    }
+  }
+
+  return true;
 }
