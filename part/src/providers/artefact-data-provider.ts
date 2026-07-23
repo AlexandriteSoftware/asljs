@@ -86,10 +86,10 @@ export class ArtefactDataProvider
     }
 
     const context: ArtefactDataProvidingContext =
-      {
-      logger: this.logger,
-      markdownDocuments: this.markdownDocumentProvider
-    };
+      { logger:
+          this.logger,
+        markdownDocuments:
+          this.markdownDocumentProvider };
 
     try {
       return await getDataFunction(

@@ -29,7 +29,8 @@ export class MarkdownDocumentProvider
         content);
 
     const markdownDocument: MarkdownDocument =
-      { content, root: document };
+      { content,
+        root: document };
 
     return markdownDocument;
   }

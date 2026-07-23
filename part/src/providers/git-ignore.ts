@@ -133,7 +133,8 @@ export class GitIgnore
           gitIgnoreContent);
 
       this.matchers.push(
-        { path: directoryPath, matcher });
+        { path: directoryPath,
+          matcher });
     }
 
     const parentPath =

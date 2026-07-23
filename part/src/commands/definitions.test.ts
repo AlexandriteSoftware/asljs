@@ -56,12 +56,13 @@ This top-level definition should be ignored by the Definitions parameter.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.resolve('definitions'),
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.resolve('definitions'),
+          project:
+            workspace.path });
 
     await execDefinitions(
       environment);

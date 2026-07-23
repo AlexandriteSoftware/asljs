@@ -112,12 +112,11 @@ export async function execCheck(
     const paths =
       await glob(
         options.pattern,
-        {
-        absolute: true,
-        cwd: environment.cwd,
-        dot: true,
-        nodir: true
-      });
+        { absolute: true,
+          cwd:
+            environment.cwd,
+          dot: true,
+          nodir: true });
 
     for (const artefactPath of paths) {
       const artefact =
@@ -211,13 +210,12 @@ export async function execCheck(
         ruleResult.result === 'Ok';
 
       const row =
-        {
-        location: relativePath,
-        rule: `${rule.name}`,
-        result: isOk
+        { location: relativePath,
+          rule: `${rule.name}`,
+          result:
+            isOk
           ? 'OK'
-          : ruleResult.message
-      };
+          : ruleResult.message };
 
       hasFailures = hasFailures
         || !isOk;
@@ -251,10 +249,10 @@ export async function execCheck(
 
   const table =
     renderObjectsToMarkdownTable(
-      [{ property: 'location', name: 'Location' }, {
-      property: 'rule',
-      name: 'Rule'
-    }, { property: 'result', name: 'Result' }],
+      [{ property: 'location',
+         name: 'Location' }, { property: 'rule',
+                               name: 'Rule' }, { property: 'result',
+                                                 name: 'Result' }],
       results);
 
   environment.stdout

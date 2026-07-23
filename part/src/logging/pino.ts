@@ -50,7 +50,8 @@ export function createPinoLoggerProvider(
 
   const loggerProvider =
     new PinoLoggerProvider(
-    { level, file }
+    { level,
+      file }
   );
 
   return loggerProvider;
@@ -88,21 +89,23 @@ class PinoLoggerProvider implements LoggerProvider
 
     if (file) {
       this.#transport = pino.transport(
-        { target: 'pino/file', options: { destination: file, mkdir: true } });
+        { target: 'pino/file',
+          options:
+            { destination: file,
+              mkdir: true } });
     } else {
       this.#transport = pino.transport(
-        {
-          target: 'pino-pretty',
-          options: {
-            messageFormat: '{context}: {msg}',
-            ignore: 'context',
-            colorize: true
-          }
-        });
+        { target: 'pino-pretty',
+          options:
+            { messageFormat:
+                '{context}: {msg}',
+              ignore: 'context',
+              colorize: true } });
     }
 
     this.#logger = pino(
-      { base: null, level: pinoLogLevel },
+      { base: null,
+        level: pinoLogLevel },
       this.#transport);
   }
 

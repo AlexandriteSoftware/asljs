@@ -47,7 +47,8 @@ export async function execInit(
       path.join(
         definitionsPath,
         entryName),
-      { recursive: true, force: true });
+      { recursive: true,
+        force: true });
   }
 
   environment.stdout.write(

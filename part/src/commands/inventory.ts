@@ -75,7 +75,9 @@ export async function execInventory(
       let entry;
 
       if (existingEntry === undefined) {
-        entry = { location: artefact.relativePath, definitions: [] };
+        entry = { location:
+                    artefact.relativePath,
+                  definitions: [] };
       } else {
         entry = existingEntry;
       }
@@ -97,10 +99,10 @@ export async function execInventory(
       artefactIndex.values(),
       entry =>
     {
-      return {
-        location: entry.location,
-        definitions: entry.definitions.join(',')
-      };
+      return { location:
+                 entry.location,
+               definitions:
+                 entry.definitions.join(',') };
     });
 
   items.sort(
@@ -110,10 +112,9 @@ export async function execInventory(
 
   const table =
     renderObjectsToMarkdownTable(
-      [{ property: 'location', name: 'Location' }, {
-      property: 'definitions',
-      name: 'Definitions'
-    }],
+      [{ property: 'location',
+         name: 'Location' }, { property: 'definitions',
+                               name: 'Definitions' }],
       items);
 
   environment.stdout.write(

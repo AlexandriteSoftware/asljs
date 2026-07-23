@@ -77,12 +77,13 @@ Requirement passes a second rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -160,17 +161,20 @@ Definition rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
       environment,
-      { pattern: 'definitions/Requirement.md', withPositives: true });
+      { pattern:
+          'definitions/Requirement.md',
+        withPositives: true });
 
     assert.equal(
       environment.stderr.toString(),
@@ -248,22 +252,24 @@ Article rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
       environment,
-      {
-        pattern: 'development/**/*.md',
-        checkDefinitions: ['Requirement'],
-        checkRules: ['Requirement_RL11'],
-        withPositives: true
-      });
+      { pattern:
+          'development/**/*.md',
+        checkDefinitions:
+          ['Requirement'],
+        checkRules:
+          ['Requirement_RL11'],
+        withPositives: true });
 
     assert.equal(
       environment.stderr.toString(),
@@ -328,17 +334,20 @@ Second rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
       environment,
-      { withPositives: true, checkDefinitions: ['Requirement'] });
+      { withPositives: true,
+        checkDefinitions:
+          ['Requirement'] });
 
     assert.equal(
       environment.stderr.toString(),
@@ -409,12 +418,13 @@ Passing rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -475,12 +485,13 @@ Passing rule.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),

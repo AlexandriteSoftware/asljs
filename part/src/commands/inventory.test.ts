@@ -65,12 +65,13 @@ I need to buy milk.
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider
-      });
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider });
 
     await execInventory(
       execInventoryLogger,
@@ -116,12 +117,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider
-      });
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider });
 
     await execInventory(
       execInventoryLogger,
@@ -171,12 +173,13 @@ Definition file.
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider
-      });
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider });
 
     await execInventory(
       execInventoryLogger,
@@ -226,17 +229,19 @@ Definition file.
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider
-      });
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider });
 
     await execInventory(
       execInventoryLogger,
       environment,
-      { inventoryDefinitions: ['Article'] });
+      { inventoryDefinitions:
+          ['Article'] });
 
     assert.equal(
       environment.stderr.toString(),
@@ -278,11 +283,12 @@ A todo item is a task that needs to be done.
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execInventory(
       execInventoryLogger,

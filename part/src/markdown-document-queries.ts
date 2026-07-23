@@ -27,13 +27,13 @@ export function getSections(
   const sections: Section[] = [];
 
   let currentSection: Section =
-    {
-    heading: '',
-    level: 0,
-    nodes: [],
-    markup: '',
-    content: { nodes: [], markup: '' }
-  };
+    { heading: '',
+      level: 0,
+      nodes: [],
+      markup: '',
+      content:
+        { nodes: [],
+          markup: '' } };
 
   sections.push(
     currentSection);
@@ -66,13 +66,15 @@ export function getSections(
         node.children);
 
     const newSection: Section =
-      {
-      heading: markup,
-      level: (node as Heading).depth,
-      nodes: [node],
-      markup: '',
-      content: { nodes: [], markup: '' }
-    };
+      { heading: markup,
+        level:
+          (node as Heading).depth,
+        nodes:
+          [node],
+        markup: '',
+        content:
+          { nodes: [],
+            markup: '' } };
 
     sections.push(newSection);
 

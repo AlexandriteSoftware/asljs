@@ -43,12 +43,15 @@ test(
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider,
-        runCopilotCli: async (_, request) =>
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider,
+          runCopilotCli:
+            async (_, request) =>
         {
           requestPrompt = request.prompt;
 
@@ -61,8 +64,7 @@ test(
             `${request.comment}\n\nexport async function validate() {}\n`);
 
           return `all done`;
-        }
-      });
+        } });
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -112,16 +114,18 @@ test(
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        loggerProvider,
-        runCopilotCli: async () =>
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          loggerProvider,
+          runCopilotCli:
+            async () =>
         {
           throw new Error('runCopilotCli should not be called during dry-run');
-        }
-      });
+        } });
 
     await workspace.writeText(
       'artefacts/Requirement.md',
@@ -172,11 +176,14 @@ test(
 
     const environment =
       createEnvironment(
-        {
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path,
-        runCopilotCli: async (_, request) =>
+        { cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path,
+          runCopilotCli:
+            async (_, request) =>
         {
           const ruleFileName =
             path.basename(
@@ -187,8 +194,7 @@ test(
             `${request.comment}\n\nexport async function validate() {}\n`);
 
           return 'all done';
-        }
-      });
+        } });
 
     await workspace.writeText(
       'artefacts/Requirement.md',

@@ -24,7 +24,8 @@ export function tmpDirFactory(
         tmpDirLogger);
 
     const tmpDirOptions: Partial<TmpDirOptions> =
-      { error, trace };
+      { error,
+        trace };
 
     return new TmpDir(
       tmpDirOptions

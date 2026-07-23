@@ -185,7 +185,11 @@ export class ArtefactDefinitionProviderImpl
     const markdownPaths =
       await glob(
         '**/*.md',
-        { absolute: true, cwd: this.definitionsPath, dot: true, nodir: true });
+        { absolute: true,
+          cwd:
+            this.definitionsPath,
+          dot: true,
+          nodir: true });
 
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
@@ -386,25 +390,24 @@ export class ArtefactDefinitionProviderImpl
         ruleSection.markup;
 
       const rule: ArtefactDefinitionRule =
-        {
-        id: ruleId,
-        definition: name,
-        name: ruleName,
-        heading: ruleSection.heading,
-        content: ruleDescription
-      };
+        { id: ruleId,
+          definition: name,
+          name: ruleName,
+          heading:
+            ruleSection.heading,
+          content:
+            ruleDescription };
 
       rules.push(rule);
     }
 
     const definition =
-      {
-      path: context.path,
-      name,
-      description,
-      locations,
-      rules
-    };
+      { path:
+          context.path,
+        name,
+        description,
+        locations,
+        rules };
 
     this.logger.trace(
       'parse() { name: %s, rules: %d, locations: %d }',
@@ -480,7 +483,9 @@ export class ArtefactDefinitionProviderImpl
       }
 
       const location: Location =
-        { pattern, exclude, filters };
+        { pattern,
+          exclude,
+          filters };
 
       locations.push(location);
     }

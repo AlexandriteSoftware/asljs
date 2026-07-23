@@ -60,16 +60,20 @@ export function createRuleValidationContext(
     providers.markdownDocumentProvider;
 
   const context: RuleValidationContext =
-    {
-    logger: loggerProvider.getLogger(
-      'RuleValidationContext'),
-    rootPath: projectPath,
-    definitions: artefactDefinitionProvider,
-    artefacts: artefactProvider,
-    artefactData: artefactDataProvider,
-    markdownDocuments: markdownDocumentProvider,
-    rules: artefactDefinitionRuleProvider
-  };
+    { logger:
+        loggerProvider.getLogger(
+          'RuleValidationContext'),
+      rootPath: projectPath,
+      definitions:
+        artefactDefinitionProvider,
+      artefacts:
+        artefactProvider,
+      artefactData:
+        artefactDataProvider,
+      markdownDocuments:
+        markdownDocumentProvider,
+      rules:
+        artefactDefinitionRuleProvider };
 
   return context;
 }

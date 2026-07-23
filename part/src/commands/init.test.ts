@@ -34,11 +34,11 @@ test(
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.resolve('definitions')
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.resolve('definitions') });
 
     await execInit(
       environment);

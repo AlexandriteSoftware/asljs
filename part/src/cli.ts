@@ -93,12 +93,13 @@ function createCli(
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
-      {
-        writeOut: value => environment.stdout.write(value),
-        writeErr: value => environment.stderr.write(value),
-        outputError: () =>
-        {}
-      })
+      { writeOut:
+          value => environment.stdout.write(value),
+        writeErr:
+          value => environment.stderr.write(value),
+        outputError:
+          () =>
+        {} })
     .exitOverride(
       error =>
       {
@@ -124,9 +125,7 @@ function createCli(
           actionCommand.optsWithGlobals();
 
         const loggerOptions: Partial<LoggerOptions> =
-          {
-          envVarPrefix: 'PART_LOG_'
-        };
+          { envVarPrefix: 'PART_LOG_' };
 
         if (options.loglevel) {
           loggerOptions.level = options.loglevel;
@@ -215,10 +214,9 @@ function createCli(
         await method(
           logger,
           environment,
-          {
-            inventoryDefinitions: splitCommaSeparatedOption(
-              options.inventoryDefinitions)
-          });
+          { inventoryDefinitions:
+              splitCommaSeparatedOption(
+                options.inventoryDefinitions) });
       });
 
   cli.command('definition')
@@ -320,14 +318,15 @@ function createCli(
         await method(
           logger,
           environment,
-          {
-            pattern,
-            checkDefinitions: splitCommaSeparatedOption(
-              options.checkDefinitions),
-            checkRules: splitCommaSeparatedOption(
-              options.checkRules),
-            withPositives: options.withPositives === true
-          });
+          { pattern,
+            checkDefinitions:
+              splitCommaSeparatedOption(
+                options.checkDefinitions),
+            checkRules:
+              splitCommaSeparatedOption(
+                options.checkRules),
+            withPositives:
+              options.withPositives === true });
       });
 
   cli.command('version')

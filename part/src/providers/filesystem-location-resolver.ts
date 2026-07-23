@@ -114,11 +114,10 @@ export class FilesystemLocationResolver
       const rootPathMatches =
         await glob(
           rootPathPatterns,
-          {
-          cwd: this.rootPath,
-          absolute: true,
-          nodir: filesOnly
-        });
+          { cwd:
+              this.rootPath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of rootPathMatches) {
         matches.add(match);
@@ -134,11 +133,10 @@ export class FilesystemLocationResolver
       const basePathMatches =
         await glob(
           basePathPatterns,
-          {
-          cwd: normalisedBasePath,
-          absolute: true,
-          nodir: filesOnly
-        });
+          { cwd:
+              normalisedBasePath,
+            absolute: true,
+            nodir: filesOnly });
 
       this.logger.trace(
         'FilesystemLocationResolver.resolve() => %d in %s',
@@ -161,7 +159,10 @@ export class FilesystemLocationResolver
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd: this.rootPath, absolute: true, nodir: filesOnly });
+          { cwd:
+              this.rootPath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of rootExcludeMatches) {
         matches.delete(match);
@@ -177,7 +178,10 @@ export class FilesystemLocationResolver
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd: normalisedBasePath, absolute: true, nodir: filesOnly });
+          { cwd:
+              normalisedBasePath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of basePathExcludeMatches) {
         matches.delete(match);

@@ -58,12 +58,13 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        {
-        loggerProvider,
-        cwd: workspace.path,
-        definitions: workspace.path,
-        project: workspace.path
-      });
+        { loggerProvider,
+          cwd:
+            workspace.path,
+          definitions:
+            workspace.path,
+          project:
+            workspace.path });
 
     await execDefinition(
       environment,

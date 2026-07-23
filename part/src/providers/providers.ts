@@ -90,16 +90,14 @@ export function providersFactory(
     artefactDefinitionProvider
   );
 
-  return {
-    projectPath,
-    definitionsPath,
-    loggerProvider,
-    artefactDefinitionProvider,
-    artefactDefinitionRuleProvider,
-    artefactDataProvider,
-    artefactProvider,
-    filesystemLocationResolver,
-    gitIgnore,
-    markdownDocumentProvider
-  };
+  return { projectPath,
+           definitionsPath,
+           loggerProvider,
+           artefactDefinitionProvider,
+           artefactDefinitionRuleProvider,
+           artefactDataProvider,
+           artefactProvider,
+           filesystemLocationResolver,
+           gitIgnore,
+           markdownDocumentProvider };
 }

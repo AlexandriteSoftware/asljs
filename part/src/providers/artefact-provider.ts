@@ -190,20 +190,22 @@ export class ArtefactProvider
   ): Promise<Artefact>
   {
     const artefact: Artefact =
-      {
-      path: artefactPath,
-      relativePath: toPosixPath(
-        path.relative(
+      { path: artefactPath,
+        relativePath:
+          toPosixPath(
+            path.relative(
+              projectDirectory,
+              artefactPath)),
+        basePath:
           projectDirectory,
-          artefactPath)),
-      basePath: projectDirectory,
-      name: path.basename(
-        artefactPath,
-        path.extname(artefactPath)),
-      definitions: definitions
+        name:
+          path.basename(
+            artefactPath,
+            path.extname(artefactPath)),
+        definitions:
+          definitions
         .map(
-          definition => definition.name)
-    };
+          definition => definition.name) };
 
     return artefact;
   }

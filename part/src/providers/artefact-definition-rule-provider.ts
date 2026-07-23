@@ -186,14 +186,14 @@ export class ArtefactDefinitionRuleProvider
           directoryPath,
           entry.name);
 
-      return {
-        path: absoluteFilePath,
-        relativePath: toPosixPath(
-          path.relative(
-            path.dirname(
-              definitionPath),
-            absoluteFilePath))
-      };
+      return { path:
+                 absoluteFilePath,
+               relativePath:
+                 toPosixPath(
+                   path.relative(
+                     path.dirname(
+                       definitionPath),
+                     absoluteFilePath)) };
     }
 
     return null;

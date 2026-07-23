@@ -302,7 +302,8 @@ export class TmpDir
     try {
       await fsp.rm(
         this.path,
-        { recursive: true, force: true });
+        { recursive: true,
+          force: true });
     } catch (error) {
       this.#error(
         `cleanup error: %s`,
@@ -321,7 +322,8 @@ export class TmpDir
     try {
       fs.rmSync(
         this.path,
-        { recursive: true, force: true });
+        { recursive: true,
+          force: true });
     } catch (error) {
       this.#error(
         `cleanupSync() error: %s`,

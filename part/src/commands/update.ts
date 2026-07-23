@@ -103,23 +103,28 @@ export async function execUpdate(
             rule);
 
         const request: CodeGenerationRequest =
-          {
-          mode: 'create',
-          rootDirectory: rootDir,
-          ruleFilePath: expectedFilePath,
-          definition: definition.name,
-          definitionPath: definition.path,
-          ruleId: rule.id,
-          rule: rule.content,
-          comment: ruleProvider.formatRuleComment(rule),
-          currentContent: null,
-          prompt: buildPrompt(
-            'create',
-            definition,
-            rule,
-            expectedFilePath,
-            null)
-        };
+          { mode: 'create',
+            rootDirectory: rootDir,
+            ruleFilePath:
+              expectedFilePath,
+            definition:
+              definition.name,
+            definitionPath:
+              definition.path,
+            ruleId:
+              rule.id,
+            rule:
+              rule.content,
+            comment:
+              ruleProvider.formatRuleComment(rule),
+            currentContent: null,
+            prompt:
+              buildPrompt(
+                'create',
+                definition,
+                rule,
+                expectedFilePath,
+                null) };
 
         if (dryRun) {
           prompts.push(request);
@@ -181,23 +186,28 @@ export async function execUpdate(
       }
 
       const request: CodeGenerationRequest =
-        {
-        mode: 'update',
-        rootDirectory: rootDir,
-        ruleFilePath: currentFilePath,
-        definition: definition.name,
-        definitionPath: definition.path,
-        ruleId: rule.id,
-        rule: rule.content,
-        comment: ruleProvider.formatRuleComment(rule),
-        currentContent: currentContent,
-        prompt: buildPrompt(
-          'update',
-          definition,
-          rule,
-          currentFilePath,
-          currentContent)
-      };
+        { mode: 'update',
+          rootDirectory: rootDir,
+          ruleFilePath:
+            currentFilePath,
+          definition:
+            definition.name,
+          definitionPath:
+            definition.path,
+          ruleId:
+            rule.id,
+          rule:
+            rule.content,
+          comment:
+            ruleProvider.formatRuleComment(rule),
+          currentContent: currentContent,
+          prompt:
+            buildPrompt(
+              'update',
+              definition,
+              rule,
+              currentFilePath,
+              currentContent) };
 
       if (dryRun) {
         prompts.push(request);
@@ -224,11 +234,9 @@ export async function execUpdate(
   }
 
   const result =
-    {
-    updates,
-    warnings,
-    prompts
-  };
+    { updates,
+      warnings,
+      prompts };
 
   if (result.updates.length === 0) {
     environment.stdout.write(
@@ -447,11 +455,11 @@ async function runCopilotCli(
       const child =
         spawn(
           command,
-          {
-          cwd: request.rootDirectory,
-          shell: true,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
+          { cwd:
+              request.rootDirectory,
+            shell: true,
+            stdio:
+              ['pipe', 'pipe', 'pipe'] });
 
       let stdout = '';
       let stderr = '';

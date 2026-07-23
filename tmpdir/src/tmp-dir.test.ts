@@ -24,7 +24,8 @@ test(
           'asljs-tmpdir-test-'));
 
     const options =
-      { tmpDir: baseTmpDir, prefix: 'case-' };
+      { tmpDir: baseTmpDir,
+        prefix: 'case-' };
 
     const tmpDirs = new Map<string, TmpDir>();
 
@@ -59,7 +60,8 @@ test(
     } finally {
       await fs.rm(
         baseTmpDir,
-        { recursive: true, force: true });
+        { recursive: true,
+          force: true });
     }
   });
 
@@ -149,7 +151,9 @@ test(
 
     const tmpDir =
       new TmpDir(
-      { tmpDir: parentDirectoryPath, prefix: 'case-' }
+      { tmpDir:
+          parentDirectoryPath,
+        prefix: 'case-' }
     );
 
     const escapedFilePath =
@@ -184,7 +188,8 @@ test(
 
       await fs.rm(
         parentDirectoryPath,
-        { recursive: true, force: true });
+        { recursive: true,
+          force: true });
     }
   });
 

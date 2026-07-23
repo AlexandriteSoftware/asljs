@@ -59,11 +59,10 @@ export class RuleRunner
         rule.name,
         artefact.name);
 
-      return {
-        rule,
-        result: 'Fail',
-        message: 'Missing rule file.'
-      };
+      return { rule,
+               result: 'Fail',
+               message:
+                 'Missing rule file.' };
     }
 
     try {
@@ -75,11 +74,10 @@ export class RuleRunner
         rule.name,
         artefact.name);
 
-      return {
-        rule,
-        result: 'Fail',
-        message: 'Cannot access rule file.'
-      };
+      return { rule,
+               result: 'Fail',
+               message:
+                 'Cannot access rule file.' };
     }
 
     const ruleFileExtension =
@@ -165,15 +163,20 @@ export class RuleRunner
       let result = null;
 
       const validationContext: RuleValidationContext =
-        {
-        logger: this.logger,
-        rootPath: this.providers.projectPath,
-        definitions: this.providers.artefactDefinitionProvider,
-        artefacts: this.providers.artefactProvider,
-        artefactData: this.providers.artefactDataProvider,
-        markdownDocuments: this.providers.markdownDocumentProvider,
-        rules: this.providers.artefactDefinitionRuleProvider
-      };
+        { logger:
+            this.logger,
+          rootPath:
+            this.providers.projectPath,
+          definitions:
+            this.providers.artefactDefinitionProvider,
+          artefacts:
+            this.providers.artefactProvider,
+          artefactData:
+            this.providers.artefactDataProvider,
+          markdownDocuments:
+            this.providers.markdownDocumentProvider,
+          rules:
+            this.providers.artefactDefinitionRuleProvider };
 
       try {
         await validateFunction(
@@ -185,24 +188,20 @@ export class RuleRunner
       }
 
       if (result !== null) {
-        return {
-          rule,
-          result: 'Fail',
-          message: this.formatError(result)
-        };
+        return { rule,
+                 result: 'Fail',
+                 message:
+                   this.formatError(result) };
       }
 
-      return {
-        rule,
-        result: 'Ok',
-        message: ''
-      };
+      return { rule,
+               result: 'Ok',
+               message: '' };
     } catch (error) {
-      return {
-        rule,
-        result: 'Fail',
-        message: this.formatError(error)
-      };
+      return { rule,
+               result: 'Fail',
+               message:
+                 this.formatError(error) };
     }
   }
 
@@ -230,11 +229,12 @@ export class RuleRunner
         spawn(
           ruleFilePath,
           [artefact.path],
-          {
-          cwd: path.dirname(ruleFilePath),
-          env: process.env,
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
+          { cwd:
+              path.dirname(ruleFilePath),
+            env:
+              process.env,
+            stdio:
+              ['pipe', 'pipe', 'pipe'] });
 
       let stderr = '';
 
@@ -255,11 +255,10 @@ export class RuleRunner
         error =>
         {
           resolve(
-            {
-              rule,
+            { rule,
               result: 'Fail',
-              message: this.formatError(error)
-            });
+              message:
+                this.formatError(error) });
         });
 
       child.on(
@@ -277,11 +276,9 @@ export class RuleRunner
             : stderr.trim() || rule.content;
 
           resolve(
-            {
-              rule,
+            { rule,
               result,
-              message
-            });
+              message });
         });
     });
   }

@@ -89,17 +89,23 @@ function formatDefinitionDetails(
   ): string
 {
   return serializeMarkdownList(
-    {
-      name: definition.name,
-      description: definition.description,
-      location: definition.locations,
-      rules: definition.rules.map(
-        rule => ({ id: rule.id, description: rule.content })),
-      path: toPosixPath(
-        path.relative(
-          rootDirectory,
-          definition.path))
-    });
+    { name:
+        definition.name,
+      description:
+        definition.description,
+      location:
+        definition.locations,
+      rules:
+        definition.rules.map(
+          rule => ({ id:
+                       rule.id,
+                     description:
+                       rule.content })),
+      path:
+        toPosixPath(
+          path.relative(
+            rootDirectory,
+            definition.path)) });
 }
 
 function serializeMarkdownList(
