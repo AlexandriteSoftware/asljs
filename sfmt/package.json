@@ -1,6 +1,6 @@
 {
   "name": "asljs-sfmt",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A command line tool for formatting JavaScript and TypeScript according to the Alexandrite Software Library style guide.",
   "type": "module",
   "main": "dist/index.js",
