@@ -1,7 +1,7 @@
-import * as ESTree
-  from 'estree';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
+import * as ESTree
+  from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
@@ -39,7 +39,8 @@ export function fmtFunctionDeclaration(
 
   const parameters =
     node.params.map(
-      parameter => context.sourceCode.getText(
+      parameter =>
+      context.sourceCode.getText(
         parameter as unknown as ESTree.Node));
 
   const code: string[] = [];

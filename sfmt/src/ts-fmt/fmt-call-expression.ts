@@ -1,5 +1,5 @@
-import { SimpleCallExpression,
-         Node }
+import { Node,
+         SimpleCallExpression }
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -63,8 +63,10 @@ export function fmtCallExpression(
       code.push(
         firstArgumentText);
     } else {
-      if (expressionIsShort(
-        firstArgument)) {
+      if (
+        expressionIsShort(
+          firstArgument)
+      ) {
         if (openingParenthesis.loc.end.line !== argumentStartLine) {
           code.push(
             context.newLine);

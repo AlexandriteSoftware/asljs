@@ -2,8 +2,8 @@ import { ConditionalExpression }
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
-import { getIndentation,
-         asTextNode }
+import { asTextNode,
+         getIndentation }
   from '../ts-style-rules/conditional-expression.js';
 
 export function fmtConditionalExpression(

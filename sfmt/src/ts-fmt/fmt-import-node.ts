@@ -41,7 +41,9 @@ export function fmtImportNode(
           node.source?.raw || '');
 
         code.push(';');
-      } else if (/^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)) {
+      } else if (
+        /^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)
+      ) {
         code.push('{ }');
 
         code.push(
@@ -166,7 +168,8 @@ export function fmtImportNode(
 
       const isType =
         importKind === 'type'
-        || (parent?.type === 'ImportDeclaration' && parent.importKind === 'type');
+        || (parent?.type === 'ImportDeclaration'
+          && parent.importKind === 'type');
 
       if (isType) {
         code.push('type ');

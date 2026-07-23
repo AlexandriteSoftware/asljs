@@ -1,12 +1,12 @@
-import { Node,
-         Expression }
-  from 'estree';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
+import { Expression,
+         Node }
+  from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
-import { Indentation,
-         getIndentation }
+import { getIndentation,
+         Indentation }
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
@@ -35,8 +35,10 @@ export function fmtVariableDeclarator(
       context.sourceCode.getText(
         nodeInit as unknown as Node);
 
-    if (expressionIsShort(
-      nodeInit as Expression)) {
+    if (
+      expressionIsShort(
+        nodeInit as Expression)
+    ) {
       code.push(' ');
       code.push(initText);
     } else {
