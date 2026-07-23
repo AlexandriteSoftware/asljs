@@ -76,48 +76,63 @@ export function fmtObjectExpression(
         propertyIndentation.value);
     }
 
-    if (property.type === 'Property') {
-      code.push(
-        context.sourceCode
-          .getText(
-            property.key));
-
-      code.push(':');
-
-      const propertyValue =
-        property.value;
-
-      const propertyValueIsShort =
-        expressionIsShort(
-          propertyValue);
-
-      if (propertyValueIsShort) {
-        code.push(' ');
-
-        code.push(
-          context.sourceCode
-            .getText(
-              propertyValue));
-      } else {
-        code.push(
-          context.newLine);
-
-        const valueIndentation =
-          propertyIndentation.increase();
-
-        code.push(
-          valueIndentation.value);
-
-        code.push(
-          context.sourceCode
-            .getText(
-              propertyValue));
-      }
-    } else {
+    if (property.type !== 'Property') {
       code.push(
         context.sourceCode
           .getText(
             property));
+
+      continue;
+    }
+
+    code.push(
+      context.sourceCode
+        .getText(
+          property.key));
+
+    if (property.shorthand) {
+      continue;
+    }
+
+    if (property.method) {
+      code.push(
+        context.sourceCode
+          .getText(
+            property.value));
+
+      continue;
+    }
+
+    code.push(':');
+
+    const propertyValue =
+      property.value;
+
+    const propertyValueIsShort =
+      expressionIsShort(
+        propertyValue);
+
+    if (propertyValueIsShort) {
+      code.push(' ');
+
+      code.push(
+        context.sourceCode
+          .getText(
+            propertyValue));
+    } else {
+      code.push(
+        context.newLine);
+
+      const valueIndentation =
+        propertyIndentation.increase();
+
+      code.push(
+        valueIndentation.value);
+
+      code.push(
+        context.sourceCode
+          .getText(
+            propertyValue));
     }
   }
 

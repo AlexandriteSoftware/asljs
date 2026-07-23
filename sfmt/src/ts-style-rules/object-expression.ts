@@ -186,35 +186,45 @@ function checkLayout(
       return false;
     }
 
-    if (property.type === 'Property') {
-      const value =
-        property.value;
+    if (property.type !== 'Property') {
+      continue;
+    }
 
-      const valueLocation =
-        tryGetLocation(value);
+    if (property.shorthand) {
+      continue;
+    }
 
-      if (!valueLocation) {
-        // do not check if the value has no location
-        return true;
+    if (property.method) {
+      continue;
+    }
+
+    const value =
+      property.value;
+
+    const valueLocation =
+      tryGetLocation(value);
+
+    if (!valueLocation) {
+      // do not check if the value has no location
+      return true;
+    }
+
+    if (expressionIsShort(value)) {
+      if (valueLocation.start.line !== propertyLocation.start.line) {
+        return false;
       }
+    } else {
+      const expectedValueLine =
+        propertyLocation.start.line + 1;
 
-      if (expressionIsShort(value)) {
-        if (valueLocation.start.line !== propertyLocation.start.line) {
-          return false;
-        }
-      } else {
-        const expectedValueLine =
-          propertyLocation.start.line + 1;
+      const expectedValueColumn =
+        propertyIndentation.increase().column;
 
-        const expectedValueColumn =
-          propertyIndentation.increase().column;
-
-        if (
-          valueLocation.start.line !== expectedValueLine
-          || valueLocation.start.column !== expectedValueColumn
-        ) {
-          return false;
-        }
+      if (
+        valueLocation.start.line !== expectedValueLine
+        || valueLocation.start.column !== expectedValueColumn
+      ) {
+        return false;
       }
     }
   }
