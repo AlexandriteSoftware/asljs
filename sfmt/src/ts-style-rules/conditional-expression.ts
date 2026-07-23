@@ -10,6 +10,8 @@ import { createFormatter }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
+import { fmtConditionalExpression }
+  from '../ts-fmt/fmt-conditional-expression.js';
 
 const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
   { meta:
@@ -54,7 +56,7 @@ function create(
           (fixer: Rule.RuleFixer): Rule.Fix =>
         {
           const replacement =
-            buildConditionalExpression(
+            fmtConditionalExpression(
               node,
               fmtCtx);
 
@@ -112,38 +114,7 @@ function checkLayout(
   );
 }
 
-function buildConditionalExpression(
-    node: ConditionalExpression,
-    context: FormattingContext
-  ): string
-{
-  const indent =
-    getIndentation(
-      context.sourceCode,
-      node);
-
-  const branchIndent =
-    indent + '  ';
-
-  const testText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.test));
-
-  const consequentText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.consequent));
-
-  const alternateText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.alternate));
-
-  return `${testText}${context.newLine}${branchIndent}? ${consequentText}${context.newLine}${branchIndent}: ${alternateText}`;
-}
-
-function getIndentation(
+export function getIndentation(
     sourceCode: SourceCode,
     node: ConditionalExpression
   ): string
@@ -171,7 +142,7 @@ function asTokenTarget(
   return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
 }
 
-function asTextNode(
+export function asTextNode(
     node: unknown
   ): Parameters<SourceCode['getText']>[0]
 {
