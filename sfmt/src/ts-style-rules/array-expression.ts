@@ -5,7 +5,9 @@ import { JSSyntaxElement,
   from 'eslint';
 import { ArrayExpression }
   from 'estree';
-import { FormatterDefinition }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -15,82 +17,85 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
+import { Logger }
+  from '../logging.js';
 
-const meta: Rule.RuleMetaData =
-  { type: 'layout',
-    fixable: 'code',
-    schema: [] };
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'array-expression',
+    listenerFactory);
 
-export const tsArrayExpressionEslintRule: Rule.RuleModule =
-  { meta,
-    create };
+export default formatterDefinitionFactory;
 
-export const tsArrayExpressionFormatter: FormatterDefinition =
-  { name:
-      'array-expression',
-    eslintRule:
-      tsArrayExpressionEslintRule };
-
-function create(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
 {
-  const listener =
-    createExpressionListener(
-      context);
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { ArrayExpression:
+            listener };
 
-  return listener;
+      return ruleListener;
+
+      function listener(
+          node: ArrayExpression & Rule.NodeParentExtension
+        ): void
+      {
+        processArrayExpression(
+          logger,
+          context,
+          node);
+      }
+    };
+
+  return listenerFactory;
 }
 
-function createExpressionListener(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+function processArrayExpression(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: ArrayExpression & Rule.NodeParentExtension
+  ): void
 {
-  const ruleListener: Rule.RuleListener =
-    { ArrayExpression:
-        arrayExpressionListener };
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger);
 
-  return ruleListener;
+  const correctLayout =
+    checkLayout(
+      node,
+      fmtCtx);
 
-  function arrayExpressionListener(
-      node: ArrayExpression & Rule.NodeParentExtension
-    ): void
+  if (correctLayout) {
+    return;
+  }
+
+  const report: ViolationReport<JSSyntaxElement, string> =
+    { node: node,
+      message:
+        'Use asljs array expression style.',
+      fix: fix };
+
+  context.report(report);
+
+  function fix(
+      fixer: Rule.RuleFixer
+    ): Rule.Fix
   {
-    const fmtCtx =
-      new FormattingContext(
-      context.sourceCode
-    );
-
-    const correctLayout =
-      checkLayout(
+    const replacement =
+      fmtArrayExpression(
         node,
         fmtCtx);
 
-    if (correctLayout) {
-      return;
-    }
-
-    const report: ViolationReport<JSSyntaxElement, string> =
-      { node: node,
-        message:
-          'Use asljs expression style.',
-        fix: fix };
-
-    context.report(report);
-
-    function fix(
-        fixer: Rule.RuleFixer
-      ): Rule.Fix
-    {
-      const replacement =
-        fmtArrayExpression(
-          node,
-          fmtCtx);
-
-      return fixer.replaceText(
-        node,
-        replacement);
-    }
+    return fixer.replaceText(
+      node,
+      replacement);
   }
 }
 

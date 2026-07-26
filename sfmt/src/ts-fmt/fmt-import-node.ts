@@ -3,7 +3,7 @@ import { type TSESTree }
 import { FormattingContext }
   from '../formatting-context.js';
 import { Import }
-  from '../ts-style-rules/import.js';
+  from '../ts-style-rules/import-declaration.js';
 
 export function fmtImportNode(
     node: TSESTree.ImportDeclaration,

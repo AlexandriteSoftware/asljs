@@ -6,7 +6,9 @@ import { JSSyntaxElement,
 import { Expression,
          SimpleCallExpression }
   from 'estree';
-import { FormatterDefinition }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext,
          FormattingContextPredicates }
@@ -19,84 +21,85 @@ import { expressionIsShort }
   from '../functions/short-expression.js';
 import { fmtCallExpression }
   from '../ts-fmt/fmt-call-expression.js';
+import { Logger }
+  from '../logging.js';
 
-const meta: Rule.RuleMetaData =
-  { type: 'layout',
-    fixable: 'code',
-    schema: [] };
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'call-expression',
+    listenerFactory);
 
-export const tsCallExpressionEslintRule: Rule.RuleModule =
-  { meta: meta,
-    create: create };
+export default formatterDefinitionFactory;
 
-export const tsCallExpressionFormatter: FormatterDefinition =
-  { name:
-      'call-expression',
-    eslintRule:
-      tsCallExpressionEslintRule };
-
-function create(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
 {
-  const listener =
-    createCallExpressionListener(
-      context);
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { CallExpression:
+            listener };
 
-  return listener;
+      return ruleListener;
+
+      function listener(
+          node: SimpleCallExpression & Rule.NodeParentExtension
+        ): void
+      {
+        processCallExpression(
+          logger,
+          context,
+          node);
+      }
+    };
+
+  return listenerFactory;
 }
 
-function createCallExpressionListener(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+function processCallExpression(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: SimpleCallExpression & Rule.NodeParentExtension
+  ): void
 {
-  const ruleListener =
-    { CallExpression:
-        callExpressionListener };
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger);
 
-  return ruleListener;
+  const correctLayout =
+    checkLayout(
+      node,
+      fmtCtx);
 
-  function callExpressionListener(
-      node:
-      & SimpleCallExpression
-      & Rule.NodeParentExtension
-    ): void
+  if (correctLayout) {
+    return;
+  }
+
+  const report: ViolationReport<JSSyntaxElement, string> =
+    { node: node,
+      message:
+        'Use asljs call expression style.',
+      fix: fix };
+
+  context.report(report);
+
+  function fix(
+      fixer: Rule.RuleFixer
+    ): Rule.Fix
   {
-    const fmtCtx =
-      new FormattingContext(
-      context.sourceCode
-    );
-
-    const correctLayout =
-      checkLayout(
+    const replacement =
+      fmtCallExpression(
         node,
         fmtCtx);
 
-    if (correctLayout) {
-      return;
-    }
-
-    const report: ViolationReport<JSSyntaxElement, string> =
-      { node: node,
-        message:
-          'Use asljs call expression style.',
-        fix: fix };
-
-    context.report(report);
-
-    function fix(
-        fixer: Rule.RuleFixer
-      ): Rule.Fix
-    {
-      const replacement =
-        fmtCallExpression(
-          node,
-          fmtCtx);
-
-      return fixer.replaceText(
-        node,
-        replacement);
-    }
+    return fixer.replaceText(
+      node,
+      replacement);
   }
 }
 

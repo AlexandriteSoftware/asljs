@@ -1,78 +1,92 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
 import { Rule,
          SourceCode }
   from 'eslint';
 import { ConditionalExpression }
   from 'estree';
-import { createFormatter }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { fmtConditionalExpression }
   from '../ts-fmt/fmt-conditional-expression.js';
+import { Logger }
+  from '../logging.js';
 
-const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  { meta:
-      { type: 'layout',
-        fixable: 'code',
-        schema: [] },
-    create: create };
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'conditional-expression',
+    listenerFactory);
 
-function create(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+export default formatterDefinitionFactory;
+
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
 {
-  const listener: Rule.RuleListener =
-    { ConditionalExpression:
-        conditionalExpressionListener };
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { ConditionalExpression:
+            listener };
 
-  return listener;
+      return ruleListener;
 
-  function conditionalExpressionListener(
-      node: ConditionalExpression
-    ): void
-  {
-    const fmtCtx =
-      new FormattingContext(
-      context.sourceCode
-    );
+      function listener(
+          node: ConditionalExpression
+        ): void
+      {
+        processConditionalExpression(
+          logger,
+          context,
+          node);
+      }
+    };
 
-    const correctLayout =
-      checkLayout(
-        node,
-        fmtCtx);
-
-    if (correctLayout) {
-      return;
-    }
-
-    context.report(
-      { node: node,
-        message:
-          'Use asljs conditional expression style.',
-        fix:
-          (fixer: Rule.RuleFixer): Rule.Fix =>
-        {
-          const replacement =
-            fmtConditionalExpression(
-              node,
-              fmtCtx);
-
-          return fixer.replaceText(
-            node,
-            replacement);
-        } });
-  }
+  return listenerFactory;
 }
 
-export const conditionalExpressionFormatter =
-  createFormatter(
-    'conditional-expression-style',
-    ruleDefinition);
+function processConditionalExpression(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: ConditionalExpression
+  ): void
+{
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger);
 
-export default conditionalExpressionFormatter.eslintRule;
+  const correctLayout =
+    checkLayout(
+      node,
+      fmtCtx);
+
+  if (correctLayout) {
+    return;
+  }
+
+  context.report(
+    { node: node,
+      message:
+        'Use asljs conditional expression style.',
+      fix:
+        (fixer: Rule.RuleFixer): Rule.Fix =>
+      {
+        const replacement =
+          fmtConditionalExpression(
+            node,
+            fmtCtx);
+
+        return fixer.replaceText(
+          node,
+          replacement);
+      } });
+}
 
 function checkLayout(
     node: ConditionalExpression,

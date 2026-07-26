@@ -1,54 +1,60 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions,
-         SourceRange }
+import { SourceRange }
   from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { Rule,
          SourceCode }
   from 'eslint';
-import { createFormatter }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
+import { Logger }
+  from '../logging.js';
 
-const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  { meta:
-      { type: 'layout',
-        fixable: 'whitespace',
-        schema: [] },
-    create:
-      (context: Rule.RuleContext): Rule.RuleListener =>
-  {
-    const listener: Rule.RuleListener =
-      { Program:
-          (node): void =>
-      {
-        const tsNode =
-          node as unknown as TSESTree.Program;
-
-        checkStatements(
-          tsNode.body,
-          context);
-      },
-        BlockStatement:
-          (node): void =>
-      {
-        const tsNode =
-          node as unknown as TSESTree.BlockStatement;
-
-        checkStatements(
-          tsNode.body,
-          context);
-      } };
-
-    return listener;
-  } };
-
-export const statementSpacingFormatter =
-  createFormatter(
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
     'statement-spacing',
-    ruleDefinition);
+    listenerFactory);
 
-export default statementSpacingFormatter.eslintRule;
+export default formatterDefinitionFactory;
+
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
+{
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { Program:
+          (node): void =>
+          {
+            const tsNode =
+              node as unknown as TSESTree.Program;
+
+            checkStatements(
+              tsNode.body,
+              context);
+          },
+            BlockStatement:
+              (node): void =>
+          {
+            const tsNode =
+              node as unknown as TSESTree.BlockStatement;
+
+            checkStatements(
+              tsNode.body,
+              context);
+          } };
+
+      return ruleListener;
+    };
+
+  return listenerFactory;
+}
 
 /**
  * Enforces a blank line between multiline statements.

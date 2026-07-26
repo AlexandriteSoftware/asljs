@@ -5,7 +5,9 @@ import { JSSyntaxElement,
   from 'eslint';
 import { ObjectExpression }
   from 'estree';
-import { FormatterDefinition }
+import { formatterFactory,
+         FormatterDefinitionFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -20,115 +22,83 @@ import { fmtObjectExpression }
 import { Logger }
   from '../logging.js';
 
-type RuleListenerCreateFn =
-  (
-      context: Rule.RuleContext
-    ) => Rule.RuleListener;
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'object-expression',
+    listenerFactory);
 
-export default (
+export default formatterDefinitionFactory;
+
+function listenerFactory(
     logger: Logger
-  ): FormatterDefinition =>
+  ): RuleListenerFactory
 {
-  const meta: Rule.RuleMetaData =
-    { type: 'layout',
-      fixable: 'code',
-      schema: [ ] };
-
-  const create =
-    createFactory(
-      logger);
-
-  const eslintRule: Rule.RuleModule =
-    { meta,
-      create };
-
-  const formatter: FormatterDefinition =
-    { name: 'expression',
-      eslintRule };
-
-  return formatter;
-};
-
-function createFactory(
-    logger: Logger
-  ): RuleListenerCreateFn
-{
-  const factory =
+  const listenerFactory: RuleListenerFactory =
     (
         context: Rule.RuleContext
       ): Rule.RuleListener =>
     {
-      const listener =
-        create(
-          context);
+      const ruleListener: Rule.RuleListener =
+        { ObjectExpression:
+            listener };
 
-      return listener;
-    }; 
+      return ruleListener;
 
-  return factory;
+      function listener(
+          node: ObjectExpression & Rule.NodeParentExtension
+        ): void
+      {
+        processObjectExpression(
+          logger,
+          context,
+          node);
+      }
+    };
 
-  function create(
-      context: Rule.RuleContext
-    ): Rule.RuleListener
-  {
-    const listener =
-      createExpressionListener(
-        context);
+  return listenerFactory;
+}
 
-    return listener;
+function processObjectExpression(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: ObjectExpression & Rule.NodeParentExtension
+  ): void
+{
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger
+    );
+
+  const correctLayout =
+    checkLayout(
+      node,
+      fmtCtx);
+
+  if (correctLayout) {
+    return;
   }
 
-  function createExpressionListener(
-      context: Rule.RuleContext
-    ): Rule.RuleListener
+  const report: ViolationReport<JSSyntaxElement, string> =
+    { node: node,
+      message:
+        'Use asljs object expression style.',
+      fix: fix };
+
+  context.report(report);
+
+  function fix(
+      fixer: Rule.RuleFixer
+    ): Rule.Fix
   {
-    const ruleListener: Rule.RuleListener =
-      { ObjectExpression:
-          objectExpressionListener };
+    const replacement =
+      fmtObjectExpression(
+        node,
+        fmtCtx);
 
-    return ruleListener;
-
-    function objectExpressionListener(
-        node: ObjectExpression & Rule.NodeParentExtension
-      ): void
-    {
-      const fmtCtx =
-        new FormattingContext(
-          context.sourceCode,
-          logger
-        );
-
-      const correctLayout =
-        checkLayout(
-          node,
-          fmtCtx);
-
-      if (correctLayout) {
-        return;
-      }
-
-      const report: ViolationReport<JSSyntaxElement, string> =
-        { node: node,
-          message:
-            'Use asljs expression style.',
-          fix: fix };
-
-      context.report(report);
-
-      function fix(
-          fixer: Rule.RuleFixer
-        ): Rule.Fix
-      {
-        const replacement =
-          fmtObjectExpression(
-            node,
-            fmtCtx);
-
-        return fixer.replaceText(
-          node,
-          replacement);
-      }
-    }
+    return fixer.replaceText(
+      node,
+      replacement);
   }
 }
 

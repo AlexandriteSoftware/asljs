@@ -12,12 +12,14 @@ export {
 
 export {
   applyFormatters,
-  createFormatter,
+  formatterFactory,
   getFileType,
   type FormatterDefinition,
   type SupportedFileType
 } from './formatter.js';
 
 export {
-  jsStyleFormatters
-} from './js-style-rules/style-rules.js';
+  createPinoLoggerProvider,
+  NullLoggerProvider,
+  type Logger
+} from './logging.js';

@@ -6,21 +6,22 @@ import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import tsFunctionDeclarationFormatterFactory
-  from './function-declaration.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
+import tsImportDeclarationFormatterFactory
+  from './import-declaration.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-const tsFunctionDeclarationFormatter =
-  tsFunctionDeclarationFormatterFactory(
+const tsImportDeclarationFormatter =
+  tsImportDeclarationFormatterFactory(
     loggerProvider.getLogger(
-      'function-declaration.test.ts'));
+      'Import-declaration.test.ts'));
 
-const tsFunctionDeclarationEslintRule =
-  tsFunctionDeclarationFormatter.eslintRule;
+const tsImportDeclarationEslintRule =
+  tsImportDeclarationFormatter.eslintRule;
+
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(
@@ -36,11 +37,11 @@ const eslint =
           plugins:
             { asljs:
                 { rules:
-                    { 'function-declaration-style':
-                        tsFunctionDeclarationEslintRule } } },
+                    { 'import-declaration-style':
+                        tsImportDeclarationEslintRule } } },
           rules:
-            { 'asljs/function-declaration-style': 'error' } } });
+            { 'asljs/import-declaration-style': 'error' } } });
 
-await buildStyleRuleTestsFromMarkdown(
-  SCRIPT_FILE_PATH,
-  eslint);
+  await buildStyleRuleTestsFromMarkdown(
+    SCRIPT_FILE_PATH,
+    eslint);

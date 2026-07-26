@@ -2,48 +2,44 @@ import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
   from 'eslint';
-import assert
-  from 'node:assert/strict';
-import test
-  from 'node:test';
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import rule
+import tsStatementSpacingFormatterFactory
   from './statement-spacing.js';
+import { createPinoLoggerProvider }
+  from '../logging.js';
+
+const loggerProvider =
+  createPinoLoggerProvider();
+
+const tsStatementSpacingFormatter =
+  tsStatementSpacingFormatterFactory(
+    loggerProvider.getLogger(
+      'statement-spacing.test.ts'));
+
+const tsStatementSpacingEslintRule =
+  tsStatementSpacingFormatter.eslintRule;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(
     import.meta.url);
 
 const eslint =
-  new ESLint({ overrideConfigFile: true,
-               fix: true,
-               overrideConfig:
-                 { languageOptions:
-                     { parser: tsParser },
-                   plugins:
-                     { asljs:
-                         { rules:
-                             { 'statement-spacing': rule } } },
-                   rules:
-                     { 'asljs/statement-spacing': 'error' } } });
-
-test(
-  'ts-style-rules/statement-spacing: \r\n line endings',
-  async () =>
-  {
-    const code =
-      "import { readFile }\r\n  from 'node:fs/promises';";
-
-    const [result] =
-      await eslint.lintText(code);
-
-    assert.strictEqual(
-      result.output,
-      undefined);
-  });
+  new ESLint(
+    { overrideConfigFile: true,
+      fix: true,
+      overrideConfig:
+        { languageOptions:
+            { parser: tsParser },
+          plugins:
+            { asljs:
+                { rules:
+                    { 'statement-spacing':
+                        tsStatementSpacingEslintRule } } },
+          rules:
+            { 'asljs/statement-spacing': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

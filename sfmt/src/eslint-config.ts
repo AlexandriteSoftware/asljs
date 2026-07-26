@@ -6,34 +6,63 @@ import { type Linter }
   from 'eslint';
 import tseslint
   from 'typescript-eslint';
-import jsCallExpressionStyleRule
-  from './js-style-rules/call-expression.js';
-import jsConditionalExpressionStyleRule
-  from './js-style-rules/conditional-expression.js';
-import jsFunctionDeclarationStyleRule
-  from './js-style-rules/function-declaration.js';
-import jsImportStyleRule
-  from './js-style-rules/import.js';
-import jsStatementSpacingStyleRule
-  from './js-style-rules/statement-spacing.js';
-import jsVariableDeclarationStyleRule
-  from './js-style-rules/variable-declaration.js';
-import { tsCallExpressionEslintRule }
-  from './ts-style-rules/call-expression.js';
-import tsConditionalExpressionStyleRule
-  from './ts-style-rules/conditional-expression.js';
-import tsFunctionDeclarationStyleRule
+import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
-import tsImportStyleRule
-  from './ts-style-rules/import.js';
-import tsStatementSpacingStyleRule
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
+import tsStatementSpacingFormatterFactory
   from './ts-style-rules/statement-spacing.js';
-import tsVariableDeclarationStyleRule
+import tsVariableDeclarationFormatterFactory
   from './ts-style-rules/variable-declaration.js';
+import tsArrayExpressionFormatterFactory
+  from './ts-style-rules/array-expression.js';
+import tsCallExpressionFormatterFactory
+  from './ts-style-rules/call-expression.js';
+import tsConditionalExpressionFormatterFactory
+  from './ts-style-rules/conditional-expression.js';
+import tsObjectExpressionFormatterFactory
+  from './ts-style-rules/object-expression.js';
+import { NullLoggerProvider }
+  from './index.js';
 
 const ignores: Linter.Config =
   { ignores:
       ['**/dist/**', '**/build/**', '**/.tests/**', '**/node_modules/**'] };
+
+const loggerProvider =
+  new NullLoggerProvider();
+
+const tsArrayExpressionFormatter =
+  tsArrayExpressionFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsCallExpressionFormatter =
+  tsCallExpressionFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsConditionalExpressionFormatter =
+  tsConditionalExpressionFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsFunctionDeclarationFormatter =
+  tsFunctionDeclarationFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsImportDeclarationFormatter =
+  tsImportDeclarationFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsObjectExpressionFormatter =
+  tsObjectExpressionFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsStatementSpacingFormatter =
+  tsStatementSpacingFormatterFactory(
+    loggerProvider.getLogger());
+
+    const tsVariableDeclarationFormatter =
+  tsVariableDeclarationFormatterFactory(
+    loggerProvider.getLogger());
 
 const typescriptConfig: Linter.Config =
   { files:
@@ -49,17 +78,21 @@ const typescriptConfig: Linter.Config =
         asljs:
           { rules:
               { 'import-style':
-                  tsImportStyleRule,
+                  tsImportDeclarationFormatter.eslintRule,
                 'function-declaration-style':
-                  tsFunctionDeclarationStyleRule,
+                  tsFunctionDeclarationFormatter.eslintRule,
                 'conditional-expression-style':
-                  tsConditionalExpressionStyleRule,
+                  tsConditionalExpressionFormatter.eslintRule,
                 'call-expression-style':
-                  tsCallExpressionEslintRule,
+                  tsCallExpressionFormatter.eslintRule,
                 'variable-declaration-style':
-                  tsVariableDeclarationStyleRule,
+                  tsVariableDeclarationFormatter.eslintRule,
                 'statement-spacing':
-                  tsStatementSpacingStyleRule } } },
+                  tsStatementSpacingFormatter.eslintRule,
+                'object-expression-style':
+                  tsObjectExpressionFormatter.eslintRule,
+                'array-expression-style':
+                  tsArrayExpressionFormatter.eslintRule } } },
     rules:
       { indent: 'off',
         semi:
@@ -108,7 +141,9 @@ const typescriptConfig: Linter.Config =
         'asljs/conditional-expression-style': 'error',
         'asljs/call-expression-style': 'error',
         'asljs/variable-declaration-style': 'error',
-        'asljs/statement-spacing': 'error' } };
+        'asljs/statement-spacing': 'error',
+        'asljs/object-expression-style': 'error',
+        'asljs/array-expression-style': 'error' } };
 
 const javascriptConfig: Linter.Config =
   { files:
@@ -116,21 +151,6 @@ const javascriptConfig: Linter.Config =
     languageOptions:
       { ecmaVersion: 'latest',
         sourceType: 'module' },
-    plugins:
-      { asljs:
-          { rules:
-              { 'import-style':
-                  jsImportStyleRule,
-                'function-declaration-style':
-                  jsFunctionDeclarationStyleRule,
-                'conditional-expression-style':
-                  jsConditionalExpressionStyleRule,
-                'call-expression-style':
-                  jsCallExpressionStyleRule,
-                'variable-declaration-style':
-                  jsVariableDeclarationStyleRule,
-                'statement-spacing':
-                  jsStatementSpacingStyleRule } } },
     rules:
       { ...js.configs.recommended.rules,
         semi:
@@ -163,13 +183,7 @@ const javascriptConfig: Linter.Config =
       'single',
       { avoidEscape: true,
         allowTemplateLiterals: true }
-    ],
-        'asljs/import-style': 'error',
-        'asljs/function-declaration-style': 'error',
-        'asljs/conditional-expression-style': 'error',
-        'asljs/call-expression-style': 'error',
-        'asljs/variable-declaration-style': 'error',
-        'asljs/statement-spacing': 'error' } };
+    ] } };
 
 const configs: Linter.Config[] =
   [ignores, typescriptConfig, javascriptConfig];

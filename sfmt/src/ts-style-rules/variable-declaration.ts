@@ -1,13 +1,13 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { Rule }
   from 'eslint';
-import { Node }
+import { Node,
+         VariableDeclarator }
   from 'estree';
-import { createFormatter }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -17,67 +17,90 @@ import { expressionIsShort }
   from '../functions/short-expression.js';
 import { fmtVariableDeclarator }
   from '../ts-fmt/fmt-variable-declarator.js';
+import { Logger }
+  from '../logging.js';
 
-const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  { meta:
-      { type: 'layout',
-        fixable: 'code',
-        schema: [] },
-    create:
-      (context: Rule.RuleContext): Rule.RuleListener =>
-  {
-    const listener: Rule.RuleListener =
-      { VariableDeclarator:
-          (node): void =>
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'variable-declaration',
+    listenerFactory);
+
+export default formatterDefinitionFactory;
+
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
+{
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { VariableDeclarator:
+            listener };
+
+      return ruleListener;
+
+      function listener(
+          node: VariableDeclarator & Rule.NodeParentExtension
+        ): void
       {
-        const tsNode =
-          node as unknown as TSESTree.VariableDeclarator;
+        processVariableDeclaration(
+          logger,
+          context,
+          node);
+      }
+    };
 
-        if (!tsNode.init) {
-          return;
-        }
+  return listenerFactory;
+}
 
-        const fmtCtx =
-          new FormattingContext(
-          context.sourceCode
-        );
+function processVariableDeclaration(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: VariableDeclarator & Rule.NodeParentExtension
+  ): void
+{
+  const tsNode =
+    node as unknown as TSESTree.VariableDeclarator;
 
-        const correctLayout =
-          checkLayout(
+  if (!tsNode.init) {
+    return;
+  }
+
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger
+    );
+
+  const correctLayout =
+    checkLayout(
+      tsNode,
+      fmtCtx);
+
+  if (correctLayout) {
+    return;
+  }
+
+  context.report(
+    { node: node,
+      message:
+        'Use asljs variable declaration style.',
+      fix:
+        fixer =>
+      {
+        const replacement =
+          fmtVariableDeclarator(
             tsNode,
             fmtCtx);
 
-        if (correctLayout) {
-          return;
-        }
-
-        context.report(
-          { node: node,
-            message:
-              'Use asljs variable declaration style.',
-            fix:
-              fixer =>
-            {
-              const replacement =
-                fmtVariableDeclarator(
-                  tsNode,
-                  fmtCtx);
-
-              return fixer.replaceText(
-                node,
-                replacement);
-            } });
-      } };
-
-    return listener;
-  } };
-
-export const variableDeclarationFormatter =
-  createFormatter(
-    'variable-declaration-style',
-    ruleDefinition);
-
-export default variableDeclarationFormatter.eslintRule;
+        return fixer.replaceText(
+          node,
+          replacement);
+      } });
+}
 
 function checkLayout(
     node: TSESTree.VariableDeclarator,

@@ -4,36 +4,14 @@ import test
   from 'node:test';
 import { applyFormatters }
   from './formatter.js';
-import { importFormatter as jsImportFormatter }
-  from './js-style-rules/import.js';
-import { importFormatter as tsImportFormatter }
-  from './ts-style-rules/import.js';
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
+import { NullLogger }
+  from './logging.js';
 
-test(
-  'applyFormatters applies a single JavaScript formatter independently',
-  async () =>
-  {
-    const code =
-      "import{readFile,writeFile}from'node:fs/promises';\n";
-
-    const formatted =
-      await applyFormatters(
-        code,
-        'example.js',
-        [
-        jsImportFormatter
-      ]);
-
-    assert.strictEqual(
-      formatted,
-      'import { readFile,\n'
-        + '         writeFile }\n'
-        + "  from 'node:fs/promises';\n");
-  });
-
-test(
-  'applyFormatters applies a single TypeScript formatter independently',
-  async () =>
+ test(
+   'applyFormatters applies a single TypeScript formatter independently',
+   async () =>
   {
     const code =
       "import type { writeFile } from'import-type';\n";
@@ -43,7 +21,8 @@ test(
         code,
         'example.ts',
         [
-        tsImportFormatter
+        tsImportDeclarationFormatterFactory(
+          new NullLogger())
       ]);
 
     assert.strictEqual(

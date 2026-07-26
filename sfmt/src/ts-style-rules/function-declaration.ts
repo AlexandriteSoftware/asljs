@@ -1,97 +1,112 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
 import { AST,
          Rule }
   from 'eslint';
-import * as ESTree
+import { FunctionDeclaration,
+         Node }
   from 'estree';
-import { createFormatter }
+import { FormatterDefinitionFactory,
+         formatterFactory,
+         RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { tryGetLocation }
+import { tryGetLocation,
+         WithLocation }
   from '../functions/location.js';
 import { fmtFunctionDeclaration }
   from '../ts-fmt/fmt-function-declaration.js';
+import { Logger }
+  from '../logging.js';
 
-const ruleDefinition: RuleDefinition<RuleDefinitionTypeOptions> =
-  { meta:
-      { type: 'layout',
-        fixable: 'code',
-        schema: [] },
-    create:
-      (context: Rule.RuleContext): Rule.RuleListener =>
-  {
-    const listener: Rule.RuleListener =
-      { FunctionDeclaration:
-          (node): void =>
+const formatterDefinitionFactory: FormatterDefinitionFactory =
+  formatterFactory(
+    'function-declaration',
+    listenerFactory);
+
+export default formatterDefinitionFactory;
+
+function listenerFactory(
+    logger: Logger
+  ): RuleListenerFactory
+{
+  const listenerFactory: RuleListenerFactory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
+    {
+      const ruleListener: Rule.RuleListener =
+        { FunctionDeclaration:
+            listener };
+
+      return ruleListener;
+
+      function listener(
+          node: FunctionDeclaration
+        ): void
       {
-        const tsNode =
-          node as unknown as TSESTree.FunctionDeclaration;
+        processFunctionDeclaration(
+          logger,
+          context,
+          node);
+      }
+    };
 
-        const sourceCode =
-          context.sourceCode;
+  return listenerFactory;
+}
 
-        const fmtCtx =
-          new FormattingContext(
-          sourceCode
-        );
+function processFunctionDeclaration(
+    logger: Logger,
+    context: Rule.RuleContext,
+    node: FunctionDeclaration
+  ): void
+{
+  const fmtCtx =
+    new FormattingContext(
+      context.sourceCode,
+      logger);
 
-        const correctLayout =
-          checkLayout(
-            tsNode,
+  const correctLayout =
+    checkLayout(
+      node,
+      fmtCtx);
+
+  if (correctLayout) {
+    return;
+  }
+
+  context.report(
+    { node: node,
+      message:
+        'Use asljs function declaration style.',
+      fix:
+        (fixer: Rule.RuleFixer): Rule.Fix =>
+      {
+        const replacement =
+          fmtFunctionDeclaration(
+            node,
             fmtCtx);
 
-        if (correctLayout) {
-          return;
-        }
-
-        context.report(
-          { node: node,
-            message:
-              'Use asljs function declaration style.',
-            fix:
-              (fixer: Rule.RuleFixer): Rule.Fix =>
-            {
-              const replacement =
-                fmtFunctionDeclaration(
-                  tsNode,
-                  fmtCtx);
-
-              return fixer.replaceText(
-                node,
-                replacement);
-            } });
-      } };
-
-    return listener;
-  } };
-
-export const functionDeclarationFormatter =
-  createFormatter(
-    'function-declaration-style',
-    ruleDefinition);
-
-export default functionDeclarationFormatter.eslintRule;
+        return fixer.replaceText(
+          node,
+          replacement);
+      } });
+}
 
 /**
  * Checks that function parameters are on separate lines and the opening brace
  * is on a new line.
  */
 function checkLayout(
-    node: TSESTree.FunctionDeclaration,
+    node: FunctionDeclaration,
     context: FormattingContext
   ): boolean
 {
   const baseIndent =
     getIndentation(
       context.sourceCode,
-      node);
+      node as unknown as WithLocation);
 
   const parametersIndent =
     baseIndent.increase(2);
@@ -100,16 +115,16 @@ function checkLayout(
     node.id;
 
   const typeParameters =
-    node.typeParameters;
+    (node as unknown as { typeParameters: Node | null }).typeParameters;
 
   let openingParen: AST.Token | null = null;
 
   if (typeParameters) {
     openingParen = context.sourceCode.getTokenAfter(
-      typeParameters as unknown as ESTree.Node);
+      typeParameters as unknown as Node);
   } else {
     openingParen = context.sourceCode.getTokenAfter(
-      id as unknown as ESTree.Node);
+      id as unknown as Node);
   }
 
   if (
@@ -156,7 +171,7 @@ function checkLayout(
     const parameterIndent =
       getIndentation(
         context.sourceCode,
-        firstParameter);
+        firstParameter as unknown as WithLocation);
 
     if (parameterIndent.value !== parametersIndent.value) {
       return false;
@@ -199,7 +214,7 @@ function checkLayout(
     const parameterIndent =
       getIndentation(
         context.sourceCode,
-        currentParameter);
+        currentParameter as unknown as WithLocation);
 
     if (parameterIndent.value !== parametersIndent.value) {
       return false;
@@ -222,7 +237,7 @@ function checkLayout(
 
     closingParen = context.sourceCode
       .getTokenAfter(
-        lastParameter as unknown as ESTree.Node);
+        lastParameter as unknown as Node);
 
     if (
       !closingParen
@@ -252,7 +267,7 @@ function checkLayout(
 
     closingParen = context.sourceCode
       .getTokenAfter(
-        openingParen as unknown as ESTree.Node);
+        openingParen as unknown as Node);
 
     if (
       !closingParen

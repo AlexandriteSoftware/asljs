@@ -1,21 +1,22 @@
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
-import * as ESTree
+import { FunctionDeclaration,
+         Node }
   from 'estree';
+import { type WithLocation }
+  from '../functions/location.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
 
 export function fmtFunctionDeclaration(
-    node: TSESTree.FunctionDeclaration,
+    node: FunctionDeclaration,
     context: FormattingContext
   ): string
 {
   const baseIndent =
     getIndentation(
       context.sourceCode,
-      node);
+      node as unknown as WithLocation);
 
   const parameterIndent =
     baseIndent.increase(2);
@@ -27,7 +28,7 @@ export function fmtFunctionDeclaration(
     node.id?.name ?? '';
 
   const typeParameters =
-    node.typeParameters;
+    (node as unknown as { typeParameters: Node | null }).typeParameters;
 
   const body =
     node.body;
@@ -41,7 +42,7 @@ export function fmtFunctionDeclaration(
     node.params.map(
       parameter =>
       context.sourceCode.getText(
-        parameter as unknown as ESTree.Node));
+        parameter as unknown as Node));
 
   const code: string[] = [];
 
@@ -58,7 +59,7 @@ export function fmtFunctionDeclaration(
   if (typeParameters) {
     const typeParametersCode =
       context.sourceCode.getText(
-        typeParameters as unknown as ESTree.Node);
+        typeParameters);
 
     code.push(
       typeParametersCode);
@@ -98,22 +99,25 @@ export function fmtFunctionDeclaration(
 
   code.push(
     context.sourceCode.getText(
-      body as unknown as ESTree.Node));
+      body as unknown as Node));
 
   return code.join('');
 
   function getReturnTypeText(
-      node: TSESTree.FunctionDeclaration,
+      node: FunctionDeclaration,
       context: FormattingContext
     ): string
   {
-    if (!node.returnType) {
+    const returnType =
+      (node as unknown as { returnType: Node | null }).returnType;
+
+    if (!returnType) {
       return '';
     }
 
     const returnTypeText =
       context.sourceCode.getText(
-        node.returnType as unknown as ESTree.Node);
+        returnType);
 
     return returnTypeText;
   }

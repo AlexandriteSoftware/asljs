@@ -4,10 +4,13 @@ import { RuleDefinition,
 import tsParser
   from '@typescript-eslint/parser';
 import { ESLint,
-         Linter }
+         Linter,
+         Rule }
   from 'eslint';
 import path
   from 'node:path';
+import { Logger }
+  from './logging.js';
 
 export type SupportedFileType = 'javascript' | 'typescript';
 
@@ -17,13 +20,51 @@ export interface FormatterDefinition
   eslintRule: RuleDefinition<RuleDefinitionTypeOptions>;
 }
 
-export function createFormatter(
+export type RuleListenerFactory =
+  (
+      context: Rule.RuleContext
+    ) => Rule.RuleListener;
+  
+export type RuleListenerFactoryMaker =
+  (
+      logger: Logger
+    ) => RuleListenerFactory;
+
+export type FormatterDefinitionFactory =
+  (
+      logger: Logger
+    ) => FormatterDefinition;
+
+export function formatterFactory(
     name: string,
-    eslintRule: RuleDefinition<RuleDefinitionTypeOptions>
-  ): FormatterDefinition
+    ruleListenerCreateFn: RuleListenerFactoryMaker
+  ): FormatterDefinitionFactory
 {
-  return { name: name,
-           eslintRule: eslintRule };
+  const fn =
+    (
+        logger: Logger
+      ): FormatterDefinition =>
+    {
+      const meta: Rule.RuleMetaData =
+        { type: 'layout',
+          fixable: 'code',
+          schema: [ ] };
+
+      const create: RuleListenerFactory =
+        ruleListenerCreateFn(logger);
+
+      const eslintRule: Rule.RuleModule =
+        { meta,
+          create };
+
+      const formatter: FormatterDefinition =
+        { name,
+          eslintRule };
+
+      return formatter;
+    };
+
+  return fn;
 }
 
 export async function applyFormatters(

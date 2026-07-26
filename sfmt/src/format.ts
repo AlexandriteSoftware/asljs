@@ -8,22 +8,24 @@ import { applyFormatters,
          FormatterDefinition,
          getFileType }
   from './formatter.js';
-import { jsStyleFormatters }
-  from './js-style-rules/style-rules.js';
-import { tsCallExpressionFormatter }
-  from './ts-style-rules/call-expression.js';
-import { conditionalExpressionFormatter }
-  from './ts-style-rules/conditional-expression.js';
-import { functionDeclarationFormatter }
+import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
-import { importFormatter }
-  from './ts-style-rules/import.js';
-import { tsExpressionFormatter }
-  from './ts-style-rules/object-expression.js';
-import { statementSpacingFormatter }
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
+import tsStatementSpacingFormatterFactory
   from './ts-style-rules/statement-spacing.js';
-import { variableDeclarationFormatter }
+import tsVariableDeclarationFormatterFactory
   from './ts-style-rules/variable-declaration.js';
+import tsArrayExpressionFormatterFactory
+  from './ts-style-rules/array-expression.js';
+import tsCallExpressionFormatterFactory
+  from './ts-style-rules/call-expression.js';
+import tsConditionalExpressionFormatterFactory
+  from './ts-style-rules/conditional-expression.js';
+import tsObjectExpressionFormatterFactory
+  from './ts-style-rules/object-expression.js';
+import { createPinoLoggerProvider }
+  from './logging.js';
 
 export async function format(
     environment: Environment,
@@ -94,23 +96,43 @@ function getFormattersForPath(
     path: string
   ): FormatterDefinition[]
 {
+  const loggerProvider =
+    createPinoLoggerProvider();
+
   const fileType =
     getFileType(path);
 
   switch (fileType) {
     case 'javascript':
-      return jsStyleFormatters;
+      return [ ];
 
     case 'typescript':
       const tsStyleFormatters: FormatterDefinition[] =
         [
-        importFormatter,
-        functionDeclarationFormatter,
-        conditionalExpressionFormatter,
-        tsCallExpressionFormatter,
-        variableDeclarationFormatter,
-        statementSpacingFormatter,
-        tsExpressionFormatter
+        tsImportDeclarationFormatterFactory(
+          loggerProvider.getLogger(
+            'import-declaration')),
+        tsFunctionDeclarationFormatterFactory(
+          loggerProvider.getLogger(
+            'function-declaration')),
+        tsConditionalExpressionFormatterFactory(
+          loggerProvider.getLogger(
+            'conditional-expression')),
+        tsCallExpressionFormatterFactory(
+          loggerProvider.getLogger(
+            'call-expression')),
+        tsVariableDeclarationFormatterFactory(
+          loggerProvider.getLogger(
+            'variable-declaration')),
+        tsStatementSpacingFormatterFactory(
+          loggerProvider.getLogger(
+            'statement-spacing')),
+        tsObjectExpressionFormatterFactory(
+          loggerProvider.getLogger(
+            'object-expression')),
+        tsArrayExpressionFormatterFactory(
+          loggerProvider.getLogger(
+            'array-expression'))
       ];
 
       return tsStyleFormatters;
