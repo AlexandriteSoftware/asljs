@@ -20,13 +20,13 @@ import { fmtObjectExpression }
 
 const log =
   (
-      ...args: any[]
-    ): void =>
-  {
-    // console.log(
-    //   'object-exptression:',
-    //   ...args);
-  };
+  ...args: any[]
+): void =>
+{
+  // console.log(
+  //   'object-exptression:',
+  //   ...args);
+};
 
 const meta: Rule.RuleMetaData =
   { type: 'layout',
