@@ -22,7 +22,7 @@ export function createEnvironment(
 
   const registry = new Map();
 
-  const disposeActions: (() => Promise<void>)[] = [];
+  const disposeActions: (() => Promise<void>)[] = [ ];
 
   const baseEnvironment: Environment =
     { cwd: cwd,
@@ -57,7 +57,7 @@ interface WritableBuffer
 function createInMemoryWritableBuffer(
   ): WritableBuffer
 {
-  const output: string[] = [];
+  const output: string[] = [ ];
 
   const buffer: WritableBuffer =
     { write:

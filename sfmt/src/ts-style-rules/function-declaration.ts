@@ -15,10 +15,10 @@ import { getIndentation }
 import { tryGetLocation,
          WithLocation }
   from '../functions/location.js';
-import { fmtFunctionDeclaration }
-  from '../ts-fmt/fmt-function-declaration.js';
 import { Logger }
   from '../logging.js';
+import { fmtFunctionDeclaration }
+  from '../ts-fmt/fmt-function-declaration.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
@@ -33,25 +33,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { FunctionDeclaration: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: FunctionDeclaration
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { FunctionDeclaration:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: FunctionDeclaration
-        ): void
-      {
-        processFunctionDeclaration(
-          logger,
-          context,
-          node);
-      }
-    };
+      processFunctionDeclaration(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -64,8 +63,9 @@ function processFunctionDeclaration(
 {
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger);
+    context.sourceCode,
+    logger
+  );
 
   const correctLayout =
     checkLayout(
@@ -115,7 +115,7 @@ function checkLayout(
     node.id;
 
   const typeParameters =
-    (node as unknown as { typeParameters: Node | null }).typeParameters;
+    (node as unknown as { typeParameters: Node | null; }).typeParameters;
 
   let openingParen: AST.Token | null = null;
 

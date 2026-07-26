@@ -1,12 +1,12 @@
 import { FunctionDeclaration,
          Node }
   from 'estree';
-import { type WithLocation }
-  from '../functions/location.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
+import { type WithLocation }
+  from '../functions/location.js';
 
 export function fmtFunctionDeclaration(
     node: FunctionDeclaration,
@@ -28,7 +28,7 @@ export function fmtFunctionDeclaration(
     node.id?.name ?? '';
 
   const typeParameters =
-    (node as unknown as { typeParameters: Node | null }).typeParameters;
+    (node as unknown as { typeParameters: Node | null; }).typeParameters;
 
   const body =
     node.body;
@@ -44,7 +44,7 @@ export function fmtFunctionDeclaration(
       context.sourceCode.getText(
         parameter as unknown as Node));
 
-  const code: string[] = [];
+  const code: string[] = [ ];
 
   if (node.async) {
     code.push('async ');
@@ -109,7 +109,7 @@ export function fmtFunctionDeclaration(
     ): string
   {
     const returnType =
-      (node as unknown as { returnType: Node | null }).returnType;
+      (node as unknown as { returnType: Node | null; }).returnType;
 
     if (!returnType) {
       return '';

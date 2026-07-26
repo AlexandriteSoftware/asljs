@@ -52,7 +52,7 @@ export function fmtArrayExpression(
   const elementIndentation =
     baseIndentation.increase();
 
-  const code: string[] = [];
+  const code: string[] = [ ];
 
   code.push('[ ');
 

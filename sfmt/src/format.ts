@@ -8,24 +8,24 @@ import { applyFormatters,
          FormatterDefinition,
          getFileType }
   from './formatter.js';
-import tsFunctionDeclarationFormatterFactory
-  from './ts-style-rules/function-declaration.js';
-import tsImportDeclarationFormatterFactory
-  from './ts-style-rules/import-declaration.js';
-import tsStatementSpacingFormatterFactory
-  from './ts-style-rules/statement-spacing.js';
-import tsVariableDeclarationFormatterFactory
-  from './ts-style-rules/variable-declaration.js';
+import { createPinoLoggerProvider }
+  from './logging.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
   from './ts-style-rules/conditional-expression.js';
+import tsFunctionDeclarationFormatterFactory
+  from './ts-style-rules/function-declaration.js';
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
 import tsObjectExpressionFormatterFactory
   from './ts-style-rules/object-expression.js';
-import { createPinoLoggerProvider }
-  from './logging.js';
+import tsStatementSpacingFormatterFactory
+  from './ts-style-rules/statement-spacing.js';
+import tsVariableDeclarationFormatterFactory
+  from './ts-style-rules/variable-declaration.js';
 
 export async function format(
     environment: Environment,
@@ -46,7 +46,9 @@ export async function format(
         dot: true,
         nodir: true,
         ignore:
-          ['**/node_modules/**', '**/dist/**', '**/build/**'] });
+          [ '**/node_modules/**',
+            '**/dist/**',
+            '**/build/**' ] });
 
   for (const path of paths) {
     await formatFile(path);
@@ -108,37 +110,35 @@ function getFormattersForPath(
 
     case 'typescript':
       const tsStyleFormatters: FormatterDefinition[] =
-        [
-        tsImportDeclarationFormatterFactory(
+        [ tsImportDeclarationFormatterFactory(
           loggerProvider.getLogger(
             'import-declaration')),
-        tsFunctionDeclarationFormatterFactory(
-          loggerProvider.getLogger(
-            'function-declaration')),
-        tsConditionalExpressionFormatterFactory(
-          loggerProvider.getLogger(
-            'conditional-expression')),
-        tsCallExpressionFormatterFactory(
-          loggerProvider.getLogger(
-            'call-expression')),
-        tsVariableDeclarationFormatterFactory(
-          loggerProvider.getLogger(
-            'variable-declaration')),
-        tsStatementSpacingFormatterFactory(
-          loggerProvider.getLogger(
-            'statement-spacing')),
-        tsObjectExpressionFormatterFactory(
-          loggerProvider.getLogger(
-            'object-expression')),
-        tsArrayExpressionFormatterFactory(
-          loggerProvider.getLogger(
-            'array-expression'))
-      ];
+          tsFunctionDeclarationFormatterFactory(
+            loggerProvider.getLogger(
+              'function-declaration')),
+          tsConditionalExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'conditional-expression')),
+          tsCallExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'call-expression')),
+          tsVariableDeclarationFormatterFactory(
+            loggerProvider.getLogger(
+              'variable-declaration')),
+          tsStatementSpacingFormatterFactory(
+            loggerProvider.getLogger(
+              'statement-spacing')),
+          tsObjectExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'object-expression')),
+          tsArrayExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'array-expression')) ];
 
       return tsStyleFormatters;
 
     default:
-      return [];
+      return [ ];
   }
 }
 
@@ -147,12 +147,10 @@ function normaliseWhitespace(
   ): string
 {
   const formatters =
-    [
-    normaliseLineEndings,
-    normaliseTrailingWhitespace,
-    normaliseFinalNewline,
-    normaliseIndentationCharacters
-  ];
+    [ normaliseLineEndings,
+      normaliseTrailingWhitespace,
+      normaliseFinalNewline,
+      normaliseIndentationCharacters ];
 
   return formatters.reduce(
     (text: string, formatter: (text: string) => string): string =>

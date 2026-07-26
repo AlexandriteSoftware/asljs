@@ -55,7 +55,8 @@ export function expressionIsShort(
         newExpression.callee as Identifier;
 
       const allowedConstructors =
-        ['Set', 'Map'];
+        [ 'Set',
+          'Map' ];
 
       const isAllowedConstructor =
         allowedConstructors.includes(

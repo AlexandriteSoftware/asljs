@@ -103,8 +103,8 @@ function createCli(
       {
         const fnArgs =
           pattern === undefined
-          ? []
-          : [pattern];
+          ? [ ]
+          : [ pattern ];
 
         await format(
           environment,

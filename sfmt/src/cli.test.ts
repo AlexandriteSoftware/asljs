@@ -30,7 +30,7 @@ test(
 
     const exitCode =
       await runCli(
-        ['src/**/*.ts'],
+        [ 'src/**/*.ts' ],
         environment);
 
     const formatted =

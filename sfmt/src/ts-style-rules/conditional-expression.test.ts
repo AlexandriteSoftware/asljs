@@ -6,10 +6,10 @@ import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import tsConditionalExpressionFormatterFactory
-  from './conditional-expression.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
+import tsConditionalExpressionFormatterFactory
+  from './conditional-expression.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
@@ -28,18 +28,19 @@ const SCRIPT_FILE_PATH =
 
 const eslint =
   new ESLint(
-    { overrideConfigFile: true,
-      fix: true,
-      overrideConfig:
-        { languageOptions:
-            { parser: tsParser },
-          plugins:
-            { asljs:
-                { rules:
-                    { 'conditional-expression-style':
-                        tsConditionalExpressionEslintRule } } },
-          rules:
-            { 'asljs/conditional-expression-style': 'error' } } });
+  { overrideConfigFile: true,
+    fix: true,
+    overrideConfig:
+      { languageOptions:
+          { parser: tsParser },
+        plugins:
+          { asljs:
+              { rules:
+                  { 'conditional-expression-style':
+                      tsConditionalExpressionEslintRule } } },
+        rules:
+          { 'asljs/conditional-expression-style': 'error' } } }
+);
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

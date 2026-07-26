@@ -11,7 +11,7 @@ export function fmtImportNode(
   ): string
 {
   const code =
-    ['import '];
+    [ 'import ' ];
 
   if (node.specifiers.length === 0) {
     const nodeRange =
@@ -122,7 +122,7 @@ export function fmtImportNode(
       startAt: number
     ): TSESTree.ImportSpecifier[]
   {
-    const group = [];
+    const group = [ ];
 
     for (let index = startAt; index < specifiers.length; index++) {
       const specifier =
@@ -143,7 +143,7 @@ export function fmtImportNode(
       formattingContext: FormattingContext
     ): string
   {
-    const code = [];
+    const code = [ ];
 
     let firstImportSpecifier = true;
 

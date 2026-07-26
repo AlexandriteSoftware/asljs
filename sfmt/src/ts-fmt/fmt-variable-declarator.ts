@@ -18,7 +18,7 @@ export function fmtVariableDeclarator(
     context: FormattingContext
   ): string
 {
-  const code: string[] = [];
+  const code: string[] = [ ];
 
   const idText =
     context.sourceCode.getText(

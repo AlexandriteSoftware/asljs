@@ -4,14 +4,14 @@ import test
   from 'node:test';
 import { applyFormatters }
   from './formatter.js';
-import tsImportDeclarationFormatterFactory
-  from './ts-style-rules/import-declaration.js';
 import { NullLogger }
   from './logging.js';
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
 
- test(
-   'applyFormatters applies a single TypeScript formatter independently',
-   async () =>
+test(
+  'applyFormatters applies a single TypeScript formatter independently',
+  async () =>
   {
     const code =
       "import type { writeFile } from'import-type';\n";
@@ -20,10 +20,8 @@ import { NullLogger }
       await applyFormatters(
         code,
         'example.ts',
-        [
-        tsImportDeclarationFormatterFactory(
-          new NullLogger())
-      ]);
+        [ tsImportDeclarationFormatterFactory(
+          new NullLogger()) ]);
 
     assert.strictEqual(
       formatted,

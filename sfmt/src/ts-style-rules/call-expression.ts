@@ -19,10 +19,10 @@ import { ensureLocation }
   from '../functions/location.js';
 import { expressionIsShort }
   from '../functions/short-expression.js';
-import { fmtCallExpression }
-  from '../ts-fmt/fmt-call-expression.js';
 import { Logger }
   from '../logging.js';
+import { fmtCallExpression }
+  from '../ts-fmt/fmt-call-expression.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
@@ -37,25 +37,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { CallExpression: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: SimpleCallExpression & Rule.NodeParentExtension
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { CallExpression:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: SimpleCallExpression & Rule.NodeParentExtension
-        ): void
-      {
-        processCallExpression(
-          logger,
-          context,
-          node);
-      }
-    };
+      processCallExpression(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -68,8 +67,9 @@ function processCallExpression(
 {
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger);
+    context.sourceCode,
+    logger
+  );
 
   const correctLayout =
     checkLayout(

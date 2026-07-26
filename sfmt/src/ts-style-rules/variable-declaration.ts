@@ -15,10 +15,10 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsShort }
   from '../functions/short-expression.js';
-import { fmtVariableDeclarator }
-  from '../ts-fmt/fmt-variable-declarator.js';
 import { Logger }
   from '../logging.js';
+import { fmtVariableDeclarator }
+  from '../ts-fmt/fmt-variable-declarator.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
@@ -33,25 +33,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { VariableDeclarator: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: VariableDeclarator & Rule.NodeParentExtension
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { VariableDeclarator:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: VariableDeclarator & Rule.NodeParentExtension
-        ): void
-      {
-        processVariableDeclaration(
-          logger,
-          context,
-          node);
-      }
-    };
+      processVariableDeclaration(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -71,9 +70,9 @@ function processVariableDeclaration(
 
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger
-    );
+    context.sourceCode,
+    logger
+  );
 
   const correctLayout =
     checkLayout(

@@ -25,33 +25,33 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
-    {
-      const ruleListener: Rule.RuleListener =
-        { Program:
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { Program:
           (node): void =>
-          {
-            const tsNode =
-              node as unknown as TSESTree.Program;
+      {
+        const tsNode =
+          node as unknown as TSESTree.Program;
 
-            checkStatements(
-              tsNode.body,
-              context);
-          },
-            BlockStatement:
-              (node): void =>
-          {
-            const tsNode =
-              node as unknown as TSESTree.BlockStatement;
+        checkStatements(
+          tsNode.body,
+          context);
+      },
+        BlockStatement:
+          (node): void =>
+      {
+        const tsNode =
+          node as unknown as TSESTree.BlockStatement;
 
-            checkStatements(
-              tsNode.body,
-              context);
-          } };
+        checkStatements(
+          tsNode.body,
+          context);
+      } };
 
-      return ruleListener;
-    };
+    return ruleListener;
+  };
 
   return listenerFactory;
 }
@@ -109,7 +109,8 @@ function checkStatements(
           (fixer: Rule.RuleFixer): Rule.Fix =>
         {
           const range: SourceRange =
-            [statementRange[1], nextStatementRange[0]];
+            [ statementRange[1],
+              nextStatementRange[0] ];
 
           const nextStatementIndentation =
             getIndentation(

@@ -54,7 +54,7 @@ export function fmtObjectExpression(
   const propertyIndentation =
     baseIndentation.increase();
 
-  const code: string[] = [];
+  const code: string[] = [ ];
 
   code.push('{ ');
 

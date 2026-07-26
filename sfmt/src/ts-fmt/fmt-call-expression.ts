@@ -35,7 +35,7 @@ export function fmtCallExpression(
   const requiredArgumentIndent =
     indent.increase();
 
-  const code: string[] = [];
+  const code: string[] = [ ];
 
   const callee =
     context.sourceCode.getText(

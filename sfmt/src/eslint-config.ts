@@ -6,28 +6,31 @@ import { type Linter }
   from 'eslint';
 import tseslint
   from 'typescript-eslint';
-import tsFunctionDeclarationFormatterFactory
-  from './ts-style-rules/function-declaration.js';
-import tsImportDeclarationFormatterFactory
-  from './ts-style-rules/import-declaration.js';
-import tsStatementSpacingFormatterFactory
-  from './ts-style-rules/statement-spacing.js';
-import tsVariableDeclarationFormatterFactory
-  from './ts-style-rules/variable-declaration.js';
+import { NullLoggerProvider }
+  from './index.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
   from './ts-style-rules/conditional-expression.js';
+import tsFunctionDeclarationFormatterFactory
+  from './ts-style-rules/function-declaration.js';
+import tsImportDeclarationFormatterFactory
+  from './ts-style-rules/import-declaration.js';
 import tsObjectExpressionFormatterFactory
   from './ts-style-rules/object-expression.js';
-import { NullLoggerProvider }
-  from './index.js';
+import tsStatementSpacingFormatterFactory
+  from './ts-style-rules/statement-spacing.js';
+import tsVariableDeclarationFormatterFactory
+  from './ts-style-rules/variable-declaration.js';
 
 const ignores: Linter.Config =
   { ignores:
-      ['**/dist/**', '**/build/**', '**/.tests/**', '**/node_modules/**'] };
+      [ '**/dist/**',
+        '**/build/**',
+        '**/.tests/**',
+        '**/node_modules/**' ] };
 
 const loggerProvider =
   new NullLoggerProvider();
@@ -60,13 +63,13 @@ const tsStatementSpacingFormatter =
   tsStatementSpacingFormatterFactory(
     loggerProvider.getLogger());
 
-    const tsVariableDeclarationFormatter =
+const tsVariableDeclarationFormatter =
   tsVariableDeclarationFormatterFactory(
     loggerProvider.getLogger());
 
 const typescriptConfig: Linter.Config =
   { files:
-      ['**/*.{ts,tsx}'],
+      [ '**/*.{ts,tsx}' ],
     languageOptions:
       { parser: tsParser,
         parserOptions:
@@ -96,46 +99,45 @@ const typescriptConfig: Linter.Config =
     rules:
       { indent: 'off',
         semi:
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         eqeqeq:
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         'prefer-const': 'error',
         'no-var': 'error',
         'function-call-argument-newline':
-          ['error', 'consistent'],
+          [ 'error',
+            'consistent' ],
         'nonblock-statement-body-position':
-          ['error', 'below'],
+          [ 'error',
+            'below' ],
         'multiline-ternary':
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         'operator-linebreak':
-          [
-      'error',
-      'before',
-      { overrides:
-          { '=': 'after',
-            '&&': 'before',
-            '||': 'before',
-            '?': 'before',
-            ':': 'before' } }
-    ],
+          [ 'error',
+            'before',
+            { overrides:
+                { '=': 'after',
+                  '&&': 'before',
+                  '||': 'before',
+                  '?': 'before',
+                  ':': 'before' } } ],
         quotes:
-          [
-      'error',
-      'single',
-      { avoidEscape: true,
-        allowTemplateLiterals: true }
-    ],
+          [ 'error',
+            'single',
+            { avoidEscape: true,
+              allowTemplateLiterals: true } ],
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-unsafe-function-type': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/explicit-function-return-type':
-          [
-      'error',
-      { allowExpressions: true,
-        allowTypedFunctionExpressions: true,
-        allowHigherOrderFunctions: true,
-        allowDirectConstAssertionInArrowFunctions: true }
-    ],
+          [ 'error',
+            { allowExpressions: true,
+              allowTypedFunctionExpressions: true,
+              allowHigherOrderFunctions: true,
+              allowDirectConstAssertionInArrowFunctions: true } ],
         'asljs/import-style': 'error',
         'asljs/function-declaration-style': 'error',
         'asljs/conditional-expression-style': 'error',
@@ -147,45 +149,48 @@ const typescriptConfig: Linter.Config =
 
 const javascriptConfig: Linter.Config =
   { files:
-      ['**/*.{js,mjs,cjs}'],
+      [ '**/*.{js,mjs,cjs}' ],
     languageOptions:
       { ecmaVersion: 'latest',
         sourceType: 'module' },
     rules:
       { ...js.configs.recommended.rules,
         semi:
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         eqeqeq:
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         'prefer-const': 'error',
         'no-var': 'error',
         'no-duplicate-imports': 'error',
         'function-call-argument-newline':
-          ['error', 'consistent'],
+          [ 'error',
+            'consistent' ],
         'nonblock-statement-body-position':
-          ['error', 'below'],
+          [ 'error',
+            'below' ],
         'multiline-ternary':
-          ['error', 'always'],
+          [ 'error',
+            'always' ],
         'operator-linebreak':
-          [
-      'error',
-      'before',
-      { overrides:
-          { '=': 'after',
-            '&&': 'before',
-            '||': 'before',
-            '?': 'before',
-            ':': 'before' } }
-    ],
+          [ 'error',
+            'before',
+            { overrides:
+                { '=': 'after',
+                  '&&': 'before',
+                  '||': 'before',
+                  '?': 'before',
+                  ':': 'before' } } ],
         quotes:
-          [
-      'error',
-      'single',
-      { avoidEscape: true,
-        allowTemplateLiterals: true }
-    ] } };
+          [ 'error',
+            'single',
+            { avoidEscape: true,
+              allowTemplateLiterals: true } ] } };
 
 const configs: Linter.Config[] =
-  [ignores, typescriptConfig, javascriptConfig];
+  [ ignores,
+    typescriptConfig,
+    javascriptConfig ];
 
 export default configs;

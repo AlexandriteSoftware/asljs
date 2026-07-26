@@ -22,26 +22,26 @@ const tsImportDeclarationFormatter =
 const tsImportDeclarationEslintRule =
   tsImportDeclarationFormatter.eslintRule;
 
-
 const SCRIPT_FILE_PATH =
   fileURLToPath(
     import.meta.url);
 
 const eslint =
   new ESLint(
-    { overrideConfigFile: true,
-      fix: true,
-      overrideConfig:
-        { languageOptions:
-            { parser: tsParser },
-          plugins:
-            { asljs:
-                { rules:
-                    { 'import-declaration-style':
-                        tsImportDeclarationEslintRule } } },
-          rules:
-            { 'asljs/import-declaration-style': 'error' } } });
+  { overrideConfigFile: true,
+    fix: true,
+    overrideConfig:
+      { languageOptions:
+          { parser: tsParser },
+        plugins:
+          { asljs:
+              { rules:
+                  { 'import-declaration-style':
+                      tsImportDeclarationEslintRule } } },
+        rules:
+          { 'asljs/import-declaration-style': 'error' } } }
+);
 
-  await buildStyleRuleTestsFromMarkdown(
-    SCRIPT_FILE_PATH,
-    eslint);
+await buildStyleRuleTestsFromMarkdown(
+  SCRIPT_FILE_PATH,
+  eslint);

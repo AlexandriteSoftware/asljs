@@ -2,18 +2,18 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { Rule }
   from 'eslint';
+import { ImportDeclaration }
+  from 'estree';
 import { FormatterDefinitionFactory,
          formatterFactory,
          RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { fmtImportNode }
-  from '../ts-fmt/fmt-import-node.js';
 import { Logger }
   from '../logging.js';
-import { ImportDeclaration }
-  from 'estree';
+import { fmtImportNode }
+  from '../ts-fmt/fmt-import-node.js';
 
 export type Import =
   | TSESTree.ImportSpecifier
@@ -33,25 +33,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { ImportDeclaration: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: ImportDeclaration & Rule.NodeParentExtension
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { ImportDeclaration:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: ImportDeclaration & Rule.NodeParentExtension
-        ): void
-      {
-        processImportDeclaration(
-          logger,
-          context,
-          node);
-      }
-    };
+      processImportDeclaration(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -67,8 +66,9 @@ function processImportDeclaration(
 
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger);
+    context.sourceCode,
+    logger
+  );
 
   const sourceCode =
     context.sourceCode.getText(node);

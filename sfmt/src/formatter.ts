@@ -20,20 +20,17 @@ export interface FormatterDefinition
   eslintRule: RuleDefinition<RuleDefinitionTypeOptions>;
 }
 
-export type RuleListenerFactory =
-  (
-      context: Rule.RuleContext
-    ) => Rule.RuleListener;
-  
-export type RuleListenerFactoryMaker =
-  (
-      logger: Logger
-    ) => RuleListenerFactory;
+export type RuleListenerFactory = (
+  context: Rule.RuleContext
+) => Rule.RuleListener;
 
-export type FormatterDefinitionFactory =
-  (
-      logger: Logger
-    ) => FormatterDefinition;
+export type RuleListenerFactoryMaker = (
+  logger: Logger
+) => RuleListenerFactory;
+
+export type FormatterDefinitionFactory = (
+  logger: Logger
+) => FormatterDefinition;
 
 export function formatterFactory(
     name: string,
@@ -42,27 +39,27 @@ export function formatterFactory(
 {
   const fn =
     (
-        logger: Logger
-      ): FormatterDefinition =>
-    {
-      const meta: Rule.RuleMetaData =
-        { type: 'layout',
-          fixable: 'code',
-          schema: [ ] };
+    logger: Logger
+  ): FormatterDefinition =>
+  {
+    const meta: Rule.RuleMetaData =
+      { type: 'layout',
+        fixable: 'code',
+        schema: [ ] };
 
-      const create: RuleListenerFactory =
-        ruleListenerCreateFn(logger);
+    const create: RuleListenerFactory =
+      ruleListenerCreateFn(logger);
 
-      const eslintRule: Rule.RuleModule =
-        { meta,
-          create };
+    const eslintRule: Rule.RuleModule =
+      { meta,
+        create };
 
-      const formatter: FormatterDefinition =
-        { name,
-          eslintRule };
+    const formatter: FormatterDefinition =
+      { name,
+        eslintRule };
 
-      return formatter;
-    };
+    return formatter;
+  };
 
   return fn;
 }
@@ -88,13 +85,15 @@ export async function applyFormatters(
     Object
     .fromEntries(
       formatters.map(
-        formatter => [formatter.name, formatter.eslintRule]));
+        formatter => [ formatter.name,
+                       formatter.eslintRule ]));
 
   const enabledRules =
     Object
     .fromEntries(
       formatters.map(
-        formatter => [`sfmt/${formatter.name}`, 'error' as const]));
+        formatter => [ `sfmt/${formatter.name}`,
+                       'error' as const ]));
 
   const absoluteFilePath =
     path.resolve(filePath);
@@ -108,16 +107,14 @@ export async function applyFormatters(
       absoluteFilePath);
 
   const overrideConfig: Linter.Config[] =
-    [
-    { files:
-        getFilePatterns(fileType),
-      languageOptions:
-        getLanguageOptions(fileType),
-      plugins:
-        { sfmt:
-            { rules } },
-      rules: enabledRules }
-  ];
+    [ { files:
+          getFilePatterns(fileType),
+        languageOptions:
+          getLanguageOptions(fileType),
+        plugins:
+          { sfmt:
+              { rules } },
+        rules: enabledRules } ];
 
   const eslint =
     new ESLint({ cwd: eslintCwd,
@@ -172,8 +169,8 @@ function getFilePatterns(
   ): string[]
 {
   if (fileType === 'typescript') {
-    return ['**/*.{ts,mts,cts}'];
+    return [ '**/*.{ts,mts,cts}' ];
   }
 
-  return ['**/*.{js,mjs,cjs}'];
+  return [ '**/*.{js,mjs,cjs}' ];
 }

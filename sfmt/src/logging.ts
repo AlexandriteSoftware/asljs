@@ -46,8 +46,7 @@ export interface Logger
   ): void;
 }
 
-export class NullLogger
-  implements Logger
+export class NullLogger implements Logger
 {
   level = 'silent';
 
@@ -155,8 +154,7 @@ export function createPinoLoggerProvider(
   return loggerProvider;
 }
 
-class PinoLoggerProvider
-  implements LoggerProvider
+class PinoLoggerProvider implements LoggerProvider
 {
   readonly #logger: pino.Logger;
   readonly #level: string;

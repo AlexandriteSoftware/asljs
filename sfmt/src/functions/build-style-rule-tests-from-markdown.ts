@@ -143,7 +143,7 @@ export function parseTests(
 
   let inTests = false;
 
-  const tests: TestCase[] = [];
+  const tests: TestCase[] = [ ];
 
   for (let index = 0; index < tokens.length; index++) {
     const token =
@@ -214,7 +214,7 @@ function addNoiseToTestCase(
     testCases: TestCase[]
   ): TestCase[]
 {
-  const result: TestCase[] = [];
+  const result: TestCase[] = [ ];
 
   for (const testCase of testCases) {
     result.push(testCase);

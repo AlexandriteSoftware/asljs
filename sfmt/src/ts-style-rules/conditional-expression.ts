@@ -9,10 +9,10 @@ import { FormatterDefinitionFactory,
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { fmtConditionalExpression }
-  from '../ts-fmt/fmt-conditional-expression.js';
 import { Logger }
   from '../logging.js';
+import { fmtConditionalExpression }
+  from '../ts-fmt/fmt-conditional-expression.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
@@ -27,25 +27,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { ConditionalExpression: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: ConditionalExpression
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { ConditionalExpression:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: ConditionalExpression
-        ): void
-      {
-        processConditionalExpression(
-          logger,
-          context,
-          node);
-      }
-    };
+      processConditionalExpression(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -58,8 +57,9 @@ function processConditionalExpression(
 {
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger);
+    context.sourceCode,
+    logger
+  );
 
   const correctLayout =
     checkLayout(

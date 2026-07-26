@@ -5,8 +5,8 @@ import { JSSyntaxElement,
   from 'eslint';
 import { ObjectExpression }
   from 'estree';
-import { formatterFactory,
-         FormatterDefinitionFactory,
+import { FormatterDefinitionFactory,
+         formatterFactory,
          RuleListenerFactory }
   from '../formatter.js';
 import { FormattingContext }
@@ -17,10 +17,10 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsShort }
   from '../functions/short-expression.js';
-import { fmtObjectExpression }
-  from '../ts-fmt/fmt-object-expression.js';
 import { Logger }
   from '../logging.js';
+import { fmtObjectExpression }
+  from '../ts-fmt/fmt-object-expression.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
@@ -35,25 +35,24 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-        context: Rule.RuleContext
-      ): Rule.RuleListener =>
+    context: Rule.RuleContext
+  ): Rule.RuleListener =>
+  {
+    const ruleListener: Rule.RuleListener =
+      { ObjectExpression: listener };
+
+    return ruleListener;
+
+    function listener(
+        node: ObjectExpression & Rule.NodeParentExtension
+      ): void
     {
-      const ruleListener: Rule.RuleListener =
-        { ObjectExpression:
-            listener };
-
-      return ruleListener;
-
-      function listener(
-          node: ObjectExpression & Rule.NodeParentExtension
-        ): void
-      {
-        processObjectExpression(
-          logger,
-          context,
-          node);
-      }
-    };
+      processObjectExpression(
+        logger,
+        context,
+        node);
+    }
+  };
 
   return listenerFactory;
 }
@@ -66,9 +65,9 @@ function processObjectExpression(
 {
   const fmtCtx =
     new FormattingContext(
-      context.sourceCode,
-      logger
-    );
+    context.sourceCode,
+    logger
+  );
 
   const correctLayout =
     checkLayout(
@@ -109,9 +108,9 @@ function checkLayout(
 {
   const log =
     context.logger
-      .debug
-      .bind(
-        context.logger);
+    .debug
+    .bind(
+      context.logger);
 
   const tokens =
     context.sourceCode.getTokens(node);
