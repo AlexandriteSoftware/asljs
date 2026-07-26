@@ -1,15 +1,14 @@
 import { Expression,
          IfStatement,
-         LogicalExpression,
          Node,
          Statement }
   from 'estree';
+import { formatCriteriaExpression }
+  from '../functions/criteria-expression.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
 import { type WithLocation }
   from '../functions/location.js';
 
@@ -26,19 +25,23 @@ export function fmtIfStatement(
   const conditionIndentation =
     baseIndentation.increase();
 
-  const testIsShort =
-    expressionIsShort(
-      node.test);
+  const formattedTestExpression =
+    fmtIfTestExpression(
+      node.test,
+      context);
+
+  const isMultilineCondition =
+    formattedTestExpression.includes(
+      context.newLine);
 
   const code: string[] = [ ];
 
   code.push('if ');
   code.push('(');
 
-  if (testIsShort) {
+  if (!isMultilineCondition) {
     code.push(
-      context.sourceCode.getText(
-        node.test));
+      formattedTestExpression);
   } else {
     code.push(
       context.newLine);
@@ -87,18 +90,18 @@ export function fmtIfStatement(
 export function fmtIfTestExpression(
     expression: Expression,
     context: FormattingContext,
-    continuationIndentation: string
+    continuationIndentation: string = ''
   ): string
 {
-  if (expression.type !== 'LogicalExpression') {
-    return context.sourceCode.getText(
-      expression);
-  }
-
-  return fmtLogicalExpression(
+  return formatCriteriaExpression(
     expression,
-    context,
-    continuationIndentation);
+    { getText:
+        (node: Expression): string =>
+        context.sourceCode.getText(
+          node),
+      newLine:
+        context.newLine,
+      continuationIndentation });
 }
 
 function fmtStatement(
@@ -114,94 +117,4 @@ function fmtStatement(
 
   return context.sourceCode.getText(
     statement as Node);
-}
-
-function fmtLogicalExpression(
-    expression: LogicalExpression,
-    context: FormattingContext,
-    continuationIndentation: string
-  ): string
-{
-  const parts =
-    flattenLogicalExpression(
-      expression,
-      expression.operator);
-
-  const code: string[] =
-    [ fmtLogicalOperand(
-      parts[0],
-      context,
-      continuationIndentation) ];
-
-  for (let index = 1; index < parts.length; index++) {
-    code.push(
-      context.newLine);
-
-    code.push(
-      continuationIndentation);
-
-    code.push(
-      expression.operator);
-
-    code.push(' ');
-
-    code.push(
-      fmtLogicalOperand(
-        parts[index],
-        context,
-        continuationIndentation));
-  }
-
-  return code.join('');
-}
-
-function fmtLogicalOperand(
-    expression: Expression,
-    context: FormattingContext,
-    continuationIndentation: string
-  ): string
-{
-  if (expression.type !== 'LogicalExpression') {
-    return context.sourceCode.getText(
-      expression);
-  }
-
-  return fmtLogicalExpression(
-    expression,
-    context,
-    continuationIndentation);
-}
-
-function flattenLogicalExpression(
-    expression: LogicalExpression,
-    operator: LogicalExpression['operator']
-  ): Expression[]
-{
-  const parts: Expression[] = [ ];
-
-  addExpression(
-    expression);
-
-  return parts;
-
-  function addExpression(
-      currentExpression: Expression
-    ): void
-  {
-    if (
-      currentExpression.type === 'LogicalExpression'
-      && currentExpression.operator === operator
-    ) {
-      addExpression(
-        currentExpression.left);
-
-      addExpression(
-        currentExpression.right);
-
-      return;
-    }
-
-    parts.push(
-      currentExpression);
-  }
 }

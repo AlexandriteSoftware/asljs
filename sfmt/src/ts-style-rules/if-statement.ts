@@ -14,8 +14,6 @@ import { getIndentation }
 import { tryGetLocation,
          type WithLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
 import { Logger }
   from '../logging.js';
 import { fmtIfStatement,
@@ -188,14 +186,26 @@ function checkConditionLayout(
     context: FormattingContext
   ): boolean
 {
-  const testIsShort =
-    expressionIsShort(
-      node.test);
+  const formattedTestExpression =
+    fmtIfTestExpression(
+      node.test,
+      context,
+      getIndentation(
+        sourceCode,
+        node as unknown as WithLocation)
+        .increase()
+        .value);
 
-  if (testIsShort) {
+  const isMultilineCondition =
+    formattedTestExpression.includes(
+      context.newLine);
+
+  if (!isMultilineCondition) {
     return (
       testStartLine === openingParenLine
-      && node.test.loc?.end.line === closingParenLine);
+      && node.test.loc?.end.line === closingParenLine
+      && context.sourceCode.getText(
+        node.test) === formattedTestExpression);
   }
 
   const baseIndentation =
@@ -212,11 +222,7 @@ function checkConditionLayout(
     && closingParenLine === node.test.loc?.end.line + 1
     && closingParenColumn === baseIndentation.column
     && context.sourceCode.getText(
-      node.test)
-      === fmtIfTestExpression(
-        node.test,
-        context,
-        expectedConditionIndentation.value));
+      node.test) === formattedTestExpression);
 }
 
 function checkElseIfLayout(
