@@ -94,8 +94,7 @@ export class ArtefactDefinitionProviderImpl
         definitionsPath)
     ) {
       throw new Error(
-        `'definitionsPath' must be absolute: ${definitionsPath}`
-      );
+        `'definitionsPath' must be absolute: ${definitionsPath}`);
     }
   }
 
@@ -146,8 +145,7 @@ export class ArtefactDefinitionProviderImpl
 
     if (!definition) {
       throw new Error(
-        `Definition "${definitionName}" not found in ${this.definitionsPath}`
-      );
+        `Definition "${definitionName}" not found in ${this.definitionsPath}`);
     }
 
     this.logger.trace(
@@ -194,7 +192,7 @@ export class ArtefactDefinitionProviderImpl
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
 
-    const definitions = [];
+    const definitions = [ ];
 
     for (const markdownPath of visibleMarkdownPaths) {
       let content =
@@ -203,7 +201,8 @@ export class ArtefactDefinitionProviderImpl
           'utf8');
 
       if (content.startsWith('\uFEFF')) {
-        content = content.slice(1);
+        content =
+          content.slice(1);
       }
 
       const artefactDefinition =
@@ -233,8 +232,7 @@ export class ArtefactDefinitionProviderImpl
   {
     if (!path.isAbsolute(filePath)) {
       throw new Error(
-        `'filePath' must be absolute: ${filePath}`
-      );
+        `'filePath' must be absolute: ${filePath}`);
     }
 
     this.logger.trace(
@@ -247,7 +245,8 @@ export class ArtefactDefinitionProviderImpl
         'utf8');
 
     if (content.startsWith('\uFEFF')) {
-      content = content.slice(1);
+      content =
+        content.slice(1);
     }
 
     const artefactDefinition =
@@ -257,8 +256,7 @@ export class ArtefactDefinitionProviderImpl
 
     if (!artefactDefinition) {
       throw new Error(
-        `Failed to parse artefact definition from ${filePath}`
-      );
+        `Failed to parse artefact definition from ${filePath}`);
     }
 
     this.logger.trace(
@@ -345,7 +343,7 @@ export class ArtefactDefinitionProviderImpl
       return;
     }
 
-    const ruleSections: Section[] = [];
+    const ruleSections: Section[] = [ ];
 
     let collect = false;
 
@@ -364,7 +362,7 @@ export class ArtefactDefinitionProviderImpl
       }
     }
 
-    const rules: ArtefactDefinitionRule[] = [];
+    const rules: ArtefactDefinitionRule[] = [ ];
 
     for (const ruleSection of ruleSections) {
       const ruleIdMatch =
@@ -430,7 +428,7 @@ export class ArtefactDefinitionProviderImpl
       .map(
         node => node as List);
 
-    const locations: Location[] = [];
+    const locations: Location[] = [ ];
 
     for (const locationList of locationLists) {
       const listItems =
@@ -450,9 +448,9 @@ export class ArtefactDefinitionProviderImpl
 
       let pattern: string = '';
 
-      const exclude: string[] = [];
+      const exclude: string[] = [ ];
 
-      const filters: any[] = [];
+      const filters: any[] = [ ];
 
       for (const itemText of listItems) {
         const typeMatch =
@@ -460,7 +458,8 @@ export class ArtefactDefinitionProviderImpl
             /^Pattern\s*:\s*(.+)$/i);
 
         if (typeMatch) {
-          pattern = typeMatch[1].trim();
+          pattern =
+            typeMatch[1].trim();
 
           continue;
         }

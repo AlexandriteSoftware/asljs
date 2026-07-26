@@ -87,13 +87,15 @@ export class RuleRunner
     let result;
 
     if (ruleFileExtension.toLowerCase() === '.js') {
-      result = await this.runJavaScriptRule(
-        rule,
-        artefact);
+      result =
+        await this.runJavaScriptRule(
+          rule,
+          artefact);
     } else {
-      result = await this.runExecutableRule(
-        rule,
-        artefact);
+      result =
+        await this.runExecutableRule(
+          rule,
+          artefact);
     }
 
     if (result.result === 'Fail') {
@@ -112,7 +114,7 @@ export class RuleRunner
     artefact: Artefact
   ): Promise<RuleRunResult[]>
   {
-    const results: RuleRunResult[] = [];
+    const results: RuleRunResult[] = [ ];
 
     for (const rule of definition.rules) {
       const result =
@@ -137,8 +139,7 @@ export class RuleRunner
 
     if (!ruleFile?.path) {
       throw new Error(
-        `Missing rule file for ${rule.name}.`
-      );
+        `Missing rule file for ${rule.name}.`);
     }
 
     const importUrl =
@@ -156,8 +157,7 @@ export class RuleRunner
 
       if (typeof validateFunction !== 'function') {
         throw new Error(
-          'Rule module must export validate.'
-        );
+          'Rule module must export validate.');
       }
 
       let result = null;
@@ -183,8 +183,10 @@ export class RuleRunner
           artefact,
           validationContext);
       } catch (error) {
-        result = error
-          ?? new Error('Unknown error');
+        result =
+          error
+          ?? new Error(
+            'Unknown error');
       }
 
       if (result !== null) {
@@ -216,25 +218,27 @@ export class RuleRunner
 
     if (!ruleFile?.path) {
       throw new Error(
-        `Missing rule file for ${rule.name}.`
-      );
+        `Missing rule file for ${rule.name}.`);
     }
 
     const ruleFilePath =
       ruleFile.path;
 
-    return new Promise(resolve =>
+    return new Promise(
+      resolve =>
     {
       const child =
         spawn(
           ruleFilePath,
-          [artefact.path],
+          [ artefact.path ],
           { cwd:
               path.dirname(ruleFilePath),
             env:
               process.env,
             stdio:
-              ['pipe', 'pipe', 'pipe'] });
+              [ 'pipe',
+                'pipe',
+                'pipe' ] });
 
       let stderr = '';
 

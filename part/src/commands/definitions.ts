@@ -32,9 +32,10 @@ export async function execDefinitions(
 
   const markdown =
     renderObjectsToMarkdownTable(
-      [{ name: 'Name',
-         property: 'name' }, { name: 'Location',
-                               property: 'path' }],
+      [ { name: 'Name',
+          property: 'name' },
+        { name: 'Location',
+          property: 'path' } ],
       objects);
 
   environment.stdout.write(

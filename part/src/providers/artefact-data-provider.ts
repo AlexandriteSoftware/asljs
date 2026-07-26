@@ -31,8 +31,7 @@ export class ArtefactDataProvider
         definitionsPath)
     ) {
       throw new Error(
-        `'definitionsPath' must be absolute: ${definitionsPath}`
-      );
+        `'definitionsPath' must be absolute: ${definitionsPath}`);
     }
   }
 
@@ -66,7 +65,8 @@ export class ArtefactDataProvider
     let dataProviderModule;
 
     try {
-      dataProviderModule = await import(
+      dataProviderModule =
+        await import(
         importUrl.href
       );
     } catch (error) {
@@ -81,8 +81,7 @@ export class ArtefactDataProvider
 
     if (typeof getDataFunction !== 'function') {
       throw new Error(
-        'Data provider module must export getData.'
-      );
+        'Data provider module must export getData.');
     }
 
     const context: ArtefactDataProvidingContext =

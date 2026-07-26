@@ -49,7 +49,8 @@ export class MarkdownDocumentProvider
         'utf8');
 
     if (content.startsWith('\uFEFF')) {
-      content = content.slice(1);
+      content =
+        content.slice(1);
     }
 
     const document =

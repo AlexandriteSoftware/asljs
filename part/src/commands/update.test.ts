@@ -53,7 +53,8 @@ test(
           runCopilotCli:
             async (_, request) =>
         {
-          requestPrompt = request.prompt;
+          requestPrompt =
+            request.prompt;
 
           const ruleFileName =
             path.basename(
@@ -124,7 +125,8 @@ test(
           runCopilotCli:
             async () =>
         {
-          throw new Error('runCopilotCli should not be called during dry-run');
+          throw new Error(
+            'runCopilotCli should not be called during dry-run');
         } });
 
     await workspace.writeText(

@@ -32,7 +32,8 @@ export async function runCli(
 {
   const ownEnvironment = !environment;
 
-  environment = environment
+  environment =
+    environment
     ?? createEnvironment();
 
   const cli =
@@ -128,11 +129,13 @@ function createCli(
           { envVarPrefix: 'PART_LOG_' };
 
         if (options.loglevel) {
-          loggerOptions.level = options.loglevel;
+          loggerOptions.level =
+            options.loglevel;
         }
 
         if (options.logfile) {
-          loggerOptions.file = options.logfile;
+          loggerOptions.file =
+            options.logfile;
         }
 
         const loggerProvider =
@@ -152,20 +155,23 @@ function createCli(
             options.definitions);
 
         if (optDefinitions !== '') {
-          environment.definitions = path.normalize(
-            path.resolve(
-              optDefinitions));
+          environment.definitions =
+            path.normalize(
+              path.resolve(
+                optDefinitions));
         } else {
           const envDefinitions =
             filterStringOption(
               process.env.PART_DEFINITIONS);
 
           if (envDefinitions !== '') {
-            environment.definitions = path.normalize(
-              path.resolve(
-                envDefinitions));
+            environment.definitions =
+              path.normalize(
+                path.resolve(
+                  envDefinitions));
           } else {
-            environment.definitions = environment.cwd;
+            environment.definitions =
+              environment.cwd;
           }
         }
 
@@ -174,20 +180,23 @@ function createCli(
             options.project);
 
         if (optProject !== '') {
-          environment.project = path.normalize(
-            path.resolve(
-              optProject));
+          environment.project =
+            path.normalize(
+              path.resolve(
+                optProject));
         } else {
           const envProject =
             filterStringOption(
               process.env.PART_PROJECT);
 
           if (envProject !== '') {
-            environment.project = path.normalize(
-              path.resolve(
-                envProject));
+            environment.project =
+              path.normalize(
+                path.resolve(
+                  envProject));
           } else {
-            environment.project = environment.cwd;
+            environment.project =
+              environment.cwd;
           }
         }
       });
@@ -475,7 +484,7 @@ function splitCommaSeparatedOption(
     typeof value !== 'string'
     || value.trim() === ''
   ) {
-    return [];
+    return [ ];
   }
 
   return value

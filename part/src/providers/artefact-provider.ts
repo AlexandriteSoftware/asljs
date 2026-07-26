@@ -29,14 +29,13 @@ export class ArtefactProvider
   {
     if (!path.isAbsolute(projectPath)) {
       throw new Error(
-        `'projectPath' must be absolute: ${projectPath}`
-      );
+        `'projectPath' must be absolute: ${projectPath}`);
     }
 
-    this.locationResolver = new FilesystemLocationResolver(
-      this.logger,
-      this.projectPath
-    );
+    this.locationResolver =
+      new FilesystemLocationResolver(
+        this.logger,
+        this.projectPath);
   }
 
   async tryGetArtefact(
@@ -85,7 +84,8 @@ export class ArtefactProvider
       let definitionsList;
 
       if (definitions) {
-        definitionsList = definitions
+        definitionsList =
+          definitions
           .map(
             definition => definition.name)
           .join(', ');
@@ -99,12 +99,13 @@ export class ArtefactProvider
     }
 
     if (definitions === null) {
-      definitions = await this.artefactDefinitionProvider.getDefinitions();
+      definitions =
+        await this.artefactDefinitionProvider.getDefinitions();
     }
 
     const artefactPaths = new Set<string>();
 
-    for (const definition of definitions || []) {
+    for (const definition of definitions || [ ]) {
       const paths =
         await this.locationResolver
         .resolve(
@@ -117,7 +118,7 @@ export class ArtefactProvider
       }
     }
 
-    const artefacts = [];
+    const artefacts = [ ];
 
     for (const artefactPath of artefactPaths) {
       const artefactDefinitions =
@@ -168,7 +169,7 @@ export class ArtefactProvider
     const definitions =
       await this.artefactDefinitionProvider.getDefinitions();
 
-    const matchingDefinitions = [];
+    const matchingDefinitions = [ ];
 
     for (const definition of definitions) {
       if (

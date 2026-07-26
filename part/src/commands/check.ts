@@ -82,7 +82,7 @@ export async function execCheck(
   const selectedDefinitions =
     filterDefinitions(
       filteredDefinitions,
-      [...definitionsWithRules]);
+      [ ...definitionsWithRules ]);
 
   const selectedDefinitionNames =
     selectedDefinitions.map(
@@ -96,7 +96,7 @@ export async function execCheck(
   const artefactProvider =
     environment.getProviders().artefactProvider;
 
-  const artefacts: Artefact[] = [];
+  const artefacts: Artefact[] = [ ];
 
   /**
    * List of definition names for each artefact path, limited to the requested
@@ -136,7 +136,8 @@ export async function execCheck(
         continue;
       }
 
-      definitionNamesForArtefact[artefact.path] = artefactSelectedDefinitions;
+      definitionNamesForArtefact[artefact.path] =
+        artefactSelectedDefinitions;
 
       artefacts.push(artefact);
     }
@@ -149,7 +150,8 @@ export async function execCheck(
       ...definitionArtefacts);
 
     for (const artefact of artefacts) {
-      definitionNamesForArtefact[artefact.path] = artefact.definitions
+      definitionNamesForArtefact[artefact.path] =
+        artefact.definitions
         .filter(
           definition => selectedDefinitionNames.includes(definition));
     }
@@ -163,21 +165,20 @@ export async function execCheck(
     'Check command: found %d rule(s) to apply',
     selectedRules.length);
 
-  const results = [];
+  const results = [ ];
 
   let hasFailures = false;
 
   const ruleRunner =
     new RuleRunner(
-    logger,
-    environment.getProviders()
-  );
+      logger,
+      environment.getProviders());
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {
       const artefactDefinitionNames =
         definitionNamesForArtefact[artefact.path]
-        ?? [];
+        ?? [ ];
 
       const applicable =
         artefactDefinitionNames.includes(
@@ -217,7 +218,8 @@ export async function execCheck(
           ? 'OK'
           : ruleResult.message };
 
-      hasFailures = hasFailures
+      hasFailures =
+        hasFailures
         || !isOk;
 
       if (
@@ -249,10 +251,12 @@ export async function execCheck(
 
   const table =
     renderObjectsToMarkdownTable(
-      [{ property: 'location',
-         name: 'Location' }, { property: 'rule',
-                               name: 'Rule' }, { property: 'result',
-                                                 name: 'Result' }],
+      [ { property: 'location',
+          name: 'Location' },
+        { property: 'rule',
+          name: 'Rule' },
+        { property: 'result',
+          name: 'Result' } ],
       results);
 
   environment.stdout
@@ -262,7 +266,7 @@ export async function execCheck(
 
 export function filterDefinitions(
     definitions: ArtefactDefinition[],
-    definitionNames: string[] = []
+    definitionNames: string[] = [ ]
   ): ArtefactDefinition[]
 {
   if (definitionNames.length === 0) {
@@ -270,7 +274,8 @@ export function filterDefinitions(
   }
 
   const allowedNames =
-    new Set(definitionNames);
+    new Set(
+      definitionNames);
 
   return definitions.filter(
     definition =>
@@ -280,7 +285,7 @@ export function filterDefinitions(
 
 export function filterRules(
     rules: ArtefactDefinitionRule[],
-    ruleNames: string[] = []
+    ruleNames: string[] = [ ]
   ): ArtefactDefinitionRule[]
 {
   if (ruleNames.length === 0) {

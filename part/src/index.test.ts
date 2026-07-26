@@ -11,12 +11,10 @@ test(
   {
     assert.deepEqual(
       Object.keys(part).sort(),
-      [
-        'ArtefactProvider',
+      [ 'ArtefactProvider',
         'MarkdownDocumentProvider',
         'TmpDir',
         'createPinoLoggerProvider',
         'createRuleValidationContext',
-        'runCli'
-      ]);
+        'runCli' ]);
   });

@@ -30,7 +30,7 @@ test(
 
     const exitCode =
       await runCli(
-        ['version'],
+        [ 'version' ],
         environment);
 
     assert.equal(
@@ -59,15 +59,15 @@ test(
       execVersion,
       async e =>
       {
-        definitions = e.definitions;
+        definitions =
+          e.definitions;
+
         return Promise.resolve(0);
       });
 
     await runCli(
-      [
-        'version',
-        '--definitions=artefacts'
-      ],
+      [ 'version',
+        '--definitions=artefacts' ],
       environment);
 
     const definitionsPath =
@@ -96,15 +96,15 @@ test(
       execVersion,
       async e =>
       {
-        project = e.project;
+        project =
+          e.project;
+
         return Promise.resolve(0);
       });
 
     await runCli(
-      [
-        'version',
-        '--project=artefacts'
-      ],
+      [ 'version',
+        '--project=artefacts' ],
       environment);
 
     const projectPath =
@@ -135,7 +135,8 @@ test(
       });
 
     await runCli(
-      ['version', '--loglevel=silent'],
+      [ 'version',
+        '--loglevel=silent' ],
       environment);
 
     assert.equal(
@@ -152,10 +153,8 @@ test(
 
     const exitCode =
       await runCli(
-        [
-        'inventory',
-        '--unsupported'
-      ],
+        [ 'inventory',
+          '--unsupported' ],
         environment);
 
     assert.equal(
@@ -176,7 +175,8 @@ test(
 
     const missingValueExitCode =
       await runCli(
-        ['inventory', '--definitions'],
+        [ 'inventory',
+          '--definitions' ],
         environment);
 
     assert.equal(
@@ -197,7 +197,8 @@ test(
 
     const exitCode =
       await runCli(
-        ['inventory', '--verbose'],
+        [ 'inventory',
+          '--verbose' ],
         environment);
 
     assert.equal(
@@ -219,7 +220,7 @@ test(
     process.env.PART_DEFINITIONS = 'artefacts';
 
     await runCli(
-      ['version'],
+      [ 'version' ],
       environment);
 
     assert.equal(
@@ -237,7 +238,7 @@ test(
     process.env.PART_PROJECT = 'project';
 
     await runCli(
-      ['version'],
+      [ 'version' ],
       environment);
 
     assert.equal(

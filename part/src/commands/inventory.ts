@@ -60,7 +60,7 @@ export async function execInventory(
 
     const definitionArtefacts =
       await artefactProvider.getArtefacts(
-        [definition]);
+        [ definition ]);
 
     logger.trace(
       'Inventory command: collected %d artefacts for definition "%s"',
@@ -75,9 +75,10 @@ export async function execInventory(
       let entry;
 
       if (existingEntry === undefined) {
-        entry = { location:
-                    artefact.relativePath,
-                  definitions: [] };
+        entry =
+          { location:
+              artefact.relativePath,
+            definitions: [ ] };
       } else {
         entry = existingEntry;
       }
@@ -112,9 +113,10 @@ export async function execInventory(
 
   const table =
     renderObjectsToMarkdownTable(
-      [{ property: 'location',
-         name: 'Location' }, { property: 'definitions',
-                               name: 'Definitions' }],
+      [ { property: 'location',
+          name: 'Location' },
+        { property: 'definitions',
+          name: 'Definitions' } ],
       items);
 
   environment.stdout.write(

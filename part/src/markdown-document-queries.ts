@@ -24,15 +24,15 @@ export function getSections(
     document: MarkdownDocument
   ): Section[]
 {
-  const sections: Section[] = [];
+  const sections: Section[] = [ ];
 
   let currentSection: Section =
     { heading: '',
       level: 0,
-      nodes: [],
+      nodes: [ ],
       markup: '',
       content:
-        { nodes: [],
+        { nodes: [ ],
           markup: '' } };
 
   sections.push(
@@ -70,10 +70,10 @@ export function getSections(
         level:
           (node as Heading).depth,
         nodes:
-          [node],
+          [ node ],
         markup: '',
         content:
-          { nodes: [],
+          { nodes: [ ],
             markup: '' } };
 
     sections.push(newSection);
@@ -144,7 +144,7 @@ export function getSectionNodes(
     sectionHeadingMarkup: string
   ): Node[] | null
 {
-  const sectionNodes: Node[] = [];
+  const sectionNodes: Node[] = [ ];
 
   let inSection = false;
 
@@ -177,7 +177,7 @@ export function getSectionNodes(
   if (sectionNodes.length === 0) {
     if (inSection) {
       // section was found but has no content
-      return [];
+      return [ ];
     }
 
     // section not found

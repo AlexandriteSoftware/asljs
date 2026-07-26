@@ -77,10 +77,12 @@ function resolveDefinition(
   }
 
   if (byName.length > 1) {
-    throw new Error(`Multiple definitions match: ${target}`);
+    throw new Error(
+      `Multiple definitions match: ${target}`);
   }
 
-  throw new Error(`Definition not found: ${target}`);
+  throw new Error(
+    `Definition not found: ${target}`);
 }
 
 function formatDefinitionDetails(

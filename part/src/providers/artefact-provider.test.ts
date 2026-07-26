@@ -72,14 +72,14 @@ Requirement.
 
     const requirementArtefacts =
       await artefactProvider.getArtefacts(
-        [requirementDefinition]);
+        [ requirementDefinition ]);
 
     assert.deepEqual(
       requirementArtefacts
         .map(
           artefact => artefact.relativePath)
         .sort(),
-      ['development/visible/RQ101 Example.md']);
+      [ 'development/visible/RQ101 Example.md' ]);
 
     assert.equal(
       await artefactProvider.isArtefactOfDefinition(
@@ -141,5 +141,6 @@ Specification.
     assert.deepEqual(
       matchingDefinitions.map(
         definition => definition.name).sort(),
-      ['Article', 'Specification']);
+      [ 'Article',
+        'Specification' ]);
   });

@@ -51,7 +51,7 @@ export function renderObjectsToMarkdownTable(
         ...columnWidths);
     });
 
-  const lines = [];
+  const lines = [ ];
 
   lines.push(
     renderRow(
@@ -82,7 +82,7 @@ function renderRow(
     widths: number[]
   ): string
 {
-  const md = [];
+  const md = [ ];
 
   for (
     let index = 0;

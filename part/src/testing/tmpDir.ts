@@ -28,7 +28,6 @@ export function tmpDirFactory(
         trace };
 
     return new TmpDir(
-      tmpDirOptions
-    );
+      tmpDirOptions);
   };
 }

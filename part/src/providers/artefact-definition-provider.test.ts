@@ -173,24 +173,24 @@ Due date must be in the future.
       'A todo item is a task that needs to be done.');
 
     const expectedLocations: Location[] =
-      [{ pattern:
-           'Todo Items/**/*.md',
-         exclude:
-           ['Todo Items/Templates/**/*.md'],
-         filters:
-           [{ name: 'GitIgnore' }] }];
+      [ { pattern:
+            'Todo Items/**/*.md',
+          exclude:
+            [ 'Todo Items/Templates/**/*.md' ],
+          filters:
+            [ { name: 'GitIgnore' } ] } ];
 
     assert.deepEqual(
       definition.locations,
       expectedLocations);
 
     const expectedRules: ArtefactDefinitionRule[] =
-      [{ id: 'R1',
-         definition: 'Todo Item',
-         name: 'Todo Item_R1',
-         heading: 'R1',
-         content:
-           '### R1\n\nDue date must be in the future.' }];
+      [ { id: 'R1',
+          definition: 'Todo Item',
+          name: 'Todo Item_R1',
+          heading: 'R1',
+          content:
+            '### R1\n\nDue date must be in the future.' } ];
 
     assert.deepEqual(
       definition.rules,

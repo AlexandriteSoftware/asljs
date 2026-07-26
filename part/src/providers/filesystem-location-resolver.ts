@@ -29,12 +29,13 @@ export class FilesystemLocationResolver
   {
     this.logger = logger;
 
-    this.rootPath = path.normalize(
-      path.resolve(rootPath));
+    this.rootPath =
+      path.normalize(
+        path.resolve(rootPath));
 
-    this.gitIgnore = new GitIgnore(
-      this.logger
-    );
+    this.gitIgnore =
+      new GitIgnore(
+        this.logger);
   }
 
   async resolve(
@@ -42,7 +43,7 @@ export class FilesystemLocationResolver
     locations: Location[]
   ): Promise<string[]>
   {
-    const results: string[] = [];
+    const results: string[] = [ ];
 
     for (const location of locations) {
       const resolved =
@@ -55,7 +56,7 @@ export class FilesystemLocationResolver
     }
 
     const uniqueResults =
-      [...new Set(results)];
+      [ ...new Set(results) ];
 
     uniqueResults.sort(
       (a, b) => a.localeCompare(b));
@@ -72,10 +73,10 @@ export class FilesystemLocationResolver
       location.pattern;
 
     const exclude =
-      location.exclude || [];
+      location.exclude || [ ];
 
     const filters =
-      location.filters || [];
+      location.filters || [ ];
 
     this.logger.trace(
       'FilesystemLocationResolver.resolve(%s, %s)',
@@ -97,14 +98,13 @@ export class FilesystemLocationResolver
       && !directoriesOnly
     ) {
       throw new Error(
-        `Patterns must be either all files or all directories`
-      );
+        `Patterns must be either all files or all directories`);
     }
 
     const matches = new Set<string>();
 
     const rootPathPatterns =
-      [pattern]
+      [ pattern ]
       .filter(
         pattern => pattern.startsWith('/'))
       .map(
@@ -125,7 +125,7 @@ export class FilesystemLocationResolver
     }
 
     const basePathPatterns =
-      [pattern]
+      [ pattern ]
       .filter(
         pattern => !pattern.startsWith('/'));
 
@@ -189,19 +189,19 @@ export class FilesystemLocationResolver
     }
 
     let result =
-      [...matches];
+      [ ...matches ];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result = this.gitIgnore
+          result =
+            this.gitIgnore
             .filter(
               result);
           break;
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`
-          );
+            `Unknown filter: ${filter.name}`);
       }
     }
 
@@ -246,10 +246,10 @@ export class FilesystemLocationResolver
       location.pattern;
 
     const exclude =
-      location.exclude || [];
+      location.exclude || [ ];
 
     const filters =
-      location.filters || [];
+      location.filters || [ ];
 
     const normalisedTargetPath =
       path.normalize(
@@ -270,7 +270,7 @@ export class FilesystemLocationResolver
         normalisedTargetPath);
 
     const included =
-      [patterns].some(
+      [ patterns ].some(
         pattern =>
       {
         if (pattern.startsWith('/')) {
@@ -312,19 +312,19 @@ export class FilesystemLocationResolver
     }
 
     let result =
-      [normalisedTargetPath];
+      [ normalisedTargetPath ];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result = this.gitIgnore
+          result =
+            this.gitIgnore
             .filter(result);
           break;
 
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`
-          );
+            `Unknown filter: ${filter.name}`);
       }
     }
 

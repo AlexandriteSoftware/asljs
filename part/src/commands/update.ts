@@ -55,9 +55,8 @@ export async function execUpdate(
 
   const ruleProvider =
     new ArtefactDefinitionRuleProvider(
-    logger,
-    artefactDefinitionProvider
-  );
+      logger,
+      artefactDefinitionProvider);
 
   const runCopilotCli =
     environment.runCopilotCli
@@ -66,9 +65,9 @@ export async function execUpdate(
   const dryRun =
     options.dryRun === true;
 
-  const updates = [];
-  const warnings = [];
-  const prompts = [];
+  const updates = [ ];
+  const warnings = [ ];
+  const prompts = [ ];
 
   for (const definition of definitions) {
     logger.trace(
@@ -423,7 +422,8 @@ async function runConfiguredCopilotCli(
     process.env.PART_COPILOT_CLI_COMMAND?.trim();
 
   if (!command) {
-    command = 'copilot -p "" '
+    command =
+      'copilot -p "" '
       + '--allow-all-tools '
       + '--allow-all-paths '
       + '--no-ask-user '
@@ -459,7 +459,9 @@ async function runCopilotCli(
               request.rootDirectory,
             shell: true,
             stdio:
-              ['pipe', 'pipe', 'pipe'] });
+              [ 'pipe',
+                'pipe',
+                'pipe' ] });
 
       let stdout = '';
       let stderr = '';
@@ -496,8 +498,7 @@ async function runCopilotCli(
             reject(
               new Error(
                 stderr.trim()
-                  || `Copilot CLI failed with exit code ${code}.`
-              ));
+                  || `Copilot CLI failed with exit code ${code}.`));
 
             return;
           }

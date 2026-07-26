@@ -44,8 +44,12 @@ test(
       workspace,
       await filesystemLocationResolver.resolve(
         workspace.path,
-        [{ pattern: '**/*.txt' }]),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+        [ { pattern: '**/*.txt' } ]),
+      [ 'f1.txt',
+        'd1/f2.txt',
+        'd1/d11/f3.txt',
+        'd2/f4.txt',
+        'd2/d21/f5.txt' ]);
   });
 
 test(
@@ -67,8 +71,9 @@ test(
         path.join(
           workspace.path,
           'd1'),
-        [{ pattern: '**/*.txt' }]),
-      ['d1/f2.txt', 'd1/d11/f3.txt']);
+        [ { pattern: '**/*.txt' } ]),
+      [ 'd1/f2.txt',
+        'd1/d11/f3.txt' ]);
   });
 
 test(
@@ -88,8 +93,12 @@ test(
       workspace,
       await filesystemLocationResolver.resolve(
         workspace.path,
-        [{ pattern: '/**/*.txt' }]),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+        [ { pattern: '/**/*.txt' } ]),
+      [ 'f1.txt',
+        'd1/f2.txt',
+        'd1/d11/f3.txt',
+        'd2/f4.txt',
+        'd2/d21/f5.txt' ]);
   });
 
 async function getTestTmpFolder(
@@ -99,13 +108,11 @@ async function getTestTmpFolder(
     tmpDir();
 
   const files =
-    [
-    'f1.txt',
-    'd1/f2.txt',
-    'd1/d11/f3.txt',
-    'd2/f4.txt',
-    'd2/d21/f5.txt'
-  ];
+    [ 'f1.txt',
+      'd1/f2.txt',
+      'd1/d11/f3.txt',
+      'd2/f4.txt',
+      'd2/d21/f5.txt' ];
 
   for (const file of files) {
     await workspace.writeText(

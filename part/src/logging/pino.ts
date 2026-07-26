@@ -50,9 +50,8 @@ export function createPinoLoggerProvider(
 
   const loggerProvider =
     new PinoLoggerProvider(
-    { level,
-      file }
-  );
+      { level,
+        file });
 
   return loggerProvider;
 }
@@ -88,25 +87,28 @@ class PinoLoggerProvider implements LoggerProvider
     }
 
     if (file) {
-      this.#transport = pino.transport(
-        { target: 'pino/file',
-          options:
-            { destination: file,
-              mkdir: true } });
+      this.#transport =
+        pino.transport(
+          { target: 'pino/file',
+            options:
+              { destination: file,
+                mkdir: true } });
     } else {
-      this.#transport = pino.transport(
-        { target: 'pino-pretty',
-          options:
-            { messageFormat:
-                '{context}: {msg}',
-              ignore: 'context',
-              colorize: true } });
+      this.#transport =
+        pino.transport(
+          { target: 'pino-pretty',
+            options:
+              { messageFormat:
+                  '{context}: {msg}',
+                ignore: 'context',
+                colorize: true } });
     }
 
-    this.#logger = pino(
-      { base: null,
-        level: pinoLogLevel },
-      this.#transport);
+    this.#logger =
+      pino(
+        { base: null,
+          level: pinoLogLevel },
+        this.#transport);
   }
 
   getLogger(
@@ -120,14 +122,12 @@ class PinoLoggerProvider implements LoggerProvider
       return new PinoLogger(
         this.#logger.child(
           { context }),
-        this.#level
-      );
+        this.#level);
     }
 
     return new PinoLogger(
       this.#logger,
-      this.#level
-    );
+      this.#level);
   }
 
   dispose(): Promise<void>

@@ -266,9 +266,9 @@ Article rule.
       { pattern:
           'development/**/*.md',
         checkDefinitions:
-          ['Requirement'],
+          [ 'Requirement' ],
         checkRules:
-          ['Requirement_RL11'],
+          [ 'Requirement_RL11' ],
         withPositives: true });
 
     assert.equal(
@@ -347,7 +347,7 @@ Second rule.
       environment,
       { withPositives: true,
         checkDefinitions:
-          ['Requirement'] });
+          [ 'Requirement' ] });
 
     assert.equal(
       environment.stderr.toString(),
@@ -368,12 +368,18 @@ Second rule.
 
     assert.deepEqual(
       rows,
-      [
-        ['development/alpha/RQ100 Earlier.md', 'Requirement_RL10', 'OK'],
-        ['development/alpha/RQ100 Earlier.md', 'Requirement_RL11', 'OK'],
-        ['development/zeta/RQ200 Later.md', 'Requirement_RL10', 'OK'],
-        ['development/zeta/RQ200 Later.md', 'Requirement_RL11', 'OK']
-      ]);
+      [ [ 'development/alpha/RQ100 Earlier.md',
+          'Requirement_RL10',
+          'OK' ],
+        [ 'development/alpha/RQ100 Earlier.md',
+          'Requirement_RL11',
+          'OK' ],
+        [ 'development/zeta/RQ200 Later.md',
+          'Requirement_RL10',
+          'OK' ],
+        [ 'development/zeta/RQ200 Later.md',
+          'Requirement_RL11',
+          'OK' ] ]);
   });
 
 test(

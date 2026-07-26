@@ -25,7 +25,9 @@ export class ArtefactDefinitionRuleProvider
   )
   {
     this.logger = logger;
-    this.definitions = definitionProvider;
+
+    this.definitions =
+      definitionProvider;
   }
 
   async isRuleInSync(
@@ -43,8 +45,7 @@ export class ArtefactDefinitionRuleProvider
 
     if (!definitionObj) {
       throw new Error(
-        `Definition '${definition}' not found`
-      );
+        `Definition '${definition}' not found`);
     }
 
     const rule =
@@ -54,8 +55,7 @@ export class ArtefactDefinitionRuleProvider
 
     if (!rule) {
       throw new Error(
-        `Rule '${ruleId}' not found in definition '${definition}'`
-      );
+        `Rule '${ruleId}' not found in definition '${definition}'`);
     }
 
     const ruleJsFilePath =
@@ -71,7 +71,8 @@ export class ArtefactDefinitionRuleProvider
       const stat =
         await fs.stat(ruleJsFilePath);
 
-      isRuleJsFileExists = stat.isFile();
+      isRuleJsFileExists =
+        stat.isFile();
     } catch (error) {
       isRuleJsFileExists = false;
     }
@@ -120,8 +121,7 @@ export class ArtefactDefinitionRuleProvider
       || ruleId.trim() === ''
     ) {
       throw new Error(
-        'ruleId must be a non-empty string'
-      );
+        'ruleId must be a non-empty string');
     }
 
     this.logger.trace(
@@ -154,9 +154,10 @@ export class ArtefactDefinitionRuleProvider
     let entries;
 
     try {
-      entries = await readdir(
-        directoryPath,
-        { withFileTypes: true });
+      entries =
+        await readdir(
+          directoryPath,
+          { withFileTypes: true });
     } catch (error) {
       this.logger.trace(
         'resolveRuleFile { failed to read directory %s. Exception: %s }',

@@ -241,7 +241,7 @@ Definition file.
       execInventoryLogger,
       environment,
       { inventoryDefinitions:
-          ['Article'] });
+          [ 'Article' ] });
 
     assert.equal(
       environment.stderr.toString(),

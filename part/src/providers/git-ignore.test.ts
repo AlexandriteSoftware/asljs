@@ -40,21 +40,19 @@ test(
 
     const gitIgnore =
       new GitIgnore(
-      loggerProvider.getLogger('GitIgnore')
-    );
+        loggerProvider.getLogger('GitIgnore'));
 
     const files =
-      [
-      'keep.md',
-      'ignored.md',
-      'docs/guide.md',
-      'docs/drafts/draft.md'
-    ];
+      [ 'keep.md',
+        'ignored.md',
+        'docs/guide.md',
+        'docs/drafts/draft.md' ];
 
     const filePaths: Record<string, string> = {};
 
     for (const file of files) {
-      filePaths[file] = workspace.resolve(file);
+      filePaths[file] =
+        workspace.resolve(file);
     }
 
     assert.equal(
@@ -75,5 +73,6 @@ test(
     assert.deepEqual(
       gitIgnore.filter(
         Object.values(filePaths)),
-      [filePaths['keep.md'], filePaths['docs/guide.md']]);
+      [ filePaths['keep.md'],
+        filePaths['docs/guide.md'] ]);
   });

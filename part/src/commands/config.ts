@@ -5,7 +5,7 @@ export function execConfig(
     environment: Environment
   ): Promise<number>
 {
-  const output: string[] = [];
+  const output: string[] = [ ];
 
   output.push(
     'Environment:');
