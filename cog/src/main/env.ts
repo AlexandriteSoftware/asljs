@@ -28,8 +28,7 @@ export function ensurePatchFileExists(
       patchPath)
   ) {
     throw new Error(
-      `Patch file does not exist: ${patchPath}`
-    );
+      `Patch file does not exist: ${patchPath}`);
   }
 }
 
@@ -42,8 +41,7 @@ function getRequiredEnv(
 
   if (!value) {
     throw new Error(
-      `${name} is required`
-    );
+      `${name} is required`);
   }
 
   return value;

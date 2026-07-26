@@ -42,7 +42,7 @@ export class BackupRollbackFeed implements RollbackFeed
   ): Promise<BackupRollbackFeed>
   {
     const backup: Backup =
-      { files: [] };
+      { files: [ ] };
 
     await mkdir(
       dirname(
@@ -60,8 +60,7 @@ export class BackupRollbackFeed implements RollbackFeed
       'utf8');
 
     return new BackupRollbackFeed(
-      backupPath
-    );
+      backupPath);
   }
 
   static async restoreAndDelete(
@@ -70,8 +69,7 @@ export class BackupRollbackFeed implements RollbackFeed
   {
     const rollbackFeed =
       new BackupRollbackFeed(
-      backupPath
-    );
+        backupPath);
 
     await rollbackFeed.rollbackAll();
     await rollbackFeed.delete();
@@ -97,18 +95,18 @@ export class BackupRollbackFeed implements RollbackFeed
     ) {
       backup.files
         .push(
-          {
-            path: filePath,
+          { path: filePath,
             existed: true,
-            content: (await readFile(
-              filePath))
+            content:
+              (await readFile(
+                filePath))
               .toString(
-                'base64')
-          });
+                'base64') });
     } else {
       backup.files
         .push(
-          { path: filePath, existed: false });
+          { path: filePath,
+            existed: false });
     }
 
     await this.save(
@@ -140,15 +138,13 @@ export class BackupRollbackFeed implements RollbackFeed
       await this.load();
 
     for (
-      const file of [
-        ...backup.files
-      ].reverse()
+      const file of [ ...backup.files ].reverse()
     ) {
       await restoreFile(
         file);
     }
 
-    backup.files = [];
+    backup.files = [ ];
 
     await this.save(
       backup);
@@ -196,6 +192,7 @@ async function restoreFile(
   } else {
     await rm(
       file.path,
-      { recursive: true, force: true });
+      { recursive: true,
+        force: true });
   }
 }

@@ -25,11 +25,11 @@ export async function main(
     createLogger();
 
   const context: ExecutionContext =
-    {
-    logger,
-    console: new DefaultHostConsole(),
-    dispose: () => logger.dispose()
-  };
+    { logger,
+      console:
+        new DefaultHostConsole(),
+      dispose:
+        () => logger.dispose() };
 
   try {
     const program =
@@ -74,8 +74,7 @@ export async function main(
         () =>
         {
           throw new Error(
-            'Usage: cog <read|list|update|restore|apply-patch> [args...]'
-          );
+            'Usage: cog <read|list|update|restore|apply-patch> [args...]');
         });
 
     await program.parseAsync(

@@ -19,7 +19,7 @@ export class GitIgnore
   )
   {
     this.logger = logger;
-    this.matchers = [];
+    this.matchers = [ ];
     this.visitedPaths = new Set();
   }
 
@@ -29,8 +29,7 @@ export class GitIgnore
   {
     if (!path.isAbsolute(targetPath)) {
       throw new Error(
-        `Path must be absolute: ${targetPath}`
-      );
+        `Path must be absolute: ${targetPath}`);
     }
 
     const isDirectory =
@@ -139,7 +138,8 @@ export class GitIgnore
           gitIgnoreContent);
 
       this.matchers.push(
-        { path: directoryPath, matcher });
+        { path: directoryPath,
+          matcher });
     }
 
     const parentPath =

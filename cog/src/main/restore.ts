@@ -31,10 +31,9 @@ export function configureRestoreCommand(
         }>();
 
         await restoreCmd(
-          {
-            envelopePath: resolveEnvelopePath(
-              options.envelope)
-          });
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope) });
       });
 }
 
@@ -55,8 +54,7 @@ async function restoreCmd(
       backupPath)
   ) {
     throw new Error(
-      `backup.json does not exist: ${backupPath}`
-    );
+      `backup.json does not exist: ${backupPath}`);
   }
 
   await BackupRollbackFeed.restoreAndDelete(

@@ -33,10 +33,9 @@ export function configureUpdateCommand(
 
         await updateCmd(
           context,
-          {
-            envelopePath: resolveEnvelopePath(
-              options.envelope)
-          });
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope) });
       });
 }
 
@@ -51,8 +50,7 @@ async function updateCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-    context.logger
-  );
+      context.logger);
 
   const envelope =
     await envelopeContainer.loadEnvelope(

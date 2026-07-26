@@ -15,7 +15,8 @@ test(
 
     let output = '';
 
-    process.stdout.write = ((chunk: string | Uint8Array) =>
+    process.stdout.write =
+      ((chunk: string | Uint8Array) =>
     {
       output += typeof chunk === 'string'
         ? chunk

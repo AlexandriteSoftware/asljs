@@ -15,11 +15,9 @@ import { read }
 
 const testBinaryFileContent: Buffer =
   Buffer.from(
-    [
-    0,
-    1,
-    255
-  ]);
+    [ 0,
+      1,
+      255 ]);
 
 const logger =
   createLogger();
@@ -30,10 +28,8 @@ test.after(
 function emptyEnvelope(
   ): Envelope
 {
-  return {
-    instruction: '',
-    files: []
-  };
+  return { instruction: '',
+           files: [ ] };
 }
 
 test(
@@ -47,7 +43,8 @@ test(
       () =>
         read(
           envelope,
-          { command: 'read', path: 'file.txt' } as unknown as Parameters<
+          { command: 'read',
+            path: 'file.txt' } as unknown as Parameters<
             typeof read
           >[1]),
       /Read command pattern is required/);
@@ -59,8 +56,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const filePath =
       workspace.resolve(
@@ -80,7 +76,10 @@ test(
 
     await read(
       envelope,
-      { command: 'read', pattern: filePattern, lines: 2, sizeKb: 1 });
+      { command: 'read',
+        pattern: filePattern,
+        lines: 2,
+        sizeKb: 1 });
 
     assert.equal(
       envelope.files[0].type,
@@ -96,15 +95,13 @@ test(
 
     assert.deepEqual(
       envelope.files[0].update,
-      {
-        command: 'read',
+      { command: 'read',
         pattern: filePattern,
-        exclude: [],
+        exclude: [ ],
         lines: 2,
         sizeKb: 1,
         readToEnd: false,
-        withBinaryB64: false
-      });
+        withBinaryB64: false });
   });
 
 test(
@@ -113,8 +110,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const filePath =
       workspace.resolve(
@@ -134,13 +130,11 @@ test(
 
     await read(
       envelope,
-      {
-        command: 'read',
+      { command: 'read',
         pattern: filePath,
         lines: 1,
         sizeKb: 1,
-        readToEnd: true
-      });
+        readToEnd: true });
 
     assert.equal(
       envelope.files[0].content,
@@ -152,15 +146,13 @@ test(
 
     assert.deepEqual(
       envelope.files[0].update,
-      {
-        command: 'read',
+      { command: 'read',
         pattern: filePattern,
-        exclude: [],
+        exclude: [ ],
         lines: 1,
         sizeKb: 1,
         readToEnd: true,
-        withBinaryB64: false
-      });
+        withBinaryB64: false });
   });
 
 test(
@@ -169,8 +161,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const filePath =
       workspace.resolve(
@@ -185,7 +176,9 @@ test(
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, withBinaryB64: true });
+      { command: 'read',
+        pattern: filePath,
+        withBinaryB64: true });
 
     assert.equal(
       envelope.files[0].type,
@@ -207,8 +200,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const filePath =
       workspace.resolve(
@@ -223,7 +215,8 @@ test(
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath });
+      { command: 'read',
+        pattern: filePath });
 
     assert.equal(
       envelope.files[0].type,
@@ -244,8 +237,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     await workspace.writeText(
       join(
@@ -264,15 +256,14 @@ test(
 
     await read(
       envelope,
-      {
-        command: 'read',
-        pattern: workspace.resolve(
-          'src')
-      });
+      { command: 'read',
+        pattern:
+          workspace.resolve(
+            'src') });
 
     assert.deepEqual(
       envelope.files,
-      []);
+      [ ]);
   });
 
 test(
@@ -281,8 +272,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     await workspace.writeText(
       join(
@@ -308,45 +298,41 @@ test(
 
     await read(
       envelope,
-      {
-        command: 'read',
-        pattern: `${
+      { command: 'read',
+        pattern:
+          `${
           workspace.resolve(
             'src')
         }/**/*.ts`,
-        exclude: [`${
+        exclude:
+          [ `${
           workspace.resolve(
             'src')
-        }/**/*.test.ts`],
-        readToEnd: true
-      });
+        }/**/*.test.ts` ],
+        readToEnd: true });
 
     assert.deepEqual(
       envelope.files
         .map(
           file => file.path)
         .sort(),
-      [
+      [ workspace.resolve(
+        join(
+          'src',
+          'nested',
+          'three.ts')),
         workspace.resolve(
           join(
             'src',
-            'nested',
-            'three.ts')),
-        workspace.resolve(
-          join(
-            'src',
-            'one.ts'))
-      ].sort());
+            'one.ts')) ].sort());
 
     assert.deepEqual(
       envelope.files
         .map(
           file => file.content)
         .sort(),
-      [
-        'one\n',
-        'three\n'
-      ]);
+      [ 'one\n',
+        'three\n' ]);
   });
 
 test(
@@ -355,8 +341,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const filePath =
       workspace.resolve(
@@ -371,7 +356,9 @@ test(
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, readToEnd: true });
+      { command: 'read',
+        pattern: filePath,
+        readToEnd: true });
 
     await workspace.writeText(
       'file.txt',
@@ -379,7 +366,9 @@ test(
 
     await read(
       envelope,
-      { command: 'read', pattern: filePath, readToEnd: true });
+      { command: 'read',
+        pattern: filePath,
+        readToEnd: true });
 
     assert.equal(
       envelope.files.length,

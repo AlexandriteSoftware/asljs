@@ -31,10 +31,9 @@ export function configureListCommand(
 
         await listCmd(
           context,
-          {
-            envelopePath: resolveEnvelopePath(
-              options.envelope)
-          });
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope) });
       });
 }
 
@@ -49,8 +48,7 @@ async function listCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-    context.logger
-  );
+      context.logger);
 
   const envelope =
     await envelopeContainer.loadEnvelope(
@@ -73,10 +71,9 @@ export function formatFileList(
   ): string
 {
   const lines =
-    [
-    '| Location | Complete | Type |',
-    '| --- | --- | --- |',
-    ...envelope.files
+    [ '| Location | Complete | Type |',
+      '| --- | --- | --- |',
+      ...envelope.files
       .map(
         file =>
           `| ${
@@ -88,8 +85,7 @@ export function formatFileList(
           } | ${
             escapeMarkdownTableCell(
               file.type)
-          } |`)
-  ];
+          } |`) ];
 
   return `${
     lines.join(

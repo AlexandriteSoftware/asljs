@@ -27,8 +27,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const envelopePath =
       workspace.resolve(
@@ -37,7 +36,8 @@ test(
     await workspace.writeText(
       'envelope.json',
       JSON.stringify(
-        { instruction: '', files: [] },
+        { instruction: '',
+          files: [ ] },
         null,
         2));
 
@@ -52,11 +52,10 @@ test(
     await workspace.writeText(
       'patch.json',
       JSON.stringify(
-        {
-          commands: [
-            { command: 'write', path: filePath, content: 'new\n' }
-          ]
-        },
+        { commands:
+            [ { command: 'write',
+                path: filePath,
+                content: 'new\n' } ] },
         null,
         2));
 
@@ -89,8 +88,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const envelopePath =
       workspace.resolve(
@@ -99,7 +97,8 @@ test(
     await workspace.writeText(
       'envelope.json',
       JSON.stringify(
-        { instruction: '', files: [] },
+        { instruction: '',
+          files: [ ] },
         null,
         2));
 
@@ -119,11 +118,10 @@ test(
       'patch.json',
       `${
         JSON.stringify(
-          {
-            commands: [
-              { command: 'write', path: filePath, content: 'new\n' }
-            ]
-          },
+          { commands:
+              [ { command: 'write',
+                  path: filePath,
+                  content: 'new\n' } ] },
           null,
           2)
       }\n`);
@@ -160,8 +158,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const envelopePath =
       workspace.resolve(
@@ -170,7 +167,8 @@ test(
     await workspace.writeText(
       'envelope.json',
       JSON.stringify(
-        { instruction: '', files: [] },
+        { instruction: '',
+          files: [ ] },
         null,
         2));
 
@@ -190,20 +188,18 @@ test(
       'patch.json',
       `${
         JSON.stringify(
-          {
-            commands: [
-              { command: 'write', path: filePath, content: 'new\n' }
-            ]
-          },
+          { commands:
+              [ { command: 'write',
+                  path: filePath,
+                  content: 'new\n' } ] },
           null,
           2)
       }\n`);
 
     await withEnv(
-      {
-        COG_PATCH_VERIFY_CMD: nodeCommand(
-          'process.exit(3)')
-      },
+      { COG_PATCH_VERIFY_CMD:
+          nodeCommand(
+            'process.exit(3)') },
       async () =>
       {
         await assert.rejects(
@@ -230,8 +226,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const envelopePath =
       workspace.resolve(
@@ -240,7 +235,8 @@ test(
     await workspace.writeText(
       'envelope.json',
       JSON.stringify(
-        { instruction: '', files: [] },
+        { instruction: '',
+          files: [ ] },
         null,
         2));
 
@@ -256,20 +252,18 @@ test(
       'patch.json',
       `${
         JSON.stringify(
-          {
-            commands: [
-              { command: 'write', path: filePath, content: 'new\n' }
-            ]
-          },
+          { commands:
+              [ { command: 'write',
+                  path: filePath,
+                  content: 'new\n' } ] },
           null,
           2)
       }\n`);
 
     await withEnv(
-      {
-        COG_PATCH_VERIFY_CMD: nodeCommand(
-          'process.exit(9)')
-      },
+      { COG_PATCH_VERIFY_CMD:
+          nodeCommand(
+            'process.exit(9)') },
       async () =>
       {
         await main(

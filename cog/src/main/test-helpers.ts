@@ -2,11 +2,9 @@ export function argv(
     ...args: string[]
   ): string[]
 {
-  return [
-    'node',
-    'cog',
-    ...args
-  ];
+  return [ 'node',
+           'cog',
+           ...args ];
 }
 
 export function quoteShellArg(

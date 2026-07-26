@@ -105,8 +105,7 @@ export class PinoLoggerAdapter implements RootLogger
   ): Logger
   {
     return new PinoLoggerAdapter(
-      this.logger.child(properties)
-    );
+      this.logger.child(properties));
   }
 
   trace(
@@ -193,7 +192,8 @@ export function createLogger(
   let level;
 
   if (options.level !== undefined) {
-    level = options.level;
+    level =
+      options.level;
   } else {
     const envLogLevel =
       process.env[`${envVarPrefix}LOG_LEVEL`];
@@ -212,7 +212,8 @@ export function createLogger(
   let file;
 
   if (options.file !== undefined) {
-    file = options.file;
+    file =
+      options.file;
   } else {
     const envLogFile =
       process.env[`${envVarPrefix}LOG_FILE`];
@@ -227,27 +228,30 @@ export function createLogger(
   let transport = null;
 
   if (file === null) {
-    transport = pino.transport(
-      {
-        target: 'pino-pretty',
-        options: {
-          messageFormat: '{instanceId}: {msg}',
-          ignore: 'instanceId',
-          colorize: true
-        }
-      });
+    transport =
+      pino.transport(
+        { target: 'pino-pretty',
+          options:
+            { messageFormat:
+                '{instanceId}: {msg}',
+              ignore: 'instanceId',
+              colorize: true } });
   } else {
-    transport = pino.transport(
-      { target: 'pino/file', options: { destination: file, mkdir: true } });
+    transport =
+      pino.transport(
+        { target: 'pino/file',
+          options:
+            { destination: file,
+              mkdir: true } });
   }
 
   const logger =
     pino(
-      { base: null, level },
+      { base: null,
+        level },
       transport);
 
   return new PinoLoggerAdapter(
     logger,
-    transport
-  );
+    transport);
 }

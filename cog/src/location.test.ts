@@ -20,16 +20,20 @@ test(
 
     const resolver =
       new LocationResolver(
-      createLogger(),
-      workspace.path
-    );
+        createLogger(),
+        workspace.path);
 
     checkResolvedFiles(
       workspace,
       await resolver.resolve(
         workspace.path,
-        { patterns: ['**/*.txt'] }),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+        { patterns:
+            [ '**/*.txt' ] }),
+      [ 'f1.txt',
+        'd1/f2.txt',
+        'd1/d11/f3.txt',
+        'd2/f4.txt',
+        'd2/d21/f5.txt' ]);
   });
 
 test(
@@ -41,9 +45,8 @@ test(
 
     const resolver =
       new LocationResolver(
-      createLogger(),
-      workspace.path
-    );
+        createLogger(),
+        workspace.path);
 
     checkResolvedFiles(
       workspace,
@@ -51,8 +54,10 @@ test(
         path.join(
           workspace.path,
           'd1'),
-        { patterns: ['**/*.txt'] }),
-      ['d1/f2.txt', 'd1/d11/f3.txt']);
+        { patterns:
+            [ '**/*.txt' ] }),
+      [ 'd1/f2.txt',
+        'd1/d11/f3.txt' ]);
   });
 
 test(
@@ -64,16 +69,20 @@ test(
 
     const resolver =
       new LocationResolver(
-      createLogger(),
-      workspace.path
-    );
+        createLogger(),
+        workspace.path);
 
     checkResolvedFiles(
       workspace,
       await resolver.resolve(
         workspace.path,
-        { patterns: ['/**/*.txt'] }),
-      ['f1.txt', 'd1/f2.txt', 'd1/d11/f3.txt', 'd2/f4.txt', 'd2/d21/f5.txt']);
+        { patterns:
+            [ '/**/*.txt' ] }),
+      [ 'f1.txt',
+        'd1/f2.txt',
+        'd1/d11/f3.txt',
+        'd2/f4.txt',
+        'd2/d21/f5.txt' ]);
   });
 
 async function getTestTmpFolder(
@@ -81,17 +90,14 @@ async function getTestTmpFolder(
 {
   const tmpDir =
     new TmpDir(
-    createLogger()
-  );
+      createLogger());
 
   const files =
-    [
-    'f1.txt',
-    'd1/f2.txt',
-    'd1/d11/f3.txt',
-    'd2/f4.txt',
-    'd2/d21/f5.txt'
-  ];
+    [ 'f1.txt',
+      'd1/f2.txt',
+      'd1/d11/f3.txt',
+      'd2/f4.txt',
+      'd2/d21/f5.txt' ];
 
   for (const file of files) {
     await tmpDir.writeText(

@@ -34,12 +34,13 @@ export class LocationResolver
   {
     this.logger = logger;
 
-    this.rootPath = path.normalize(
-      path.resolve(rootPath));
+    this.rootPath =
+      path.normalize(
+        path.resolve(rootPath));
 
-    this.gitIgnore = new GitIgnore(
-      this.logger
-    );
+    this.gitIgnore =
+      new GitIgnore(
+        this.logger);
   }
 
   async resolve(
@@ -51,10 +52,10 @@ export class LocationResolver
       location.patterns;
 
     const exclude =
-      location.exclude || [];
+      location.exclude || [ ];
 
     const filters =
-      location.filters || [];
+      location.filters || [ ];
 
     this.logger.trace(
       `FilesystemLocationResolver.resolve(${JSON.stringify(basePath)}, ${
@@ -78,8 +79,7 @@ export class LocationResolver
       && !directoriesOnly
     ) {
       throw new Error(
-        `Patterns must be either all files or all directories`
-      );
+        `Patterns must be either all files or all directories`);
     }
 
     const matches: Set<string> = new Set();
@@ -95,11 +95,10 @@ export class LocationResolver
       const rootPathMatches =
         await glob(
           rootPathPatterns,
-          {
-          cwd: this.rootPath,
-          absolute: true,
-          nodir: filesOnly
-        });
+          { cwd:
+              this.rootPath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of rootPathMatches) {
         matches.add(match);
@@ -115,11 +114,10 @@ export class LocationResolver
       const basePathMatches =
         await glob(
           basePathPatterns,
-          {
-          cwd: normalisedBasePath,
-          absolute: true,
-          nodir: filesOnly
-        });
+          { cwd:
+              normalisedBasePath,
+            absolute: true,
+            nodir: filesOnly });
 
       this.logger.trace(
         `FilesystemLocationResolver.resolve() => ${basePathMatches.length} in ${normalisedBasePath}`);
@@ -140,7 +138,10 @@ export class LocationResolver
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd: this.rootPath, absolute: true, nodir: filesOnly });
+          { cwd:
+              this.rootPath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of rootExcludeMatches) {
         matches.delete(match);
@@ -156,7 +157,10 @@ export class LocationResolver
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd: normalisedBasePath, absolute: true, nodir: filesOnly });
+          { cwd:
+              normalisedBasePath,
+            absolute: true,
+            nodir: filesOnly });
 
       for (const match of basePathExcludeMatches) {
         matches.delete(match);
@@ -164,19 +168,19 @@ export class LocationResolver
     }
 
     let result =
-      [...matches];
+      [ ...matches ];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result = this.gitIgnore
+          result =
+            this.gitIgnore
             .filter(
               result);
           break;
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`
-          );
+            `Unknown filter: ${filter.name}`);
       }
     }
 
@@ -199,10 +203,10 @@ export class LocationResolver
       location.patterns;
 
     const exclude =
-      location.exclude || [];
+      location.exclude || [ ];
 
     const filters =
-      location.filters || [];
+      location.filters || [ ];
 
     const normalisedTargetPath =
       path.normalize(
@@ -265,19 +269,19 @@ export class LocationResolver
     }
 
     let result =
-      [normalisedTargetPath];
+      [ normalisedTargetPath ];
 
     for (const filter of filters) {
       switch (filter.name) {
         case 'GitIgnore':
-          result = this.gitIgnore
+          result =
+            this.gitIgnore
             .filter(result);
           break;
 
         default:
           throw new Error(
-            `Unknown filter: ${filter.name}`
-          );
+            `Unknown filter: ${filter.name}`);
       }
     }
 

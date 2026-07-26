@@ -61,14 +61,15 @@ export function configureApplyPatchCommand(
 
         await applyPatch(
           context,
-          {
-            envelopePath: resolveEnvelopePath(
-              options.envelope),
-            patchPath: resolvePatchPath(
-              options.patch),
-            patchVerifyCmd: applyPatchOptions.patchVerifyCmd
-              ?? process.env.COG_PATCH_VERIFY_CMD
-          });
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope),
+            patchPath:
+              resolvePatchPath(
+                options.patch),
+            patchVerifyCmd:
+              applyPatchOptions.patchVerifyCmd
+              ?? process.env.COG_PATCH_VERIFY_CMD });
       });
 }
 
@@ -101,8 +102,7 @@ async function applyPatch(
 
   const envelopeContainer =
     new EnvelopeContainer(
-    context.logger
-  );
+      context.logger);
 
   const envelope =
     await envelopeContainer.loadEnvelope(
@@ -164,8 +164,7 @@ async function applyPatchCommand(
       context);
   } else {
     throw new Error(
-      `Unknown patch command ${command.command}`
-    );
+      `Unknown patch command ${command.command}`);
   }
 }
 
@@ -186,8 +185,7 @@ async function verifyPatch(
 
   if (exitCode !== 0) {
     throw new Error(
-      `Patch verify command failed with exit code ${exitCode}`
-    );
+      `Patch verify command failed with exit code ${exitCode}`);
   }
 }
 
@@ -201,7 +199,8 @@ async function runCommand(
       const child =
         spawn(
           command,
-          { shell: true, stdio: 'inherit' });
+          { shell: true,
+            stdio: 'inherit' });
 
       child.on(
         'error',
@@ -210,6 +209,5 @@ async function runCommand(
       child.on(
         'close',
         resolve);
-    }
-  );
+    });
 }

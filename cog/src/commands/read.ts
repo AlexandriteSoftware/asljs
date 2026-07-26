@@ -18,9 +18,8 @@ import { RollbackFeed }
 
 const textDecoder =
   new TextDecoder(
-  'utf-8',
-  { fatal: true }
-);
+    'utf-8',
+    { fatal: true });
 
 const defaultLines = 150;
 const defaultSizeKb = 15;
@@ -58,8 +57,7 @@ export async function read(
 {
   if (!parameters.pattern) {
     throw new Error(
-      'Read command pattern is required'
-    );
+      'Read command pattern is required');
   }
 
   const normalizedParameters =
@@ -70,7 +68,7 @@ export async function read(
     await getReadTargets(
       normalizedParameters.pattern,
       normalizedParameters.exclude
-      ?? []);
+      ?? [ ]);
 
   for (const target of targets) {
     const file =
@@ -79,12 +77,14 @@ export async function read(
         getUpdateCommand(
           target,
           normalizedParameters),
-        {
-        lines: normalizedParameters.lines ?? defaultLines,
-        sizeKb: normalizedParameters.sizeKb ?? defaultSizeKb,
-        readToEnd: normalizedParameters.readToEnd ?? false,
-        withBinaryB64: normalizedParameters.withBinaryB64 ?? false
-      });
+        { lines:
+            normalizedParameters.lines ?? defaultLines,
+          sizeKb:
+            normalizedParameters.sizeKb ?? defaultSizeKb,
+          readToEnd:
+            normalizedParameters.readToEnd ?? false,
+          withBinaryB64:
+            normalizedParameters.withBinaryB64 ?? false });
 
     const fileIndex =
       envelope.files
@@ -117,20 +117,24 @@ function normalizeReadParameters(
     command: ReadParameters
   ): ReadParameters
 {
-  return {
-    command: 'read',
-    pattern: command.pattern,
-    exclude: command.exclude
-      ?? [],
-    lines: command.lines
+  return { command: 'read',
+           pattern:
+             command.pattern,
+           exclude:
+             command.exclude
+      ?? [ ],
+           lines:
+             command.lines
       ?? defaultLines,
-    sizeKb: command.sizeKb
+           sizeKb:
+             command.sizeKb
       ?? defaultSizeKb,
-    readToEnd: command.readToEnd
+           readToEnd:
+             command.readToEnd
       ?? false,
-    withBinaryB64: command.withBinaryB64
-      ?? false
-  };
+           withBinaryB64:
+             command.withBinaryB64
+      ?? false };
 }
 
 function getUpdateCommand(
@@ -138,12 +142,11 @@ function getUpdateCommand(
     command: ReadParameters
   ): ReadParameters
 {
-  return {
-    ...command,
-    pattern: target.path.replace(
-      /\\/g,
-      '/')
-  };
+  return { ...command,
+           pattern:
+             target.path.replace(
+               /\\/g,
+               '/') };
 }
 
 async function getReadTargets(
@@ -157,14 +160,15 @@ async function getReadTargets(
   try {
     const resolver =
       new LocationResolver(
-      logger,
-      process.cwd()
-    );
+        logger,
+        process.cwd());
 
     const matches =
       await resolver.resolve(
         process.cwd(),
-        { patterns: [pattern], exclude: excludes });
+        { patterns:
+            [ pattern ],
+          exclude: excludes });
 
     return matches
       .map(
@@ -173,12 +177,11 @@ async function getReadTargets(
             match))
       .sort()
       .map(
-        diskPath => ({
-          path: toDisplayPath(
-            diskPath,
-            pattern),
-          diskPath
-        }));
+        diskPath => ({ path:
+                         toDisplayPath(
+                           diskPath,
+                           pattern),
+                       diskPath }));
   } finally {
     logger.dispose();
   }
@@ -216,25 +219,25 @@ async function getEnvelopeFile(
   let content: string;
 
   try {
-    content = textDecoder.decode(
-      data);
+    content =
+      textDecoder.decode(
+        data);
   } catch {
     if (limits.withBinaryB64) {
-      return {
-        path: target.path,
-        type: 'binary',
-        content: data.toString(
-          'base64'),
-        complete: true,
-        update
-      };
+      return { path:
+                 target.path,
+               type: 'binary',
+               content:
+                 data.toString(
+                   'base64'),
+               complete: true,
+               update };
     }
 
-    return {
-      path: target.path,
-      type: 'binary',
-      update
-    };
+    return { path:
+               target.path,
+             type: 'binary',
+             update };
   }
 
   const limited =
@@ -242,13 +245,14 @@ async function getEnvelopeFile(
       content,
       limits);
 
-  return {
-    path: target.path,
-    type: 'text',
-    content: limited.content,
-    complete: limited.complete,
-    update
-  };
+  return { path:
+             target.path,
+           type: 'text',
+           content:
+             limited.content,
+           complete:
+             limited.complete,
+           update };
 }
 
 function limitText(
@@ -257,10 +261,8 @@ function limitText(
   ): { content: string; complete: boolean; }
 {
   if (limits.readToEnd) {
-    return {
-      content,
-      complete: true
-    };
+    return { content,
+             complete: true };
   }
 
   let limitedContent = content;
@@ -276,9 +278,10 @@ function limitText(
       'utf8');
 
   if (length > maxBytes) {
-    limitedContent = Buffer.from(
-      limitedContent,
-      'utf8')
+    limitedContent =
+      Buffer.from(
+        limitedContent,
+        'utf8')
       .subarray(
         0,
         maxBytes)
@@ -293,7 +296,8 @@ function limitText(
       /\r?\n/);
 
   if (lines.length > limits.lines) {
-    limitedContent = lines
+    limitedContent =
+      lines
       .slice(
         0,
         limits.lines)
@@ -303,10 +307,8 @@ function limitText(
     complete = false;
   }
 
-  return {
-    content: limitedContent,
-    complete
-  };
+  return { content: limitedContent,
+           complete };
 }
 
 function normalizeSlashes(

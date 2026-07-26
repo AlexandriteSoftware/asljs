@@ -24,7 +24,6 @@ export function ensureBackupFileDoesNotExist(
       backupPath)
   ) {
     throw new Error(
-      `backup.json exists: run cog restore or delete ${backupPath} before applying a patch`
-    );
+      `backup.json exists: run cog restore or delete ${backupPath} before applying a patch`);
   }
 }

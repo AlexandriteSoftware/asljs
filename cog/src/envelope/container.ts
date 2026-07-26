@@ -19,8 +19,10 @@ export class EnvelopeContainer
     logger: Logger
   )
   {
-    this.logger = logger.scope(
-      { instanceId: 'EnvelopeContainer' });
+    this.logger =
+      logger.scope(
+        { instanceId:
+            'EnvelopeContainer' });
   }
 
   public async tryLoadEnvelope(
@@ -55,8 +57,7 @@ export class EnvelopeContainer
 
     if (this.envelope === null) {
       throw new Error(
-        `Envelope is null after loading from ${filePath}`
-      );
+        `Envelope is null after loading from ${filePath}`);
     }
 
     return this.envelope;
@@ -76,7 +77,8 @@ export class EnvelopeContainer
         JSON.parse(
           content);
 
-      this.envelope = json as Envelope;
+      this.envelope =
+        json as Envelope;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
@@ -93,7 +95,8 @@ export class EnvelopeContainer
       await this.loadInstruction();
 
     const envelope =
-      { instruction, files: [] };
+      { instruction,
+        files: [ ] };
 
     this.envelope = envelope;
 

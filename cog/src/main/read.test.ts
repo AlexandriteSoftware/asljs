@@ -25,8 +25,7 @@ test(
   {
     await using workspace =
       new TmpDir(
-      logger
-    );
+        logger);
 
     const envelopePath =
       workspace.resolve(
@@ -67,18 +66,17 @@ test(
 
     assert.deepEqual(
       envelope.files[0].update,
-      {
-        command: 'read',
-        pattern: workspace.resolve(
-          'docs',
-          'one.txt')
+      { command: 'read',
+        pattern:
+          workspace.resolve(
+            'docs',
+            'one.txt')
           .replace(
             /\\/g,
             '/'),
-        exclude: [],
+        exclude: [ ],
         lines: 150,
         sizeKb: 15,
         readToEnd: true,
-        withBinaryB64: false
-      });
+        withBinaryB64: false });
   });

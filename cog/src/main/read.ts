@@ -54,7 +54,7 @@ export function configureReadCommand(
       '--exclude <path>',
       'file, folder, or glob pattern to exclude',
       collect,
-      [])
+      [ ])
     .action(
       async (
         path: string,
@@ -70,10 +70,9 @@ export function configureReadCommand(
           context,
           path,
           readOptions,
-          {
-            envelopePath: resolveEnvelopePath(
-              options.envelope)
-          });
+          { envelopePath:
+              resolveEnvelopePath(
+                options.envelope) });
       });
 }
 
@@ -102,8 +101,7 @@ async function readCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-    context.logger
-  );
+      context.logger);
 
   const envelopeLoaded =
     await envelopeContainer.tryLoadEnvelope(
@@ -115,25 +113,31 @@ async function readCmd(
     envelopeLoaded
     && envelopeContainer.envelope !== null
   ) {
-    envelope = envelopeContainer.envelope;
+    envelope =
+      envelopeContainer.envelope;
   } else {
-    envelope = await envelopeContainer.initializeEnvelope();
+    envelope =
+      await envelopeContainer.initializeEnvelope();
   }
 
   const parameters: ReadParameters =
-    {
-    command: 'read',
-    pattern: normalisedPattern,
-    exclude: normalisedExcludes ?? [],
-    lines: parsePositiveInteger(
-      readOptions.lines,
-      'lines'),
-    sizeKb: parsePositiveInteger(
-      readOptions.sizeKb,
-      'sizeKb'),
-    readToEnd: readOptions.readToEnd ?? false,
-    withBinaryB64: readOptions.withBinaryB64 ?? false
-  };
+    { command: 'read',
+      pattern:
+        normalisedPattern,
+      exclude:
+        normalisedExcludes ?? [ ],
+      lines:
+        parsePositiveInteger(
+          readOptions.lines,
+          'lines'),
+      sizeKb:
+        parsePositiveInteger(
+          readOptions.sizeKb,
+          'sizeKb'),
+      readToEnd:
+        readOptions.readToEnd ?? false,
+      withBinaryB64:
+        readOptions.withBinaryB64 ?? false };
 
   logger.trace(
     'calling read() with parameters: %o',
@@ -154,10 +158,8 @@ function collect(
     values: string[]
   ): string[]
 {
-  return [
-    ...values,
-    value
-  ];
+  return [ ...values,
+           value ];
 }
 
 function parsePositiveInteger(
@@ -177,8 +179,7 @@ function parsePositiveInteger(
     || parsed.toString() !== value
   ) {
     throw new Error(
-      `${name} must be a positive integer`
-    );
+      `${name} must be a positive integer`);
   }
 
   return parsed;
