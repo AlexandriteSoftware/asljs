@@ -14,33 +14,48 @@ import { AiTools,
   from './ai-tools.js';
 
 const TEST_TOOLS: AiTools =
-  {
-  listFileset: async () => ['index.html'],
-  listFilesByMask: async () => ['index.html'],
-  readFile: async () => 'content',
-  readFiles: async () => ({ 'index.html': 'content' }),
-  readFilesByMask: async () => ({ 'index.html': 'content' }),
-  readFileData: async () => null,
-  setFilesContent: async () => undefined,
-  setFileData: async () => undefined,
-  setFileContent: async () => undefined,
-  deleteFile: async () => undefined,
-  replaceFilePart: async () => undefined,
-  grep: async () => [],
-  choose: async () => undefined,
-  evalInApp: async () => null,
-  assertInApp: async () => true,
-  runAppTests: async () => ({
-    path: 'app.tests.js',
-    total: 0,
-    passed: 0,
-    failed: 0,
-    results: []
-  }),
-  startGeneration: async () => 'queued',
-  getAppDiagnostics: async () => null,
-  runAppAndCollectDiagnostics: async () => null
-};
+  { listFileset:
+      async () => ['index.html'],
+    listFilesByMask:
+      async () => ['index.html'],
+    readFile:
+      async () => 'content',
+    readFiles:
+      async () => ({ 'index.html': 'content' }),
+    readFilesByMask:
+      async () => ({ 'index.html': 'content' }),
+    readFileData:
+      async () => null,
+    setFilesContent:
+      async () => undefined,
+    setFileData:
+      async () => undefined,
+    setFileContent:
+      async () => undefined,
+    deleteFile:
+      async () => undefined,
+    replaceFilePart:
+      async () => undefined,
+    grep:
+      async () => [],
+    choose:
+      async () => undefined,
+    evalInApp:
+      async () => null,
+    assertInApp:
+      async () => true,
+    runAppTests:
+      async () => ({ path: 'app.tests.js',
+                     total: 0,
+                     passed: 0,
+                     failed: 0,
+                     results: [] }),
+    startGeneration:
+      async () => 'queued',
+    getAppDiagnostics:
+      async () => null,
+    runAppAndCollectDiagnostics:
+      async () => null };
 
 test(
   'generateApp returns output_text summary with injected transport',
@@ -49,18 +64,16 @@ test(
     const requests: unknown[] = [];
 
     const transport: AiResponsesTransport =
-      {
-      createResponse: async request =>
+      { createResponse:
+          async request =>
       {
         requests.push(request);
 
-        return {
-          id: 'resp-1',
-          output_text: 'Completed summary',
-          output: []
-        };
-      }
-    };
+        return { id: 'resp-1',
+                 output_text:
+                   'Completed summary',
+                 output: [] };
+      } };
 
     const result =
       await generateApp(
@@ -87,8 +100,8 @@ test(
     let callCount = 0;
 
     const transport: AiResponsesTransport =
-      {
-      createResponse: async request =>
+      { createResponse:
+          async request =>
       {
         requests.push(
           request as Record<string, unknown>);
@@ -96,17 +109,15 @@ test(
         callCount += 1;
 
         if (callCount === 1) {
-          return {
-            id: 'resp-1',
-            output: [
-              {
-                type: 'function_call',
+          return { id: 'resp-1',
+                   output:
+                     [
+              { type:
+                  'function_call',
                 name: 'listFileset',
                 call_id: 'call-1',
-                arguments: '{}'
-              }
-            ]
-          };
+                arguments: '{}' }
+            ] };
         }
 
         const toolOutputs =
@@ -128,22 +139,18 @@ test(
           toolOutputs[0]?.output,
           '{"ok":true,"value":["index.html"]}');
 
-        return {
-          output: [
-            {
-              type: 'message',
+        return { output:
+                   [
+            { type: 'message',
               role: 'assistant',
-              content: [
-                {
-                  type: 'output_text',
-                  text: 'Applied update.'
-                }
-              ]
-            }
-          ]
-        };
-      }
-    };
+              content:
+                [
+                { type: 'output_text',
+                  text:
+                    'Applied update.' }
+              ] }
+          ] };
+      } };
 
     const result =
       await generateApp(
@@ -175,12 +182,11 @@ test(
   async () =>
   {
     const transport: AiResponsesTransport =
-      {
-      createResponse: async () =>
+      { createResponse:
+          async () =>
       {
         throw new Error('Transport failed');
-      }
-    };
+      } };
 
     await assert.rejects(
       () =>
@@ -198,19 +204,16 @@ test(
   async () =>
   {
     const transport: AiResponsesTransport =
-      {
-      createResponse: async () => ({
-        id: 'resp-1',
-        output: [
-          {
-            type: 'function_call',
+      { createResponse:
+          async () => ({ id: 'resp-1',
+                         output:
+                           [
+          { type:
+              'function_call',
             name: 'listFileset',
             call_id: 'call-1',
-            arguments: '{}'
-          }
-        ]
-      })
-    };
+            arguments: '{}' }
+        ] }) };
 
     await assert.rejects(
       () =>
@@ -219,11 +222,10 @@ test(
           'test-key',
           DEFAULT_MODEL,
           TEST_TOOLS,
-          {
-            initialToolStepLimit: 0,
-            onToolStepLimit: async () => false,
-            transport
-          }),
+          { initialToolStepLimit: 0,
+            onToolStepLimit:
+              async () => false,
+            transport }),
       error => error instanceof ToolStepLimitExceededError);
   });
 
@@ -235,31 +237,28 @@ test(
     let transportCalls = 0;
 
     const transport: AiResponsesTransport =
-      {
-      createResponse: async () =>
+      { createResponse:
+          async () =>
       {
         transportCalls += 1;
 
         if (transportCalls <= 2) {
-          return {
-            id: `resp-${transportCalls}`,
-            output: [
-              {
-                type: 'function_call',
+          return { id:
+                     `resp-${transportCalls}`,
+                   output:
+                     [
+              { type:
+                  'function_call',
                 name: 'listFileset',
-                call_id: `call-${transportCalls}`,
-                arguments: {}
-              }
-            ]
-          };
+                call_id:
+                  `call-${transportCalls}`,
+                arguments: {} }
+            ] };
         }
 
-        return {
-          output_text: 'done',
-          output: []
-        };
-      }
-    };
+        return { output_text: 'done',
+                 output: [] };
+      } };
 
     const result =
       await generateApp(
@@ -267,15 +266,14 @@ test(
         'test-key',
         DEFAULT_MODEL,
         TEST_TOOLS,
-        {
-        initialToolStepLimit: 1,
-        onToolStepLimit: async () =>
+        { initialToolStepLimit: 1,
+          onToolStepLimit:
+            async () =>
         {
           onToolStepLimitCalls += 1;
           return true;
         },
-        transport
-      });
+          transport });
 
     assert.equal(
       result.summary,
@@ -291,27 +289,32 @@ test(
   async () =>
   {
     const transport: AiModelsTransport =
-      {
-      listModels: async apiKey =>
+      { listModels:
+          async apiKey =>
       {
         assert.equal(
           apiKey,
           'test-key');
 
         return [
-          { id: 'gpt-5-mini', created: 1 },
-          { id: 'gpt-5.4-codex', created: 2 }
+          { id: 'gpt-5-mini',
+            created: 1 },
+          { id:
+              'gpt-5.4-codex',
+            created: 2 }
         ];
-      }
-    };
+      } };
 
     assert.deepEqual(
       await listAvailableModels(
         'test-key',
         transport),
       [
-        { id: 'gpt-5-mini', created: 1 },
-        { id: 'gpt-5.4-codex', created: 2 }
+        { id: 'gpt-5-mini',
+          created: 1 },
+        { id:
+            'gpt-5.4-codex',
+          created: 2 }
       ]);
   });
 
@@ -320,12 +323,11 @@ test(
   async () =>
   {
     const transport: AiModelsTransport =
-      {
-      listModels: async () =>
+      { listModels:
+          async () =>
       {
         throw new Error('should not be called');
-      }
-    };
+      } };
 
     assert.deepEqual(
       await listAvailableModels(

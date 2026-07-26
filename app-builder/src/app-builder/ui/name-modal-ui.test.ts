@@ -59,15 +59,14 @@ test(
       };
 
       ui.open(
-        {
-          title: 'Rename App',
+        { title: 'Rename App',
           initialValue: ' Old Name ',
           selectText: false,
-          onConfirm: async value =>
+          onConfirm:
+            async value =>
           {
             confirmed.push(value);
-          }
-        });
+          } });
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -144,15 +143,14 @@ test(
       };
 
       ui.open(
-        {
-          title: 'New App',
+        { title: 'New App',
           initialValue: '',
           selectText: false,
-          onConfirm: async () =>
+          onConfirm:
+            async () =>
           {
             confirmed = true;
-          }
-        });
+          } });
 
       input.value = '   ';
 

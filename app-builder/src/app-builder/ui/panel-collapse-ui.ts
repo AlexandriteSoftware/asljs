@@ -33,12 +33,11 @@ export function togglePanelUi(
 
   setButtonContent(
     options.toggleButtonElement,
-    {
-      text: nextText,
-      icon: collapsed
+    { text: nextText,
+      icon:
+        collapsed
         ? options.collapsedIcon
-        : options.expandedIcon
-    });
+        : options.expandedIcon });
 
   options.toggleButtonElement.setAttribute(
     'aria-expanded',

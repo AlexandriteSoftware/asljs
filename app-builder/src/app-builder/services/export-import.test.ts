@@ -13,45 +13,42 @@ test(
   () =>
   {
     const app =
-      {
-      id: 'a1',
-      uuid: 'u1',
-      name: 'Demo',
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-02T00:00:00.000Z'
-    };
+      { id: 'a1',
+        uuid: 'u1',
+        name: 'Demo',
+        createdAt:
+          '2026-01-01T00:00:00.000Z',
+        updatedAt:
+          '2026-01-02T00:00:00.000Z' };
 
     const files =
       [
-      { id: 'f1', appId: 'a1', name: 'index.html', content: '<h1>Hi</h1>' }
+      { id: 'f1',
+        appId: 'a1',
+        name: 'index.html',
+        content: '<h1>Hi</h1>' }
     ];
 
     const payload =
       buildExportPayload(
-        {
-        app: {
-          ...app,
-          author: {
-            name: 'Alex',
-            email: 'alex@example.com'
-          }
-        },
-        files
-      });
+        { app:
+            { ...app,
+              author:
+                { name: 'Alex',
+                  email:
+                    'alex@example.com' } },
+          files });
 
     assert.deepEqual(
       payload,
-      {
-        id: 'a1',
+      { id: 'a1',
         name: 'Demo',
-        author: {
-          name: 'Alex',
-          email: 'alex@example.com'
-        },
-        files: {
-          'index.html': '<h1>Hi</h1>'
-        }
-      });
+        author:
+          { name: 'Alex',
+            email:
+              'alex@example.com' },
+        files:
+          { 'index.html': '<h1>Hi</h1>' } });
   });
 
 test(
@@ -60,17 +57,14 @@ test(
   {
     const text =
       JSON.stringify(
-        {
-        id: 'a-imported',
-        name: 'Imported',
-        author: {
-          name: 'Alex',
-          email: 'alex@example.com'
-        },
-        files: {
-          'index.html': 'ok'
-        }
-      });
+        { id: 'a-imported',
+          name: 'Imported',
+          author:
+            { name: 'Alex',
+              email:
+                'alex@example.com' },
+          files:
+            { 'index.html': 'ok' } });
 
     const payload =
       parseImportedPayloadText(text);
@@ -119,36 +113,36 @@ test(
   () =>
   {
     const payload: ImportedPayload =
-      {
-      id: 'a-existing',
-      name: 'Imported',
-      files: {
-        'index.html': 'ok'
-      }
-    };
+      { id: 'a-existing',
+        name: 'Imported',
+        files:
+          { 'index.html': 'ok' } };
 
     const plan =
       createImportPlan(
-        {
-        payload,
-        existingApps: [
-          {
-            id: 'a-existing',
+        { payload,
+          existingApps:
+            [
+          { id: 'a-existing',
             uuid: 'u-1',
             name: 'Current',
-            createdAt: '2026-01-01T00:00:00.000Z',
-            updatedAt: '2026-01-02T00:00:00.000Z'
-          }
+            createdAt:
+              '2026-01-01T00:00:00.000Z',
+            updatedAt:
+              '2026-01-02T00:00:00.000Z' }
         ],
-        navigateToExistingById: true,
-        now: '2026-01-03T00:00:00.000Z',
-        createId: () => 'generated-id',
-        createUuid: () => 'generated-uuid'
-      });
+          navigateToExistingById: true,
+          now:
+            '2026-01-03T00:00:00.000Z',
+          createId:
+            () => 'generated-id',
+          createUuid:
+            () => 'generated-uuid' });
 
     assert.deepEqual(
       plan,
-      { kind: 'existing', appId: 'a-existing' });
+      { kind: 'existing',
+        appId: 'a-existing' });
   });
 
 test(
@@ -156,32 +150,31 @@ test(
   () =>
   {
     const payload: ImportedPayload =
-      {
-      id: 'a-existing',
-      name: 'Imported',
-      files: {
-        'index.html': 'ok'
-      }
-    };
+      { id: 'a-existing',
+        name: 'Imported',
+        files:
+          { 'index.html': 'ok' } };
 
     const plan =
       createImportPlan(
-        {
-        payload,
-        existingApps: [
-          {
-            id: 'a-existing',
+        { payload,
+          existingApps:
+            [
+          { id: 'a-existing',
             uuid: 'u-1',
             name: 'Current',
-            createdAt: '2026-01-01T00:00:00.000Z',
-            updatedAt: '2026-01-02T00:00:00.000Z'
-          }
+            createdAt:
+              '2026-01-01T00:00:00.000Z',
+            updatedAt:
+              '2026-01-02T00:00:00.000Z' }
         ],
-        navigateToExistingById: false,
-        now: '2026-01-03T00:00:00.000Z',
-        createId: () => 'generated-id',
-        createUuid: () => 'generated-uuid'
-      });
+          navigateToExistingById: false,
+          now:
+            '2026-01-03T00:00:00.000Z',
+          createId:
+            () => 'generated-id',
+          createUuid:
+            () => 'generated-uuid' });
 
     assert.deepEqual(
       plan,
@@ -193,18 +186,15 @@ test(
   () =>
   {
     const payload: ImportedPayload =
-      {
-      id: 'app-id',
-      name: 'Imported',
-      author: {
-        name: 'Author Name',
-        email: 'author@example.com'
-      },
-      files: {
-        'index.html': 'ok',
-        'readme.md': 'hello'
-      }
-    };
+      { id: 'app-id',
+        name: 'Imported',
+        author:
+          { name: 'Author Name',
+            email:
+              'author@example.com' },
+        files:
+          { 'index.html': 'ok',
+            'readme.md': 'hello' } };
 
     const generatedIds =
       ['file-id-1', 'file-id-2'];
@@ -213,14 +203,15 @@ test(
 
     const plan =
       createImportPlan(
-        {
-        payload,
-        existingApps: [],
-        navigateToExistingById: false,
-        now: '2026-01-03T00:00:00.000Z',
-        createId: () => generatedIds[index++] ?? 'fallback-id',
-        createUuid: () => 'generated-uuid'
-      });
+        { payload,
+          existingApps: [],
+          navigateToExistingById: false,
+          now:
+            '2026-01-03T00:00:00.000Z',
+          createId:
+            () => generatedIds[index++] ?? 'fallback-id',
+          createUuid:
+            () => 'generated-uuid' });
 
     assert.equal(
       plan.kind,

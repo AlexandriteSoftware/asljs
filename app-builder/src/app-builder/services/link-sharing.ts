@@ -50,10 +50,9 @@ export function createLinkSharingService(
     const url =
       `${options.baseUrl}${options.hashPrefix}${compressed}`;
 
-    return {
-      url,
-      exceedsMaxUrlLength: url.length > options.maxUrlLength
-    };
+    return { url,
+             exceedsMaxUrlLength:
+               url.length > options.maxUrlLength };
   }
 
   async function parsePayloadFromToken<TPayload>(
@@ -84,20 +83,18 @@ export function createLinkSharingService(
       options.hashPrefix.length);
   }
 
-  return {
-    createShareUrl,
-    parsePayloadFromToken,
-    readTokenFromHash
-  };
+  return { createShareUrl,
+           parsePayloadFromToken,
+           readTokenFromHash };
 }
 
 export function createBrowserTextCompressionCodec(
   ): TextCompressionCodec
 {
-  return {
-    compress: compressTextInBrowser,
-    decompress: decompressTextInBrowser
-  };
+  return { compress:
+             compressTextInBrowser,
+           decompress:
+             decompressTextInBrowser };
 }
 
 async function compressTextInBrowser(

@@ -33,23 +33,26 @@ export function renderAppListUi(
 
   const items: SelectItem[] =
     apps.map(
-      app => ({
-      value: app.id,
-      label: app.name
-    }));
+      app => ({ value:
+                  app.id,
+                label:
+                  app.name }));
 
   if (apps.length > 0) {
     items.push(
-      {
-        value: '__separator__',
+      { value:
+          '__separator__',
         label: '────────',
-        disabled: true
-      });
+        disabled: true });
   }
 
   items.push(
-    { value: options.newActionValue, label: 'New...' },
-    { value: options.importActionValue, label: 'Import...' });
+    { value:
+        options.newActionValue,
+      label: 'New...' },
+    { value:
+        options.importActionValue,
+      label: 'Import...' });
 
   selectElement.items = items;
   selectElement.disabled = items.length === 0;

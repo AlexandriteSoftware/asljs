@@ -23,19 +23,16 @@ test(
     renderPreview(
       frame,
       [
-        {
-          name: 'index.html',
+        { name: 'index.html',
           content:
-            '<!doctype html><html><head><link rel="stylesheet" href="style.css"></head><body><img src="assets/logo.png" alt="Logo"></body></html>'
-        },
-        {
-          name: 'style.css',
-          content: '.hero { background-image: url("assets/logo.png"); }'
-        },
-        {
-          name: 'assets/logo.png',
-          content: 'data:image/png;base64,AQID'
-        }
+            '<!doctype html><html><head><link rel="stylesheet" href="style.css"></head><body><img src="assets/logo.png" alt="Logo"></body></html>' },
+        { name: 'style.css',
+          content:
+            '.hero { background-image: url("assets/logo.png"); }' },
+        { name:
+            'assets/logo.png',
+          content:
+            'data:image/png;base64,AQID' }
       ]);
 
     assert.match(

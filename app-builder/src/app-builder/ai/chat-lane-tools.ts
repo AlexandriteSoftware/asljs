@@ -26,9 +26,9 @@ export function createChatLaneTools(
     }
   }
 
-  return {
-    ...baseTools,
-    setFilesContent: async files =>
+  return { ...baseTools,
+           setFilesContent:
+             async files =>
     {
       for (const file of files) {
         assertPlanOnly(
@@ -37,13 +37,15 @@ export function createChatLaneTools(
 
       await baseTools.setFilesContent(files);
     },
-    setFileData: async () =>
+           setFileData:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot create binary assets. Use a direct file command or the generation lane.'
       );
     },
-    setFileContent: async (path, content) =>
+           setFileContent:
+             async (path, content) =>
     {
       assertPlanOnly(path);
 
@@ -51,12 +53,14 @@ export function createChatLaneTools(
         path,
         content);
     },
-    deleteFile: async path =>
+           deleteFile:
+             async path =>
     {
       assertPlanOnly(path);
       await baseTools.deleteFile(path);
     },
-    replaceFilePart: async (path, search, replacement, replaceAll) =>
+           replaceFilePart:
+             async (path, search, replacement, replaceAll) =>
     {
       assertPlanOnly(path);
 
@@ -66,38 +70,43 @@ export function createChatLaneTools(
         replacement,
         replaceAll);
     },
-    evalInApp: async () =>
+           evalInApp:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot run the app. Start generation first.'
       );
     },
-    assertInApp: async () =>
+           assertInApp:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot assert runtime behavior. Start generation first.'
       );
     },
-    runAppTests: async () =>
+           runAppTests:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot run app tests. Start generation first.'
       );
     },
-    getAppDiagnostics: async () =>
+           getAppDiagnostics:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot inspect runtime diagnostics. Start generation first.'
       );
     },
-    runAppAndCollectDiagnostics: async () =>
+           runAppAndCollectDiagnostics:
+             async () =>
     {
       throw new Error(
         'The chat lane cannot run the app. Start generation first.'
       );
     },
-    startGeneration: options.startGeneration
-  };
+           startGeneration:
+             options.startGeneration };
 }
 
 function normalizePath(

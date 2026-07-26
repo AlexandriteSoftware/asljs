@@ -44,29 +44,27 @@ test(
 
       configureButton(
         button,
-        {
-          text: 'Save',
+        { text: 'Save',
           icon: '✓',
-          className: 'btn btn-primary'
-        });
+          className:
+            'btn btn-primary' });
 
       configureTextInput(
         input,
-        {
-          placeholder: 'Name',
+        { placeholder: 'Name',
           inputType: 'email',
-          className: 'form-input-lg'
-        });
+          className:
+            'form-input-lg' });
 
       configureSelect(
         select,
-        {
-          className: 'form-select',
-          items: [
-            { value: 'light', label: 'Light' }
+        { className: 'form-select',
+          items:
+            [
+            { value: 'light',
+              label: 'Light' }
           ],
-          placeholder: 'Choose'
-        });
+          placeholder: 'Choose' });
 
       writeControlValue(
         input,
@@ -103,7 +101,8 @@ test(
       assert.deepEqual(
         select.items,
         [
-          { value: 'light', label: 'Light' }
+          { value: 'light',
+            label: 'Light' }
         ]);
 
       assert.equal(
@@ -148,17 +147,15 @@ test(
 
       setButtonContent(
         button,
-        {
-          text: 'Run',
-          icon: '<i class="bi bi-play-fill"></i>'
-        });
+        { text: 'Run',
+          icon:
+            '<i class="bi bi-play-fill"></i>' });
 
       setButtonContent(
         nativeButton,
-        {
-          text: 'Run',
-          icon: '<i class="bi bi-play-fill"></i>'
-        });
+        { text: 'Run',
+          icon:
+            '<i class="bi bi-play-fill"></i>' });
 
       assert.equal(
         button.text,

@@ -15,19 +15,19 @@ test(
 
     const result =
       await minifySharePayload(
-        {
-        id: 'a1',
-        name: 'Demo',
-        files: {
-          'app.js': 'const x = 1;\n',
-          'style.css': 'h1 { color: red; }\n',
-          'note.txt': 'keep me'
-        }
-      },
+        { id: 'a1',
+          name: 'Demo',
+          files:
+            { 'app.js':
+                'const x = 1;\n',
+              'style.css':
+                'h1 { color: red; }\n',
+              'note.txt': 'keep me' } },
         async (source: string, loader: SharePayloadMinifyLoader) =>
       {
         calls.push(
-          { source, loader });
+          { source,
+            loader });
 
         return `${loader}:${source.trim()}`;
       });
@@ -35,8 +35,12 @@ test(
     assert.deepEqual(
       calls,
       [
-        { source: 'const x = 1;\n', loader: 'js' },
-        { source: 'h1 { color: red; }\n', loader: 'css' }
+        { source:
+            'const x = 1;\n',
+          loader: 'js' },
+        { source:
+            'h1 { color: red; }\n',
+          loader: 'css' }
       ]);
 
     assert.equal(
@@ -58,11 +62,11 @@ test(
   {
     const result =
       await minifySharePayload(
-        {
-        id: 'a1',
-        name: 'Demo',
-        files: {
-          'index.html': '<!doctype html>\n'
+        { id: 'a1',
+          name: 'Demo',
+          files:
+            { 'index.html':
+                '<!doctype html>\n'
             + '<html>\n'
             + '  <head>\n'
             + '    <!-- remove -->\n'
@@ -77,9 +81,7 @@ test(
             + '      const b = 2;\n'
             + '    </script>\n'
             + '  </body>\n'
-            + '</html>\n'
-        }
-      },
+            + '</html>\n' } },
         async (source: string) => source);
 
     const html =

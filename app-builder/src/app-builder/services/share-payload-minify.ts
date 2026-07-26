@@ -41,10 +41,8 @@ export async function minifySharePayload(
     }
   }
 
-  return {
-    ...payload,
-    files
-  };
+  return { ...payload,
+           files };
 }
 
 function resolveLoaderFromFileName(

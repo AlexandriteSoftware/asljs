@@ -41,13 +41,14 @@ export function buildExportPayload(
     files[file.name] = file.content;
   }
 
-  return {
-    id: options.app.id,
-    name: options.app.name,
-    author: normalizeAuthor(
-      options.app.author),
-    files
-  };
+  return { id:
+             options.app.id,
+           name:
+             options.app.name,
+           author:
+             normalizeAuthor(
+               options.app.author),
+           files };
 }
 
 export function parseImportedPayloadText(
@@ -75,44 +76,43 @@ export function createImportPlan(
 
   if (existingById !== undefined) {
     if (options.navigateToExistingById) {
-      return {
-        kind: 'existing',
-        appId: existingById.id
-      };
+      return { kind: 'existing',
+               appId:
+                 existingById.id };
     }
 
-    return {
-      kind: 'duplicate'
-    };
+    return { kind: 'duplicate' };
   }
 
   const app: AppRecord =
-    {
-    id: options.payload.id,
-    uuid: options.createUuid(),
-    name: options.payload.name,
-    author: normalizeAuthor(
-      options.payload.author),
-    createdAt: options.now,
-    updatedAt: options.now
-  };
+    { id:
+        options.payload.id,
+      uuid:
+        options.createUuid(),
+      name:
+        options.payload.name,
+      author:
+        normalizeAuthor(
+          options.payload.author),
+      createdAt:
+        options.now,
+      updatedAt:
+        options.now };
 
   const files =
     Object.entries(
       options.payload.files)
     .map(
-      ([name, content]) => ({
-        id: options.createId(),
-        appId: app.id,
-        name,
-        content
-      }));
+      ([name, content]) => ({ id:
+                                options.createId(),
+                              appId:
+                                app.id,
+                              name,
+                              content }));
 
-  return {
-    kind: 'new',
-    app,
-    files
-  };
+  return { kind: 'new',
+           app,
+           files };
 }
 
 function validateImportedPayload(
@@ -170,14 +170,12 @@ function normalizeAuthor(
     return undefined;
   }
 
-  return {
-    ...(name !== ''
+  return { ...(name !== ''
       ? { name }
       : {}),
-    ...(email !== ''
+           ...(email !== ''
       ? { email }
-      : {})
-  };
+      : {}) };
 }
 
 function isValidAuthor(

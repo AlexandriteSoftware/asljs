@@ -126,53 +126,52 @@ export function createShareModalUi(
 
   configureButton(
     elBtnClose,
-    {
-      icon: '<i class="bi bi-x-lg"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { icon:
+        '<i class="bi bi-x-lg"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnShareLink,
-    {
-      text: 'Share with link',
-      className: 'btn btn-primary'
-    });
+    { text:
+        'Share with link',
+      className:
+        'btn btn-primary' });
 
   configureButton(
     elBtnShareDownload,
-    {
-      text: 'Download export',
-      className: 'btn btn-outline-secondary'
-    });
+    { text:
+        'Download export',
+      className:
+        'btn btn-outline-secondary' });
 
   configureButton(
     elBtnCopyText,
-    {
-      text: 'Copy as text link',
-      className: 'btn btn-outline-secondary'
-    });
+    { text:
+        'Copy as text link',
+      className:
+        'btn btn-outline-secondary' });
 
   configureButton(
     elBtnCopyHtml,
-    {
-      text: 'Copy as HTML link',
-      className: 'btn btn-outline-secondary'
-    });
+    { text:
+        'Copy as HTML link',
+      className:
+        'btn btn-outline-secondary' });
 
   configureButton(
     elBtnCloseFooter,
-    {
-      text: 'Close',
-      className: 'btn btn-outline-secondary'
-    });
+    { text: 'Close',
+      className:
+        'btn btn-outline-secondary' });
 
   function readShareOptions(
     ): ShareModalOptions
   {
-    return {
-      minified: elMinifiedInput.checked,
-      excludeNonApplicationFiles: elExcludeTestsInput.checked
-    };
+    return { minified:
+               elMinifiedInput.checked,
+             excludeNonApplicationFiles:
+               elExcludeTestsInput.checked };
   }
 
   async function prepareShareLink(
@@ -264,10 +263,10 @@ export function createShareModalUi(
         await navigator.clipboard.write(
           [
             new ClipboardItem(
-              {
-                'text/html': new Blob([html], { type: 'text/html' }),
-                'text/plain': new Blob([url], { type: 'text/plain' })
-              }
+              { 'text/html':
+                  new Blob([html], { type: 'text/html' }),
+                'text/plain':
+                  new Blob([url], { type: 'text/plain' }) }
             )
           ]);
 
@@ -376,8 +375,7 @@ export function createShareModalUi(
       }
     });
 
-  return {
-    open(): void
+  return { open(): void
     {
       if (!options.canOpen()) {
         return;
@@ -386,6 +384,5 @@ export function createShareModalUi(
       elModal.classList.remove('hidden');
       void prepareShareLink();
     },
-    close
-  };
+           close };
 }

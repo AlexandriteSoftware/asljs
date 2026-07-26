@@ -74,30 +74,26 @@ export function createNameModalUi(
 
   configureButton(
     elBtnClose,
-    {
-      icon: '<i class="bi bi-x-lg"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { icon:
+        '<i class="bi bi-x-lg"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnConfirm,
-    {
-      text: 'OK',
-      className: 'btn btn-primary'
-    });
+    { text: 'OK',
+      className:
+        'btn btn-primary' });
 
   configureButton(
     elBtnCancel,
-    {
-      text: 'Cancel',
-      className: 'btn btn-outline-secondary'
-    });
+    { text: 'Cancel',
+      className:
+        'btn btn-outline-secondary' });
 
   configureTextInput(
     elInput,
-    {
-      placeholder: 'My App'
-    });
+    { placeholder: 'My App' });
 
   function close(
     ): void
@@ -160,8 +156,7 @@ export function createNameModalUi(
       }
     });
 
-  return {
-    open(request: NameModalRequest): void
+  return { open(request: NameModalRequest): void
     {
       activeRequest = request;
       elTitle.textContent = request.title;
@@ -179,6 +174,5 @@ export function createNameModalUi(
 
       focusInnerControl(elInput);
     },
-    close
-  };
+           close };
 }

@@ -16,46 +16,63 @@ function makeFile(
     overrides?: Partial<AiToolFileRecord>
   ): AiToolFileRecord
 {
-  return {
-    id: overrides?.id ?? 'f1',
-    appId: overrides?.appId ?? 'a1',
-    name: overrides?.name ?? 'index.html',
-    content: overrides?.content ?? 'hello world'
-  };
+  return { id:
+             overrides?.id ?? 'f1',
+           appId:
+             overrides?.appId ?? 'a1',
+           name:
+             overrides?.name ?? 'index.html',
+           content:
+             overrides?.content ?? 'hello world' };
 }
 
 function makeToolsStub(
     overrides?: Partial<AiTools>
   ): AiTools
 {
-  return {
-    listFileset: async () => [],
-    listFilesByMask: async () => [],
-    readFile: async () => '',
-    readFiles: async () => ({}),
-    readFilesByMask: async () => ({}),
-    readFileData: async () => null,
-    setFilesContent: async () => undefined,
-    setFileData: async () => undefined,
-    setFileContent: async () => undefined,
-    deleteFile: async () => undefined,
-    replaceFilePart: async () => undefined,
-    grep: async () => [],
-    choose: async () => undefined,
-    evalInApp: async () => null,
-    assertInApp: async () => true,
-    runAppTests: async () => ({
-      path: 'app.tests.js',
-      total: 0,
-      passed: 0,
-      failed: 0,
-      results: []
-    }),
-    startGeneration: async () => 'queued',
-    getAppDiagnostics: async () => null,
-    runAppAndCollectDiagnostics: async () => null,
-    ...overrides
-  };
+  return { listFileset:
+             async () => [],
+           listFilesByMask:
+             async () => [],
+           readFile:
+             async () => '',
+           readFiles:
+             async () => ({}),
+           readFilesByMask:
+             async () => ({}),
+           readFileData:
+             async () => null,
+           setFilesContent:
+             async () => undefined,
+           setFileData:
+             async () => undefined,
+           setFileContent:
+             async () => undefined,
+           deleteFile:
+             async () => undefined,
+           replaceFilePart:
+             async () => undefined,
+           grep:
+             async () => [],
+           choose:
+             async () => undefined,
+           evalInApp:
+             async () => null,
+           assertInApp:
+             async () => true,
+           runAppTests:
+             async () => ({ path: 'app.tests.js',
+                            total: 0,
+                            passed: 0,
+                            failed: 0,
+                            results: [] }),
+           startGeneration:
+             async () => 'queued',
+           getAppDiagnostics:
+             async () => null,
+           runAppAndCollectDiagnostics:
+             async () => null,
+           ...overrides };
 }
 
 test(
@@ -164,20 +181,19 @@ test(
 
     const output =
       await executeToolCall(
-        {
-        type: 'function_call',
-        name: 'startGeneration',
-        arguments: '{}',
-        call_id: 'c_1'
-      },
+        { type:
+            'function_call',
+          name:
+            'startGeneration',
+          arguments: '{}',
+          call_id: 'c_1' },
         makeToolsStub(
-          {
-          startGeneration: async () =>
+          { startGeneration:
+              async () =>
           {
             called = true;
             return 'queued';
-          }
-        }));
+          } }));
 
     assert.equal(
       called,
@@ -194,7 +210,8 @@ test(
   {
     assert.equal(
       isResponseFunctionCall(
-        { type: 'function_call' }),
+        { type:
+            'function_call' }),
       true);
 
     assert.equal(
@@ -212,11 +229,10 @@ test(
   () =>
   {
     const toolCall =
-      {
-      type: 'function_call' as const,
-      name: 'readFile',
-      call_id: 'c_1'
-    };
+      { type:
+          'function_call' as const,
+        name: 'readFile',
+        call_id: 'c_1' };
 
     assert.equal(
       readFunctionName(toolCall),
@@ -234,7 +250,8 @@ test(
     assert.throws(
       () =>
         readFunctionName(
-          { type: 'function_call' }),
+          { type:
+              'function_call' }),
       /Tool call missing function name\./);
   });
 
@@ -246,21 +263,20 @@ test(
 
     const tools =
       makeToolsStub(
-        {
-        readFile: async path =>
+        { readFile:
+            async path =>
         {
           seenPaths.push(path);
           return `content:${path}`;
-        }
-      });
+        } });
 
     const output =
       await executeToolCall(
-        {
-        type: 'function_call',
-        name: 'readFile',
-        arguments: '{"path":"app.js"}'
-      },
+        { type:
+            'function_call',
+          name: 'readFile',
+          arguments:
+            '{"path":"app.js"}' },
         tools);
 
     assert.deepEqual(
@@ -281,7 +297,10 @@ test(
 
     const output =
       await executeToolCall(
-        { type: 'function_call', name: 'not-real-tool' },
+        { type:
+            'function_call',
+          name:
+            'not-real-tool' },
         tools);
 
     assert.equal(
@@ -295,16 +314,19 @@ test(
   {
     const tools =
       makeToolsStub(
-        {
-        readFile: async () =>
+        { readFile:
+            async () =>
         {
           throw new Error('boom');
-        }
-      });
+        } });
 
     const output =
       await executeToolCall(
-        { type: 'function_call', name: 'readFile', arguments: { path: 'x' } },
+        { type:
+            'function_call',
+          name: 'readFile',
+          arguments:
+            { path: 'x' } },
         tools);
 
     assert.equal(
@@ -320,33 +342,38 @@ test(
 
     const tools =
       makeToolsStub(
-        {
-        setFilesContent: async files =>
+        { setFilesContent:
+            async files =>
         {
           seen.push(
             ...files);
-        }
-      });
+        } });
 
     const output =
       await executeToolCall(
-        {
-        type: 'function_call',
-        name: 'setFilesContent',
-        arguments: {
-          files: [
-            { path: 'README.md', content: '# demo' },
-            { path: 'app.js', content: 'console.log(1);' }
-          ]
-        }
-      },
+        { type:
+            'function_call',
+          name:
+            'setFilesContent',
+          arguments:
+            { files:
+                [
+            { path: 'README.md',
+              content: '# demo' },
+            { path: 'app.js',
+              content:
+                'console.log(1);' }
+          ] } },
         tools);
 
     assert.deepEqual(
       seen,
       [
-        { path: 'README.md', content: '# demo' },
-        { path: 'app.js', content: 'console.log(1);' }
+        { path: 'README.md',
+          content: '# demo' },
+        { path: 'app.js',
+          content:
+            'console.log(1);' }
       ]);
 
     assert.equal(
@@ -360,25 +387,24 @@ test(
   {
     const tools =
       makeToolsStub(
-        {
-        readFileData: async path => ({
-          mimeType: 'image/png',
-          base64: 'AQID',
-          dataUrl: `data:image/png;base64:${
+        { readFileData:
+            async path => ({ mimeType: 'image/png',
+                             base64: 'AQID',
+                             dataUrl:
+                               `data:image/png;base64:${
             path === 'assets/logo.png'
               ? 'AQID'
               : ''
-          }`
-        })
-      });
+          }` }) });
 
     const output =
       await executeToolCall(
-        {
-        type: 'function_call',
-        name: 'readFileData',
-        arguments: { path: 'assets/logo.png' }
-      },
+        { type:
+            'function_call',
+          name: 'readFileData',
+          arguments:
+            { path:
+                'assets/logo.png' } },
         tools);
 
     assert.equal(
@@ -394,35 +420,34 @@ test(
 
     const tools =
       makeToolsStub(
-        {
-        setFileData: async (path, mimeType, base64) =>
+        { setFileData:
+            async (path, mimeType, base64) =>
         {
           calls.push(
-            { path, mimeType, base64 });
-        }
-      });
+            { path,
+              mimeType,
+              base64 });
+        } });
 
     const output =
       await executeToolCall(
-        {
-        type: 'function_call',
-        name: 'setFileData',
-        arguments: {
-          path: 'assets/logo.png',
-          mimeType: 'image/png',
-          base64: 'AQID'
-        }
-      },
+        { type:
+            'function_call',
+          name: 'setFileData',
+          arguments:
+            { path:
+                'assets/logo.png',
+              mimeType: 'image/png',
+              base64: 'AQID' } },
         tools);
 
     assert.deepEqual(
       calls,
       [
-        {
-          path: 'assets/logo.png',
+        { path:
+            'assets/logo.png',
           mimeType: 'image/png',
-          base64: 'AQID'
-        }
+          base64: 'AQID' }
       ]);
 
     assert.equal(
@@ -436,38 +461,56 @@ test(
   {
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [
           makeFile(
-            { name: 'src/app.js', content: 'alpha beta gamma' }),
+            { name: 'src/app.js',
+              content:
+                'alpha beta gamma' }),
           makeFile(
-            { id: 'f2', name: 'src/util.js', content: 'delta epsilon' }),
+            { id: 'f2',
+              name: 'src/util.js',
+              content:
+                'delta epsilon' }),
           makeFile(
-            { id: 'f3', name: 'README.md', content: '# readme' })
+            { id: 'f3',
+              name: 'README.md',
+              content: '# readme' })
         ],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     assert.deepEqual(
       await tools.readFilesByMask(
         'src/*.js',
         10,
         5),
-      {
-        'src/app.js': 'alpha\n...[truncated]',
-        'src/util.js': 'delta\n...[truncated]'
-      });
+      { 'src/app.js':
+          'alpha\n...[truncated]',
+        'src/util.js':
+          'delta\n...[truncated]' });
   });
 
 test(
@@ -476,26 +519,42 @@ test(
   {
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [
           makeFile(
-            { name: 'src/app.js', content: 'alpha\nbeta\ngamma' }),
+            { name: 'src/app.js',
+              content:
+                'alpha\nbeta\ngamma' }),
           makeFile(
-            { id: 'f2', name: 'src/util.js', content: 'delta\nbeta util' })
+            { id: 'f2',
+              name: 'src/util.js',
+              content:
+                'delta\nbeta util' })
         ],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     assert.deepEqual(
       await tools.grep(
@@ -504,8 +563,12 @@ test(
         '',
         10),
       [
-        { path: 'src/app.js', line: 2, text: 'beta' },
-        { path: 'src/util.js', line: 2, text: 'beta util' }
+        { path: 'src/app.js',
+          line: 2,
+          text: 'beta' },
+        { path: 'src/util.js',
+          line: 2,
+          text: 'beta util' }
       ]);
   });
 
@@ -517,25 +580,37 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: (question, options) =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [],
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            (question, options) =>
         {
           seen.push(
-            { question, options });
+            { question,
+              options });
         },
-        wait: async () => undefined
-      });
+          wait:
+            async () => undefined });
 
     await tools.choose(
       'How should it look?',
@@ -547,10 +622,10 @@ test(
     assert.deepEqual(
       seen,
       [
-        {
-          question: 'How should it look?',
-          options: ['glowing ring', 'spinning block']
-        }
+        { question:
+            'How should it look?',
+          options:
+            ['glowing ring', 'spinning block'] }
       ]);
   });
 
@@ -562,13 +637,14 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [
           makeFile(
-            {
-              name: 'app.tests.js',
-              content: `export default [
+            { name: 'app.tests.js',
+              content:
+                `export default [
               {
                 name: 'first',
                 async run({ evalInApp }) {
@@ -584,20 +660,27 @@ test(
                   await assertInApp('window.__testName = "second"; false;', 'second should pass');
                 },
               },
-            ];`
-            })
+            ];` })
         ],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () =>
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () =>
         {
           calls.push('run');
         },
-        evaluateInApp: async code =>
+          evaluateInApp:
+            async code =>
         {
           const currentTest =
             code.includes('"second"')
@@ -609,13 +692,15 @@ test(
 
           return currentTest === 'first';
         },
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () =>
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () =>
         {
           calls.push('wait');
-        }
-      });
+        } });
 
     const result =
       await tools.runAppTests();
@@ -646,8 +731,12 @@ test(
     assert.deepEqual(
       result.results,
       [
-        { name: 'first', ok: true },
-        { name: 'second', ok: false, error: 'second should pass' }
+        { name: 'first',
+          ok: true },
+        { name: 'second',
+          ok: false,
+          error:
+            'second should pass' }
       ]);
   });
 
@@ -657,30 +746,42 @@ test(
   {
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [
           makeFile(
-            {
-              name: 'app.tests.json',
-              content: JSON.stringify(
-                [
-                  { name: 'legacy', code: 'true;' }
-                ])
-            })
+            { name:
+                'app.tests.json',
+              content:
+                JSON.stringify(
+                  [
+                  { name: 'legacy',
+                    code: 'true;' }
+                ]) })
         ],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => true,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => true,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     const result =
       await tools.runAppTests(
@@ -709,30 +810,41 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => files,
-        setFiles: next =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => files,
+          setFiles:
+            next =>
         {
           files = next;
         },
-        getActiveFileName: () => activeFileName,
-        setActiveFileName: next =>
+          getActiveFileName:
+            () => activeFileName,
+          setActiveFileName:
+            next =>
         {
           activeFileName = next;
         },
-        createFileId: () => 'new-file-id',
-        saveFile: async file =>
+          createFileId:
+            () => 'new-file-id',
+          saveFile:
+            async file =>
         {
           savedFiles.push(file);
         },
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     await tools.setFileContent(
       './src\\app.js',
@@ -771,24 +883,35 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => files,
-        setFiles: next =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => files,
+          setFiles:
+            next =>
         {
           files = next;
         },
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'image-file-id',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'image-file-id',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     await tools.setFileData(
       './assets\\logo.png',
@@ -814,36 +937,46 @@ test(
   {
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [
           makeFile(
-            {
-              name: 'assets/logo.png',
-              content: 'data:image/png;base64,AQID'
-            })
+            { name:
+                'assets/logo.png',
+              content:
+                'data:image/png;base64,AQID' })
         ],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     assert.deepEqual(
       await tools.readFileData(
         'assets/logo.png'),
-      {
-        mimeType: 'image/png',
+      { mimeType: 'image/png',
         base64: 'AQID',
-        dataUrl: 'data:image/png;base64,AQID'
-      });
+        dataUrl:
+          'data:image/png;base64,AQID' });
   });
 
 test(
@@ -855,27 +988,38 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => files,
-        setFiles: next =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => files,
+          setFiles:
+            next =>
         {
           files = next;
         },
-        getActiveFileName: () => activeFileName,
-        setActiveFileName: next =>
+          getActiveFileName:
+            () => activeFileName,
+          setActiveFileName:
+            next =>
         {
           activeFileName = next;
         },
-        createFileId: () => 'new-hidden-file-id',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          createFileId:
+            () => 'new-hidden-file-id',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     await tools.setFileContent(
       '.README.md',
@@ -901,32 +1045,42 @@ test(
     let files: AiToolFileRecord[] =
       [
       makeFile(
-        {
-          name: 'README.md',
-          content: 'x marker x marker'
-        })
+        { name: 'README.md',
+          content:
+            'x marker x marker' })
     ];
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => files,
-        setFiles: next =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => files,
+          setFiles:
+            next =>
         {
           files = next;
         },
-        getActiveFileName: () => files[0]?.name ?? null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () => undefined,
-        evaluateInApp: async () => null,
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          getActiveFileName:
+            () => files[0]?.name ?? null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () => undefined,
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     await assert.rejects(
       () =>
@@ -946,20 +1100,29 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [makeFile()],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [makeFile()],
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () =>
         {
           runCount += 1;
         },
-        evaluateInApp: async () =>
+          evaluateInApp:
+            async () =>
         {
           evalCount += 1;
 
@@ -969,10 +1132,12 @@ test(
 
           return 'ok';
         },
-        getAppDiagnostics: async () => null,
-        showChoicePrompt: () => undefined,
-        wait: async () => undefined
-      });
+          getAppDiagnostics:
+            async () => null,
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async () => undefined });
 
     const result =
       await tools.evalInApp('1 + 1');
@@ -998,33 +1163,44 @@ test(
 
     const tools =
       createAppRuntimeTools(
-        {
-        getCurrentAppId: () => 'app-1',
-        getFiles: () => [],
-        setFiles: () => undefined,
-        getActiveFileName: () => null,
-        setActiveFileName: () => undefined,
-        createFileId: () => 'unused',
-        saveFile: async () => undefined,
-        deleteFileById: async () => undefined,
-        runApp: () =>
+        { getCurrentAppId:
+            () => 'app-1',
+          getFiles:
+            () => [],
+          setFiles:
+            () => undefined,
+          getActiveFileName:
+            () => null,
+          setActiveFileName:
+            () => undefined,
+          createFileId:
+            () => 'unused',
+          saveFile:
+            async () => undefined,
+          deleteFileById:
+            async () => undefined,
+          runApp:
+            () =>
         {
           calls.push('run');
         },
-        evaluateInApp: async () => null,
-        getAppDiagnostics: () =>
+          evaluateInApp:
+            async () => null,
+          getAppDiagnostics:
+            () =>
         {
           calls.push('diag');
           return { ok: true };
         },
-        showChoicePrompt: () => undefined,
-        wait: async milliseconds =>
+          showChoicePrompt:
+            () => undefined,
+          wait:
+            async milliseconds =>
         {
           calls.push(
             `wait:${milliseconds}`);
         },
-        diagnosticsDelayMs: 123
-      });
+          diagnosticsDelayMs: 123 });
 
     const result =
       await tools.runAppAndCollectDiagnostics();

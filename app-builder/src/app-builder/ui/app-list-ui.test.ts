@@ -29,16 +29,21 @@ test(
 
     try {
       renderAppListUi(
-        {
-          selectElement: select,
-          apps: [
-            { id: 'a1', name: 'Older', updatedAt: '2026-01-01T00:00:00.000Z' },
-            { id: 'a2', name: 'Newer', updatedAt: '2026-02-01T00:00:00.000Z' }
+        { selectElement: select,
+          apps:
+            [
+            { id: 'a1',
+              name: 'Older',
+              updatedAt:
+                '2026-01-01T00:00:00.000Z' },
+            { id: 'a2',
+              name: 'Newer',
+              updatedAt:
+                '2026-02-01T00:00:00.000Z' }
           ],
           currentAppId: 'a2',
           newActionValue: '__new__',
-          importActionValue: '__import__'
-        });
+          importActionValue: '__import__' });
 
       const values =
         select.items.map(

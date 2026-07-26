@@ -37,18 +37,16 @@ test(
 
       const ui =
         createSettingsModalUi(
-          {
-          loadValues: async () => ({
-            apiKey: 'sk-demo',
-            theme: 'light',
-            fontSize: 16,
-            maxToolSteps: 30
-          }),
-          onSave: async values =>
+          { loadValues:
+              async () => ({ apiKey: 'sk-demo',
+                             theme: 'light',
+                             fontSize: 16,
+                             maxToolSteps: 30 }),
+            onSave:
+              async values =>
           {
             saved.push(values);
-          }
-        });
+          } });
 
       const modal =
         document.getElementById(
@@ -114,12 +112,10 @@ test(
       assert.deepEqual(
         saved,
         [
-          {
-            apiKey: 'sk-next',
+          { apiKey: 'sk-next',
             theme: 'dark',
             fontSizeText: '18',
-            maxToolStepsText: '42'
-          }
+            maxToolStepsText: '42' }
         ]);
 
       assert.equal(
@@ -145,16 +141,14 @@ test(
     try {
       const ui =
         createSettingsModalUi(
-          {
-          loadValues: async () => ({
-            apiKey: '',
-            theme: 'dark',
-            fontSize: 14,
-            maxToolSteps: 20
-          }),
-          onSave: async () =>
-          {}
-        });
+          { loadValues:
+              async () => ({ apiKey: '',
+                             theme: 'dark',
+                             fontSize: 14,
+                             maxToolSteps: 20 }),
+            onSave:
+              async () =>
+          {} });
 
       const modal =
         document.getElementById(

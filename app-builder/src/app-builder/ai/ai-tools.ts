@@ -188,18 +188,17 @@ function openAiToolDefinition(
     required?: string[]
   ): OpenAiToolDefinition
 {
-  return {
-    name,
-    type: 'function',
-    description,
-    parameters: {
-      type: 'object',
-      properties: properties || {},
-      required: required || [],
-      additionalProperties: false
-    },
-    strict: true
-  };
+  return { name,
+           type: 'function',
+           description,
+           parameters:
+             { type: 'object',
+               properties:
+                 properties || {},
+               required:
+                 required || [],
+               additionalProperties: false },
+           strict: true };
 }
 
 export const OPENAI_TOOLS: OpenAiToolDefinition[] =
@@ -210,114 +209,136 @@ export const OPENAI_TOOLS: OpenAiToolDefinition[] =
   openAiToolDefinition(
     'listFilesByMask',
     'List file paths that match a glob-like mask such as src/*.js or assets/**/*.png.',
-    { mask: { type: 'string' }, maxFiles: { type: 'number' } },
+    { mask:
+        { type: 'string' },
+      maxFiles:
+        { type: 'number' } },
     ['mask', 'maxFiles']),
   openAiToolDefinition(
     'readFile',
     'Read the full text content of a file.',
-    { path: { type: 'string' } },
+    { path:
+        { type: 'string' } },
     ['path']),
   openAiToolDefinition(
     'readFiles',
     'Read several files in one step. Use maxCharsPerFile to cap each returned file content.',
-    {
-      paths: { type: 'array', items: { type: 'string' } },
-      maxCharsPerFile: { type: 'number' }
-    },
+    { paths:
+        { type: 'array',
+          items:
+            { type: 'string' } },
+      maxCharsPerFile:
+        { type: 'number' } },
     ['paths', 'maxCharsPerFile']),
   openAiToolDefinition(
     'readFilesByMask',
     'Read all files that match a glob-like mask in one step. Use maxFiles and maxCharsPerFile to keep results bounded.',
-    {
-      mask: { type: 'string' },
-      maxFiles: { type: 'number' },
-      maxCharsPerFile: { type: 'number' }
-    },
+    { mask:
+        { type: 'string' },
+      maxFiles:
+        { type: 'number' },
+      maxCharsPerFile:
+        { type: 'number' } },
     ['mask', 'maxFiles', 'maxCharsPerFile']),
   openAiToolDefinition(
     'readFileData',
     'Read a binary-safe file stored as a data URL. Returns MIME type, base64 payload, and data URL, or null when the file is plain text.',
-    { path: { type: 'string' } },
+    { path:
+        { type: 'string' } },
     ['path']),
   openAiToolDefinition(
     'setFilesContent',
     'Create or fully replace several text files in one step.',
-    {
-      files: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            path: { type: 'string' },
-            content: { type: 'string' }
-          },
-          required: ['path', 'content'],
-          additionalProperties: false
-        }
-      }
-    },
+    { files:
+        { type: 'array',
+          items:
+            { type: 'object',
+              properties:
+                { path:
+                    { type: 'string' },
+                  content:
+                    { type: 'string' } },
+              required:
+                ['path', 'content'],
+              additionalProperties: false } } },
     ['files']),
   openAiToolDefinition(
     'setFileData',
     'Create or replace a binary-safe file from base64 data. Use this for image assets that should be referenced by path from HTML or CSS.',
-    {
-      path: { type: 'string' },
-      mimeType: { type: 'string' },
-      base64: { type: 'string' }
-    },
+    { path:
+        { type: 'string' },
+      mimeType:
+        { type: 'string' },
+      base64:
+        { type: 'string' } },
     ['path', 'mimeType', 'base64']),
   openAiToolDefinition(
     'setFileContent',
     'Create or fully replace file content.',
-    { path: { type: 'string' }, content: { type: 'string' } },
+    { path:
+        { type: 'string' },
+      content:
+        { type: 'string' } },
     ['path', 'content']),
   openAiToolDefinition(
     'replaceFilePart',
     'Replace part of a file by exact search string.',
-    {
-      path: { type: 'string' },
-      search: { type: 'string' },
-      replacement: { type: 'string' },
-      replaceAll: { type: 'boolean' }
-    },
+    { path:
+        { type: 'string' },
+      search:
+        { type: 'string' },
+      replacement:
+        { type: 'string' },
+      replaceAll:
+        { type: 'boolean' } },
     ['path', 'search', 'replacement', 'replaceAll']),
   openAiToolDefinition(
     'deleteFile',
     'Delete a file from the virtual filesystem.',
-    { path: { type: 'string' } },
+    { path:
+        { type: 'string' } },
     ['path']),
   openAiToolDefinition(
     'grep',
     'Search matching files with a regular expression and return matching lines.',
-    {
-      mask: { type: 'string' },
-      pattern: { type: 'string' },
-      flags: { type: 'string' },
-      maxMatches: { type: 'number' }
-    },
+    { mask:
+        { type: 'string' },
+      pattern:
+        { type: 'string' },
+      flags:
+        { type: 'string' },
+      maxMatches:
+        { type: 'number' } },
     ['mask', 'pattern', 'flags', 'maxMatches']),
   openAiToolDefinition(
     'choose',
     'Show a short list of clickable choices in the chat UI. Use this when asking the user to pick from a few clear options.',
-    {
-      question: { type: 'string' },
-      options: { type: 'array', items: { type: 'string' } }
-    },
+    { question:
+        { type: 'string' },
+      options:
+        { type: 'array',
+          items:
+            { type: 'string' } } },
     ['question', 'options']),
   openAiToolDefinition(
     'evalInApp',
     'Evaluate JavaScript in the running app document context.',
-    { code: { type: 'string' } },
+    { code:
+        { type: 'string' } },
     ['code']),
   openAiToolDefinition(
     'assertInApp',
     'Run a JavaScript check in the app context and fail if it throws or returns false.',
-    { code: { type: 'string' }, message: { type: 'string' } },
+    { code:
+        { type: 'string' },
+      message:
+        { type: 'string' } },
     ['code', 'message']),
   openAiToolDefinition(
     'runAppTests',
     'Run the JavaScript test module stored in app.tests.js or another specified file. The app restarts before each test.',
-    { path: { type: 'string' } },
+    { path:
+        { type: 'string' } },
     ['path']),
   openAiToolDefinition(
     'startGeneration',
@@ -442,10 +463,8 @@ export function createAppRuntimeTools(
 
     if (existing !== undefined) {
       const updated: AiToolFileRecord =
-        {
-        ...existing,
-        content
-      };
+        { ...existing,
+          content };
 
       await context.saveFile(updated);
 
@@ -465,12 +484,11 @@ export function createAppRuntimeTools(
     }
 
     const created: AiToolFileRecord =
-      {
-      id: context.createFileId(),
-      appId,
-      name: normalizedPath,
-      content
-    };
+      { id:
+          context.createFileId(),
+        appId,
+        name: normalizedPath,
+        content };
 
     await context.saveFile(created);
 
@@ -659,11 +677,11 @@ export function createAppRuntimeTools(
         }
 
         matches.push(
-          {
-            path,
-            line: index + 1,
-            text: lines[index]
-          });
+          { path,
+            line:
+              index + 1,
+            text:
+              lines[index] });
 
         if (matches.length >= maxMatches) {
           return matches;
@@ -753,9 +771,10 @@ export function createAppRuntimeTools(
           context.diagnosticsDelayMs ?? DEFAULT_DIAGNOSTICS_DELAY_MS);
 
         const helpers: AppTestHelpers =
-          {
-          evalInApp: code => context.evaluateInApp(code),
-          assertInApp: async (code, message) =>
+          { evalInApp:
+              code => context.evaluateInApp(code),
+            assertInApp:
+              async (code, message) =>
           {
             const result =
               await context.evaluateInApp(code);
@@ -768,38 +787,39 @@ export function createAppRuntimeTools(
 
             return result;
           },
-          getAppDiagnostics: getAppDiagnosticsTool,
-          wait: context.wait
-        };
+            getAppDiagnostics:
+              getAppDiagnosticsTool,
+            wait:
+              context.wait };
 
         await testCase.run(helpers);
 
         results.push(
-          {
-            name: testCase.name,
-            ok: true
-          });
+          { name:
+              testCase.name,
+            ok: true });
       } catch (error) {
         results.push(
-          {
-            name: testCase.name,
+          { name:
+              testCase.name,
             ok: false,
-            error: error instanceof Error
+            error:
+              error instanceof Error
               ? error.message
-              : String(error)
-          });
+              : String(error) });
       }
     }
 
-    return {
-      path: resolvedPath,
-      total: results.length,
-      passed: results.filter(
-        result => result.ok).length,
-      failed: results.filter(
-        result => !result.ok).length,
-      results
-    };
+    return { path: resolvedPath,
+             total:
+               results.length,
+             passed:
+               results.filter(
+                 result => result.ok).length,
+             failed:
+               results.filter(
+                 result => !result.ok).length,
+             results };
   }
 
   async function getAppDiagnosticsTool(
@@ -829,27 +849,38 @@ export function createAppRuntimeTools(
     return context.startGeneration();
   }
 
-  return {
-    listFileset: listFilesetTool,
-    listFilesByMask: listFilesByMaskTool,
-    readFile: readFileTool,
-    readFiles: readFilesTool,
-    readFilesByMask: readFilesByMaskTool,
-    readFileData: readFileDataTool,
-    setFilesContent: setFilesContentTool,
-    setFileData: setFileDataTool,
-    setFileContent: setFileContentTool,
-    deleteFile: deleteFileTool,
-    replaceFilePart: replaceFilePartTool,
-    grep: grepTool,
-    choose: chooseTool,
-    evalInApp: evalInAppTool,
-    assertInApp: assertInAppTool,
-    runAppTests: runAppTestsTool,
-    startGeneration: startGenerationTool,
-    getAppDiagnostics: getAppDiagnosticsTool,
-    runAppAndCollectDiagnostics: runAppAndCollectDiagnosticsTool
-  };
+  return { listFileset:
+             listFilesetTool,
+           listFilesByMask:
+             listFilesByMaskTool,
+           readFile: readFileTool,
+           readFiles: readFilesTool,
+           readFilesByMask:
+             readFilesByMaskTool,
+           readFileData:
+             readFileDataTool,
+           setFilesContent:
+             setFilesContentTool,
+           setFileData:
+             setFileDataTool,
+           setFileContent:
+             setFileContentTool,
+           deleteFile: deleteFileTool,
+           replaceFilePart:
+             replaceFilePartTool,
+           grep: grepTool,
+           choose: chooseTool,
+           evalInApp: evalInAppTool,
+           assertInApp:
+             assertInAppTool,
+           runAppTests:
+             runAppTestsTool,
+           startGeneration:
+             startGenerationTool,
+           getAppDiagnostics:
+             getAppDiagnosticsTool,
+           runAppAndCollectDiagnostics:
+             runAppAndCollectDiagnosticsTool };
 }
 
 function requireCurrentAppId(
@@ -1118,13 +1149,13 @@ function normalizeModuleTestCase(
   const run =
     testCase.run;
 
-  return {
-    name: testCase.name,
-    run: async helpers =>
+  return { name:
+             testCase.name,
+           run:
+             async helpers =>
     {
       await run(helpers);
-    }
-  };
+    } };
 }
 
 function parseLegacyJsonAppTests(
@@ -1168,9 +1199,10 @@ function parseLegacyJsonAppTests(
         throw new Error(`Test case ${testCase.name} is missing code.`);
       }
 
-      return {
-        name: testCase.name,
-        run: async helpers =>
+      return { name:
+                 testCase.name,
+               run:
+                 async helpers =>
         {
           const result =
             await helpers.evalInApp(
@@ -1179,8 +1211,7 @@ function parseLegacyJsonAppTests(
           if (result === false) {
             throw new Error('Test returned false.');
           }
-        }
-      };
+        } };
     });
 }
 
@@ -1593,10 +1624,10 @@ function readFileContentEntriesArg(
         );
       }
 
-      return {
-        path: file.path,
-        content: file.content
-      };
+      return { path:
+                 file.path,
+               content:
+                 file.content };
     });
 }
 
@@ -1645,10 +1676,8 @@ function toolSuccess(
   ): string
 {
   return stringifyToolPayload(
-    {
-      ok: true,
-      value
-    });
+    { ok: true,
+      value });
 }
 
 function toolFailure(
@@ -1656,10 +1685,8 @@ function toolFailure(
   ): string
 {
   return stringifyToolPayload(
-    {
-      ok: false,
-      error
-    });
+    { ok: false,
+      error });
 }
 
 function stringifyToolPayload(

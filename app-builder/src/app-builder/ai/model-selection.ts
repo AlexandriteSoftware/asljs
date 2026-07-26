@@ -40,13 +40,12 @@ export function dedupeModels(
       id.toLowerCase());
 
     normalized.push(
-      {
-        id,
-        created: Number.isFinite(
-          model.created)
+      { id,
+        created:
+          Number.isFinite(
+            model.created)
           ? model.created
-          : 0
-      });
+          : 0 });
   }
 
   return normalized;

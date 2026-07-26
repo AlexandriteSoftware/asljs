@@ -33,16 +33,17 @@ test(
 
     const collapsed =
       togglePanelUi(
-        {
-        panelElement: panel,
-        toggleButtonElement: button,
-        panelsElement: panels,
-        collapsedPanelsClass: 'chat-collapsed',
-        expandedText: 'Chat',
-        collapsedText: 'Chat',
-        expandedIcon: '<i class="bi bi-chevron-down"></i>',
-        collapsedIcon: '<i class="bi bi-chevron-right"></i>'
-      });
+        { panelElement: panel,
+          toggleButtonElement: button,
+          panelsElement: panels,
+          collapsedPanelsClass:
+            'chat-collapsed',
+          expandedText: 'Chat',
+          collapsedText: 'Chat',
+          expandedIcon:
+            '<i class="bi bi-chevron-down"></i>',
+          collapsedIcon:
+            '<i class="bi bi-chevron-right"></i>' });
 
     assert.equal(
       collapsed,

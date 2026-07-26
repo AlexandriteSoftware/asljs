@@ -14,7 +14,8 @@ test(
     const dom =
       new JSDOM(
       '',
-      { url: 'https://example.test/' }
+      { url:
+          'https://example.test/' }
     );
 
     const previousSessionStorage =
@@ -27,8 +28,9 @@ test(
         createSessionStorageAiChatStateStore('app-1');
 
       await store.save(
-        {
-          messages: [{ role: 'assistant', content: 'Hi' }],
+        { messages:
+            [{ role: 'assistant',
+               content: 'Hi' }],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -36,13 +38,13 @@ test(
           lastResponseId: 'resp_1',
           choicePrompt: null,
           progress: null,
-          sending: false
-        });
+          sending: false });
 
       assert.deepEqual(
         await store.load(),
-        {
-          messages: [{ role: 'assistant', content: 'Hi' }],
+        { messages:
+            [{ role: 'assistant',
+               content: 'Hi' }],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -50,8 +52,7 @@ test(
           lastResponseId: 'resp_1',
           choicePrompt: null,
           progress: null,
-          sending: false
-        });
+          sending: false });
     } finally {
       globalThis.sessionStorage = previousSessionStorage;
     }

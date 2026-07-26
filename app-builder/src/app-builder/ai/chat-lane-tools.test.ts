@@ -10,33 +10,48 @@ import { createChatLaneTools }
 function makeBaseTools(
   ): AiTools
 {
-  return {
-    listFileset: async () => [],
-    listFilesByMask: async () => [],
-    readFile: async () => '',
-    readFiles: async () => ({}),
-    readFilesByMask: async () => ({}),
-    readFileData: async () => null,
-    setFilesContent: async () => undefined,
-    setFileData: async () => undefined,
-    setFileContent: async () => undefined,
-    deleteFile: async () => undefined,
-    replaceFilePart: async () => undefined,
-    grep: async () => [],
-    choose: async () => undefined,
-    evalInApp: async () => null,
-    assertInApp: async () => true,
-    runAppTests: async () => ({
-      path: 'app.tests.js',
-      total: 0,
-      passed: 0,
-      failed: 0,
-      results: []
-    }),
-    startGeneration: async () => 'queued',
-    getAppDiagnostics: async () => null,
-    runAppAndCollectDiagnostics: async () => null
-  };
+  return { listFileset:
+             async () => [],
+           listFilesByMask:
+             async () => [],
+           readFile:
+             async () => '',
+           readFiles:
+             async () => ({}),
+           readFilesByMask:
+             async () => ({}),
+           readFileData:
+             async () => null,
+           setFilesContent:
+             async () => undefined,
+           setFileData:
+             async () => undefined,
+           setFileContent:
+             async () => undefined,
+           deleteFile:
+             async () => undefined,
+           replaceFilePart:
+             async () => undefined,
+           grep:
+             async () => [],
+           choose:
+             async () => undefined,
+           evalInApp:
+             async () => null,
+           assertInApp:
+             async () => true,
+           runAppTests:
+             async () => ({ path: 'app.tests.js',
+                            total: 0,
+                            passed: 0,
+                            failed: 0,
+                            results: [] }),
+           startGeneration:
+             async () => 'queued',
+           getAppDiagnostics:
+             async () => null,
+           runAppAndCollectDiagnostics:
+             async () => null };
 }
 
 test(
@@ -46,10 +61,9 @@ test(
     const chatTools =
       createChatLaneTools(
         makeBaseTools(),
-        {
-        planFileName: 'PLAN.md',
-        startGeneration: async () => 'queued'
-      });
+        { planFileName: 'PLAN.md',
+          startGeneration:
+            async () => 'queued' });
 
     await assert.rejects(
       () =>
@@ -68,14 +82,13 @@ test(
     const chatTools =
       createChatLaneTools(
         makeBaseTools(),
-        {
-        planFileName: 'PLAN.md',
-        startGeneration: async () =>
+        { planFileName: 'PLAN.md',
+          startGeneration:
+            async () =>
         {
           called = true;
           return 'queued';
-        }
-      });
+        } });
 
     const result =
       await chatTools.startGeneration();

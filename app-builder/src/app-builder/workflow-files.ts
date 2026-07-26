@@ -15,14 +15,14 @@ export function createDefaultWorkflowFiles(
   ): FileRecord[]
 {
   return WORKFLOW_FILE_ORDER.map(
-    fileName => ({
-      id: createId(),
-      appId,
-      name: fileName,
-      content: buildDefaultWorkflowContent(
-        fileName,
-        appName)
-    }));
+    fileName => ({ id:
+                     createId(),
+                   appId,
+                   name: fileName,
+                   content:
+                     buildDefaultWorkflowContent(
+                       fileName,
+                       appName) }));
 }
 
 export function ensureWorkflowFiles(
@@ -54,22 +54,22 @@ export function ensureWorkflowFiles(
     }
 
     nextFiles.push(
-      {
-        id: options.createId(),
-        appId: options.appId,
+      { id:
+          options.createId(),
+        appId:
+          options.appId,
         name: fileName,
-        content: buildDefaultWorkflowContent(
-          fileName,
-          options.appName)
-      });
+        content:
+          buildDefaultWorkflowContent(
+            fileName,
+            options.appName) });
 
     changed = true;
   }
 
-  return {
-    files: sortWorkflowFilesFirst(nextFiles),
-    changed
-  };
+  return { files:
+             sortWorkflowFilesFirst(nextFiles),
+           changed };
 }
 
 export function hasOnlyWorkflowFiles(

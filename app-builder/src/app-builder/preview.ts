@@ -342,9 +342,7 @@ export async function evaluateInPreview(
     await requestPreviewPayload(
       frame,
       EVAL_REQUEST_TYPE,
-      {
-      code
-    },
+      { code },
       EVAL_RESPONSE_TYPE);
 
   if (payload.ok === true) {
@@ -381,7 +379,8 @@ export async function getPreviewDiagnostics(
     payload.diagnostics as RuntimeDiagnostics | undefined;
 
   return diagnostics
-    ?? { logs: [], errors: [] };
+    ?? { logs: [],
+         errors: [] };
 }
 
 async function requestPreviewPayload(
@@ -450,11 +449,9 @@ async function requestPreviewPayload(
       onMessage);
 
     frameWindow.postMessage(
-      {
-        type: requestType,
+      { type: requestType,
         id: requestId,
-        ...requestBody
-      },
+        ...requestBody },
       '*');
   });
 }
@@ -541,10 +538,8 @@ function readImportMapVersions(
     };
 
     const source =
-      {
-      ...(parsed.dependencies ?? {}),
-      ...(parsed.devDependencies ?? {})
-    };
+      { ...(parsed.dependencies ?? {}),
+        ...(parsed.devDependencies ?? {}) };
 
     const names =
       [
@@ -616,12 +611,11 @@ function injectHostContext(
   const script =
     `<script>window.__ASLJS_APP_BUILDER_HOST__ = ${
     JSON.stringify(
-      {
-        openAiApiKey: options?.hostOpenAiApiKey === undefined
+      { openAiApiKey:
+          options?.hostOpenAiApiKey === undefined
             || options.hostOpenAiApiKey.trim() === ''
           ? null
-          : options.hostOpenAiApiKey
-      })
+          : options.hostOpenAiApiKey })
   };</script>`;
 
   if (html.includes('</head>')) {

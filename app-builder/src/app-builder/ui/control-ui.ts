@@ -59,10 +59,10 @@ export function configureButton(
 
   setButtonContent(
     element,
-    {
-      text: options.text ?? '',
-      icon: options.icon ?? ''
-    });
+    { text:
+        options.text ?? '',
+      icon:
+        options.icon ?? '' });
 }
 
 export function setButtonContent(

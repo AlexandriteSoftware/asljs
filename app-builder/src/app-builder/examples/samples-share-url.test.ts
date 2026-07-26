@@ -21,13 +21,13 @@ test(
 
     const service =
       createLinkSharingService(
-        {
-        codec: createNodeEsbuildGzipBase64UrlCodec(),
-        baseUrl: 'https://example.test/app-builder',
-        hashPrefix: '#I!',
-        maxUrlLength: 5000,
-        timeoutMs: 500
-      });
+        { codec:
+            createNodeEsbuildGzipBase64UrlCodec(),
+          baseUrl:
+            'https://example.test/app-builder',
+          hashPrefix: '#I!',
+          maxUrlLength: 5000,
+          timeoutMs: 500 });
 
     for (const sample of samples) {
       const share =

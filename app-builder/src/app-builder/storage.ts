@@ -254,5 +254,6 @@ export async function saveAppOpenAiApiKey(
 
   await dbRequestAsync(
     tx.objectStore('chatSecrets').put(
-      { appId, openAiApiKey: apiKey }));
+      { appId,
+        openAiApiKey: apiKey }));
 }

@@ -16,11 +16,10 @@ test(
 
     assert.deepEqual(
       result,
-      {
-        mimeType: 'image/png',
+      { mimeType: 'image/png',
         base64: 'AQID',
-        dataUrl: 'data:image/png;base64,AQID'
-      });
+        dataUrl:
+          'data:image/png;base64,AQID' });
   });
 
 test(

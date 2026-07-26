@@ -265,8 +265,10 @@ let browserEsbuildApiPromise: Promise<BrowserEsbuildApi> | null = null;
 
 let availableModels: AvailableAiModel[] =
   [
-  { id: DEFAULT_CHAT_MODEL },
-  { id: DEFAULT_CODE_MODEL },
+  { id:
+      DEFAULT_CHAT_MODEL },
+  { id:
+      DEFAULT_CODE_MODEL },
   { id: DEFAULT_MODEL }
 ];
 
@@ -279,41 +281,44 @@ setMobileWorkspaceTab('chat');
 
 const firstApplicationDialog =
   createFirstApplicationDialogUi(
-    {
-    onCreateApplication: createFirstApp,
-    onCreateTodoSample: createTodoSampleApp
-  });
+    { onCreateApplication: createFirstApp,
+      onCreateTodoSample:
+        createTodoSampleApp });
 
 const nameModal =
   createNameModalUi();
 
 const projectSettingsModal =
   createProjectSettingsModalUi(
-    {
-    onSave: saveProjectSettings,
-    onDelete: confirmDeleteApp
-  });
+    { onSave:
+        saveProjectSettings,
+      onDelete:
+        confirmDeleteApp });
 
 const settingsModal =
   createSettingsModalUi(
-    {
-    loadValues: async () => ({
-      apiKey: await refreshCurrentAppOpenAiApiKey(),
-      theme: getTheme(),
-      fontSize: getFontSize(),
-      maxToolSteps: getMaxToolSteps()
-    }),
-    onSave: saveSettingsFromModal
-  });
+    { loadValues:
+        async () => ({ apiKey:
+                         await refreshCurrentAppOpenAiApiKey(),
+                       theme:
+                         getTheme(),
+                       fontSize:
+                         getFontSize(),
+                       maxToolSteps:
+                         getMaxToolSteps() }),
+      onSave:
+        saveSettingsFromModal });
 
 const shareModal =
   createShareModalUi(
-    {
-    canOpen: () => getCurrentApp() !== undefined,
-    readAppName: () => getCurrentApp()?.name ?? 'Shared app',
-    prepareLink: prepareShareLink,
-    downloadExport: downloadShareExport
-  });
+    { canOpen:
+        () => getCurrentApp() !== undefined,
+      readAppName:
+        () => getCurrentApp()?.name ?? 'Shared app',
+      prepareLink:
+        prepareShareLink,
+      downloadExport:
+        downloadShareExport });
 
 type BrowserEsbuildApi = {
   transform: (
@@ -331,123 +336,113 @@ function configureShellControls(
 {
   configureButton(
     elBtnSettings,
-    {
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnNewApp,
-    {
-      text: 'New',
-      icon: '<i class="bi bi-plus-lg"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'New',
+      icon:
+        '<i class="bi bi-plus-lg"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnImport,
-    {
-      text: 'Import',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'Import',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnProjectSettings,
-    {
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnToggleChat,
-    {
-      text: 'Chat',
-      icon: '<i class="bi bi-chevron-down"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'Chat',
+      icon:
+        '<i class="bi bi-chevron-down"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnToggleFiles,
-    {
-      text: 'Files',
-      icon: '<i class="bi bi-chevron-down"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'Files',
+      icon:
+        '<i class="bi bi-chevron-down"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnRun,
-    {
-      text: 'Run',
-      icon: '<i class="bi bi-play-fill"></i>',
-      className: 'btn btn-success btn-sm'
-    });
+    { text: 'Run',
+      icon:
+        '<i class="bi bi-play-fill"></i>',
+      className:
+        'btn btn-success btn-sm' });
 
   configureButton(
     elMobileTabChat,
-    {
-      text: 'Chat',
-      icon: '<i class="bi bi-chat-dots"></i>',
-      className: 'btn btn-outline-secondary flex-fill'
-    });
+    { text: 'Chat',
+      icon:
+        '<i class="bi bi-chat-dots"></i>',
+      className:
+        'btn btn-outline-secondary flex-fill' });
 
   configureButton(
     elMobileTabFiles,
-    {
-      text: 'Files',
-      icon: '<i class="bi bi-folder2-open"></i>',
-      className: 'btn btn-outline-secondary flex-fill'
-    });
+    { text: 'Files',
+      icon:
+        '<i class="bi bi-folder2-open"></i>',
+      className:
+        'btn btn-outline-secondary flex-fill' });
 
   configureButton(
     elMobileTabRun,
-    {
-      text: 'Run',
-      icon: '<i class="bi bi-play-fill"></i>',
-      className: 'btn btn-outline-secondary flex-fill'
-    });
+    { text: 'Run',
+      icon:
+        '<i class="bi bi-play-fill"></i>',
+      className:
+        'btn btn-outline-secondary flex-fill' });
 
   configureButton(
     elBtnShare,
-    {
-      text: 'Share',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'Share',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnStartGeneration,
-    {
-      text: 'Generate',
-      className: 'btn btn-primary btn-sm'
-    });
+    { text: 'Generate',
+      className:
+        'btn btn-primary btn-sm' });
 
   configureButton(
     elBtnStopGeneration,
-    {
-      text: 'Stop',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { text: 'Stop',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureSelect(
     elAppSelect,
-    {
-      className: 'form-select form-select-sm bootstrap-select app-select'
-    });
+    { className:
+        'form-select form-select-sm bootstrap-select app-select' });
 
   configureSelect(
     elFileSelect,
-    {
-      className: 'form-select form-select-sm bootstrap-select file-select'
-    });
+    { className:
+        'form-select form-select-sm bootstrap-select file-select' });
 
   configureSelect(
     elChatModelSelect,
-    {
-      className: 'form-select form-select-sm bootstrap-select lane-model-select'
-    });
+    { className:
+        'form-select form-select-sm bootstrap-select lane-model-select' });
 
   configureSelect(
     elGenerationModelSelect,
-    {
-      className: 'form-select form-select-sm bootstrap-select lane-model-select'
-    });
+    { className:
+        'form-select form-select-sm bootstrap-select lane-model-select' });
 }
 
 function isMobileViewport(
@@ -473,9 +468,14 @@ function setMobileWorkspaceTab(
     button: AppBuilderButtonElement;
   }[] =
     [
-    { tab: 'chat', button: elMobileTabChat },
-    { tab: 'files', button: elMobileTabFiles },
-    { tab: 'run', button: elMobileTabRun }
+    { tab: 'chat',
+      button:
+        elMobileTabChat },
+    { tab: 'files',
+      button:
+        elMobileTabFiles },
+    { tab: 'run',
+      button: elMobileTabRun }
   ];
 
   for (const item of tabs) {
@@ -503,12 +503,13 @@ function getLinkSharingService(
 {
   linkSharingService = linkSharingService
     ?? createLinkSharingService(
-      {
-        codec: createBrowserTextCompressionCodec(),
+      { codec:
+          createBrowserTextCompressionCodec(),
         baseUrl: SHARE_BASE_URL,
-        hashPrefix: IMPORT_HASH_PREFIX,
-        maxUrlLength: SHARE_MAX_URL_LENGTH
-      });
+        hashPrefix:
+          IMPORT_HASH_PREFIX,
+        maxUrlLength:
+          SHARE_MAX_URL_LENGTH });
 
   return linkSharingService;
 }
@@ -681,11 +682,10 @@ async function ensureAppsHaveUniqueUuids(
     }
 
     const updated: AppRecord =
-      {
-      ...app,
-      uuid,
-      updatedAt: app.updatedAt ?? now()
-    };
+      { ...app,
+        uuid,
+        updatedAt:
+          app.updatedAt ?? now() };
 
     await saveApp(updated);
     normalized.push(updated);
@@ -726,11 +726,11 @@ async function regenerateCurrentAppUuidForFileChange(
   }
 
   const updated: AppRecord =
-    {
-    ...app,
-    uuid: createAppUuid(),
-    updatedAt: now()
-  };
+    { ...app,
+      uuid:
+        createAppUuid(),
+      updatedAt:
+        now() };
 
   await saveAppAndReplaceInState(updated);
 }
@@ -786,56 +786,66 @@ declare global {
 
 const appRuntimeTools =
   createAppRuntimeTools(
-    {
-    getCurrentAppId: () => state.currentAppId,
-    getFiles: () => state.files,
-    setFiles: files =>
+    { getCurrentAppId:
+        () => state.currentAppId,
+      getFiles:
+        () => state.files,
+      setFiles:
+        files =>
     {
       state.files = files;
     },
-    getActiveFileName: () => state.activeFileName,
-    setActiveFileName: fileName =>
+      getActiveFileName:
+        () => state.activeFileName,
+      setActiveFileName:
+        fileName =>
     {
       state.activeFileName = fileName;
     },
-    createFileId: randomId,
-    saveFile: async file =>
+      createFileId: randomId,
+      saveFile:
+        async file =>
     {
       await saveFile(file);
       await regenerateCurrentAppUuidForFileChange();
     },
-    deleteFileById: async id =>
+      deleteFileById:
+        async id =>
     {
       await deleteFile(id);
       await regenerateCurrentAppUuidForFileChange();
     },
-    runApp: handleRun,
-    evaluateInApp: code =>
+      runApp: handleRun,
+      evaluateInApp:
+        code =>
       evaluateInPreview(
         elPreviewFrame,
         code),
-    getAppDiagnostics: () => getPreviewDiagnostics(elPreviewFrame),
-    showChoicePrompt: showChoicePrompt,
-    wait: milliseconds =>
+      getAppDiagnostics:
+        () => getPreviewDiagnostics(elPreviewFrame),
+      showChoicePrompt:
+        showChoicePrompt,
+      wait:
+        milliseconds =>
       new Promise(resolve =>
       {
         window.setTimeout(
           resolve,
           milliseconds);
-      })
-  });
+      }) });
 
 function renderAppList(
   ): void
 {
   renderAppListUi(
-    {
-      selectElement: elAppSelect,
-      apps: state.apps,
-      currentAppId: state.currentAppId,
+    { selectElement: elAppSelect,
+      apps:
+        state.apps,
+      currentAppId:
+        state.currentAppId,
       newActionValue: APP_ACTION_NEW,
-      importActionValue: APP_ACTION_IMPORT
-    });
+      importActionValue:
+        APP_ACTION_IMPORT });
 }
 
 function renderWorkspace(
@@ -872,13 +882,16 @@ async function createFirstApp(
   ): Promise<void>
 {
   const app: AppRecord =
-    {
-    id: randomId(),
-    uuid: createAppUuid(),
-    name: values.name,
-    createdAt: now(),
-    updatedAt: now()
-  };
+    { id:
+        randomId(),
+      uuid:
+        createAppUuid(),
+      name:
+        values.name,
+      createdAt:
+        now(),
+      updatedAt:
+        now() };
 
   await saveApp(app);
 
@@ -924,14 +937,17 @@ async function createTodoSampleApp(
     : values.name;
 
   const app: AppRecord =
-    {
-    id: randomId(),
-    uuid: createAppUuid(),
-    name,
-    author: sample.author,
-    createdAt: now(),
-    updatedAt: now()
-  };
+    { id:
+        randomId(),
+      uuid:
+        createAppUuid(),
+      name,
+      author:
+        sample.author,
+      createdAt:
+        now(),
+      updatedAt:
+        now() };
 
   const files =
     buildSampleFiles(
@@ -961,22 +977,24 @@ function renderFileSelect(
   ): void
 {
   renderFileSelectUi(
-    {
-      selectElement: elFileSelect,
-      files: state.files,
-      activeFileName: state.activeFileName
-    });
+    { selectElement: elFileSelect,
+      files:
+        state.files,
+      activeFileName:
+        state.activeFileName });
 }
 
 function renderFileContent(
   ): void
 {
   renderFileContentUi(
-    {
-      fileElement: elFileView,
-      files: state.files,
-      activeFileName: state.activeFileName,
-      onSaveText: async (fileName, text) =>
+    { fileElement: elFileView,
+      files:
+        state.files,
+      activeFileName:
+        state.activeFileName,
+      onSaveText:
+        async (fileName, text) =>
       {
         const file =
           state.files.find(
@@ -989,8 +1007,7 @@ function renderFileContent(
         file.content = text;
         await saveFile(file);
         await regenerateCurrentAppUuidForFileChange();
-      }
-    });
+      } });
 }
 
 function setGenerating(
@@ -1070,7 +1087,10 @@ function syncStateChatMessagesFromAiChatModel(
       .filter(
         isUserOrAssistantMessage)
       .map(
-        message => ({ role: message.role, text: message.content }));
+        message => ({ role:
+                        message.role,
+                      text:
+                        message.content }));
 }
 
 function isUserOrAssistantMessage(
@@ -1106,21 +1126,22 @@ async function mountAiChatForCurrentApp(
     (
     transport: OpenAiTransport | null
   ): AiChatOptions<{ currentAppId: string | null; }> => (
-    {
-      provider: createAppBuilderAiChatSecretsAndSettingsProvider(
-        {
-          appId,
-          readChatModel: getChatModel,
-          readInitialToolStepLimit: getMaxToolSteps
-        }),
+    { provider:
+        createAppBuilderAiChatSecretsAndSettingsProvider(
+          { appId,
+            readChatModel: getChatModel,
+            readInitialToolStepLimit:
+              getMaxToolSteps }),
       ...(transport !== null
         ? { transport }
         : {}),
-      stateStore: createSessionStorageAiChatStateStore(appId),
-      getRequestContext: () => ({
-        currentAppId: state.currentAppId
-      }),
-      buildRequestInput: ({ model: chatModel }: { model: AiChatModel; }) =>
+      stateStore:
+        createSessionStorageAiChatStateStore(appId),
+      getRequestContext:
+        () => ({ currentAppId:
+                   state.currentAppId }),
+      buildRequestInput:
+        ({ model: chatModel }: { model: AiChatModel; }) =>
       {
         const transcript =
           buildConversationPrompt(
@@ -1129,30 +1150,34 @@ async function mountAiChatForCurrentApp(
             .filter(
               isUserOrAssistantMessage)
             .map(
-              (message: { role: 'user' | 'assistant'; content: string; }) => ({
-                role: message.role,
-                text: message.content
-              })));
+              (message: { role: 'user' | 'assistant'; content: string; }) => ({ role:
+                                                                                  message.role,
+                                                                                text:
+                                                                                  message.content })));
 
         return [
-          { role: 'system', content: CHAT_SYSTEM_PROMPT },
-          { role: 'user', content: transcript }
+          { role: 'system',
+            content:
+              CHAT_SYSTEM_PROMPT },
+          { role: 'user',
+            content: transcript }
         ];
       },
-      getTools: () => OPENAI_TOOLS,
-      executeTool: async (
+      getTools:
+        () => OPENAI_TOOLS,
+      executeTool:
+        async (
         name: string,
         argumentsJson: string
       ): Promise<string> =>
         executeToolCall(
-          {
-            type: 'function_call',
+          { type:
+              'function_call',
             name,
             arguments: argumentsJson,
-            call_id: `app-chat:${name}`
-          },
-          appRuntimeTools)
-    }
+            call_id:
+              `app-chat:${name}` },
+          appRuntimeTools) }
   );
 
   const apiKey =
@@ -1268,12 +1293,11 @@ async function openApp(
 
   const ensured =
     ensureWorkflowFiles(
-      {
-      files,
-      appId: id,
-      appName: app?.name ?? 'Untitled App',
-      createId: randomId
-    });
+      { files,
+        appId: id,
+        appName:
+          app?.name ?? 'Untitled App',
+        createId: randomId });
 
   if (ensured.changed) {
     await replaceFiles(
@@ -1302,20 +1326,22 @@ function promptNewApp(
   ): void
 {
   nameModal.open(
-    {
-      title: 'New App',
+    { title: 'New App',
       initialValue: '',
       selectText: false,
-      onConfirm: async (name: string) =>
+      onConfirm:
+        async (name: string) =>
       {
         const app: AppRecord =
-          {
-          id: randomId(),
-          uuid: createAppUuid(),
-          name,
-          createdAt: now(),
-          updatedAt: now()
-        };
+          { id:
+              randomId(),
+            uuid:
+              createAppUuid(),
+            name,
+            createdAt:
+              now(),
+            updatedAt:
+              now() };
 
         await saveApp(app);
 
@@ -1330,8 +1356,7 @@ function promptNewApp(
 
         await openApp(
           app.id);
-      }
-    });
+      } });
 }
 
 function promptRenameApp(
@@ -1346,18 +1371,18 @@ function promptRenameApp(
   }
 
   nameModal.open(
-    {
-      title: 'Rename App',
-      initialValue: app.name,
+    { title: 'Rename App',
+      initialValue:
+        app.name,
       selectText: true,
-      onConfirm: async (name: string) =>
+      onConfirm:
+        async (name: string) =>
       {
         const updated: AppRecord =
-          {
-          ...app,
-          name,
-          updatedAt: now()
-        };
+          { ...app,
+            name,
+            updatedAt:
+              now() };
 
         await saveApp(updated);
 
@@ -1367,8 +1392,7 @@ function promptRenameApp(
               ? updated
               : item
           ));
-      }
-    });
+      } });
 }
 
 function openProjectSettings(
@@ -1383,11 +1407,12 @@ function openProjectSettings(
   }
 
   projectSettingsModal.open(
-    {
-      name: app.name,
-      authorName: app.author?.name ?? '',
-      authorEmail: app.author?.email ?? ''
-    });
+    { name:
+        app.name,
+      authorName:
+        app.author?.name ?? '',
+      authorEmail:
+        app.author?.email ?? '' });
 }
 
 async function saveProjectSettings(
@@ -1408,23 +1433,23 @@ async function saveProjectSettings(
 
   const author: AppAuthor | undefined =
     values.authorName !== '' || values.authorEmail !== ''
-      ? {
-        ...(values.authorName !== ''
-          ? { name: values.authorName }
+      ? { ...(values.authorName !== ''
+          ? { name:
+                values.authorName }
           : {}),
-        ...(values.authorEmail !== ''
-          ? { email: values.authorEmail }
-          : {})
-      }
+          ...(values.authorEmail !== ''
+          ? { email:
+                values.authorEmail }
+          : {}) }
       : undefined;
 
   const updated: AppRecord =
-    {
-    ...app,
-    name: values.name,
-    author,
-    updatedAt: now()
-  };
+    { ...app,
+      name:
+        values.name,
+      author,
+      updatedAt:
+        now() };
 
   await saveApp(updated);
 
@@ -1535,18 +1560,21 @@ async function handleStartGeneration(
         apiKey,
         getCodeGenerationModel(),
         appRuntimeTools,
-        {
-        initialToolStepLimit: getMaxToolSteps(),
-        systemPrompt: GENERATION_SYSTEM_PROMPT,
-        shouldStop: () => generationStopRequested,
-        onToolStepLimit: async ({ stepsCompleted }) =>
+        { initialToolStepLimit:
+            getMaxToolSteps(),
+          systemPrompt:
+            GENERATION_SYSTEM_PROMPT,
+          shouldStop:
+            () => generationStopRequested,
+          onToolStepLimit:
+            async ({ stepsCompleted }) =>
           confirm(
             `Generation reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`),
-        onProgress: message =>
+          onProgress:
+            message =>
         {
           setGenerationStatus(message);
-        }
-      });
+        } });
 
     await writeCurrentFileContent(
       CHANGE_FILE,
@@ -1611,9 +1639,8 @@ function handleRun(
       renderPreview(
         elPreviewFrame,
         state.files,
-        {
-          hostOpenAiApiKey: getCurrentAppOpenAiApiKey()
-        });
+        { hostOpenAiApiKey:
+            getCurrentAppOpenAiApiKey() });
     });
 }
 
@@ -1630,10 +1657,9 @@ async function buildExportPayload(
   }
 
   return buildExportPayloadModel(
-    {
-      app,
-      files: state.files
-    });
+    { app,
+      files:
+        state.files });
 }
 
 function downloadExportPayload(
@@ -1641,9 +1667,8 @@ function downloadExportPayload(
   ): void
 {
   const blob =
-    new Blob([JSON.stringify(payload)], {
-    type: 'application/json'
-  });
+    new Blob([JSON.stringify(payload)], { type:
+                                            'application/json' });
 
   const url =
     URL.createObjectURL(blob);
@@ -1674,14 +1699,13 @@ async function buildSharePayload(
     await buildExportPayload();
 
   if (options.excludeNonApplicationFiles) {
-    payload = {
-      ...payload,
-      files: Object.fromEntries(
-        Object.entries(
-          payload.files)
+    payload = { ...payload,
+                files:
+                  Object.fromEntries(
+                    Object.entries(
+                      payload.files)
           .filter(
-            ([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName)))
-    };
+            ([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName))) };
   }
 
   if (!options.minified) {
@@ -1704,11 +1728,9 @@ async function transformWithBrowserEsbuild(
   const result =
     await esbuildApi.transform(
       source,
-      {
-      loader,
-      minify: true,
-      target: 'es2020'
-    });
+      { loader,
+        minify: true,
+        target: 'es2020' });
 
   return result.code.trim();
 }
@@ -1723,11 +1745,11 @@ async function getBrowserEsbuildApi(
   browserEsbuildApiPromise = (async () =>
   {
     await esbuildWasm.initialize(
-      { wasmURL: esbuildWasmUrl, worker: true });
+      { wasmURL: esbuildWasmUrl,
+        worker: true });
 
-    return {
-      transform: esbuildWasm.transform
-    };
+    return { transform:
+               esbuildWasm.transform };
   })();
 
   return browserEsbuildApiPromise;
@@ -1788,21 +1810,19 @@ function setWorkspaceMode(
 
   setButtonContent(
     elBtnToggleChat,
-    {
-      text: 'Chat',
-      icon: collapsed
+    { text: 'Chat',
+      icon:
+        collapsed
         ? '<i class="bi bi-chevron-right"></i>'
-        : '<i class="bi bi-chevron-down"></i>'
-    });
+        : '<i class="bi bi-chevron-down"></i>' });
 
   setButtonContent(
     elBtnToggleFiles,
-    {
-      text: 'Files',
-      icon: collapsed
+    { text: 'Files',
+      icon:
+        collapsed
         ? '<i class="bi bi-chevron-right"></i>'
-        : '<i class="bi bi-chevron-down"></i>'
-    });
+        : '<i class="bi bi-chevron-down"></i>' });
 
   elBtnToggleChat.setAttribute(
     'aria-expanded',
@@ -1854,14 +1874,15 @@ async function importPayload(
 {
   const plan =
     createImportPlan(
-      {
-      payload,
-      existingApps: state.apps,
-      navigateToExistingById: options.navigateToExistingById,
-      now: now(),
-      createId: randomId,
-      createUuid: createAppUuid
-    });
+      { payload,
+        existingApps:
+          state.apps,
+        navigateToExistingById:
+          options.navigateToExistingById,
+        now:
+          now(),
+        createId: randomId,
+        createUuid: createAppUuid });
 
   if (plan.kind === 'duplicate') {
     if (options.showDuplicateAlert) {
@@ -1917,10 +1938,8 @@ async function handleImportFile(
 
     await importPayload(
       payload,
-      {
-        navigateToExistingById: false,
-        showDuplicateAlert: true
-      });
+      { navigateToExistingById: false,
+        showDuplicateAlert: true });
   } catch (error) {
     const message =
       error instanceof Error
@@ -1983,10 +2002,8 @@ async function handleImportFromHashOnStartup(
       const importedAppId =
         await importPayload(
           sample,
-          {
-          navigateToExistingById: true,
-          showDuplicateAlert: false
-        });
+          { navigateToExistingById: true,
+            showDuplicateAlert: false });
 
       if (importedAppId !== null) {
         const mode =
@@ -2017,10 +2034,8 @@ async function handleImportFromHashOnStartup(
       const importedAppId =
         await importPayload(
           payload,
-          {
-          navigateToExistingById: true,
-          showDuplicateAlert: false
-        });
+          { navigateToExistingById: true,
+            showDuplicateAlert: false });
 
       if (importedAppId !== null) {
         const mode =
@@ -2113,13 +2128,13 @@ async function prepareShareLink(
     );
   }
 
-  return {
-    url: linkResult.url,
-    status: buildShareStatusMessage(
-      linkResult.url.length,
-      SHARE_PRACTICAL_URL_LENGTH,
-      SHARE_MAX_URL_LENGTH)
-  };
+  return { url:
+             linkResult.url,
+           status:
+             buildShareStatusMessage(
+               linkResult.url.length,
+               SHARE_PRACTICAL_URL_LENGTH,
+               SHARE_MAX_URL_LENGTH) };
 }
 
 async function downloadShareExport(
@@ -2204,10 +2219,8 @@ function syncModelSelectOptions(
     readControlValue(selectElement);
 
   selectElement.items = modelIds.map(
-    modelId => ({
-      value: modelId,
-      label: modelId
-    }));
+    modelId => ({ value: modelId,
+                  label: modelId }));
 
   if (modelIds.includes(currentValue)) {
     writeControlValue(
@@ -2231,8 +2244,10 @@ function refreshLaneModelSelectOptions(
     dedupeModels(
       [
       ...availableModels,
-      { id: getChatModel() },
-      { id: getCodeGenerationModel() }
+      { id:
+          getChatModel() },
+      { id:
+          getCodeGenerationModel() }
     ]).map(
       model => model.id);
 
@@ -2326,12 +2341,12 @@ async function writeCurrentFileContent(
   }
 
   const created =
-    {
-    id: randomId(),
-    appId: state.currentAppId,
-    name: fileName,
-    content
-  };
+    { id:
+        randomId(),
+      appId:
+        state.currentAppId,
+      name: fileName,
+      content };
 
   await saveFile(created);
   await regenerateCurrentAppUuidForFileChange();
@@ -2348,8 +2363,10 @@ async function refreshAvailableModels(
   if (trimmedApiKey === '') {
     availableModels = dedupeModels(
       [
-        { id: DEFAULT_CHAT_MODEL },
-        { id: DEFAULT_CODE_MODEL },
+        { id:
+            DEFAULT_CHAT_MODEL },
+        { id:
+            DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
       ]);
 
@@ -2364,8 +2381,10 @@ async function refreshAvailableModels(
     availableModels = dedupeModels(
       [
         ...models,
-        { id: DEFAULT_CHAT_MODEL },
-        { id: DEFAULT_CODE_MODEL },
+        { id:
+            DEFAULT_CHAT_MODEL },
+        { id:
+            DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
       ]);
   } catch (error) {
@@ -2376,8 +2395,10 @@ async function refreshAvailableModels(
     availableModels = dedupeModels(
       [
         ...availableModels,
-        { id: DEFAULT_CHAT_MODEL },
-        { id: DEFAULT_CODE_MODEL },
+        { id:
+            DEFAULT_CHAT_MODEL },
+        { id:
+            DEFAULT_CODE_MODEL },
         { id: DEFAULT_MODEL }
       ]);
   }
@@ -2394,16 +2415,18 @@ function toggleAppsCollapsed(
   }
 
   togglePanelUi(
-    {
-      panelElement: elPanelChat,
-      toggleButtonElement: elBtnToggleChat,
+    { panelElement: elPanelChat,
+      toggleButtonElement:
+        elBtnToggleChat,
       panelsElement: elPanels,
-      collapsedPanelsClass: 'chat-collapsed',
+      collapsedPanelsClass:
+        'chat-collapsed',
       expandedText: 'Chat',
       collapsedText: 'Chat',
-      expandedIcon: '<i class="bi bi-chevron-down"></i>',
-      collapsedIcon: '<i class="bi bi-chevron-right"></i>'
-    });
+      expandedIcon:
+        '<i class="bi bi-chevron-down"></i>',
+      collapsedIcon:
+        '<i class="bi bi-chevron-right"></i>' });
 }
 
 function toggleFilesCollapsed(
@@ -2415,16 +2438,18 @@ function toggleFilesCollapsed(
   }
 
   togglePanelUi(
-    {
-      panelElement: elPanelEditor,
-      toggleButtonElement: elBtnToggleFiles,
+    { panelElement: elPanelEditor,
+      toggleButtonElement:
+        elBtnToggleFiles,
       panelsElement: elPanels,
-      collapsedPanelsClass: 'files-collapsed',
+      collapsedPanelsClass:
+        'files-collapsed',
       expandedText: 'Files',
       collapsedText: 'Files',
-      expandedIcon: '<i class="bi bi-chevron-down"></i>',
-      collapsedIcon: '<i class="bi bi-chevron-right"></i>'
-    });
+      expandedIcon:
+        '<i class="bi bi-chevron-down"></i>',
+      collapsedIcon:
+        '<i class="bi bi-chevron-right"></i>' });
 }
 
 state.on(

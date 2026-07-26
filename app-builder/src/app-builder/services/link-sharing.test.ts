@@ -10,26 +10,27 @@ test(
   async () =>
   {
     const codec =
-      {
-      compress: async (text: string) => encodeURIComponent(text),
-      decompress: async (value: string) => decodeURIComponent(value)
-    };
+      { compress:
+          async (text: string) => encodeURIComponent(text),
+        decompress:
+          async (value: string) => decodeURIComponent(value) };
 
     const service =
       createLinkSharingService(
-        {
-        codec,
-        baseUrl: 'https://example.test/app-builder',
-        hashPrefix: '#I!',
-        maxUrlLength: 5000,
-        timeoutMs: 100
-      });
+        { codec,
+          baseUrl:
+            'https://example.test/app-builder',
+          hashPrefix: '#I!',
+          maxUrlLength: 5000,
+          timeoutMs: 100 });
 
     const payload =
-      {
-      app: { uuid: 'u1', name: 'Demo' },
-      files: [{ name: 'index.html', content: '<h1>Hi</h1>' }]
-    };
+      { app:
+          { uuid: 'u1',
+            name: 'Demo' },
+        files:
+          [{ name: 'index.html',
+             content: '<h1>Hi</h1>' }] };
 
     const share =
       await service.createShareUrl(payload);
@@ -58,24 +59,24 @@ test(
   async () =>
   {
     const codec =
-      {
-      compress: async (text: string) => encodeURIComponent(text),
-      decompress: async (value: string) => decodeURIComponent(value)
-    };
+      { compress:
+          async (text: string) => encodeURIComponent(text),
+        decompress:
+          async (value: string) => decodeURIComponent(value) };
 
     const service =
       createLinkSharingService(
-        {
-        codec,
-        baseUrl: 'https://example.test/app-builder',
-        hashPrefix: '#I!',
-        maxUrlLength: 20,
-        timeoutMs: 100
-      });
+        { codec,
+          baseUrl:
+            'https://example.test/app-builder',
+          hashPrefix: '#I!',
+          maxUrlLength: 20,
+          timeoutMs: 100 });
 
     const share =
       await service.createShareUrl(
-        { app: { name: 'Demo' } });
+        { app:
+            { name: 'Demo' } });
 
     assert.equal(
       share.exceedsMaxUrlLength,
@@ -88,16 +89,16 @@ test(
   {
     const service =
       createLinkSharingService(
-        {
-        codec: {
-          compress: async (text: string) => encodeURIComponent(text),
-          decompress: async (value: string) => decodeURIComponent(value)
-        },
-        baseUrl: 'https://example.test/app-builder',
-        hashPrefix: '#I!',
-        maxUrlLength: 5000,
-        timeoutMs: 100
-      });
+        { codec:
+            { compress:
+                async (text: string) => encodeURIComponent(text),
+              decompress:
+                async (value: string) => decodeURIComponent(value) },
+          baseUrl:
+            'https://example.test/app-builder',
+          hashPrefix: '#I!',
+          maxUrlLength: 5000,
+          timeoutMs: 100 });
 
     assert.equal(
       service.readTokenFromHash('#other'),
@@ -113,25 +114,25 @@ test(
   async () =>
   {
     const codec =
-      {
-      compress: async (_text: string) =>
+      { compress:
+          async (_text: string) =>
         await new Promise<string>(() =>
         {}),
-      decompress: async (_value: string) => ''
-    };
+        decompress:
+          async (_value: string) => '' };
 
     const service =
       createLinkSharingService(
-        {
-        codec,
-        baseUrl: 'https://example.test/app-builder',
-        hashPrefix: '#I!',
-        maxUrlLength: 5000,
-        timeoutMs: 20
-      });
+        { codec,
+          baseUrl:
+            'https://example.test/app-builder',
+          hashPrefix: '#I!',
+          maxUrlLength: 5000,
+          timeoutMs: 20 });
 
     await assert.rejects(
       service.createShareUrl(
-        { app: { name: 'Demo' } }),
+        { app:
+            { name: 'Demo' } }),
       /timed out/i);
   });

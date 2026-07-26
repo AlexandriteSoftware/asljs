@@ -18,7 +18,8 @@ test(
         { id: 'gpt-5.4' },
         { id: 'gpt-5-mini' },
         { id: 'gpt-5-nano' },
-        { id: 'gpt-5.3-codex' }
+        { id:
+            'gpt-5.3-codex' }
       ]);
 
     assert.equal(
@@ -33,9 +34,11 @@ test(
     assert.equal(
       selectPreferredCodeModel(
         [
-          { id: 'gpt-5.3-codex' },
+          { id:
+              'gpt-5.3-codex' },
           { id: 'gpt-5.4' },
-          { id: 'gpt-5.4-codex' }
+          { id:
+              'gpt-5.4-codex' }
         ]),
       'gpt-5.4-codex');
 
@@ -63,7 +66,9 @@ test(
       shouldUseCodeGenerationModel(
         'yes',
         [
-          { role: 'assistant', text: 'Shall I build these changes?' }
+          { role: 'assistant',
+            text:
+              'Shall I build these changes?' }
         ]),
       true);
 
@@ -89,10 +94,14 @@ test(
         [
           { id: 'gpt-5.4' },
           { id: 'GPT-5.4' },
-          { id: 'gpt-5.4-codex' }
+          { id:
+              'gpt-5.4-codex' }
         ]),
       [
-        { id: 'gpt-5.4', created: 0 },
-        { id: 'gpt-5.4-codex', created: 0 }
+        { id: 'gpt-5.4',
+          created: 0 },
+        { id:
+            'gpt-5.4-codex',
+          created: 0 }
       ]);
   });

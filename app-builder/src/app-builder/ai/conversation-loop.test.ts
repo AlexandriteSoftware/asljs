@@ -43,10 +43,17 @@ test(
     const prompt =
       buildConversationPrompt(
         [
-        { role: 'assistant', text: 'What should the ball game be about?' },
-        { role: 'user', text: 'A football game.' },
-        { role: 'assistant', text: 'How many players should it have?' },
-        { role: 'user', text: '2 players.' }
+        { role: 'assistant',
+          text:
+            'What should the ball game be about?' },
+        { role: 'user',
+          text:
+            'A football game.' },
+        { role: 'assistant',
+          text:
+            'How many players should it have?' },
+        { role: 'user',
+          text: '2 players.' }
       ]);
 
     assert.match(

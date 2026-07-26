@@ -116,55 +116,50 @@ export function createSettingsModalUi(
 
   configureButton(
     elBtnClose,
-    {
-      icon: '<i class="bi bi-x-lg"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { icon:
+        '<i class="bi bi-x-lg"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnSave,
-    {
-      text: 'Save',
-      className: 'btn btn-primary'
-    });
+    { text: 'Save',
+      className:
+        'btn btn-primary' });
 
   configureButton(
     elBtnCancel,
-    {
-      text: 'Cancel',
-      className: 'btn btn-outline-secondary'
-    });
+    { text: 'Cancel',
+      className:
+        'btn btn-outline-secondary' });
 
   configureTextInput(
     elApiKeyInput,
-    {
-      placeholder: 'sk-…  (optional, stored locally)',
-      inputType: 'password'
-    });
+    { placeholder:
+        'sk-…  (optional, stored locally)',
+      inputType: 'password' });
 
   configureTextInput(
     elFontSizeInput,
-    {
-      placeholder: '14',
-      inputType: 'number'
-    });
+    { placeholder: '14',
+      inputType: 'number' });
 
   configureTextInput(
     elMaxToolStepsInput,
-    {
-      placeholder: '20',
-      inputType: 'number'
-    });
+    { placeholder: '20',
+      inputType: 'number' });
 
   configureSelect(
     elThemeSelect,
-    {
-      className: 'form-select bootstrap-select',
-      items: [
-        { value: 'dark', label: 'Dark' },
-        { value: 'light', label: 'Light' }
-      ]
-    });
+    { className:
+        'form-select bootstrap-select',
+      items:
+        [
+        { value: 'dark',
+          label: 'Dark' },
+        { value: 'light',
+          label: 'Light' }
+      ] });
 
   function close(
     ): void
@@ -176,14 +171,16 @@ export function createSettingsModalUi(
     ): Promise<void>
   {
     await options.onSave(
-      {
-        apiKey: readControlValue(elApiKeyInput).trim(),
-        theme: readControlValue(elThemeSelect),
-        fontSizeText: readControlValue(
-          elFontSizeInput),
-        maxToolStepsText: readControlValue(
-          elMaxToolStepsInput)
-      });
+      { apiKey:
+          readControlValue(elApiKeyInput).trim(),
+        theme:
+          readControlValue(elThemeSelect),
+        fontSizeText:
+          readControlValue(
+            elFontSizeInput),
+        maxToolStepsText:
+          readControlValue(
+            elMaxToolStepsInput) });
 
     close();
   }
@@ -212,8 +209,7 @@ export function createSettingsModalUi(
       }
     });
 
-  return {
-    async open(): Promise<void>
+  return { open(): Promise<void>
     {
       const values =
         await options.loadValues();
@@ -239,6 +235,5 @@ export function createSettingsModalUi(
       elModal.classList.remove('hidden');
       focusInnerControl(elApiKeyInput);
     },
-    close
-  };
+           close };
 }

@@ -52,7 +52,9 @@ export function renderFileSelectUi(
 
   if (visibleFiles.length === 0) {
     selectElement.items = [
-      { value: '', label: 'No files', disabled: true }
+      { value: '',
+        label: 'No files',
+        disabled: true }
     ];
 
     selectElement.value = '';
@@ -61,10 +63,10 @@ export function renderFileSelectUi(
   }
 
   selectElement.items = visibleFiles.map(
-    file => ({
-      value: file.name,
-      label: file.name
-    }));
+    file => ({ value:
+                 file.name,
+               label:
+                 file.name }));
 
   const active =
     options.activeFileName !== null
@@ -82,8 +84,8 @@ export function renderFileContentUi(
   ): void
 {
   const provider: FileViewProvider =
-    {
-    loadFile: async (fileName: string): Promise<FileViewData | null> =>
+    { loadFile:
+        async (fileName: string): Promise<FileViewData | null> =>
     {
       const file =
         options.files.find(
@@ -98,19 +100,19 @@ export function renderFileContentUi(
           file.content);
 
       if (fileData !== null) {
-        return {
-          name: file.name,
-          mimeType: fileData.mimeType,
-          dataUrl: fileData.dataUrl
-        };
+        return { name:
+                   file.name,
+                 mimeType:
+                   fileData.mimeType,
+                 dataUrl:
+                   fileData.dataUrl };
       }
 
-      return {
-        name: file.name,
-        text: file.content
-      };
-    }
-  };
+      return { name:
+                 file.name,
+               text:
+                 file.content };
+    } };
 
   if (options.onSaveText !== undefined) {
     provider.saveText = options.onSaveText;

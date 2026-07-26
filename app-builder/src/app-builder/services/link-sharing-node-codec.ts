@@ -11,10 +11,10 @@ import { TextCompressionCodec }
 export function createNodeEsbuildGzipBase64UrlCodec(
   ): TextCompressionCodec
 {
-  return {
-    compress: compressTextInNode,
-    decompress: decompressTextInNode
-  };
+  return { compress:
+             compressTextInNode,
+           decompress:
+             decompressTextInNode };
 }
 
 async function compressTextInNode(
@@ -27,12 +27,10 @@ async function compressTextInNode(
   const result =
     await transform(
       source,
-      {
-      loader: 'js',
-      format: 'esm',
-      target: 'es2020',
-      minify: true
-    });
+      { loader: 'js',
+        format: 'esm',
+        target: 'es2020',
+        minify: true });
 
   const compressed =
     gzipSync(
@@ -61,9 +59,7 @@ async function decompressTextInNode(
     runInNewContext(
       `(${expression})`,
       Object.create(null),
-      {
-      timeout: 100
-    }) as unknown;
+      { timeout: 100 }) as unknown;
 
   return JSON.stringify(payload);
 }

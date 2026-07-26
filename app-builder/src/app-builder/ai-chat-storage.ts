@@ -16,13 +16,14 @@ export function createAppBuilderAiChatSecretsAndSettingsProvider(
   }
   ): AiChatSecretsAndSettingsProvider
 {
-  return {
-    getOpenAiApiKey: async () =>
+  return { getOpenAiApiKey:
+             async () =>
       loadAppOpenAiApiKey(
         options.appId),
-    getChatModel: async () => options.readChatModel(),
-    getInitialToolStepLimit: async () => options.readInitialToolStepLimit()
-  };
+           getChatModel:
+             async () => options.readChatModel(),
+           getInitialToolStepLimit:
+             async () => options.readInitialToolStepLimit() };
 }
 
 export function createSessionStorageAiChatStateStore(
@@ -32,8 +33,8 @@ export function createSessionStorageAiChatStateStore(
   const storageKey =
     `${chatStateStorageKeyPrefix}${appId}`;
 
-  return {
-    load: async (): Promise<Partial<AiChatSerializableState>> =>
+  return { load:
+             async (): Promise<Partial<AiChatSerializableState>> =>
     {
       try {
         const raw =
@@ -48,13 +49,13 @@ export function createSessionStorageAiChatStateStore(
         return {};
       }
     },
-    save: async (
+           save:
+             async (
       state: AiChatSerializableState
     ): Promise<void> =>
     {
       sessionStorage.setItem(
         storageKey,
         JSON.stringify(state));
-    }
-  };
+    } };
 }

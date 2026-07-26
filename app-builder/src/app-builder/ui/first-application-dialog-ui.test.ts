@@ -32,14 +32,14 @@ test(
 
       const ui =
         createFirstApplicationDialogUi(
-          {
-          onCreateApplication: async values =>
+          { onCreateApplication:
+              async values =>
           {
             calls.push(values);
           },
-          onCreateTodoSample: async () =>
-          {}
-        });
+            onCreateTodoSample:
+              async () =>
+          {} });
 
       const dialog =
         document.getElementById(
@@ -89,7 +89,8 @@ test(
       assert.deepEqual(
         calls,
         [
-          { name: 'Demo App', apiKey: 'sk-demo' }
+          { name: 'Demo App',
+            apiKey: 'sk-demo' }
         ]);
 
       ui.hide();
@@ -120,16 +121,16 @@ test(
 
       const ui =
         createFirstApplicationDialogUi(
-          {
-          onCreateApplication: async values =>
+          { onCreateApplication:
+              async values =>
           {
             createdApps.push(values);
           },
-          onCreateTodoSample: async values =>
+            onCreateTodoSample:
+              async values =>
           {
             createdSamples.push(values);
-          }
-        });
+          } });
 
       const nameInput =
         document.getElementById(
@@ -185,7 +186,8 @@ test(
       assert.deepEqual(
         createdSamples,
         [
-          { name: 'Sample App', apiKey: 'key' }
+          { name: 'Sample App',
+            apiKey: 'key' }
         ]);
     } finally {
       globalThis.document = previousDocument;

@@ -33,10 +33,9 @@ test(
     Object.defineProperty(
       globalThis,
       'navigator',
-      {
-        configurable: true,
-        value: dom.window.navigator
-      });
+      { configurable: true,
+        value:
+          dom.window.navigator });
 
     try {
       const prepareCalls: Array<{
@@ -46,21 +45,23 @@ test(
 
       const ui =
         createShareModalUi(
-          {
-          canOpen: () => true,
-          readAppName: () => 'Demo App',
-          prepareLink: async shareOptions =>
+          { canOpen:
+              () => true,
+            readAppName:
+              () => 'Demo App',
+            prepareLink:
+              async shareOptions =>
           {
             prepareCalls.push(shareOptions);
 
-            return {
-              url: `https://example.test/${prepareCalls.length}`,
-              status: `ready ${prepareCalls.length}`
-            };
+            return { url:
+                       `https://example.test/${prepareCalls.length}`,
+                     status:
+                       `ready ${prepareCalls.length}` };
           },
-          downloadExport: async () =>
-          {}
-        });
+            downloadExport:
+              async () =>
+          {} });
 
       const modal =
         document.getElementById('share-modal') as HTMLElement;
@@ -87,7 +88,8 @@ test(
       assert.deepEqual(
         prepareCalls,
         [
-          { minified: false, excludeNonApplicationFiles: false }
+          { minified: false,
+            excludeNonApplicationFiles: false }
         ]);
 
       assert.equal(
@@ -108,8 +110,10 @@ test(
       assert.deepEqual(
         prepareCalls,
         [
-          { minified: false, excludeNonApplicationFiles: false },
-          { minified: true, excludeNonApplicationFiles: false }
+          { minified: false,
+            excludeNonApplicationFiles: false },
+          { minified: true,
+            excludeNonApplicationFiles: false }
         ]);
 
       assert.equal(
@@ -125,10 +129,9 @@ test(
       Object.defineProperty(
         globalThis,
         'navigator',
-        {
-          configurable: true,
-          value: previousNavigator
-        });
+        { configurable: true,
+          value:
+            previousNavigator });
     }
   });
 
@@ -160,32 +163,30 @@ test(
       Object.defineProperty(
         globalThis,
         'navigator',
-        {
-          configurable: true,
-          value: {
-            clipboard: {
-              writeText: async (value: string) =>
+        { configurable: true,
+          value:
+            { clipboard:
+                { writeText:
+                    async (value: string) =>
               {
                 copied.push(value);
-              }
-            }
-          }
-        });
+              } } } });
 
       const ui =
         createShareModalUi(
-          {
-          canOpen: () => canOpen,
-          readAppName: () => 'Demo App',
-          prepareLink: async () => ({
-            url: 'https://example.test/shared',
-            status: 'ready'
-          }),
-          downloadExport: async options =>
+          { canOpen:
+              () => canOpen,
+            readAppName:
+              () => 'Demo App',
+            prepareLink:
+              async () => ({ url:
+                               'https://example.test/shared',
+                             status: 'ready' }),
+            downloadExport:
+              async options =>
           {
             downloads.push(options);
-          }
-        });
+          } });
 
       const modal =
         document.getElementById('share-modal') as HTMLElement;
@@ -232,7 +233,8 @@ test(
       assert.deepEqual(
         downloads,
         [
-          { minified: false, excludeNonApplicationFiles: true }
+          { minified: false,
+            excludeNonApplicationFiles: true }
         ]);
     } finally {
       globalThis.document = previousDocument;
@@ -240,9 +242,8 @@ test(
       Object.defineProperty(
         globalThis,
         'navigator',
-        {
-          configurable: true,
-          value: previousNavigator
-        });
+        { configurable: true,
+          value:
+            previousNavigator });
     }
   });

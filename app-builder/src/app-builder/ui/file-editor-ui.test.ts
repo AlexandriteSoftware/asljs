@@ -65,32 +65,31 @@ test(
       await importFileEditorUi();
 
     const fileElement: TestFileElement =
-      {
-      provider: null,
-      handlers: [],
-      fileName: null
-    };
+      { provider: null,
+        handlers: [],
+        fileName: null };
 
     const files =
       [
-      { name: 'index.html', content: '<html></html>' },
-      { name: 'app.js', content: 'console.log(1);' }
+      { name: 'index.html',
+        content:
+          '<html></html>' },
+      { name: 'app.js',
+        content:
+          'console.log(1);' }
     ];
 
     try {
       ui.renderFileSelectUi(
-        {
-          selectElement: select,
+        { selectElement: select,
           files,
-          activeFileName: 'app.js'
-        });
+          activeFileName: 'app.js' });
 
       ui.renderFileContentUi(
-        {
-          fileElement: fileElement as never,
+        { fileElement:
+            fileElement as never,
           files,
-          activeFileName: 'app.js'
-        });
+          activeFileName: 'app.js' });
 
       assert.equal(
         select.disabled,
@@ -113,7 +112,9 @@ test(
 
       assert.deepEqual(
         loaded,
-        { name: 'app.js', text: 'console.log(1);' });
+        { name: 'app.js',
+          text:
+            'console.log(1);' });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;
@@ -143,9 +144,13 @@ test(
 
     const files =
       [
-      { name: '.README.md', content: '# previous' },
-      { name: 'README.md', content: '# current' },
-      { name: 'app.js', content: 'console.log(1);' }
+      { name: '.README.md',
+        content: '# previous' },
+      { name: 'README.md',
+        content: '# current' },
+      { name: 'app.js',
+        content:
+          'console.log(1);' }
     ];
 
     const ui =
@@ -153,11 +158,9 @@ test(
 
     try {
       ui.renderFileSelectUi(
-        {
-          selectElement: select,
+        { selectElement: select,
           files,
-          activeFileName: '.README.md'
-        });
+          activeFileName: '.README.md' });
 
       assert.equal(
         select.disabled,
@@ -204,21 +207,23 @@ test(
       await importFileEditorUi();
 
     const fileElement: TestFileElement =
-      {
-      provider: null,
-      handlers: [],
-      fileName: null
-    };
+      { provider: null,
+        handlers: [],
+        fileName: null };
 
     try {
       ui.renderFileContentUi(
-        {
-          fileElement: fileElement as never,
-          files: [
-            { name: 'assets/logo.png', content: 'data:image/png;base64,AQID' }
+        { fileElement:
+            fileElement as never,
+          files:
+            [
+            { name:
+                'assets/logo.png',
+              content:
+                'data:image/png;base64,AQID' }
           ],
-          activeFileName: 'assets/logo.png'
-        });
+          activeFileName:
+            'assets/logo.png' });
 
       const imagePreview =
         await fileElement.provider?.loadFile(
@@ -226,11 +231,11 @@ test(
 
       assert.deepEqual(
         imagePreview,
-        {
-          name: 'assets/logo.png',
+        { name:
+            'assets/logo.png',
           mimeType: 'image/png',
-          dataUrl: 'data:image/png;base64,AQID'
-        });
+          dataUrl:
+            'data:image/png;base64,AQID' });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;

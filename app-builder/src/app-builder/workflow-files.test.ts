@@ -38,19 +38,18 @@ test(
   {
     const result =
       ensureWorkflowFiles(
-        {
-        appId: 'app-1',
-        appName: 'Demo App',
-        createId: () => 'new-file',
-        files: [
-          {
-            id: 'f1',
+        { appId: 'app-1',
+          appName: 'Demo App',
+          createId:
+            () => 'new-file',
+          files:
+            [
+          { id: 'f1',
             appId: 'app-1',
             name: README_FILE,
-            content: '# Existing README'
-          }
-        ]
-      });
+            content:
+              '# Existing README' }
+        ] });
 
     assert.equal(
       result.changed,

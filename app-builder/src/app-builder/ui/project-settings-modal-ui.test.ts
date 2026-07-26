@@ -36,14 +36,14 @@ test(
 
       const ui =
         createProjectSettingsModalUi(
-          {
-          onSave: async values =>
+          { onSave:
+              async values =>
           {
             saved.push(values);
           },
-          onDelete: async () =>
-          {}
-        });
+            onDelete:
+              async () =>
+          {} });
 
       const modal =
         document.getElementById(
@@ -68,11 +68,10 @@ test(
           'btn-save-project-settings') as HTMLElement;
 
       ui.open(
-        {
-          name: 'Starter',
+        { name: 'Starter',
           authorName: 'Jane',
-          authorEmail: 'jane@example.com'
-        });
+          authorEmail:
+            'jane@example.com' });
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -102,11 +101,10 @@ test(
       assert.deepEqual(
         saved,
         [
-          {
-            name: 'Updated App',
+          { name: 'Updated App',
             authorName: 'Alex',
-            authorEmail: 'alex@example.com'
-          }
+            authorEmail:
+              'alex@example.com' }
         ]);
 
       assert.equal(
@@ -135,16 +133,16 @@ test(
 
       const ui =
         createProjectSettingsModalUi(
-          {
-          onSave: async () =>
+          { onSave:
+              async () =>
           {
             saved = true;
           },
-          onDelete: async () =>
+            onDelete:
+              async () =>
           {
             deleted = true;
-          }
-        });
+          } });
 
       const modal =
         document.getElementById(
@@ -172,11 +170,9 @@ test(
       };
 
       ui.open(
-        {
-          name: '',
+        { name: '',
           authorName: '',
-          authorEmail: ''
-        });
+          authorEmail: '' });
 
       nameInput.value = '   ';
 

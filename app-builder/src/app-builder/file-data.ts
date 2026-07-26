@@ -21,11 +21,11 @@ export function readFileDataInfo(
     return null;
   }
 
-  return {
-    mimeType: match[1].toLowerCase(),
-    base64: match[2],
-    dataUrl: trimmed
-  };
+  return { mimeType:
+             match[1].toLowerCase(),
+           base64:
+             match[2],
+           dataUrl: trimmed };
 }
 
 export function isImageMimeType(

@@ -109,28 +109,32 @@ export type AiModelsTransport = {
 };
 
 const DEFAULT_TRANSPORT: AiResponsesTransport =
-  {
-  createResponse: async request =>
+  { createResponse:
+      async request =>
   {
     const response =
       await fetch(
         OPENAI_RESPONSES_URL,
-        {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${request.apiKey}`
-        },
-        body: JSON.stringify(
-          {
-            model: request.model,
-            instructions: request.instructions,
-            temperature: request.temperature,
-            previous_response_id: request.previous_response_id,
-            input: request.input,
-            tools: request.tools
-          })
-      });
+        { method: 'POST',
+          headers:
+            { 'Content-Type':
+                'application/json',
+              Authorization:
+                `Bearer ${request.apiKey}` },
+          body:
+            JSON.stringify(
+              { model:
+                  request.model,
+                instructions:
+                  request.instructions,
+                temperature:
+                  request.temperature,
+                previous_response_id:
+                  request.previous_response_id,
+                input:
+                  request.input,
+                tools:
+                  request.tools }) });
 
     if (!response.ok) {
       const errorPayload =
@@ -146,24 +150,21 @@ const DEFAULT_TRANSPORT: AiResponsesTransport =
     }
 
     return response.json() as Promise<ResponsesResult>;
-  }
-};
+  } };
 
 const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
-  {
-  listModels: async apiKey =>
+  { listModels:
+      async apiKey =>
   {
     const response =
       await fetch(
         OPENAI_RESPONSES_URL.replace(
           '/responses',
           '/models'),
-        {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${apiKey}`
-        }
-      });
+        { method: 'GET',
+          headers:
+            { Authorization:
+                `Bearer ${apiKey}` } });
 
     if (!response.ok) {
       const errorPayload =
@@ -193,18 +194,17 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
         (value): value is { id?: unknown; created?: unknown; } =>
           typeof value === 'object' && value !== null)
       .map(
-        value => ({
-          id: typeof value.id === 'string'
+        value => ({ id:
+                      typeof value.id === 'string'
             ? value.id
             : '',
-          created: typeof value.created === 'number'
+                    created:
+                      typeof value.created === 'number'
             ? value.created
-            : 0
-        }))
+            : 0 }))
       .filter(
         value => value.id !== '');
-  }
-};
+  } };
 
 export async function listAvailableModels(
     apiKey: string,
@@ -253,17 +253,13 @@ export async function generateApp(
     if (step >= stepLimit) {
       const shouldContinue =
         await options?.onToolStepLimit(
-          {
-          stepsCompleted: step,
-          stepLimit
-        })
+          { stepsCompleted: step,
+            stepLimit })
         ?? false;
 
       if (!shouldContinue) {
-        throw new ToolStepLimitExceededError({
-          stepsCompleted: step,
-          stepLimit
-        });
+        throw new ToolStepLimitExceededError({ stepsCompleted: step,
+                                               stepLimit });
       }
 
       stepLimit += TOOL_STEP_EXTENSION;
@@ -275,15 +271,14 @@ export async function generateApp(
 
     const data =
       await transport.createResponse(
-        {
-        apiKey,
-        model,
-        instructions: systemPrompt,
-        temperature: 0.1,
-        previous_response_id: previousResponseId,
-        input,
-        tools: OPENAI_TOOLS
-      });
+        { apiKey,
+          model,
+          instructions: systemPrompt,
+          temperature: 0.1,
+          previous_response_id:
+            previousResponseId,
+          input,
+          tools: OPENAI_TOOLS });
 
     if (
       !Array.isArray(
@@ -306,11 +301,10 @@ export async function generateApp(
       const summary =
         extractResponsesSummary(data);
 
-      return {
-        summary: summary === ''
+      return { summary:
+                 summary === ''
           ? 'Completed tool-based update.'
-          : summary
-      };
+          : summary };
     }
 
     const toolOutputs: ResponseFunctionCallOutput[] = [];
@@ -330,11 +324,11 @@ export async function generateApp(
           tools);
 
       toolOutputs.push(
-        {
-          type: 'function_call_output',
-          call_id: readCallId(toolCall),
-          output
-        });
+        { type:
+            'function_call_output',
+          call_id:
+            readCallId(toolCall),
+          output });
     }
 
     await reportProgress(

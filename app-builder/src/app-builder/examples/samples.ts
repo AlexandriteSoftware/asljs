@@ -60,12 +60,11 @@ export function buildSampleFiles(
 {
   return Object.entries(
     sample.files).map(
-      ([fileName, content]) => ({
-      id: createId(),
-      appId,
-      name: fileName,
-      content
-    }));
+      ([fileName, content]) => ({ id:
+                                    createId(),
+                                  appId,
+                                  name: fileName,
+                                  content }));
 }
 
 function normalizeSampleSource(

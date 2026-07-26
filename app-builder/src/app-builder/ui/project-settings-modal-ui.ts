@@ -97,50 +97,42 @@ export function createProjectSettingsModalUi(
 
   configureButton(
     elBtnCloseX,
-    {
-      icon: '<i class="bi bi-x-lg"></i>',
-      className: 'btn btn-outline-secondary btn-sm'
-    });
+    { icon:
+        '<i class="bi bi-x-lg"></i>',
+      className:
+        'btn btn-outline-secondary btn-sm' });
 
   configureButton(
     elBtnSave,
-    {
-      text: 'Save',
-      className: 'btn btn-primary'
-    });
+    { text: 'Save',
+      className:
+        'btn btn-primary' });
 
   configureButton(
     elBtnDelete,
-    {
-      text: 'Delete',
-      className: 'btn btn-danger'
-    });
+    { text: 'Delete',
+      className:
+        'btn btn-danger' });
 
   configureButton(
     elBtnClose,
-    {
-      text: 'Cancel',
-      className: 'btn btn-outline-secondary'
-    });
+    { text: 'Cancel',
+      className:
+        'btn btn-outline-secondary' });
 
   configureTextInput(
     elNameInput,
-    {
-      placeholder: 'Project name'
-    });
+    { placeholder: 'Project name' });
 
   configureTextInput(
     elAuthorNameInput,
-    {
-      placeholder: 'Jane Doe'
-    });
+    { placeholder: 'Jane Doe' });
 
   configureTextInput(
     elAuthorEmailInput,
-    {
-      placeholder: 'jane@example.com',
-      inputType: 'email'
-    });
+    { placeholder:
+        'jane@example.com',
+      inputType: 'email' });
 
   function close(
     ): void
@@ -151,13 +143,14 @@ export function createProjectSettingsModalUi(
   function readValues(
     ): ProjectSettingsModalValues
   {
-    return {
-      name: readControlValue(elNameInput).trim(),
-      authorName: readControlValue(
-        elAuthorNameInput).trim(),
-      authorEmail: readControlValue(
-        elAuthorEmailInput).trim()
-    };
+    return { name:
+               readControlValue(elNameInput).trim(),
+             authorName:
+               readControlValue(
+                 elAuthorNameInput).trim(),
+             authorEmail:
+               readControlValue(
+                 elAuthorEmailInput).trim() };
   }
 
   async function save(
@@ -223,8 +216,7 @@ export function createProjectSettingsModalUi(
       }
     });
 
-  return {
-    open(values: ProjectSettingsModalValues): void
+  return { open(values: ProjectSettingsModalValues): void
     {
       writeControlValue(
         elNameInput,
@@ -241,6 +233,5 @@ export function createProjectSettingsModalUi(
       elModal.classList.remove('hidden');
       selectInnerTextControl(elNameInput);
     },
-    close
-  };
+           close };
 }

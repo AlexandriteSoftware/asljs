@@ -95,38 +95,34 @@ export function createFirstApplicationDialogUi(
 
   configureButton(
     elBtnCreate,
-    {
-      text: 'Create Application',
-      className: 'btn btn-primary'
-    });
+    { text:
+        'Create Application',
+      className:
+        'btn btn-primary' });
 
   configureButton(
     elBtnCreateSample,
-    {
-      text: 'Create TODO Sample App',
-      className: 'btn btn-outline-secondary'
-    });
+    { text:
+        'Create TODO Sample App',
+      className:
+        'btn btn-outline-secondary' });
 
   configureTextInput(
     elApiKeyInput,
-    {
-      placeholder: 'sk-...',
-      inputType: 'password'
-    });
+    { placeholder: 'sk-...',
+      inputType: 'password' });
 
   configureTextInput(
     elNameInput,
-    {
-      placeholder: 'My App'
-    });
+    { placeholder: 'My App' });
 
   function readValues(
     ): FirstApplicationDialogValues
   {
-    return {
-      name: readControlValue(elNameInput).trim(),
-      apiKey: readControlValue(elApiKeyInput).trim()
-    };
+    return { name:
+               readControlValue(elNameInput).trim(),
+             apiKey:
+               readControlValue(elApiKeyInput).trim() };
   }
 
   async function createApplication(
@@ -186,15 +182,13 @@ export function createFirstApplicationDialogUi(
       }
     });
 
-  return {
-    show(): void
+  return { show(): void
     {
       clear();
       elDialog.classList.remove('hidden');
     },
-    hide(): void
+           hide(): void
     {
       elDialog.classList.add('hidden');
-    }
-  };
+    } };
 }
