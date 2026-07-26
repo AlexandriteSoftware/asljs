@@ -184,25 +184,28 @@ class PinoLoggerProvider implements LoggerProvider
     }
 
     if (file) {
-      this.#transport = pino.transport(
-        { target: 'pino/file',
-          options:
-            { destination: file,
-              mkdir: true } });
+      this.#transport =
+        pino.transport(
+          { target: 'pino/file',
+            options:
+              { destination: file,
+                mkdir: true } });
     } else {
-      this.#transport = pino.transport(
-        { target: 'pino-pretty',
-          options:
-            { messageFormat:
-                '{context}: {msg}',
-              ignore: 'context',
-              colorize: true } });
+      this.#transport =
+        pino.transport(
+          { target: 'pino-pretty',
+            options:
+              { messageFormat:
+                  '{context}: {msg}',
+                ignore: 'context',
+                colorize: true } });
     }
 
-    this.#logger = pino(
-      { base: null,
-        level: pinoLogLevel },
-      this.#transport);
+    this.#logger =
+      pino(
+        { base: null,
+          level: pinoLogLevel },
+        this.#transport);
   }
 
   getLogger(

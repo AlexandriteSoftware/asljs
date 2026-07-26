@@ -106,8 +106,9 @@ export async function buildStyleRuleTestsFromMarkdown(
   if (focusedTests.length > 0) {
     testCasesToRun = focusedTests;
   } else {
-    testCasesToRun = addNoiseToTestCase(
-      testCases);
+    testCasesToRun =
+      addNoiseToTestCase(
+        testCases);
   }
 
   for (const testCase of testCasesToRun) {

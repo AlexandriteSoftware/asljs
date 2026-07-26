@@ -25,7 +25,8 @@ export class FormattingContext
   {
     this.sourceCode = sourceCode;
 
-    this.newLine = sourceCode.text.includes('\r\n')
+    this.newLine =
+      sourceCode.text.includes('\r\n')
       ? '\r\n'
       : '\n';
   }

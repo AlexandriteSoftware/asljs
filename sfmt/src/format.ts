@@ -12,6 +12,8 @@ import { createPinoLoggerProvider }
   from './logging.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
+import tsAssignmentExpressionFormatterFactory
+  from './ts-style-rules/assignment-expression.js';
 import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
@@ -115,6 +117,9 @@ function getFormattersForPath(
         [ tsImportDeclarationFormatterFactory(
           loggerProvider.getLogger(
             'import-declaration')),
+          tsAssignmentExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'assignment-expression')),
           tsFunctionDeclarationFormatterFactory(
             loggerProvider.getLogger(
               'function-declaration')),

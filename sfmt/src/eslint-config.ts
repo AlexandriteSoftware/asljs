@@ -10,6 +10,8 @@ import { NullLoggerProvider }
   from './index.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
+import tsAssignmentExpressionFormatterFactory
+  from './ts-style-rules/assignment-expression.js';
 import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
@@ -39,6 +41,10 @@ const loggerProvider =
 
 const tsArrayExpressionFormatter =
   tsArrayExpressionFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsAssignmentExpressionFormatter =
+  tsAssignmentExpressionFormatterFactory(
     loggerProvider.getLogger());
 
 const tsCallExpressionFormatter =
@@ -88,6 +94,8 @@ const typescriptConfig: Linter.Config =
           { rules:
               { 'import-style':
                   tsImportDeclarationFormatter.eslintRule,
+                'assignment-expression-style':
+                  tsAssignmentExpressionFormatter.eslintRule,
                 'function-declaration-style':
                   tsFunctionDeclarationFormatter.eslintRule,
                 'conditional-expression-style':
@@ -147,6 +155,7 @@ const typescriptConfig: Linter.Config =
               allowHigherOrderFunctions: true,
               allowDirectConstAssertionInArrowFunctions: true } ],
         'asljs/import-style': 'error',
+        'asljs/assignment-expression-style': 'error',
         'asljs/function-declaration-style': 'error',
         'asljs/conditional-expression-style': 'error',
         'asljs/call-expression-style': 'error',

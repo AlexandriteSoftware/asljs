@@ -7,7 +7,8 @@ export class LocationIncompleteError extends Error
     super(
       "Property 'loc' is undefined or null.");
 
-    this.code = 'LOCATION_INCOMPLETE';
+    this.code =
+      'LOCATION_INCOMPLETE';
   }
 }
 

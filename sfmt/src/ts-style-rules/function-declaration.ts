@@ -119,11 +119,13 @@ function checkLayout(
   let openingParen: AST.Token | null = null;
 
   if (typeParameters) {
-    openingParen = context.sourceCode.getTokenAfter(
-      typeParameters as unknown as Node);
+    openingParen =
+      context.sourceCode.getTokenAfter(
+        typeParameters as unknown as Node);
   } else {
-    openingParen = context.sourceCode.getTokenAfter(
-      id as unknown as Node);
+    openingParen =
+      context.sourceCode.getTokenAfter(
+        id as unknown as Node);
   }
 
   if (
@@ -234,7 +236,8 @@ function checkLayout(
       return true;
     }
 
-    closingParen = context.sourceCode
+    closingParen =
+      context.sourceCode
       .getTokenAfter(
         lastParameter as unknown as Node);
 
@@ -264,7 +267,8 @@ function checkLayout(
     const openingParenEndLine =
       openingParenLocation.end.line;
 
-    closingParen = context.sourceCode
+    closingParen =
+      context.sourceCode
       .getTokenAfter(
         openingParen as unknown as Node);
 

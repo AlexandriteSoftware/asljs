@@ -2,25 +2,29 @@ import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
   from 'eslint';
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
-import tsVariableDeclarationFormatterFactory
-  from './variable-declaration.js';
+import tsAssignmentExpressionFormatterFactory
+  from './assignment-expression.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-const tsVariableDeclarationFormatter =
-  tsVariableDeclarationFormatterFactory(
+const tsAssignmentExpressionFormatter =
+  tsAssignmentExpressionFormatterFactory(
     loggerProvider.getLogger(
-      'variable-declaration.test.ts'));
+      'assignment-expression.test.ts'));
 
-const tsVariableDeclarationEslintRule =
-  tsVariableDeclarationFormatter.eslintRule;
+const tsAssignmentExpressionEslintRule =
+  tsAssignmentExpressionFormatter.eslintRule;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(
@@ -36,10 +40,10 @@ const eslint =
           plugins:
             { asljs:
                 { rules:
-                    { 'variable-declaration-style':
-                        tsVariableDeclarationEslintRule } } },
+                    { 'assignment-expression-style':
+                        tsAssignmentExpressionEslintRule } } },
           rules:
-            { 'asljs/variable-declaration-style': 'error' } } });
+            { 'asljs/assignment-expression-style': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

@@ -13,7 +13,8 @@ export async function runCli(
 {
   const ownEnvironment = !environment;
 
-  environment = environment
+  environment =
+    environment
     ?? createEnvironment();
 
   const cli =

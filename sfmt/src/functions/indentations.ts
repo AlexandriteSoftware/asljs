@@ -13,7 +13,8 @@ export class Indentation
     indentation: string | number
   )
   {
-    this.#indentation = typeof indentation === 'number'
+    this.#indentation =
+      typeof indentation === 'number'
       ? ' '.repeat(indentation)
       : indentation;
   }
