@@ -57,3 +57,11 @@
    {
 
    } });
+```
+
+```ts
+({ ...items, [this.key]: value });
+// ---
+({ ...items,
+   [this.key]: value });
+```

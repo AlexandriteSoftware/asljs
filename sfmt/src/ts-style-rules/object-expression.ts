@@ -152,6 +152,10 @@ function checkLayout(
   const firstProperty =
     node.properties[0];
 
+  console.log(
+    'node',
+    node);
+
   const firstPropertyLocation =
     tryGetLocation(firstProperty);
 
@@ -173,6 +177,11 @@ function checkLayout(
   ) {
     const property =
       node.properties[index];
+
+  console.log(
+    'property',
+    property);
+
 
     const propertyLocation =
       tryGetLocation(property);

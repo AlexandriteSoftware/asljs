@@ -85,10 +85,18 @@ export function fmtObjectExpression(
       continue;
     }
 
+    if (property.computed) {
+      code.push('[');
+    }
+
     code.push(
       context.sourceCode
         .getText(
           property.key));
+
+    if (property.computed) {
+      code.push(']');
+    }
 
     if (property.shorthand) {
       continue;
