@@ -39,27 +39,27 @@ export function formatterFactory(
 {
   const fn =
     (
-    logger: Logger
-  ): FormatterDefinition =>
-  {
-    const meta: Rule.RuleMetaData =
-      { type: 'layout',
-        fixable: 'code',
-        schema: [ ] };
+        logger: Logger
+      ): FormatterDefinition =>
+      {
+        const meta: Rule.RuleMetaData =
+          { type: 'layout',
+            fixable: 'code',
+            schema: [ ] };
 
-    const create: RuleListenerFactory =
-      ruleListenerCreateFn(logger);
+        const create: RuleListenerFactory =
+          ruleListenerCreateFn(logger);
 
-    const eslintRule: Rule.RuleModule =
-      { meta,
-        create };
+        const eslintRule: Rule.RuleModule =
+          { meta,
+            create };
 
-    const formatter: FormatterDefinition =
-      { name,
-        eslintRule };
+        const formatter: FormatterDefinition =
+          { name,
+            eslintRule };
 
-    return formatter;
-  };
+        return formatter;
+      };
 
   return fn;
 }

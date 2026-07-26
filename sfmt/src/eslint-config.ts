@@ -16,8 +16,12 @@ import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
   from './ts-style-rules/conditional-expression.js';
+import tsForStatementFormatterFactory
+  from './ts-style-rules/for-statement.js';
 import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
+import tsIfStatementFormatterFactory
+  from './ts-style-rules/if-statement.js';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
 import tsNewExpressionFormatterFactory
@@ -55,8 +59,16 @@ const tsConditionalExpressionFormatter =
   tsConditionalExpressionFormatterFactory(
     loggerProvider.getLogger());
 
+const tsForStatementFormatter =
+  tsForStatementFormatterFactory(
+    loggerProvider.getLogger());
+
 const tsFunctionDeclarationFormatter =
   tsFunctionDeclarationFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsIfStatementFormatter =
+  tsIfStatementFormatterFactory(
     loggerProvider.getLogger());
 
 const tsImportDeclarationFormatter =
@@ -98,6 +110,10 @@ const typescriptConfig: Linter.Config =
                   tsAssignmentExpressionFormatter.eslintRule,
                 'function-declaration-style':
                   tsFunctionDeclarationFormatter.eslintRule,
+                'for-statement-style':
+                  tsForStatementFormatter.eslintRule,
+                'if-statement-style':
+                  tsIfStatementFormatter.eslintRule,
                 'conditional-expression-style':
                   tsConditionalExpressionFormatter.eslintRule,
                 'call-expression-style':
@@ -157,6 +173,8 @@ const typescriptConfig: Linter.Config =
         'asljs/import-style': 'error',
         'asljs/assignment-expression-style': 'error',
         'asljs/function-declaration-style': 'error',
+        'asljs/for-statement-style': 'error',
+        'asljs/if-statement-style': 'error',
         'asljs/conditional-expression-style': 'error',
         'asljs/call-expression-style': 'error',
         'asljs/variable-declaration-style': 'error',

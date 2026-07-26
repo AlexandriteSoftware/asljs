@@ -105,17 +105,14 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const log =
-    context.logger
-    .debug
-    .bind(
-      context.logger);
+  const logger =
+    context.logger;
 
   const tokens =
     context.sourceCode.getTokens(node);
 
   if (tokens.length === 0) {
-    log(
+    logger.debug(
       'checkLayout: do not check if there are no tokens');
 
     return true;
@@ -125,7 +122,7 @@ function checkLayout(
     tokens[0];
 
   if (firstToken.value !== '{') {
-    log(
+    logger.debug(
       'checkLayout: do not check if the first token is not an opening brace');
 
     return true;
@@ -135,7 +132,7 @@ function checkLayout(
     tryGetLocation(firstToken);
 
   if (!firstTokenLocation) {
-    log(
+    logger.debug(
       'checkLayout: do not check if the first token has no location');
 
     return true;
@@ -148,7 +145,7 @@ function checkLayout(
     tryGetLocation(lastToken);
 
   if (!lastTokenLocation) {
-    log(
+    logger.debug(
       'checkLayout: do not check if the last token has no location');
 
     return true;
@@ -160,10 +157,10 @@ function checkLayout(
       && firstTokenLocation.start.column === lastTokenLocation.end.column - 2;
 
     if (result) {
-      log(
+      logger.debug(
         'checkLayout: the empty object expression is correct');
     } else {
-      log(
+      logger.debug(
         'checkLayout: the empty object expression should be just `{ }`');
     }
 
@@ -184,14 +181,14 @@ function checkLayout(
     tryGetLocation(firstProperty);
 
   if (!firstPropertyLocation) {
-    log(
+    logger.debug(
       'checkLayout: do not check if the first property has no location');
 
     return true;
   }
 
   if (firstPropertyLocation.start.line !== firstTokenLocation.start.line) {
-    log(
+    logger.debug(
       'checkLayout: the first property should be on the same line as the opening brace');
 
     return false;
@@ -209,14 +206,14 @@ function checkLayout(
       tryGetLocation(property);
 
     if (!propertyLocation) {
-      log(
+      logger.debug(
         'checkLayout: do not check if the property has no location');
 
       return true;
     }
 
     if (propertyLocation.start.column !== propertyIndentation.column) {
-      log(
+      logger.debug(
         'checkLayout: the properties should be indented one level deeper than the opening brace');
 
       return false;
@@ -245,7 +242,7 @@ function checkLayout(
       tryGetLocation(value);
 
     if (!valueLocation) {
-      log(
+      logger.debug(
         'checkLayout: do not check if the value has no location');
 
       return true;
@@ -253,7 +250,7 @@ function checkLayout(
 
     if (expressionIsShort(value)) {
       if (valueLocation.start.line !== propertyLocation.start.line) {
-        log(
+        logger.debug(
           'checkLayout: the short expressionvalue should be on the same line as the property');
 
         return false;
@@ -269,7 +266,7 @@ function checkLayout(
         valueLocation.start.line !== expectedValueLine
         || valueLocation.start.column !== expectedValueColumn
       ) {
-        log(
+        logger.debug(
           'checkLayout: the long expression value should be on the next line and indented one level deeper than the property');
 
         return false;
@@ -277,7 +274,7 @@ function checkLayout(
     }
   }
 
-  log(
+  logger.debug(
     'checkLayout: the object expression layout is correct');
 
   return true;

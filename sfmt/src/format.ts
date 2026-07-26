@@ -18,8 +18,12 @@ import tsCallExpressionFormatterFactory
   from './ts-style-rules/call-expression.js';
 import tsConditionalExpressionFormatterFactory
   from './ts-style-rules/conditional-expression.js';
+import tsForStatementFormatterFactory
+  from './ts-style-rules/for-statement.js';
 import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
+import tsIfStatementFormatterFactory
+  from './ts-style-rules/if-statement.js';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
 import tsNewExpressionFormatterFactory
@@ -123,6 +127,12 @@ function getFormattersForPath(
           tsFunctionDeclarationFormatterFactory(
             loggerProvider.getLogger(
               'function-declaration')),
+          tsForStatementFormatterFactory(
+            loggerProvider.getLogger(
+              'for-statement')),
+          tsIfStatementFormatterFactory(
+            loggerProvider.getLogger(
+              'if-statement')),
           tsConditionalExpressionFormatterFactory(
             loggerProvider.getLogger(
               'conditional-expression')),
