@@ -144,22 +144,35 @@ export function parseTests(
 
   const tests: TestCase[] = [ ];
 
-  for (let index = 0; index < tokens.length; index++) {
+  for (
+    let index = 0;
+    index < tokens.length;
+    index++
+  ) {
     const token =
       tokens[index];
 
     if (token.type === 'heading') {
-      if (token.depth === 2 && token.text === 'Tests') {
+      if (
+        token.depth === 2
+        && token.text === 'Tests'
+      ) {
         inTests = true;
         continue;
       }
 
-      if (inTests && token.depth <= 2) {
+      if (
+        inTests
+        && token.depth <= 2
+      ) {
         break;
       }
     }
 
-    if (!inTests || token.type !== 'code') {
+    if (
+      !inTests
+      || token.type !== 'code'
+    ) {
       continue;
     }
 

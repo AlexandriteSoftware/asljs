@@ -187,7 +187,11 @@ function checkLayout(
   // If not captured by one short argument before, continue with checking that
   // each argument starts on a separate line.
 
-  for (let index = 0; index < argumentsList.length; index++) {
+  for (
+    let index = 0;
+    index < argumentsList.length;
+    index++
+  ) {
     const argument =
       argumentsList[index];
 

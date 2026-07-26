@@ -90,7 +90,11 @@ export function fmtNewExpression(
       }
     }
   } else if (node.arguments.length > 1) {
-    for (let index = 0; index < node.arguments.length; index++) {
+    for (
+      let index = 0;
+      index < node.arguments.length;
+      index++
+    ) {
       if (index > 0) {
         code.push(',');
       }

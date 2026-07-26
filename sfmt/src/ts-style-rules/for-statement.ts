@@ -160,13 +160,7 @@ function checkLayout(
     tryGetLocation(
       closingParen);
 
-  if (
-    !forTokenLocation
-    || !openingParenLocation
-    || !firstSemicolonLocation
-    || !secondSemicolonLocation
-    || !closingParenLocation
-  ) {
+  if (!forTokenLocation || !openingParenLocation || !firstSemicolonLocation || !secondSemicolonLocation || !closingParenLocation) {
     return true;
   }
 
@@ -239,7 +233,8 @@ function checkClause(
   return (
     clauseLocation.start.line === previousTokenLine + 1
     && clauseLocation.start.column === expectedColumn
-    && clauseLocation.end.line === semicolonLine);
+    && clauseLocation.end.line === semicolonLine
+  );
 }
 
 function checkUpdateClause(
@@ -254,7 +249,8 @@ function checkUpdateClause(
   if (clause === null) {
     return (
       closingParenLine === previousTokenLine + 1
-      && closingParenColumn === expectedClosingParenColumn);
+      && closingParenColumn === expectedClosingParenColumn
+    );
   }
 
   const clauseLocation =
@@ -269,7 +265,8 @@ function checkUpdateClause(
     clauseLocation.start.line === previousTokenLine + 1
     && clauseLocation.start.column === expectedColumn
     && clauseLocation.end.line + 1 === closingParenLine
-    && closingParenColumn === expectedClosingParenColumn);
+    && closingParenColumn === expectedClosingParenColumn
+  );
 }
 
 function getFirstSemicolon(

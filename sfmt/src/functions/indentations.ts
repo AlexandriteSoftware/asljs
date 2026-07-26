@@ -46,7 +46,10 @@ export class Indentation
     size: number = 1
   ): Indentation
   {
-    if (this.#indentation.length < 2 * size) {
+    if (
+      this.#indentation.length
+      < 2 * size
+    ) {
       throw new Error(
         'Cannot decrease indentation below zero.');
     }

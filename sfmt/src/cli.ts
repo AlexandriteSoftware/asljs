@@ -189,7 +189,10 @@ function tryExtractOptionName(
   const match =
     /'(--[^ <']+)/.exec(message);
 
-  if (!match || match.length < 2) {
+  if (
+    !match
+    || match.length < 2
+  ) {
     return null;
   }
 

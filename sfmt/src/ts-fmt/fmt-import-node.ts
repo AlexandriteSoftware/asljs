@@ -41,9 +41,7 @@ export function fmtImportNode(
           node.source?.raw || '');
 
         code.push(';');
-      } else if (
-        /^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)
-      ) {
+      } else if (/^\s*import[\r\n\s]*\{[\r\n\s]*\}[\r\n\s]*from\s*$/.test(importPart)) {
         code.push('{ }');
 
         code.push(
@@ -124,7 +122,11 @@ export function fmtImportNode(
   {
     const group = [ ];
 
-    for (let index = startAt; index < specifiers.length; index++) {
+    for (
+      let index = startAt;
+      index < specifiers.length;
+      index++
+    ) {
       const specifier =
         specifiers[index];
 

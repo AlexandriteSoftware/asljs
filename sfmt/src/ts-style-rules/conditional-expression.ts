@@ -104,7 +104,10 @@ function checkLayout(
         node.consequent),
       token => token.value === ':');
 
-  if (questionMark === null || colon === null) {
+  if (
+    questionMark === null
+    || colon === null
+  ) {
     return true;
   }
 
@@ -135,7 +138,10 @@ export function getIndentation(
   const nodeLocation =
     node.loc;
 
-  if (nodeLocation === undefined || nodeLocation === null) {
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null
+  ) {
     return '';
   }
 

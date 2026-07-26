@@ -13,7 +13,7 @@ export interface CriteriaExpressionFormattingOptions
 }
 
 type OperationExpression =
-  BinaryExpression
+  | BinaryExpression
   | LogicalExpression;
 
 export function formatCriteriaExpression(

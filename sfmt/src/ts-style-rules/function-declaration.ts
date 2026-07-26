@@ -179,7 +179,11 @@ function checkLayout(
     }
   }
 
-  for (let index = 1; index < parameters.length; index++) {
+  for (
+    let index = 1;
+    index < parameters.length;
+    index++
+  ) {
     const previousParameter =
       parameters[index - 1];
 

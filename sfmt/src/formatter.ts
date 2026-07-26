@@ -39,27 +39,27 @@ export function formatterFactory(
 {
   const fn =
     (
-        logger: Logger
-      ): FormatterDefinition =>
-      {
-        const meta: Rule.RuleMetaData =
-          { type: 'layout',
-            fixable: 'code',
-            schema: [ ] };
+    logger: Logger
+  ): FormatterDefinition =>
+  {
+    const meta: Rule.RuleMetaData =
+      { type: 'layout',
+        fixable: 'code',
+        schema: [ ] };
 
-        const create: RuleListenerFactory =
-          ruleListenerCreateFn(logger);
+    const create: RuleListenerFactory =
+      ruleListenerCreateFn(logger);
 
-        const eslintRule: Rule.RuleModule =
-          { meta,
-            create };
+    const eslintRule: Rule.RuleModule =
+      { meta,
+        create };
 
-        const formatter: FormatterDefinition =
-          { name,
-            eslintRule };
+    const formatter: FormatterDefinition =
+      { name,
+        eslintRule };
 
-        return formatter;
-      };
+    return formatter;
+  };
 
   return fn;
 }
@@ -139,11 +139,19 @@ export function getFileType(
   const extension =
     path.extname(filePath).toLowerCase();
 
-  if (extension === '.js' || extension === '.mjs' || extension === '.cjs') {
+  if (
+    extension === '.js'
+    || extension === '.mjs'
+    || extension === '.cjs'
+  ) {
     return 'javascript';
   }
 
-  if (extension === '.ts' || extension === '.mts' || extension === '.cts') {
+  if (
+    extension === '.ts'
+    || extension === '.mts'
+    || extension === '.cts'
+  ) {
     return 'typescript';
   }
 

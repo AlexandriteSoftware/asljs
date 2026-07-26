@@ -67,7 +67,11 @@ export function fmtFunctionDeclaration(
 
   code.push('(');
 
-  for (let index = 0; index < parameters.length; index++) {
+  for (
+    let index = 0;
+    index < parameters.length;
+    index++
+  ) {
     code.push(
       context.newLine);
 
@@ -77,7 +81,10 @@ export function fmtFunctionDeclaration(
     code.push(
       parameters[index]);
 
-    if (index < parameters.length - 1) {
+    if (
+      index
+      < parameters.length - 1
+    ) {
       code.push(',');
     }
   }

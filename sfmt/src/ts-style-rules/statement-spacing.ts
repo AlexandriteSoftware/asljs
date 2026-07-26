@@ -72,7 +72,11 @@ function checkStatements(
     ? '\r\n'
     : '\n';
 
-  for (let index = 0; index < statements.length - 1; index++) {
+  for (
+    let index = 0;
+    index < statements.length - 1;
+    index++
+  ) {
     const statement =
       statements[index];
 
@@ -171,7 +175,10 @@ function statementIsMultiline(
   const statementLocation =
     statement.loc;
 
-  if (statementLocation === undefined || statementLocation === null) {
+  if (
+    statementLocation === undefined
+    || statementLocation === null
+  ) {
     return false;
   }
 
@@ -186,7 +193,10 @@ function getIndentation(
   const nodeLocation =
     node.loc;
 
-  if (nodeLocation === undefined || nodeLocation === null) {
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null
+  ) {
     return '';
   }
 

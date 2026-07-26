@@ -3,10 +3,10 @@ import { Expression,
          Node,
          Statement }
   from 'estree';
-import { formatCriteriaExpression }
-  from '../functions/criteria-expression.js';
 import { FormattingContext }
   from '../formatting-context.js';
+import { formatCriteriaExpression }
+  from '../functions/criteria-expression.js';
 import { getIndentation }
   from '../functions/indentations.js';
 import { type WithLocation }

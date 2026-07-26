@@ -141,12 +141,7 @@ function checkLayout(
     tryGetLocation(
       node.test);
 
-  if (
-    !ifTokenLocation
-    || !openingParenLocation
-    || !closingParenLocation
-    || !testLocation
-  ) {
+  if (!ifTokenLocation || !openingParenLocation || !closingParenLocation || !testLocation) {
     return true;
   }
 
@@ -167,9 +162,11 @@ function checkLayout(
     return false;
   }
 
-  if (!checkElseIfLayout(
-    node,
-    context)) {
+  if (
+    !checkElseIfLayout(
+      node,
+      context)
+  ) {
     return false;
   }
 
@@ -193,8 +190,8 @@ function checkConditionLayout(
       getIndentation(
         sourceCode,
         node as unknown as WithLocation)
-        .increase()
-        .value);
+      .increase()
+      .value);
 
   const isMultilineCondition =
     formattedTestExpression.includes(
@@ -205,7 +202,8 @@ function checkConditionLayout(
       testStartLine === openingParenLine
       && node.test.loc?.end.line === closingParenLine
       && context.sourceCode.getText(
-        node.test) === formattedTestExpression);
+        node.test) === formattedTestExpression
+    );
   }
 
   const baseIndentation =
@@ -222,7 +220,8 @@ function checkConditionLayout(
     && closingParenLine === node.test.loc?.end.line + 1
     && closingParenColumn === baseIndentation.column
     && context.sourceCode.getText(
-      node.test) === formattedTestExpression);
+      node.test) === formattedTestExpression
+  );
 }
 
 function checkElseIfLayout(
@@ -233,7 +232,10 @@ function checkElseIfLayout(
   const alternate =
     node.alternate ?? null;
 
-  if (alternate === null || alternate.type !== 'IfStatement') {
+  if (
+    alternate === null
+    || alternate.type !== 'IfStatement'
+  ) {
     return true;
   }
 
