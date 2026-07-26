@@ -28,27 +28,31 @@ export function formatMessage(
 {
   return message.replace(
     /%[sdo]/g,
-    m =>
-    {
-      const param =
-        params.shift();
+    replaceFormatTokens);
 
-      if (param === undefined) {
-        switch (m) {
-          case '%s':
-            return String(param);
-          case '%d':
-            return String(
-              Number(param));
-          case '%o':
-            return JSON.stringify(param);
-        }
+  function replaceFormatTokens(
+      substring: string
+    ): string
+  {
+    const param =
+      params.shift();
 
-        return m;
+    if (param === undefined) {
+      switch (substring) {
+        case '%s':
+          return String(param);
+        case '%d':
+          return String(
+            Number(param));
+        case '%o':
+          return JSON.stringify(param);
       }
 
-      return param;
-    });
+      return substring;
+    }
+
+    return param;
+  }
 }
 
 export function tmpDirConsoleLogFunction(
