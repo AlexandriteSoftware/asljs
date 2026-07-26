@@ -23,7 +23,8 @@ function parseExpression(
     ast.body[0];
 
   if (statement.type !== 'ExpressionStatement') {
-    throw new Error('Expected expression statement');
+    throw new Error(
+      'Expected expression statement');
   }
 
   return statement.expression as Expression;

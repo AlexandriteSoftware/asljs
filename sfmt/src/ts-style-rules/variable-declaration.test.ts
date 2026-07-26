@@ -32,19 +32,18 @@ const SCRIPT_FILE_PATH =
 
 const eslint =
   new ESLint(
-  { overrideConfigFile: true,
-    fix: true,
-    overrideConfig:
-      { languageOptions:
-          { parser: tsParser },
-        plugins:
-          { asljs:
-              { rules:
-                  { 'variable-declaration-style':
-                      tsVariableDeclarationEslintRule } } },
-        rules:
-          { 'asljs/variable-declaration-style': 'error' } } }
-);
+    { overrideConfigFile: true,
+      fix: true,
+      overrideConfig:
+        { languageOptions:
+            { parser: tsParser },
+          plugins:
+            { asljs:
+                { rules:
+                    { 'variable-declaration-style':
+                        tsVariableDeclarationEslintRule } } },
+          rules:
+            { 'asljs/variable-declaration-style': 'error' } } });
 
 test(
   'ts-style-rules/variable-declaration: \r\n line endings',

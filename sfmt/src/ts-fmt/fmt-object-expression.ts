@@ -48,8 +48,7 @@ export function fmtObjectExpression(
 
   const baseIndentation =
     new Indentation(
-    firstTokenLocation.start.column
-  );
+      firstTokenLocation.start.column);
 
   const propertyIndentation =
     baseIndentation.increase();

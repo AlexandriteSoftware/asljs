@@ -147,9 +147,8 @@ export function createPinoLoggerProvider(
 
   const loggerProvider =
     new PinoLoggerProvider(
-    { level,
-      file }
-  );
+      { level,
+        file });
 
   return loggerProvider;
 }
@@ -217,14 +216,12 @@ class PinoLoggerProvider implements LoggerProvider
       return new PinoLogger(
         this.#logger.child(
           { context }),
-        this.#level
-      );
+        this.#level);
     }
 
     return new PinoLogger(
       this.#logger,
-      this.#level
-    );
+      this.#level);
   }
 
   dispose(): Promise<void>

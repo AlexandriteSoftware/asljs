@@ -8,14 +8,14 @@ import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
-import callExpressionFormatter
+import tsCallExpressionFormatterFactory
   from './call-expression.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
 const tsCallExpressionFormatter =
-  callExpressionFormatter(
+  tsCallExpressionFormatterFactory(
     loggerProvider.getLogger(
       'call-expression.test.ts'));
 
@@ -28,19 +28,18 @@ const SCRIPT_FILE_PATH =
 
 const eslint =
   new ESLint(
-  { overrideConfigFile: true,
-    fix: true,
-    overrideConfig:
-      { languageOptions:
-          { parser: tsParser },
-        plugins:
-          { asljs:
-              { rules:
-                  { 'call-expression-style':
-                      tsCallExpressionEslintRule } } },
-        rules:
-          { 'asljs/call-expression-style': 'error' } } }
-);
+    { overrideConfigFile: true,
+      fix: true,
+      overrideConfig:
+        { languageOptions:
+            { parser: tsParser },
+          plugins:
+            { asljs:
+                { rules:
+                    { 'call-expression-style':
+                        tsCallExpressionEslintRule } } },
+          rules:
+            { 'asljs/call-expression-style': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

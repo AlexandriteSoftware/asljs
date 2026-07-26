@@ -8,19 +8,19 @@ import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
-import tsConditionalExpressionFormatterFactory
-  from './conditional-expression.js';
+import tsNewExpressionFormatterFactory
+  from './new-expression.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-const tsConditionalExpressionFormatter =
-  tsConditionalExpressionFormatterFactory(
+const tsNewExpressionFormatter =
+  tsNewExpressionFormatterFactory(
     loggerProvider.getLogger(
-      'conditional-expression.test.ts'));
+      'new-expression.test.ts'));
 
-const tsConditionalExpressionEslintRule =
-  tsConditionalExpressionFormatter.eslintRule;
+const tsNewExpressionEslintRule =
+  tsNewExpressionFormatter.eslintRule;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(
@@ -36,10 +36,10 @@ const eslint =
           plugins:
             { asljs:
                 { rules:
-                    { 'conditional-expression-style':
-                        tsConditionalExpressionEslintRule } } },
+                    { 'new-expression-style':
+                        tsNewExpressionEslintRule } } },
           rules:
-            { 'asljs/conditional-expression-style': 'error' } } });
+            { 'asljs/new-expression-style': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

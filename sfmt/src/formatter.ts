@@ -117,11 +117,12 @@ export async function applyFormatters(
         rules: enabledRules } ];
 
   const eslint =
-    new ESLint({ cwd: eslintCwd,
-                 overrideConfigFile: true,
-                 fix: true,
-                 ignore: false,
-                 overrideConfig: overrideConfig });
+    new ESLint(
+      { cwd: eslintCwd,
+        overrideConfigFile: true,
+        fix: true,
+        ignore: false,
+        overrideConfig: overrideConfig });
 
   const [result] =
     await eslint.lintText(

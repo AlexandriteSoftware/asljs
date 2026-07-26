@@ -42,8 +42,7 @@ export async function buildStyleRuleTestsFromMarkdown(
 {
   if (!filePath.endsWith('.test.js')) {
     throw new Error(
-      `Expected a test file path ending with .test.js`
-    );
+      `Expected a test file path ending with .test.js`);
   }
 
   /** packageRootDir is a directory with package.json */
@@ -59,8 +58,7 @@ export async function buildStyleRuleTestsFromMarkdown(
 
   if (!filePath.startsWith(buildDir)) {
     throw new Error(
-      `Expected a test file in the build directory.`
-    );
+      `Expected a test file in the build directory.`);
   }
 
   /** path from root to the compiled tests typescript file (`build/...`) */
@@ -283,8 +281,7 @@ async function findPackageRootDir(
 
       if (parentDir === dir) {
         throw new Error(
-          `Could not find package.json in any parent directory of ${dir}`
-        );
+          `Could not find package.json in any parent directory of ${dir}`);
       }
 
       dir = parentDir;

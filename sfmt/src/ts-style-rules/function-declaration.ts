@@ -63,9 +63,8 @@ function processFunctionDeclaration(
 {
   const fmtCtx =
     new FormattingContext(
-    context.sourceCode,
-    logger
-  );
+      context.sourceCode,
+      logger);
 
   const correctLayout =
     checkLayout(

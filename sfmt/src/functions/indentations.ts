@@ -38,8 +38,7 @@ export class Indentation
   ): Indentation
   {
     return new Indentation(
-      this.#indentation + '  '.repeat(size)
-    );
+      this.#indentation + '  '.repeat(size));
   }
 
   decrease(
@@ -48,15 +47,13 @@ export class Indentation
   {
     if (this.#indentation.length < 2 * size) {
       throw new Error(
-        'Cannot decrease indentation below zero.'
-      );
+        'Cannot decrease indentation below zero.');
     }
 
     return new Indentation(
       this.#indentation.slice(
         0,
-        -2 * size)
-    );
+        -2 * size));
   }
 }
 
@@ -76,8 +73,7 @@ export function getIndentation(
 
   const indentation =
     new Indentation(
-    whitespace
-  );
+      whitespace);
 
   return indentation;
 }

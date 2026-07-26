@@ -28,19 +28,18 @@ const SCRIPT_FILE_PATH =
 
 const eslint =
   new ESLint(
-  { overrideConfigFile: true,
-    fix: true,
-    overrideConfig:
-      { languageOptions:
-          { parser: tsParser },
-        plugins:
-          { asljs:
-              { rules:
-                  { 'function-declaration-style':
-                      tsFunctionDeclarationEslintRule } } },
-        rules:
-          { 'asljs/function-declaration-style': 'error' } } }
-);
+    { overrideConfigFile: true,
+      fix: true,
+      overrideConfig:
+        { languageOptions:
+            { parser: tsParser },
+          plugins:
+            { asljs:
+                { rules:
+                    { 'function-declaration-style':
+                        tsFunctionDeclarationEslintRule } } },
+          rules:
+            { 'asljs/function-declaration-style': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

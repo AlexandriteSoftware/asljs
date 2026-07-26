@@ -46,8 +46,7 @@ export function fmtArrayExpression(
 
   const baseIndentation =
     new Indentation(
-    firstTokenLocation.start.column
-  );
+      firstTokenLocation.start.column);
 
   const elementIndentation =
     baseIndentation.increase();

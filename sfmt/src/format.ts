@@ -20,6 +20,8 @@ import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
+import tsNewExpressionFormatterFactory
+  from './ts-style-rules/new-expression.js';
 import tsObjectExpressionFormatterFactory
   from './ts-style-rules/object-expression.js';
 import tsStatementSpacingFormatterFactory
@@ -128,6 +130,9 @@ function getFormattersForPath(
           tsStatementSpacingFormatterFactory(
             loggerProvider.getLogger(
               'statement-spacing')),
+          tsNewExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'new-expression')),
           tsObjectExpressionFormatterFactory(
             loggerProvider.getLogger(
               'object-expression')),

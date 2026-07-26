@@ -66,9 +66,8 @@ function processImportDeclaration(
 
   const fmtCtx =
     new FormattingContext(
-    context.sourceCode,
-    logger
-  );
+      context.sourceCode,
+      logger);
 
   const sourceCode =
     context.sourceCode.getText(node);

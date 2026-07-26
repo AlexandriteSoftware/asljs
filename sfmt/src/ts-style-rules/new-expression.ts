@@ -4,6 +4,7 @@ import { JSSyntaxElement,
          Rule }
   from 'eslint';
 import { Expression,
+         NewExpression,
          SimpleCallExpression }
   from 'estree';
 import { FormatterDefinitionFactory,
@@ -21,12 +22,12 @@ import { expressionIsShort }
   from '../functions/short-expression.js';
 import { Logger }
   from '../logging.js';
-import { fmtCallExpression }
-  from '../ts-fmt/fmt-call-expression.js';
+import { fmtNewExpression }
+  from '../ts-fmt/fmt-new-expression.js';
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   formatterFactory(
-    'call-expression',
+    'new-expression',
     listenerFactory);
 
 export default formatterDefinitionFactory;
@@ -41,15 +42,15 @@ function listenerFactory(
   ): Rule.RuleListener =>
   {
     const ruleListener: Rule.RuleListener =
-      { CallExpression: listener };
+      { NewExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: SimpleCallExpression & Rule.NodeParentExtension
+        node: NewExpression & Rule.NodeParentExtension
       ): void
     {
-      processCallExpression(
+      processNewExpression(
         logger,
         context,
         node);
@@ -59,10 +60,10 @@ function listenerFactory(
   return listenerFactory;
 }
 
-function processCallExpression(
+function processNewExpression(
     logger: Logger,
     context: Rule.RuleContext,
-    node: SimpleCallExpression & Rule.NodeParentExtension
+    node: NewExpression & Rule.NodeParentExtension
   ): void
 {
   const fmtCtx =
@@ -82,7 +83,7 @@ function processCallExpression(
   const report: ViolationReport<JSSyntaxElement, string> =
     { node: node,
       message:
-        'Use asljs call expression style.',
+        'Use asljs new expression style.',
       fix: fix };
 
   context.report(report);
@@ -92,7 +93,7 @@ function processCallExpression(
     ): Rule.Fix
   {
     const replacement =
-      fmtCallExpression(
+      fmtNewExpression(
         node,
         fmtCtx);
 
@@ -103,7 +104,7 @@ function processCallExpression(
 }
 
 function checkLayout(
-    node: SimpleCallExpression,
+    node: NewExpression,
     context: FormattingContext
   ): boolean
 {

@@ -18,6 +18,8 @@ import tsFunctionDeclarationFormatterFactory
   from './ts-style-rules/function-declaration.js';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
+import tsNewExpressionFormatterFactory
+  from './ts-style-rules/new-expression.js';
 import tsObjectExpressionFormatterFactory
   from './ts-style-rules/object-expression.js';
 import tsStatementSpacingFormatterFactory
@@ -53,6 +55,10 @@ const tsFunctionDeclarationFormatter =
 
 const tsImportDeclarationFormatter =
   tsImportDeclarationFormatterFactory(
+    loggerProvider.getLogger());
+
+const tsNewExpressionFormatter =
+  tsNewExpressionFormatterFactory(
     loggerProvider.getLogger());
 
 const tsObjectExpressionFormatter =
@@ -92,6 +98,8 @@ const typescriptConfig: Linter.Config =
                   tsVariableDeclarationFormatter.eslintRule,
                 'statement-spacing':
                   tsStatementSpacingFormatter.eslintRule,
+                'new-expression-style':
+                  tsNewExpressionFormatter.eslintRule,
                 'object-expression-style':
                   tsObjectExpressionFormatter.eslintRule,
                 'array-expression-style':
@@ -144,6 +152,7 @@ const typescriptConfig: Linter.Config =
         'asljs/call-expression-style': 'error',
         'asljs/variable-declaration-style': 'error',
         'asljs/statement-spacing': 'error',
+        'asljs/new-expression-style': 'error',
         'asljs/object-expression-style': 'error',
         'asljs/array-expression-style': 'error' } };
 

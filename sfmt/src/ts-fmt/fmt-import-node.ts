@@ -193,7 +193,8 @@ export function fmtImportNode(
         code.push(
           `${importedLiteral.raw} as ${specifier.local.name}`);
       } else {
-        throw new Error(`Unsupported import specifier type.`);
+        throw new Error(
+          `Unsupported import specifier type.`);
       }
     }
 
@@ -226,7 +227,8 @@ export function fmtImportNode(
         return `* as ${specifier.local.name}`;
 
       default:
-        throw new Error(`Unsupported import specifier type.`);
+        throw new Error(
+          `Unsupported import specifier type.`);
     }
   }
 }
