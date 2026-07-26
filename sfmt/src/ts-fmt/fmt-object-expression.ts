@@ -85,6 +85,15 @@ export function fmtObjectExpression(
       continue;
     }
 
+    if (property.kind !== 'init') {
+      code.push(
+        context.sourceCode
+          .getText(
+            property));
+
+      continue;
+    }
+
     if (property.computed) {
       code.push('[');
     }

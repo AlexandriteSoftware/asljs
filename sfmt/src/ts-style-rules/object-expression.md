@@ -65,3 +65,17 @@
 ({ ...items,
    [this.key]: value });
 ```
+
+```ts
+({
+  get test() {
+  },
+  set test2(value) {
+  }
+});
+// ---
+({ get test() {
+  },
+   set test2(value) {
+  } });
+```

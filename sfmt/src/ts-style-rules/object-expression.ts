@@ -18,6 +18,16 @@ import { expressionIsShort }
 import { fmtObjectExpression }
   from '../ts-fmt/fmt-object-expression.js';
 
+const log =
+  (
+      ...args: any[]
+    ): void =>
+  {
+    // console.log(
+    //   'object-exptression:',
+    //   ...args);
+  };
+
 const meta: Rule.RuleMetaData =
   { type: 'layout',
     fixable: 'code',
@@ -104,7 +114,9 @@ function checkLayout(
     context.sourceCode.getTokens(node);
 
   if (tokens.length === 0) {
-    // do not check if there are no tokens
+    log(
+      'checkLayout: do not check if there are no tokens');
+
     return true;
   }
 
@@ -112,7 +124,9 @@ function checkLayout(
     tokens[0];
 
   if (firstToken.value !== '{') {
-    // do not check if the first token is not an opening brace
+    log(
+      'checkLayout: do not check if the first token is not an opening brace');
+
     return true;
   }
 
@@ -120,7 +134,9 @@ function checkLayout(
     tryGetLocation(firstToken);
 
   if (!firstTokenLocation) {
-    // do not check if the first token has no location
+    log(
+      'checkLayout: do not check if the first token has no location');
+
     return true;
   }
 
@@ -131,14 +147,26 @@ function checkLayout(
     tryGetLocation(lastToken);
 
   if (!lastTokenLocation) {
-    // do not check if the last token has no location
+    log(
+      'checkLayout: do not check if the last token has no location');
+
     return true;
   }
 
   if (node.properties.length === 0) {
-    // the object expression without properties should be just `{ }`
-    return firstTokenLocation.start.line === lastTokenLocation.end.line
+    const result =
+      firstTokenLocation.start.line === lastTokenLocation.end.line
       && firstTokenLocation.start.column === lastTokenLocation.end.column - 2;
+
+    if (result) {
+      log(
+        'checkLayout: the empty object expression is correct');
+    } else {
+      log(
+        'checkLayout: the empty object expression should be just `{ }`');
+    }
+
+    return result;
   }
 
   const baseIndentation =
@@ -156,16 +184,19 @@ function checkLayout(
     tryGetLocation(firstProperty);
 
   if (!firstPropertyLocation) {
-    // do not check if the first property has no location
+    log(
+      'checkLayout: do not check if the first property has no location');
+
     return true;
   }
 
-  // first property should be on the same line as the opening brace
   if (firstPropertyLocation.start.line !== firstTokenLocation.start.line) {
+    log(
+      'checkLayout: the first property should be on the same line as the opening brace');
+
     return false;
   }
 
-  // the properties should be indented one level deeper than the opening brace
   for (
     let index = 0;
     index < node.properties.length;
@@ -178,11 +209,16 @@ function checkLayout(
       tryGetLocation(property);
 
     if (!propertyLocation) {
-      // do not check if the property has no location
+      log(
+        'checkLayout: do not check if the property has no location');
+
       return true;
     }
 
     if (propertyLocation.start.column !== propertyIndentation.column) {
+      log(
+        'checkLayout: the properties should be indented one level deeper than the opening brace');
+
       return false;
     }
 
@@ -198,6 +234,10 @@ function checkLayout(
       continue;
     }
 
+    if (property.kind !== 'init') {
+      continue;
+    }
+
     const value =
       property.value;
 
@@ -205,12 +245,17 @@ function checkLayout(
       tryGetLocation(value);
 
     if (!valueLocation) {
-      // do not check if the value has no location
+      log(
+        'checkLayout: do not check if the value has no location');
+
       return true;
     }
 
     if (expressionIsShort(value)) {
       if (valueLocation.start.line !== propertyLocation.start.line) {
+        log(
+          'checkLayout: the short expressionvalue should be on the same line as the property');
+
         return false;
       }
     } else {
@@ -224,10 +269,16 @@ function checkLayout(
         valueLocation.start.line !== expectedValueLine
         || valueLocation.start.column !== expectedValueColumn
       ) {
+        log(
+          'checkLayout: the long expression value should be on the next line and indented one level deeper than the property');
+
         return false;
       }
     }
   }
+
+  log(
+    'checkLayout: the object expression layout is correct');
 
   return true;
 }
