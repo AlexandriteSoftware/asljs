@@ -73,7 +73,7 @@ export function fmtArrayExpression(
 
       code.push(
         context.newLine);
- 
+
       code.push(
         elementIndentation.value);
     }

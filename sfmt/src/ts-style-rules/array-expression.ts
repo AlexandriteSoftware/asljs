@@ -26,7 +26,8 @@ export const tsArrayExpressionEslintRule: Rule.RuleModule =
     create };
 
 export const tsArrayExpressionFormatter: FormatterDefinition =
-  { name: 'array-expression',
+  { name:
+      'array-expression',
     eslintRule:
       tsArrayExpressionEslintRule };
 
@@ -54,7 +55,7 @@ function createExpressionListener(
   function arrayExpressionListener(
       node: ArrayExpression & Rule.NodeParentExtension
     ): void
-  {  
+  {
     const fmtCtx =
       new FormattingContext(
       context.sourceCode
@@ -137,7 +138,8 @@ function checkLayout(
     // the array expression without elements should be just `[ ]`
     const result =
       firstTokenLocation.start.line === lastTokenLocation.start.line
-      && firstTokenLocation.start.column === (lastTokenLocation.start.column - 2);
+      && firstTokenLocation.start.column
+        === (lastTokenLocation.start.column - 2);
 
     return result;
   }
@@ -176,7 +178,7 @@ function checkLayout(
       node.elements[index];
 
     if (element === null) {
-    // do not check if the element is null
+      // do not check if the element is null
       return true;
     }
 
