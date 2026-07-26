@@ -6,6 +6,8 @@ import * as ESTree
 import { ensureLocation,
          WithLocation }
   from './functions/location.js';
+import { Logger }
+  from './logging.js';
 
 export type ContextElement =
   | ESTree.Node
@@ -17,7 +19,8 @@ export class FormattingContext
   newLine: string;
 
   constructor(
-    public readonly sourceCode: SourceCode
+    public readonly sourceCode: SourceCode,
+    public readonly logger: Logger
   )
   {
     this.sourceCode = sourceCode;

@@ -17,90 +17,117 @@ import { expressionIsShort }
   from '../functions/short-expression.js';
 import { fmtObjectExpression }
   from '../ts-fmt/fmt-object-expression.js';
+import { Logger }
+  from '../logging.js';
 
-const log =
+type RuleListenerCreateFn =
   (
-  ...args: any[]
-): void =>
+      context: Rule.RuleContext
+    ) => Rule.RuleListener;
+
+export default (
+    logger: Logger
+  ): FormatterDefinition =>
 {
-  // console.log(
-  //   'object-exptression:',
-  //   ...args);
+  const meta: Rule.RuleMetaData =
+    { type: 'layout',
+      fixable: 'code',
+      schema: [ ] };
+
+  const create =
+    createFactory(
+      logger);
+
+  const eslintRule: Rule.RuleModule =
+    { meta,
+      create };
+
+  const formatter: FormatterDefinition =
+    { name: 'expression',
+      eslintRule };
+
+  return formatter;
 };
 
-const meta: Rule.RuleMetaData =
-  { type: 'layout',
-    fixable: 'code',
-    schema: [] };
-
-export const tsExpressionEslintRule: Rule.RuleModule =
-  { meta: meta,
-    create: create };
-
-export const tsExpressionFormatter: FormatterDefinition =
-  { name: 'expression',
-    eslintRule:
-      tsExpressionEslintRule };
-
-function create(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
+function createFactory(
+    logger: Logger
+  ): RuleListenerCreateFn
 {
-  const listener =
-    createExpressionListener(
-      context);
-
-  return listener;
-}
-
-function createExpressionListener(
-    context: Rule.RuleContext
-  ): Rule.RuleListener
-{
-  const ruleListener: Rule.RuleListener =
-    { ObjectExpression:
-        objectExpressionListener };
-
-  return ruleListener;
-
-  function objectExpressionListener(
-      node: ObjectExpression & Rule.NodeParentExtension
-    ): void
-  {
-    const fmtCtx =
-      new FormattingContext(
-      context.sourceCode
-    );
-
-    const correctLayout =
-      checkLayout(
-        node,
-        fmtCtx);
-
-    if (correctLayout) {
-      return;
-    }
-
-    const report: ViolationReport<JSSyntaxElement, string> =
-      { node: node,
-        message:
-          'Use asljs expression style.',
-        fix: fix };
-
-    context.report(report);
-
-    function fix(
-        fixer: Rule.RuleFixer
-      ): Rule.Fix
+  const factory =
+    (
+        context: Rule.RuleContext
+      ): Rule.RuleListener =>
     {
-      const replacement =
-        fmtObjectExpression(
+      const listener =
+        create(
+          context);
+
+      return listener;
+    }; 
+
+  return factory;
+
+  function create(
+      context: Rule.RuleContext
+    ): Rule.RuleListener
+  {
+    const listener =
+      createExpressionListener(
+        context);
+
+    return listener;
+  }
+
+  function createExpressionListener(
+      context: Rule.RuleContext
+    ): Rule.RuleListener
+  {
+    const ruleListener: Rule.RuleListener =
+      { ObjectExpression:
+          objectExpressionListener };
+
+    return ruleListener;
+
+    function objectExpressionListener(
+        node: ObjectExpression & Rule.NodeParentExtension
+      ): void
+    {
+      const fmtCtx =
+        new FormattingContext(
+          context.sourceCode,
+          logger
+        );
+
+      const correctLayout =
+        checkLayout(
           node,
           fmtCtx);
 
-      return fixer.replaceText(
-        node,
-        replacement);
+      if (correctLayout) {
+        return;
+      }
+
+      const report: ViolationReport<JSSyntaxElement, string> =
+        { node: node,
+          message:
+            'Use asljs expression style.',
+          fix: fix };
+
+      context.report(report);
+
+      function fix(
+          fixer: Rule.RuleFixer
+        ): Rule.Fix
+      {
+        const replacement =
+          fmtObjectExpression(
+            node,
+            fmtCtx);
+
+        return fixer.replaceText(
+          node,
+          replacement);
+      }
     }
   }
 }
@@ -110,6 +137,12 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
+  const log =
+    context.logger
+      .debug
+      .bind(
+        context.logger);
+
   const tokens =
     context.sourceCode.getTokens(node);
 
