@@ -4,47 +4,53 @@ import { Expression }
   from 'estree';
 import assert
   from 'node:assert/strict';
+import { fileURLToPath }
+  from 'node:url';
+import path
+  from 'node:path';
 import test
   from 'node:test';
+import { loadTests }
+  from './build-style-rule-tests-from-markdown.js';
 import { formatCriteriaExpression }
   from './criteria-expression.js';
 
-test(
-  'criteria-expression: keeps a single comparison on one line',
-  (): void =>
-  {
-    assert.strictEqual(
-      format(
-        'nodeLocation === undefined'),
-      'nodeLocation === undefined');
-  });
+const SCRIPT_FILE_PATH =
+  fileURLToPath(
+    import.meta.url);
 
-test(
-  'criteria-expression: breaks before lower-priority equality after addition',
-  (): void =>
-  {
-    assert.strictEqual(
-      format('a + b === c'),
-      'a + b\n  === c');
-  });
+const TESTS_FILE_PATH =
+  scriptFilePathToTestsFilePath(
+    SCRIPT_FILE_PATH);
 
-test(
-  'criteria-expression: breaks before lower-priority logical and after equality',
-  (): void =>
-  {
-    assert.strictEqual(
-      format('a === b && c'),
-      'a === b\n  && c');
-  });
+const testCases =
+  await loadTests(
+    TESTS_FILE_PATH);
 
-test(
-  'criteria-expression: keeps same-priority logical chain on one line',
-  (): void =>
-  {
-    assert.strictEqual(
-      format('a && b && c'),
-      'a && b && c');
-  });
+for (const testCase of testCases) {
+  test(
+    `criteria-expression: ${testCase.title}`,
+    (): void =>
+    {
+      assert.strictEqual(
+        format(
+          testCase.source),
+        testCase.expected);
+    });
+}
+
+function scriptFilePathToTestsFilePath(
+    scriptFilePath: string
+  ): string
+{
+  return scriptFilePath
+    .replace(
+      `${path.sep}build${path.sep}`,
+      `${path.sep}src${path.sep}`)
+    .replace(
+      /\.test\.js$/,
+      '.md');
+}
 
 function format(
     code: string
@@ -61,8 +67,7 @@ function format(
         getNodeText(
           code,
           node),
-      newLine: '\n',
-      continuationIndentation: '  ' });
+      newLine: '\n' });
 }
 
 function parseExpression(

@@ -3,13 +3,13 @@ import { BinaryExpression,
          LogicalExpression }
   from 'estree';
 
+const LONG_EXPRESSION_LENGTH = 15;
+
 export interface CriteriaExpressionFormattingOptions
 {
   getText: (expression: Expression) => string;
 
   newLine: string;
-
-  continuationIndentation: string;
 }
 
 type OperationExpression =
@@ -25,19 +25,24 @@ export function formatCriteriaExpression(
     return options.getText(expression);
   }
 
-  const maxPriority =
-    getMaxPriority(
-      expression);
-
   return formatOperationExpression(
     expression,
-    maxPriority,
     options);
 }
 
+/**
+ * Keep the operators with priority '===' and higher on the same line,
+ * and break the lines for operators with priority '&' and lower.
+ * 
+ * Examples:
+ * 
+ * ```ts
+ * a + b + c === d + e
+ * && f <= g
+ * ```
+ */
 function formatOperationExpression(
     expression: OperationExpression,
-    maxPriority: number,
     options: CriteriaExpressionFormattingOptions
   ): string
 {
@@ -45,23 +50,35 @@ function formatOperationExpression(
     getOperationPriority(
       expression);
 
-  const separator =
-    operatorPriority === maxPriority
-    ? ` ${expression.operator} `
-    : `${options.newLine}${options.continuationIndentation}${expression.operator} `;
+  const leftExpression =
+    expression.left as Expression;
 
   const left =
     formatOperand(
-      expression.left as Expression,
+      leftExpression,
       operatorPriority,
-      maxPriority,
       options);
+
+  const shouldBreakBeforeOperator =
+    operatorPriority < 7
+    || left.includes(
+      options.newLine)
+    || left.length >= LONG_EXPRESSION_LENGTH;
+
+  const indentation =
+    ' '.repeat(
+      leftExpression.loc?.start.column
+      ?? 0);
+
+  const separator =
+    shouldBreakBeforeOperator
+    ? `${options.newLine}${indentation}${expression.operator} `
+    : ` ${expression.operator} `;
 
   const right =
     formatOperand(
       expression.right,
       operatorPriority,
-      maxPriority,
       options);
 
   return `${left}${separator}${right}`;
@@ -70,7 +87,6 @@ function formatOperationExpression(
 function formatOperand(
     expression: Expression,
     parentPriority: number,
-    maxPriority: number,
     options: CriteriaExpressionFormattingOptions
   ): string
 {
@@ -85,7 +101,6 @@ function formatOperand(
   const formatted =
     formatOperationExpression(
       expression,
-      maxPriority,
       options);
 
   if (operatorPriority < parentPriority) {
@@ -93,40 +108,6 @@ function formatOperand(
   }
 
   return formatted;
-}
-
-function getMaxPriority(
-    expression: OperationExpression
-  ): number
-{
-  const ownPriority =
-    getOperationPriority(
-      expression);
-
-  const leftPriority =
-    tryGetMaxPriority(
-      expression.left as Expression);
-
-  const rightPriority =
-    tryGetMaxPriority(
-      expression.right);
-
-  return Math.max(
-    ownPriority,
-    leftPriority ?? ownPriority,
-    rightPriority ?? ownPriority);
-}
-
-function tryGetMaxPriority(
-    expression: Expression
-  ): number | null
-{
-  if (!isOperationExpression(expression)) {
-    return null;
-  }
-
-  return getMaxPriority(
-    expression);
 }
 
 function isOperationExpression(
@@ -145,6 +126,9 @@ function getOperationPriority(
     expression.operator);
 }
 
+/**
+ * Returns operator priority, from 1 (lowest) to 12 (highest).
+ */
 function getOperatorPriority(
     operator: string
   ): number

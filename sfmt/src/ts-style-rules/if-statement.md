@@ -36,19 +36,6 @@ if (
 ```
 
 ```ts
-if (a + b === c) {
-  return true;
-}
-// ---
-if (
-  a + b
-  === c
-) {
-  return true;
-}
-```
-
-```ts
 if (a === b && c) {
   return true;
 }

@@ -8,6 +8,7 @@ import { ArrayExpression,
          Expression,
          Identifier,
          Literal,
+         MemberExpression,
          NewExpression,
          ObjectExpression,
          ObjectPattern,
@@ -104,6 +105,10 @@ function getLength(
     return getUnaryExpressionLength(expression);
   }
 
+  if (expression.type === 'MemberExpression') {
+    return getMemberExpressionLength(expression);
+  }
+
   return null;
 }
 
@@ -194,4 +199,43 @@ function getUnaryExpressionLength(
     + expression.operator.length;
 
   return length;
+}
+
+function getMemberExpressionLength(
+    expression: MemberExpression
+  ): number | null
+{
+  if (expression.object.type === 'Super') {
+    return null;
+  }
+
+  const objectLength =
+    getLength(
+      expression.object);
+
+  if (objectLength === null) {
+    return null;
+  }
+
+  if (!expression.computed) {
+    if (expression.property.type !== 'Identifier') {
+      return null;
+    }
+
+    return objectLength
+      + 1
+      + expression.property.name.length;
+  }
+
+  const propertyLength =
+    getLength(
+      expression.property as ExpressionParameter);
+
+  if (propertyLength === null) {
+    return null;
+  }
+
+  return objectLength
+    + 2
+    + propertyLength;
 }

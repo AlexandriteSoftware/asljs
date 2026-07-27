@@ -100,8 +100,7 @@ export function fmtIfTestExpression(
         context.sourceCode.getText(
           node),
       newLine:
-        context.newLine,
-      continuationIndentation });
+        context.newLine });
 }
 
 function fmtStatement(

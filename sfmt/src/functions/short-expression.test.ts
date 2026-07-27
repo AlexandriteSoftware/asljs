@@ -35,6 +35,8 @@ const testExpressions =
     { a: true,
       a1234567890123: true,
       a12345678901234: false,
+      'a12345.b123.c1': true,
+      'a12345.b123.c12': false,
       '1234567890123': true,
       '123456789012345': false,
       '-1.23456789e10': true,
