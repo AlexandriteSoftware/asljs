@@ -10,8 +10,8 @@ import test
   from 'node:test';
 import { fileURLToPath }
   from 'node:url';
-import { loadTests }
-  from '../functions/build-style-rule-tests-from-markdown.js';
+import { readMarkdownTestsFromFile }
+  from '../functions/markdown-tests/read-markdown-tests-from-file.js';
 import { fmtCriteriaExpression }
   from './fmt-criteria-expression.js';
 
@@ -24,7 +24,7 @@ const TESTS_FILE_PATH =
     SCRIPT_FILE_PATH);
 
 const testCases =
-  await loadTests(
+  await readMarkdownTestsFromFile(
     TESTS_FILE_PATH);
 
 for (const testCase of testCases) {

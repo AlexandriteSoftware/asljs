@@ -1,8 +1,5 @@
 import { ESLint }
   from 'eslint';
-import { marked,
-         Tokens }
-  from 'marked';
 import assert
   from 'node:assert/strict';
 import fs
@@ -11,21 +8,15 @@ import path
   from 'node:path';
 import test
   from 'node:test';
+import { MarkdownTest }
+  from './markdown-tests/markdown-test.js';
+import { readMarkdownTestsFromFile }
+  from './markdown-tests/read-markdown-tests-from-file.js';
 
-export interface TestCase
-{
-  /**
-   * The title of the test case. Quite often title is constructed by serialising
-   * the test input.
-   */
-  title: string;
-
-  source: string;
-
-  expected: string;
-
-  tags: string[];
-}
+export type TestFn = (
+  name?: string | undefined,
+  fn?: test.TestFn | undefined
+) => Promise<void>;
 
 /**
  * Reads a markdown file with test cases and sets up tests for each test case.
@@ -37,7 +28,8 @@ export interface TestCase
  */
 export async function buildStyleRuleTestsFromMarkdown(
     filePath: string,
-    eslint: ESLint
+    eslint: ESLint,
+    testFn?: TestFn
   ): Promise<void>
 {
   if (!filePath.endsWith('.test.js')) {
@@ -88,8 +80,8 @@ export async function buildStyleRuleTestsFromMarkdown(
       srcDir,
       relativeTestsFilePath);
 
-  const testCases: TestCase[] =
-    await loadTests(
+  const testCases: MarkdownTest[] =
+    await readMarkdownTestsFromFile(
       testsFilePath);
 
   const focusedTests =
@@ -101,7 +93,7 @@ export async function buildStyleRuleTestsFromMarkdown(
       /\.md$/,
       '');
 
-  let testCasesToRun: TestCase[];
+  let testCasesToRun: MarkdownTest[];
 
   if (focusedTests.length > 0) {
     testCasesToRun = focusedTests;
@@ -111,8 +103,12 @@ export async function buildStyleRuleTestsFromMarkdown(
         testCases);
   }
 
+  const localTestFn =
+    testFn
+    ?? test;
+
   for (const testCase of testCasesToRun) {
-    test(
+    localTestFn(
       `${testsFileShortPath}: ${testCase.title}`,
       async () =>
       {
@@ -133,97 +129,11 @@ export async function buildStyleRuleTestsFromMarkdown(
   }
 }
 
-export function parseTests(
-    markdown: string
-  ): TestCase[]
-{
-  const tokens =
-    marked.lexer(markdown);
-
-  let inTests = false;
-
-  const tests: TestCase[] = [ ];
-
-  for (
-    let index = 0;
-    index < tokens.length;
-    index++
-  ) {
-    const token = tokens[index];
-
-    if (token.type === 'heading') {
-      if (
-        token.depth === 2
-        && token.text === 'Tests'
-      ) {
-        inTests = true;
-        continue;
-      }
-
-      if (
-        inTests
-        && token.depth <= 2
-      ) {
-        break;
-      }
-    }
-
-    if (
-      !inTests
-      || token.type !== 'code'
-    ) {
-      continue;
-    }
-
-    const code =
-      token as Tokens.Code;
-
-    const tags =
-      (code.lang ?? '').split(/\s+/);
-
-    const parts =
-      code.text.split(
-        /\r?\n\/\/ ---\r?\n/g);
-
-    const source = parts[0];
-
-    const expected = parts[1];
-
-    const title =
-      JSON.stringify(
-        source);
-
-    tests.push(
-      { title: title,
-        source: source,
-        expected: expected,
-        tags: tags });
-  }
-
-  return tests;
-}
-
-export async function loadTests(
-    filePath: string
-  ): Promise<TestCase[]>
-{
-  const markdown =
-    await fs.readFile(
-      filePath,
-      'utf8');
-
-  const testCases =
-    parseTests(
-      markdown);
-
-  return testCases;
-}
-
 function addNoiseToTestCase(
-    testCases: TestCase[]
-  ): TestCase[]
+    testCases: MarkdownTest[]
+  ): MarkdownTest[]
 {
-  const result: TestCase[] = [ ];
+  const result: MarkdownTest[] = [ ];
 
   for (const testCase of testCases) {
     result.push(testCase);
@@ -237,18 +147,18 @@ function addNoiseToTestCase(
 }
 
 function testWithCrNl(
-    testCase: TestCase,
-    result: TestCase[]
+    testCase: MarkdownTest,
+    result: MarkdownTest[]
   ): void
 {
-  const crNlLineEndingSource =
+  const crNlSourceLineEnding =
     testCase.source.replace(
       /\r?\n/g,
       '\r\n');
 
   if (
     testCase.source
-    === crNlLineEndingSource
+    === crNlSourceLineEnding
   ) {
     return;
   }
@@ -258,11 +168,12 @@ function testWithCrNl(
       /\r?\n/g,
       '\r\n');
 
-  const withDifferentLineEndings: TestCase =
-    { title:
+  const withDifferentLineEndings: MarkdownTest =
+    { testSuite: testCase.testSuite,
+      title:
         `${testCase.title} (with \\r\\n)`,
       source:
-        crNlLineEndingSource,
+        crNlSourceLineEnding,
       expected:
         crNlLineEndingExpected,
       tags: testCase.tags };
