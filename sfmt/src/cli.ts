@@ -128,11 +128,17 @@ function writeCommanderError(
   const code =
     (error as Error & { code?: string; }).code;
 
-  if (typeof code !== 'string') {
+  if (
+    typeof code
+    !== 'string'
+  ) {
     return false;
   }
 
-  if (code === 'commander.optionMissingArgument') {
+  if (
+    code
+    === 'commander.optionMissingArgument'
+  ) {
     const optionName =
       tryExtractOptionName(
         error.message);
@@ -147,7 +153,10 @@ function writeCommanderError(
     return true;
   }
 
-  if (code === 'commander.unknownOption') {
+  if (
+    code
+    === 'commander.unknownOption'
+  ) {
     const optionName =
       tryExtractOptionName(
         error.message);
@@ -162,7 +171,10 @@ function writeCommanderError(
     return true;
   }
 
-  if (code === 'commander.unknownCommand') {
+  if (
+    code
+    === 'commander.unknownCommand'
+  ) {
     environment.stderr.write(
       `Unknown command.\n`);
 
@@ -172,7 +184,10 @@ function writeCommanderError(
     return true;
   }
 
-  if (code === 'commander.help') {
+  if (
+    code
+    === 'commander.help'
+  ) {
     cli.outputHelp(
       { error: true });
 
@@ -196,8 +211,7 @@ function tryExtractOptionName(
     return null;
   }
 
-  const group =
-    match[1];
+  const group = match[1];
 
   if (!group) {
     return null;

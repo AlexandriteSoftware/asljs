@@ -110,8 +110,7 @@ function checkLayout(
   const parametersIndent =
     baseIndent.increase(2);
 
-  const id =
-    node.id;
+  const id = node.id;
 
   const typeParameters =
     (node as unknown as { typeParameters: Node | null; }).typeParameters;
@@ -130,8 +129,10 @@ function checkLayout(
 
   if (
     !openingParen
-    || openingParen.type !== 'Punctuator'
-    || openingParen.value !== '('
+    || openingParen.type
+       !== 'Punctuator'
+    || openingParen.value
+       !== '('
   ) {
     return true;
   }
@@ -147,12 +148,13 @@ function checkLayout(
   const openingParenEndLine =
     openingParenLocation.end.line;
 
-  const parameters =
-    node.params;
+  const parameters = node.params;
 
-  if (parameters.length > 0) {
-    const firstParameter =
-      parameters[0];
+  if (
+    parameters.length
+    > 0
+  ) {
+    const firstParameter = parameters[0];
 
     const tryGetFirstParameterLocation =
       tryGetLocation(
@@ -165,7 +167,10 @@ function checkLayout(
     const firstParameterStartLine =
       tryGetFirstParameterLocation.start.line;
 
-    if (openingParenEndLine === firstParameterStartLine) {
+    if (
+      openingParenEndLine
+      === firstParameterStartLine
+    ) {
       return false;
     }
 
@@ -174,7 +179,10 @@ function checkLayout(
         context.sourceCode,
         firstParameter as unknown as WithLocation);
 
-    if (parameterIndent.value !== parametersIndent.value) {
+    if (
+      parameterIndent.value
+      !== parametersIndent.value
+    ) {
       return false;
     }
   }
@@ -195,8 +203,7 @@ function checkLayout(
       return true;
     }
 
-    const currentParameter =
-      parameters[index];
+    const currentParameter = parameters[index];
 
     const currentParameterLocation =
       tryGetLocation(
@@ -212,7 +219,10 @@ function checkLayout(
     const currentParameterStartLine =
       currentParameterLocation.start.line;
 
-    if (previousParameterEndLine === currentParameterStartLine) {
+    if (
+      previousParameterEndLine
+      === currentParameterStartLine
+    ) {
       return false;
     }
 
@@ -221,14 +231,20 @@ function checkLayout(
         context.sourceCode,
         currentParameter as unknown as WithLocation);
 
-    if (parameterIndent.value !== parametersIndent.value) {
+    if (
+      parameterIndent.value
+      !== parametersIndent.value
+    ) {
       return false;
     }
   }
 
   let closingParen: AST.Token | null = null;
 
-  if (parameters.length > 0) {
+  if (
+    parameters.length
+    > 0
+  ) {
     const lastParameter =
       parameters[parameters.length - 1];
 
@@ -247,8 +263,10 @@ function checkLayout(
 
     if (
       !closingParen
-      || closingParen.type !== 'Punctuator'
-      || closingParen.value !== ')'
+      || closingParen.type
+         !== 'Punctuator'
+      || closingParen.value
+         !== ')'
     ) {
       return true;
     }
@@ -264,7 +282,10 @@ function checkLayout(
     const closingParenEndLine =
       closingParenLocation.end.line;
 
-    if (closingParenEndLine === lastParameterLocation.end.line) {
+    if (
+      closingParenEndLine
+      === lastParameterLocation.end.line
+    ) {
       return false;
     }
   } else {
@@ -278,8 +299,10 @@ function checkLayout(
 
     if (
       !closingParen
-      || closingParen.type !== 'Punctuator'
-      || closingParen.value !== ')'
+      || closingParen.type
+         !== 'Punctuator'
+      || closingParen.value
+         !== ')'
     ) {
       return true;
     }
@@ -295,7 +318,10 @@ function checkLayout(
     const closingParenStartLine =
       closingParenLocation.start.line;
 
-    if (openingParenEndLine === closingParenStartLine) {
+    if (
+      openingParenEndLine
+      === closingParenStartLine
+    ) {
       return false;
     }
   }
@@ -308,7 +334,10 @@ function checkLayout(
       context.sourceCode,
       closingParen);
 
-  if (closingParenIndent.value !== actualClosingParenIndent.value) {
+  if (
+    closingParenIndent.value
+    !== actualClosingParenIndent.value
+  ) {
     return false;
   }
 

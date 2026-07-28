@@ -24,14 +24,12 @@ export function fmtFunctionDeclaration(
   const closeParenIndent =
     baseIndent.increase();
 
-  const name =
-    node.id?.name ?? '';
+  const name = node.id?.name ?? '';
 
   const typeParameters =
     (node as unknown as { typeParameters: Node | null; }).typeParameters;
 
-  const body =
-    node.body;
+  const body = node.body;
 
   const returnTypeText =
     getReturnTypeText(
@@ -83,7 +81,8 @@ export function fmtFunctionDeclaration(
 
     if (
       index
-      < parameters.length - 1
+      < parameters.length
+        - 1
     ) {
       code.push(',');
     }

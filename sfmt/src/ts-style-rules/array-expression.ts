@@ -111,10 +111,12 @@ function checkLayout(
     return true;
   }
 
-  const firstToken =
-    tokens[0];
+  const firstToken = tokens[0];
 
-  if (firstToken.value !== '[') {
+  if (
+    firstToken.value
+    !== '['
+  ) {
     // do not check if the first token is not `[`
     return true;
   }
@@ -138,7 +140,10 @@ function checkLayout(
     return true;
   }
 
-  if (node.elements.length === 0) {
+  if (
+    node.elements.length
+    === 0
+  ) {
     // the array expression without elements should be just `[ ]`
     const result =
       firstTokenLocation.start.line === lastTokenLocation.start.line
@@ -155,8 +160,7 @@ function checkLayout(
   const elementIndentation =
     baseIndentation.increase();
 
-  const firstElement =
-    node.elements[0];
+  const firstElement = node.elements[0];
 
   const firstElementLocation =
     tryGetLocation(firstElement);
@@ -167,7 +171,10 @@ function checkLayout(
   }
 
   // first property should be on the same line as the opening brace
-  if (firstElementLocation.start.line !== firstTokenLocation.start.line) {
+  if (
+    firstElementLocation.start.line
+    !== firstTokenLocation.start.line
+  ) {
     return false;
   }
 
@@ -193,7 +200,10 @@ function checkLayout(
       return true;
     }
 
-    if (elementLocation.start.column !== elementIndentation.column) {
+    if (
+      elementLocation.start.column
+      !== elementIndentation.column
+    ) {
       return false;
     }
   }

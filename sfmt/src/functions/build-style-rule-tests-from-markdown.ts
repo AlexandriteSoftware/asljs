@@ -149,8 +149,7 @@ export function parseTests(
     index < tokens.length;
     index++
   ) {
-    const token =
-      tokens[index];
+    const token = tokens[index];
 
     if (token.type === 'heading') {
       if (
@@ -186,11 +185,9 @@ export function parseTests(
       code.text.split(
         /\r?\n\/\/ ---\r?\n/g);
 
-    const source =
-      parts[0];
+    const source = parts[0];
 
-    const expected =
-      parts[1];
+    const expected = parts[1];
 
     const title =
       JSON.stringify(
@@ -249,7 +246,10 @@ function testWithCrNl(
       /\r?\n/g,
       '\r\n');
 
-  if (testCase.source === crNlLineEndingSource) {
+  if (
+    testCase.source
+    === crNlLineEndingSource
+  ) {
     return;
   }
 
@@ -265,8 +265,7 @@ function testWithCrNl(
         crNlLineEndingSource,
       expected:
         crNlLineEndingExpected,
-      tags:
-        testCase.tags };
+      tags: testCase.tags };
 
   result.push(
     withDifferentLineEndings);

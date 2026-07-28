@@ -15,8 +15,8 @@ import { Indentation }
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 import { Logger }
   from '../logging.js';
 import { fmtObjectExpression }
@@ -105,8 +105,7 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const logger =
-    context.logger;
+  const logger = context.logger;
 
   const tokens =
     context.sourceCode.getTokens(node);
@@ -118,8 +117,7 @@ function checkLayout(
     return true;
   }
 
-  const firstToken =
-    tokens[0];
+  const firstToken = tokens[0];
 
   if (firstToken.value !== '{') {
     logger.debug(
@@ -151,7 +149,10 @@ function checkLayout(
     return true;
   }
 
-  if (node.properties.length === 0) {
+  if (
+    node.properties.length
+    === 0
+  ) {
     const result =
       firstTokenLocation.start.line === lastTokenLocation.end.line
       && firstTokenLocation.start.column === lastTokenLocation.end.column - 2;
@@ -174,8 +175,7 @@ function checkLayout(
   const propertyIndentation =
     baseIndentation.increase();
 
-  const firstProperty =
-    node.properties[0];
+  const firstProperty = node.properties[0];
 
   const firstPropertyLocation =
     tryGetLocation(firstProperty);
@@ -187,7 +187,10 @@ function checkLayout(
     return true;
   }
 
-  if (firstPropertyLocation.start.line !== firstTokenLocation.start.line) {
+  if (
+    firstPropertyLocation.start.line
+    !== firstTokenLocation.start.line
+  ) {
     logger.debug(
       'checkLayout: the first property should be on the same line as the opening brace');
 
@@ -212,7 +215,10 @@ function checkLayout(
       return true;
     }
 
-    if (propertyLocation.start.column !== propertyIndentation.column) {
+    if (
+      propertyLocation.start.column
+      !== propertyIndentation.column
+    ) {
       logger.debug(
         'checkLayout: the properties should be indented one level deeper than the opening brace');
 
@@ -235,8 +241,7 @@ function checkLayout(
       continue;
     }
 
-    const value =
-      property.value;
+    const value = property.value;
 
     const valueLocation =
       tryGetLocation(value);
@@ -248,8 +253,11 @@ function checkLayout(
       return true;
     }
 
-    if (expressionIsShort(value)) {
-      if (valueLocation.start.line !== propertyLocation.start.line) {
+    if (expressionIsSimple(value)) {
+      if (
+        valueLocation.start.line
+        !== propertyLocation.start.line
+      ) {
         logger.debug(
           'checkLayout: the short expressionvalue should be on the same line as the property');
 
@@ -263,8 +271,10 @@ function checkLayout(
         propertyIndentation.increase().column;
 
       if (
-        valueLocation.start.line !== expectedValueLine
-        || valueLocation.start.column !== expectedValueColumn
+        valueLocation.start.line
+        !== expectedValueLine
+        || valueLocation.start.column
+           !== expectedValueColumn
       ) {
         logger.debug(
           'checkLayout: the long expression value should be on the next line and indented one level deeper than the property');

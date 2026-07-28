@@ -9,8 +9,8 @@ import { getIndentation,
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 
 export function fmtAssignmentExpression(
     node: AssignmentExpression,
@@ -26,15 +26,14 @@ export function fmtAssignmentExpression(
   code.push(leftText);
   code.push(' =');
 
-  const nodeRight =
-    node.right;
+  const nodeRight = node.right;
 
   const rightText =
     context.sourceCode.getText(
       nodeRight as unknown as Node);
 
   if (
-    expressionIsShort(
+    expressionIsSimple(
       nodeRight as Expression)
   ) {
     code.push(' ');
@@ -61,8 +60,7 @@ export function fmtAssignmentExpression(
       context: FormattingContext
     ): Indentation
   {
-    const nodeRight =
-      node.right;
+    const nodeRight = node.right;
 
     if (!nodeRight) {
       return Indentation.INITIAL;

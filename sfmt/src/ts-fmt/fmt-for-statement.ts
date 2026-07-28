@@ -59,7 +59,10 @@ export function fmtForStatement(
   code.push(
     clauseIndentation.value);
 
-  if (node.update !== null) {
+  if (
+    node.update
+    !== null
+  ) {
     code.push(
       context.sourceCode.getText(
         node.update));

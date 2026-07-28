@@ -14,8 +14,8 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 import { Logger }
   from '../logging.js';
 import { fmtAssignmentExpression }
@@ -99,22 +99,32 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const left =
-    node.left;
+  const logger = context.logger;
+
+  const left = node.left;
 
   if (!left) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression node has no left property, cancel.');
 
     return true;
   }
 
-  const right =
-    node.right;
+  const right = node.right;
 
   if (!right) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression node has no right property, cancel.');
+
+    return true;
+  }
+
+  if (
+    expressionIsSimple(
+      right)
+  ) {
+    logger.debug(
+      'AssignmentExpression right node is simple, accept.');
 
     return true;
   }
@@ -124,21 +134,8 @@ function checkLayout(
       left);
 
   if (!nodeLeftLocation) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression left node has no location, cancel.');
-
-    return true;
-  }
-
-  const nodeLeftLocStartLine =
-    nodeLeftLocation.start.line;
-
-  if (
-    expressionIsShort(
-      right)
-  ) {
-    context.logger.debug(
-      'AssignmentExpression right node is short, accept.');
 
     return true;
   }
@@ -149,7 +146,7 @@ function checkLayout(
       token => token.value === '=');
 
   if (!equalsToken) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression right node has no equals token, cancel.');
 
     return true;
@@ -160,7 +157,7 @@ function checkLayout(
       equalsToken);
 
   if (!equalsTokenLocation) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression equals token has no location, cancel.');
 
     return true;
@@ -174,7 +171,7 @@ function checkLayout(
       right);
 
   if (!rightNodeLocation) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression right node has no location, cancel.');
 
     return true;
@@ -187,13 +184,13 @@ function checkLayout(
     equalsTokenLocEndLine < rightNodeLocStartLine;
 
   if (!result) {
-    context.logger.debug(
+    logger.debug(
       'AssignmentExpression equals token is not on a separate line from right node, reject.');
 
     return false;
   }
 
-  context.logger.debug(
+  logger.debug(
     'AssignmentExpression equals token is on a separate line from right node, accept.');
 
   return true;

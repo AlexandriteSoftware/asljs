@@ -17,8 +17,8 @@ import { getIndentation }
   from '../functions/indentations.js';
 import { ensureLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 import { Logger }
   from '../logging.js';
 import { fmtCallExpression }
@@ -107,8 +107,9 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const callee =
-    node.callee;
+  const logger = context.logger;
+
+  const callee = node.callee;
 
   ensureLocation(
     callee);
@@ -123,15 +124,20 @@ function checkLayout(
     return true;
   }
 
-  if (openingParenthesis.loc.start.line !== callee.loc.end.line) {
+  if (
+    openingParenthesis.loc.start.line
+    !== callee.loc.end.line
+  ) {
     // FAIL: opening parenthesis is not on the same line as the callee
     return false;
   }
 
-  const argumentsList =
-    node.arguments;
+  const argumentsList = node.arguments;
 
-  if (argumentsList.length === 0) {
+  if (
+    argumentsList.length
+    === 0
+  ) {
     // no arguments
 
     const closingParenthesis =
@@ -140,12 +146,19 @@ function checkLayout(
         FormattingContextPredicates.isClosingParenthesis);
 
     if (!closingParenthesis) {
-      // no closing parenthesis found, cannot check the layout
+      logger.debug(
+        'no closing parenthesis found, cannot check the layout');
+
       return true;
     }
 
-    if (closingParenthesis.loc.start.line !== openingParenthesis.loc.end.line) {
-      // FAIL: opening and closing parenthesis are not on the same line
+    if (
+      closingParenthesis.loc.start.line
+      !== openingParenthesis.loc.end.line
+    ) {
+      logger.debug(
+        'opening and closing parenthesis are not on the same line');
+
       return false;
     }
 
@@ -161,11 +174,13 @@ function checkLayout(
   const argumentIndent =
     baseIndent.increase();
 
-  if (argumentsList.length === 1) {
+  if (
+    argumentsList.length
+    === 1
+  ) {
     // one argument: if short enough, can be kept on the same line,
     // otherwise must be on a new line with increased indentation
-    const argument =
-      argumentsList[0];
+    const argument = argumentsList[0];
 
     ensureLocation(argument);
 
@@ -173,13 +188,17 @@ function checkLayout(
       argument.loc.start.line;
 
     const isShortParameter =
-      expressionIsShort(
+      expressionIsSimple(
         argument as Expression);
 
     if (
       isShortParameter
-      && openingParenthesis.loc.end.line === argumentStartLine
+      && openingParenthesis.loc.end.line
+         === argumentStartLine
     ) {
+      logger.debug(
+        'one short argument is on the same line as the opening parenthesis');
+
       return true;
     }
   }
@@ -201,7 +220,10 @@ function checkLayout(
       argument.loc.start.line;
 
     if (index === 0) {
-      if (openingParenthesis.loc.end.line === argumentStartLine) {
+      if (
+        openingParenthesis.loc.end.line
+        === argumentStartLine
+      ) {
         return false;
       }
     } else {
@@ -214,7 +236,13 @@ function checkLayout(
       const previousArgumentEndLine =
         previousArgument.loc.end.line;
 
-      if (previousArgumentEndLine === argumentStartLine) {
+      if (
+        previousArgumentEndLine
+        === argumentStartLine
+      ) {
+        logger.debug(
+          'two arguments are on the same line');
+
         return false;
       }
     }
@@ -229,6 +257,9 @@ function checkLayout(
         currentArgumentIndent);
 
     if (!correctIndent) {
+      logger.debug(
+        'argument indentation is not correct');
+
       return false;
     }
   }
@@ -245,12 +276,19 @@ function checkLayout(
       FormattingContextPredicates.isClosingParenthesis);
 
   if (!closingParenthesis) {
-    // no closing parenthesis found, cannot check the layout
+    logger.debug(
+      'no closing parenthesis found, cannot check the layout');
+
     return true;
   }
 
-  if (closingParenthesis.loc.start.line !== lastArgument.loc.end.line) {
-    // FAIL: closing parenthesis is not on the same line as the last argument
+  if (
+    closingParenthesis.loc.start.line
+    !== lastArgument.loc.end.line
+  ) {
+    logger.debug(
+      'closing parenthesis is not on the same line as the last argument');
+
     return false;
   }
 

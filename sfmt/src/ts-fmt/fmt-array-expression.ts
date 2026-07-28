@@ -23,10 +23,12 @@ export function fmtArrayExpression(
     return original;
   }
 
-  const firstToken =
-    tokens[0];
+  const firstToken = tokens[0];
 
-  if (firstToken.value !== '[') {
+  if (
+    firstToken.value
+    !== '['
+  ) {
     // do not rebuild if the first token is not an opening brace
     return original;
   }
@@ -39,7 +41,10 @@ export function fmtArrayExpression(
     return original;
   }
 
-  if (node.elements.length === 0) {
+  if (
+    node.elements.length
+    === 0
+  ) {
     // an array expression without elements should be just `[ ]`
     return '[ ]';
   }

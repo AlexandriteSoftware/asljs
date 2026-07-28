@@ -98,8 +98,7 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const sourceCode =
-    context.sourceCode;
+  const sourceCode = context.sourceCode;
 
   const ifToken =
     sourceCode.getFirstToken(
@@ -119,8 +118,10 @@ function checkLayout(
 
   if (
     ifToken === null
-    || openingParen === null
-    || closingParen === null
+    || openingParen
+       === null
+    || closingParen
+       === null
   ) {
     return true;
   }
@@ -141,11 +142,19 @@ function checkLayout(
     tryGetLocation(
       node.test);
 
-  if (!ifTokenLocation || !openingParenLocation || !closingParenLocation || !testLocation) {
+  if (
+    !ifTokenLocation
+    || !openingParenLocation
+    || !closingParenLocation
+    || !testLocation
+  ) {
     return true;
   }
 
-  if (ifTokenLocation.start.line !== openingParenLocation.start.line) {
+  if (
+    ifTokenLocation.start.line
+    !== openingParenLocation.start.line
+  ) {
     return false;
   }
 
@@ -229,12 +238,12 @@ function checkElseIfLayout(
     context: FormattingContext
   ): boolean
 {
-  const alternate =
-    node.alternate ?? null;
+  const alternate = node.alternate ?? null;
 
   if (
     alternate === null
-    || alternate.type !== 'IfStatement'
+    || alternate.type
+       !== 'IfStatement'
   ) {
     return true;
   }
@@ -253,7 +262,10 @@ function checkElseIfLayout(
     tryGetLocation(
       alternate);
 
-  if (!elseTokenLocation || !alternateLocation) {
+  if (
+    !elseTokenLocation
+    || !alternateLocation
+  ) {
     return true;
   }
 

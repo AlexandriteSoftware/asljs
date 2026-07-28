@@ -4,16 +4,16 @@ import { Expression }
   from 'estree';
 import assert
   from 'node:assert/strict';
-import { fileURLToPath }
-  from 'node:url';
 import path
   from 'node:path';
 import test
   from 'node:test';
+import { fileURLToPath }
+  from 'node:url';
 import { loadTests }
-  from './build-style-rule-tests-from-markdown.js';
-import { formatCriteriaExpression }
-  from './criteria-expression.js';
+  from '../functions/build-style-rule-tests-from-markdown.js';
+import { fmtCriteriaExpression }
+  from './fmt-criteria-expression.js';
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(
@@ -29,7 +29,7 @@ const testCases =
 
 for (const testCase of testCases) {
   test(
-    `criteria-expression: ${testCase.title}`,
+    `fmt-criteria-expression: ${testCase.title}`,
     (): void =>
     {
       assert.strictEqual(
@@ -60,7 +60,7 @@ function format(
     parseExpression(
       code);
 
-  return formatCriteriaExpression(
+  return fmtCriteriaExpression(
     expression,
     { getText:
         (node: Expression): string =>
@@ -81,10 +81,12 @@ function parseExpression(
         sourceType: 'module',
         range: true });
 
-  const statement =
-    ast.body[0];
+  const statement = ast.body[0];
 
-  if (statement.type !== 'ExpressionStatement') {
+  if (
+    statement.type
+    !== 'ExpressionStatement'
+  ) {
     throw new Error(
       'Expected expression statement');
   }

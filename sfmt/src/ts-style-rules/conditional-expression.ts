@@ -105,7 +105,8 @@ function checkLayout(
       token => token.value === ':');
 
   if (
-    questionMark === null
+    questionMark
+    === null
     || colon === null
   ) {
     return true;
@@ -118,8 +119,10 @@ function checkLayout(
     node.consequent.loc?.end.line;
 
   if (
-    testEndLine === undefined
-    || consequentEndLine === undefined
+    testEndLine
+    === undefined
+    || consequentEndLine
+       === undefined
   ) {
     return true;
   }
@@ -135,12 +138,13 @@ export function getIndentation(
     node: ConditionalExpression
   ): string
 {
-  const nodeLocation =
-    node.loc;
+  const nodeLocation = node.loc;
 
   if (
-    nodeLocation === undefined
-    || nodeLocation === null
+    nodeLocation
+    === undefined
+    || nodeLocation
+       === null
   ) {
     return '';
   }

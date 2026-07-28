@@ -6,8 +6,8 @@ import { Indentation }
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 
 export function fmtObjectExpression(
     node: ObjectExpression,
@@ -25,10 +25,12 @@ export function fmtObjectExpression(
     return original;
   }
 
-  const firstToken =
-    tokens[0];
+  const firstToken = tokens[0];
 
-  if (firstToken.value !== '{') {
+  if (
+    firstToken.value
+    !== '{'
+  ) {
     // do not rebuild if the first token is not an opening brace
     return original;
   }
@@ -41,7 +43,10 @@ export function fmtObjectExpression(
     return original;
   }
 
-  if (node.properties.length === 0) {
+  if (
+    node.properties.length
+    === 0
+  ) {
     // an object expression without properties should be just `{ }`
     return '{ }';
   }
@@ -75,7 +80,10 @@ export function fmtObjectExpression(
         propertyIndentation.value);
     }
 
-    if (property.type !== 'Property') {
+    if (
+      property.type
+      !== 'Property'
+    ) {
       code.push(
         context.sourceCode
           .getText(
@@ -84,7 +92,10 @@ export function fmtObjectExpression(
       continue;
     }
 
-    if (property.kind !== 'init') {
+    if (
+      property.kind
+      !== 'init'
+    ) {
       code.push(
         context.sourceCode
           .getText(
@@ -121,11 +132,10 @@ export function fmtObjectExpression(
 
     code.push(':');
 
-    const propertyValue =
-      property.value;
+    const propertyValue = property.value;
 
     const propertyValueIsShort =
-      expressionIsShort(
+      expressionIsSimple(
         propertyValue);
 
     if (propertyValueIsShort) {

@@ -2,8 +2,8 @@ import { BinaryExpression,
          Expression,
          LogicalExpression }
   from 'estree';
-
-const LONG_EXPRESSION_LENGTH = 15;
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 
 export interface CriteriaExpressionFormattingOptions
 {
@@ -16,7 +16,7 @@ type OperationExpression =
   | BinaryExpression
   | LogicalExpression;
 
-export function formatCriteriaExpression(
+export function fmtCriteriaExpression(
     expression: Expression,
     options: CriteriaExpressionFormattingOptions
   ): string
@@ -30,17 +30,6 @@ export function formatCriteriaExpression(
     options);
 }
 
-/**
- * Keep the operators with priority '===' and higher on the same line,
- * and break the lines for operators with priority '&' and lower.
- * 
- * Examples:
- * 
- * ```ts
- * a + b + c === d + e
- * && f <= g
- * ```
- */
 function formatOperationExpression(
     expression: OperationExpression,
     options: CriteriaExpressionFormattingOptions
@@ -50,24 +39,23 @@ function formatOperationExpression(
     getOperationPriority(
       expression);
 
-  const leftExpression =
-    expression.left as Expression;
+  const isSimple =
+    expressionIsSimple(
+      expression);
+
+  const shouldBreakBeforeOperator =
+    !isSimple
+    || operatorPriority < 7;
 
   const left =
     formatOperand(
-      leftExpression,
+      expression.left as Expression,
       operatorPriority,
       options);
 
-  const shouldBreakBeforeOperator =
-    operatorPriority < 7
-    || left.includes(
-      options.newLine)
-    || left.length >= LONG_EXPRESSION_LENGTH;
-
   const indentation =
     ' '.repeat(
-      leftExpression.loc?.start.column
+      expression.left.loc?.start.column
       ?? 0);
 
   const separator =
@@ -103,7 +91,10 @@ function formatOperand(
       expression,
       options);
 
-  if (operatorPriority < parentPriority) {
+  if (
+    operatorPriority
+    < parentPriority
+  ) {
     return `(${formatted})`;
   }
 

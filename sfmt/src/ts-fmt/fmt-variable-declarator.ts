@@ -1,7 +1,6 @@
-import { type TSESTree }
-  from '@typescript-eslint/typescript-estree';
 import { Expression,
-         Node }
+         Node,
+         VariableDeclarator }
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -10,11 +9,11 @@ import { getIndentation,
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 
 export function fmtVariableDeclarator(
-    node: TSESTree.VariableDeclarator,
+    node: VariableDeclarator,
     context: FormattingContext
   ): string
 {
@@ -27,8 +26,7 @@ export function fmtVariableDeclarator(
   code.push(idText);
   code.push(' =');
 
-  const nodeInit =
-    node.init;
+  const nodeInit = node.init;
 
   if (nodeInit) {
     const initText =
@@ -36,7 +34,7 @@ export function fmtVariableDeclarator(
         nodeInit as unknown as Node);
 
     if (
-      expressionIsShort(
+      expressionIsSimple(
         nodeInit as Expression)
     ) {
       code.push(' ');
@@ -60,12 +58,11 @@ export function fmtVariableDeclarator(
   return code.join('');
 
   function getVariableDeclaratorIndentation(
-      node: TSESTree.VariableDeclarator,
+      node: VariableDeclarator,
       context: FormattingContext
     ): Indentation
   {
-    const nodeInit =
-      node.init;
+    const nodeInit = node.init;
 
     if (!nodeInit) {
       return Indentation.INITIAL;

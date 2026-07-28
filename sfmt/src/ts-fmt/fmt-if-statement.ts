@@ -5,12 +5,12 @@ import { Expression,
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
-import { formatCriteriaExpression }
-  from '../functions/criteria-expression.js';
 import { getIndentation }
   from '../functions/indentations.js';
 import { type WithLocation }
   from '../functions/location.js';
+import { fmtCriteriaExpression }
+  from './fmt-criteria-expression.js';
 
 export function fmtIfStatement(
     node: IfStatement,
@@ -93,14 +93,13 @@ export function fmtIfTestExpression(
     continuationIndentation: string = ''
   ): string
 {
-  return formatCriteriaExpression(
+  return fmtCriteriaExpression(
     expression,
     { getText:
         (node: Expression): string =>
         context.sourceCode.getText(
           node),
-      newLine:
-        context.newLine });
+      newLine: context.newLine });
 }
 
 function fmtStatement(
@@ -108,7 +107,10 @@ function fmtStatement(
     context: FormattingContext
   ): string
 {
-  if (statement.type === 'IfStatement') {
+  if (
+    statement.type
+    === 'IfStatement'
+  ) {
     return fmtIfStatement(
       statement,
       context);

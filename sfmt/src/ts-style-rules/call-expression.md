@@ -114,7 +114,7 @@ test(
 
 Nested calls require chopping:
 
-```js
+```js focus
 test(test(test()));
 // ---
 test(

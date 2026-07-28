@@ -13,14 +13,18 @@ export function fmtImportNode(
   const code =
     [ 'import ' ];
 
-  if (node.specifiers.length === 0) {
-    const nodeRange =
-      node.range;
+  if (
+    node.specifiers.length
+    === 0
+  ) {
+    const nodeRange = node.range;
 
-    const sourceRange =
-      node.source.range;
+    const sourceRange = node.source.range;
 
-    if (nodeRange && sourceRange) {
+    if (
+      nodeRange
+      && sourceRange
+    ) {
       const importPart =
         context.sourceCode.text.slice(
           nodeRange[0],
@@ -91,7 +95,10 @@ export function fmtImportNode(
           node.specifiers,
           index);
 
-      if (importSpecifierGroup.length === 0) {
+      if (
+        importSpecifierGroup.length
+        === 0
+      ) {
         code.push(
           formatSpecifier(
             node.specifiers[index]));
@@ -127,10 +134,12 @@ export function fmtImportNode(
       index < specifiers.length;
       index++
     ) {
-      const specifier =
-        specifiers[index];
+      const specifier = specifiers[index];
 
-      if (specifier.type !== 'ImportSpecifier') {
+      if (
+        specifier.type
+        !== 'ImportSpecifier'
+      ) {
         break;
       }
 
@@ -165,8 +174,7 @@ export function fmtImportNode(
       const importKind =
         specifier.importKind;
 
-      const parent =
-        specifier.parent;
+      const parent = specifier.parent;
 
       const isType =
         importKind === 'type'
@@ -177,20 +185,27 @@ export function fmtImportNode(
         code.push('type ');
       }
 
-      if (specifier.imported.type === 'Identifier') {
-        const importedIdentifier =
-          specifier.imported;
+      if (
+        specifier.imported.type
+        === 'Identifier'
+      ) {
+        const importedIdentifier = specifier.imported;
 
-        if (importedIdentifier.name === specifier.local.name) {
+        if (
+          importedIdentifier.name
+          === specifier.local.name
+        ) {
           code.push(
             importedIdentifier.name);
         } else {
           code.push(
             `${importedIdentifier.name} as ${specifier.local.name}`);
         }
-      } else if (specifier.imported.type === 'Literal') {
-        const importedLiteral =
-          specifier.imported;
+      } else if (
+        specifier.imported.type
+        === 'Literal'
+      ) {
+        const importedLiteral = specifier.imported;
 
         code.push(
           `${importedLiteral.raw} as ${specifier.local.name}`);

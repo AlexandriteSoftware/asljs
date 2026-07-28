@@ -99,8 +99,7 @@ function checkLayout(
     context: FormattingContext
   ): boolean
 {
-  const sourceCode =
-    context.sourceCode;
+  const sourceCode = context.sourceCode;
 
   const forToken =
     sourceCode.getFirstToken(
@@ -132,10 +131,14 @@ function checkLayout(
 
   if (
     forToken === null
-    || openingParen === null
-    || firstSemicolon === null
-    || secondSemicolon === null
-    || closingParen === null
+    || openingParen
+       === null
+    || firstSemicolon
+       === null
+    || secondSemicolon
+       === null
+    || closingParen
+       === null
   ) {
     return true;
   }
@@ -160,11 +163,20 @@ function checkLayout(
     tryGetLocation(
       closingParen);
 
-  if (!forTokenLocation || !openingParenLocation || !firstSemicolonLocation || !secondSemicolonLocation || !closingParenLocation) {
+  if (
+    !forTokenLocation
+    || !openingParenLocation
+    || !firstSemicolonLocation
+    || !secondSemicolonLocation
+    || !closingParenLocation
+  ) {
     return true;
   }
 
-  if (forTokenLocation.start.line !== openingParenLocation.start.line) {
+  if (
+    forTokenLocation.start.line
+    !== openingParenLocation.start.line
+  ) {
     return false;
   }
 
@@ -275,7 +287,10 @@ function getFirstSemicolon(
     openingParen: AST.Token | null
   ): AST.Token | null
 {
-  if (openingParen === null) {
+  if (
+    openingParen
+    === null
+  ) {
     return null;
   }
 
@@ -298,7 +313,10 @@ function getSecondSemicolon(
     firstSemicolon: AST.Token | null
   ): AST.Token | null
 {
-  if (firstSemicolon === null) {
+  if (
+    firstSemicolon
+    === null
+  ) {
     return null;
   }
 

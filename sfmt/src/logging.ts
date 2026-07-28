@@ -175,7 +175,10 @@ class PinoLoggerProvider implements LoggerProvider
 
     let pinoLogLevel;
 
-    if (level === 'information') {
+    if (
+      level
+      === 'information'
+    ) {
       pinoLogLevel = 'info';
     } else if (level === 'warning') {
       pinoLogLevel = 'warn';
@@ -195,8 +198,7 @@ class PinoLoggerProvider implements LoggerProvider
         pino.transport(
           { target: 'pino-pretty',
             options:
-              { messageFormat:
-                  '{context}: {msg}',
+              { messageFormat: '{context}: {msg}',
                 ignore: 'context',
                 colorize: true } });
     }

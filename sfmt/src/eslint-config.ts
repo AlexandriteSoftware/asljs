@@ -100,8 +100,7 @@ const typescriptConfig: Linter.Config =
           { ecmaVersion: 'latest',
             sourceType: 'module' } },
     plugins:
-      { '@typescript-eslint':
-          tseslint.plugin,
+      { '@typescript-eslint': tseslint.plugin,
         asljs:
           { rules:
               { 'import-style':

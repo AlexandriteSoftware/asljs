@@ -64,8 +64,7 @@ function checkStatements(
     context: Rule.RuleContext
   ): void
 {
-  const sourceCode =
-    context.sourceCode;
+  const sourceCode = context.sourceCode;
 
   const newLine =
     sourceCode.text.includes('\r\n')
@@ -77,11 +76,9 @@ function checkStatements(
     index < statements.length - 1;
     index++
   ) {
-    const statement =
-      statements[index];
+    const statement = statements[index];
 
-    const statementRange =
-      statement.range;
+    const statementRange = statement.range;
 
     if (statementRange === undefined) {
       continue;
@@ -90,8 +87,7 @@ function checkStatements(
     const nextStatement =
       statements[index + 1];
 
-    const nextStatementRange =
-      nextStatement.range;
+    const nextStatementRange = nextStatement.range;
 
     if (nextStatementRange === undefined) {
       continue;
@@ -151,7 +147,10 @@ function shouldSpace(
   const nextStatementStartLine =
     nextStatement.loc?.start.line;
 
-  if (nextStatementStartLine === undefined) {
+  if (
+    nextStatementStartLine
+    === undefined
+  ) {
     return false;
   }
 
@@ -172,8 +171,7 @@ function statementIsMultiline(
     statement: TSESTree.Statement
   ): boolean
 {
-  const statementLocation =
-    statement.loc;
+  const statementLocation = statement.loc;
 
   if (
     statementLocation === undefined
@@ -190,8 +188,7 @@ function getIndentation(
     node: TSESTree.Statement
   ): string
 {
-  const nodeLocation =
-    node.loc;
+  const nodeLocation = node.loc;
 
   if (
     nodeLocation === undefined

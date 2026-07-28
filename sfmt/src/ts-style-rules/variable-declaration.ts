@@ -13,8 +13,8 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 import { Logger }
   from '../logging.js';
 import { fmtVariableDeclarator }
@@ -61,10 +61,7 @@ function processVariableDeclaration(
     node: VariableDeclarator & Rule.NodeParentExtension
   ): void
 {
-  const tsNode =
-    node as unknown as TSESTree.VariableDeclarator;
-
-  if (!tsNode.init) {
+  if (!node.init) {
     return;
   }
 
@@ -75,7 +72,7 @@ function processVariableDeclaration(
 
   const correctLayout =
     checkLayout(
-      tsNode,
+      node,
       fmtCtx);
 
   if (correctLayout) {
@@ -91,7 +88,7 @@ function processVariableDeclaration(
       {
         const replacement =
           fmtVariableDeclarator(
-            tsNode,
+            node,
             fmtCtx);
 
         return fixer.replaceText(
@@ -101,12 +98,11 @@ function processVariableDeclaration(
 }
 
 function checkLayout(
-    node: TSESTree.VariableDeclarator,
+    node: VariableDeclarator,
     context: FormattingContext
   ): boolean
 {
-  const nodeInitialiser =
-    node.init;
+  const nodeInitialiser = node.init;
 
   if (!nodeInitialiser) {
     return true;
@@ -124,7 +120,7 @@ function checkLayout(
     nodeInitialiserLocation.start.line;
 
   if (
-    expressionIsShort(
+    expressionIsSimple(
       nodeInitialiser)
   ) {
     return true;

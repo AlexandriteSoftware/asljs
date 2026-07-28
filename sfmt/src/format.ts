@@ -49,8 +49,7 @@ export async function format(
     await glob(
       pattern,
       { absolute: true,
-        cwd:
-          environment.cwd,
+        cwd: environment.cwd,
         dot: true,
         nodir: true,
         ignore:

@@ -66,8 +66,7 @@ export function getIndentation(
     node: WithLocation
   ): Indentation
 {
-  const nodeStartLine =
-    node.loc.start.line;
+  const nodeStartLine = node.loc.start.line;
 
   const line =
     sourceCode.lines[nodeStartLine - 1];
@@ -91,8 +90,7 @@ export function getIndentationFromLine(
     index < line.length;
     index++
   ) {
-    const char =
-      line[index];
+    const char = line[index];
 
     if (char !== ' ') {
       return ' '.repeat(index);

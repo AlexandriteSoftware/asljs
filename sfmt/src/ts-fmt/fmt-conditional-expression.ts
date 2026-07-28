@@ -16,8 +16,7 @@ export function fmtConditionalExpression(
       context.sourceCode,
       node);
 
-  const branchIndent =
-    indent + '  ';
+  const branchIndent = indent + '  ';
 
   const testText =
     context.sourceCode.getText(

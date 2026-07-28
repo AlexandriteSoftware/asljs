@@ -7,8 +7,8 @@ import { getIndentation }
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
-import { expressionIsShort }
-  from '../functions/short-expression.js';
+import { expressionIsSimple }
+  from '../functions/simple-expression.js';
 
 export function fmtNewExpression(
     node: NewExpression,
@@ -20,7 +20,10 @@ export function fmtNewExpression(
       node.callee,
       token => token.value === '(');
 
-  if (openingParenthesis === null) {
+  if (
+    openingParenthesis
+    === null
+  ) {
     const expressionCode =
       context.sourceCode.getText(node);
 
@@ -45,9 +48,11 @@ export function fmtNewExpression(
   code.push(callee);
   code.push('(');
 
-  if (node.arguments.length === 1) {
-    const firstArgument =
-      node.arguments[0];
+  if (
+    node.arguments.length
+    === 1
+  ) {
+    const firstArgument = node.arguments[0];
 
     const firstArgumentText =
       context.sourceCode.getText(
@@ -60,15 +65,21 @@ export function fmtNewExpression(
     const argumentStartLine =
       firstArgumentLocation?.start.line;
 
-    if (argumentStartLine === undefined) {
+    if (
+      argumentStartLine
+      === undefined
+    ) {
       code.push(
         firstArgumentText);
     } else {
       if (
-        expressionIsShort(
+        expressionIsSimple(
           firstArgument)
       ) {
-        if (openingParenthesis.loc.end.line !== argumentStartLine) {
+        if (
+          openingParenthesis.loc.end.line
+          !== argumentStartLine
+        ) {
           code.push(
             context.newLine);
 
@@ -89,7 +100,10 @@ export function fmtNewExpression(
           firstArgumentText);
       }
     }
-  } else if (node.arguments.length > 1) {
+  } else if (
+    node.arguments.length
+    > 1
+  ) {
     for (
       let index = 0;
       index < node.arguments.length;
