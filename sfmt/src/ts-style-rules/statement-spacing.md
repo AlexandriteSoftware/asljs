@@ -2,7 +2,7 @@
 
 ## Tests
 
-```js
+```ts
 await fn(a);
 fn(a);
 // ---
@@ -10,7 +10,7 @@ await fn(a);
 fn(a);
 ```
 
-```js
+```ts
 await fn(
   a,
   b);
@@ -23,7 +23,7 @@ await fn(
 fn(a);
 ```
 
-```js
+```ts
   await fn(
     a,
     b);
@@ -36,7 +36,7 @@ fn(a);
   fn(a);
 ```
 
-```js
+```ts
   fn(a);
   await fn(
     a,
@@ -49,7 +49,7 @@ fn(a);
     b);
 ```
 
-```js
+```ts
 import { a }
   from 'a';
 import { b }
@@ -59,4 +59,29 @@ import { a }
   from 'a';
 import { b }
   from 'b';
+```
+
+```ts focus
+type A =
+  (
+    a: string,
+    b: string
+  ) => void;
+export type B =
+  (
+    a: string,
+    b: string
+  ) => void;
+// ---
+type A =
+  (
+    a: string,
+    b: string
+  ) => void;
+
+export type B =
+  (
+    a: string,
+    b: string
+  ) => void;
 ```

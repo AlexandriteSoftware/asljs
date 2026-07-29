@@ -12,16 +12,16 @@ import { getIndentation }
   from '../functions/indentations.js';
 import { Logger }
   from '../logging.js';
-import { fmtFunctionDeclaration }
-  from '../ts-fmt/fmt-function-declaration.js';
+import { fmtTypeAliasDeclaration }
+  from '../ts-fmt/fmt-type-alias-declaration.js';
 
 const messages: Record<string, string> =
-  { 'use-asljs-function-declaration-style':
-      'Use asljs function declaration style.' };
+  { 'use-asljs-type-alias-declaration-style':
+      'Use asljs type alias declaration style.' };
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   tsFormatterFactory(
-    'function-declaration',
+    'type-alias-declaration',
     listenerFactory,
     messages);
 
@@ -37,15 +37,15 @@ function listenerFactory(
   ): TSESLint.RuleListener =>
   {
     const ruleListener: TSESLint.RuleListener =
-      { FunctionDeclaration: listener };
+      { TSTypeAliasDeclaration: listener };
 
     return ruleListener;
 
     function listener(
-        node: TSESTree.FunctionDeclaration
+        node: TSESTree.TSTypeAliasDeclaration
       ): void
     {
-      processFunctionDeclaration(
+      processTypeAliasDeclaration(
         logger,
         context,
         node);
@@ -55,12 +55,19 @@ function listenerFactory(
   return listenerFactory;
 }
 
-function processFunctionDeclaration(
+function processTypeAliasDeclaration(
     logger: Logger,
     context: TSESLint.RuleContext<string, readonly unknown[]>,
-    node: TSESTree.FunctionDeclaration
+    node: TSESTree.TSTypeAliasDeclaration
   ): void
 {
+  if (
+    node.typeAnnotation.type
+    !== 'TSFunctionType'
+  ) {
+    return;
+  }
+
   const fmtCtx =
     new FormattingContext(
       context.sourceCode,
@@ -78,14 +85,14 @@ function processFunctionDeclaration(
   context.report(
     { node: node,
       messageId:
-        'use-asljs-function-declaration-style',
+        'use-asljs-type-alias-declaration-style',
       fix:
         (
         fixer: TSESLint.RuleFixer
       ): TSESLint.RuleFix =>
       {
         const replacement =
-          fmtFunctionDeclaration(
+          fmtTypeAliasDeclaration(
             node,
             fmtCtx);
 
@@ -95,61 +102,85 @@ function processFunctionDeclaration(
       } });
 }
 
-/**
- * Checks that function parameters are on separate lines and the opening brace
- * is on a new line.
- */
 function checkLayout(
-    node: TSESTree.FunctionDeclaration,
+    node: TSESTree.TSTypeAliasDeclaration,
     context: FormattingContext
   ): boolean
 {
+  const functionType = node.typeAnnotation;
+
+  if (functionType.type !== 'TSFunctionType') {
+    return true;
+  }
+
   const baseIndent =
     getIndentation(
       context.sourceCode,
       node);
 
+  const openingParenIndent =
+    baseIndent.increase();
+
   const parametersIndent =
     baseIndent.increase(2);
 
-  const id = node.id;
+  const equalsToken =
+    context.sourceCode.getTokenBefore(
+      functionType,
+      token => token.value === '=');
 
-  const typeParameters =
-    (node as unknown as { typeParameters: TSESTree.Node | null; })
-      .typeParameters;
+  const equalsLocation = equalsToken?.loc;
+
+  if (!equalsLocation) {
+    return true;
+  }
 
   let openingParen: TSESTree.Token | null = null;
 
-  if (typeParameters) {
+  if (functionType.typeParameters) {
     openingParen =
       context.sourceCode.getTokenAfter(
-        typeParameters);
-  } else if (id) {
+        functionType.typeParameters);
+  } else {
     openingParen =
-      context.sourceCode.getTokenAfter(
-        id);
+      context.sourceCode.getFirstToken(
+        functionType);
   }
 
   if (
     !openingParen
-    || openingParen.type
-       !== 'Punctuator'
-    || openingParen.value
-       !== '('
+    || openingParen.type !== 'Punctuator'
+    || openingParen.value !== '('
   ) {
     return true;
   }
 
-  const openingParenLocation = openingParen?.loc;
+  const openingParenLocation = openingParen.loc;
 
   if (!openingParenLocation) {
     return true;
   }
 
-  const openingParenEndLine =
-    openingParenLocation.end.line;
+  if (
+    equalsLocation.end.line
+    === openingParenLocation.start.line
+  ) {
+    return false;
+  }
 
-  const parameters = node.params;
+  const actualOpeningParenIndent =
+    getIndentation(
+      context.sourceCode,
+      openingParen);
+
+  if (
+    actualOpeningParenIndent.value
+    !== openingParenIndent.value
+  ) {
+    return false;
+  }
+
+  const parameters = functionType.params;
 
   if (
     parameters.length
@@ -157,29 +188,26 @@ function checkLayout(
   ) {
     const firstParameter = parameters[0];
 
-    const tryGetFirstParameterLocation = firstParameter?.loc;
+    const firstParameterLocation = firstParameter?.loc;
 
-    if (!tryGetFirstParameterLocation) {
+    if (!firstParameterLocation) {
       return true;
     }
 
-    const firstParameterStartLine =
-      tryGetFirstParameterLocation.start.line;
-
     if (
-      openingParenEndLine
-      === firstParameterStartLine
+      openingParenLocation.end.line
+      === firstParameterLocation.start.line
     ) {
       return false;
     }
 
-    const parameterIndent =
+    const firstParameterIndent =
       getIndentation(
         context.sourceCode,
         firstParameter);
 
     if (
-      parameterIndent.value
+      firstParameterIndent.value
       !== parametersIndent.value
     ) {
       return false;
@@ -210,15 +238,9 @@ function checkLayout(
       return true;
     }
 
-    const previousParameterEndLine =
-      previousParameterLocation.end.line;
-
-    const currentParameterStartLine =
-      currentParameterLocation.start.line;
-
     if (
-      previousParameterEndLine
-      === currentParameterStartLine
+      previousParameterLocation.end.line
+      === currentParameterLocation.start.line
     ) {
       return false;
     }
@@ -252,80 +274,124 @@ function checkLayout(
     }
 
     closingParen =
-      context.sourceCode
-      .getTokenAfter(
+      context.sourceCode.getTokenAfter(
         lastParameter);
 
     if (
       !closingParen
-      || closingParen.type
-         !== 'Punctuator'
-      || closingParen.value
-         !== ')'
+      || closingParen.type !== 'Punctuator'
+      || closingParen.value !== ')'
     ) {
       return true;
     }
 
-    const closingParenLocation = closingParen?.loc;
+    const closingParenLocation = closingParen.loc;
 
     if (!closingParenLocation) {
       return true;
     }
 
-    const closingParenEndLine =
-      closingParenLocation.end.line;
-
     if (
-      closingParenEndLine
-      === lastParameterLocation.end.line
+      lastParameterLocation.end.line
+      === closingParenLocation.start.line
     ) {
       return false;
     }
   } else {
-    const openingParenEndLine =
-      openingParenLocation.end.line;
-
     closingParen =
-      context.sourceCode
-      .getTokenAfter(
-        openingParen);
+      context.sourceCode.getTokenAfter(
+        openingParen as unknown as TSESTree.Node);
 
     if (
       !closingParen
-      || closingParen.type
-         !== 'Punctuator'
-      || closingParen.value
-         !== ')'
+      || closingParen.type !== 'Punctuator'
+      || closingParen.value !== ')'
     ) {
       return true;
     }
 
-    if (!closingParen) {
+    const closingParenLocation = closingParen.loc;
+
+    if (!closingParenLocation) {
       return true;
     }
 
-    const closingParenStartLine =
-      closingParen.loc.start.line;
-
     if (
-      openingParenEndLine
-      === closingParenStartLine
+      openingParenLocation.end.line
+      === closingParenLocation.start.line
     ) {
       return false;
     }
   }
 
   const closingParenIndent =
-    baseIndent.increase();
-
-  const actualClosingParenIndent =
     getIndentation(
       context.sourceCode,
       closingParen);
 
   if (
     closingParenIndent.value
-    !== actualClosingParenIndent.value
+    !== openingParenIndent.value
+  ) {
+    return false;
+  }
+
+  const arrowToken =
+    context.sourceCode.getTokenAfter(
+      closingParen as unknown as TSESTree.Node);
+
+  if (
+    !arrowToken
+    || arrowToken.type !== 'Punctuator'
+    || arrowToken.value !== '=>'
+  ) {
+    return true;
+  }
+
+  const arrowLocation = arrowToken.loc;
+
+  if (!arrowLocation) {
+    return true;
+  }
+
+  if (
+    arrowLocation.start.line
+    !== closingParen.loc?.start.line
+  ) {
+    return false;
+  }
+
+  const returnType =
+    functionType.returnType;
+
+  if (!returnType) {
+    return true;
+  }
+
+  const returnTypeNode =
+    returnType.typeAnnotation;
+
+  const returnTypeLocation = returnTypeNode.loc;
+
+  if (!returnTypeLocation) {
+    return true;
+  }
+
+  if (
+    returnTypeLocation.start.line
+    === arrowLocation.end.line
+  ) {
+    return false;
+  }
+
+  const returnTypeIndent =
+    getIndentation(
+      context.sourceCode,
+      returnTypeNode);
+
+  if (
+    returnTypeIndent.value
+    !== parametersIndent.value
   ) {
     return false;
   }

@@ -10,19 +10,19 @@ import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
 import { createPinoLoggerProvider }
   from '../logging.js';
-import tsConditionalExpressionFormatterFactory
-  from './conditional-expression.js';
+import tsTypeAliasDeclarationFormatterFactory
+  from './type-alias-declaration.js';
 
 const loggerProvider =
   createPinoLoggerProvider();
 
-const tsConditionalExpressionFormatter =
-  tsConditionalExpressionFormatterFactory(
+const tsTypeAliasDeclarationFormatter =
+  tsTypeAliasDeclarationFormatterFactory(
     loggerProvider.getLogger(
-      'conditional-expression.test.ts'));
+      'type-alias-declaration.test.ts'));
 
-const tsConditionalExpressionEslintRule =
-  tsConditionalExpressionFormatter
+const tsTypeAliasDeclarationEslintRule =
+  tsTypeAliasDeclarationFormatter
   .eslintRule as unknown as RuleDefinition;
 
 const SCRIPT_FILE_PATH =
@@ -39,10 +39,10 @@ const eslint =
           plugins:
             { asljs:
                 { rules:
-                    { 'conditional-expression-style':
-                        tsConditionalExpressionEslintRule } } },
+                    { 'type-alias-declaration':
+                        tsTypeAliasDeclarationEslintRule } } },
           rules:
-            { 'asljs/conditional-expression-style': 'error' } } });
+            { 'asljs/type-alias-declaration': 'error' } } });
 
 await buildStyleRuleTestsFromMarkdown(
   SCRIPT_FILE_PATH,

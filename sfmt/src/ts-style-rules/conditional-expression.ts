@@ -1,11 +1,12 @@
-import { Rule,
-         SourceCode }
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
+import { Rule }
   from 'eslint';
-import { ConditionalExpression }
-  from 'estree';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -14,10 +15,15 @@ import { Logger }
 import { fmtConditionalExpression }
   from '../ts-fmt/fmt-conditional-expression.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-conditional-expression-style':
+      'Use asljs conditional expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'conditional-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -27,16 +33,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { ConditionalExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: ConditionalExpression
+        node: TSESTree.ConditionalExpression
       ): void
     {
       processConditionalExpression(
@@ -51,8 +57,8 @@ function listenerFactory(
 
 function processConditionalExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: ConditionalExpression
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.ConditionalExpression
   ): void
 {
   const fmtCtx =
@@ -71,10 +77,12 @@ function processConditionalExpression(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs conditional expression style.',
+      messageId:
+        'use-asljs-conditional-expression-style',
       fix:
-        (fixer: Rule.RuleFixer): Rule.Fix =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         const replacement =
           fmtConditionalExpression(
@@ -88,7 +96,7 @@ function processConditionalExpression(
 }
 
 function checkLayout(
-    node: ConditionalExpression,
+    node: TSESTree.ConditionalExpression,
     context: FormattingContext
   ): boolean
 {
@@ -134,8 +142,8 @@ function checkLayout(
 }
 
 export function getIndentation(
-    sourceCode: SourceCode,
-    node: ConditionalExpression
+    sourceCode: Readonly<TSESLint.SourceCode>,
+    node: TSESTree.ConditionalExpression
   ): string
 {
   const nodeLocation = node.loc;
@@ -160,14 +168,16 @@ export function getIndentation(
 
 function asTokenTarget(
     node: unknown
-  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
+  ): NonNullable<Parameters<TSESLint.SourceCode['getTokenAfter']>[0]>
 {
-  return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
+  return node as NonNullable<
+    Parameters<TSESLint.SourceCode['getTokenAfter']>[0]
+  >;
 }
 
 export function asTextNode(
     node: unknown
-  ): Parameters<SourceCode['getText']>[0]
+  ): Parameters<TSESLint.SourceCode['getText']>[0]
 {
-  return node as Parameters<SourceCode['getText']>[0];
+  return node as Parameters<TSESLint.SourceCode['getText']>[0];
 }

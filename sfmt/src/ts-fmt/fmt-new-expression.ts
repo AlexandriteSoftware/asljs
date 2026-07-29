@@ -1,6 +1,5 @@
-import { NewExpression,
-         Node }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
@@ -11,7 +10,7 @@ import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export function fmtNewExpression(
-    node: NewExpression,
+    node: TSESTree.NewExpression,
     context: FormattingContext
   ): string
 {
@@ -42,7 +41,7 @@ export function fmtNewExpression(
 
   const callee =
     context.sourceCode.getText(
-      node.callee as unknown as Node);
+      node.callee);
 
   code.push('new ');
   code.push(callee);
@@ -58,9 +57,7 @@ export function fmtNewExpression(
       context.sourceCode.getText(
         firstArgument);
 
-    const firstArgumentLocation =
-      tryGetLocation(
-        firstArgument);
+    const firstArgumentLocation = firstArgument?.loc;
 
     const argumentStartLine =
       firstArgumentLocation?.start.line;

@@ -1,7 +1,5 @@
-import { Expression,
-         Node,
-         VariableDeclarator }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation,
@@ -13,7 +11,7 @@ import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export function fmtVariableDeclarator(
-    node: VariableDeclarator,
+    node: TSESTree.VariableDeclarator,
     context: FormattingContext
   ): string
 {
@@ -21,7 +19,7 @@ export function fmtVariableDeclarator(
 
   const idText =
     context.sourceCode.getText(
-      node.id as unknown as Node);
+      node.id);
 
   code.push(idText);
   code.push(' =');
@@ -31,11 +29,11 @@ export function fmtVariableDeclarator(
   if (nodeInit) {
     const initText =
       context.sourceCode.getText(
-        nodeInit as unknown as Node);
+        nodeInit);
 
     if (
       expressionIsSimple(
-        nodeInit as Expression)
+        nodeInit)
     ) {
       code.push(' ');
       code.push(initText);
@@ -58,31 +56,29 @@ export function fmtVariableDeclarator(
   return code.join('');
 
   function getVariableDeclaratorIndentation(
-      node: VariableDeclarator,
+      node: TSESTree.VariableDeclarator,
       context: FormattingContext
     ): Indentation
   {
     const nodeInit = node.init;
 
     if (!nodeInit) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
     const equalsToken =
       context.sourceCode.getTokenBefore(
-        nodeInit as unknown as Node,
+        nodeInit,
         token => token.value === '=');
 
     if (!equalsToken) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
-    const equalsTokenLocation =
-      tryGetLocation(
-        equalsToken);
+    const equalsTokenLocation = equalsToken?.loc;
 
     if (!equalsTokenLocation) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
     return getIndentation(

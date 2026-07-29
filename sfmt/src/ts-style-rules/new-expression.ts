@@ -1,15 +1,12 @@
-import { ViolationReport }
-  from '@eslint/core';
-import { JSSyntaxElement,
-         Rule }
-  from 'eslint';
-import { Expression,
-         NewExpression,
-         SimpleCallExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
+import { ReportDescriptor }
+  from '@typescript-eslint/utils/ts-eslint';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext,
          FormattingContextPredicates }
@@ -25,10 +22,15 @@ import { Logger }
 import { fmtNewExpression }
   from '../ts-fmt/fmt-new-expression.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-new-expression-style':
+      'Use asljs new expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'new-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -38,16 +40,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { NewExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: NewExpression & Rule.NodeParentExtension
+        node: TSESTree.NewExpression
       ): void
     {
       processNewExpression(
@@ -62,8 +64,8 @@ function listenerFactory(
 
 function processNewExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: NewExpression & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.NewExpression
   ): void
 {
   const fmtCtx =
@@ -80,17 +82,17 @@ function processNewExpression(
     return;
   }
 
-  const report: ViolationReport<JSSyntaxElement, string> =
+  const report: ReportDescriptor<string> =
     { node: node,
-      message:
-        'Use asljs new expression style.',
+      messageId:
+        'use-asljs-new-expression-style',
       fix: fix };
 
   context.report(report);
 
   function fix(
-      fixer: Rule.RuleFixer
-    ): Rule.Fix
+      fixer: TSESLint.RuleFixer
+    ): TSESLint.RuleFix
   {
     const replacement =
       fmtNewExpression(
@@ -104,7 +106,7 @@ function processNewExpression(
 }
 
 function checkLayout(
-    node: NewExpression,
+    node: TSESTree.NewExpression,
     context: FormattingContext
   ): boolean
 {
@@ -182,12 +184,12 @@ function checkLayout(
     const argumentStartLine =
       argument.loc.start.line;
 
-    const isShortParameter =
+    const argumentIsSimple =
       expressionIsSimple(
-        argument as Expression);
+        argument);
 
     if (
-      isShortParameter
+      argumentIsSimple
       && openingParenthesis.loc.end.line
          === argumentStartLine
     ) {

@@ -1,14 +1,19 @@
 import { ViolationReport }
   from '@eslint/core';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
+import { ReportDescriptor }
+  from '@typescript-eslint/utils/ts-eslint';
 import { JSSyntaxElement,
          Rule }
   from 'eslint';
-import { Expression,
-         SimpleCallExpression }
+import { Expression }
   from 'estree';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext,
          FormattingContextPredicates }
@@ -24,10 +29,15 @@ import { Logger }
 import { fmtCallExpression }
   from '../ts-fmt/fmt-call-expression.js';
 
+const messages: Record<string, string> =
+  { 'Use asljs call expression style.':
+      'Use asljs call expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'call-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -37,16 +47,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { CallExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: SimpleCallExpression & Rule.NodeParentExtension
+        node: TSESTree.CallExpression
       ): void
     {
       processCallExpression(
@@ -61,8 +71,8 @@ function listenerFactory(
 
 function processCallExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: SimpleCallExpression & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.CallExpression
   ): void
 {
   const fmtCtx =
@@ -79,17 +89,17 @@ function processCallExpression(
     return;
   }
 
-  const report: ViolationReport<JSSyntaxElement, string> =
+  const report: ReportDescriptor<string> =
     { node: node,
-      message:
+      messageId:
         'Use asljs call expression style.',
       fix: fix };
 
   context.report(report);
 
   function fix(
-      fixer: Rule.RuleFixer
-    ): Rule.Fix
+      fixer: TSESLint.RuleFixer
+    ): TSESLint.RuleFix
   {
     const replacement =
       fmtCallExpression(
@@ -103,7 +113,7 @@ function processCallExpression(
 }
 
 function checkLayout(
-    node: SimpleCallExpression,
+    node: TSESTree.CallExpression,
     context: FormattingContext
   ): boolean
 {

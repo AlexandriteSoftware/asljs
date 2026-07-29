@@ -1,3 +1,5 @@
+import { RuleDefinition }
+  from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
@@ -20,7 +22,8 @@ const tsVariableDeclarationFormatter =
       'variable-declaration.test.ts'));
 
 const tsVariableDeclarationEslintRule =
-  tsVariableDeclarationFormatter.eslintRule;
+  tsVariableDeclarationFormatter
+  .eslintRule as unknown as RuleDefinition;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(

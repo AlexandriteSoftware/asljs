@@ -1,29 +1,30 @@
-import { Rule,
-         SourceCode }
-  from 'eslint';
-import { IfStatement }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { tryGetLocation,
-         type WithLocation }
-  from '../functions/location.js';
 import { Logger }
   from '../logging.js';
 import { fmtIfStatement,
          fmtIfTestExpression }
   from '../ts-fmt/fmt-if-statement.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-if-statement-style':
+      'Use asljs if statement style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'if-statement',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -33,16 +34,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { IfStatement: listener };
 
     return ruleListener;
 
     function listener(
-        node: IfStatement
+        node: TSESTree.IfStatement
       ): void
     {
       processIfStatement(
@@ -57,8 +58,8 @@ function listenerFactory(
 
 function processIfStatement(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: IfStatement
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.IfStatement
   ): void
 {
   const fmtCtx =
@@ -77,10 +78,12 @@ function processIfStatement(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs if statement style.',
+      messageId:
+        'use-asljs-if-statement-style',
       fix:
-        (fixer: Rule.RuleFixer): Rule.Fix =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         const replacement =
           fmtIfStatement(
@@ -94,7 +97,7 @@ function processIfStatement(
 }
 
 function checkLayout(
-    node: IfStatement,
+    node: TSESTree.IfStatement,
     context: FormattingContext
   ): boolean
 {
@@ -126,21 +129,13 @@ function checkLayout(
     return true;
   }
 
-  const ifTokenLocation =
-    tryGetLocation(
-      ifToken);
+  const ifTokenLocation = ifToken?.loc;
 
-  const openingParenLocation =
-    tryGetLocation(
-      openingParen);
+  const openingParenLocation = openingParen?.loc;
 
-  const closingParenLocation =
-    tryGetLocation(
-      closingParen);
+  const closingParenLocation = closingParen?.loc;
 
-  const testLocation =
-    tryGetLocation(
-      node.test);
+  const testLocation = node.test?.loc;
 
   if (
     !ifTokenLocation
@@ -183,8 +178,8 @@ function checkLayout(
 }
 
 function checkConditionLayout(
-    node: IfStatement,
-    sourceCode: SourceCode,
+    node: TSESTree.IfStatement,
+    sourceCode: Readonly<TSESLint.SourceCode>,
     openingParenLine: number,
     closingParenLine: number,
     closingParenColumn: number,
@@ -198,7 +193,7 @@ function checkConditionLayout(
       context,
       getIndentation(
         sourceCode,
-        node as unknown as WithLocation)
+        node)
       .increase()
       .value);
 
@@ -218,7 +213,7 @@ function checkConditionLayout(
   const baseIndentation =
     getIndentation(
       sourceCode,
-      node as unknown as WithLocation);
+      node);
 
   const expectedConditionIndentation =
     baseIndentation.increase();
@@ -234,7 +229,7 @@ function checkConditionLayout(
 }
 
 function checkElseIfLayout(
-    node: IfStatement,
+    node: TSESTree.IfStatement,
     context: FormattingContext
   ): boolean
 {
@@ -254,13 +249,9 @@ function checkElseIfLayout(
         alternate),
       token => token.value === 'else');
 
-  const elseTokenLocation =
-    tryGetLocation(
-      elseToken);
+  const elseTokenLocation = elseToken?.loc;
 
-  const alternateLocation =
-    tryGetLocation(
-      alternate);
+  const alternateLocation = alternate?.loc;
 
   if (
     !elseTokenLocation
@@ -274,7 +265,9 @@ function checkElseIfLayout(
 
 function asTokenTarget(
     node: unknown
-  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
+  ): NonNullable<Parameters<TSESLint.SourceCode['getTokenAfter']>[0]>
 {
-  return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
+  return node as NonNullable<
+    Parameters<TSESLint.SourceCode['getTokenAfter']>[0]
+  >;
 }

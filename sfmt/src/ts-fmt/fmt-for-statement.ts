@@ -1,22 +1,19 @@
-import { ForStatement,
-         Node }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { type WithLocation }
-  from '../functions/location.js';
 
 export function fmtForStatement(
-    node: ForStatement,
+    node: TSESTree.ForStatement,
     context: FormattingContext
   ): string
 {
   const baseIndentation =
     getIndentation(
       context.sourceCode,
-      node as unknown as WithLocation);
+      node);
 
   const clauseIndentation =
     baseIndentation.increase();
@@ -34,7 +31,7 @@ export function fmtForStatement(
   if (node.init !== null) {
     code.push(
       context.sourceCode.getText(
-        node.init as Node));
+        node.init));
   }
 
   code.push(';');
@@ -78,7 +75,7 @@ export function fmtForStatement(
 
   code.push(
     context.sourceCode.getText(
-      node.body as Node));
+      node.body));
 
   return code.join('');
 }

@@ -1,5 +1,5 @@
-import { ArrayExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/utils';
 import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
@@ -8,7 +8,7 @@ import { tryGetLocation }
   from '../functions/location.js';
 
 export function fmtArrayExpression(
-    node: ArrayExpression,
+    node: TSESTree.ArrayExpression,
     context: FormattingContext
   ): string
 {
@@ -25,16 +25,12 @@ export function fmtArrayExpression(
 
   const firstToken = tokens[0];
 
-  if (
-    firstToken.value
-    !== '['
-  ) {
+  if (firstToken.value !== '[') {
     // do not rebuild if the first token is not an opening brace
     return original;
   }
 
-  const firstTokenLocation =
-    tryGetLocation(firstToken);
+  const firstTokenLocation = firstToken?.loc;
 
   if (!firstTokenLocation) {
     // do not rebuild if the first token has no location

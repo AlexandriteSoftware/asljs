@@ -1,20 +1,17 @@
-import { ViolationReport }
-  from '@eslint/core';
-import { JSSyntaxElement,
-         Rule }
-  from 'eslint';
-import { ObjectExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
+import { ReportDescriptor }
+  from '@typescript-eslint/utils/ts-eslint';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
   from '../functions/indentations.js';
-import { tryGetLocation }
-  from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
@@ -22,10 +19,15 @@ import { Logger }
 import { fmtObjectExpression }
   from '../ts-fmt/fmt-object-expression.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-object-expression-style':
+      'Use asljs object expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'object-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -35,16 +37,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { ObjectExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: ObjectExpression & Rule.NodeParentExtension
+        node: TSESTree.ObjectExpression
       ): void
     {
       processObjectExpression(
@@ -59,8 +61,8 @@ function listenerFactory(
 
 function processObjectExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: ObjectExpression & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.ObjectExpression
   ): void
 {
   const fmtCtx =
@@ -77,17 +79,17 @@ function processObjectExpression(
     return;
   }
 
-  const report: ViolationReport<JSSyntaxElement, string> =
+  const report: ReportDescriptor<string> =
     { node: node,
-      message:
-        'Use asljs object expression style.',
+      messageId:
+        'use-asljs-object-expression-style',
       fix: fix };
 
   context.report(report);
 
   function fix(
-      fixer: Rule.RuleFixer
-    ): Rule.Fix
+      fixer: TSESLint.RuleFixer
+    ): TSESLint.RuleFix
   {
     const replacement =
       fmtObjectExpression(
@@ -101,7 +103,7 @@ function processObjectExpression(
 }
 
 function checkLayout(
-    node: ObjectExpression,
+    node: TSESTree.ObjectExpression,
     context: FormattingContext
   ): boolean
 {
@@ -126,8 +128,7 @@ function checkLayout(
     return true;
   }
 
-  const firstTokenLocation =
-    tryGetLocation(firstToken);
+  const firstTokenLocation = firstToken?.loc;
 
   if (!firstTokenLocation) {
     logger.debug(
@@ -139,8 +140,7 @@ function checkLayout(
   const lastToken =
     tokens[tokens.length - 1];
 
-  const lastTokenLocation =
-    tryGetLocation(lastToken);
+  const lastTokenLocation = lastToken?.loc;
 
   if (!lastTokenLocation) {
     logger.debug(
@@ -177,8 +177,7 @@ function checkLayout(
 
   const firstProperty = node.properties[0];
 
-  const firstPropertyLocation =
-    tryGetLocation(firstProperty);
+  const firstPropertyLocation = firstProperty?.loc;
 
   if (!firstPropertyLocation) {
     logger.debug(
@@ -205,8 +204,7 @@ function checkLayout(
     const property =
       node.properties[index];
 
-    const propertyLocation =
-      tryGetLocation(property);
+    const propertyLocation = property?.loc;
 
     if (!propertyLocation) {
       logger.debug(
@@ -243,8 +241,7 @@ function checkLayout(
 
     const value = property.value;
 
-    const valueLocation =
-      tryGetLocation(value);
+    const valueLocation = value?.loc;
 
     if (!valueLocation) {
       logger.debug(

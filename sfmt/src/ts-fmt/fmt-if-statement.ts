@@ -1,26 +1,21 @@
-import { Expression,
-         IfStatement,
-         Node,
-         Statement }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { type WithLocation }
-  from '../functions/location.js';
 import { fmtCriteriaExpression }
   from './fmt-criteria-expression.js';
 
 export function fmtIfStatement(
-    node: IfStatement,
+    node: TSESTree.IfStatement,
     context: FormattingContext
   ): string
 {
   const baseIndentation =
     getIndentation(
       context.sourceCode,
-      node as unknown as WithLocation);
+      node);
 
   const conditionIndentation =
     baseIndentation.increase();
@@ -88,7 +83,7 @@ export function fmtIfStatement(
 }
 
 export function fmtIfTestExpression(
-    expression: Expression,
+    expression: TSESTree.Expression,
     context: FormattingContext,
     continuationIndentation: string = ''
   ): string
@@ -96,14 +91,14 @@ export function fmtIfTestExpression(
   return fmtCriteriaExpression(
     expression,
     { getText:
-        (node: Expression): string =>
+        (node: TSESTree.Node): string =>
         context.sourceCode.getText(
           node),
       newLine: context.newLine });
 }
 
 function fmtStatement(
-    statement: Statement,
+    statement: TSESTree.Statement,
     context: FormattingContext
   ): string
 {
@@ -117,5 +112,5 @@ function fmtStatement(
   }
 
   return context.sourceCode.getText(
-    statement as Node);
+    statement);
 }

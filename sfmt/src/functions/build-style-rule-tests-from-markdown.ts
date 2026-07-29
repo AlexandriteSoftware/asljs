@@ -13,10 +13,12 @@ import { MarkdownTest }
 import { readMarkdownTestsFromFile }
   from './markdown-tests/read-markdown-tests-from-file.js';
 
-export type TestFn = (
-  name?: string | undefined,
-  fn?: test.TestFn | undefined
-) => Promise<void>;
+export type TestFn =
+  (
+    name?: string,
+    fn?: test.TestFn
+  ) =>
+    Promise<void>;
 
 /**
  * Reads a markdown file with test cases and sets up tests for each test case.
@@ -151,15 +153,12 @@ function testWithCrNl(
     result: MarkdownTest[]
   ): void
 {
-  const crNlSourceLineEnding =
+  const crNlSource =
     testCase.source.replace(
       /\r?\n/g,
       '\r\n');
 
-  if (
-    testCase.source
-    === crNlSourceLineEnding
-  ) {
+  if (testCase.source === crNlSource) {
     return;
   }
 
@@ -172,8 +171,7 @@ function testWithCrNl(
     { testSuite: testCase.testSuite,
       title:
         `${testCase.title} (with \\r\\n)`,
-      source:
-        crNlSourceLineEnding,
+      source: crNlSource,
       expected:
         crNlLineEndingExpected,
       tags: testCase.tags };

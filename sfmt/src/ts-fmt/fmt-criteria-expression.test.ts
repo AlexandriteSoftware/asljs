@@ -1,7 +1,7 @@
-import * as espree
-  from 'espree';
-import { Expression }
-  from 'estree';
+import tsParser
+  from '@typescript-eslint/parser';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import assert
   from 'node:assert/strict';
 import path
@@ -63,7 +63,7 @@ function format(
   return fmtCriteriaExpression(
     expression,
     { getText:
-        (node: Expression): string =>
+        (node: TSESTree.Node): string =>
         getNodeText(
           code,
           node),
@@ -72,10 +72,10 @@ function format(
 
 function parseExpression(
     code: string
-  ): Expression
+  ): TSESTree.Expression
 {
   const ast =
-    espree.parse(
+    tsParser.parse(
       code,
       { ecmaVersion: 'latest',
         sourceType: 'module',
@@ -91,16 +91,15 @@ function parseExpression(
       'Expected expression statement');
   }
 
-  return statement.expression as Expression;
+  return statement.expression as TSESTree.Expression;
 }
 
 function getNodeText(
     code: string,
-    node: Expression
+    node: TSESTree.Node
   ): string
 {
-  const range =
-    (node as Expression & { range?: [number, number]; }).range;
+  const range = node.range;
 
   if (!range) {
     throw new Error(

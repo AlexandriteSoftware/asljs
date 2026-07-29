@@ -1,3 +1,6 @@
+import { type Plugin,
+         type RuleDefinition }
+  from '@eslint/core';
 import js
   from '@eslint/js';
 import tsParser
@@ -30,6 +33,8 @@ import tsObjectExpressionFormatterFactory
   from './ts-style-rules/object-expression.js';
 import tsStatementSpacingFormatterFactory
   from './ts-style-rules/statement-spacing.js';
+import tsTypeAliasDeclarationFormatterFactory
+  from './ts-style-rules/type-alias-declaration.js';
 import tsVariableDeclarationFormatterFactory
   from './ts-style-rules/variable-declaration.js';
 
@@ -43,53 +48,65 @@ const ignores: Linter.Config =
 const loggerProvider =
   new NullLoggerProvider();
 
-const tsArrayExpressionFormatter =
-  tsArrayExpressionFormatterFactory(
-    loggerProvider.getLogger());
+const tsFormatterFactories =
+  { 'array-expression-style':
+      tsArrayExpressionFormatterFactory,
+    'assignment-expression-style':
+      tsAssignmentExpressionFormatterFactory,
+    'call-expression-style':
+      tsCallExpressionFormatterFactory,
+    'conditional-expression-style':
+      tsConditionalExpressionFormatterFactory,
+    'for-statement-style':
+      tsForStatementFormatterFactory,
+    'function-declaration-style':
+      tsFunctionDeclarationFormatterFactory,
+    'if-statement-style':
+      tsIfStatementFormatterFactory,
+    'import-style':
+      tsImportDeclarationFormatterFactory,
+    'new-expression-style':
+      tsNewExpressionFormatterFactory,
+    'object-expression-style':
+      tsObjectExpressionFormatterFactory,
+    'statement-spacing-style':
+      tsStatementSpacingFormatterFactory,
+    'type-alias-declaration':
+      tsTypeAliasDeclarationFormatterFactory,
+    'variable-declaration-style':
+      tsVariableDeclarationFormatterFactory };
 
-const tsAssignmentExpressionFormatter =
-  tsAssignmentExpressionFormatterFactory(
-    loggerProvider.getLogger());
+const pluginRules: Record<string, RuleDefinition> = {};
 
-const tsCallExpressionFormatter =
-  tsCallExpressionFormatterFactory(
-    loggerProvider.getLogger());
+for (
+  const [ruleName, formatterFactory] of Object.entries(
+    tsFormatterFactories)
+) {
+  const rule =
+    formatterFactory(
+      loggerProvider.getLogger());
 
-const tsConditionalExpressionFormatter =
-  tsConditionalExpressionFormatterFactory(
-    loggerProvider.getLogger());
+  pluginRules[ruleName] =
+    rule.eslintRule as unknown as RuleDefinition;
+}
 
-const tsForStatementFormatter =
-  tsForStatementFormatterFactory(
-    loggerProvider.getLogger());
+const severityPerPluginRule: Record<string, string> =
+  Object.fromEntries(
+    Object.entries(
+      pluginRules)
+    .map(
+      ([ruleName, _rule]) =>
+      {
+        const entry =
+          [ `asljs-sfmt-ts/${ruleName}`,
+            'error' as const ];
 
-const tsFunctionDeclarationFormatter =
-  tsFunctionDeclarationFormatterFactory(
-    loggerProvider.getLogger());
+        return entry;
+      }));
 
-const tsIfStatementFormatter =
-  tsIfStatementFormatterFactory(
-    loggerProvider.getLogger());
-
-const tsImportDeclarationFormatter =
-  tsImportDeclarationFormatterFactory(
-    loggerProvider.getLogger());
-
-const tsNewExpressionFormatter =
-  tsNewExpressionFormatterFactory(
-    loggerProvider.getLogger());
-
-const tsObjectExpressionFormatter =
-  tsObjectExpressionFormatterFactory(
-    loggerProvider.getLogger());
-
-const tsStatementSpacingFormatter =
-  tsStatementSpacingFormatterFactory(
-    loggerProvider.getLogger());
-
-const tsVariableDeclarationFormatter =
-  tsVariableDeclarationFormatterFactory(
-    loggerProvider.getLogger());
+const asljsSfmtTsPlugin: Record<string, Plugin> =
+  { 'asljs-sfmt-ts':
+      { rules: pluginRules } };
 
 const typescriptConfig: Linter.Config =
   { files:
@@ -101,32 +118,7 @@ const typescriptConfig: Linter.Config =
             sourceType: 'module' } },
     plugins:
       { '@typescript-eslint': tseslint.plugin,
-        asljs:
-          { rules:
-              { 'import-style':
-                  tsImportDeclarationFormatter.eslintRule,
-                'assignment-expression-style':
-                  tsAssignmentExpressionFormatter.eslintRule,
-                'function-declaration-style':
-                  tsFunctionDeclarationFormatter.eslintRule,
-                'for-statement-style':
-                  tsForStatementFormatter.eslintRule,
-                'if-statement-style':
-                  tsIfStatementFormatter.eslintRule,
-                'conditional-expression-style':
-                  tsConditionalExpressionFormatter.eslintRule,
-                'call-expression-style':
-                  tsCallExpressionFormatter.eslintRule,
-                'variable-declaration-style':
-                  tsVariableDeclarationFormatter.eslintRule,
-                'statement-spacing':
-                  tsStatementSpacingFormatter.eslintRule,
-                'new-expression-style':
-                  tsNewExpressionFormatter.eslintRule,
-                'object-expression-style':
-                  tsObjectExpressionFormatter.eslintRule,
-                'array-expression-style':
-                  tsArrayExpressionFormatter.eslintRule } } },
+        ...asljsSfmtTsPlugin },
     rules:
       { indent: 'off',
         semi:
@@ -169,18 +161,7 @@ const typescriptConfig: Linter.Config =
               allowTypedFunctionExpressions: true,
               allowHigherOrderFunctions: true,
               allowDirectConstAssertionInArrowFunctions: true } ],
-        'asljs/import-style': 'error',
-        'asljs/assignment-expression-style': 'error',
-        'asljs/function-declaration-style': 'error',
-        'asljs/for-statement-style': 'error',
-        'asljs/if-statement-style': 'error',
-        'asljs/conditional-expression-style': 'error',
-        'asljs/call-expression-style': 'error',
-        'asljs/variable-declaration-style': 'error',
-        'asljs/statement-spacing': 'error',
-        'asljs/new-expression-style': 'error',
-        'asljs/object-expression-style': 'error',
-        'asljs/array-expression-style': 'error' } };
+        ...severityPerPluginRule } };
 
 const javascriptConfig: Linter.Config =
   { files:

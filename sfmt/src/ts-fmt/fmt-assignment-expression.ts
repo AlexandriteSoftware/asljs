@@ -1,3 +1,5 @@
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { AssignmentExpression,
          Expression,
          Node }
@@ -13,7 +15,7 @@ import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export function fmtAssignmentExpression(
-    node: AssignmentExpression,
+    node: TSESTree.AssignmentExpression,
     context: FormattingContext
   ): string
 {
@@ -21,7 +23,7 @@ export function fmtAssignmentExpression(
 
   const leftText =
     context.sourceCode.getText(
-      node.left as unknown as Node);
+      node.left);
 
   code.push(leftText);
   code.push(' =');
@@ -30,7 +32,7 @@ export function fmtAssignmentExpression(
 
   const rightText =
     context.sourceCode.getText(
-      nodeRight as unknown as Node);
+      nodeRight);
 
   if (
     expressionIsSimple(
@@ -56,31 +58,29 @@ export function fmtAssignmentExpression(
   return code.join('');
 
   function getAssignmentExpressionIndentation(
-      node: AssignmentExpression,
+      node: TSESTree.AssignmentExpression,
       context: FormattingContext
     ): Indentation
   {
     const nodeRight = node.right;
 
     if (!nodeRight) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
     const equalsToken =
       context.sourceCode.getTokenBefore(
-        nodeRight as unknown as Node,
+        nodeRight,
         token => token.value === '=');
 
     if (!equalsToken) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
-    const equalsTokenLocation =
-      tryGetLocation(
-        equalsToken);
+    const equalsTokenLocation = equalsToken?.loc;
 
     if (!equalsTokenLocation) {
-      return Indentation.INITIAL;
+      return Indentation.Initial;
     }
 
     return getIndentation(

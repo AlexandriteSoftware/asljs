@@ -1,5 +1,5 @@
-import { ConditionalExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { asTextNode,
@@ -7,7 +7,7 @@ import { asTextNode,
   from '../ts-style-rules/conditional-expression.js';
 
 export function fmtConditionalExpression(
-    node: ConditionalExpression,
+    node: TSESTree.ConditionalExpression,
     context: FormattingContext
   ): string
 {

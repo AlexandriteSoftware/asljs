@@ -1,24 +1,6 @@
 import { TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { ArrayExpression,
-         ArrayPattern,
-         AssignmentPattern,
-         CallExpression,
-         ChainElement,
-         ChainExpression,
-         Expression,
-         Identifier,
-         Literal,
-         MemberExpression,
-         NewExpression,
-         ObjectExpression,
-         ObjectPattern,
-         PrivateIdentifier,
-         RestElement,
-         SpreadElement,
-         Super,
-         TemplateLiteral,
-         UnaryExpression }
+import * as estree
   from 'estree';
 import { tryGetLocation }
   from './location.js';
@@ -26,16 +8,16 @@ import { tryGetLocation }
 const LONG_EXPRESSION_LENGTH = 20;
 
 export type ExpressionParameter =
-  | TSESTree.TSAsExpression
-  | Expression
-  | SpreadElement
-  | ObjectPattern
-  | ArrayPattern
-  | RestElement
-  | AssignmentPattern
-  | PrivateIdentifier
-  | ChainElement
-  | Super;
+  | TSESTree.Node
+  | estree.Expression
+  | estree.SpreadElement
+  | estree.ObjectPattern
+  | estree.ArrayPattern
+  | estree.RestElement
+  | estree.AssignmentPattern
+  | estree.PrivateIdentifier
+  | estree.ChainElement
+  | estree.Super;
 
 export function expressionIsSimple(
     expression: ExpressionParameter
@@ -43,9 +25,7 @@ export function expressionIsSimple(
 {
   // Any expression is complex if it spans multiple lines
 
-  const location =
-    tryGetLocation(
-      expression);
+  const location = expression?.loc;
 
   if (
     location
@@ -58,7 +38,7 @@ export function expressionIsSimple(
     // Object expression is simple if it has no properties
 
     const objectExpression =
-      expression as ObjectExpression;
+      expression as estree.ObjectExpression;
 
     return objectExpression.properties.length === 0;
   }
@@ -67,7 +47,7 @@ export function expressionIsSimple(
     // Array expression is simple if it has no elements
 
     const arrayExpression =
-      expression as ArrayExpression;
+      expression as estree.ArrayExpression;
 
     return arrayExpression.elements.length === 0;
   }
@@ -76,14 +56,14 @@ export function expressionIsSimple(
     // New expression is simple if it has no arguments and is a Set or Map
 
     const newExpression =
-      expression as NewExpression;
+      expression as estree.NewExpression;
 
     if (
       newExpression.callee.type
       === 'Identifier'
     ) {
       const calleeIdentifier =
-        newExpression.callee as Identifier;
+        newExpression.callee as estree.Identifier;
 
       const allowedConstructors =
         [ 'Set',
@@ -218,7 +198,7 @@ function getLength(
 }
 
 function getCallExpressionLength(
-    expression: CallExpression
+    expression: estree.CallExpression
   ): number
 {
   const calleeLength =
@@ -236,19 +216,17 @@ function getCallExpressionLength(
 }
 
 function getIdentifierLength(
-    expression: Identifier
+    expression: estree.Identifier
   ): number
 {
   return expression.name.length;
 }
 
 function getTemplateLiteralLength(
-    expression: TemplateLiteral
+    expression: estree.TemplateLiteral
   ): number
 {
-  const location =
-    tryGetLocation(
-      expression);
+  const location = expression?.loc;
 
   if (!location) {
     return 0;
@@ -275,7 +253,7 @@ function getTemplateLiteralLength(
 }
 
 function getLiteralLength(
-    expression: Literal
+    expression: estree.Literal
   ): number
 {
   const literalRawContent = expression.raw;
@@ -288,7 +266,7 @@ function getLiteralLength(
 }
 
 function getUnaryExpressionLength(
-    expression: UnaryExpression
+    expression: estree.UnaryExpression
   ): number
 {
   const argumentLength =
@@ -303,7 +281,7 @@ function getUnaryExpressionLength(
 }
 
 function getMemberExpressionLength(
-    expression: MemberExpression
+    expression: estree.MemberExpression
   ): number
 {
   const objectLength =
@@ -335,7 +313,7 @@ function getMemberExpressionLength(
 }
 
 function getChainExpressionLength(
-    expression: ChainExpression
+    expression: estree.ChainExpression
   ): number
 {
   const expressionLength =

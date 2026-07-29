@@ -1,22 +1,19 @@
-import { FunctionDeclaration,
-         Node }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { type WithLocation }
-  from '../functions/location.js';
 
 export function fmtFunctionDeclaration(
-    node: FunctionDeclaration,
+    node: TSESTree.FunctionDeclaration,
     context: FormattingContext
   ): string
 {
   const baseIndent =
     getIndentation(
       context.sourceCode,
-      node as unknown as WithLocation);
+      node);
 
   const parameterIndent =
     baseIndent.increase(2);
@@ -27,7 +24,8 @@ export function fmtFunctionDeclaration(
   const name = node.id?.name ?? '';
 
   const typeParameters =
-    (node as unknown as { typeParameters: Node | null; }).typeParameters;
+    (node as unknown as { typeParameters: TSESTree.Node | null; })
+      .typeParameters;
 
   const body = node.body;
 
@@ -40,7 +38,7 @@ export function fmtFunctionDeclaration(
     node.params.map(
       parameter =>
       context.sourceCode.getText(
-        parameter as unknown as Node));
+        parameter));
 
   const code: string[] = [ ];
 
@@ -105,17 +103,17 @@ export function fmtFunctionDeclaration(
 
   code.push(
     context.sourceCode.getText(
-      body as unknown as Node));
+      body));
 
   return code.join('');
 
   function getReturnTypeText(
-      node: FunctionDeclaration,
+      node: TSESTree.FunctionDeclaration,
       context: FormattingContext
     ): string
   {
     const returnType =
-      (node as unknown as { returnType: Node | null; }).returnType;
+      (node as unknown as { returnType: TSESTree.Node | null; }).returnType;
 
     if (!returnType) {
       return '';

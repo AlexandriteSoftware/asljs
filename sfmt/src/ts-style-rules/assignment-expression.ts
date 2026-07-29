@@ -1,14 +1,10 @@
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { Rule }
-  from 'eslint';
-import { AssignmentExpression,
-         Node,
-         VariableDeclarator }
-  from 'estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -21,10 +17,15 @@ import { Logger }
 import { fmtAssignmentExpression }
   from '../ts-fmt/fmt-assignment-expression.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-assignment-expression-style':
+      'Use asljs assignment expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'assignment-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -34,16 +35,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { AssignmentExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: AssignmentExpression & Rule.NodeParentExtension
+        node: TSESTree.AssignmentExpression
       ): void
     {
       processAssignmentExpression(
@@ -58,8 +59,8 @@ function listenerFactory(
 
 function processAssignmentExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: AssignmentExpression & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.AssignmentExpression
   ): void
 {
   const fmtCtx =
@@ -78,10 +79,12 @@ function processAssignmentExpression(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs variable declaration style.',
+      messageId:
+        'use-asljs-assignment-expression-style',
       fix:
-        fixer =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         const replacement =
           fmtAssignmentExpression(
@@ -95,7 +98,7 @@ function processAssignmentExpression(
 }
 
 function checkLayout(
-    node: AssignmentExpression,
+    node: TSESTree.AssignmentExpression,
     context: FormattingContext
   ): boolean
 {
@@ -129,9 +132,7 @@ function checkLayout(
     return true;
   }
 
-  const nodeLeftLocation =
-    tryGetLocation(
-      left);
+  const nodeLeftLocation = left?.loc;
 
   if (!nodeLeftLocation) {
     logger.debug(
@@ -142,7 +143,7 @@ function checkLayout(
 
   const equalsToken =
     context.sourceCode.getTokenBefore(
-      right as unknown as Node,
+      right,
       token => token.value === '=');
 
   if (!equalsToken) {
@@ -152,9 +153,7 @@ function checkLayout(
     return true;
   }
 
-  const equalsTokenLocation =
-    tryGetLocation(
-      equalsToken);
+  const equalsTokenLocation = equalsToken?.loc;
 
   if (!equalsTokenLocation) {
     logger.debug(
@@ -166,9 +165,7 @@ function checkLayout(
   const equalsTokenLocEndLine =
     equalsTokenLocation.end.line;
 
-  const rightNodeLocation =
-    tryGetLocation(
-      right);
+  const rightNodeLocation = right?.loc;
 
   if (!rightNodeLocation) {
     logger.debug(

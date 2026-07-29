@@ -1,30 +1,29 @@
-import { AST,
-         Rule,
-         SourceCode }
-  from 'eslint';
-import { ForStatement,
-         Node }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { tryGetLocation,
-         type WithLocation }
-  from '../functions/location.js';
 import { Logger }
   from '../logging.js';
 import { fmtForStatement }
   from '../ts-fmt/fmt-for-statement.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-for-statement-style':
+      'Use asljs for statement style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'for-statement',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -34,16 +33,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { ForStatement: listener };
 
     return ruleListener;
 
     function listener(
-        node: ForStatement
+        node: TSESTree.ForStatement
       ): void
     {
       processForStatement(
@@ -58,8 +57,8 @@ function listenerFactory(
 
 function processForStatement(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: ForStatement
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.ForStatement
   ): void
 {
   const fmtCtx =
@@ -78,10 +77,12 @@ function processForStatement(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs for statement style.',
+      messageId:
+        'use-asljs-for-statement-style',
       fix:
-        (fixer: Rule.RuleFixer): Rule.Fix =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         const replacement =
           fmtForStatement(
@@ -95,7 +96,7 @@ function processForStatement(
 }
 
 function checkLayout(
-    node: ForStatement,
+    node: TSESTree.ForStatement,
     context: FormattingContext
   ): boolean
 {
@@ -143,25 +144,16 @@ function checkLayout(
     return true;
   }
 
-  const forTokenLocation =
-    tryGetLocation(
-      forToken);
+  const forTokenLocation = forToken?.loc;
 
-  const openingParenLocation =
-    tryGetLocation(
-      openingParen);
+  const openingParenLocation = openingParen?.loc;
 
-  const firstSemicolonLocation =
-    tryGetLocation(
-      firstSemicolon);
+  const firstSemicolonLocation = firstSemicolon?.loc;
 
   const secondSemicolonLocation =
-    tryGetLocation(
-      secondSemicolon);
+    secondSemicolon?.loc;
 
-  const closingParenLocation =
-    tryGetLocation(
-      closingParen);
+  const closingParenLocation = closingParen?.loc;
 
   if (
     !forTokenLocation
@@ -183,7 +175,7 @@ function checkLayout(
   const baseIndentation =
     getIndentation(
       sourceCode,
-      node as unknown as WithLocation);
+      node);
 
   const clauseIndentation =
     baseIndentation.increase();
@@ -224,7 +216,7 @@ function checkLayout(
 }
 
 function checkClause(
-    clause: Node | null,
+    clause: TSESTree.Node | null,
     previousTokenLine: number,
     semicolonLine: number,
     expectedColumn: number
@@ -234,9 +226,7 @@ function checkClause(
     return semicolonLine === previousTokenLine + 1;
   }
 
-  const clauseLocation =
-    tryGetLocation(
-      clause);
+  const clauseLocation = clause?.loc;
 
   if (!clauseLocation) {
     return true;
@@ -250,7 +240,7 @@ function checkClause(
 }
 
 function checkUpdateClause(
-    clause: Node | null,
+    clause: TSESTree.Node | null,
     previousTokenLine: number,
     closingParenLine: number,
     expectedColumn: number,
@@ -265,9 +255,7 @@ function checkUpdateClause(
     );
   }
 
-  const clauseLocation =
-    tryGetLocation(
-      clause);
+  const clauseLocation = clause?.loc;
 
   if (!clauseLocation) {
     return true;
@@ -282,10 +270,10 @@ function checkUpdateClause(
 }
 
 function getFirstSemicolon(
-    node: ForStatement,
-    sourceCode: SourceCode,
-    openingParen: AST.Token | null
-  ): AST.Token | null
+    node: TSESTree.ForStatement,
+    sourceCode: Readonly<TSESLint.SourceCode>,
+    openingParen: TSESTree.Token | null
+  ): TSESTree.Token | null
 {
   if (
     openingParen
@@ -308,10 +296,10 @@ function getFirstSemicolon(
 }
 
 function getSecondSemicolon(
-    node: ForStatement,
-    sourceCode: SourceCode,
-    firstSemicolon: AST.Token | null
-  ): AST.Token | null
+    node: TSESTree.ForStatement,
+    sourceCode: Readonly<TSESLint.SourceCode>,
+    firstSemicolon: TSESTree.Token | null
+  ): TSESTree.Token | null
 {
   if (
     firstSemicolon
@@ -335,7 +323,9 @@ function getSecondSemicolon(
 
 function asTokenTarget(
     node: unknown
-  ): NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>
+  ): NonNullable<Parameters<TSESLint.SourceCode['getTokenAfter']>[0]>
 {
-  return node as NonNullable<Parameters<SourceCode['getTokenAfter']>[0]>;
+  return node as NonNullable<
+    Parameters<TSESLint.SourceCode['getTokenAfter']>[0]
+  >;
 }

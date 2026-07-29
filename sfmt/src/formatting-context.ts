@@ -1,10 +1,11 @@
-import { AST,
-         SourceCode }
+import { type TSESLint,
+         TSESTree }
+  from '@typescript-eslint/utils';
+import { AST }
   from 'eslint';
 import * as ESTree
   from 'estree';
-import { ensureLocation,
-         WithLocation }
+import { ensureLocation }
   from './functions/location.js';
 import { Logger }
   from './logging.js';
@@ -19,7 +20,7 @@ export class FormattingContext
   newLine: string;
 
   constructor(
-    public readonly sourceCode: SourceCode,
+    public readonly sourceCode: Readonly<TSESLint.SourceCode>,
     public readonly logger: Logger
   )
   {
@@ -32,12 +33,13 @@ export class FormattingContext
   }
 
   next(
-    token: ContextElement,
+    token: TSESTree.Node | TSESTree.Token,
     predicate?: (token?: ContextElement) => boolean
-  ): AST.Token & WithLocation | undefined
+  ): TSESTree.Token | undefined
   {
-    const nextNode =
-      this.sourceCode.getTokenAfter(token);
+    const nextNode: TSESTree.Token | null =
+      this.sourceCode.getTokenAfter(
+        token);
 
     if (!nextNode) {
       return;

@@ -1,5 +1,5 @@
-import { ObjectExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
@@ -10,7 +10,7 @@ import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export function fmtObjectExpression(
-    node: ObjectExpression,
+    node: TSESTree.ObjectExpression,
     context: FormattingContext
   ): string
 {
@@ -35,8 +35,7 @@ export function fmtObjectExpression(
     return original;
   }
 
-  const firstTokenLocation =
-    tryGetLocation(firstToken);
+  const firstTokenLocation = firstToken?.loc;
 
   if (!firstTokenLocation) {
     // do not rebuild if the first token has no location

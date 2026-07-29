@@ -1,18 +1,13 @@
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { Rule }
-  from 'eslint';
-import { Node,
-         VariableDeclarator }
-  from 'estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { tryGetLocation }
-  from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
@@ -20,10 +15,15 @@ import { Logger }
 import { fmtVariableDeclarator }
   from '../ts-fmt/fmt-variable-declarator.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-variable-declaration-style':
+      'Use asljs variable declaration style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'variable-declaration',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -33,16 +33,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { VariableDeclarator: listener };
 
     return ruleListener;
 
     function listener(
-        node: VariableDeclarator & Rule.NodeParentExtension
+        node: TSESTree.VariableDeclarator
       ): void
     {
       processVariableDeclaration(
@@ -57,8 +57,8 @@ function listenerFactory(
 
 function processVariableDeclaration(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: VariableDeclarator & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.VariableDeclarator
   ): void
 {
   if (!node.init) {
@@ -81,10 +81,12 @@ function processVariableDeclaration(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs variable declaration style.',
+      messageId:
+        'use-asljs-variable-declaration-style',
       fix:
-        fixer =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         const replacement =
           fmtVariableDeclarator(
@@ -98,7 +100,7 @@ function processVariableDeclaration(
 }
 
 function checkLayout(
-    node: VariableDeclarator,
+    node: TSESTree.VariableDeclarator,
     context: FormattingContext
   ): boolean
 {
@@ -109,8 +111,7 @@ function checkLayout(
   }
 
   const nodeInitialiserLocation =
-    tryGetLocation(
-      nodeInitialiser);
+    nodeInitialiser?.loc;
 
   if (!nodeInitialiserLocation) {
     return true;
@@ -128,12 +129,10 @@ function checkLayout(
 
   const equalsToken =
     context.sourceCode.getTokenBefore(
-      nodeInitialiser as unknown as Node,
+      nodeInitialiser,
       token => token.value === '=');
 
-  const equalsTokenLocation =
-    tryGetLocation(
-      equalsToken);
+  const equalsTokenLocation = equalsToken?.loc;
 
   if (!equalsTokenLocation) {
     return true;

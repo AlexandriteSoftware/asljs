@@ -1,29 +1,31 @@
-import { ViolationReport }
-  from '@eslint/core';
-import { JSSyntaxElement,
-         Rule }
-  from 'eslint';
-import { ArrayExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
+import { ReportDescriptor }
+  from '@typescript-eslint/utils/ts-eslint';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
   from '../functions/indentations.js';
-import { tryGetLocation }
-  from '../functions/location.js';
 import { Logger }
   from '../logging.js';
 import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
 
+const messages: Record<string, string> =
+  { 'Use asljs array expression style.':
+      'Use asljs array expression style.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'array-expression',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -33,16 +35,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { ArrayExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: ArrayExpression & Rule.NodeParentExtension
+        node: TSESTree.ArrayExpression
       ): void
     {
       processArrayExpression(
@@ -57,8 +59,8 @@ function listenerFactory(
 
 function processArrayExpression(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: ArrayExpression & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.ArrayExpression
   ): void
 {
   const fmtCtx =
@@ -75,17 +77,17 @@ function processArrayExpression(
     return;
   }
 
-  const report: ViolationReport<JSSyntaxElement, string> =
+  const report: ReportDescriptor<string> =
     { node: node,
-      message:
+      messageId:
         'Use asljs array expression style.',
       fix: fix };
 
   context.report(report);
 
   function fix(
-      fixer: Rule.RuleFixer
-    ): Rule.Fix
+      fixer: TSESLint.RuleFixer
+    ): TSESLint.RuleFix
   {
     const replacement =
       fmtArrayExpression(
@@ -99,7 +101,7 @@ function processArrayExpression(
 }
 
 function checkLayout(
-    node: ArrayExpression,
+    node: TSESTree.ArrayExpression,
     context: FormattingContext
   ): boolean
 {
@@ -121,8 +123,7 @@ function checkLayout(
     return true;
   }
 
-  const firstTokenLocation =
-    tryGetLocation(firstToken);
+  const firstTokenLocation = firstToken?.loc;
 
   if (!firstTokenLocation) {
     // do not check if the first token has no location
@@ -132,8 +133,7 @@ function checkLayout(
   const lastToken =
     tokens[tokens.length - 1];
 
-  const lastTokenLocation =
-    tryGetLocation(lastToken);
+  const lastTokenLocation = lastToken?.loc;
 
   if (!lastTokenLocation) {
     // do not check if the last token has no location
@@ -162,15 +162,14 @@ function checkLayout(
 
   const firstElement = node.elements[0];
 
-  const firstElementLocation =
-    tryGetLocation(firstElement);
+  const firstElementLocation = firstElement?.loc;
 
   if (!firstElementLocation) {
-    // do not check if the first property has no location
+    // do not check if the first element has no location
     return true;
   }
 
-  // first property should be on the same line as the opening brace
+  // first element should be on the same line as the opening bracket
   if (
     firstElementLocation.start.line
     !== firstTokenLocation.start.line
@@ -178,7 +177,7 @@ function checkLayout(
     return false;
   }
 
-  // the properties should be indented one level deeper than the opening brace
+  // the elements should be indented one level deeper than the opening bracket
   for (
     let index = 0;
     index < node.elements.length;
@@ -192,11 +191,10 @@ function checkLayout(
       return true;
     }
 
-    const elementLocation =
-      tryGetLocation(element);
+    const elementLocation = element?.loc;
 
     if (!elementLocation) {
-      // do not check if the property has no location
+      // do not check if the element has no location
       return true;
     }
 

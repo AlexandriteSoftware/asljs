@@ -1,12 +1,10 @@
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
-import { Rule }
-  from 'eslint';
-import { ImportDeclaration }
-  from 'estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -15,15 +13,20 @@ import { Logger }
 import { fmtImportNode }
   from '../ts-fmt/fmt-import-node.js';
 
+const messages: Record<string, string> =
+  { 'use-asljs-import-style':
+      'Use asljs import style.' };
+
 export type Import =
   | TSESTree.ImportSpecifier
   | TSESTree.ImportDefaultSpecifier
   | TSESTree.ImportNamespaceSpecifier;
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'import-declaration',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -33,16 +36,16 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { ImportDeclaration: listener };
 
     return ruleListener;
 
     function listener(
-        node: ImportDeclaration & Rule.NodeParentExtension
+        node: TSESTree.ImportDeclaration
       ): void
     {
       processImportDeclaration(
@@ -57,13 +60,10 @@ function listenerFactory(
 
 function processImportDeclaration(
     logger: Logger,
-    context: Rule.RuleContext,
-    node: ImportDeclaration & Rule.NodeParentExtension
+    context: TSESLint.RuleContext<string, readonly unknown[]>,
+    node: TSESTree.ImportDeclaration
   ): void
 {
-  const tsNode =
-    node as unknown as TSESTree.ImportDeclaration;
-
   const fmtCtx =
     new FormattingContext(
       context.sourceCode,
@@ -74,7 +74,7 @@ function processImportDeclaration(
 
   const replacement =
     fmtImportNode(
-      tsNode,
+      node,
       fmtCtx);
 
   if (sourceCode === replacement) {
@@ -83,10 +83,12 @@ function processImportDeclaration(
 
   context.report(
     { node: node,
-      message:
-        'Use asljs import style.',
+      messageId:
+        'use-asljs-import-style',
       fix:
-        (fixer: Rule.RuleFixer): Rule.Fix =>
+        (
+        fixer: TSESLint.RuleFixer
+      ): TSESLint.RuleFix =>
       {
         return fixer.replaceText(
           node,

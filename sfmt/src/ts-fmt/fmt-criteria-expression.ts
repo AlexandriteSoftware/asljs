@@ -1,23 +1,23 @@
-import { BinaryExpression,
-         Expression,
-         LogicalExpression }
-  from 'estree';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export interface CriteriaExpressionFormattingOptions
 {
-  getText: (expression: Expression) => string;
+  getText: (
+    expression: TSESTree.Node
+  ) => string;
 
   newLine: string;
 }
 
 type OperationExpression =
-  | BinaryExpression
-  | LogicalExpression;
+  | TSESTree.BinaryExpression
+  | TSESTree.LogicalExpression;
 
 export function fmtCriteriaExpression(
-    expression: Expression,
+    expression: TSESTree.Expression,
     options: CriteriaExpressionFormattingOptions
   ): string
 {
@@ -49,7 +49,7 @@ function formatOperationExpression(
 
   const left =
     formatOperand(
-      expression.left as Expression,
+      expression.left,
       operatorPriority,
       options);
 
@@ -73,7 +73,7 @@ function formatOperationExpression(
 }
 
 function formatOperand(
-    expression: Expression,
+    expression: TSESTree.Expression | TSESTree.PrivateIdentifier,
     parentPriority: number,
     options: CriteriaExpressionFormattingOptions
   ): string
@@ -102,7 +102,7 @@ function formatOperand(
 }
 
 function isOperationExpression(
-    expression: Expression
+    expression: TSESTree.Expression | TSESTree.PrivateIdentifier
   ): expression is OperationExpression
 {
   return expression.type === 'BinaryExpression'

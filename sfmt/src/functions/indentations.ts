@@ -1,13 +1,13 @@
-import { SourceCode }
-  from 'eslint';
-import { WithLocation }
-  from './location.js';
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 
 export class Indentation
 {
   readonly #indentation: string;
 
-  public static readonly INITIAL = new Indentation('');
+  public static readonly Initial = new Indentation('');
 
   constructor(
     indentation: string | number
@@ -62,8 +62,8 @@ export class Indentation
 }
 
 export function getIndentation(
-    sourceCode: SourceCode,
-    node: WithLocation
+    sourceCode: Readonly<TSESLint.SourceCode>,
+    node: TSESTree.Node | TSESTree.Token
   ): Indentation
 {
   const nodeStartLine = node.loc.start.line;

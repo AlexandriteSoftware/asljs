@@ -1,3 +1,5 @@
+import { RuleDefinition }
+  from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
@@ -20,7 +22,8 @@ const tsIfStatementFormatter =
       'if-statement.test.ts'));
 
 const tsIfStatementEslintRule =
-  tsIfStatementFormatter.eslintRule;
+  tsIfStatementFormatter
+  .eslintRule as unknown as RuleDefinition;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(

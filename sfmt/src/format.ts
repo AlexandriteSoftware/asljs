@@ -1,12 +1,18 @@
+import { ESLint,
+         Linter }
+  from 'eslint';
 import { glob }
   from 'glob';
 import fs
   from 'node:fs/promises';
+import path
+  from 'node:path';
 import { Environment }
   from './environment.js';
-import { applyFormatters,
-         FormatterDefinition,
-         getFileType }
+import baseConfig
+  from './eslint-config.js';
+import { FormatterDefinition,
+         SupportedFileType }
   from './formatter.js';
 import { createPinoLoggerProvider }
   from './logging.js';
@@ -219,4 +225,77 @@ function normaliseIndentationCharacters(
   return text.replace(
     /\t/g,
     '  ');
+}
+
+export async function applyFormatters(
+    text: string,
+    filePath: string,
+    formatters: FormatterDefinition[]
+  ): Promise<string>
+{
+  if (formatters.length === 0) {
+    return text;
+  }
+
+  const fileType =
+    getFileType(filePath);
+
+  if (fileType === null) {
+    return text;
+  }
+
+  const absoluteFilePath =
+    path.resolve(filePath);
+
+  const eslintCwd =
+    path.dirname(
+      absoluteFilePath);
+
+  const eslintFilePath =
+    path.basename(
+      absoluteFilePath);
+
+  const overrideConfig: Linter.Config[] =
+    [ ...baseConfig ];
+
+  const eslint =
+    new ESLint(
+      { cwd: eslintCwd,
+        overrideConfigFile: true,
+        fix: true,
+        ignore: false,
+        overrideConfig: overrideConfig });
+
+  const [result] =
+    await eslint.lintText(
+      text,
+      { filePath: eslintFilePath });
+
+  return result?.output ?? text;
+}
+
+export function getFileType(
+    filePath: string
+  ): SupportedFileType | null
+{
+  const extension =
+    path.extname(filePath).toLowerCase();
+
+  if (
+    extension === '.js'
+    || extension === '.mjs'
+    || extension === '.cjs'
+  ) {
+    return 'javascript';
+  }
+
+  if (
+    extension === '.ts'
+    || extension === '.mts'
+    || extension === '.cts'
+  ) {
+    return 'typescript';
+  }
+
+  return null;
 }

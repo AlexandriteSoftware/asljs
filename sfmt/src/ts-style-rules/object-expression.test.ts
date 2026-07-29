@@ -1,3 +1,5 @@
+import { RuleDefinition }
+  from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
@@ -20,7 +22,8 @@ const tsObjectExpressionFormatter =
       'object-expression.test.ts'));
 
 const tsObjectExpressionEslintRule =
-  tsObjectExpressionFormatter.eslintRule;
+  tsObjectExpressionFormatter
+  .eslintRule as unknown as RuleDefinition;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(

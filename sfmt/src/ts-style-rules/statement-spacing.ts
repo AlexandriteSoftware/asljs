@@ -2,20 +2,27 @@ import { SourceRange }
   from '@eslint/core';
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import { Rule,
          SourceCode }
   from 'eslint';
 import { FormatterDefinitionFactory,
-         formatterFactory,
-         RuleListenerFactory }
+         RuleListenerFactory,
+         tsFormatterFactory }
   from '../formatter.js';
 import { Logger }
   from '../logging.js';
 
+const messages: Record<string, string> =
+  { 'add-blank-line-between-statements':
+      'Add blank line between statements.' };
+
 const formatterDefinitionFactory: FormatterDefinitionFactory =
-  formatterFactory(
+  tsFormatterFactory(
     'statement-spacing',
-    listenerFactory);
+    listenerFactory,
+    messages);
 
 export default formatterDefinitionFactory;
 
@@ -25,28 +32,28 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: Rule.RuleContext
-  ): Rule.RuleListener =>
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ): TSESLint.RuleListener =>
   {
-    const ruleListener: Rule.RuleListener =
+    const ruleListener: TSESLint.RuleListener =
       { Program:
           (node): void =>
       {
-        const tsNode =
-          node as unknown as TSESTree.Program;
+        const tsProgram =
+          node as TSESTree.Program;
 
         checkStatements(
-          tsNode.body,
+          tsProgram.body,
           context);
       },
         BlockStatement:
           (node): void =>
       {
-        const tsNode =
-          node as unknown as TSESTree.BlockStatement;
+        const tsStm =
+          node as TSESTree.BlockStatement;
 
         checkStatements(
-          tsNode.body,
+          tsStm.body,
           context);
       } };
 
@@ -61,7 +68,7 @@ function listenerFactory(
  */
 function checkStatements(
     statements: TSESTree.Statement[],
-    context: Rule.RuleContext
+    context: TSESLint.RuleContext<string, readonly unknown[]>
   ): void
 {
   const sourceCode = context.sourceCode;
@@ -103,10 +110,12 @@ function checkStatements(
 
     context.report(
       { node: nextStatement,
-        message:
-          'Add a blank line between statements.',
+        messageId:
+          'add-blank-line-between-statements',
         fix:
-          (fixer: Rule.RuleFixer): Rule.Fix =>
+          (
+          fixer: TSESLint.RuleFixer
+        ): TSESLint.RuleFix =>
         {
           const range: SourceRange =
             [ statementRange[1],
@@ -184,7 +193,7 @@ function statementIsMultiline(
 }
 
 function getIndentation(
-    sourceCode: SourceCode,
+    sourceCode: Readonly<TSESLint.SourceCode>,
     node: TSESTree.Statement
   ): string
 {

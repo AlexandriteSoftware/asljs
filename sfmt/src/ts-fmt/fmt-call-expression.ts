@@ -1,5 +1,6 @@
-import { Node,
-         SimpleCallExpression }
+import { type TSESTree }
+  from '@typescript-eslint/typescript-estree';
+import { Node }
   from 'estree';
 import { FormattingContext }
   from '../formatting-context.js';
@@ -11,7 +12,7 @@ import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
 export function fmtCallExpression(
-    node: SimpleCallExpression,
+    node: TSESTree.CallExpression,
     context: FormattingContext
   ): string
 {
@@ -42,7 +43,7 @@ export function fmtCallExpression(
 
   const callee =
     context.sourceCode.getText(
-      node.callee as unknown as Node);
+      node.callee);
 
   code.push(callee);
   code.push('(');
@@ -57,9 +58,7 @@ export function fmtCallExpression(
       context.sourceCode.getText(
         firstArgument);
 
-    const firstArgumentLocation =
-      tryGetLocation(
-        firstArgument);
+    const firstArgumentLocation = firstArgument?.loc;
 
     const argumentStartLine =
       firstArgumentLocation?.start.line;

@@ -7,13 +7,13 @@ export {
 } from './eslint-config.js';
 
 export {
+  applyFormatters,
   format
 } from './format.js';
 
 export {
-  applyFormatters,
-  formatterFactory,
   getFileType,
+  tsFormatterFactory as formatterFactory,
   type FormatterDefinition,
   type SupportedFileType
 } from './formatter.js';

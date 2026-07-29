@@ -43,6 +43,20 @@ export function tryGetLocation(
   return location;
 }
 
+export function getLocation(
+    value: unknown
+  ): Location
+{
+  const location =
+    tryGetLocation(value);
+
+  if (!location) {
+    throw new LocationIncompleteError();
+  }
+
+  return location;
+}
+
 export function ensureLocation(
     value: unknown
   ): asserts value is WithLocation

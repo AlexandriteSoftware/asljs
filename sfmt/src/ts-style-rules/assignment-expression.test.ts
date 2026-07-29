@@ -1,11 +1,9 @@
+import { RuleDefinition }
+  from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
 import { ESLint }
   from 'eslint';
-import assert
-  from 'node:assert/strict';
-import test
-  from 'node:test';
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
@@ -24,7 +22,8 @@ const tsAssignmentExpressionFormatter =
       'assignment-expression.test.ts'));
 
 const tsAssignmentExpressionEslintRule =
-  tsAssignmentExpressionFormatter.eslintRule;
+  tsAssignmentExpressionFormatter
+  .eslintRule as unknown as RuleDefinition;
 
 const SCRIPT_FILE_PATH =
   fileURLToPath(

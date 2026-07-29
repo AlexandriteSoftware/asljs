@@ -1,40 +1,42 @@
-import { RuleDefinition,
-         RuleDefinitionTypeOptions }
-  from '@eslint/core';
-import tsParser
-  from '@typescript-eslint/parser';
-import { ESLint,
-         Linter,
-         Rule }
-  from 'eslint';
+import { type TSESLint }
+  from '@typescript-eslint/utils';
 import path
   from 'node:path';
 import { Logger }
   from './logging.js';
 
-export type SupportedFileType = 'javascript' | 'typescript';
+export type SupportedFileType =
+  | 'javascript'
+  | 'typescript';
 
 export interface FormatterDefinition
 {
   name: string;
-  eslintRule: RuleDefinition<RuleDefinitionTypeOptions>;
+  eslintRule: TSESLint.RuleModule<string>;
 }
 
-export type RuleListenerFactory = (
-  context: Rule.RuleContext
-) => Rule.RuleListener;
+export type RuleListenerFactory =
+  (
+    context: TSESLint.RuleContext<string, readonly unknown[]>
+  ) =>
+    TSESLint.RuleListener;
 
-export type RuleListenerFactoryMaker = (
-  logger: Logger
-) => RuleListenerFactory;
+export type RuleListenerFactoryMaker =
+  (
+    logger: Logger
+  ) =>
+    RuleListenerFactory;
 
-export type FormatterDefinitionFactory = (
-  logger: Logger
-) => FormatterDefinition;
+export type FormatterDefinitionFactory =
+  (
+    logger: Logger
+  ) =>
+    FormatterDefinition;
 
-export function formatterFactory(
+export function tsFormatterFactory(
     name: string,
-    ruleListenerCreateFn: RuleListenerFactoryMaker
+    ruleListenerCreateFn: RuleListenerFactoryMaker,
+    messages: Record<string, string>
   ): FormatterDefinitionFactory
 {
   const fn =
@@ -42,15 +44,16 @@ export function formatterFactory(
     logger: Logger
   ): FormatterDefinition =>
   {
-    const meta: Rule.RuleMetaData =
+    const meta: TSESLint.RuleMetaData<string> =
       { type: 'layout',
         fixable: 'code',
-        schema: [ ] };
+        schema: [ ],
+        messages: messages };
 
     const create: RuleListenerFactory =
       ruleListenerCreateFn(logger);
 
-    const eslintRule: Rule.RuleModule =
+    const eslintRule: TSESLint.RuleModule<string> =
       { meta,
         create };
 
@@ -62,74 +65,6 @@ export function formatterFactory(
   };
 
   return fn;
-}
-
-export async function applyFormatters(
-    text: string,
-    filePath: string,
-    formatters: FormatterDefinition[]
-  ): Promise<string>
-{
-  if (formatters.length === 0) {
-    return text;
-  }
-
-  const fileType =
-    getFileType(filePath);
-
-  if (fileType === null) {
-    return text;
-  }
-
-  const rules =
-    Object
-    .fromEntries(
-      formatters.map(
-        formatter => [ formatter.name,
-                       formatter.eslintRule ]));
-
-  const enabledRules =
-    Object
-    .fromEntries(
-      formatters.map(
-        formatter => [ `sfmt/${formatter.name}`,
-                       'error' as const ]));
-
-  const absoluteFilePath =
-    path.resolve(filePath);
-
-  const eslintCwd =
-    path.dirname(
-      absoluteFilePath);
-
-  const eslintFilePath =
-    path.basename(
-      absoluteFilePath);
-
-  const overrideConfig: Linter.Config[] =
-    [ { files:
-          getFilePatterns(fileType),
-        languageOptions:
-          getLanguageOptions(fileType),
-        plugins:
-          { sfmt:
-              { rules } },
-        rules: enabledRules } ];
-
-  const eslint =
-    new ESLint(
-      { cwd: eslintCwd,
-        overrideConfigFile: true,
-        fix: true,
-        ignore: false,
-        overrideConfig: overrideConfig });
-
-  const [result] =
-    await eslint.lintText(
-      text,
-      { filePath: eslintFilePath });
-
-  return result?.output ?? text;
 }
 
 export function getFileType(
@@ -156,30 +91,4 @@ export function getFileType(
   }
 
   return null;
-}
-
-function getLanguageOptions(
-    fileType: SupportedFileType
-  ): Linter.LanguageOptions
-{
-  if (fileType === 'typescript') {
-    return { parser: tsParser,
-             parserOptions:
-               { ecmaVersion: 'latest',
-                 sourceType: 'module' } };
-  }
-
-  return { ecmaVersion: 'latest',
-           sourceType: 'module' };
-}
-
-function getFilePatterns(
-    fileType: SupportedFileType
-  ): string[]
-{
-  if (fileType === 'typescript') {
-    return [ '**/*.{ts,mts,cts}' ];
-  }
-
-  return [ '**/*.{js,mjs,cjs}' ];
 }
