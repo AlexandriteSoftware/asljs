@@ -86,8 +86,7 @@ export class BackupRollbackFeed implements RollbackFeed
     filePath: string
   ): Promise<void>
   {
-    const backup =
-      await this.load();
+    const backup = await this.load();
 
     if (
       existsSync(
@@ -115,8 +114,7 @@ export class BackupRollbackFeed implements RollbackFeed
 
   async rollbackLast(): Promise<void>
   {
-    const backup =
-      await this.load();
+    const backup = await this.load();
 
     const file =
       backup.files.pop();
@@ -134,8 +132,7 @@ export class BackupRollbackFeed implements RollbackFeed
 
   async rollbackAll(): Promise<void>
   {
-    const backup =
-      await this.load();
+    const backup = await this.load();
 
     for (
       const file of [ ...backup.files ].reverse()

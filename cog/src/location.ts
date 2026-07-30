@@ -48,8 +48,7 @@ export class LocationResolver
     location: Location
   ): Promise<string[]>
   {
-    const patterns =
-      location.patterns;
+    const patterns = location.patterns;
 
     const exclude =
       location.exclude || [ ];
@@ -91,12 +90,14 @@ export class LocationResolver
       .map(
         pattern => pattern.slice(1));
 
-    if (rootPathPatterns.length > 0) {
+    if (
+      rootPathPatterns.length
+      > 0
+    ) {
       const rootPathMatches =
         await glob(
           rootPathPatterns,
-          { cwd:
-              this.rootPath,
+          { cwd: this.rootPath,
             absolute: true,
             nodir: filesOnly });
 
@@ -110,12 +111,14 @@ export class LocationResolver
       .filter(
         pattern => !pattern.startsWith('/'));
 
-    if (basePathPatterns.length > 0) {
+    if (
+      basePathPatterns.length
+      > 0
+    ) {
       const basePathMatches =
         await glob(
           basePathPatterns,
-          { cwd:
-              normalisedBasePath,
+          { cwd: normalisedBasePath,
             absolute: true,
             nodir: filesOnly });
 
@@ -134,12 +137,14 @@ export class LocationResolver
       .map(
         pattern => pattern.slice(1));
 
-    if (rootExcludePatterns.length > 0) {
+    if (
+      rootExcludePatterns.length
+      > 0
+    ) {
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd:
-              this.rootPath,
+          { cwd: this.rootPath,
             absolute: true,
             nodir: filesOnly });
 
@@ -153,12 +158,14 @@ export class LocationResolver
       .filter(
         pattern => !pattern.startsWith('/'));
 
-    if (basePathExcludePatterns.length > 0) {
+    if (
+      basePathExcludePatterns.length
+      > 0
+    ) {
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd:
-              normalisedBasePath,
+          { cwd: normalisedBasePath,
             absolute: true,
             nodir: filesOnly });
 
@@ -199,8 +206,7 @@ export class LocationResolver
     location: Location
   ): Promise<boolean>
   {
-    const patterns =
-      location.patterns;
+    const patterns = location.patterns;
 
     const exclude =
       location.exclude || [ ];

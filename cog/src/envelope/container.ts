@@ -21,8 +21,7 @@ export class EnvelopeContainer
   {
     this.logger =
       logger.scope(
-        { instanceId:
-            'EnvelopeContainer' });
+        { instanceId: 'EnvelopeContainer' });
   }
 
   public async tryLoadEnvelope(
@@ -37,7 +36,10 @@ export class EnvelopeContainer
       await this._loadEnvelope(filePath);
       return true;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (
+        (error as NodeJS.ErrnoException).code
+        === 'ENOENT'
+      ) {
         return false;
       }
 
@@ -80,7 +82,10 @@ export class EnvelopeContainer
       this.envelope =
         json as Envelope;
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      if (
+        (error as NodeJS.ErrnoException).code
+        !== 'ENOENT'
+      ) {
         throw error;
       }
     }

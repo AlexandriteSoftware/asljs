@@ -46,8 +46,7 @@ export function withEnv(
       name,
       process.env[name]);
 
-    const value =
-      updates[name];
+    const value = updates[name];
 
     if (value === undefined) {
       delete process.env[name];

@@ -111,7 +111,8 @@ async function readCmd(
 
   if (
     envelopeLoaded
-    && envelopeContainer.envelope !== null
+    && envelopeContainer.envelope
+       !== null
   ) {
     envelope =
       envelopeContainer.envelope;
@@ -122,8 +123,7 @@ async function readCmd(
 
   const parameters: ReadParameters =
     { command: 'read',
-      pattern:
-        normalisedPattern,
+      pattern: normalisedPattern,
       exclude:
         normalisedExcludes ?? [ ],
       lines:
@@ -176,7 +176,8 @@ function parsePositiveInteger(
     !Number.isInteger(
       parsed)
     || parsed <= 0
-    || parsed.toString() !== value
+    || parsed.toString()
+       !== value
   ) {
     throw new Error(
       `${name} must be a positive integer`);

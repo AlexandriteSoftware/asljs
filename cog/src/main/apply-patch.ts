@@ -174,7 +174,8 @@ async function verifyPatch(
 {
   if (
     patchVerifyCmd === undefined
-    || patchVerifyCmd.trim() === ''
+    || patchVerifyCmd.trim()
+       === ''
   ) {
     return;
   }

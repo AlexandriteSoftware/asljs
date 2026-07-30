@@ -33,7 +33,10 @@ export async function remove(
     .findIndex(
       file => file.path === command.path);
 
-  if (fileIndex !== -1) {
+  if (
+    fileIndex
+    !== -1
+  ) {
     envelope.files.splice(
       fileIndex,
       1);

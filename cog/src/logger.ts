@@ -192,8 +192,7 @@ export function createLogger(
   let level;
 
   if (options.level !== undefined) {
-    level =
-      options.level;
+    level = options.level;
   } else {
     const envLogLevel =
       process.env[`${envVarPrefix}LOG_LEVEL`];
@@ -212,8 +211,7 @@ export function createLogger(
   let file;
 
   if (options.file !== undefined) {
-    file =
-      options.file;
+    file = options.file;
   } else {
     const envLogFile =
       process.env[`${envVarPrefix}LOG_FILE`];

@@ -91,7 +91,10 @@ export async function read(
       .findIndex(
         file => file.path === target.path);
 
-    if (fileIndex === -1) {
+    if (
+      fileIndex
+      === -1
+    ) {
       envelope.files
         .push(
           file);
@@ -118,8 +121,7 @@ function normalizeReadParameters(
   ): ReadParameters
 {
   return { command: 'read',
-           pattern:
-             command.pattern,
+           pattern: command.pattern,
            exclude:
              command.exclude
       ?? [ ],
@@ -224,8 +226,7 @@ async function getEnvelopeFile(
         data);
   } catch {
     if (limits.withBinaryB64) {
-      return { path:
-                 target.path,
+      return { path: target.path,
                type: 'binary',
                content:
                  data.toString(
@@ -234,8 +235,7 @@ async function getEnvelopeFile(
                update };
     }
 
-    return { path:
-               target.path,
+    return { path: target.path,
              type: 'binary',
              update };
   }
@@ -245,13 +245,10 @@ async function getEnvelopeFile(
       content,
       limits);
 
-  return { path:
-             target.path,
+  return { path: target.path,
            type: 'text',
-           content:
-             limited.content,
-           complete:
-             limited.complete,
+           content: limited.content,
+           complete: limited.complete,
            update };
 }
 
@@ -269,8 +266,7 @@ function limitText(
 
   let complete = true;
 
-  const maxBytes =
-    limits.sizeKb * 1024;
+  const maxBytes = limits.sizeKb * 1024;
 
   const length =
     Buffer.byteLength(

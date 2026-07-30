@@ -17,11 +17,9 @@ test(
                 type: 'text',
                 content: 'content',
                 complete: true },
-              { path:
-                  'assets/logo.png',
+              { path: 'assets/logo.png',
                 type: 'binary' },
-              { path:
-                  'docs/partial.md',
+              { path: 'docs/partial.md',
                 type: 'text',
                 content: 'partial',
                 complete: false } ] });
