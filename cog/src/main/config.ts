@@ -41,9 +41,9 @@ export function configureConfigCommand(
 
         for (
           const line of output
-          .trimEnd()
-          .split(
-            '\n')
+            .trimEnd()
+            .split(
+              '\n')
         ) {
           context.console.writeLine(
             line);
@@ -110,26 +110,26 @@ export function formatConfig(
 
 function getCurrentSettings(
     options: {
-      envelope?: string;
-      patch?: string;
-    }
+    envelope?: string;
+    patch?: string;
+  }
   ): CogConfigSettings
 {
   return { envelopePath:
              options.envelope
-             ?? process.env.COG_ENVELOPE_PATH
-             ?? '',
+      ?? process.env.COG_ENVELOPE_PATH
+      ?? '',
            patchPath:
              options.patch
-             ?? process.env.COG_PATCH_PATH
-             ?? '',
+      ?? process.env.COG_PATCH_PATH
+      ?? '',
            patchVerifyCmd:
              process.env.COG_PATCH_VERIFY_CMD
-             ?? '',
+      ?? '',
            logLevel:
              process.env.COG_LOG_LEVEL
-             ?? 'silent',
+      ?? 'silent',
            logFile:
              process.env.COG_LOG_FILE
-             ?? '' };
+      ?? '' };
 }

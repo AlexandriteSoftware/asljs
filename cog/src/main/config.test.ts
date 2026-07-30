@@ -11,14 +11,16 @@ test(
   {
     const output =
       formatConfig(
-        { envelopePath: '/work/envelope.json',
+        { envelopePath:
+            '/work/envelope.json',
           patchPath: '/work/patch.json',
           patchVerifyCmd: 'npm test',
           logLevel: 'debug',
           logFile: '/work/cog.log' },
         { COG_LOG_LEVEL: 'debug',
           COG_LOG_FILE: '/work/cog.log',
-          COG_ENVELOPE_PATH: '/work/envelope.json',
+          COG_ENVELOPE_PATH:
+            '/work/envelope.json',
           COG_PATCH_PATH: '/work/patch.json',
           COG_PATCH_VERIFY_CMD: 'npm test' });
 
@@ -52,7 +54,7 @@ test(
           patchVerifyCmd: '',
           logLevel: 'silent',
           logFile: '' },
-        { });
+        {});
 
     assert.match(
       output,
