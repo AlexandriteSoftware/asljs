@@ -37,6 +37,7 @@ Available commands:
 - `update` refreshes envelope files using their stored update commands.
 - `restore` restores project files from backup.
 - `apply-patch` applies the current patch.
+- `config` prints current resolved settings and related environment variables.
 
 ### `read <path> [arguments]`
 
@@ -84,6 +85,26 @@ accepts the patch; any non-zero exit code fails the patch and rolls back.
 
 After the patch succeeds, COG refreshes envelope files using their stored update
 commands.
+
+### `config`
+
+Prints current COG settings and key environment variables.
+
+The output includes resolved values for:
+
+- envelope path
+- patch path
+- patch verify command
+- log level
+- log file
+
+It also prints these environment variables:
+
+- `COG_LOG_LEVEL`
+- `COG_LOG_FILE`
+- `COG_ENVELOPE_PATH`
+- `COG_PATCH_PATH`
+- `COG_PATCH_VERIFY_CMD`
 
 ## Envelope
 

@@ -115,6 +115,8 @@ The command must:
   transactionally applies the patch. If `backup.json` exists, it stops before
   applying anything. `--patch-verify-cmd` specifies the command used to verify
   the applied patch and takes precedence over `COG_PATCH_VERIFY_CMD`.
+- `config`
+  prints current resolved settings and key environment variables.
 
 ## Patch verification
 

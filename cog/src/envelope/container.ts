@@ -110,19 +110,43 @@ export class EnvelopeContainer
 
   async loadInstruction(): Promise<string>
   {
-    const instructionPath =
-      path.join(
-        path.dirname(
-          fileURLToPath(
-            import.meta.url)),
-        '../../src/files/Instruction.txt');
+    const basePath =
+      path.dirname(
+        fileURLToPath(
+          import.meta.url));
 
-    const instruction =
-      await fs.readFile(
-        instructionPath,
-        'utf-8');
+    const instructionPathCandidates =
+      [ '../../src/files/Instruction.txt',
+        '../files/Instruction.txt' ]
+      .map(
+        candidate =>
+          path.join(
+            basePath,
+            candidate));
 
-    return instruction;
+    for (const instructionPath of instructionPathCandidates) {
+      try {
+        const instruction =
+          await fs.readFile(
+            instructionPath,
+            'utf-8');
+
+        return instruction;
+      } catch (error) {
+        if (
+          (error as NodeJS.ErrnoException).code
+          !== 'ENOENT'
+        ) {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error(
+      `Instruction file not found. Tried: ${
+        instructionPathCandidates.join(
+          ', ')
+      }`);
   }
 
   async saveEnvelope(

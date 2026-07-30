@@ -6,6 +6,8 @@ import { createLogger }
   from '../logger.js';
 import { configureApplyPatchCommand }
   from './apply-patch.js';
+import { configureConfigCommand }
+  from './config.js';
 import { configureListCommand }
   from './list.js';
 import { configureReadCommand }
@@ -69,12 +71,16 @@ export async function main(
       program,
       context);
 
+    configureConfigCommand(
+      program,
+      context);
+
     program
       .action(
         () =>
         {
           throw new Error(
-            'Usage: cog <read|list|update|restore|apply-patch> [args...]');
+            'Usage: cog <read|list|update|restore|apply-patch|config> [args...]');
         });
 
     await program.parseAsync(
