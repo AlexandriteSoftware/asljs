@@ -40,6 +40,26 @@ export function fmtArrayFunctionExpression(
       context.sourceCode.getText(
         parameter));
 
+  const bodyText =
+    context.sourceCode.getText(
+      node.body);
+
+  const blockHasOnlyWhitespace =
+    /^\{\s*\}$/.test(
+      bodyText);
+
+  if (
+    parameters.length === 0
+    && node.body.body.length === 0
+    && blockHasOnlyWhitespace
+  ) {
+    return fmtEmptyBodyArrow(
+      node,
+      context,
+      typeParameters,
+      returnType);
+  }
+
   const code: string[] = [ ];
 
   if (node.async) {
@@ -107,4 +127,36 @@ export function fmtArrayFunctionExpression(
       node.body));
 
   return code.join('');
+
+  function fmtEmptyBodyArrow(
+      node: TSESTree.ArrowFunctionExpression,
+      context: FormattingContext,
+      typeParameters: TSESTree.Node | null,
+      returnType: TSESTree.Node | null
+    ): string
+  {
+    const code: string[] = [ ];
+
+    if (node.async) {
+      code.push('async ');
+    }
+
+    if (typeParameters) {
+      code.push(
+        context.sourceCode.getText(
+          typeParameters));
+    }
+
+    code.push('()');
+
+    if (returnType) {
+      code.push(
+        context.sourceCode.getText(
+          returnType));
+    }
+
+    code.push(' => { }');
+
+    return code.join('');
+  }
 }

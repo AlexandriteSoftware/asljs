@@ -81,9 +81,7 @@ function createCli(
           value => environment.stdout.write(value),
         writeErr:
           value => environment.stderr.write(value),
-        outputError:
-          () =>
-          {} })
+        outputError: () => { } })
     .exitOverride(
       (
           error
@@ -96,10 +94,7 @@ function createCli(
       () =>
       {
         environment.onDispose(
-          async (): Promise<void> =>
-          {
-            // for logging
-          });
+          async (): Promise<void> => { });
       })
     .action(
       async (

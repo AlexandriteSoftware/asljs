@@ -38,6 +38,7 @@ const allTestExpressions =
     { '12': true,
       '-10': true,
       '-100': false,
+      "''": true,
       "' '": true,
       "'['": true,
       "'\\n'": true,

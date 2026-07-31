@@ -46,5 +46,5 @@ function isSingleCharacterStringLiteral(
     return false;
   }
 
-  return [ ...expression.value ].length === 1;
+  return [ ...expression.value ].length <= 1;
 }

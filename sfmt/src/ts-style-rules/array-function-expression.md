@@ -46,6 +46,51 @@ const map =
     });
 ```
 
+Special case: if the arrow has an empty body and no parameters, it is formatted
+as a single line:
+
+```ts
+const map =
+  items.map(
+    () =>
+    {
+    });
+// ---
+const map =
+  items.map(
+    () => { });
+```
+
+```ts
+const map =
+  items.map(
+    (): void =>
+    {
+    });
+// ---
+const map =
+  items.map(
+    (): void => { });
+```
+
+Comments are preserved:
+
+```ts
+const map =
+  items.map(
+    (): void =>
+    {
+      // do nothing
+    });
+// ---
+const map =
+  items.map(
+    (): void =>
+    {
+      // do nothing
+    });
+```
+
 Async typed arrows are also chopped:
 
 ```ts
