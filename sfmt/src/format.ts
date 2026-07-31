@@ -43,6 +43,8 @@ import tsStatementSpacingFormatterFactory
 import tsVariableDeclarationFormatterFactory
   from './ts-style-rules/variable-declaration.js';
 
+const MAX_FIX_PASSES = 10;
+
 export async function format(
     environment: Environment,
     ...args: string[]
@@ -274,12 +276,30 @@ export async function applyFormatters(
         ignore: false,
         overrideConfig: overrideConfig });
 
-  const [result] =
-    await eslint.lintText(
-      text,
-      { filePath: eslintFilePath });
+  let formatted = text;
 
-  return result?.output ?? text;
+  for (
+    let pass = 0;
+    pass < MAX_FIX_PASSES;
+    pass++
+  ) {
+    const [result] =
+      await eslint.lintText(
+        formatted,
+        { filePath: eslintFilePath });
+
+    const next =
+      result?.output
+      ?? formatted;
+
+    if (next === formatted) {
+      return formatted;
+    }
+
+    formatted = next;
+  }
+
+  return formatted;
 }
 
 export function getFileType(

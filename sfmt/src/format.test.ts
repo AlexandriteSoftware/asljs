@@ -64,3 +64,30 @@ test(
       formatted,
       'import { type writeFile }\n' + "  from 'import-type';\n");
   });
+
+test(
+  'applyFormatters converges for object expression with arrow function value',
+  async () =>
+  {
+    const code =
+      [ 'const value =',
+        '  { outputError:',
+        '      () =>',
+        '    {} };',
+        '' ]
+      .join('\n');
+
+    const formatted =
+      await applyFormatters(
+        code,
+        'example.ts',
+        [ tsImportDeclarationFormatterFactory(
+          new NullLogger()) ]);
+
+    assert.strictEqual(
+      formatted,
+      [ 'const value =',
+        '  { outputError: () => { } };',
+        '' ]
+      .join('\n'));
+  });
