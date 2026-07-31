@@ -1,6 +1,6 @@
 {
   "name": "asljs-sfmt",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "A command line tool for formatting TypeScript code.",
   "type": "module",
   "main": "dist/index.js",
