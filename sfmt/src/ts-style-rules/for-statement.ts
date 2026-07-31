@@ -33,9 +33,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { ForStatement: listener };
 
@@ -81,9 +81,9 @@ function processForStatement(
         'use-asljs-for-statement-style',
       fix:
         (
-        fixer: TSESLint.RuleFixer
-      ): TSESLint.RuleFix =>
-      {
+            fixer: TSESLint.RuleFixer
+          ): TSESLint.RuleFix =>
+        {
         const replacement =
           fmtForStatement(
             node,

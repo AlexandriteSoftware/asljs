@@ -48,10 +48,7 @@ export function fmtCallExpression(
   code.push(callee);
   code.push('(');
 
-  if (
-    node.arguments.length
-    === 1
-  ) {
+  if (node.arguments.length === 1) {
     const firstArgument = node.arguments[0];
 
     const firstArgumentText =
@@ -98,10 +95,7 @@ export function fmtCallExpression(
           firstArgumentText);
       }
     }
-  } else if (
-    node.arguments.length
-    > 1
-  ) {
+  } else if (node.arguments.length > 1) {
     for (
       let index = 0;
       index < node.arguments.length;

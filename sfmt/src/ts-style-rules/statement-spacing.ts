@@ -32,13 +32,15 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { Program:
-          (node): void =>
-      {
+          (
+              node
+            ): void =>
+          {
         const tsProgram =
           node as TSESTree.Program;
 
@@ -47,8 +49,10 @@ function listenerFactory(
           context);
       },
         BlockStatement:
-          (node): void =>
-      {
+          (
+              node
+            ): void =>
+          {
         const tsStm =
           node as TSESTree.BlockStatement;
 
@@ -114,9 +118,9 @@ function checkStatements(
           'add-blank-line-between-statements',
         fix:
           (
-          fixer: TSESLint.RuleFixer
-        ): TSESLint.RuleFix =>
-        {
+              fixer: TSESLint.RuleFixer
+            ): TSESLint.RuleFix =>
+          {
           const range: SourceRange =
             [ statementRange[1],
               nextStatementRange[0] ];

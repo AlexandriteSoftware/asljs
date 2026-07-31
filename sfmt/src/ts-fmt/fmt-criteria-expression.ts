@@ -44,8 +44,11 @@ function formatOperationExpression(
       expression);
 
   const shouldBreakBeforeOperator =
-    !isSimple
-    || operatorPriority < 7;
+    shouldBreakBeforeBinaryOperator(
+      expression,
+      operatorPriority,
+      isSimple,
+      options);
 
   const left =
     formatOperand(
@@ -70,6 +73,27 @@ function formatOperationExpression(
       options);
 
   return `${left}${separator}${right}`;
+}
+
+function shouldBreakBeforeBinaryOperator(
+    expression: OperationExpression,
+    operatorPriority: number,
+    isSimple: boolean,
+    options: CriteriaExpressionFormattingOptions
+  ): boolean
+{
+  if (
+    isComparisonOperator(
+      expression.operator)
+    && hasShortNumericOperand(
+      expression,
+      options)
+  ) {
+    return false;
+  }
+
+  return !isSimple
+    || operatorPriority < 7;
 }
 
 function formatOperand(
@@ -107,6 +131,54 @@ function isOperationExpression(
 {
   return expression.type === 'BinaryExpression'
     || expression.type === 'LogicalExpression';
+}
+
+function isComparisonOperator(
+    operator: string
+  ): boolean
+{
+  return [ '==',
+           '!=',
+           '===',
+           '!==',
+           '<',
+           '<=',
+           '>',
+           '>=' ]
+    .includes(
+      operator);
+}
+
+function hasShortNumericOperand(
+    expression: OperationExpression,
+    options: CriteriaExpressionFormattingOptions
+  ): boolean
+{
+  return isShortNumericExpression(
+    expression.left,
+    options)
+    || isShortNumericExpression(
+      expression.right,
+      options);
+}
+
+function isShortNumericExpression(
+    expression: TSESTree.Expression | TSESTree.PrivateIdentifier,
+    options: CriteriaExpressionFormattingOptions
+  ): boolean
+{
+  if (expression.type === 'PrivateIdentifier') {
+    return false;
+  }
+
+  const text =
+    options.getText(
+      expression)
+    .trim();
+
+  return /^-?\d+$/.test(
+    text)
+    && text.length <= 3;
 }
 
 function getOperationPriority(

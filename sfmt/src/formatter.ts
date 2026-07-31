@@ -41,9 +41,9 @@ export function tsFormatterFactory(
 {
   const fn =
     (
-    logger: Logger
-  ): FormatterDefinition =>
-  {
+        logger: Logger
+      ): FormatterDefinition =>
+    {
     const meta: TSESLint.RuleMetaData<string> =
       { type: 'layout',
         fixable: 'code',

@@ -37,10 +37,7 @@ export function fmtArrayExpression(
     return original;
   }
 
-  if (
-    node.elements.length
-    === 0
-  ) {
+  if (node.elements.length === 0) {
     // an array expression without elements should be just `[ ]`
     return '[ ]';
   }

@@ -18,6 +18,8 @@ import { createPinoLoggerProvider }
   from './logging.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
+import tsArrayFunctionExpressionFormatterFactory
+  from './ts-style-rules/array-function-expression.js';
 import tsAssignmentExpressionFormatterFactory
   from './ts-style-rules/assignment-expression.js';
 import tsCallExpressionFormatterFactory
@@ -158,7 +160,10 @@ function getFormattersForPath(
               'object-expression')),
           tsArrayExpressionFormatterFactory(
             loggerProvider.getLogger(
-              'array-expression')) ];
+              'array-expression')),
+          tsArrayFunctionExpressionFormatterFactory(
+            loggerProvider.getLogger(
+              'arrayfunctionexpression')) ];
 
       return tsStyleFormatters;
 
@@ -178,7 +183,10 @@ function normaliseWhitespace(
       normaliseIndentationCharacters ];
 
   return formatters.reduce(
-    (text: string, formatter: (text: string) => string): string =>
+    (
+        text: string,
+        formatter: (text: string) => string
+      ): string =>
     {
       return formatter(text);
     },

@@ -37,9 +37,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { ObjectExpression: listener };
 
@@ -149,10 +149,7 @@ function checkLayout(
     return true;
   }
 
-  if (
-    node.properties.length
-    === 0
-  ) {
+  if (node.properties.length === 0) {
     const result =
       firstTokenLocation.start.line === lastTokenLocation.end.line
       && firstTokenLocation.start.column === lastTokenLocation.end.column - 2;

@@ -36,9 +36,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { ImportDeclaration: listener };
 
@@ -87,9 +87,9 @@ function processImportDeclaration(
         'use-asljs-import-style',
       fix:
         (
-        fixer: TSESLint.RuleFixer
-      ): TSESLint.RuleFix =>
-      {
+            fixer: TSESLint.RuleFixer
+          ): TSESLint.RuleFix =>
+        {
         return fixer.replaceText(
           node,
           replacement);

@@ -13,10 +13,7 @@ export function fmtImportNode(
   const code =
     [ 'import ' ];
 
-  if (
-    node.specifiers.length
-    === 0
-  ) {
+  if (node.specifiers.length === 0) {
     const nodeRange = node.range;
 
     const sourceRange = node.source.range;
@@ -95,10 +92,7 @@ export function fmtImportNode(
           node.specifiers,
           index);
 
-      if (
-        importSpecifierGroup.length
-        === 0
-      ) {
+      if (importSpecifierGroup.length === 0) {
         code.push(
           formatSpecifier(
             node.specifiers[index]));

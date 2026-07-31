@@ -8,20 +8,18 @@ import { FormatterDefinitionFactory,
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { expressionIsSimple }
-  from '../functions/simple-expression.js';
 import { Logger }
   from '../logging.js';
-import { fmtVariableDeclarator }
-  from '../ts-fmt/fmt-variable-declarator.js';
+import { fmtArrayFunctionExpression }
+  from '../ts-fmt/fmt-array-function-expression.js';
 
 const messages: Record<string, string> =
-  { 'use-asljs-variable-declaration-style':
-      'Use asljs variable declaration style.' };
+  { 'use-asljs-arrayfunctionexpression-style':
+      'Use asljs arrayfunctionexpression style.' };
 
 const formatterDefinitionFactory: FormatterDefinitionFactory =
   tsFormatterFactory(
-    'variable-declaration',
+    'arrayfunctionexpression',
     listenerFactory,
     messages);
 
@@ -37,15 +35,15 @@ function listenerFactory(
       ): TSESLint.RuleListener =>
     {
     const ruleListener: TSESLint.RuleListener =
-      { VariableDeclarator: listener };
+      { ArrowFunctionExpression: listener };
 
     return ruleListener;
 
     function listener(
-        node: TSESTree.VariableDeclarator
+        node: TSESTree.ArrowFunctionExpression
       ): void
     {
-      processVariableDeclaration(
+      processArrowFunctionExpression(
         logger,
         context,
         node);
@@ -55,13 +53,13 @@ function listenerFactory(
   return listenerFactory;
 }
 
-function processVariableDeclaration(
+function processArrowFunctionExpression(
     logger: Logger,
     context: TSESLint.RuleContext<string, readonly unknown[]>,
-    node: TSESTree.VariableDeclarator
+    node: TSESTree.ArrowFunctionExpression
   ): void
 {
-  if (!node.init) {
+  if (node.body.type !== 'BlockStatement') {
     return;
   }
 
@@ -82,14 +80,14 @@ function processVariableDeclaration(
   context.report(
     { node: node,
       messageId:
-        'use-asljs-variable-declaration-style',
+        'use-asljs-arrayfunctionexpression-style',
       fix:
         (
             fixer: TSESLint.RuleFixer
           ): TSESLint.RuleFix =>
         {
         const replacement =
-          fmtVariableDeclarator(
+          fmtArrayFunctionExpression(
             node,
             fmtCtx);
 
@@ -100,46 +98,18 @@ function processVariableDeclaration(
 }
 
 function checkLayout(
-    node: TSESTree.VariableDeclarator,
+    node: TSESTree.ArrowFunctionExpression,
     context: FormattingContext
   ): boolean
 {
-  const nodeInitialiser = node.init;
+  const replacement =
+    fmtArrayFunctionExpression(
+      node,
+      context);
 
-  if (!nodeInitialiser) {
-    return true;
-  }
+  const source =
+    context.sourceCode.getText(
+      node);
 
-  const nodeInitialiserLocation =
-    nodeInitialiser?.loc;
-
-  if (!nodeInitialiserLocation) {
-    return true;
-  }
-
-  const nodeInitialiserLocStartLine =
-    nodeInitialiserLocation.start.line;
-
-  if (
-    expressionIsSimple(
-      nodeInitialiser)
-  ) {
-    return true;
-  }
-
-  const equalsToken =
-    context.sourceCode.getTokenBefore(
-      nodeInitialiser,
-      token => token.value === '=');
-
-  const equalsTokenLocation = equalsToken?.loc;
-
-  if (!equalsTokenLocation) {
-    return true;
-  }
-
-  const equalsTokenLocEndLine =
-    equalsTokenLocation.end.line;
-
-  return equalsTokenLocEndLine < nodeInitialiserLocStartLine;
+  return replacement === source;
 }

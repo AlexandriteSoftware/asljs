@@ -83,9 +83,11 @@ function createCli(
           value => environment.stderr.write(value),
         outputError:
           () =>
-        {} })
+          {} })
     .exitOverride(
-      error =>
+      (
+          error
+        ) =>
       {
         throw error;
       })
@@ -100,7 +102,9 @@ function createCli(
           });
       })
     .action(
-      async (pattern?: string): Promise<void> =>
+      async (
+          pattern?: string
+        ): Promise<void> =>
       {
         const fnArgs =
           pattern === undefined

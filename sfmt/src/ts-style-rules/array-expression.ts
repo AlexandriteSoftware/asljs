@@ -4,8 +4,7 @@ import { type TSESLint }
   from '@typescript-eslint/utils';
 import { ReportDescriptor }
   from '@typescript-eslint/utils/ts-eslint';
-import { FormatterDefinitionFactory,
-         RuleListenerFactory,
+import { RuleListenerFactory,
          tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
@@ -18,10 +17,10 @@ import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
 
 const messages: Record<string, string> =
-  { 'Use asljs array expression style.':
+  { 'use-asljs-array-expression-style':
       'Use asljs array expression style.' };
 
-const formatterDefinitionFactory: FormatterDefinitionFactory =
+const formatterDefinitionFactory =
   tsFormatterFactory(
     'array-expression',
     listenerFactory,
@@ -35,9 +34,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { ArrayExpression: listener };
 
@@ -78,10 +77,10 @@ function processArrayExpression(
   }
 
   const report: ReportDescriptor<string> =
-    { node: node,
+    { node,
       messageId:
-        'Use asljs array expression style.',
-      fix: fix };
+        'use-asljs-array-expression-style',
+      fix };
 
   context.report(report);
 
@@ -140,10 +139,7 @@ function checkLayout(
     return true;
   }
 
-  if (
-    node.elements.length
-    === 0
-  ) {
+  if (node.elements.length === 0) {
     // the array expression without elements should be just `[ ]`
     const result =
       firstTokenLocation.start.line === lastTokenLocation.start.line

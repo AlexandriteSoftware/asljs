@@ -13,6 +13,8 @@ import { NullLoggerProvider }
   from './logging.js';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
+import tsArrayFunctionExpressionFormatterFactory
+  from './ts-style-rules/array-function-expression.js';
 import tsAssignmentExpressionFormatterFactory
   from './ts-style-rules/assignment-expression.js';
 import tsCallExpressionFormatterFactory
@@ -51,6 +53,8 @@ const loggerProvider =
 const tsFormatterFactories =
   { 'array-expression-style':
       tsArrayExpressionFormatterFactory,
+    'arrayfunctionexpression-style':
+      tsArrayFunctionExpressionFormatterFactory,
     'assignment-expression-style':
       tsAssignmentExpressionFormatterFactory,
     'call-expression-style':
@@ -95,7 +99,9 @@ const severityPerPluginRule: Record<string, string> =
     Object.entries(
       pluginRules)
     .map(
-      ([ruleName, _rule]) =>
+      (
+          [ruleName, _rule]
+        ) =>
       {
         const entry =
           [ `asljs-sfmt-ts/${ruleName}`,

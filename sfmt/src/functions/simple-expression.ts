@@ -78,10 +78,7 @@ export function expressionIsSimple(
       }
     }
 
-    if (
-      newExpression.arguments.length
-      > 0
-    ) {
+    if (newExpression.arguments.length > 0) {
       return false;
     }
 

@@ -42,10 +42,7 @@ export function fmtObjectExpression(
     return original;
   }
 
-  if (
-    node.properties.length
-    === 0
-  ) {
+  if (node.properties.length === 0) {
     // an object expression without properties should be just `{ }`
     return '{ }';
   }

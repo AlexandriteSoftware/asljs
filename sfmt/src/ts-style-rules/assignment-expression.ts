@@ -35,9 +35,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { AssignmentExpression: listener };
 
@@ -83,9 +83,9 @@ function processAssignmentExpression(
         'use-asljs-assignment-expression-style',
       fix:
         (
-        fixer: TSESLint.RuleFixer
-      ): TSESLint.RuleFix =>
-      {
+            fixer: TSESLint.RuleFixer
+          ): TSESLint.RuleFix =>
+        {
         const replacement =
           fmtAssignmentExpression(
             node,

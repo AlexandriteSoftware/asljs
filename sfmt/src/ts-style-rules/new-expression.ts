@@ -40,9 +40,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { NewExpression: listener };
 
@@ -135,10 +135,7 @@ function checkLayout(
 
   const argumentsList = node.arguments;
 
-  if (
-    argumentsList.length
-    === 0
-  ) {
+  if (argumentsList.length === 0) {
     // no arguments
 
     const closingParenthesis =
@@ -171,10 +168,7 @@ function checkLayout(
   const argumentIndent =
     baseIndent.increase();
 
-  if (
-    argumentsList.length
-    === 1
-  ) {
+  if (argumentsList.length === 1) {
     // one argument: if short enough, can be kept on the same line,
     // otherwise must be on a new line with increased indentation
     const argument = argumentsList[0];

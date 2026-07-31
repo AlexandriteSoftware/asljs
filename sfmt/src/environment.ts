@@ -34,7 +34,7 @@ export function createEnvironment(
         action => disposeActions.push(action),
       dispose:
         async () =>
-    {
+        {
       for (const action of disposeActions) {
         await action();
       }
@@ -61,13 +61,15 @@ function createInMemoryWritableBuffer(
 
   const buffer: WritableBuffer =
     { write:
-        (value: string): void =>
-    {
+        (
+            value: string
+          ): void =>
+        {
       output.push(value);
     },
       toString:
         (): string =>
-    {
+        {
       return output.join('');
     } };
 

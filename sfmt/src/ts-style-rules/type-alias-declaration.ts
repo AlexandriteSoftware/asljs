@@ -33,9 +33,9 @@ function listenerFactory(
 {
   const listenerFactory: RuleListenerFactory =
     (
-    context: TSESLint.RuleContext<string, readonly unknown[]>
-  ): TSESLint.RuleListener =>
-  {
+        context: TSESLint.RuleContext<string, readonly unknown[]>
+      ): TSESLint.RuleListener =>
+    {
     const ruleListener: TSESLint.RuleListener =
       { TSTypeAliasDeclaration: listener };
 
@@ -88,9 +88,9 @@ function processTypeAliasDeclaration(
         'use-asljs-type-alias-declaration-style',
       fix:
         (
-        fixer: TSESLint.RuleFixer
-      ): TSESLint.RuleFix =>
-      {
+            fixer: TSESLint.RuleFixer
+          ): TSESLint.RuleFix =>
+        {
         const replacement =
           fmtTypeAliasDeclaration(
             node,
@@ -182,10 +182,7 @@ function checkLayout(
 
   const parameters = functionType.params;
 
-  if (
-    parameters.length
-    > 0
-  ) {
+  if (parameters.length > 0) {
     const firstParameter = parameters[0];
 
     const firstParameterLocation = firstParameter?.loc;
@@ -260,10 +257,7 @@ function checkLayout(
 
   let closingParen: TSESTree.Token | null = null;
 
-  if (
-    parameters.length
-    > 0
-  ) {
+  if (parameters.length > 0) {
     const lastParameter =
       parameters[parameters.length - 1];
 
