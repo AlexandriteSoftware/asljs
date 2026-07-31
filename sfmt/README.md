@@ -9,7 +9,7 @@ formatted with the tool itself, therefore for complete example of the formatting
 rules, see [the source code of this project][3].
 
 [1]: https://github.com/AlexandriteSoftware/asljs
-[2]: https://github.com/AlexandriteSoftware/asljs/blob/main/sfmt/FORMATTING.md
+[2]: FORMATTING.md
 [3]: https://github.com/AlexandriteSoftware/asljs/blob/main/sfmt/src
 
 ## Highlights

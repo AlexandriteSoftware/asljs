@@ -1,6 +1,6 @@
 # Starcase Code Formatting Style
 
-for TypeScript, JavaScript, and other languages
+This document defines formatting rules for TypeScript.
 
 ## Overview
 

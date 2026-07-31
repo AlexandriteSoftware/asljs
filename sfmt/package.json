@@ -14,8 +14,7 @@
   "files": [
     "dist/**",
     "bin/**",
-    "README.md",
-    "LICENSE.md"
+    "*.md"
   ],
   "bin": {
     "sfmt": "bin/sfmt.js"
