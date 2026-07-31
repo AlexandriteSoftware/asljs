@@ -1,10 +1,29 @@
 import { Command }
   from 'commander';
+import { readFileSync }
+  from 'node:fs';
 import { createEnvironment,
          Environment }
   from './environment.js';
 import { format }
   from './format.js';
+
+type PackageMetadata = {
+  name: string;
+  version: string;
+  description: string;
+  homepage: string;
+  author: string;
+  license: string;
+};
+
+const packageMetadata: PackageMetadata =
+  JSON.parse(
+    readFileSync(
+      new URL(
+        '../package.json',
+        import.meta.url),
+      'utf8')) as PackageMetadata;
 
 export async function runCli(
     args: string[],
@@ -21,7 +40,11 @@ export async function runCli(
     createCli(environment);
 
   if (args.length === 0) {
-    cli.outputHelp();
+    writeHelp(
+      environment,
+      cli,
+      false);
+
     return 0;
   }
 
@@ -70,7 +93,7 @@ function createCli(
   cli
     .name('sfmt')
     .description(
-      '`sfmt` is a script (js, ts) formatting tool.')
+      packageMetadata.description)
     .argument(
       '[pattern]',
       'Glob pattern of files to format')
@@ -177,8 +200,10 @@ function writeCommanderError(
     environment.stderr.write(
       `Unknown command.\n`);
 
-    cli.outputHelp(
-      { error: true });
+    writeHelp(
+      environment,
+      cli,
+      true);
 
     return true;
   }
@@ -187,8 +212,10 @@ function writeCommanderError(
     code
     === 'commander.help'
   ) {
-    cli.outputHelp(
-      { error: true });
+    writeHelp(
+      environment,
+      cli,
+      false);
 
     return true;
   }
@@ -224,4 +251,33 @@ function tryExtractOptionName(
   }
 
   return trimmed;
+}
+
+function writeHelp(
+    environment: Environment,
+    cli: Command,
+    isError: boolean
+  ): void
+{
+  const output =
+    createHelpPreface()
+    + cli.helpInformation();
+
+  if (isError) {
+    environment.stderr.write(output);
+  } else {
+    environment.stdout.write(output);
+  }
+}
+
+function createHelpPreface(
+  ): string
+{
+  let preface =
+    `${packageMetadata.name} ${packageMetadata.version}\n`;
+
+  preface
+    += `${packageMetadata.homepage}\n\n`;
+
+  return preface;
 }
