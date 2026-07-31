@@ -115,8 +115,7 @@ test(
     const tmpDir =
       new TmpDir();
 
-    const tmpDirectoryPath =
-      tmpDir.path;
+    const tmpDirectoryPath = tmpDir.path;
 
     await tmpDir.writeText(
       'content.txt',
@@ -151,10 +150,8 @@ test(
 
     const tmpDir =
       new TmpDir(
-      { tmpDir:
-          parentDirectoryPath,
-        prefix: 'case-' }
-    );
+        { tmpDir: parentDirectoryPath,
+          prefix: 'case-' });
 
     const escapedFilePath =
       path.join(
@@ -199,7 +196,7 @@ test(
   {
     const factory =
       async (): Promise<string> =>
-    {
+      {
       using tmpDir =
         new TmpDir();
 
@@ -210,8 +207,7 @@ test(
       return tmpDir.path;
     };
 
-    const tmpDirPath =
-      await factory();
+    const tmpDirPath = await factory();
 
     await assert.rejects(
       async () =>
@@ -227,7 +223,7 @@ test(
   {
     const factory =
       async (): Promise<string> =>
-    {
+      {
       await using tmpDir =
         new TmpDir();
 
@@ -238,8 +234,7 @@ test(
       return tmpDir.path;
     };
 
-    const tmpDirPath =
-      await factory();
+    const tmpDirPath = await factory();
 
     await assert.rejects(
       async () =>
@@ -253,14 +248,14 @@ test(
   'TmpDir traces calls to its methods',
   async (): Promise<void> =>
   {
-    const traceMessages: string[] = [];
+    const traceMessages: string[] = [ ];
 
     const traceHandler: TmpDirLogFunction =
       (
-      message: string,
-      ...params: any[]
-    ): void =>
-    {
+          message: string,
+          ...params: any[]
+        ): void =>
+      {
       const text =
         formatMessage(
           message,
@@ -271,8 +266,7 @@ test(
 
     using tmpDir =
       new TmpDir(
-      { trace: traceHandler }
-    );
+        { trace: traceHandler });
 
     await tmpDir.writeText(
       'content.txt',

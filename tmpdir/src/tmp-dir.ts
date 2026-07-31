@@ -7,10 +7,12 @@ import os
 import path
   from 'node:path';
 
-export type TmpDirLogFunction = (
-  message: string,
-  ...params: any[]
-) => void;
+export type TmpDirLogFunction =
+  (
+    message: string,
+    ...params: any[]
+  ) =>
+    void;
 
 export interface TmpDirOptions
 {
@@ -74,8 +76,7 @@ export function tmpDirThrowErrorFunction(
   throw new Error(
     formatMessage(
       message,
-      ...params)
-  );
+      ...params));
 }
 
 export class TmpDir
@@ -90,11 +91,12 @@ export class TmpDir
     options: Partial<TmpDirOptions> = {}
   )
   {
-    this.#trace = options.trace
-      ?? (() =>
-      {});
+    this.#trace =
+      options.trace
+      ?? (() => { });
 
-    this.#error = options.error
+    this.#error =
+      options.error
       ?? tmpDirConsoleLogFunction;
 
     const tmpDir =
@@ -105,10 +107,11 @@ export class TmpDir
       options.prefix
       ?? 'asljs-tmpdir-';
 
-    this.path = fs.mkdtempSync(
-      path.join(
-        tmpDir,
-        prefix));
+    this.path =
+      fs.mkdtempSync(
+        path.join(
+          tmpDir,
+          prefix));
 
     this.#trace(
       `constructor() { this.path=${this.path} }`);
@@ -128,8 +131,7 @@ export class TmpDir
 
     if (!segmentsAreValid) {
       throw new Error(
-        'All path segments must be relative'
-      );
+        'All path segments must be relative');
     }
 
     const resolvedPath =
@@ -149,8 +151,7 @@ export class TmpDir
       || path.isAbsolute(relativePath)
     ) {
       throw new Error(
-        'Resolved path must stay within the temporary directory'
-      );
+        'Resolved path must stay within the temporary directory');
     }
 
     return resolvedPath;
@@ -292,8 +293,7 @@ export class TmpDir
   {
     if (this.#disposed) {
       throw new Error(
-        `TmpDir instance has been disposed`
-      );
+        `TmpDir instance has been disposed`);
     }
   }
 
