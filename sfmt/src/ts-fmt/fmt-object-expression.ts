@@ -27,10 +27,7 @@ export function fmtObjectExpression(
 
   const firstToken = tokens[0];
 
-  if (
-    firstToken.value
-    !== '{'
-  ) {
+  if (firstToken.value !== '{') {
     // do not rebuild if the first token is not an opening brace
     return original;
   }

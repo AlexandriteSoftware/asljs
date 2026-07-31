@@ -39,7 +39,10 @@ function isSingleCharacterStringLiteral(
     return false;
   }
 
-  if (typeof expression.value !== 'string') {
+  if (
+    typeof expression.value
+    !== 'string'
+  ) {
     return false;
   }
 

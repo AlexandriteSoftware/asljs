@@ -134,8 +134,7 @@ function checkLayout(
     !openingParen
     || openingParen.type
        !== 'Punctuator'
-    || openingParen.value
-       !== '('
+    || openingParen.value !== '('
   ) {
     return true;
   }
@@ -254,8 +253,7 @@ function checkLayout(
       !closingParen
       || closingParen.type
          !== 'Punctuator'
-      || closingParen.value
-         !== ')'
+      || closingParen.value !== ')'
     ) {
       return true;
     }
@@ -288,8 +286,7 @@ function checkLayout(
       !closingParen
       || closingParen.type
          !== 'Punctuator'
-      || closingParen.value
-         !== ')'
+      || closingParen.value !== ')'
     ) {
       return true;
     }

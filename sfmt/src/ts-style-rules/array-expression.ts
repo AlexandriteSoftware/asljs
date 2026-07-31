@@ -114,10 +114,7 @@ function checkLayout(
 
   const firstToken = tokens[0];
 
-  if (
-    firstToken.value
-    !== '['
-  ) {
+  if (firstToken.value !== '[') {
     // do not check if the first token is not `[`
     return true;
   }

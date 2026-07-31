@@ -22,7 +22,10 @@ function parseExpression(
 
   const statement = ast.body[0];
 
-  if (statement.type !== 'ExpressionStatement') {
+  if (
+    statement.type
+    !== 'ExpressionStatement'
+  ) {
     throw new Error(
       'Expected expression statement');
   }
@@ -63,9 +66,9 @@ for (const [code, expectedResult] of allTestExpressions) {
           expression,
           { getText:
               node =>
-                code.slice(
-                  node.range?.[0] ?? 0,
-                  node.range?.[1] ?? 0) });
+            code.slice(
+              node.range?.[0] ?? 0,
+              node.range?.[1] ?? 0) });
 
       assert.equal(
         actual,
