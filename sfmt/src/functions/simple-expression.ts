@@ -2,8 +2,6 @@ import { TSESTree }
   from '@typescript-eslint/typescript-estree';
 import * as estree
   from 'estree';
-import { tryGetLocation }
-  from './location.js';
 
 const LONG_EXPRESSION_LENGTH = 20;
 

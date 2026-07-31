@@ -1,5 +1,7 @@
 import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
+import { criteriaPartIsSimple }
+  from '../functions/simple-criteria-part.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 
@@ -85,7 +87,7 @@ function shouldBreakBeforeBinaryOperator(
   if (
     isComparisonOperator(
       expression.operator)
-    && hasShortNumericOperand(
+    && hasSimpleCriteriaPartOperand(
       expression,
       options)
   ) {
@@ -149,36 +151,17 @@ function isComparisonOperator(
       operator);
 }
 
-function hasShortNumericOperand(
+function hasSimpleCriteriaPartOperand(
     expression: OperationExpression,
     options: CriteriaExpressionFormattingOptions
   ): boolean
 {
-  return isShortNumericExpression(
+  return criteriaPartIsSimple(
     expression.left,
     options)
-    || isShortNumericExpression(
+    || criteriaPartIsSimple(
       expression.right,
       options);
-}
-
-function isShortNumericExpression(
-    expression: TSESTree.Expression | TSESTree.PrivateIdentifier,
-    options: CriteriaExpressionFormattingOptions
-  ): boolean
-{
-  if (expression.type === 'PrivateIdentifier') {
-    return false;
-  }
-
-  const text =
-    options.getText(
-      expression)
-    .trim();
-
-  return /^-?\d+$/.test(
-    text)
-    && text.length <= 3;
 }
 
 function getOperationPriority(
