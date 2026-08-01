@@ -113,8 +113,7 @@ export async function execCheck(
       await glob(
         options.pattern,
         { absolute: true,
-          cwd:
-            environment.cwd,
+          cwd: environment.cwd,
           dot: true,
           nodir: true });
 
@@ -234,7 +233,10 @@ export async function execCheck(
   }
 
   results.sort(
-    (left, right) =>
+    (
+        left,
+        right
+      ) =>
     {
       const pathCompare =
         left.location.localeCompare(

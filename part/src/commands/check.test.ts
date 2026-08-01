@@ -78,12 +78,9 @@ Requirement passes a second rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -162,12 +159,9 @@ Definition rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -253,12 +247,9 @@ Article rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -335,12 +326,9 @@ Second rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -425,12 +413,9 @@ Passing rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -492,12 +477,9 @@ Passing rule.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),

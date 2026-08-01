@@ -27,10 +27,12 @@ export interface RuleValidationContext
   markdownDocuments: MarkdownDocumentProvider;
 }
 
-export type RuleValidationFunction = (
-  artefact: Artefact,
-  context: RuleValidationContext
-) => Promise<void>;
+export type RuleValidationFunction =
+  (
+    artefact: Artefact,
+    context: RuleValidationContext
+  ) =>
+    Promise<void>;
 
 export function createRuleValidationContext(
     loggerProvider: LoggerProvider,
@@ -66,8 +68,7 @@ export function createRuleValidationContext(
       rootPath: projectPath,
       definitions:
         artefactDefinitionProvider,
-      artefacts:
-        artefactProvider,
+      artefacts: artefactProvider,
       artefactData:
         artefactDataProvider,
       markdownDocuments:

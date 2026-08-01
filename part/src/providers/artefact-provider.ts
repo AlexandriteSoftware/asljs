@@ -197,8 +197,7 @@ export class ArtefactProvider
             path.relative(
               projectDirectory,
               artefactPath)),
-        basePath:
-          projectDirectory,
+        basePath: projectDirectory,
         name:
           path.basename(
             artefactPath,

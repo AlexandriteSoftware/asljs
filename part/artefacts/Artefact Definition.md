@@ -11,6 +11,8 @@ Artefact Definition is a markdown file, with the following content:
   list of rules, each with an id and description. First token in the rule
   description should be the rule id. Rule ids has the format
   `<letters><number>`.
+- `## Properties` - optional, specifies artefact's properties, as returned by
+  the artefact's data provider.
 
 ## Location
 
@@ -72,3 +74,30 @@ Special filters:
   collects `.gitignore` files starting from the file's folder and going up to
   the project root until it reaches the repository root (folder with the `.git`
   subfolder) or filesystem root. It caches collected `.gitignore` files.
+
+## Properties
+
+Property is defined as
+
+```markdown
+### <PropertyName>
+
+- Type: <PropertyType>
+
+<Description>
+```
+
+Property type can be one of the following:
+
+- `string` - a string value.
+- `artefact` - a path to the artefact, relative to location of the current
+  artefact.
+
+If property type ends with `[]`, e.g. `string[]`, it means that the property is
+an array of values.
+
+Example:
+
+For the Article artefact (representing markdown article), the RelatedArticles
+property is of type `artefact[]`, meaning that it is an array of paths to other
+articles within this project.

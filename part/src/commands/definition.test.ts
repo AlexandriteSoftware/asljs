@@ -40,7 +40,11 @@ A statement about the system that must be true.
 
 ## Properties
 
-- Id - A unique identifier of the requirement.
+### Id
+
+- Type: string
+
+A unique identifier of the requirement.
 
 ## Location
 
@@ -59,12 +63,9 @@ A statement about the system that must be true.
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+          cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execDefinition(
       environment,
@@ -77,4 +78,12 @@ A statement about the system that must be true.
     assert.match(
       environment.stdout.toString(),
       /- name: Requirement/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /- properties:/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /- type: string/);
   });

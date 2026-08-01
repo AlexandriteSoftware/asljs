@@ -92,7 +92,7 @@ export function createEnvironment(
         action => disposeActions.push(action),
       dispose:
         async () =>
-    {
+        {
       for (const action of disposeActions) {
         await action();
       }

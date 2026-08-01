@@ -117,7 +117,8 @@ export class ArtefactDefinitionRuleProvider
   ): Promise<{ path: string; relativePath: string; } | null>
   {
     if (
-      typeof ruleId !== 'string'
+      typeof ruleId
+      !== 'string'
       || ruleId.trim() === ''
     ) {
       throw new Error(
@@ -187,8 +188,7 @@ export class ArtefactDefinitionRuleProvider
           directoryPath,
           entry.name);
 
-      return { path:
-                 absoluteFilePath,
+      return { path: absoluteFilePath,
                relativePath:
                  toPosixPath(
                    path.relative(

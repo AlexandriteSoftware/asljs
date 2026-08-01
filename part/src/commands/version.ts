@@ -9,7 +9,7 @@ export function execVersion(
 {
   const packageVersion =
     (() =>
-  {
+    {
     const require =
       createRequire(
         import.meta.url);

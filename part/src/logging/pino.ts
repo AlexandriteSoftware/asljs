@@ -98,8 +98,7 @@ class PinoLoggerProvider implements LoggerProvider
         pino.transport(
           { target: 'pino-pretty',
             options:
-              { messageFormat:
-                  '{context}: {msg}',
+              { messageFormat: '{context}: {msg}',
                 ignore: 'context',
                 colorize: true } });
     }

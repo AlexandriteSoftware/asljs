@@ -35,8 +35,7 @@ test(
     const environment =
       createEnvironment(
         { loggerProvider,
-          cwd:
-            workspace.path,
+          cwd: workspace.path,
           definitions:
             workspace.resolve('definitions') });
 

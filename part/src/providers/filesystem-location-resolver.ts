@@ -114,8 +114,7 @@ export class FilesystemLocationResolver
       const rootPathMatches =
         await glob(
           rootPathPatterns,
-          { cwd:
-              this.rootPath,
+          { cwd: this.rootPath,
             absolute: true,
             nodir: filesOnly });
 
@@ -133,8 +132,7 @@ export class FilesystemLocationResolver
       const basePathMatches =
         await glob(
           basePathPatterns,
-          { cwd:
-              normalisedBasePath,
+          { cwd: normalisedBasePath,
             absolute: true,
             nodir: filesOnly });
 
@@ -159,8 +157,7 @@ export class FilesystemLocationResolver
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
-          { cwd:
-              this.rootPath,
+          { cwd: this.rootPath,
             absolute: true,
             nodir: filesOnly });
 
@@ -178,8 +175,7 @@ export class FilesystemLocationResolver
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
-          { cwd:
-              normalisedBasePath,
+          { cwd: normalisedBasePath,
             absolute: true,
             nodir: filesOnly });
 
@@ -271,8 +267,10 @@ export class FilesystemLocationResolver
 
     const included =
       [ patterns ].some(
-        pattern =>
-      {
+        (
+            pattern
+          ) =>
+        {
         if (pattern.startsWith('/')) {
           return minimatch(
             relativeToRoot,
@@ -292,8 +290,10 @@ export class FilesystemLocationResolver
 
     const excluded =
       exclude.some(
-        pattern =>
-      {
+        (
+            pattern
+          ) =>
+        {
         if (pattern.startsWith('/')) {
           return minimatch(
             relativeToRoot,

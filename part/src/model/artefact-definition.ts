@@ -1,5 +1,7 @@
 import { ArtefactDefinitionRule }
   from './artefact-definition-rule.js';
+import { ArtefactDefinitionProperty }
+  from './artefact-definition-property.js';
 import { Location }
   from './location.js';
 
@@ -37,4 +39,9 @@ export interface ArtefactDefinition
    * Defines rules that are defined by this artefact definition.
    */
   rules: ArtefactDefinitionRule[];
+
+  /**
+   * Defines properties that are returned by the artefact data provider.
+   */
+  properties: ArtefactDefinitionProperty[];
 }

@@ -28,12 +28,16 @@ export function renderObjectsToMarkdownTable(
 
   const widths =
     properties.map(
-      property =>
-    {
+      (
+          property
+        ) =>
+      {
       const columnWidths =
         objects.map(
-          row =>
-        {
+          (
+              row
+            ) =>
+          {
           const text =
             String(
               row[property]);

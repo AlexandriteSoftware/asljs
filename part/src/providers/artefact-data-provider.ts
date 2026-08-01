@@ -51,10 +51,17 @@ export class ArtefactDataProvider
         'parts',
         definition + '.js');
 
-    if (
-      !(await fs.stat(
-        dataProviderFilePath)).isFile()
-    ) {
+    let fileStat;
+
+    try {
+      fileStat =
+        await fs.stat(
+          dataProviderFilePath);
+    } catch {
+      return null;
+    }
+
+    if (!fileStat.isFile()) {
       return null;
     }
 
@@ -79,14 +86,16 @@ export class ArtefactDataProvider
     const getDataFunction: ArtefactDataProvidingFunction =
       dataProviderModule.getData;
 
-    if (typeof getDataFunction !== 'function') {
+    if (
+      typeof getDataFunction
+      !== 'function'
+    ) {
       throw new Error(
         'Data provider module must export getData.');
     }
 
     const context: ArtefactDataProvidingContext =
-      { logger:
-          this.logger,
+      { logger: this.logger,
         markdownDocuments:
           this.markdownDocumentProvider };
 

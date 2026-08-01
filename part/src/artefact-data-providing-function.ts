@@ -17,7 +17,9 @@ export interface ArtefactDataProvidingContext
 /**
  * Provides a data object for a given artefact.
  */
-export type ArtefactDataProvidingFunction = (
-  artefact: Artefact,
-  context: ArtefactDataProvidingContext
-) => Promise<Record<string, unknown>>;
+export type ArtefactDataProvidingFunction =
+  (
+    artefact: Artefact,
+    context: ArtefactDataProvidingContext
+  ) =>
+    Promise<Record<string, unknown>>;

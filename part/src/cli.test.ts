@@ -8,6 +8,8 @@ import test
   from 'node:test';
 import { runCli }
   from './cli.js';
+import { execInventory }
+  from './commands/inventory.js';
 import { execVersion }
   from './commands/version.js';
 import { createEnvironment }
@@ -57,7 +59,9 @@ test(
 
     environment.register(
       execVersion,
-      async e =>
+      async (
+          e
+        ) =>
       {
         definitions =
           e.definitions;
@@ -94,7 +98,9 @@ test(
 
     environment.register(
       execVersion,
-      async e =>
+      async (
+          e
+        ) =>
       {
         project =
           e.project;
@@ -118,6 +124,39 @@ test(
     assert.equal(
       project,
       projectPath);
+  });
+
+test(
+  'RQ121: cli forwards inventory report option',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    let report = '';
+
+    environment.register(
+      execInventory,
+      async (
+          _logger,
+          _environment,
+          options
+        ) =>
+      {
+        report =
+          options?.report ?? '';
+
+        return Promise.resolve();
+      });
+
+    await runCli(
+      [ 'inventory',
+        '--report=diagram' ],
+      environment);
+
+    assert.equal(
+      report,
+      'diagram');
   });
 
 test(

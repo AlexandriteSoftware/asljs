@@ -98,11 +98,11 @@ function createCli(
           value => environment.stdout.write(value),
         writeErr:
           value => environment.stderr.write(value),
-        outputError:
-          () =>
-        {} })
+        outputError: () => { } })
     .exitOverride(
-      error =>
+      (
+          error
+        ) =>
       {
         throw error;
       })
@@ -120,7 +120,10 @@ function createCli(
       'Path to artefact directory. Defaults to the current working directory.')
     .hook(
       'preAction',
-      (_, actionCommand) =>
+      (
+          _,
+          actionCommand
+        ) =>
       {
         const options =
           actionCommand.optsWithGlobals();
@@ -207,8 +210,13 @@ function createCli(
     .option(
       '--inventory-definitions <definitions>',
       'Comma-separated definition names to get inventory for')
+    .option(
+      '--report <format>',
+      'Report format: table or diagram')
     .action(
-      async options =>
+      async (
+          options
+        ) =>
       {
         const method =
           environment.resolve(
@@ -225,7 +233,10 @@ function createCli(
           environment,
           { inventoryDefinitions:
               splitCommaSeparatedOption(
-                options.inventoryDefinitions) });
+                options.inventoryDefinitions),
+            report:
+              filterStringOption(
+                options.report) });
       });
 
   cli.command('definition')
@@ -234,7 +245,9 @@ function createCli(
     .argument(
       'target')
     .action(
-      async target =>
+      async (
+          target
+        ) =>
       {
         const method =
           environment.resolve(
@@ -280,7 +293,9 @@ function createCli(
       '--dry-run',
       'Print Copilot prompts without running them or writing files')
     .action(
-      async options =>
+      async (
+          options
+        ) =>
       {
         const method =
           environment.resolve(
@@ -312,7 +327,10 @@ function createCli(
       '--with-positives',
       'Show passing and failing check rows')
     .action(
-      async (pattern, options) =>
+      async (
+          pattern,
+          options
+        ) =>
       {
         const method =
           environment.resolve(
@@ -382,11 +400,17 @@ function writeCommanderError(
   const code =
     (error as Error & { code?: string; }).code;
 
-  if (typeof code !== 'string') {
+  if (
+    typeof code
+    !== 'string'
+  ) {
     return false;
   }
 
-  if (code === 'commander.optionMissingArgument') {
+  if (
+    code
+    === 'commander.optionMissingArgument'
+  ) {
     const optionName =
       tryExtractOptionName(
         error.message);
@@ -403,7 +427,10 @@ function writeCommanderError(
     return true;
   }
 
-  if (code === 'commander.unknownOption') {
+  if (
+    code
+    === 'commander.unknownOption'
+  ) {
     const optionName =
       tryExtractOptionName(
         error.message);
@@ -420,7 +447,10 @@ function writeCommanderError(
     return true;
   }
 
-  if (code === 'commander.unknownCommand') {
+  if (
+    code
+    === 'commander.unknownCommand'
+  ) {
     environment.stderr
       .write(
         `Unknown command.\n`);
@@ -481,7 +511,8 @@ function splitCommaSeparatedOption(
   ): string[]
 {
   if (
-    typeof value !== 'string'
+    typeof value
+    !== 'string'
     || value.trim() === ''
   ) {
     return [ ];
@@ -503,7 +534,10 @@ function filterStringOption(
     value: unknown
   ): string
 {
-  if (typeof value !== 'string') {
+  if (
+    typeof value
+    !== 'string'
+  ) {
     return '';
   }
 

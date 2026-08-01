@@ -10,7 +10,8 @@ Artefact Definition is defined in [model/artefact-definition.ts][2] as follows:
   name: string;
   description: string;
   locations: Location[];
-  rules: ArtefactDefinitionRule[]; }
+  rules: ArtefactDefinitionRule[];
+  properties: ArtefactDefinitionProperty[] }
 ```
 
 [1]: <../artefacts/Artefact Definition.md>

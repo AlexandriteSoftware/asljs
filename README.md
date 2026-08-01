@@ -1,7 +1,7 @@
 # asljs
 
 Alexandrite Software Libraries for JavaScript (asljs) provides essential
-utilities and functions to improve everyday development.
+libraries and tools to improve everyday development.
 
 Libraries:
 
@@ -20,8 +20,8 @@ Tools:
 
 - [cog](cog) - AI agents context manager.
 - [part](part) - defines project artefacts in markdown and validates them with
-  CLI rules.
-- [sfmt](sfmt) - JS/TS code formatter.
+  rules.
+- [sfmt](sfmt) - code formatter for TypeScript.
 
 Applications:
 

@@ -65,12 +65,9 @@ I need to buy milk.
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider });
 
     await execInventory(
@@ -117,12 +114,9 @@ A statement about the system that must be true.
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider });
 
     await execInventory(
@@ -173,12 +167,9 @@ Definition file.
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider });
 
     await execInventory(
@@ -229,12 +220,9 @@ Definition file.
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider });
 
     await execInventory(
@@ -283,12 +271,9 @@ A todo item is a task that needs to be done.
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path });
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path });
 
     await execInventory(
       execInventoryLogger,
@@ -301,4 +286,107 @@ A todo item is a task that needs to be done.
     assert.match(
       environment.stdout.toString(),
       /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
+  });
+
+test(
+  'RQ206: inventory can render a diagram report',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Properties
+
+### PrimaryArticle
+
+- Type: artefact
+
+The primary referenced article.
+
+### RelatedArticles
+
+- Type: artefact[]
+
+The related articles.
+
+## Location
+
+- Pattern: articles/*.md
+`);
+
+    await workspace.writeText(
+      'parts/Article.js',
+      `export async function getData(artefact) {
+  if (artefact.name === 'A') {
+    return {
+      primaryArticle: 'B.md',
+      relatedArticles: ['C.md']
+    };
+  }
+
+  return {
+    primaryArticle: '',
+    relatedArticles: []
+  };
+}
+`);
+
+    await workspace.writeText(
+      'articles/A.md',
+      '# A\n');
+
+    await workspace.writeText(
+      'articles/B.md',
+      '# B\n');
+
+    await workspace.writeText(
+      'articles/C.md',
+      '# C\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          loggerProvider });
+
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { report: 'diagram' });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    const output =
+      environment.stdout.toString();
+
+    assert.match(
+      output,
+      /<svg[\s\S]*<\/svg>/);
+
+    assert.match(
+      output,
+      /articles\/A\.md/);
+
+    assert.match(
+      output,
+      /articles\/B\.md/);
+
+    assert.match(
+      output,
+      /articles\/C\.md/);
+
+    assert.equal(
+      (output.match(
+        /class="edge"/g)
+        ?? [ ]).length,
+      2);
   });

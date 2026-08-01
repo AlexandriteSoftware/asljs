@@ -1,5 +1,3 @@
-import path
-  from 'node:path';
 import { log,
          ROOT_DIR }
   from '../api.js';
@@ -21,8 +19,7 @@ export async function releasePatch(
 {
   log(
     'patch-release of the package `%s`...',
-    path.basename(
-      process.cwd()));
+    process.cwd());
 
   await ensureCleanWorkingDirectory();
 
@@ -79,7 +76,7 @@ function verifyReleaseTarget(
     packageJson.name;
 
   if (
-    typeof name !== 'string'
+    !name
     || name.trim() === ''
   ) {
     throw new Error(
@@ -95,7 +92,7 @@ function verifyReleaseTarget(
     packageJson.version;
 
   if (
-    typeof version !== 'string'
+    !version
     || version.trim() === ''
   ) {
     throw new Error(

@@ -12,6 +12,7 @@ Parameters:
 
 - `--inventory-definitions=...` - limit check to specific definitions,
   comma-separated list.
+- `--report=...` - report format, either `table` (default) or `diagram`.
 
 See also:
 

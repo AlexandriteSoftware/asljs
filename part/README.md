@@ -81,6 +81,12 @@ Run inventory:
 part inventory
 ```
 
+Render the inventory as an SVG diagram and save it to a file:
+
+```bash
+part inventory --report=diagram > inventory.svg
+```
+
 Bootstrap a definitions folder:
 
 ```bash

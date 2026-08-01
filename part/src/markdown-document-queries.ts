@@ -125,7 +125,10 @@ export function getSectionNode(
         document,
         node.children);
 
-    if (markup !== sectionHeadingMarkup) {
+    if (
+      markup
+      !== sectionHeadingMarkup
+    ) {
       continue;
     }
 
@@ -163,7 +166,10 @@ export function getSectionNodes(
           document,
           headingNode.children);
 
-      if (markup === sectionHeadingMarkup) {
+      if (
+        markup
+        === sectionHeadingMarkup
+      ) {
         inSection = true;
         continue;
       }
@@ -216,14 +222,20 @@ export function getMarkup(
   const startOffset =
     firstNode.position?.start?.offset;
 
-  if (typeof startOffset !== 'number') {
+  if (
+    typeof startOffset
+    !== 'number'
+  ) {
     return '';
   }
 
   const endOffset =
     lastNode.position?.end?.offset;
 
-  if (typeof endOffset !== 'number') {
+  if (
+    typeof endOffset
+    !== 'number'
+  ) {
     return '';
   }
 
@@ -260,7 +272,10 @@ export function getText(
   const value =
     (node as any).value;
 
-  if (typeof value === 'string') {
+  if (
+    typeof value
+    === 'string'
+  ) {
     return value;
   }
 

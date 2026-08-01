@@ -86,7 +86,10 @@ export class RuleRunner
 
     let result;
 
-    if (ruleFileExtension.toLowerCase() === '.js') {
+    if (
+      ruleFileExtension.toLowerCase()
+      === '.js'
+    ) {
       result =
         await this.runJavaScriptRule(
           rule,
@@ -155,7 +158,10 @@ export class RuleRunner
       const validateFunction: RuleValidationFunction =
         validatorModule.validate;
 
-      if (typeof validateFunction !== 'function') {
+      if (
+        typeof validateFunction
+        !== 'function'
+      ) {
         throw new Error(
           'Rule module must export validate.');
       }
@@ -163,8 +169,7 @@ export class RuleRunner
       let result = null;
 
       const validationContext: RuleValidationContext =
-        { logger:
-            this.logger,
+        { logger: this.logger,
           rootPath:
             this.providers.projectPath,
           definitions:
@@ -225,16 +230,17 @@ export class RuleRunner
       ruleFile.path;
 
     return new Promise(
-      resolve =>
-    {
+      (
+          resolve
+        ) =>
+      {
       const child =
         spawn(
           ruleFilePath,
           [ artefact.path ],
           { cwd:
               path.dirname(ruleFilePath),
-            env:
-              process.env,
+            env: process.env,
             stdio:
               [ 'pipe',
                 'pipe',
@@ -249,14 +255,18 @@ export class RuleRunner
 
       child.stderr.on(
         'data',
-        chunk =>
+        (
+            chunk
+          ) =>
         {
           stderr += String(chunk);
         });
 
       child.on(
         'error',
-        error =>
+        (
+            error
+          ) =>
         {
           resolve(
             { rule,
@@ -267,7 +277,9 @@ export class RuleRunner
 
       child.on(
         'close',
-        code =>
+        (
+            code
+          ) =>
         {
           const result =
             code === 0

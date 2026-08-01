@@ -22,8 +22,7 @@ export async function execDefinitions(
 
   const objects =
     definitions.map(
-      definition => ({ name:
-                         definition.name,
+      definition => ({ name: definition.name,
                        path:
                          toPosixPath(
                            path.relative(

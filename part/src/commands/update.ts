@@ -104,16 +104,11 @@ export async function execUpdate(
         const request: CodeGenerationRequest =
           { mode: 'create',
             rootDirectory: rootDir,
-            ruleFilePath:
-              expectedFilePath,
-            definition:
-              definition.name,
-            definitionPath:
-              definition.path,
-            ruleId:
-              rule.id,
-            rule:
-              rule.content,
+            ruleFilePath: expectedFilePath,
+            definition: definition.name,
+            definitionPath: definition.path,
+            ruleId: rule.id,
+            rule: rule.content,
             comment:
               ruleProvider.formatRuleComment(rule),
             currentContent: null,
@@ -155,7 +150,8 @@ export async function execUpdate(
 
       if (
         path.extname(
-          currentFilePath).toLowerCase() !== '.js'
+          currentFilePath).toLowerCase()
+        !== '.js'
       ) {
         warnings.push(
           `Skipping ${
@@ -187,16 +183,11 @@ export async function execUpdate(
       const request: CodeGenerationRequest =
         { mode: 'update',
           rootDirectory: rootDir,
-          ruleFilePath:
-            currentFilePath,
-          definition:
-            definition.name,
-          definitionPath:
-            definition.path,
-          ruleId:
-            rule.id,
-          rule:
-            rule.content,
+          ruleFilePath: currentFilePath,
+          definition: definition.name,
+          definitionPath: definition.path,
+          ruleId: rule.id,
+          rule: rule.content,
           comment:
             ruleProvider.formatRuleComment(rule),
           currentContent: currentContent,
@@ -448,9 +439,9 @@ async function runCopilotCli(
 
   return new Promise<string>(
     (
-      resolve: (value: string) => void,
-      reject: (reason: any) => void
-    ): void =>
+        resolve: (value: string) => void,
+        reject: (reason: any) => void
+      ): void =>
     {
       const child =
         spawn(
@@ -468,7 +459,9 @@ async function runCopilotCli(
 
       child.stdout.on(
         'data',
-        chunk =>
+        (
+            chunk
+          ) =>
         {
           logger.trace(
             String(chunk));
@@ -478,7 +471,9 @@ async function runCopilotCli(
 
       child.stderr.on(
         'data',
-        chunk =>
+        (
+            chunk
+          ) =>
         {
           logger.trace(
             String(chunk));
@@ -492,7 +487,9 @@ async function runCopilotCli(
 
       child.on(
         'close',
-        code =>
+        (
+            code
+          ) =>
         {
           if (code !== 0) {
             reject(

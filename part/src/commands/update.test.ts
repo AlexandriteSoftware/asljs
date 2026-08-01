@@ -43,16 +43,16 @@ test(
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider,
           runCopilotCli:
-            async (_, request) =>
-        {
+            async (
+                _,
+                request
+              ) =>
+            {
           requestPrompt =
             request.prompt;
 
@@ -115,16 +115,13 @@ test(
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           loggerProvider,
           runCopilotCli:
             async () =>
-        {
+            {
           throw new Error(
             'runCopilotCli should not be called during dry-run');
         } });
@@ -178,15 +175,15 @@ test(
 
     const environment =
       createEnvironment(
-        { cwd:
-            workspace.path,
-          definitions:
-            workspace.path,
-          project:
-            workspace.path,
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
           runCopilotCli:
-            async (_, request) =>
-        {
+            async (
+                _,
+                request
+              ) =>
+            {
           const ruleFileName =
             path.basename(
               request.ruleFilePath);

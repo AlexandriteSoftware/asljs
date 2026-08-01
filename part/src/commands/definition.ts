@@ -91,18 +91,17 @@ function formatDefinitionDetails(
   ): string
 {
   return serializeMarkdownList(
-    { name:
-        definition.name,
+    { name: definition.name,
       description:
         definition.description,
       location:
         definition.locations,
       rules:
         definition.rules.map(
-          rule => ({ id:
-                       rule.id,
-                     description:
-                       rule.content })),
+          rule => ({ id: rule.id,
+                     description: rule.content })),
+      properties:
+        definition.properties,
       path:
         toPosixPath(
           path.relative(

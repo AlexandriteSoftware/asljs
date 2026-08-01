@@ -4,6 +4,8 @@ import test
   from 'node:test';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
+import { ArtefactDefinitionProperty }
+  from '../model/artefact-definition-property.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { Location }
@@ -172,6 +174,16 @@ Due date must be in the future.
       definition.description,
       'A todo item is a task that needs to be done.');
 
+    const expectedProperties: ArtefactDefinitionProperty[] =
+      [ { name: 'Due date',
+          type: 'string',
+          description:
+            'when it needs to be done.' } ];
+
+    assert.deepEqual(
+      definition.properties,
+      expectedProperties);
+
     const expectedLocations: Location[] =
       [ { pattern:
             'Todo Items/**/*.md',
@@ -195,6 +207,41 @@ Due date must be in the future.
     assert.deepEqual(
       definition.rules,
       expectedRules);
+  });
+
+test(
+  'RQ202: DefinitionProvider loads definition without properties',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Todo Item.md',
+      `# Todo Item
+
+A todo item is a task that needs to be done.
+
+## Location
+
+- Pattern: Todo Items/**/*.md
+`);
+
+    const { artefactDefinitionProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        workspace.path);
+
+    const definition =
+      await artefactDefinitionProvider.fromFile(
+        workspace.resolve('Todo Item.md'));
+
+    assert.ok(definition);
+
+    assert.deepEqual(
+      definition.properties,
+      [ ]);
   });
 
 test(
