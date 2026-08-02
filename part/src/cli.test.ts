@@ -63,8 +63,7 @@ test(
           e
         ) =>
       {
-        definitions =
-          e.definitions;
+        definitions = e.definitions;
 
         return Promise.resolve(0);
       });
@@ -102,8 +101,7 @@ test(
           e
         ) =>
       {
-        project =
-          e.project;
+        project = e.project;
 
         return Promise.resolve(0);
       });
@@ -127,13 +125,15 @@ test(
   });
 
 test(
-  'RQ121: cli forwards inventory report option',
+  'RQ121: cli forwards inventory format option and bare with-properties flag',
   async () =>
   {
     const environment =
       createEnvironment();
 
-    let report = '';
+    let format = '';
+
+    let withProperties: true | string[] | undefined;
 
     environment.register(
       execInventory,
@@ -143,20 +143,61 @@ test(
           options
         ) =>
       {
-        report =
-          options?.report ?? '';
+        format = options?.format ?? '';
+
+        withProperties =
+          options?.withProperties;
 
         return Promise.resolve();
       });
 
     await runCli(
       [ 'inventory',
-        '--report=diagram' ],
+        '--format=diagram',
+        '--with-properties' ],
       environment);
 
     assert.equal(
-      report,
+      format,
       'diagram');
+
+    assert.equal(
+      withProperties,
+      true);
+  });
+
+test(
+  'RQ121: cli parses with-properties selector list',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    let withProperties: true | string[] | undefined;
+
+    environment.register(
+      execInventory,
+      async (
+          _logger,
+          _environment,
+          options
+        ) =>
+      {
+        withProperties =
+          options?.withProperties;
+
+        return Promise.resolve();
+      });
+
+    await runCli(
+      [ 'inventory',
+        '--with-properties=Article.Link,Def1.Pro2' ],
+      environment);
+
+    assert.deepEqual(
+      withProperties,
+      [ 'Article.Link',
+        'Def1.Pro2' ]);
   });
 
 test(

@@ -84,8 +84,29 @@ part inventory
 Render the inventory as an SVG diagram and save it to a file:
 
 ```bash
-part inventory --report=diagram > inventory.svg
+part inventory --format=diagram > inventory.svg
 ```
+
+Include parsed property values in table output:
+
+```bash
+part inventory --with-properties
+```
+
+Include only selected properties in table output:
+
+```bash
+part inventory --with-properties=Article.Link,Def1.Pro2
+```
+
+Export inventory as JSON:
+
+```bash
+part inventory --format=json
+```
+
+The diagram rendering path uses the local `@mermaid-js/mermaid-cli`
+dependency bundled with this package.
 
 Bootstrap a definitions folder:
 

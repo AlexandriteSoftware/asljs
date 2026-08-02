@@ -50,8 +50,7 @@ export class RuleRunner
       await this.resolveRuleFile(
         rule);
 
-    const rulePath =
-      ruleFile?.path;
+    const rulePath = ruleFile?.path;
 
     if (!rulePath) {
       this.logger.trace(
@@ -226,77 +225,76 @@ export class RuleRunner
         `Missing rule file for ${rule.name}.`);
     }
 
-    const ruleFilePath =
-      ruleFile.path;
+    const ruleFilePath = ruleFile.path;
 
     return new Promise(
       (
           resolve
         ) =>
       {
-      const child =
-        spawn(
-          ruleFilePath,
-          [ artefact.path ],
-          { cwd:
-              path.dirname(ruleFilePath),
-            env: process.env,
-            stdio:
-              [ 'pipe',
-                'pipe',
-                'pipe' ] });
+        const child =
+          spawn(
+            ruleFilePath,
+            [ artefact.path ],
+            { cwd:
+                path.dirname(ruleFilePath),
+              env: process.env,
+              stdio:
+                [ 'pipe',
+                  'pipe',
+                  'pipe' ] });
 
-      let stderr = '';
+        let stderr = '';
 
-      child.stdin.write(
-        `${JSON.stringify(artefact)}\n`);
+        child.stdin.write(
+          `${JSON.stringify(artefact)}\n`);
 
-      child.stdin.end();
+        child.stdin.end();
 
-      child.stderr.on(
-        'data',
-        (
-            chunk
-          ) =>
-        {
-          stderr += String(chunk);
-        });
+        child.stderr.on(
+          'data',
+          (
+              chunk
+            ) =>
+          {
+            stderr += String(chunk);
+          });
 
-      child.on(
-        'error',
-        (
-            error
-          ) =>
-        {
-          resolve(
-            { rule,
-              result: 'Fail',
-              message:
-                this.formatError(error) });
-        });
+        child.on(
+          'error',
+          (
+              error
+            ) =>
+          {
+            resolve(
+              { rule,
+                result: 'Fail',
+                message:
+                  this.formatError(error) });
+          });
 
-      child.on(
-        'close',
-        (
-            code
-          ) =>
-        {
-          const result =
-            code === 0
-            ? 'Ok'
-            : 'Fail';
+        child.on(
+          'close',
+          (
+              code
+            ) =>
+          {
+            const result =
+              code === 0
+              ? 'Ok'
+              : 'Fail';
 
-          const message =
-            code === 0
-            ? ''
-            : stderr.trim() || rule.content;
+            const message =
+              code === 0
+              ? ''
+              : stderr.trim() || rule.content;
 
-          resolve(
-            { rule,
-              result,
-              message });
-        });
-    });
+            resolve(
+              { rule,
+                result,
+                message });
+          });
+      });
   }
 
   formatError(

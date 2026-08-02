@@ -206,8 +206,7 @@ export async function execCheck(
             : environment.project,
             artefact.path));
 
-      const isOk =
-        ruleResult.result === 'Ok';
+      const isOk = ruleResult.result === 'Ok';
 
       const row =
         { location: relativePath,

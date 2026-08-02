@@ -29,6 +29,7 @@ node --test --test-name-pattern="Article_RL2"
 ```
 
 Inventory diagram coverage lives in `src/commands/inventory.test.ts` and the
-diagram report emits SVG through `part inventory --report=diagram`.
+diagram report emits SVG through `part inventory --format=diagram`.
+The diagram renderer uses the package-local Mermaid CLI dependency.
 
 

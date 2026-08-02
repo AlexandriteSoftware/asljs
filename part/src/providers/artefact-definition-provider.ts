@@ -13,12 +13,12 @@ import { getSections,
          getText,
          Section }
   from '../markdown-document-queries.js';
+import { ArtefactDefinitionProperty }
+  from '../model/artefact-definition-property.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinition }
   from '../model/artefact-definition.js';
-import { ArtefactDefinitionProperty }
-  from '../model/artefact-definition-property.js';
 import { Location }
   from '../model/location.js';
 import { MarkdownDocument }
@@ -301,8 +301,7 @@ export class ArtefactDefinitionProviderImpl
       return;
     }
 
-    const firstSection =
-      sections[0];
+    const firstSection = sections[0];
 
     if (
       firstSection.level !== 1
@@ -387,14 +386,11 @@ export class ArtefactDefinitionProviderImpl
         continue;
       }
 
-      const ruleId =
-        ruleIdMatch[1];
+      const ruleId = ruleIdMatch[1];
 
-      const ruleName =
-        `${name}_${ruleId}`;
+      const ruleName = `${name}_${ruleId}`;
 
-      const ruleDescription =
-        ruleSection.markup;
+      const ruleDescription = ruleSection.markup;
 
       const rule: ArtefactDefinitionRule =
         { id: ruleId,
@@ -499,10 +495,10 @@ export class ArtefactDefinitionProviderImpl
 
     const description =
       section.content.markup
-        .replace(
-          /^-\s*Type:\s*.+\r?\n?/im,
-          '')
-        .trim();
+      .replace(
+        /^-\s*Type:\s*.+\r?\n?/im,
+        '')
+      .trim();
 
     return { name: section.heading,
              type,
@@ -517,11 +513,10 @@ export class ArtefactDefinitionProviderImpl
   {
     const listItems =
       nodes
-        .filter(
-          node => node.type === 'list')
-        .flatMap(
-          node =>
-            (node as List).children);
+      .filter(
+        node => node.type === 'list')
+      .flatMap(
+        node => (node as List).children);
 
     const properties: ArtefactDefinitionProperty[] = [ ];
 
@@ -530,7 +525,7 @@ export class ArtefactDefinitionProviderImpl
         getText(
           document,
           item)
-          .trim();
+        .trim();
 
       if (itemText === '') {
         continue;
@@ -650,11 +645,9 @@ function sortDefinitionsByName(
     second: ArtefactDefinition
   ): number
 {
-  const firstName =
-    first.name;
+  const firstName = first.name;
 
-  const secondName =
-    second.name;
+  const secondName = second.name;
 
   if (firstName < secondName) {
     return -1;

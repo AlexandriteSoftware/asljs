@@ -12,7 +12,10 @@ Parameters:
 
 - `--inventory-definitions=...` - limit check to specific definitions,
   comma-separated list.
-- `--report=...` - report format, either `table` (default) or `diagram`.
+- `--format=...` - output format, either `table` (default), `diagram`, or
+  `json`.
+- `--with-properties` - when output format is `table`, includes columns for
+  definition properties as `<Definition>.<Property>`.
 
 See also:
 

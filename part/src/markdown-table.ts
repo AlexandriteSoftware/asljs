@@ -93,11 +93,9 @@ function renderRow(
     index < cells.length;
     index++
   ) {
-    const cell =
-      cells[index];
+    const cell = cells[index];
 
-    const width =
-      widths[index];
+    const width = widths[index];
 
     md.push(
       cell.padEnd(width));

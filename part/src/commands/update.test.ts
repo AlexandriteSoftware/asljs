@@ -53,8 +53,7 @@ test(
                 request
               ) =>
             {
-          requestPrompt =
-            request.prompt;
+          requestPrompt = request.prompt;
 
           const ruleFileName =
             path.basename(

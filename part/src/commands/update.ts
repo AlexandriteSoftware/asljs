@@ -44,8 +44,7 @@ export async function execUpdate(
 {
   logger.trace('start');
 
-  const rootDir =
-    environment.project;
+  const rootDir = environment.project;
 
   const { artefactDefinitionProvider } =
     environment.getProviders();
@@ -62,8 +61,7 @@ export async function execUpdate(
     environment.runCopilotCli
     ?? runConfiguredCopilotCli;
 
-  const dryRun =
-    options.dryRun === true;
+  const dryRun = options.dryRun === true;
 
   const updates = [ ];
   const warnings = [ ];
@@ -88,8 +86,7 @@ export async function execUpdate(
           definition.name,
           definition.path);
 
-      const currentFilePath =
-        ruleFile?.path;
+      const currentFilePath = ruleFile?.path;
 
       if (!currentFilePath) {
         logger.trace(

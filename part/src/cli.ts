@@ -132,13 +132,11 @@ function createCli(
           { envVarPrefix: 'PART_LOG_' };
 
         if (options.loglevel) {
-          loggerOptions.level =
-            options.loglevel;
+          loggerOptions.level = options.loglevel;
         }
 
         if (options.logfile) {
-          loggerOptions.file =
-            options.logfile;
+          loggerOptions.file = options.logfile;
         }
 
         const loggerProvider =
@@ -173,8 +171,7 @@ function createCli(
                 path.resolve(
                   envDefinitions));
           } else {
-            environment.definitions =
-              environment.cwd;
+            environment.definitions = environment.cwd;
           }
         }
 
@@ -198,8 +195,7 @@ function createCli(
                 path.resolve(
                   envProject));
           } else {
-            environment.project =
-              environment.cwd;
+            environment.project = environment.cwd;
           }
         }
       });
@@ -211,8 +207,11 @@ function createCli(
       '--inventory-definitions <definitions>',
       'Comma-separated definition names to get inventory for')
     .option(
-      '--report <format>',
-      'Report format: table or diagram')
+      '--format <format>',
+      'Output format: table, diagram or json')
+    .option(
+      '--with-properties [properties]',
+      'Include all definition properties in table output, or only the comma-separated <Definition>.<Property> list provided')
     .action(
       async (
           options
@@ -234,9 +233,12 @@ function createCli(
           { inventoryDefinitions:
               splitCommaSeparatedOption(
                 options.inventoryDefinitions),
-            report:
+            format:
               filterStringOption(
-                options.report) });
+                options.format),
+            withProperties:
+              parseWithPropertiesOption(
+                options.withProperties) });
       });
 
   cli.command('definition')
@@ -485,8 +487,7 @@ function tryExtractOptionName(
     return null;
   }
 
-  const group =
-    match[1];
+  const group = match[1];
 
   if (!group) {
     return null;
@@ -542,4 +543,29 @@ function filterStringOption(
   }
 
   return value.trim();
+}
+
+function parseWithPropertiesOption(
+    value: unknown
+  ): true | string[] | undefined
+{
+  if (value === true) {
+    return true;
+  }
+
+  if (
+    typeof value
+    !== 'string'
+  ) {
+    return undefined;
+  }
+
+  const items =
+    splitCommaSeparatedOption(value);
+
+  if (items.length === 0) {
+    return true;
+  }
+
+  return items;
 }

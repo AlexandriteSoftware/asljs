@@ -69,8 +69,7 @@ export class FilesystemLocationResolver
     location: Location
   ): Promise<string[]>
   {
-    const pattern =
-      location.pattern;
+    const pattern = location.pattern;
 
     const exclude =
       location.exclude || [ ];
@@ -238,8 +237,7 @@ export class FilesystemLocationResolver
     location: Location
   ): Promise<boolean>
   {
-    const patterns =
-      location.pattern;
+    const patterns = location.pattern;
 
     const exclude =
       location.exclude || [ ];

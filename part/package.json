@@ -63,6 +63,7 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.16.0",
     "commander": "^15.0.0",
     "dprint": "^0.55.2",
     "glob": "^13.0.6",

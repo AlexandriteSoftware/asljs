@@ -3,6 +3,8 @@
 Inventory diagram is created from the inventory report by creating an
 intermediate mermaid diagram and saving it to an SVG file.
 
+The diagram output is selected using `part inventory --format=diagram`.
+
 When creating a diagram:
 
 1. Place the found artefacts on the diagram in alphabetical order.

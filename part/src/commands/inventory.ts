@@ -1,3 +1,15 @@
+import { spawn }
+  from 'node:child_process';
+import { readFileSync }
+  from 'node:fs';
+import { existsSync }
+  from 'node:fs';
+import fs
+  from 'node:fs/promises';
+import { createRequire }
+  from 'node:module';
+import os
+  from 'node:os';
 import path
   from 'node:path';
 import { Environment }
@@ -6,27 +18,20 @@ import { toPosixPath }
   from '../formatting.js';
 import { Logger }
   from '../logging/logging.js';
+import { renderObjectsToMarkdownTable }
+  from '../markdown-table.js';
 import { ArtefactDefinition }
   from '../model/artefact-definition.js';
-import { ArtefactDefinitionProperty }
-  from '../model/artefact-definition-property.js';
 import { Artefact }
   from '../model/artefact.js';
 import { ArtefactDataProvider }
   from '../providers/artefact-data-provider.js';
-import { renderObjectsToMarkdownTable }
-  from '../markdown-table.js';
 
 interface InventoryCommandOptions
 {
   inventoryDefinitions?: string[];
-  report?: string;
-}
-
-interface InventoryItem
-{
-  location: string;
-  definitions: string;
+  format?: string;
+  withProperties?: true | string[];
 }
 
 interface InventoryEntry
@@ -34,6 +39,16 @@ interface InventoryEntry
   artefact: Artefact;
   definitions: string[];
 }
+
+interface InventoryEntryDefinitionData
+{
+  definition: ArtefactDefinition;
+  data: unknown;
+}
+
+const require =
+  createRequire(
+    import.meta.url);
 
 export async function execInventory(
     logger: Logger,
@@ -44,11 +59,9 @@ export async function execInventory(
   logger.trace(
     'Inventory command: start');
 
-  const { artefactDataProvider,
-          artefactDefinitionProvider,
-          artefactProvider } =
+  const { artefactDataProvider, artefactDefinitionProvider, artefactProvider } =
     environment
-    .getProviders();
+      .getProviders();
 
   const definitions =
     await artefactDefinitionProvider.getDefinitions();
@@ -75,17 +88,29 @@ export async function execInventory(
       artefactProvider,
       filteredDefinitions);
 
-  const report =
-    getInventoryReportFormat(
-      options.report);
+  const format =
+    getInventoryFormat(
+      options.format);
 
-  if (report === 'diagram') {
+  const definitionByName =
+    new Map(
+      filteredDefinitions.map(
+        definition => [ definition.name,
+                        definition ] as const));
+
+  const inventoryData =
+    await collectInventoryData(
+      entries,
+      definitionByName,
+      artefactDataProvider);
+
+  if (format === 'diagram') {
     const svg =
       await buildInventoryDiagramSvg(
         environment.project,
         entries,
         filteredDefinitions,
-        artefactDataProvider);
+        inventoryData);
 
     environment.stdout.write(
       `${svg}\n`);
@@ -93,25 +118,33 @@ export async function execInventory(
     return;
   }
 
-  const items: InventoryItem[] =
-    entries.map(
-      (
-          entry
-        ) =>
-      {
-        return { location:
-                   entry.artefact.relativePath,
-                 definitions:
-                   entry.definitions.join(',') };
-      });
+  if (format === 'json') {
+    const json =
+      JSON.stringify(
+        buildJsonInventory(
+          entries,
+          definitionByName,
+          inventoryData),
+        null,
+        2);
+
+    environment.stdout.write(
+      `${json}\n`);
+
+    return;
+  }
+
+  const items =
+    buildTableInventory(
+      entries,
+      definitionByName,
+      inventoryData,
+      options.withProperties);
 
   const table =
     renderObjectsToMarkdownTable(
-      [ { property: 'location',
-          name: 'Location' },
-        { property: 'definitions',
-          name: 'Definitions' } ],
-      items);
+      items.columns,
+      items.rows);
 
   environment.stdout.write(
     `${table}\n`);
@@ -119,12 +152,13 @@ export async function execInventory(
 
 async function collectInventoryEntries(
     logger: Logger,
-    artefactProvider: { getArtefacts: (definitions?: ArtefactDefinition[]) => Promise<Artefact[]>; },
+    artefactProvider: {
+    getArtefacts: (definitions?: ArtefactDefinition[]) => Promise<Artefact[]>;
+  },
     filteredDefinitions: ArtefactDefinition[]
   ): Promise<InventoryEntry[]>
 {
-  const artefactIndex =
-    new Map<string, InventoryEntry>();
+  const artefactIndex = new Map<string, InventoryEntry>();
 
   for (const definition of filteredDefinitions) {
     logger.trace(
@@ -170,12 +204,12 @@ async function collectInventoryEntries(
           right.artefact.relativePath));
 }
 
-function getInventoryReportFormat(
-    report: string | undefined
-  ): 'table' | 'diagram'
+function getInventoryFormat(
+    format: string | undefined
+  ): 'table' | 'diagram' | 'json'
 {
   const normalised =
-    (report ?? 'table').trim();
+    (format ?? 'table').trim();
 
   if (
     normalised === ''
@@ -188,26 +222,279 @@ function getInventoryReportFormat(
     return 'diagram';
   }
 
+  if (normalised === 'json') {
+    return 'json';
+  }
+
   throw new Error(
-    `Unknown inventory report format: ${report}`);
+    `Unknown inventory format: ${format}`);
+}
+
+function buildTableInventory(
+    entries: InventoryEntry[],
+    definitionByName: Map<string, ArtefactDefinition>,
+    inventoryData: Map<string, InventoryEntryDefinitionData[]>,
+    withProperties: true | string[] | undefined
+  ): {
+  columns: { property: string; name: string; }[];
+  rows: Record<string, string>[];
+}
+{
+  const baseColumns =
+    [ { property: 'location',
+        name: 'Location' },
+      { property: 'definitions',
+        name: 'Definitions' } ];
+
+  const propertyColumns =
+    resolvePropertyColumns(
+      definitionByName,
+      withProperties);
+
+  const includeProperties =
+    propertyColumns.length > 0;
+
+  const columns =
+    [ ...baseColumns,
+      ...propertyColumns.map(
+        propertyColumn => ({ property: propertyColumn,
+                             name: propertyColumn })) ];
+
+  const rows =
+    entries.map(
+      (
+          entry
+        ) =>
+      {
+      const row: Record<string, string> =
+        { location:
+            entry.artefact.relativePath,
+          definitions:
+            entry.definitions.join(',') };
+
+      if (!includeProperties) {
+        return row;
+      }
+
+      const dataByDefinition =
+        inventoryData.get(
+          entry.artefact.relativePath)
+        ?? [ ];
+
+      for (const propertyColumn of propertyColumns) {
+        const separatorIndex =
+          propertyColumn.indexOf('.');
+
+        const definitionName =
+          propertyColumn.slice(
+            0,
+            separatorIndex);
+
+        const propertyName =
+          propertyColumn.slice(separatorIndex + 1);
+
+        const definitionData =
+          dataByDefinition.find(
+            item => item.definition.name === definitionName);
+
+        const value =
+          definitionData
+          ? getArtefactPropertyValueRaw(
+            definitionData.data,
+            propertyName)
+          : undefined;
+
+        row[propertyColumn] =
+          formatValueForTable(
+            value);
+      }
+
+      return row;
+    });
+
+  return { columns,
+           rows };
+}
+
+function resolvePropertyColumns(
+    definitionByName: Map<string, ArtefactDefinition>,
+    withProperties: true | string[] | undefined
+  ): string[]
+{
+  if (withProperties === undefined) {
+    return [ ];
+  }
+
+  const allColumns =
+    collectPropertyColumns(
+      definitionByName);
+
+  if (withProperties === true) {
+    return allColumns;
+  }
+
+  const columnSet =
+    new Set(allColumns);
+
+  for (const selectedColumn of withProperties) {
+    if (!columnSet.has(selectedColumn)) {
+      throw new Error(
+        `Unknown inventory property: ${selectedColumn}`);
+    }
+  }
+
+  return withProperties;
+}
+
+function buildJsonInventory(
+    entries: InventoryEntry[],
+    definitionByName: Map<string, ArtefactDefinition>,
+    inventoryData: Map<string, InventoryEntryDefinitionData[]>
+  ): Record<string, unknown>[]
+{
+  return entries.map(
+    (
+        entry
+      ) =>
+    {
+      const row: Record<string, unknown> =
+        { location:
+            entry.artefact.relativePath };
+
+      const dataByDefinition =
+        inventoryData.get(
+          entry.artefact.relativePath)
+        ?? [ ];
+
+      for (const definitionName of entry.definitions) {
+        const definition =
+          definitionByName.get(
+            definitionName);
+
+        if (!definition) {
+          continue;
+        }
+
+        const definitionData =
+          dataByDefinition.find(
+            item => item.definition.name === definitionName);
+
+        const definitionObject: Record<string, unknown> = {};
+
+        for (const property of definition.properties) {
+          definitionObject[property.name] =
+            definitionData
+            ? getArtefactPropertyValueRaw(
+              definitionData.data,
+              property.name)
+            : null;
+        }
+
+        row[definitionName] = definitionObject;
+      }
+
+      return row;
+    });
+}
+
+function collectPropertyColumns(
+    definitionByName: Map<string, ArtefactDefinition>
+  ): string[]
+{
+  const columns =
+    Array.from(
+      definitionByName.values())
+    .flatMap(
+      definition =>
+        definition.properties.map(
+          property => `${definition.name}.${property.name}`));
+
+  return columns.sort(
+    (left, right) => left.localeCompare(right));
+}
+
+function formatValueForTable(
+    value: unknown
+  ): string
+{
+  if (
+    value === null
+    || value === undefined
+  ) {
+    return '';
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map(
+        entry =>
+          typeof entry === 'string'
+            ? entry
+            : JSON.stringify(entry))
+      .join(',');
+  }
+
+  if (
+    typeof value
+    === 'string'
+  ) {
+    return value;
+  }
+
+  return JSON.stringify(value);
+}
+
+async function collectInventoryData(
+    entries: InventoryEntry[],
+    definitionByName: Map<string, ArtefactDefinition>,
+    artefactDataProvider: ArtefactDataProvider
+  ): Promise<Map<string, InventoryEntryDefinitionData[]>>
+{
+  const inventoryData = new Map<string, InventoryEntryDefinitionData[]>();
+
+  for (const entry of entries) {
+    const values: InventoryEntryDefinitionData[] = [ ];
+
+    for (const definitionName of entry.definitions) {
+      const definition =
+        definitionByName.get(
+          definitionName);
+
+      if (!definition) {
+        continue;
+      }
+
+      const data =
+        await artefactDataProvider.tryGetArtefactData(
+          entry.artefact,
+          definition.name);
+
+      values.push(
+        { definition,
+          data });
+    }
+
+    inventoryData.set(
+      entry.artefact.relativePath,
+      values);
+  }
+
+  return inventoryData;
 }
 
 async function buildInventoryDiagramSvg(
     projectPath: string,
     entries: InventoryEntry[],
     definitions: ArtefactDefinition[],
-    artefactDataProvider: ArtefactDataProvider
+    inventoryData: Map<string, InventoryEntryDefinitionData[]>
   ): Promise<string>
 {
   const nodes =
     entries.map(
-      (entry, index) =>
-        ({ id:
-             entry.artefact.relativePath,
-           label:
-             entry.artefact.relativePath,
-           y:
-             24 + index * 88 }));
+      entry => ({ id:
+                    entry.artefact.relativePath,
+                  label:
+                    entry.artefact.relativePath }));
 
   const nodeById =
     new Map(
@@ -226,61 +513,24 @@ async function buildInventoryDiagramSvg(
       projectPath,
       entries,
       definitionByName,
-      artefactDataProvider,
+      inventoryData,
       nodeById);
-
-  const width = 520;
-
-  const height =
-    Math.max(
-      120,
-      40 + nodes.length * 88);
 
   const mermaid =
     buildMermaidDiagram(
       nodes,
       edges);
 
-  const nodeSvg =
-    nodes.map(
-      node =>
-        renderDiagramNode(
-          node,
-          width - 80))
-    .join('\n');
-
-  const edgeSvg =
-    edges.map(
-      edge =>
-        renderDiagramEdge(
-          edge,
-          width - 80,
-          nodeById))
-    .join('\n');
-
-  return [ `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Inventory diagram">`,
-           `  <desc>${escapeXml(mermaid)}</desc>`,
-           '  <defs>',
-           '    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">',
-           '      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155" />',
-           '    </marker>',
-           '  </defs>',
-           '  <style>',
-           '    .node { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; }',
-           '    .label { fill: #0f172a; font: 14px sans-serif; }',
-           '    .edge { fill: none; stroke: #64748b; stroke-width: 1.5; marker-end: url(#arrow); }',
-           '  </style>',
-           edgeSvg,
-           nodeSvg,
-           '</svg>' ].join('\n');
+  return renderMermaidToSvg(
+    mermaid);
 }
 
 async function collectDiagramEdges(
     projectPath: string,
     entries: InventoryEntry[],
     definitionByName: Map<string, ArtefactDefinition>,
-    artefactDataProvider: ArtefactDataProvider,
-    nodeById: Map<string, { id: string; label: string; y: number; }>
+    inventoryData: Map<string, InventoryEntryDefinitionData[]>,
+    nodeById: Map<string, { id: string; label: string; }>
   ): Promise<Array<{ from: string; to: string; }>>
 {
   const edgeKeys = new Set<string>();
@@ -295,10 +545,14 @@ async function collectDiagramEdges(
         continue;
       }
 
+      const definitionData =
+        inventoryData.get(
+          entry.artefact.relativePath)
+        ?.find(
+          item => item.definition.name === definitionName);
+
       const artefactData =
-        await artefactDataProvider.tryGetArtefactData(
-          entry.artefact,
-          definition.name);
+        definitionData?.data;
 
       if (!artefactData) {
         continue;
@@ -362,8 +616,13 @@ function isArtefactPropertyType(
     type: string
   ): boolean
 {
-  return type === 'artefact'
-    || type === 'artefact[]';
+  const normalised =
+    type.trim().replaceAll(
+      '`',
+      '');
+
+  return normalised === 'artefact'
+    || normalised === 'artefact[]';
 }
 
 function getArtefactPropertyValues(
@@ -371,20 +630,10 @@ function getArtefactPropertyValues(
     propertyName: string
   ): string[]
 {
-  if (
-    !data
-    || typeof data
-       !== 'object'
-  ) {
-    return [ ];
-  }
-
-  const record =
-    data as Record<string, unknown>;
-
   const value =
-    record[propertyName]
-    ?? record[toPropertyKey(propertyName)];
+    getArtefactPropertyValueRaw(
+      data,
+      propertyName);
 
   if (
     typeof value
@@ -402,6 +651,26 @@ function getArtefactPropertyValues(
   }
 
   return [ ];
+}
+
+function getArtefactPropertyValueRaw(
+    data: unknown,
+    propertyName: string
+  ): unknown
+{
+  if (
+    !data
+    || typeof data
+       !== 'object'
+  ) {
+    return undefined;
+  }
+
+  const record =
+    data as Record<string, unknown>;
+
+  return record[propertyName]
+    ?? record[toPropertyKey(propertyName)];
 }
 
 function resolveReferencedArtefactPath(
@@ -435,8 +704,8 @@ function toPropertyKey(
   const parts =
     propertyName.trim().split(
       /[^A-Za-z0-9]+/)
-      .filter(
-        part => part.length > 0);
+    .filter(
+      part => part.length > 0);
 
   if (parts.length === 0) {
     return propertyName.trim();
@@ -446,13 +715,13 @@ function toPropertyKey(
     .map(
       (part, index) =>
         index === 0
-        ? part.charAt(0).toLowerCase() + part.slice(1)
-        : part.charAt(0).toUpperCase() + part.slice(1))
+          ? part.charAt(0).toLowerCase() + part.slice(1)
+          : part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
 }
 
 function buildMermaidDiagram(
-    nodes: Array<{ id: string; label: string; y: number; }>,
+    nodes: Array<{ id: string; label: string; }>,
     edges: Array<{ from: string; to: string; }>
   ): string
 {
@@ -472,74 +741,6 @@ function buildMermaidDiagram(
   return lines.join('\n');
 }
 
-function renderDiagramNode(
-    node: { id: string; label: string; y: number; },
-    width: number
-  ): string
-{
-  const x = 40;
-  const height = 48;
-
-  return [ `  <g transform="translate(${x}, ${node.y})">`,
-           `    <rect class="node" width="${width}" height="${height}" rx="8" ry="8" />`,
-           `    <text class="label" x="16" y="30">${escapeXml(node.label)}</text>`,
-           '  </g>' ].join('\n');
-}
-
-function renderDiagramEdge(
-    edge: { from: string; to: string; },
-    width: number,
-    nodeById: Map<string, { id: string; label: string; y: number; }>
-  ): string
-{
-  const source =
-    nodeById.get(edge.from);
-
-  const target =
-    nodeById.get(edge.to);
-
-  if (
-    !source
-    || !target
-  ) {
-    return '';
-  }
-
-  const nodeHeight = 48;
-  const sourceX = 40 + width;
-  const targetX = 40;
-
-  const sourceY =
-    source.y + nodeHeight / 2;
-
-  const targetY =
-    target.y + nodeHeight / 2;
-
-  return `  <path class="edge" d="M ${sourceX} ${sourceY} C ${sourceX + 40} ${sourceY}, ${targetX - 40} ${targetY}, ${targetX} ${targetY}" />`;
-}
-
-function escapeXml(
-    value: string
-  ): string
-{
-  return value
-    .replaceAll(
-      '&',
-      '&amp;')
-    .replaceAll(
-      '<',
-      '&lt;')
-    .replaceAll(
-      '>',
-      '&gt;')
-    .replaceAll(
-      '"',
-      '&quot;')
-    .replaceAll(
-      "'",
-      '&apos;');
-}
-
 function escapeMermaid(
     value: string
   ): string
@@ -553,7 +754,220 @@ function toMermaidId(
     value: string
   ): string
 {
-  return `n${value.replace(
-    /[^A-Za-z0-9_]/g,
-    '_')}`;
+  return `n${
+    value.replace(
+      /[^A-Za-z0-9_]/g,
+      '_')
+  }`;
+}
+
+async function renderMermaidToSvg(
+    mermaidGraph: string
+  ): Promise<string>
+{
+  const tempDirPath =
+    await fs.mkdtemp(
+      path.join(
+        os.tmpdir(),
+        'part-mermaid-'));
+
+  const inputPath =
+    path.join(
+      tempDirPath,
+      'inventory.mmd');
+
+  const outputPath =
+    path.join(
+      tempDirPath,
+      'inventory.svg');
+
+  await fs.writeFile(
+    inputPath,
+    mermaidGraph,
+    'utf8');
+
+  try {
+    await runMermaidCli(
+      inputPath,
+      outputPath);
+
+    return await fs.readFile(
+      outputPath,
+      'utf8');
+  } finally {
+    await fs.rm(
+      tempDirPath,
+      { recursive: true,
+        force: true });
+  }
+}
+
+async function runMermaidCli(
+    inputPath: string,
+    outputPath: string
+  ): Promise<void>
+{
+  const mmdcPath =
+    resolveMermaidCliPath();
+
+  const args =
+    [ '-i',
+      inputPath,
+      '-o',
+      outputPath,
+      '-q' ];
+
+  const command = process.execPath;
+
+  const commandArgs =
+    [ mmdcPath,
+      ...args ];
+
+  await new Promise<void>(
+    (
+        resolve,
+        reject
+      ) =>
+    {
+      const child =
+        spawn(
+          command,
+          commandArgs,
+          { stdio:
+              [ 'ignore',
+                'pipe',
+                'pipe' ] });
+
+      let stderr = '';
+
+      child.stderr.on(
+        'data',
+        (
+            chunk
+          ) =>
+        {
+          stderr += String(chunk);
+        });
+
+      child.on(
+        'error',
+        (
+            error
+          ) =>
+        {
+          reject(
+            new Error(
+              `Failed to run mermaid CLI (mmdc): ${error}`));
+        });
+
+      child.on(
+        'close',
+        (
+            code
+          ) =>
+        {
+          if (code === 0) {
+            resolve();
+            return;
+          }
+
+          const details =
+            stderr.trim();
+
+          reject(
+            new Error(
+              details === ''
+                ? `Mermaid CLI failed with exit code ${code}.`
+                : `Mermaid CLI failed with exit code ${code}: ${details}`));
+        });
+    }
+  );
+}
+
+function resolveMermaidCliPath(
+  ): string
+{
+  const override =
+    process.env.PART_MMDC_PATH?.trim();
+
+  if (override) {
+    return path.resolve(
+      override);
+  }
+
+  const packageEntryPath =
+    require.resolve(
+      '@mermaid-js/mermaid-cli');
+
+  const packageRoot =
+    findPackageRoot(
+      packageEntryPath);
+
+  const packageJsonPath =
+    path.join(
+      packageRoot,
+      'package.json');
+
+  const packageJson =
+    JSON.parse(
+      readFileSync(
+        packageJsonPath,
+        'utf8')) as { bin?: string | Record<string, string>; };
+
+  const binField = packageJson.bin;
+
+  if (
+    typeof binField
+    === 'string'
+  ) {
+    return path.resolve(
+      packageRoot,
+      binField);
+  }
+
+  const mmdcRelativePath = binField?.mmdc;
+
+  if (
+    typeof mmdcRelativePath
+    !== 'string'
+    || mmdcRelativePath.trim() === ''
+  ) {
+    throw new Error(
+      'Cannot resolve Mermaid CLI binary path from @mermaid-js/mermaid-cli package metadata.');
+  }
+
+  return path.resolve(
+    packageRoot,
+    mmdcRelativePath);
+}
+
+function findPackageRoot(
+    entryPath: string
+  ): string
+{
+  let currentPath =
+    path.dirname(
+      entryPath);
+
+  while (true) {
+    const packageJsonPath =
+      path.join(
+        currentPath,
+        'package.json');
+
+    if (existsSync(packageJsonPath)) {
+      return currentPath;
+    }
+
+    const parentPath =
+      path.dirname(
+        currentPath);
+
+    if (parentPath === currentPath) {
+      throw new Error(
+        `Cannot locate package root from path: ${entryPath}`);
+    }
+
+    currentPath = parentPath;
+  }
 }

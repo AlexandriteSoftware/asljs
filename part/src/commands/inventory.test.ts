@@ -1,5 +1,7 @@
 import assert
   from 'node:assert/strict';
+import fs
+  from 'node:fs/promises';
 import test,
        { after }
   from 'node:test';
@@ -85,6 +87,335 @@ I need to buy milk.
     assert.match(
       environment.stdout.toString(),
       /\| Todo Items\/Buy milk\.md \| Todo Item\s+\|/);
+  });
+
+test(
+  'RQ121: inventory can include definition properties in table output',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Properties
+
+### PrimaryArticle
+
+- Type: artefact
+
+### Tags
+
+- Type: string[]
+
+## Location
+
+- Pattern: articles/*.md
+`);
+
+    await workspace.writeText(
+      'parts/Article.js',
+      `export async function getData(artefact) {
+  if (artefact.name === 'A') {
+    return {
+      primaryArticle: 'B.md',
+      tags: ['one', 'two']
+    };
+  }
+
+  return {
+    primaryArticle: '',
+    tags: []
+  };
+}
+`);
+
+    await workspace.writeText(
+      'articles/A.md',
+      '# A\n');
+
+    await workspace.writeText(
+      'articles/B.md',
+      '# B\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          loggerProvider });
+
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { withProperties: true });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    const output =
+      environment.stdout.toString();
+
+    assert.match(
+      output,
+      /\| Location\s+\| Definitions\s+\| Article\.PrimaryArticle\s+\| Article\.Tags\s+\|/);
+
+    assert.match(
+      output,
+      /\| articles\/A\.md\s+\| Article\s+\| B\.md\s+\| one,two\s+\|/);
+  });
+
+test(
+  'RQ121: inventory can include only selected properties in table output',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Properties
+
+### PrimaryArticle
+
+- Type: artefact
+
+### Tags
+
+- Type: string[]
+
+## Location
+
+- Pattern: articles/*.md
+`);
+
+    await workspace.writeText(
+      'parts/Article.js',
+      `export async function getData(artefact) {
+  if (artefact.name === 'A') {
+    return {
+      primaryArticle: 'B.md',
+      tags: ['one', 'two']
+    };
+  }
+
+  return {
+    primaryArticle: '',
+    tags: []
+  };
+}
+`);
+
+    await workspace.writeText(
+      'articles/A.md',
+      '# A\n');
+
+    await workspace.writeText(
+      'articles/B.md',
+      '# B\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          loggerProvider });
+
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { withProperties:
+          [ 'Article.PrimaryArticle' ] });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    const output =
+      environment.stdout.toString();
+
+    assert.match(
+      output,
+      /\| Location\s+\| Definitions\s+\| Article\.PrimaryArticle\s+\|/);
+
+    assert.doesNotMatch(
+      output,
+      /Article\.Tags/);
+
+    assert.match(
+      output,
+      /\| articles\/A\.md\s+\| Article\s+\| B\.md\s+\|/);
+  });
+
+test(
+  'RQ121: inventory rejects unknown selected properties',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Properties
+
+### PrimaryArticle
+
+- Type: artefact
+
+## Location
+
+- Pattern: articles/*.md
+`);
+
+    await workspace.writeText(
+      'articles/A.md',
+      '# A\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          loggerProvider });
+
+    await assert.rejects(
+      async () =>
+      {
+        await execInventory(
+          execInventoryLogger,
+          environment,
+          { withProperties:
+              [ 'Article.Missing' ] });
+      },
+      /Unknown inventory property: Article\.Missing/);
+  });
+
+test(
+  'RQ121: inventory can output json format with raw property values',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Article.md',
+      `# Article
+
+Markdown article.
+
+## Properties
+
+### PrimaryArticle
+
+- Type: artefact
+
+### RelatedArticles
+
+- Type: artefact[]
+
+### Metadata
+
+- Type: object
+
+## Location
+
+- Pattern: articles/*.md
+`);
+
+    await workspace.writeText(
+      'parts/Article.js',
+      `export async function getData(artefact) {
+  if (artefact.name === 'A') {
+    return {
+      primaryArticle: 'B.md',
+      relatedArticles: ['C.md'],
+      metadata: {
+        priority: 3
+      }
+    };
+  }
+
+  return {
+    primaryArticle: '',
+    relatedArticles: [],
+    metadata: {
+      priority: 0
+    }
+  };
+}
+`);
+
+    await workspace.writeText(
+      'articles/A.md',
+      '# A\n');
+
+    await workspace.writeText(
+      'articles/B.md',
+      '# B\n');
+
+    await workspace.writeText(
+      'articles/C.md',
+      '# C\n');
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path,
+          definitions: workspace.path,
+          project: workspace.path,
+          loggerProvider });
+
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { format: 'json' });
+
+    assert.equal(
+      environment.stderr.toString(),
+      '');
+
+    const output =
+      environment.stdout.toString();
+
+    assert.match(
+      output,
+      /^\[\n  \{/);
+
+    const parsed =
+      JSON.parse(output) as Array<Record<string, unknown>>;
+
+    const entry =
+      parsed.find(
+        item => item.location === 'articles/A.md');
+
+    assert.ok(entry);
+
+    const article =
+      entry.Article as Record<string, unknown>;
+
+    assert.equal(
+      article.PrimaryArticle,
+      'B.md');
+
+    assert.deepEqual(
+      article.RelatedArticles,
+      [ 'C.md' ]);
+
+    assert.deepEqual(
+      article.Metadata,
+      { priority: 3 });
   });
 
 test(
@@ -349,6 +680,59 @@ The related articles.
       'articles/C.md',
       '# C\n');
 
+    await workspace.mkdir(
+      'tools');
+
+    await workspace.writeText(
+      'tools/mmdc.js',
+      `import fs from 'node:fs/promises';
+
+const args = process.argv.slice(2);
+
+let inputPath = '';
+let outputPath = '';
+
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+
+  if (arg === '-i' && i + 1 < args.length) {
+    inputPath = args[++i] ?? '';
+    continue;
+  }
+
+  if (arg === '-o' && i + 1 < args.length) {
+    outputPath = args[++i] ?? '';
+    continue;
+  }
+}
+
+if (inputPath === '' || outputPath === '') {
+  process.stderr.write('Missing -i/-o arguments.\\n');
+  process.exit(2);
+}
+
+const graph = await fs.readFile(inputPath, 'utf8');
+
+const svg =
+  [ '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">',
+    '  <desc>'
+    + graph
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+    + '</desc>',
+    '</svg>' ].join('\\n');
+
+await fs.writeFile(outputPath, svg, 'utf8');
+`);
+
+    const originalMmdcPath =
+      process.env.PART_MMDC_PATH;
+
+    process.env.PART_MMDC_PATH =
+      workspace.resolve(
+        'tools/mmdc.js');
+
     const environment =
       createEnvironment(
         { cwd: workspace.path,
@@ -356,10 +740,14 @@ The related articles.
           project: workspace.path,
           loggerProvider });
 
-    await execInventory(
-      execInventoryLogger,
-      environment,
-      { report: 'diagram' });
+    try {
+      await execInventory(
+        execInventoryLogger,
+        environment,
+        { format: 'diagram' });
+    } finally {
+      process.env.PART_MMDC_PATH = originalMmdcPath;
+    }
 
     assert.equal(
       environment.stderr.toString(),
@@ -374,6 +762,10 @@ The related articles.
 
     assert.match(
       output,
+      /graph TD/);
+
+    assert.match(
+      output,
       /articles\/A\.md/);
 
     assert.match(
@@ -384,9 +776,11 @@ The related articles.
       output,
       /articles\/C\.md/);
 
-    assert.equal(
-      (output.match(
-        /class="edge"/g)
-        ?? [ ]).length,
-      2);
+    assert.match(
+      output,
+      /narticles_A_md --&gt; narticles_B_md/);
+
+    assert.match(
+      output,
+      /narticles_A_md --&gt; narticles_C_md/);
   });

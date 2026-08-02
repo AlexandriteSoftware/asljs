@@ -26,8 +26,7 @@ export class ArtefactDefinitionRuleProvider
   {
     this.logger = logger;
 
-    this.definitions =
-      definitionProvider;
+    this.definitions = definitionProvider;
   }
 
   async isRuleInSync(

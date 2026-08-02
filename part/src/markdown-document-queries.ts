@@ -269,8 +269,7 @@ export function getText(
   const node =
     nodes as Node;
 
-  const value =
-    (node as any).value;
+  const value = (node as any).value;
 
   if (
     typeof value

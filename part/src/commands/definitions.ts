@@ -11,8 +11,7 @@ export async function execDefinitions(
     environment: Environment
   ): Promise<void>
 {
-  const rootDirectory =
-    environment.project;
+  const rootDirectory = environment.project;
 
   const { artefactDefinitionProvider } =
     environment.getProviders();

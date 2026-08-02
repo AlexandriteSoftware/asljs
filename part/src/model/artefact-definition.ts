@@ -1,7 +1,7 @@
-import { ArtefactDefinitionRule }
-  from './artefact-definition-rule.js';
 import { ArtefactDefinitionProperty }
   from './artefact-definition-property.js';
+import { ArtefactDefinitionRule }
+  from './artefact-definition-rule.js';
 import { Location }
   from './location.js';
 
