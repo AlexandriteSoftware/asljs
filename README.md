@@ -1,7 +1,6 @@
 # asljs
 
-Alexandrite Software Libraries for JavaScript (asljs) provides essential
-libraries and tools to improve everyday development.
+Libraries, project tools, and productivity apps to enhance everyday development. By Alexandrite Software Ltd. In JavaScript (with TypeScript).
 
 Libraries:
 
