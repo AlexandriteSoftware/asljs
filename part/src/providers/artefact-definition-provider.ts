@@ -9,7 +9,9 @@ import path
   from 'node:path';
 import { Logger }
   from '../logging/logging.js';
-import { getSections,
+import { getListItemsAsText,
+         getLists,
+         getSections,
          getText,
          Section }
   from '../markdown-document-queries.js';
@@ -348,8 +350,7 @@ export class ArtefactDefinitionProviderImpl
     const properties =
       this.#parseProperties(
         document,
-        sections,
-        context);
+        sections);
 
     const ruleSections: Section[] = [ ];
 
@@ -421,8 +422,7 @@ export class ArtefactDefinitionProviderImpl
 
   #parseProperties(
     document: MarkdownDocument,
-    sections: Section[],
-    context: DefinitionFileParsingContext
+    sections: Section[]
   ): ArtefactDefinitionProperty[]
   {
     const propertiesSectionIndex =
@@ -454,113 +454,93 @@ export class ArtefactDefinitionProviderImpl
       propertySections.push(section);
     }
 
-    if (propertySections.length > 0) {
-      return propertySections
-        .map(
-          section =>
-            this.#parsePropertySection(
-              section,
-              context))
-        .filter(
-          (property): property is ArtefactDefinitionProperty =>
-            property !== null);
+    if (propertySections.length === 0) {
+      return [ ];
     }
 
-    return this.#parseLegacyPropertyList(
-      document,
-      sections[propertiesSectionIndex].nodes,
-      context);
+    return propertySections
+      .map(
+        section =>
+          this.#parsePropertySection(
+            document,
+            section))
+      .filter(
+        (property): property is ArtefactDefinitionProperty => property !== null);
   }
 
   #parsePropertySection(
-    section: Section,
-    context: DefinitionFileParsingContext
+    document: MarkdownDocument,
+    section: Section
   ): ArtefactDefinitionProperty | null
   {
-    const typeMatch =
-      /^-\s*Type:\s*(.+)$/im.exec(
-        section.content.markup);
+    let propertyTypeText = '';
 
-    if (!typeMatch) {
-      this.logger.warning(
-        'tryParse(...): missing property type in %s #%s',
-        context.path,
-        section.heading);
+    const descriptionNodes = [ ];
 
-      return null;
+    let firstList: List | null = null;
+
+    for (const node of section.content.nodes) {
+      if (
+        node.type === 'list'
+        && !firstList
+      ) {
+        firstList =
+          node as List;
+
+        continue;
+      }
+
+      descriptionNodes.push(node);
     }
 
-    const type =
-      typeMatch[1].trim();
+    if (firstList) {
+      const listItems =
+        getListItemsAsText(
+          document,
+          firstList);
+
+      const typeListItem =
+        listItems
+        .find(
+          itemText => /^Type:\s*/i.test(itemText)) || '';
+
+      propertyTypeText =
+        typeListItem
+        .replace(
+          /^Type:\s*/i,
+          '')
+        .trim();
+    }
+
+    let type = '';
+    let isList = false;
+    let isNullable = false;
+
+    if (propertyTypeText) {
+      const typeMatch =
+        propertyTypeText.match(
+          /^(.+?)(\[\])?(\?)?$/);
+
+      if (typeMatch) {
+        type =
+          typeMatch[1].trim();
+
+        isList = !!typeMatch[2];
+
+        isNullable = !!typeMatch[3];
+      }
+    }
 
     const description =
-      section.content.markup
-      .replace(
-        /^-\s*Type:\s*.+\r?\n?/im,
-        '')
-      .trim();
+      getText(
+        document,
+        descriptionNodes);
 
     return { name: section.heading,
              type,
+             isList,
+             isNullable,
              description };
-  }
-
-  #parseLegacyPropertyList(
-    document: MarkdownDocument,
-    nodes: Node[],
-    context: DefinitionFileParsingContext
-  ): ArtefactDefinitionProperty[]
-  {
-    const listItems =
-      nodes
-      .filter(
-        node => node.type === 'list')
-      .flatMap(
-        node => (node as List).children);
-
-    const properties: ArtefactDefinitionProperty[] = [ ];
-
-    for (const item of listItems) {
-      const itemText =
-        getText(
-          document,
-          item)
-        .trim();
-
-      if (itemText === '') {
-        continue;
-      }
-
-      const legacyMatch =
-        /^(.*?)\s*(?:[:\-])\s*(.+)$/.exec(
-          itemText);
-
-      if (!legacyMatch) {
-        this.logger.warning(
-          'tryParse(...): invalid property item "%s" in %s',
-          itemText,
-          context.path);
-
-        continue;
-      }
-
-      const name =
-        legacyMatch[1].trim();
-
-      const description =
-        legacyMatch[2].trim();
-
-      if (name === '') {
-        continue;
-      }
-
-      properties.push(
-        { name,
-          type: 'string',
-          description });
-    }
-
-    return properties;
   }
 
   #parseLocations(
@@ -569,25 +549,15 @@ export class ArtefactDefinitionProviderImpl
   ): Location[] | undefined
   {
     const locationLists =
-      nodes
-      .filter(
-        node => node.type === 'list')
-      .map(
-        node => node as List);
+      getLists(nodes);
 
     const locations: Location[] = [ ];
 
     for (const locationList of locationLists) {
       const listItems =
-        locationList.children
-        .map(
-          item =>
-            getText(
-              document,
-              item)
-              .trim())
-        .filter(
-          itemText => itemText.length > 0);
+        getListItemsAsText(
+          document,
+          locationList);
 
       if (listItems.length === 0) {
         continue;

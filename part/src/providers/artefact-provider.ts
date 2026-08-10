@@ -20,6 +20,7 @@ import { FilesystemLocationResolver }
 export class ArtefactProvider
 {
   private locationResolver: FilesystemLocationResolver;
+  private readonly projectRootPath: string;
 
   constructor(
     private readonly logger: Logger,
@@ -32,10 +33,15 @@ export class ArtefactProvider
         `'projectPath' must be absolute: ${projectPath}`);
     }
 
+    this.projectRootPath =
+      path.normalize(
+        path.resolve(
+          projectPath));
+
     this.locationResolver =
       new FilesystemLocationResolver(
         this.logger,
-        this.projectPath);
+        this.projectRootPath);
   }
 
   async tryGetArtefact(
@@ -56,6 +62,14 @@ export class ArtefactProvider
         'tryGetArtefact() { %s is resolved to %s }',
         artefactPath,
         artefactFullPath);
+    }
+
+    if (!this.isPathInsideProject(artefactFullPath)) {
+      this.logger.trace(
+        'tryGetArtefact() { %s is outside project root and ignored }',
+        artefactFullPath);
+
+      return null;
     }
 
     const definitions =
@@ -114,6 +128,14 @@ export class ArtefactProvider
           definition.locations);
 
       for (const artefactPath of paths) {
+        if (!this.isPathInsideProject(artefactPath)) {
+          this.logger.trace(
+            'getArtefacts() { %s is outside project root and ignored }',
+            artefactPath);
+
+          continue;
+        }
+
         artefactPaths.add(artefactPath);
       }
     }
@@ -150,6 +172,10 @@ export class ArtefactProvider
         path.resolve(
           this.projectPath,
           artefactPath));
+
+    if (!this.isPathInsideProject(artifactFullPath)) {
+      return false;
+    }
 
     const match =
       await this.locationResolver
@@ -208,5 +234,30 @@ export class ArtefactProvider
           definition => definition.name) };
 
     return artefact;
+  }
+
+  private isPathInsideProject(
+    candidatePath: string
+  ): boolean
+  {
+    const normalisedCandidatePath =
+      path.normalize(
+        path.resolve(
+          candidatePath));
+
+    const relativePath =
+      path.relative(
+        this.projectRootPath,
+        normalisedCandidatePath);
+
+    if (relativePath === '') {
+      return true;
+    }
+
+    if (path.isAbsolute(relativePath)) {
+      return false;
+    }
+
+    return !relativePath.startsWith('..');
   }
 }

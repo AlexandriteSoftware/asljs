@@ -9,7 +9,7 @@ A statement about the system that must be true.
 
 ## Location
 
-- Pattern: `../development/**/RQ*.md`
+- Pattern: `/requirements/RQ*.md`
 - GitIgnore
 
 ## Rules

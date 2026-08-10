@@ -4,14 +4,14 @@ ASLJS Package, published to npm.
 
 ## Location
 
-- Pattern: `../../*/`
-- Exclude: `../../common/`
+- Pattern: `../*/`
+- Exclude: `../common/`
 - GitIgnore
 
 ## Properties
 
 ### LocalDeps
 
-- Type: `artefact[]`
+- Type: Artefact[]
 
 Local dependencies.

@@ -1,5 +1,7 @@
 import { Command }
   from 'commander';
+import { readFileSync }
+  from 'node:fs';
 import { DefaultHostConsole }
   from '../console.js';
 import { createLogger }
@@ -18,6 +20,18 @@ import { ExecutionContext }
   from './types.js';
 import { configureUpdateCommand }
   from './update.js';
+
+type PackageMetadata = {
+  version: string;
+};
+
+const packageMetadata: PackageMetadata =
+  JSON.parse(
+    readFileSync(
+      new URL(
+        '../../package.json',
+        import.meta.url),
+      'utf8')) as PackageMetadata;
 
 export async function main(
     argv = process.argv
@@ -76,11 +90,23 @@ export async function main(
       context);
 
     program
+      .command(
+        'version')
+      .description(
+        'print application version')
+      .action(
+        () =>
+        {
+          context.console.writeLine(
+            packageMetadata.version);
+        });
+
+    program
       .action(
         () =>
         {
           throw new Error(
-            'Usage: cog <read|list|update|restore|apply-patch|config> [args...]');
+            'Usage: cog <read|list|update|restore|apply-patch|config|version> [args...]');
         });
 
     await program.parseAsync(

@@ -1,65 +1,42 @@
 # asljs
 
-Alexandrite Software Libraries for JavaScript (asljs) provides essential
-libraries and tools to improve everyday development.
-
-Libraries:
-
-- [components](components) - reusable web components.
-- [data-binding](data-binding) - declarative DOM bindings via `data-model`.
-- [dali](dali) - IndexedDB data layer with typed table abstractions.
-- [eventful](eventful) - adds on/off/emit to any object.
-- [machine](machine) - provides a state-machine framework for organizing control
-  flow.
-- [money](money) - provides utilities for handling monetary values.
-- [observable](observable) - makes any object emit events on property changes.
-- [tmpdir](tmpdir) - provides temporary directory utilities for testing and
-  development.
-
-Tools:
-
-- [cog](cog) - AI agents context manager.
-- [part](part) - defines project artefacts in markdown and validates them with
-  rules.
-- [sfmt](sfmt) - code formatter for TypeScript.
+Libraries, project tools, and productivity apps to enhance everyday development.
+By Alexandrite Software Ltd. In JavaScript (with TypeScript).
 
 Applications:
 
-- [app-builder](app-builder) - a demo application that uses the libraries to
+- [app-builder][APPS] - a demo application that uses the libraries to
   build a simple app with AI-assisted features.
 
-## Architecture
+Tools:
 
-The monorepo is organized as small packages with explicit workspace boundaries.
-Published libraries expose a single package-root entrypoint through
-`package.json#exports`. Internal source files remain implementation details
-unless a package README states otherwise.
+- [cog][COG] - AI agents context manager.
+- [part][PRT] - defines project artefacts in markdown and validates them with
+  rules.
+- [sfmt][SFMT] - code formatter for TypeScript.
 
-### Package dependency graph
+Libraries:
 
-```mermaid
-graph TD
-  eventful[asljs-eventful]
-  observable[asljs-observable]
-  databinding[asljs-data-binding]
-  components[asljs-components]
-  dali[asljs-dali]
-  machine[asljs-machine]
-  money[asljs-money]
-  part[asljs-part]
-  appbuilder[asljs-app-builder]
+- [components][CMP] - reusable web components.
+- [data-binding][DBND] - declarative DOM bindings via `data-model`.
+- [dali][DALI] - IndexedDB data layer with typed table abstractions.
+- [eventful][EVT] - adds on/off/emit to any object.
+- [machine][MCH] - provides a state-machine framework for organizing control
+  flow.
+- [money][MNY] - provides utilities for handling monetary values.
+- [observable][OBS] - makes any object emit events on property changes.
+- [tmpdir][TDR] - provides temporary directory utilities for testing and
+  development.
 
-  eventful --> observable
-  observable --> databinding
-  databinding --> components
-  eventful --> components
-  eventful --> dali
-  observable --> dali
-  eventful --> machine
-  observable --> machine
-  components --> appbuilder
-  dali --> appbuilder
-  databinding --> appbuilder
-  eventful --> appbuilder
-  observable --> appbuilder
-```
+[CMP]: <./components/README.md>
+[DBND]: <./data-binding/README.md>
+[DALI]: <./dali/README.md>
+[EVT]: <./eventful/README.md>
+[MCH]: <./machine/README.md>
+[MNY]: <./money/README.md>
+[OBS]: <./observable/README.md>
+[TDR]: <./tmpdir/README.md>
+[COG]: <./cog/README.md>
+[PRT]: <./part/README.md>
+[SFMT]: <./sfmt/README.md>
+[APPS]: <./app-builder/README.md>

@@ -38,6 +38,7 @@ Available commands:
 - `restore` restores project files from backup.
 - `apply-patch` applies the current patch.
 - `config` prints current resolved settings and related environment variables.
+- `version` prints the current `cog` package version.
 
 ### `read <path> [arguments]`
 
@@ -105,6 +106,10 @@ It also prints these environment variables:
 - `COG_ENVELOPE_PATH`
 - `COG_PATCH_PATH`
 - `COG_PATCH_VERIFY_CMD`
+
+### `version`
+
+Prints the installed `asljs-cog` version.
 
 ## Envelope
 

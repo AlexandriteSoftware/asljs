@@ -83,5 +83,5 @@ export async function validate(
   }
 
   throw new Error(
-    `No test file found containing requirement ID "${requirementId}".`);
+    `No test for "${requirementId}".`);
 }

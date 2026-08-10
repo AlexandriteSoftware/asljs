@@ -1,5 +1,9 @@
 import assert
   from 'node:assert/strict';
+import fs
+  from 'node:fs/promises';
+import path
+  from 'node:path';
 import test
   from 'node:test';
 import { createPinoLoggerProvider }
@@ -143,4 +147,150 @@ Specification.
         definition => definition.name).sort(),
       [ 'Article',
         'Specification' ]);
+  });
+
+test(
+  'RQ206: ArtefactProvider excludes file artefacts resolved outside project root',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    const outsideDirectoryPath =
+      path.resolve(
+        workspace.path,
+        '..',
+        `${path.basename(workspace.path)}-outside-file`);
+
+    await fs.mkdir(
+      outsideDirectoryPath,
+      { recursive: true });
+
+    try {
+      await workspace.writeText(
+        'artefacts/External File.md',
+        `# External File
+
+External file.
+
+## Location
+
+- Pattern: ../../${path.basename(
+  outsideDirectoryPath)}/*.md
+`);
+
+      const outsideFilePath =
+        path.resolve(
+          outsideDirectoryPath,
+          'RQ501 Outside.md');
+
+      await fs.writeFile(
+        outsideFilePath,
+        '# RQ501\n',
+        'utf8');
+
+      const { artefactDefinitionProvider, artefactProvider } =
+        providersFactory(
+          loggerProvider,
+          workspace.path,
+          workspace.path);
+
+      const definitions =
+        await artefactDefinitionProvider.getDefinitions();
+
+      const [externalFileDefinition] =
+        definitions.filter(
+          definition => definition.name === 'External File');
+
+      assert.ok(
+        externalFileDefinition,
+        'Expected External File definition to exist');
+
+      const artefacts =
+        await artefactProvider.getArtefacts(
+          [ externalFileDefinition ]);
+
+      assert.deepEqual(
+        artefacts,
+        [ ]);
+
+      assert.equal(
+        await artefactProvider.isArtefactOfDefinition(
+          outsideFilePath,
+          externalFileDefinition),
+        false);
+    } finally {
+      await fs.rm(
+        outsideDirectoryPath,
+        { recursive: true,
+          force: true });
+    }
+  });
+
+test(
+  'RQ206: ArtefactProvider excludes directory artefacts resolved outside project root',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    const outsideDirectoryPath =
+      path.resolve(
+        workspace.path,
+        '..',
+        `${path.basename(workspace.path)}-outside-folder`);
+
+    await fs.mkdir(
+      outsideDirectoryPath,
+      { recursive: true });
+
+    try {
+      await workspace.writeText(
+        'artefacts/External Folder.md',
+        `# External Folder
+
+External folder.
+
+## Location
+
+- Pattern: ../../${path.basename(
+  outsideDirectoryPath)}/
+`);
+
+      const { artefactDefinitionProvider, artefactProvider } =
+        providersFactory(
+          loggerProvider,
+          workspace.path,
+          workspace.path);
+
+      const definitions =
+        await artefactDefinitionProvider.getDefinitions();
+
+      const [externalFolderDefinition] =
+        definitions.filter(
+          definition => definition.name === 'External Folder');
+
+      assert.ok(
+        externalFolderDefinition,
+        'Expected External Folder definition to exist');
+
+      const artefacts =
+        await artefactProvider.getArtefacts(
+          [ externalFolderDefinition ]);
+
+      assert.deepEqual(
+        artefacts,
+        [ ]);
+
+      assert.equal(
+        await artefactProvider.isArtefactOfDefinition(
+          outsideDirectoryPath,
+          externalFolderDefinition),
+        false);
+    } finally {
+      await fs.rm(
+        outsideDirectoryPath,
+        { recursive: true,
+          force: true });
+    }
   });

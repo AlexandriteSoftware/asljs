@@ -2,8 +2,7 @@ import assert
   from 'node:assert/strict';
 import path
   from 'node:path';
-import test,
-       { after }
+import test
   from 'node:test';
 import { createEnvironment }
   from '../environment.js';
@@ -17,8 +16,8 @@ import { execUpdate }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
-  () =>
+test.after(
+  (): void =>
   {
     loggerProvider.dispose();
   });

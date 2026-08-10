@@ -1,6 +1,6 @@
 import { Heading,
-         Node,
-         Root }
+         List,
+         Node }
   from 'mdast';
 import { MarkdownDocument }
   from './model/markdown-document.js';
@@ -295,4 +295,39 @@ export function getText(
   }
 
   return '';
+}
+
+export function getLists(
+    nodes: Node[]
+  ): List[]
+{
+  const lists: List[] = [ ];
+
+  for (const node of nodes) {
+    if (node.type === 'list') {
+      lists.push(
+        node as List);
+    }
+  }
+
+  return lists;
+}
+
+export function getListItemsAsText(
+    document: MarkdownDocument,
+    list: List
+  ): string[]
+{
+  const items: string[] = [ ];
+
+  for (const item of list.children) {
+    const itemText =
+      getText(
+        document,
+        item);
+
+    items.push(itemText);
+  }
+
+  return items;
 }

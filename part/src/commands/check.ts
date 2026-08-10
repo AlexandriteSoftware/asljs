@@ -16,10 +16,6 @@ import { ArtefactDefinition }
   from '../model/artefact-definition.js';
 import { Artefact }
   from '../model/artefact.js';
-import { ArtefactProvider }
-  from '../providers/artefact-provider.js';
-import { providersFactory }
-  from '../providers/providers.js';
 import { RuleRunner }
   from '../rule-runner.js';
 

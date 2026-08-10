@@ -2,8 +2,7 @@ import assert
   from 'node:assert/strict';
 import fs
   from 'node:fs/promises';
-import test,
-       { after }
+import test
   from 'node:test';
 import { createEnvironment }
   from '../environment.js';
@@ -17,8 +16,8 @@ import { execInventory }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
-  () =>
+test.after(
+  (): void =>
   {
     loggerProvider.dispose();
   });

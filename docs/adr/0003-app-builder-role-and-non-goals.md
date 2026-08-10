@@ -1,9 +1,5 @@
 # ADR 0003: App Builder Role And Non-Goals
 
-## Status
-
-Accepted
-
 ## Decision
 
 `app-builder` is a private browser application and demo surface for the

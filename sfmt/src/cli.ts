@@ -94,9 +94,6 @@ function createCli(
     .name('sfmt')
     .description(
       packageMetadata.description)
-    .argument(
-      '[pattern]',
-      'Glob pattern of files to format')
     .allowExcessArguments(false)
     .helpCommand(false)
     .configureOutput(
@@ -118,7 +115,12 @@ function createCli(
       {
         environment.onDispose(
           async (): Promise<void> => { });
-      })
+      });
+
+  cli
+    .command('format [pattern]')
+    .description(
+      'Format files that match the glob pattern')
     .action(
       async (
           pattern?: string
@@ -132,6 +134,17 @@ function createCli(
         await format(
           environment,
           ...fnArgs);
+      });
+
+  cli
+    .command('version')
+    .description(
+      'Print the application version')
+    .action(
+      (): void =>
+      {
+        environment.stdout.write(
+          `${packageMetadata.version}\n`);
       });
 
   return cli;

@@ -1,6 +1,6 @@
 # RELEASE
 
-Each package is released separately, from the repository root.
+Each package is released independently, from the repository root.
 
 Use the workspace release command for publishable packages:
 

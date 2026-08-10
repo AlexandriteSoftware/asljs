@@ -1,7 +1,6 @@
 import assert
   from 'node:assert/strict';
-import test,
-       { after }
+import test
   from 'node:test';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
@@ -13,7 +12,7 @@ import { GitIgnore }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
+test.after(
   () =>
   {
     loggerProvider.dispose();

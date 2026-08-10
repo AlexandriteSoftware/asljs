@@ -1,7 +1,6 @@
 import assert
   from 'node:assert/strict';
-import test,
-       { after }
+import test
   from 'node:test';
 import { createEnvironment }
   from '../environment.js';
@@ -15,8 +14,8 @@ import { execVersion }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
-  () =>
+test.after(
+  (): void =>
   {
     loggerProvider.dispose();
   });

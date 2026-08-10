@@ -4,8 +4,7 @@ import assert
   from 'node:assert/strict';
 import path
   from 'node:path';
-import test,
-       { after }
+import test
   from 'node:test';
 import { createPinoLoggerProvider }
   from '../logging/pino.js';
@@ -17,7 +16,7 @@ import { providersFactory }
 const loggerProvider =
   createPinoLoggerProvider();
 
-after(
+test.after(
   () =>
   {
     loggerProvider.dispose();

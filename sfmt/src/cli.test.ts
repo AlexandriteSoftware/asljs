@@ -12,7 +12,7 @@ import { createEnvironment }
   from './environment.js';
 
 test(
-  'runCli formats files matched by a glob argument',
+  'runCli format command formats files matched by a glob argument',
   async () =>
   {
     await using workspace =
@@ -29,7 +29,8 @@ test(
 
     const exitCode =
       await runCli(
-        [ 'src/**/*.ts' ],
+        [ 'format',
+          'src/**/*.ts' ],
         environment);
 
     const formatted =
@@ -44,4 +45,29 @@ test(
     assert.strictEqual(
       formatted,
       'import { readFile }\n' + "  from 'node:fs/promises';\n");
+  });
+
+test(
+  'runCli version command writes package version',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    const exitCode =
+      await runCli(
+        [ 'version' ],
+        environment);
+
+    assert.strictEqual(
+      exitCode,
+      0);
+
+    assert.strictEqual(
+      environment.stderr.toString(),
+      '');
+
+    assert.strictEqual(
+      environment.stdout.toString(),
+      '0.1.16\n');
   });

@@ -1,9 +1,5 @@
 # ADR 0001: Public API Boundary Policy
 
-## Status
-
-Accepted
-
 ## Decision
 
 For publishable packages in `asljs`, the public API boundary is the package root

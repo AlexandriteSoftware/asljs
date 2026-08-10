@@ -1,9 +1,5 @@
 # ADR 0002: Browser-Only Package Placement Policy
 
-## Status
-
-Accepted
-
 ## Decision
 
 Browser-only behavior belongs only in packages whose role is explicitly browser

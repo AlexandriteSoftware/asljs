@@ -139,7 +139,11 @@ A todo item is a task that needs to be done.
 
 ## Properties
 
-- Due date: when it needs to be done.
+### Due
+
+- Type: DateTime
+
+When it needs to be done.
 
 ## Location
 
@@ -175,10 +179,12 @@ Due date must be in the future.
       'A todo item is a task that needs to be done.');
 
     const expectedProperties: ArtefactDefinitionProperty[] =
-      [ { name: 'Due date',
-          type: 'string',
+      [ { name: 'Due',
+          type: 'DateTime',
+          isList: false,
+          isNullable: false,
           description:
-            'when it needs to be done.' } ];
+            'When it needs to be done.' } ];
 
     assert.deepEqual(
       definition.properties,

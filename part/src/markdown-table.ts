@@ -78,7 +78,14 @@ export function renderObjectsToMarkdownTable(
         widths));
   }
 
-  return lines.join('\n');
+  const results =
+    lines
+      .map(
+        item =>
+          item + '\n')
+      .join('');
+
+  return results;
 }
 
 function renderRow(
