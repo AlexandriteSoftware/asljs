@@ -245,7 +245,7 @@ test(
   });
 
 test(
-  'TmpDir traces calls to its methods',
+  'RQ010 tmpdir traces public method calls',
   async (): Promise<void> =>
   {
     const traceMessages: string[] = [ ];

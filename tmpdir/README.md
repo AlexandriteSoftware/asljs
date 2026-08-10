@@ -1,7 +1,7 @@
 # tmpdir
 
-> Part of [Alexandrite Software Library][1] – a set of high‑quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][1] – a set of high‑quality, performant
+> JavaScript libraries for everyday use.
 
 Disposable temporary directory helper for Node.js.
 
@@ -29,19 +29,22 @@ NPM Package: [asljs-tmpdir][21]
 ### Basic
 
 ```js
-import { TmpDir }
-  from 'asljs-tmpdir';
+import {
+  TmpDir
+} from 'asljs-tmpdir';
 
-using tmpDir =
-  new TmpDir();
+using tmpDir = new TmpDir();
 
 await tmpDir.writeText(
   'example/file.txt',
-  'Hello, world!');
+  'Hello, world!'
+);
 
 console.log(
   await tmpDir.readText(
-    'example/file.txt'));
+    'example/file.txt'
+  )
+);
 
 // the temporary directory and its contents
 // will be automatically deleted at the end of
@@ -51,32 +54,35 @@ console.log(
 ### Custom tracing handler
 
 ```js
-import { TmpDir,
-         logToConsole }
-  from 'asljs-tmpdir';
+import {
+  logToConsole,
+  TmpDir
+} from 'asljs-tmpdir';
 
-using tmpDir =
-  new TmpDir(
-    { trace: logToConsole });
+using tmpDir = new TmpDir(
+  { trace: logToConsole }
+);
 
 await tmpDir.writeText(
   'example/file.txt',
-  'Hello, world!');
+  'Hello, world!'
+);
 ```
 
 ### Strict error handling
 
-Failing to clean up is not a critical error so the default behavior is to log
-a warning to the console. Replacing the error handler makes it more strict.
+Failing to clean up is not a critical error so the default behavior is to log a
+warning to the console. Replacing the error handler makes it more strict.
 
 ```js
-import { TmpDir,
-         throwOnError }
-  from 'asljs-tmpdir';
+import {
+  throwOnError,
+  TmpDir
+} from 'asljs-tmpdir';
 
-using tmpDir =
-  new TmpDir(
-    { error: throwOnError });
+using tmpDir = new TmpDir(
+  { error: throwOnError }
+);
 ```
 
 ## License
