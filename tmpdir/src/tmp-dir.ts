@@ -57,7 +57,7 @@ export function formatMessage(
   }
 }
 
-export function tmpDirConsoleLogFunction(
+export function logToConsole(
     message: string,
     ...params: any[]
   ): void
@@ -68,7 +68,7 @@ export function tmpDirConsoleLogFunction(
       ...params));
 }
 
-export function tmpDirThrowErrorFunction(
+export function throwOnError(
     message: string,
     ...params: any[]
   ): void
@@ -97,7 +97,7 @@ export class TmpDir
 
     this.#error =
       options.error
-      ?? tmpDirConsoleLogFunction;
+      ?? logToConsole;
 
     const tmpDir =
       options.tmpDir

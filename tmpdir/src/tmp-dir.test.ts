@@ -14,7 +14,7 @@ import { formatMessage,
   from './tmp-dir.js';
 
 test(
-  'constructor creates unique temporary directories',
+  'RQ003 constructor creates unique temporary directories',
   async (): Promise<void> =>
   {
     const baseTmpDir =
@@ -66,7 +66,7 @@ test(
   });
 
 test(
-  'helpers create subdirectories and files inside the temporary directory',
+  'RQ004 helpers create subdirectories and files inside the temporary directory',
   async (): Promise<void> =>
   {
     using tmpDir =
@@ -109,7 +109,7 @@ test(
   });
 
 test(
-  'cleanup removes the temporary directory',
+  'RQ005 cleanup removes the temporary directory',
   async (): Promise<void> =>
   {
     const tmpDir =
@@ -139,7 +139,7 @@ test(
   });
 
 test(
-  'path helpers reject attempts to escape the temporary directory',
+  'RQ006 path helpers reject attempts to escape the temporary directory',
   async (): Promise<void> =>
   {
     const parentDirectoryPath =
@@ -191,7 +191,7 @@ test(
   });
 
 test(
-  'using statement cleans the temporary directory',
+  'RQ005 using statement cleans the temporary directory',
   async (): Promise<void> =>
   {
     const factory =
@@ -218,7 +218,7 @@ test(
   });
 
 test(
-  'await using statement cleans the temporary directory',
+  'RQ005 await using statement cleans the temporary directory',
   async (): Promise<void> =>
   {
     const factory =

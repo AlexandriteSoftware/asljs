@@ -52,17 +52,12 @@ console.log(
 
 ```js
 import { TmpDir,
-         formatMessage }
+         logToConsole }
   from 'asljs-tmpdir';
 
 using tmpDir =
   new TmpDir(
-    { trace:
-        (message, ...params) =>
-          console.log(
-            formatMessage(
-              message,
-              ...params)) });
+    { trace: logToConsole });
 
 await tmpDir.writeText(
   'example/file.txt',
@@ -76,12 +71,12 @@ a warning to the console. Replacing the error handler makes it more strict.
 
 ```js
 import { TmpDir,
-         tmpDirThrowErrorFunction }
+         throwOnError }
   from 'asljs-tmpdir';
 
 using tmpDir =
   new TmpDir(
-    { error: tmpDirThrowErrorFunction });
+    { error: throwOnError });
 ```
 
 ## License

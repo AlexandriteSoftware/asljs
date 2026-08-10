@@ -4,7 +4,7 @@ import test
   from 'node:test';
 
 test(
-  'index exports expected members',
+  'RQ002 index exports expected members',
   async () =>
   {
     const indexModule =
@@ -14,11 +14,11 @@ test(
       indexModule.TmpDir);
 
     assert.ok(
-      indexModule.tmpDirFormatMessage);
+      indexModule.formatMessage);
 
     assert.ok(
-      indexModule.tmpDirThrowErrorFunction);
+      indexModule.throwOnError);
 
     assert.ok(
-      indexModule.tmpDirConsoleLogFunction);
+      indexModule.logToConsole);
   });
