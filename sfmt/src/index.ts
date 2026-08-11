@@ -22,4 +22,4 @@ export {
   createPinoLoggerProvider,
   NullLoggerProvider,
   type Logger
-} from './logging.js';
+} from 'asljs-logging';

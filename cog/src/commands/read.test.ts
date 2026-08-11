@@ -8,7 +8,7 @@ import test
   from 'node:test';
 import { Envelope }
   from '../envelope/envelope.js';
-import { createLogger }
+import { createLoggerProvider }
   from '../logger.js';
 import { read }
   from './read.js';
@@ -19,11 +19,16 @@ const testBinaryFileContent: Buffer =
       1,
       255 ]);
 
+const loggerProvider =
+  createLoggerProvider();
+
 const logger =
-  createLogger();
+  loggerProvider.getLogger(
+    'commands.read.test');
 
 test.after(
-  () => logger.dispose());
+  async () =>
+    await loggerProvider.dispose());
 
 function emptyEnvelope(
   ): Envelope

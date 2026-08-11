@@ -10,7 +10,7 @@ import { ArtefactDataProvidingContext,
 import { MarkdownDocumentProvider }
   from '../index.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { Artefact }
   from '../model/artefact.js';
 

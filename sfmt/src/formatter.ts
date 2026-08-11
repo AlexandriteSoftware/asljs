@@ -3,7 +3,7 @@ import { type TSESLint }
 import path
   from 'node:path';
 import { Logger }
-  from './logging.js';
+  from 'asljs-logging';
 
 export type SupportedFileType =
   | 'javascript'

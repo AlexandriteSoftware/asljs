@@ -2,15 +2,18 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { NullLogger }
+import { createLoggerProvider }
   from './logger.js';
 
 test(
-  'NullLogger has all levels disabled, except silent',
+  'createLoggerProvider defaults to silent logger',
   () =>
   {
+    const loggerProvider =
+      createLoggerProvider();
+
     const logger =
-      new NullLogger();
+      loggerProvider.getLogger();
 
     assert.strictEqual(
       logger.isLevelEnabled('trace'),
@@ -31,4 +34,6 @@ test(
     assert.strictEqual(
       logger.isLevelEnabled('error'),
       false);
+
+    void loggerProvider.dispose();
   });

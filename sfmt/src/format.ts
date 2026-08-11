@@ -15,7 +15,7 @@ import { FormatterDefinition,
          SupportedFileType }
   from './formatter.js';
 import { createPinoLoggerProvider }
-  from './logging.js';
+  from 'asljs-logging';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsArrayFunctionExpressionFormatterFactory

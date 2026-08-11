@@ -11,7 +11,7 @@ import { FormattingContext }
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtVariableDeclarator }
   from '../ts-fmt/fmt-variable-declarator.js';
 

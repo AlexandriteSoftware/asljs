@@ -6,105 +6,59 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-
-export type TmpDirLogFunction =
-  (
-    message: string,
-    ...params: any[]
-  ) =>
-    void;
+import { type Logger,
+         NullLoggerProvider }
+  from 'asljs-logging';
 
 export interface TmpDirOptions
 {
-  trace: TmpDirLogFunction;
-  error: TmpDirLogFunction;
   tmpDir: string;
   prefix: string;
   keep: boolean;
 }
 
-export function formatMessage(
-    message: string,
-    ...params: any[]
-  ): string
-{
-  return message.replace(
-    /%[sdo]/g,
-    replaceFormatTokens);
-
-  function replaceFormatTokens(
-      substring: string
-    ): string
-  {
-    const param =
-      params.shift();
-
-    if (param === undefined) {
-      switch (substring) {
-        case '%s':
-          return String(param);
-        case '%d':
-          return String(
-            Number(param));
-        case '%o':
-          return JSON.stringify(param);
-      }
-
-      return substring;
-    }
-
-    return param;
-  }
-}
-
-export function logToConsole(
-    message: string,
-    ...params: any[]
-  ): void
-{
-  console.error(
-    formatMessage(
-      message,
-      ...params));
-}
-
-export function throwOnError(
-    message: string,
-    ...params: any[]
-  ): void
-{
-  throw new Error(
-    formatMessage(
-      message,
-      ...params));
-}
-
 export class TmpDir
 {
-  #trace: TmpDirLogFunction;
-  #error: TmpDirLogFunction;
+  #logger: Logger;
   #disposed: boolean;
 
   public readonly path: string;
 
   constructor(
+    options?: Partial<TmpDirOptions>
+  );
+
+  constructor(
+    logger?: Logger,
+    options?: Partial<TmpDirOptions>
+  );
+
+  constructor(
+    loggerOrOptions?: Logger | Partial<TmpDirOptions>,
     options: Partial<TmpDirOptions> = {}
   )
   {
-    this.#trace =
-      options.trace
-      ?? (() => { });
+    const logger =
+      isLogger(loggerOrOptions)
+      ? loggerOrOptions
+      : undefined;
 
-    this.#error =
-      options.error
-      ?? logToConsole;
+    const resolvedOptions =
+      isLogger(loggerOrOptions)
+      ? options
+      : (loggerOrOptions ?? options);
+
+    this.#logger =
+      logger
+      ?? new NullLoggerProvider()
+        .getLogger();
 
     const tmpDir =
-      options.tmpDir
+      resolvedOptions.tmpDir
       ?? os.tmpdir();
 
     const prefix =
-      options.prefix
+      resolvedOptions.prefix
       ?? 'asljs-tmpdir-';
 
     this.path =
@@ -113,7 +67,7 @@ export class TmpDir
           tmpDir,
           prefix));
 
-    this.#trace(
+    this.#logger.trace(
       `constructor() { this.path=${this.path} }`);
 
     this.#disposed = false;
@@ -161,7 +115,7 @@ export class TmpDir
     directoryPath: string
   ): Promise<string>
   {
-    this.#trace(
+    this.#logger.trace(
       `mkdir(${directoryPath})`);
 
     const resolvedDirectoryPath =
@@ -180,7 +134,7 @@ export class TmpDir
     content: Buffer
   ): Promise<string>
   {
-    this.#trace(
+    this.#logger.trace(
       `write(${filePath}, ...)`);
 
     this.#throwIfDisposed();
@@ -206,7 +160,7 @@ export class TmpDir
     content: string
   ): Promise<string>
   {
-    this.#trace(
+    this.#logger.trace(
       `writeText(${filePath}, ...)`);
 
     this.#throwIfDisposed();
@@ -232,7 +186,7 @@ export class TmpDir
     filePath: string
   ): Promise<string>
   {
-    this.#trace(
+    this.#logger.trace(
       `readText(${filePath})`);
 
     this.#throwIfDisposed();
@@ -250,7 +204,7 @@ export class TmpDir
     path: string
   ): Promise<fs.Stats>
   {
-    this.#trace(
+    this.#logger.trace(
       `stat(${path})`);
 
     this.#throwIfDisposed();
@@ -265,7 +219,7 @@ export class TmpDir
 
   async cleanup(): Promise<void>
   {
-    this.#trace(
+    this.#logger.trace(
       `cleanup()`);
 
     await this.#cleanup();
@@ -273,7 +227,7 @@ export class TmpDir
 
   cleanupSync(): void
   {
-    this.#trace(
+    this.#logger.trace(
       `cleanupSync()`);
 
     this.#cleanupSync();
@@ -309,7 +263,7 @@ export class TmpDir
         { recursive: true,
           force: true });
     } catch (error) {
-      this.#error(
+      this.#logger.error(
         `cleanup error: %s`,
         error);
     }
@@ -329,11 +283,40 @@ export class TmpDir
         { recursive: true,
           force: true });
     } catch (error) {
-      this.#error(
+      this.#logger.error(
         `cleanupSync() error: %s`,
         error);
     }
 
     this.#disposed = true;
   }
+}
+
+function isLogger(
+    value: Logger | Partial<TmpDirOptions> | undefined
+  ): value is Logger
+{
+  if (value === undefined) {
+    return false;
+  }
+
+  if (value === null) {
+    return false;
+  }
+
+  if (
+    typeof value
+    !== 'object'
+  ) {
+    return false;
+  }
+
+  const candidate =
+    value as Partial<Logger>;
+
+  return typeof candidate.trace === 'function'
+    && typeof candidate.debug === 'function'
+    && typeof candidate.information === 'function'
+    && typeof candidate.warning === 'function'
+    && typeof candidate.error === 'function';
 }

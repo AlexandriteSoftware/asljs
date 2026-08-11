@@ -10,7 +10,7 @@ import { type Linter }
 import tseslint
   from 'typescript-eslint';
 import { NullLoggerProvider }
-  from './logging.js';
+  from 'asljs-logging';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsArrayFunctionExpressionFormatterFactory

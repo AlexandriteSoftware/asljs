@@ -23,7 +23,7 @@ import { createEnvironment,
   from './environment.js';
 import { createPinoLoggerProvider,
          LoggerOptions }
-  from './logging/pino.js';
+  from 'asljs-logging';
 
 export async function runCli(
     args: string[],

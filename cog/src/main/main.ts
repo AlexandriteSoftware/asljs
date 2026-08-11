@@ -4,7 +4,7 @@ import { readFileSync }
   from 'node:fs';
 import { DefaultHostConsole }
   from '../console.js';
-import { createLogger }
+import { createLoggerProvider }
   from '../logger.js';
 import { configureApplyPatchCommand }
   from './apply-patch.js';
@@ -37,15 +37,18 @@ export async function main(
     argv = process.argv
   ): Promise<void>
 {
+  const loggerProvider =
+    createLoggerProvider();
+
   const logger =
-    createLogger();
+    loggerProvider.getLogger(
+      'cog.main');
 
   const context: ExecutionContext =
-    { logger,
+    { loggerProvider,
+      logger,
       console:
-        new DefaultHostConsole(),
-      dispose:
-        () => logger.dispose() };
+        new DefaultHostConsole() };
 
   try {
     const program =
@@ -112,6 +115,6 @@ export async function main(
     await program.parseAsync(
       argv);
   } finally {
-    context.dispose?.();
+    await loggerProvider.dispose();
   }
 }

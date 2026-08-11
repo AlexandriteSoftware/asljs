@@ -4,8 +4,8 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { Logger }
-  from '../logger.js';
+import { type Logger }
+  from 'asljs-logging';
 import { Envelope }
   from './envelope.js';
 
@@ -19,9 +19,7 @@ export class EnvelopeContainer
     logger: Logger
   )
   {
-    this.logger =
-      logger.scope(
-        { instanceId: 'EnvelopeContainer' });
+    this.logger = logger;
   }
 
   public async tryLoadEnvelope(

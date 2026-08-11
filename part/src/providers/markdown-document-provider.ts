@@ -5,7 +5,7 @@ import remarkParse
 import { unified }
   from 'unified';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
 

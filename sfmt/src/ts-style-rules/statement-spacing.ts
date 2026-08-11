@@ -12,7 +12,7 @@ import { FormatterDefinitionFactory,
          tsFormatterFactory }
   from '../formatter.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 
 const messages: Record<string, string> =
   { 'add-blank-line-between-statements':

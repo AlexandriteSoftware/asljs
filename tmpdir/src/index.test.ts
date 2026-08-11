@@ -10,15 +10,7 @@ test(
     const indexModule =
       await import('./index.js');
 
-    assert.ok(
-      indexModule.TmpDir);
-
-    assert.ok(
-      indexModule.formatMessage);
-
-    assert.ok(
-      indexModule.throwOnError);
-
-    assert.ok(
-      indexModule.logToConsole);
+    assert.deepEqual(
+      Object.keys(indexModule).sort(),
+      [ 'TmpDir' ]);
   });

@@ -6,18 +6,23 @@ import test
   from 'node:test';
 import { Envelope }
   from '../envelope/envelope.js';
-import { createLogger }
+import { createLoggerProvider }
   from '../logger.js';
 import { main }
   from './main.js';
 import { argv }
   from './test-helpers.js';
 
+const loggerProvider =
+  createLoggerProvider();
+
 const logger =
-  createLogger();
+  loggerProvider.getLogger(
+    'main.read.test');
 
 test.after(
-  () => logger.dispose());
+  async () =>
+    await loggerProvider.dispose());
 
 test(
   'read CLI normalises Windows path separators in stored update pattern',

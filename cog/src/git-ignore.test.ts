@@ -6,14 +6,19 @@ import test
   from 'node:test';
 import { GitIgnore }
   from './git-ignore.js';
-import { createLogger }
+import { createLoggerProvider }
   from './logger.js';
 
+const loggerProvider =
+  createLoggerProvider();
+
 const logger =
-  createLogger();
+  loggerProvider.getLogger(
+    'git-ignore.test');
 
 test.after(
-  () => logger.dispose());
+  async () =>
+    await loggerProvider.dispose());
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',
@@ -36,7 +41,8 @@ test(
 
     const gitIgnore =
       new GitIgnore(
-        createLogger());
+        loggerProvider.getLogger(
+          'GitIgnore'));
 
     const files =
       [ 'keep.md',

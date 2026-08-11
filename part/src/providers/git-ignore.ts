@@ -8,7 +8,7 @@ import path
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 
 export class GitIgnore
 {

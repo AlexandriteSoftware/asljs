@@ -51,37 +51,28 @@ console.log(
 // the using block
 ```
 
-### Custom tracing handler
+### Optional logger
 
 ```js
 import {
-  logToConsole,
+  createPinoLoggerProvider
+} from 'asljs-logging';
+import {
   TmpDir
 } from 'asljs-tmpdir';
 
+await using loggerProvider =
+  createPinoLoggerProvider(
+    { level: 'trace' }
+  );
+
 using tmpDir = new TmpDir(
-  { trace: logToConsole }
+  loggerProvider.getLogger('TmpDir')
 );
 
 await tmpDir.writeText(
   'example/file.txt',
   'Hello, world!'
-);
-```
-
-### Strict error handling
-
-Failing to clean up is not a critical error so the default behavior is to log a
-warning to the console. Replacing the error handler makes it more strict.
-
-```js
-import {
-  throwOnError,
-  TmpDir
-} from 'asljs-tmpdir';
-
-using tmpDir = new TmpDir(
-  { error: throwOnError }
 );
 ```
 

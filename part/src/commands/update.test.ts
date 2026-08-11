@@ -7,7 +7,7 @@ import test
 import { createEnvironment }
   from '../environment.js';
 import { createPinoLoggerProvider }
-  from '../logging/pino.js';
+  from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { execUpdate }

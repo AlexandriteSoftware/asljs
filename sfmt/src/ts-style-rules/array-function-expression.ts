@@ -9,7 +9,7 @@ import { FormatterDefinitionFactory,
 import { FormattingContext }
   from '../formatting-context.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtArrayFunctionExpression }
   from '../ts-fmt/fmt-array-function-expression.js';
 

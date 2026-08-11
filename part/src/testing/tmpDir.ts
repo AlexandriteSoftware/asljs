@@ -1,8 +1,7 @@
-import { TmpDir,
-         TmpDirOptions }
+import { TmpDir }
   from 'asljs-tmpdir';
 import { LoggerProvider }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 
 export function tmpDirFactory(
     loggerProvider: LoggerProvider
@@ -13,21 +12,7 @@ export function tmpDirFactory(
     const tmpDirLogger =
       loggerProvider.getLogger('TmpDir');
 
-    const error =
-      tmpDirLogger.error
-      .bind(
-        tmpDirLogger);
-
-    const trace =
-      tmpDirLogger.trace
-      .bind(
-        tmpDirLogger);
-
-    const tmpDirOptions: Partial<TmpDirOptions> =
-      { error,
-        trace };
-
     return new TmpDir(
-      tmpDirOptions);
+      tmpDirLogger);
   };
 }

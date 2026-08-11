@@ -1,5 +1,5 @@
 import { LoggerProvider }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { ArtefactDataProvider }
   from './artefact-data-provider.js';
 import { ArtefactDefinitionProvider,

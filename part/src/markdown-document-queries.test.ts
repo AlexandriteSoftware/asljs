@@ -7,7 +7,7 @@ import remarkParse
 import { unified }
   from 'unified';
 import { createPinoLoggerProvider }
-  from './logging/pino.js';
+  from 'asljs-logging';
 import { getMarkup,
          getSections }
   from './markdown-document-queries.js';

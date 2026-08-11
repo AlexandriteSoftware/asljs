@@ -6,7 +6,7 @@ import path
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinitionProvider }

@@ -8,9 +8,10 @@ import path
   from 'node:path';
 import test
   from 'node:test';
-import { formatMessage,
-         TmpDir,
-         type TmpDirLogFunction }
+import { type Logger,
+         NullLoggerProvider }
+  from 'asljs-logging';
+import { TmpDir }
   from './tmp-dir.js';
 
 test(
@@ -250,23 +251,45 @@ test(
   {
     const traceMessages: string[] = [ ];
 
-    const traceHandler: TmpDirLogFunction =
-      (
-          message: string,
-          ...params: any[]
-        ): void =>
-      {
-      const text =
-        formatMessage(
-          message,
-          ...params);
+    const fallbackLogger =
+      new NullLoggerProvider()
+        .getLogger();
 
-      traceMessages.push(text);
-    };
+    const logger: Logger =
+      { level: 'trace',
+        isLevelEnabled:
+          fallbackLogger.isLevelEnabled
+          .bind(
+            fallbackLogger),
+        trace:
+          (
+              message,
+              ...params
+            ) =>
+          {
+          traceMessages.push(
+            `${message} ${params.join(' ')}`.trim());
+        },
+        debug:
+          fallbackLogger.debug
+          .bind(
+            fallbackLogger),
+        information:
+          fallbackLogger.information
+          .bind(
+            fallbackLogger),
+        warning:
+          fallbackLogger.warning
+          .bind(
+            fallbackLogger),
+        error:
+          fallbackLogger.error
+          .bind(
+            fallbackLogger) };
 
     using tmpDir =
       new TmpDir(
-        { trace: traceHandler });
+        logger);
 
     await tmpDir.writeText(
       'content.txt',

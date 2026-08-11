@@ -13,7 +13,7 @@ import { tryGetLocation }
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtAssignmentExpression }
   from '../ts-fmt/fmt-assignment-expression.js';
 

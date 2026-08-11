@@ -8,8 +8,15 @@ import test
   from 'node:test';
 import { LocationResolver }
   from './location.js';
-import { createLogger }
+import { createLoggerProvider }
   from './logger.js';
+
+const loggerProvider =
+  createLoggerProvider();
+
+test.after(
+  async () =>
+    await loggerProvider.dispose());
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',
@@ -20,7 +27,8 @@ test(
 
     const resolver =
       new LocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'LocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -45,7 +53,8 @@ test(
 
     const resolver =
       new LocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'LocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -69,7 +78,8 @@ test(
 
     const resolver =
       new LocationResolver(
-        createLogger(),
+        loggerProvider.getLogger(
+          'LocationResolver'),
         workspace.path);
 
     checkResolvedFiles(
@@ -90,7 +100,8 @@ async function getTestTmpFolder(
 {
   const tmpDir =
     new TmpDir(
-      createLogger());
+      loggerProvider.getLogger(
+        'TmpDir'));
 
   const files =
     [ 'f1.txt',

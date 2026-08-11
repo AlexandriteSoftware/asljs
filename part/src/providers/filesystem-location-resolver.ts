@@ -5,7 +5,7 @@ import { minimatch }
 import path
   from 'node:path';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { Location }
   from '../model/location.js';
 import { GitIgnore }

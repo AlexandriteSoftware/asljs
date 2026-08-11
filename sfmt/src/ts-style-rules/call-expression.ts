@@ -25,7 +25,7 @@ import { ensureLocation }
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtCallExpression }
   from '../ts-fmt/fmt-call-expression.js';
 

@@ -5,8 +5,8 @@ import { readFileSync,
   from 'node:fs';
 import path
   from 'node:path';
-import { Logger }
-  from './logger.js';
+import { type Logger }
+  from 'asljs-logging';
 
 export class GitIgnore
 {

@@ -18,7 +18,7 @@ import { ensureLocation }
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtNewExpression }
   from '../ts-fmt/fmt-new-expression.js';
 

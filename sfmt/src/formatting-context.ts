@@ -8,7 +8,7 @@ import * as ESTree
 import { ensureLocation }
   from './functions/location.js';
 import { Logger }
-  from './logging.js';
+  from 'asljs-logging';
 
 export type ContextElement =
   | ESTree.Node

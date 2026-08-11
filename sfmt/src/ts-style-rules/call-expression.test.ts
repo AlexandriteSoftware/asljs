@@ -9,7 +9,7 @@ import { fileURLToPath }
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
 import { createPinoLoggerProvider }
-  from '../logging.js';
+  from 'asljs-logging';
 import tsCallExpressionFormatterFactory
   from './call-expression.js';
 

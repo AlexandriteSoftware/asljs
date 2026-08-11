@@ -11,7 +11,7 @@ import { FormatterDefinitionFactory,
 import { FormattingContext }
   from '../formatting-context.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtConditionalExpression }
   from '../ts-fmt/fmt-conditional-expression.js';
 

@@ -7,7 +7,7 @@ import path
 import test
   from 'node:test';
 import { createPinoLoggerProvider }
-  from '../logging/pino.js';
+  from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }

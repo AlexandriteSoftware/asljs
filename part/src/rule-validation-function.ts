@@ -1,6 +1,6 @@
 import { Logger,
          LoggerProvider }
-  from './logging/logging.js';
+  from 'asljs-logging';
 import { Artefact }
   from './model/artefact.js';
 import { ArtefactDataProvider }

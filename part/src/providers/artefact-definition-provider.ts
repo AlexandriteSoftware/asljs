@@ -8,7 +8,7 @@ import { readFile }
 import path
   from 'node:path';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { getListItemsAsText,
          getLists,
          getSections,

@@ -12,7 +12,7 @@ import { FormattingContext }
 import { Indentation }
   from '../functions/indentations.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
 

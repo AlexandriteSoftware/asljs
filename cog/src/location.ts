@@ -6,8 +6,8 @@ import path
   from 'node:path';
 import { GitIgnore }
   from './git-ignore.js';
-import { Logger }
-  from './logger.js';
+import { type Logger }
+  from 'asljs-logging';
 
 export interface LocationFilter
 {
@@ -90,10 +90,7 @@ export class LocationResolver
       .map(
         pattern => pattern.slice(1));
 
-    if (
-      rootPathPatterns.length
-      > 0
-    ) {
+    if (rootPathPatterns.length > 0) {
       const rootPathMatches =
         await glob(
           rootPathPatterns,
@@ -111,10 +108,7 @@ export class LocationResolver
       .filter(
         pattern => !pattern.startsWith('/'));
 
-    if (
-      basePathPatterns.length
-      > 0
-    ) {
+    if (basePathPatterns.length > 0) {
       const basePathMatches =
         await glob(
           basePathPatterns,
@@ -137,10 +131,7 @@ export class LocationResolver
       .map(
         pattern => pattern.slice(1));
 
-    if (
-      rootExcludePatterns.length
-      > 0
-    ) {
+    if (rootExcludePatterns.length > 0) {
       const rootExcludeMatches =
         await glob(
           rootExcludePatterns,
@@ -158,10 +149,7 @@ export class LocationResolver
       .filter(
         pattern => !pattern.startsWith('/'));
 
-    if (
-      basePathExcludePatterns.length
-      > 0
-    ) {
+    if (basePathExcludePatterns.length > 0) {
       const basePathExcludeMatches =
         await glob(
           basePathExcludePatterns,
@@ -234,8 +222,10 @@ export class LocationResolver
 
     const included =
       patterns.some(
-        pattern =>
-      {
+        (
+            pattern
+          ) =>
+        {
         if (pattern.startsWith('/')) {
           return minimatch(
             relativeToRoot,
@@ -255,8 +245,10 @@ export class LocationResolver
 
     const excluded =
       exclude.some(
-        pattern =>
-      {
+        (
+            pattern
+          ) =>
+        {
         if (pattern.startsWith('/')) {
           return minimatch(
             relativeToRoot,

@@ -40,7 +40,7 @@ export {
 
 export {
   createPinoLoggerProvider
-} from './logging/pino.js';
+} from 'asljs-logging';
 
 export {
   createRuleValidationContext

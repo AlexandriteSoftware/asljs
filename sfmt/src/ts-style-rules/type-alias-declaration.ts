@@ -11,7 +11,7 @@ import { FormattingContext }
 import { getIndentation }
   from '../functions/indentations.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtTypeAliasDeclaration }
   from '../ts-fmt/fmt-type-alias-declaration.js';
 

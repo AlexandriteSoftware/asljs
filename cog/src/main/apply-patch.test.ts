@@ -6,7 +6,7 @@ import { existsSync }
   from 'node:fs';
 import test
   from 'node:test';
-import { createLogger }
+import { createLoggerProvider }
   from '../logger.js';
 import { main }
   from './main.js';
@@ -15,11 +15,16 @@ import { argv,
          withEnv }
   from './test-helpers.js';
 
+const loggerProvider =
+  createLoggerProvider();
+
 const logger =
-  createLogger();
+  loggerProvider.getLogger(
+    'main.apply-patch.test');
 
 test.after(
-  () => logger.dispose());
+  async () =>
+    await loggerProvider.dispose());
 
 test(
   'apply-patch accepts a patch when --patch-verify-cmd exits with zero',

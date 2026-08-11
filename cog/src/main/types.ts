@@ -1,13 +1,14 @@
 import { HostConsole }
   from '../console.js';
-import { Logger }
-  from '../logger.js';
+import { type Logger,
+         type LoggerProvider }
+  from 'asljs-logging';
 
 export interface ExecutionContext
 {
+  loggerProvider: LoggerProvider;
   logger: Logger;
   console: HostConsole;
-  dispose?: () => void;
 }
 
 export interface MainOptions

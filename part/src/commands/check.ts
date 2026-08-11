@@ -7,7 +7,7 @@ import { Environment }
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { ArtefactDefinitionRule }

@@ -9,7 +9,7 @@ import { fileURLToPath }
 import { Environment }
   from './../environment.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 
 const MODULE_DIRECTORY =
   path.dirname(

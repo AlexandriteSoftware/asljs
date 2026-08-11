@@ -7,7 +7,7 @@ import { Envelope,
   from '../envelope/envelope.js';
 import { LocationResolver }
   from '../location.js';
-import { createLogger }
+import { createLoggerProvider }
   from '../logger.js';
 import { ExecutionContext }
   from '../main/types.js';
@@ -156,8 +156,12 @@ async function getReadTargets(
     excludes: string[]
   ): Promise<ReadTarget[]>
 {
+  const loggerProvider =
+    createLoggerProvider();
+
   const logger =
-    createLogger();
+    loggerProvider.getLogger(
+      'getReadTargets');
 
   try {
     const resolver =
@@ -185,7 +189,7 @@ async function getReadTargets(
                            pattern),
                        diskPath }));
   } finally {
-    logger.dispose();
+    await loggerProvider.dispose();
   }
 }
 

@@ -1,11 +1,9 @@
 import { CodeGenerationRequest }
   from './commands/update.js';
-import { LoggerProvider }
-  from './logging/logging.js';
-import { Logger }
-  from './logging/logging.js';
-import { NullLoggerProvider }
-  from './logging/null.js';
+import { Logger,
+         LoggerProvider,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import { Providers,
          providersFactory }
   from './providers/providers.js';

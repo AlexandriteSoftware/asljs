@@ -3,7 +3,7 @@ import path
 import { toPosixPath }
   from '../formatting.js';
 import { Logger }
-  from '../logging/logging.js';
+  from 'asljs-logging';
 import { ArtefactDefinition }
   from '../model/artefact-definition.js';
 import { Artefact }

@@ -12,7 +12,7 @@ import { applyFormatters,
          format }
   from './format.js';
 import { NullLogger }
-  from './logging.js';
+  from 'asljs-logging';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
 

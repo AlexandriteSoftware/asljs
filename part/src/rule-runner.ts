@@ -7,7 +7,7 @@ import path
 import { pathToFileURL }
   from 'node:url';
 import { Logger }
-  from './logging/logging.js';
+  from 'asljs-logging';
 import { ArtefactDefinitionRule }
   from './model/artefact-definition-rule.js';
 import { ArtefactDefinition }

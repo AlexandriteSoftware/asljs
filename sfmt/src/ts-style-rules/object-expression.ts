@@ -15,7 +15,7 @@ import { Indentation }
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
 import { Logger }
-  from '../logging.js';
+  from 'asljs-logging';
 import { fmtObjectExpression }
   from '../ts-fmt/fmt-object-expression.js';
 

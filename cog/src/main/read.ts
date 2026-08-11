@@ -84,8 +84,8 @@ async function readCmd(
   ): Promise<void>
 {
   const logger =
-    context.logger.scope(
-      { instanceId: 'readCmd()' });
+    context.loggerProvider.getLogger(
+      'readCmd()');
 
   const envelopePath =
     resolveEnvelopePath(
@@ -101,7 +101,8 @@ async function readCmd(
 
   const envelopeContainer =
     new EnvelopeContainer(
-      context.logger);
+      context.loggerProvider.getLogger(
+        'EnvelopeContainer'));
 
   const envelopeLoaded =
     await envelopeContainer.tryLoadEnvelope(
