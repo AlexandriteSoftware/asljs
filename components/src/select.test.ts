@@ -21,10 +21,11 @@ test(
     element.label = 'Theme';
     element.description = 'Choose one';
 
-    element.items = [
-      { value: 'dark', label: 'Dark' },
-      { value: 'light', label: 'Light' }
-    ];
+    element.items =
+      [ { value: 'dark',
+          label: 'Dark' },
+        { value: 'light',
+          label: 'Light' } ];
 
     element.value = 'light';
 
@@ -69,11 +70,12 @@ test(
     const bootstrapThemeModule =
       await import('./themes/bootstrap-theme.js');
 
-    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.theme =
+      bootstrapThemeModule.createBootstrapTheme();
 
-    element.items = [
-      { value: 'gpt-4.1', label: 'GPT-4.1' }
-    ];
+    element.items =
+      [ { value: 'gpt-4.1',
+          label: 'GPT-4.1' } ];
 
     element.value = 'gpt-4.1';
 
@@ -104,14 +106,17 @@ test(
     const bootstrapThemeModule =
       await import('./themes/bootstrap-theme.js');
 
-    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.theme =
+      bootstrapThemeModule.createBootstrapTheme();
 
-    element.items = [
-      { value: 'gpt-4.1', label: 'GPT-4.1' }
-    ];
+    element.items =
+      [ { value: 'gpt-4.1',
+          label: 'GPT-4.1' } ];
 
     element.value = 'gpt-4.1';
-    element.validator = () => 'Pick a supported model';
+
+    element.validator =
+      () => 'Pick a supported model';
 
     document.body.appendChild(element);
 
@@ -145,10 +150,11 @@ test(
     const element =
       await createElement();
 
-    element.items = [
-      { value: 'chat', label: 'Chat' },
-      { value: 'code', label: 'Code' }
-    ];
+    element.items =
+      [ { value: 'chat',
+          label: 'Chat' },
+        { value: 'code',
+          label: 'Code' } ];
 
     element.value = 'chat';
 
@@ -156,11 +162,13 @@ test(
 
     await settle(element);
 
-    const received: SelectChangeDetail[] = [];
+    const received: SelectChangeDetail[] = [ ];
 
     element.addEventListener(
       'change',
-      event =>
+      (
+          event
+        ) =>
       {
         received.push(
           ((event as unknown) as CustomEvent<SelectChangeDetail>).detail);
@@ -174,8 +182,7 @@ test(
     select.dispatchEvent(
       new window.Event(
         'change',
-        { bubbles: true }
-      ));
+        { bubbles: true }));
 
     assert.equal(
       element.value,
@@ -212,45 +219,76 @@ async function ensureDom(
 {
   if (domRestore === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      Document: globalThis.Document,
-      Event: globalThis.Event,
-      CustomEvent: globalThis.CustomEvent,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLSelectElement: globalThis.HTMLSelectElement,
-      ShadowRoot: globalThis.ShadowRoot,
-      CSSStyleSheet: globalThis.CSSStyleSheet
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        Document: globalThis.Document,
+        Event: globalThis.Event,
+        CustomEvent:
+          globalThis.CustomEvent,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLSelectElement:
+          globalThis.HTMLSelectElement,
+        ShadowRoot:
+          globalThis.ShadowRoot,
+        CSSStyleSheet:
+          globalThis.CSSStyleSheet };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
     globalThis.Document = dom.window.Document;
     globalThis.Event = dom.window.Event;
-    globalThis.CustomEvent = dom.window.CustomEvent;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLSelectElement = dom.window.HTMLSelectElement;
-    globalThis.ShadowRoot = dom.window.ShadowRoot;
-    globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
 
-    domRestore = () =>
-    {
+    globalThis.CustomEvent =
+      dom.window.CustomEvent;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLSelectElement =
+      dom.window.HTMLSelectElement;
+
+    globalThis.ShadowRoot =
+      dom.window.ShadowRoot;
+
+    globalThis.CSSStyleSheet =
+      dom.window.CSSStyleSheet;
+
+    domRestore =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
       globalThis.Event = previous.Event;
-      globalThis.CustomEvent = previous.CustomEvent;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLSelectElement = previous.HTMLSelectElement;
+
+      globalThis.CustomEvent =
+        previous.CustomEvent;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLSelectElement =
+        previous.HTMLSelectElement;
+
       globalThis.ShadowRoot = previous.ShadowRoot;
-      globalThis.CSSStyleSheet = previous.CSSStyleSheet;
+
+      globalThis.CSSStyleSheet =
+        previous.CSSStyleSheet;
     };
   }
 

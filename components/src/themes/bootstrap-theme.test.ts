@@ -78,5 +78,7 @@ test(
       getComponentVariantList(
         'button',
         theme),
-      ['add', 'delete', 'settings']);
+      [ 'add',
+        'delete',
+        'settings' ]);
   });

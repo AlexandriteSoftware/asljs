@@ -1,3 +1,5 @@
+import { type Logger }
+  from 'asljs-logging';
 import { glob }
   from 'glob';
 import { minimatch }
@@ -6,8 +8,6 @@ import path
   from 'node:path';
 import { GitIgnore }
   from './git-ignore.js';
-import { type Logger }
-  from 'asljs-logging';
 
 export interface LocationFilter
 {

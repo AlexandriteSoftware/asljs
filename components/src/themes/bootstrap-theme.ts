@@ -4,18 +4,27 @@ import { ComponentsTheme }
 export function createBootstrapTheme(
   ): ComponentsTheme
 {
-  return {
-    button: {
-      className: 'btn btn-primary',
-      variants: {
-        add: { icon: '<i class="bi bi-plus"></i>', text: 'Add' },
-        delete: { icon: '<i class="bi bi-trash"></i>', text: 'Delete' },
-        settings: { icon: '<i class="bi bi-gear"></i>', text: 'Settings' }
-      }
-    },
-    list: { container: '<div class="list-group" data-role="items"></div>' },
-    textInput: {
-      template: `
+  return { button:
+             { className: 'btn btn-primary',
+               variants:
+                 { add:
+                     { icon:
+                         '<i class="bi bi-plus"></i>',
+                       text: 'Add' },
+                   delete:
+                     { icon:
+                         '<i class="bi bi-trash"></i>',
+                       text: 'Delete' },
+                   settings:
+                     { icon:
+                         '<i class="bi bi-gear"></i>',
+                       text: 'Settings' } } },
+           list:
+             { container:
+                 '<div class="list-group" data-role="items"></div>' },
+           textInput:
+             { template:
+                 `
             <div class="mb-3"
                  data-bind-class-asljs-text-input-empty="isEmpty"
                  data-bind-class-asljs-text-input-invalid="hasError">
@@ -34,18 +43,20 @@ export function createBootstrapTheme(
                    data-bind-prop-id="descriptionId"></div>
             </div>
           `,
-      input: `
+               input:
+                 `
             <input type="text"
                    class="form-control"
                    data-control-invalid-class="is-invalid">
           `,
-      textarea: `
+               textarea:
+                 `
             <textarea class="form-control"
                       data-control-invalid-class="is-invalid"></textarea>
-          `
-    },
-    select: {
-      template: `
+          ` },
+           select:
+             { template:
+                 `
             <div class="mb-3"
                  data-bind-class-asljs-select-empty="isEmpty"
                  data-bind-class-asljs-select-invalid="hasError">
@@ -64,10 +75,9 @@ export function createBootstrapTheme(
                    data-bind-prop-id="descriptionId"></div>
             </div>
           `,
-      select: `
+               select:
+                 `
             <select class="form-select"
                     data-control-invalid-class="is-invalid"></select>
-          `
-    }
-  };
+          ` } };
 }

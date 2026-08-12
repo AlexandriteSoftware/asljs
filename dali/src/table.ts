@@ -73,22 +73,24 @@ export type TableObservedEvent<T extends Record<string, any>> =
  * Callback signature for `Table.observe()` subscriptions.
  * Receives both local and remote observed events.
  */
-export type TableObservedReceiver<T extends Record<string, any>> = (
-  event: TableObservedEvent<T>
-) => void;
+export type TableObservedReceiver<T extends Record<string, any>> =
+  (
+    event: TableObservedEvent<T>
+  ) =>
+    void;
 
 export class Table<
   T extends Record<string, any>
 > extends EventfulBase<TableEvents<T>>
 {
   /** Local-only subscribers — receive events from this tab only. */
-  readonly #receivers: Array<TableEventsReceiver<T>> = [];
+  readonly #receivers: Array<TableEventsReceiver<T>> = [ ];
 
   /**
    * Observed subscribers — receive both local commits and remote changes
    * arriving through the broadcast service.
    */
-  readonly #observedReceivers: Array<TableObservedReceiver<T>> = [];
+  readonly #observedReceivers: Array<TableObservedReceiver<T>> = [ ];
 
   public readonly key: KeyPath<T>;
 
@@ -120,10 +122,17 @@ export class Table<
   {
     super();
 
-    this.#versionStrategy = options?.versionStrategy;
-    this.#deleteStrategy = options?.deleteStrategy;
-    this.#broadcastService = options?.broadcastService;
-    this.#instanceId = crypto.randomUUID();
+    this.#versionStrategy =
+      options?.versionStrategy;
+
+    this.#deleteStrategy =
+      options?.deleteStrategy;
+
+    this.#broadcastService =
+      options?.broadcastService;
+
+    this.#instanceId =
+      crypto.randomUUID();
 
     const key =
       txRead(
@@ -138,10 +147,16 @@ export class Table<
 
     this.key = key;
 
-    if (this.#broadcastService !== undefined) {
-      this.#broadcastUnsubscribe = this.#broadcastService.subscribe(
-        message =>
-        {
+    if (
+      this.#broadcastService
+      !== undefined
+    ) {
+      this.#broadcastUnsubscribe =
+        this.#broadcastService.subscribe(
+          (
+              message
+            ) =>
+          {
           this.#onBroadcastMessage(message);
         });
     }
@@ -158,9 +173,9 @@ export class Table<
 
     return new Promise<T | null>(
       (
-        resolve,
-        reject
-      ) =>
+          resolve,
+          reject
+        ) =>
       {
         const request =
           txRead(
@@ -171,10 +186,10 @@ export class Table<
             this.storeName)
           .get(key);
 
-        request.onsuccess = () =>
-        {
-          const fields: T | undefined =
-            request.result;
+        request.onsuccess =
+          () =>
+          {
+          const fields: T | undefined = request.result;
 
           if (fields === undefined) {
             resolve(null);
@@ -189,13 +204,13 @@ export class Table<
           resolve(fields);
         };
 
-        request.onerror = () =>
-        {
+        request.onerror =
+          () =>
+          {
           reject(
             request.error
               ?? new Error(
-                `${this.storeName}: getOne request failed`
-              ));
+                `${this.storeName}: getOne request failed`));
         };
       }
     );
@@ -381,9 +396,9 @@ export class Table<
   {
     return new Promise<T[]>(
       (
-        resolve,
-        reject
-      ) =>
+          resolve,
+          reject
+        ) =>
       {
         const request =
           txRead(
@@ -394,12 +409,12 @@ export class Table<
             this.storeName)
           .openCursor();
 
-        const result: T[] = [];
+        const result: T[] = [ ];
 
-        request.onsuccess = () =>
-        {
-          const cursor =
-            request.result;
+        request.onsuccess =
+          () =>
+          {
+          const cursor = request.result;
 
           if (cursor === null) {
             resolve(result);
@@ -426,13 +441,13 @@ export class Table<
           cursor.continue();
         };
 
-        request.onerror = () =>
-        {
+        request.onerror =
+          () =>
+          {
           reject(
             request.error
               ?? new Error(
-                `${this.storeName}: scan request failed`
-              ));
+                `${this.storeName}: scan request failed`));
         };
       }
     );
@@ -471,10 +486,12 @@ export class Table<
 
         this.#notify(
           'add',
-          [storedRecord]);
+          [ storedRecord ]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'add', record: storedRecord });
+          { source: 'local',
+            eventType: 'add',
+            record: storedRecord });
 
         this.#publishBroadcast(
           'add',
@@ -515,8 +532,7 @@ export class Table<
 
     if (!existing) {
       throw new Error(
-        `Record with key ${String(key)} not found.`
-      );
+        `Record with key ${String(key)} not found.`);
     }
 
     let storedRecord = record;
@@ -524,8 +540,7 @@ export class Table<
     if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
-          `${this.storeName}: expectedVersion is required when a version strategy is configured.`
-        );
+          `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
       }
 
       if (
@@ -536,11 +551,11 @@ export class Table<
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#versionStrategy.getVersion(existing)
-        );
+          this.#versionStrategy.getVersion(existing));
       }
 
-      storedRecord = this.#versionStrategy.update(record);
+      storedRecord =
+        this.#versionStrategy.update(record);
     }
 
     await dbRequestAsync(
@@ -557,19 +572,19 @@ export class Table<
 
         this.#notify(
           'update',
-          [storedRecord, existing]);
+          [ storedRecord,
+            existing ]);
 
         this.#notifyObserved(
-          {
-            source: 'local',
+          { source: 'local',
             eventType: 'update',
             record: storedRecord,
-            previousRecord: existing
-          });
+            previousRecord: existing });
 
         this.#publishBroadcast(
           'update',
-          { record: storedRecord, previousRecord: existing });
+          { record: storedRecord,
+            previousRecord: existing });
       });
 
     if (tx === null) {
@@ -611,8 +626,7 @@ export class Table<
       if (this.#versionStrategy) {
         if (expectedVersion === undefined) {
           throw new Error(
-            `${this.storeName}: expectedVersion is required when a version strategy is configured.`
-          );
+            `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
         }
 
         if (
@@ -623,8 +637,7 @@ export class Table<
           throw new VersionConflictError(
             key,
             expectedVersion,
-            this.#versionStrategy.getVersion(existing)
-          );
+            this.#versionStrategy.getVersion(existing));
         }
       }
 
@@ -641,10 +654,12 @@ export class Table<
 
           this.#notify(
             'delete',
-            [existing]);
+            [ existing ]);
 
           this.#notifyObserved(
-            { source: 'local', eventType: 'delete', record: existing });
+            { source: 'local',
+              eventType: 'delete',
+              record: existing });
 
           this.#publishBroadcast(
             'delete',
@@ -665,8 +680,7 @@ export class Table<
     if (this.#versionStrategy) {
       if (expectedVersion === undefined) {
         throw new Error(
-          `${this.storeName}: expectedVersion is required when a version strategy is configured.`
-        );
+          `${this.storeName}: expectedVersion is required when a version strategy is configured.`);
       }
 
       if (
@@ -677,8 +691,7 @@ export class Table<
         throw new VersionConflictError(
           key,
           expectedVersion,
-          this.#versionStrategy.getVersion(existing)
-        );
+          this.#versionStrategy.getVersion(existing));
       }
     }
 
@@ -686,7 +699,8 @@ export class Table<
       this.#deleteStrategy.delete(existing);
 
     if (this.#versionStrategy) {
-      storedRecord = this.#versionStrategy.update(storedRecord);
+      storedRecord =
+        this.#versionStrategy.update(storedRecord);
     }
 
     await dbRequestAsync(
@@ -702,10 +716,12 @@ export class Table<
 
         this.#notify(
           'delete',
-          [storedRecord]);
+          [ storedRecord ]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'delete', record: storedRecord });
+          { source: 'local',
+            eventType: 'delete',
+            record: storedRecord });
 
         this.#publishBroadcast(
           'delete',
@@ -748,10 +764,12 @@ export class Table<
 
         this.#notify(
           'clear',
-          [records]);
+          [ records ]);
 
         this.#notifyObserved(
-          { source: 'local', eventType: 'clear', records });
+          { source: 'local',
+            eventType: 'clear',
+            records });
 
         this.#publishBroadcast(
           'clear',
@@ -767,8 +785,7 @@ export class Table<
     records: T[]
   ): T[]
   {
-    const deleteStrategy =
-      this.#deleteStrategy;
+    const deleteStrategy = this.#deleteStrategy;
 
     if (deleteStrategy === undefined) {
       return records;
@@ -786,14 +803,14 @@ export class Table<
   {
     let mapped: { index: string; key: IDBValidKey; } | null = null;
 
-    const strategy =
-      this.#deleteStrategy;
+    const strategy = this.#deleteStrategy;
 
     if (strategy) {
       if (strategy.mapIndexQuery) {
-        mapped = strategy.mapIndexQuery(
-          index,
-          key);
+        mapped =
+          strategy.mapIndexQuery(
+            index,
+            key);
       }
     }
 
@@ -856,28 +873,28 @@ export class Table<
 
     return new Promise<T[]>(
       (
-        resolve,
-        reject
-      ) =>
+          resolve,
+          reject
+        ) =>
       {
         const request =
           idx.getAll(key);
 
-        request.onsuccess = () =>
-        {
-          const records: T[] =
-            request.result;
+        request.onsuccess =
+          () =>
+          {
+          const records: T[] = request.result;
 
           resolve(records);
         };
 
-        request.onerror = () =>
-        {
+        request.onerror =
+          () =>
+          {
           reject(
             request.error
               ?? new Error(
-                `${this.storeName}: get request failed for index ${index}`
-              ));
+                `${this.storeName}: get request failed for index ${index}`));
         };
       }
     );
@@ -936,7 +953,10 @@ export class Table<
       const handler =
         receiver[eventName];
 
-      if (typeof handler !== 'function') {
+      if (
+        typeof handler
+        !== 'function'
+      ) {
         continue;
       }
 
@@ -982,18 +1002,20 @@ export class Table<
     payload: unknown
   ): void
   {
-    if (this.#broadcastService === undefined) {
+    if (
+      this.#broadcastService
+      === undefined
+    ) {
       return;
     }
 
     const message: TableBroadcastMessage =
-      {
-      messageId: crypto.randomUUID(),
-      originId: this.#instanceId,
-      storeName: this.storeName,
-      eventType,
-      payload
-    };
+      { messageId:
+          crypto.randomUUID(),
+        originId: this.#instanceId,
+        storeName: this.storeName,
+        eventType,
+        payload };
 
     try {
       this.#broadcastService.publish(message);
@@ -1037,30 +1059,31 @@ export class Table<
     let event: TableObservedEvent<T> | undefined;
 
     if (message.eventType === 'add') {
-      event = {
-        source: 'remote',
-        eventType: 'add',
-        record: payload['record'] as T
-      };
+      event =
+        { source: 'remote',
+          eventType: 'add',
+          record:
+            payload['record'] as T };
     } else if (message.eventType === 'update') {
-      event = {
-        source: 'remote',
-        eventType: 'update',
-        record: payload['record'] as T,
-        previousRecord: payload['previousRecord'] as T
-      };
+      event =
+        { source: 'remote',
+          eventType: 'update',
+          record:
+            payload['record'] as T,
+          previousRecord:
+            payload['previousRecord'] as T };
     } else if (message.eventType === 'delete') {
-      event = {
-        source: 'remote',
-        eventType: 'delete',
-        record: payload['record'] as T
-      };
+      event =
+        { source: 'remote',
+          eventType: 'delete',
+          record:
+            payload['record'] as T };
     } else if (message.eventType === 'clear') {
-      event = {
-        source: 'remote',
-        eventType: 'clear',
-        records: payload['records'] as T[]
-      };
+      event =
+        { source: 'remote',
+          eventType: 'clear',
+          records:
+            payload['records'] as T[] };
     }
 
     if (event === undefined) {

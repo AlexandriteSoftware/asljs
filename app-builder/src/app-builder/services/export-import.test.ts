@@ -22,12 +22,10 @@ test(
           '2026-01-02T00:00:00.000Z' };
 
     const files =
-      [
-      { id: 'f1',
-        appId: 'a1',
-        name: 'index.html',
-        content: '<h1>Hi</h1>' }
-    ];
+      [ { id: 'f1',
+          appId: 'a1',
+          name: 'index.html',
+          content: '<h1>Hi</h1>' } ];
 
     const payload =
       buildExportPayload(
@@ -35,8 +33,7 @@ test(
             { ...app,
               author:
                 { name: 'Alex',
-                  email:
-                    'alex@example.com' } },
+                  email: 'alex@example.com' } },
           files });
 
     assert.deepEqual(
@@ -45,8 +42,7 @@ test(
         name: 'Demo',
         author:
           { name: 'Alex',
-            email:
-              'alex@example.com' },
+            email: 'alex@example.com' },
         files:
           { 'index.html': '<h1>Hi</h1>' } });
   });
@@ -61,8 +57,7 @@ test(
           name: 'Imported',
           author:
             { name: 'Alex',
-              email:
-                'alex@example.com' },
+              email: 'alex@example.com' },
           files:
             { 'index.html': 'ok' } });
 
@@ -122,15 +117,13 @@ test(
       createImportPlan(
         { payload,
           existingApps:
-            [
-          { id: 'a-existing',
-            uuid: 'u-1',
-            name: 'Current',
-            createdAt:
-              '2026-01-01T00:00:00.000Z',
-            updatedAt:
-              '2026-01-02T00:00:00.000Z' }
-        ],
+            [ { id: 'a-existing',
+                uuid: 'u-1',
+                name: 'Current',
+                createdAt:
+                  '2026-01-01T00:00:00.000Z',
+                updatedAt:
+                  '2026-01-02T00:00:00.000Z' } ],
           navigateToExistingById: true,
           now:
             '2026-01-03T00:00:00.000Z',
@@ -159,15 +152,13 @@ test(
       createImportPlan(
         { payload,
           existingApps:
-            [
-          { id: 'a-existing',
-            uuid: 'u-1',
-            name: 'Current',
-            createdAt:
-              '2026-01-01T00:00:00.000Z',
-            updatedAt:
-              '2026-01-02T00:00:00.000Z' }
-        ],
+            [ { id: 'a-existing',
+                uuid: 'u-1',
+                name: 'Current',
+                createdAt:
+                  '2026-01-01T00:00:00.000Z',
+                updatedAt:
+                  '2026-01-02T00:00:00.000Z' } ],
           navigateToExistingById: false,
           now:
             '2026-01-03T00:00:00.000Z',
@@ -197,14 +188,15 @@ test(
             'readme.md': 'hello' } };
 
     const generatedIds =
-      ['file-id-1', 'file-id-2'];
+      [ 'file-id-1',
+        'file-id-2' ];
 
     let index = 0;
 
     const plan =
       createImportPlan(
         { payload,
-          existingApps: [],
+          existingApps: [ ],
           navigateToExistingById: false,
           now:
             '2026-01-03T00:00:00.000Z',

@@ -19,17 +19,21 @@ export function createChatLaneTools(
       path: string
     ): void
   {
-    if (normalizePath(path) !== normalizedPlanFileName) {
+    if (
+      normalizePath(path)
+      !== normalizedPlanFileName
+    ) {
       throw new Error(
-        'The chat lane may only edit PLAN.md. Ask the generation lane to implement runtime files.'
-      );
+        'The chat lane may only edit PLAN.md. Ask the generation lane to implement runtime files.');
     }
   }
 
   return { ...baseTools,
            setFilesContent:
-             async files =>
-    {
+             async (
+                 files
+               ) =>
+             {
       for (const file of files) {
         assertPlanOnly(
           file.path);
@@ -39,14 +43,16 @@ export function createChatLaneTools(
     },
            setFileData:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot create binary assets. Use a direct file command or the generation lane.'
-      );
+        'The chat lane cannot create binary assets. Use a direct file command or the generation lane.');
     },
            setFileContent:
-             async (path, content) =>
-    {
+             async (
+                 path,
+                 content
+               ) =>
+             {
       assertPlanOnly(path);
 
       await baseTools.setFileContent(
@@ -54,14 +60,21 @@ export function createChatLaneTools(
         content);
     },
            deleteFile:
-             async path =>
-    {
+             async (
+                 path
+               ) =>
+             {
       assertPlanOnly(path);
       await baseTools.deleteFile(path);
     },
            replaceFilePart:
-             async (path, search, replacement, replaceAll) =>
-    {
+             async (
+                 path,
+                 search,
+                 replacement,
+                 replaceAll
+               ) =>
+             {
       assertPlanOnly(path);
 
       await baseTools.replaceFilePart(
@@ -72,38 +85,33 @@ export function createChatLaneTools(
     },
            evalInApp:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot run the app. Start generation first.'
-      );
+        'The chat lane cannot run the app. Start generation first.');
     },
            assertInApp:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot assert runtime behavior. Start generation first.'
-      );
+        'The chat lane cannot assert runtime behavior. Start generation first.');
     },
            runAppTests:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot run app tests. Start generation first.'
-      );
+        'The chat lane cannot run app tests. Start generation first.');
     },
            getAppDiagnostics:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot inspect runtime diagnostics. Start generation first.'
-      );
+        'The chat lane cannot inspect runtime diagnostics. Start generation first.');
     },
            runAppAndCollectDiagnostics:
              async () =>
-    {
+             {
       throw new Error(
-        'The chat lane cannot run the app. Start generation first.'
-      );
+        'The chat lane cannot run the app. Start generation first.');
     },
            startGeneration:
              options.startGeneration };

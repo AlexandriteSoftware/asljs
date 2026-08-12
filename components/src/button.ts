@@ -19,47 +19,45 @@ import { ButtonThemeDefinition,
   from './themes/theme.js';
 
 export const ButtonModelDefinition: ComponentModelDefinition =
-  {
-  name: 'ButtonModelDefinition',
-  title: 'Button',
-  properties: [{
-    name: 'variant',
-    title: 'Variant',
-    type: 'string',
-    description:
-      'Variant key used to resolve theme defaults such as add or delete.'
-  }, {
-    name: 'icon',
-    title: 'Icon',
-    type: 'string',
-    description: 'HTML markup string for the icon.'
-  }, {
-    name: 'buttonClassName',
-    title: 'Button class name',
-    type: 'string',
-    description: 'Class name applied to the native button.'
-  }, {
-    name: 'theme',
-    title: 'Theme',
-    type: 'object',
-    description: 'Per-instance components theme override.'
-  }, {
-    name: 'text',
-    title: 'Text',
-    type: 'string',
-    description: 'Visible button label.'
-  }, {
-    name: 'disabled',
-    title: 'Disabled',
-    type: 'boolean',
-    description: 'Native disabled state.'
-  }, {
-    name: 'type',
-    title: 'Type',
-    type: 'string',
-    description: 'Native button type such as button, submit, or reset.'
-  }]
-};
+  { name:
+      'ButtonModelDefinition',
+    title: 'Button',
+    properties:
+      [ { name: 'variant',
+          title: 'Variant',
+          type: 'string',
+          description:
+            'Variant key used to resolve theme defaults such as add or delete.' },
+        { name: 'icon',
+          title: 'Icon',
+          type: 'string',
+          description:
+            'HTML markup string for the icon.' },
+        { name: 'buttonClassName',
+          title: 'Button class name',
+          type: 'string',
+          description:
+            'Class name applied to the native button.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description:
+            'Per-instance components theme override.' },
+        { name: 'text',
+          title: 'Text',
+          type: 'string',
+          description:
+            'Visible button label.' },
+        { name: 'disabled',
+          title: 'Disabled',
+          type: 'boolean',
+          description:
+            'Native disabled state.' },
+        { name: 'type',
+          title: 'Type',
+          type: 'string',
+          description:
+            'Native button type such as button, submit, or reset.' } ] };
 
 @customElement('asljs-button')
 export class Button extends LitElement
@@ -192,7 +190,10 @@ export class Button extends LitElement
           source?.[fieldName],
           this);
 
-      if (themedBaseValue !== null && themedBaseValue !== '') {
+      if (
+        themedBaseValue !== null
+        && themedBaseValue !== ''
+      ) {
         return themedBaseValue;
       }
     }
@@ -217,7 +218,10 @@ export class Button extends LitElement
         source?.variants?.[variant]?.[fieldName],
         this);
 
-    if (themedVariantValue === null || themedVariantValue === '') {
+    if (
+      themedVariantValue === null
+      || themedVariantValue === ''
+    ) {
       return null;
     }
 
@@ -226,19 +230,18 @@ export class Button extends LitElement
 
   #getButtonThemeSources(): Array<ButtonThemeDefinition | undefined>
   {
-    return [
-      this.theme?.button,
-      this.#themeProvider?.theme?.button,
-      getDefaultTheme().button
-    ];
+    return [ this.theme?.button,
+             this.#themeProvider?.theme?.button,
+             getDefaultTheme().button ];
   }
 
   #syncThemeProvider(): void
   {
     this.#disposeThemeProvider();
 
-    this.#themeProvider = findThemeProvider(
-      this);
+    this.#themeProvider =
+      findThemeProvider(
+        this);
 
     this.#themeProvider?.addEventListener(
       THEME_CHANGED_EVENT_NAME,

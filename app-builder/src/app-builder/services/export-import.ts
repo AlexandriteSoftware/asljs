@@ -41,10 +41,8 @@ export function buildExportPayload(
     files[file.name] = file.content;
   }
 
-  return { id:
-             options.app.id,
-           name:
-             options.app.name,
+  return { id: options.app.id,
+           name: options.app.name,
            author:
              normalizeAuthor(
                options.app.author),
@@ -77,16 +75,14 @@ export function createImportPlan(
   if (existingById !== undefined) {
     if (options.navigateToExistingById) {
       return { kind: 'existing',
-               appId:
-                 existingById.id };
+               appId: existingById.id };
     }
 
     return { kind: 'duplicate' };
   }
 
   const app: AppRecord =
-    { id:
-        options.payload.id,
+    { id: options.payload.id,
       uuid:
         options.createUuid(),
       name:
@@ -94,10 +90,8 @@ export function createImportPlan(
       author:
         normalizeAuthor(
           options.payload.author),
-      createdAt:
-        options.now,
-      updatedAt:
-        options.now };
+      createdAt: options.now,
+      updatedAt: options.now };
 
   const files =
     Object.entries(
@@ -105,8 +99,7 @@ export function createImportPlan(
     .map(
       ([name, content]) => ({ id:
                                 options.createId(),
-                              appId:
-                                app.id,
+                              appId: app.id,
                               name,
                               content }));
 
@@ -119,31 +112,52 @@ function validateImportedPayload(
     payload: ImportedPayload
   ): void
 {
-  if (typeof payload.id !== 'string' || payload.id.trim() === '') {
-    throw new Error('Invalid app JSON format.');
+  if (
+    typeof payload.id
+    !== 'string'
+    || payload.id.trim() === ''
+  ) {
+    throw new Error(
+      'Invalid app JSON format.');
   }
 
-  if (typeof payload.name !== 'string' || payload.name.trim() === '') {
-    throw new Error('Invalid app JSON format.');
+  if (
+    typeof payload.name
+    !== 'string'
+    || payload.name.trim() === ''
+  ) {
+    throw new Error(
+      'Invalid app JSON format.');
   }
 
-  if (payload.files === null || typeof payload.files !== 'object') {
-    throw new Error('Invalid app JSON format.');
+  if (
+    payload.files === null
+    || typeof payload.files
+       !== 'object'
+  ) {
+    throw new Error(
+      'Invalid app JSON format.');
   }
 
   if (
     !isValidAuthor(
       payload.author)
   ) {
-    throw new Error('Invalid app JSON format.');
+    throw new Error(
+      'Invalid app JSON format.');
   }
 
   for (
     const [fileName, content] of Object.entries(
       payload.files)
   ) {
-    if (fileName.trim() === '' || typeof content !== 'string') {
-      throw new Error('Invalid app JSON format.');
+    if (
+      fileName.trim() === ''
+      || typeof content
+         !== 'string'
+    ) {
+      throw new Error(
+        'Invalid app JSON format.');
     }
   }
 }
@@ -166,7 +180,10 @@ function normalizeAuthor(
     ? author.email.trim()
     : '';
 
-  if (name === '' && email === '') {
+  if (
+    name === ''
+    && email === ''
+  ) {
     return undefined;
   }
 
@@ -186,18 +203,30 @@ function isValidAuthor(
     return true;
   }
 
-  if (value === null || typeof value !== 'object') {
+  if (
+    value === null
+    || typeof value
+       !== 'object'
+  ) {
     return false;
   }
 
   const author =
     value as { name?: unknown; email?: unknown; };
 
-  if (author.name !== undefined && typeof author.name !== 'string') {
+  if (
+    author.name !== undefined
+    && typeof author.name
+       !== 'string'
+  ) {
     return false;
   }
 
-  if (author.email !== undefined && typeof author.email !== 'string') {
+  if (
+    author.email !== undefined
+    && typeof author.email
+       !== 'string'
+  ) {
     return false;
   }
 

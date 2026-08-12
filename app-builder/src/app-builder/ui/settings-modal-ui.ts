@@ -124,8 +124,7 @@ export function createSettingsModalUi(
   configureButton(
     elBtnSave,
     { text: 'Save',
-      className:
-        'btn btn-primary' });
+      className: 'btn btn-primary' });
 
   configureButton(
     elBtnCancel,
@@ -154,12 +153,10 @@ export function createSettingsModalUi(
     { className:
         'form-select bootstrap-select',
       items:
-        [
-        { value: 'dark',
-          label: 'Dark' },
-        { value: 'light',
-          label: 'Light' }
-      ] });
+        [ { value: 'dark',
+            label: 'Dark' },
+          { value: 'light',
+            label: 'Light' } ] });
 
   function close(
     ): void
@@ -202,7 +199,9 @@ export function createSettingsModalUi(
 
   elModal.addEventListener(
     'click',
-    (event: MouseEvent) =>
+    (
+        event: MouseEvent
+      ) =>
     {
       if (event.target === elModal) {
         close();

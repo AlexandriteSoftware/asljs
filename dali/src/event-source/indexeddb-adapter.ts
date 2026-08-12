@@ -46,7 +46,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
     const tx =
       txReuseOrCreate(
         null,
-        [this.storeName],
+        [ this.storeName ],
         TxMode.read,
         this.db);
 
@@ -68,7 +68,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
     const tx =
       txReuseOrCreate(
         null,
-        [this.storeName],
+        [ this.storeName ],
         TxMode.readWrite,
         this.db);
 
@@ -83,15 +83,17 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
       head?.id
       ?? null;
 
-    if (actualPrevious !== expectedPreviousTransactionId) {
+    if (
+      actualPrevious
+      !== expectedPreviousTransactionId
+    ) {
       await txDone(tx);
 
       throw new EventSourceConflictError(
         `${this.name}: expected previous transaction ${
           String(
             expectedPreviousTransactionId)
-        }, actual ${String(actualPrevious)}.`
-      );
+        }, actual ${String(actualPrevious)}.`);
     }
 
     const existing =
@@ -103,10 +105,12 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
       await txDone(tx);
 
       // Idempotent append support for retries.
-      if (JSON.stringify(existing) !== JSON.stringify(transaction)) {
+      if (
+        JSON.stringify(existing)
+        !== JSON.stringify(transaction)
+      ) {
         throw new EventSourceConflictError(
-          `${this.name}: transaction ${transaction.id} already exists with different payload.`
-        );
+          `${this.name}: transaction ${transaction.id} already exists with different payload.`);
       }
 
       return;
@@ -125,7 +129,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
     const tx =
       txReuseOrCreate(
         null,
-        [this.storeName],
+        [ this.storeName ],
         TxMode.read,
         this.db);
 
@@ -152,8 +156,7 @@ export class IndexedDbEventSourceAdapter implements EventSourceAdapter
       await txDone(tx);
 
       throw new EventSourceConflictError(
-        `${this.name}: transaction ${transactionId} not found.`
-      );
+        `${this.name}: transaction ${transactionId} not found.`);
     }
 
     const after =

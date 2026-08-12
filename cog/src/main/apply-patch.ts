@@ -48,10 +48,10 @@ export function configureApplyPatchCommand(
       'command used to verify the applied patch')
     .action(
       async (
-        applyPatchOptions: {
+          applyPatchOptions: {
           patchVerifyCmd?: string;
         }
-      ) =>
+        ) =>
       {
         const options =
           program.opts<{
@@ -174,8 +174,7 @@ async function verifyPatch(
 {
   if (
     patchVerifyCmd === undefined
-    || patchVerifyCmd.trim()
-       === ''
+    || patchVerifyCmd.trim() === ''
   ) {
     return;
   }
@@ -195,7 +194,10 @@ async function runCommand(
   ): Promise<number | null>
 {
   return new Promise(
-    (resolve, reject) =>
+    (
+        resolve,
+        reject
+      ) =>
     {
       const child =
         spawn(

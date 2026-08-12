@@ -136,7 +136,8 @@ async function compressBytesInBrowser(
   ): Promise<Uint8Array>
 {
   const stream =
-    new Blob([toBlobPart(input)])
+    new Blob(
+      [ toBlobPart(input) ])
     .stream()
     .pipeThrough(
       new CompressionStream(format));
@@ -150,7 +151,8 @@ async function decompressBytesInBrowser(
   ): Promise<Uint8Array>
 {
   const stream =
-    new Blob([toBlobPart(input)])
+    new Blob(
+      [ toBlobPart(input) ])
     .stream()
     .pipeThrough(
       new DecompressionStream(format));
@@ -177,12 +179,11 @@ async function readAllBytes(
   const reader =
     stream.getReader();
 
-  const chunks: Uint8Array[] = [];
+  const chunks: Uint8Array[] = [ ];
   let totalLength = 0;
 
   while (true) {
-    const { value, done } =
-      await reader.read();
+    const { value, done } = await reader.read();
 
     if (done) {
       break;
@@ -219,7 +220,11 @@ function encodeBase64Url(
   const segmentLength = 0x8000;
   let binary = '';
 
-  for (let index = 0; index < bytes.length; index += segmentLength) {
+  for (
+    let index = 0;
+    index < bytes.length;
+    index += segmentLength
+  ) {
     const segment =
       bytes.subarray(
         index,
@@ -254,8 +259,7 @@ function decodeBase64Url(
       /_/g,
       '/');
 
-  const padLength =
-    normalized.length % 4;
+  const padLength = normalized.length % 4;
 
   const padded =
     padLength === 0
@@ -268,16 +272,23 @@ function decodeBase64Url(
   let binary = '';
 
   try {
-    binary = atob(padded);
+    binary =
+      atob(padded);
   } catch {
-    throw new Error('Invalid compressed share token.');
+    throw new Error(
+      'Invalid compressed share token.');
   }
 
   const bytes =
     new Uint8Array(binary.length);
 
-  for (let index = 0; index < binary.length; index++) {
-    bytes[index] = binary.charCodeAt(index);
+  for (
+    let index = 0;
+    index < binary.length;
+    index++
+  ) {
+    bytes[index] =
+      binary.charCodeAt(index);
   }
 
   return bytes;
@@ -292,20 +303,25 @@ async function withTimeout<T>(
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   const timeoutPromise =
-    new Promise<T>((_, reject) =>
-  {
-    timeoutId = globalThis.setTimeout(
-      () =>
-      {
+    new Promise<T>((
+        _,
+        reject
+      ) =>
+    {
+    timeoutId =
+      globalThis.setTimeout(
+        () =>
+        {
         reject(
           new Error(timeoutMessage));
       },
-      timeoutMs);
+        timeoutMs);
   });
 
   try {
     return await Promise.race(
-      [promise, timeoutPromise]);
+      [ promise,
+        timeoutPromise ]);
   } finally {
     if (timeoutId !== undefined) {
       globalThis.clearTimeout(timeoutId);

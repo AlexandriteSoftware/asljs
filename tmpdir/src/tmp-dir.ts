@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import fs
   from 'node:fs';
 import fsp
@@ -6,9 +9,6 @@ import os
   from 'node:os';
 import path
   from 'node:path';
-import { type Logger,
-         NullLoggerProvider }
-  from 'asljs-logging';
 
 export interface TmpDirOptions
 {

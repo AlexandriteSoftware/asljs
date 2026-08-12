@@ -105,14 +105,12 @@ export function createProjectSettingsModalUi(
   configureButton(
     elBtnSave,
     { text: 'Save',
-      className:
-        'btn btn-primary' });
+      className: 'btn btn-primary' });
 
   configureButton(
     elBtnDelete,
     { text: 'Delete',
-      className:
-        'btn btn-danger' });
+      className: 'btn btn-danger' });
 
   configureButton(
     elBtnClose,
@@ -130,8 +128,7 @@ export function createProjectSettingsModalUi(
 
   configureTextInput(
     elAuthorEmailInput,
-    { placeholder:
-        'jane@example.com',
+    { placeholder: 'jane@example.com',
       inputType: 'email' });
 
   function close(
@@ -199,7 +196,9 @@ export function createProjectSettingsModalUi(
 
   elNameInput.addEventListener(
     'keydown',
-    (event: KeyboardEvent) =>
+    (
+        event: KeyboardEvent
+      ) =>
     {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -209,7 +208,9 @@ export function createProjectSettingsModalUi(
 
   elModal.addEventListener(
     'click',
-    (event: MouseEvent) =>
+    (
+        event: MouseEvent
+      ) =>
     {
       if (event.target === elModal) {
         close();

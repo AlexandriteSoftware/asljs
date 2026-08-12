@@ -18,24 +18,25 @@ async function openBasicDb(
 {
   return dbOpen(
     `db-test-${crypto.randomUUID()}`,
-    [db =>
+    [ (
+        db
+      ) =>
     {
       db.createObjectStore(
         'records',
         { keyPath: 'id' });
-    }]);
+    } ]);
 }
 
 test(
   `${TEST_SUITE}: txReuseOrCreate reuses compatible transaction`,
   async () =>
   {
-    const db =
-      await openBasicDb();
+    const db = await openBasicDb();
 
     const tx =
       db.transaction(
-        ['records'],
+        [ 'records' ],
         TxMode.readWrite);
 
     const reused =
@@ -54,12 +55,11 @@ test(
   `${TEST_SUITE}: txReuseOrCreate throws for inaccessible store`,
   async () =>
   {
-    const db =
-      await openBasicDb();
+    const db = await openBasicDb();
 
     const tx =
       db.transaction(
-        ['records'],
+        [ 'records' ],
         TxMode.read);
 
     assert.throws(
@@ -69,7 +69,9 @@ test(
           'missing',
           TxMode.read,
           db),
-      (error: unknown) =>
+      (
+          error: unknown
+        ) =>
       {
         assert.ok(
           error instanceof TransactionStoreAccessError);
@@ -88,12 +90,14 @@ test(
     const opened =
       await dbOpen(
         dbName,
-        [db =>
-      {
+        [ (
+            db
+          ) =>
+        {
         db.createObjectStore(
           'records',
           { keyPath: 'id' });
-      }]);
+      } ]);
 
     opened.close();
 
@@ -104,14 +108,16 @@ test(
     const reopened =
       await dbOpen(
         dbName,
-        [db =>
-      {
+        [ (
+            db
+          ) =>
+        {
         upgraded = true;
 
         db.createObjectStore(
           'records',
           { keyPath: 'id' });
-      }]);
+      } ]);
 
     assert.equal(
       upgraded,
@@ -127,17 +133,22 @@ test(
     const db =
       await dbOpen(
         `db-migration-test-${crypto.randomUUID()}`,
-        [database =>
-      {
+        [ (
+            database
+          ) =>
+        {
         database.createObjectStore(
           'first',
           { keyPath: 'id' });
-      }, database =>
-      {
+      },
+          (
+              database
+            ) =>
+          {
         database.createObjectStore(
           'second',
           { keyPath: 'id' });
-      }]);
+      } ]);
 
     assert.equal(
       db.objectStoreNames.contains('first'),
@@ -160,29 +171,36 @@ test(
     const firstVersion =
       await dbOpen(
         dbName,
-        [database =>
-      {
+        [ (
+            database
+          ) =>
+        {
         database.createObjectStore(
           'first',
           { keyPath: 'id' });
-      }]);
+      } ]);
 
     firstVersion.close();
 
     const secondVersion =
       await dbOpen(
         dbName,
-        [database =>
-      {
+        [ (
+            database
+          ) =>
+        {
         database.createObjectStore(
           'first',
           { keyPath: 'id' });
-      }, database =>
-      {
+      },
+          (
+              database
+            ) =>
+          {
         database.createObjectStore(
           'second',
           { keyPath: 'id' });
-      }]);
+      } ]);
 
     assert.equal(
       secondVersion.objectStoreNames.contains('first'),

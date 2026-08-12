@@ -25,7 +25,7 @@ export function renderAppListUi(
     options.selectElement;
 
   const apps =
-    [...options.apps]
+    [ ...options.apps ]
     .sort(
       (left, right) =>
         right.updatedAt.localeCompare(
@@ -33,15 +33,12 @@ export function renderAppListUi(
 
   const items: SelectItem[] =
     apps.map(
-      app => ({ value:
-                  app.id,
-                label:
-                  app.name }));
+      app => ({ value: app.id,
+                label: app.name }));
 
   if (apps.length > 0) {
     items.push(
-      { value:
-          '__separator__',
+      { value: '__separator__',
         label: '────────',
         disabled: true });
   }
@@ -57,8 +54,13 @@ export function renderAppListUi(
   selectElement.items = items;
   selectElement.disabled = items.length === 0;
 
-  if (options.currentAppId !== null) {
-    selectElement.value = options.currentAppId;
+  if (
+    options.currentAppId
+    !== null
+  ) {
+    selectElement.value =
+      options.currentAppId;
+
     return;
   }
 

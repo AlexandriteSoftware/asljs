@@ -24,11 +24,9 @@ test(
   {
     const dom =
       new JSDOM(
-      '<div id="button"></div><div id="input"></div><div id="select"></div>'
-    );
+        '<div id="button"></div><div id="input"></div><div id="select"></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -46,24 +44,20 @@ test(
         button,
         { text: 'Save',
           icon: '✓',
-          className:
-            'btn btn-primary' });
+          className: 'btn btn-primary' });
 
       configureTextInput(
         input,
         { placeholder: 'Name',
           inputType: 'email',
-          className:
-            'form-input-lg' });
+          className: 'form-input-lg' });
 
       configureSelect(
         select,
         { className: 'form-select',
           items:
-            [
-            { value: 'light',
-              label: 'Light' }
-          ],
+            [ { value: 'light',
+                label: 'Light' } ],
           placeholder: 'Choose' });
 
       writeControlValue(
@@ -100,10 +94,8 @@ test(
 
       assert.deepEqual(
         select.items,
-        [
-          { value: 'light',
-            label: 'Light' }
-        ]);
+        [ { value: 'light',
+            label: 'Light' } ]);
 
       assert.equal(
         select.placeholder,
@@ -130,11 +122,9 @@ test(
   {
     const dom =
       new JSDOM(
-      '<div id="button"></div><button id="native"></button>'
-    );
+        '<div id="button"></div><button id="native"></button>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -190,18 +180,21 @@ test(
     let inputFocused = false;
     let inputSelected = false;
 
-    container.focus = () =>
-    {
+    container.focus =
+      () =>
+      {
       containerFocused = true;
     };
 
-    input.focus = () =>
-    {
+    input.focus =
+      () =>
+      {
       inputFocused = true;
     };
 
-    input.select = () =>
-    {
+    input.select =
+      () =>
+      {
       inputSelected = true;
     };
 

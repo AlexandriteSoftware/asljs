@@ -29,27 +29,33 @@ test(
     const theme =
       bootstrapThemeModule.createBootstrapTheme();
 
-    element.definition = {
-      name: 'DemoModelDefinition',
-      properties: [
-        { name: 'title', type: 'string' },
-        { name: 'enabled', type: 'boolean' },
-        { name: 'count', type: 'number' },
-        { name: 'items', type: 'array' },
-        { name: 'handler', type: 'function' },
-        { name: 'options', type: 'object' }
-      ]
-    };
+    element.definition =
+      { name:
+          'DemoModelDefinition',
+        properties:
+          [ { name: 'title',
+              type: 'string' },
+            { name: 'enabled',
+              type: 'boolean' },
+            { name: 'count',
+              type: 'number' },
+            { name: 'items',
+              type: 'array' },
+            { name: 'handler',
+              type: 'function' },
+            { name: 'options',
+              type: 'object' } ] };
 
-    element.target = {
-      title: 'Preview',
-      enabled: true,
-      count: 3,
-      items: ['a', 'b'],
-      handler: () =>
-      {},
-      options: { mode: 'demo' }
-    };
+    element.target =
+      { title: 'Preview',
+        enabled: true,
+        count: 3,
+        items:
+          [ 'a',
+            'b' ],
+        handler: () => { },
+        options:
+          { mode: 'demo' } };
 
     element.theme = theme;
 
@@ -152,15 +158,20 @@ test(
       await createElement();
 
     const target =
-      { title: 'Before', enabled: false, count: 2 };
+      { title: 'Before',
+        enabled: false,
+        count: 2 };
 
-    element.definition = {
-      name: 'EditableDemoModelDefinition',
-      properties: [{ name: 'title', type: 'string' }, {
-        name: 'enabled',
-        type: 'boolean'
-      }, { name: 'count', type: 'number' }]
-    };
+    element.definition =
+      { name:
+          'EditableDemoModelDefinition',
+        properties:
+          [ { name: 'title',
+              type: 'string' },
+            { name: 'enabled',
+              type: 'boolean' },
+            { name: 'count',
+              type: 'number' } ] };
 
     element.target = target;
 
@@ -186,20 +197,23 @@ test(
     titleInput.dispatchEvent(
       new window.CustomEvent(
         'input',
-        { detail: { value: 'After' }, bubbles: true }
-      ));
+        { detail:
+            { value: 'After' },
+          bubbles: true }));
 
     enabledSelect.dispatchEvent(
       new window.CustomEvent(
         'input',
-        { detail: { value: 'yes' }, bubbles: true }
-      ));
+        { detail:
+            { value: 'yes' },
+          bubbles: true }));
 
     countInput.dispatchEvent(
       new window.CustomEvent(
         'input',
-        { detail: { value: '42' }, bubbles: true }
-      ));
+        { detail:
+            { value: '42' },
+          bubbles: true }));
 
     await settleTree(element);
 
@@ -224,16 +238,19 @@ test(
       await createElement();
 
     const target =
-      { title: 'Locked', enabled: false };
+      { title: 'Locked',
+        enabled: false };
 
-    element.definition = {
-      name: 'LockedDemoModelDefinition',
-      properties: [{ name: 'title', type: 'string', editable: false }, {
-        name: 'enabled',
-        type: 'boolean',
-        editable: false
-      }]
-    };
+    element.definition =
+      { name:
+          'LockedDemoModelDefinition',
+        properties:
+          [ { name: 'title',
+              type: 'string',
+              editable: false },
+            { name: 'enabled',
+              type: 'boolean',
+              editable: false } ] };
 
     element.target = target;
 
@@ -262,14 +279,16 @@ test(
     titleInput.dispatchEvent(
       new window.CustomEvent(
         'input',
-        { detail: { value: 'Changed' }, bubbles: true }
-      ));
+        { detail:
+            { value: 'Changed' },
+          bubbles: true }));
 
     enabledSelect.dispatchEvent(
       new window.CustomEvent(
         'input',
-        { detail: { value: 'yes' }, bubbles: true }
-      ));
+        { detail:
+            { value: 'yes' },
+          bubbles: true }));
 
     await settleTree(element);
 
@@ -297,8 +316,11 @@ test(
     const target =
       document.createElement('asljs-button') as Button;
 
-    element.definition = ButtonModelDefinition;
-    element.target = target as unknown as Record<string, unknown>;
+    element.definition =
+      ButtonModelDefinition;
+
+    element.target =
+      target as unknown as Record<string, unknown>;
 
     document.body.appendChild(element);
 
@@ -326,16 +348,14 @@ test(
     textControl.dispatchEvent(
       new window.Event(
         'input',
-        { bubbles: true }
-      ));
+        { bubbles: true }));
 
     disabledControl.value = 'yes';
 
     disabledControl.dispatchEvent(
       new window.Event(
         'change',
-        { bubbles: true }
-      ));
+        { bubbles: true }));
 
     await settleTree(element);
 
@@ -366,7 +386,8 @@ test(
 
     target.value = 'bad';
 
-    target.validator = value =>
+    target.validator =
+      value =>
       value === 'ok'
         ? null
         : 'Value is invalid';
@@ -374,8 +395,12 @@ test(
     document.body.appendChild(target);
     await settleTree(target);
 
-    element.definition = TextInputModelDefinition;
-    element.target = target as unknown as Record<string, unknown>;
+    element.definition =
+      TextInputModelDefinition;
+
+    element.target =
+      target as unknown as Record<string, unknown>;
+
     document.body.appendChild(element);
 
     await settleTree(element);
@@ -410,8 +435,7 @@ test(
     rowsControl.dispatchEvent(
       new window.Event(
         'input',
-        { bubbles: true }
-      ));
+        { bubbles: true }));
 
     await settleTree(element);
 
@@ -445,8 +469,7 @@ function queryPropertyTextInput(
 
   if (textInput === null) {
     throw new Error(
-      `Missing text input for property ${propertyName}.`
-    );
+      `Missing text input for property ${propertyName}.`);
   }
 
   return textInput as TextInputLike;
@@ -463,8 +486,7 @@ function queryPropertySelect(
 
   if (select === null) {
     throw new Error(
-      `Missing select for property ${propertyName}.`
-    );
+      `Missing select for property ${propertyName}.`);
   }
 
   return select as SelectLike;
@@ -475,51 +497,92 @@ async function ensureDom(
 {
   if (domRestore === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      Document: globalThis.Document,
-      Event: globalThis.Event,
-      CustomEvent: globalThis.CustomEvent,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLInputElement: globalThis.HTMLInputElement,
-      HTMLSelectElement: globalThis.HTMLSelectElement,
-      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-      ShadowRoot: globalThis.ShadowRoot,
-      CSSStyleSheet: globalThis.CSSStyleSheet
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        Document: globalThis.Document,
+        Event: globalThis.Event,
+        CustomEvent:
+          globalThis.CustomEvent,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLInputElement:
+          globalThis.HTMLInputElement,
+        HTMLSelectElement:
+          globalThis.HTMLSelectElement,
+        HTMLTextAreaElement:
+          globalThis.HTMLTextAreaElement,
+        ShadowRoot:
+          globalThis.ShadowRoot,
+        CSSStyleSheet:
+          globalThis.CSSStyleSheet };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
     globalThis.Document = dom.window.Document;
     globalThis.Event = dom.window.Event;
-    globalThis.CustomEvent = dom.window.CustomEvent;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLInputElement = dom.window.HTMLInputElement;
-    globalThis.HTMLSelectElement = dom.window.HTMLSelectElement;
-    globalThis.HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
-    globalThis.ShadowRoot = dom.window.ShadowRoot;
-    globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
 
-    domRestore = () =>
-    {
+    globalThis.CustomEvent =
+      dom.window.CustomEvent;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLInputElement =
+      dom.window.HTMLInputElement;
+
+    globalThis.HTMLSelectElement =
+      dom.window.HTMLSelectElement;
+
+    globalThis.HTMLTextAreaElement =
+      dom.window.HTMLTextAreaElement;
+
+    globalThis.ShadowRoot =
+      dom.window.ShadowRoot;
+
+    globalThis.CSSStyleSheet =
+      dom.window.CSSStyleSheet;
+
+    domRestore =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
       globalThis.Event = previous.Event;
-      globalThis.CustomEvent = previous.CustomEvent;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLInputElement = previous.HTMLInputElement;
-      globalThis.HTMLSelectElement = previous.HTMLSelectElement;
-      globalThis.HTMLTextAreaElement = previous.HTMLTextAreaElement;
+
+      globalThis.CustomEvent =
+        previous.CustomEvent;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLInputElement =
+        previous.HTMLInputElement;
+
+      globalThis.HTMLSelectElement =
+        previous.HTMLSelectElement;
+
+      globalThis.HTMLTextAreaElement =
+        previous.HTMLTextAreaElement;
+
       globalThis.ShadowRoot = previous.ShadowRoot;
-      globalThis.CSSStyleSheet = previous.CSSStyleSheet;
+
+      globalThis.CSSStyleSheet =
+        previous.CSSStyleSheet;
     };
   }
 
@@ -534,10 +597,8 @@ async function settleTree(
     element);
 
   const nestedElements =
-    [
-    ...element.querySelectorAll(
-      'asljs-text-input, asljs-select')
-  ] as LitElementLike[];
+    [ ...element.querySelectorAll(
+      'asljs-text-input, asljs-select') ] as LitElementLike[];
 
   for (const nestedElement of nestedElements) {
     await settle(

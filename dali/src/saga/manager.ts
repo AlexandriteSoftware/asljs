@@ -40,13 +40,16 @@ export class SagaManager
     } = {}
   )
   {
-    this.#sagaStoreName = options.sagaStoreName
+    this.#sagaStoreName =
+      options.sagaStoreName
       ?? SAGA_STORE_NAME;
 
-    this.#entryStoreName = options.entryStoreName
+    this.#entryStoreName =
+      options.entryStoreName
       ?? SAGA_ENTRIES_STORE_NAME;
 
-    this.#eventSource = options.eventSource
+    this.#eventSource =
+      options.eventSource
       ?? null;
   }
 
@@ -60,16 +63,16 @@ export class SagaManager
       crypto.randomUUID();
 
     await this.#insertSaga(
-      {
-        id: sagaId,
+      { id: sagaId,
         name: sagaName,
         status: 'started',
-        createdAt: nowIso(),
-        updatedAt: nowIso()
-      });
+        createdAt:
+          nowIso(),
+        updatedAt:
+          nowIso() });
 
     let sequence = 0;
-    const unsubscribeActions: Array<() => boolean> = [];
+    const unsubscribeActions: Array<() => boolean> = [ ];
 
     let queue: Promise<void> =
       Promise.resolve();
@@ -77,11 +80,14 @@ export class SagaManager
     let queueError: unknown = null;
 
     const enqueue =
-      (job: () => Promise<void>): void =>
-    {
-      queue = queue.then(
-        async () =>
-        {
+      (
+          job: () => Promise<void>
+        ): void =>
+      {
+      queue =
+        queue.then(
+          async () =>
+          {
           if (queueError !== null) {
             return;
           }
@@ -97,146 +103,136 @@ export class SagaManager
     for (const table of tables) {
       const unsubscribe =
         table.notify(
-          {
-          add: record =>
-          {
+          { add:
+              (
+                  record
+                ) =>
+              {
             sequence += 1;
 
             const undo: SagaUndoOperation =
-              {
-              type: 'delete',
-              tableName: table.storeName,
-              key: keyGet(
-                table.key,
-                record)
-            };
+              { type: 'delete',
+                tableName: table.storeName,
+                key:
+                  keyGet(
+                    table.key,
+                    record) };
 
             const forward: SagaForwardOperation =
-              {
-              type: 'add',
-              tableName: table.storeName,
-              record
-            };
+              { type: 'add',
+                tableName: table.storeName,
+                record };
 
             enqueue(
               async () =>
               {
                 await this.#insertEntry(
-                  {
-                    sagaId,
+                  { sagaId,
                     sequence,
                     tableName: table.storeName,
                     eventName: 'add',
                     forward,
                     undo,
-                    createdAt: nowIso()
-                  });
+                    createdAt:
+                      nowIso() });
               });
           },
-          update: (
-            record,
-            previousRecord
-          ) =>
-          {
+            update:
+              (
+                  record,
+                  previousRecord
+                ) =>
+              {
             sequence += 1;
 
             const undo: SagaUndoOperation =
-              {
-              type: 'put',
-              tableName: table.storeName,
-              record: previousRecord
-            };
+              { type: 'put',
+                tableName: table.storeName,
+                record: previousRecord };
 
             const forward: SagaForwardOperation =
-              {
-              type: 'update',
-              tableName: table.storeName,
-              record,
-              previousRecord
-            };
+              { type: 'update',
+                tableName: table.storeName,
+                record,
+                previousRecord };
 
             enqueue(
               async () =>
               {
                 await this.#insertEntry(
-                  {
-                    sagaId,
+                  { sagaId,
                     sequence,
                     tableName: table.storeName,
                     eventName: 'update',
                     forward,
                     undo,
-                    createdAt: nowIso()
-                  });
+                    createdAt:
+                      nowIso() });
               });
           },
-          delete: record =>
-          {
+            delete:
+              (
+                  record
+                ) =>
+              {
             sequence += 1;
 
             const undo: SagaUndoOperation =
-              {
-              type: 'put',
-              tableName: table.storeName,
-              record: this.#undoDeleteRecord(record)
-            };
+              { type: 'put',
+                tableName: table.storeName,
+                record:
+                  this.#undoDeleteRecord(record) };
 
             const forward: SagaForwardOperation =
-              {
-              type: 'delete',
-              tableName: table.storeName,
-              record
-            };
+              { type: 'delete',
+                tableName: table.storeName,
+                record };
 
             enqueue(
               async () =>
               {
                 await this.#insertEntry(
-                  {
-                    sagaId,
+                  { sagaId,
                     sequence,
                     tableName: table.storeName,
                     eventName: 'delete',
                     forward,
                     undo,
-                    createdAt: nowIso()
-                  });
+                    createdAt:
+                      nowIso() });
               });
           },
-          clear: records =>
-          {
+            clear:
+              (
+                  records
+                ) =>
+              {
             sequence += 1;
 
             const undo: SagaUndoOperation =
-              {
-              type: 'clear',
-              tableName: table.storeName,
-              records
-            };
+              { type: 'clear',
+                tableName: table.storeName,
+                records };
 
             const forward: SagaForwardOperation =
-              {
-              type: 'clear',
-              tableName: table.storeName,
-              records
-            };
+              { type: 'clear',
+                tableName: table.storeName,
+                records };
 
             enqueue(
               async () =>
               {
                 await this.#insertEntry(
-                  {
-                    sagaId,
+                  { sagaId,
                     sequence,
                     tableName: table.storeName,
                     eventName: 'clear',
                     forward,
                     undo,
-                    createdAt: nowIso()
-                  });
+                    createdAt:
+                      nowIso() });
               });
-          }
-        });
+          } });
 
       unsubscribeActions.push(unsubscribe);
     }
@@ -275,18 +271,22 @@ export class SagaManager
 
       await this.#updateSaga(
         sagaId,
-        {
-          status: 'completed',
-          completedAt: nowIso(),
-          updatedAt: nowIso(),
+        { status: 'completed',
+          completedAt:
+            nowIso(),
+          updatedAt:
+            nowIso(),
           eventTransactionId,
-          error: undefined
-        });
+          error: undefined });
     } catch (error) {
       // Saga remains started and recoverPending() may roll it back on restart.
       await this.#updateSaga(
         sagaId,
-        { status: 'started', updatedAt: nowIso(), error: String(error) });
+        { status: 'started',
+          updatedAt:
+            nowIso(),
+          error:
+            String(error) });
 
       throw error;
     }
@@ -298,7 +298,7 @@ export class SagaManager
   {
     const tx =
       this.db.transaction(
-        [this.#sagaStoreName],
+        [ this.#sagaStoreName ],
         TxMode.read);
 
     const request =
@@ -312,7 +312,7 @@ export class SagaManager
 
     await txDone(tx);
 
-    const rolledBack: string[] = [];
+    const rolledBack: string[] = [ ];
 
     for (const saga of pending) {
       await this.rollbackSaga(
@@ -341,20 +341,19 @@ export class SagaManager
     const storeNames =
       Array.from(
         new Set(
-        reversed.map(
-          entry => entry.undo.tableName)
-      ));
+          reversed.map(
+            entry => entry.undo.tableName)));
 
     const tx =
       txReuseOrCreate(
         null,
-        [...storeNames, this.#sagaStoreName],
+        [ ...storeNames,
+          this.#sagaStoreName ],
         TxMode.readWrite,
         this.db);
 
     for (const entry of reversed) {
-      const undo =
-        entry.undo;
+      const undo = entry.undo;
 
       const store =
         tx.objectStore(
@@ -394,12 +393,12 @@ export class SagaManager
     if (saga !== undefined) {
       await dbRequestAsync(
         sagaStore.put(
-          {
-            ...saga,
+          { ...saga,
             status: 'rolled_back',
-            rollbackAt: nowIso(),
-            updatedAt: nowIso()
-          }));
+            rollbackAt:
+              nowIso(),
+            updatedAt:
+              nowIso() }));
     }
 
     await txDone(tx);
@@ -412,7 +411,7 @@ export class SagaManager
     const tx =
       txReuseOrCreate(
         null,
-        [this.#sagaStoreName],
+        [ this.#sagaStoreName ],
         TxMode.readWrite,
         this.db);
 
@@ -432,7 +431,7 @@ export class SagaManager
     const tx =
       txReuseOrCreate(
         null,
-        [this.#sagaStoreName],
+        [ this.#sagaStoreName ],
         TxMode.readWrite,
         this.db);
 
@@ -446,12 +445,15 @@ export class SagaManager
 
     if (current === undefined) {
       await txDone(tx);
-      throw new Error(`Saga ${sagaId} not found.`);
+
+      throw new Error(
+        `Saga ${sagaId} not found.`);
     }
 
     await dbRequestAsync(
       store.put(
-        { ...current, ...patch }));
+        { ...current,
+          ...patch }));
 
     await txDone(tx);
   }
@@ -463,7 +465,8 @@ export class SagaManager
     const tx =
       txReuseOrCreate(
         null,
-        [this.#entryStoreName, this.#sagaStoreName],
+        [ this.#entryStoreName,
+          this.#sagaStoreName ],
         TxMode.readWrite,
         this.db);
 
@@ -484,7 +487,9 @@ export class SagaManager
     if (saga !== undefined) {
       await dbRequestAsync(
         sagaStore.put(
-          { ...saga, updatedAt: nowIso() }));
+          { ...saga,
+            updatedAt:
+              nowIso() }));
     }
 
     await txDone(tx);
@@ -497,14 +502,16 @@ export class SagaManager
     const tx =
       txReuseOrCreate(
         null,
-        [this.#entryStoreName],
+        [ this.#entryStoreName ],
         TxMode.read,
         this.db);
 
     const keyRange =
       IDBKeyRange.bound(
-        [sagaId, 0],
-        [sagaId, Number.MAX_SAFE_INTEGER]);
+        [ sagaId,
+          0 ],
+        [ sagaId,
+          Number.MAX_SAFE_INTEGER ]);
 
     const entries =
       await dbRequestAsync(
@@ -535,16 +542,15 @@ export class SagaManager
       .sort(
         (left, right) => left.sequence - right.sequence)
       .map(
-        entry => ({
-          tableName: entry.tableName,
-          eventName: entry.eventName,
-          forward: entry.forward,
-          undo: entry.undo
-        }));
+        entry => ({ tableName: entry.tableName,
+                    eventName: entry.eventName,
+                    forward: entry.forward,
+                    undo: entry.undo }));
 
     const transaction =
       await this.#eventSource.appendTransaction(
-        { sagaId, events });
+        { sagaId,
+          events });
 
     return transaction.id;
   }
@@ -553,17 +559,15 @@ export class SagaManager
     record: Record<string, any>
   ): Record<string, any>
   {
-    const deleted =
-      record['deleted'];
+    const deleted = record['deleted'];
 
     if (
-      typeof deleted === 'string'
+      typeof deleted
+      === 'string'
       && deleted.length > 0
     ) {
-      return {
-        ...record,
-        deleted: ''
-      };
+      return { ...record,
+               deleted: '' };
     }
 
     return record;

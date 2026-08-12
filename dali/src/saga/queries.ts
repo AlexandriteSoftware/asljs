@@ -18,7 +18,7 @@ export async function sagaGetAll(
   const tx =
     txReuseOrCreate(
       null,
-      [storeName],
+      [ storeName ],
       TxMode.read,
       db);
 
@@ -40,7 +40,7 @@ export async function sagaEntriesGetAll(
   const tx =
     txReuseOrCreate(
       null,
-      [storeName],
+      [ storeName ],
       TxMode.read,
       db);
 

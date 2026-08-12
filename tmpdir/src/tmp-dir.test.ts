@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import assert
   from 'node:assert';
 import fs
@@ -8,9 +11,6 @@ import path
   from 'node:path';
 import test
   from 'node:test';
-import { type Logger,
-         NullLoggerProvider }
-  from 'asljs-logging';
 import { TmpDir }
   from './tmp-dir.js';
 
@@ -253,39 +253,39 @@ test(
 
     const fallbackLogger =
       new NullLoggerProvider()
-        .getLogger();
+      .getLogger();
 
     const logger: Logger =
       { level: 'trace',
         isLevelEnabled:
           fallbackLogger.isLevelEnabled
-          .bind(
-            fallbackLogger),
+        .bind(
+          fallbackLogger),
         trace:
           (
               message,
               ...params
             ) =>
           {
-          traceMessages.push(
-            `${message} ${params.join(' ')}`.trim());
-        },
+        traceMessages.push(
+          `${message} ${params.join(' ')}`.trim());
+      },
         debug:
           fallbackLogger.debug
-          .bind(
-            fallbackLogger),
+        .bind(
+          fallbackLogger),
         information:
           fallbackLogger.information
-          .bind(
-            fallbackLogger),
+        .bind(
+          fallbackLogger),
         warning:
           fallbackLogger.warning
-          .bind(
-            fallbackLogger),
+        .bind(
+          fallbackLogger),
         error:
           fallbackLogger.error
-          .bind(
-            fallbackLogger) };
+        .bind(
+          fallbackLogger) };
 
     using tmpDir =
       new TmpDir(

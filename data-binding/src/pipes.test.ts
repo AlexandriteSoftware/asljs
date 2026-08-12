@@ -136,11 +136,9 @@ test(
   {
     const pipes =
       mergePipes(
-        {
-        pipes: {
-          upper: value => `custom:${value}`
-        }
-      });
+        { pipes:
+            { upper:
+                value => `custom:${value}` } });
 
     assert.equal(
       pipes.upper('x'),

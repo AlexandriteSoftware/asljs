@@ -28,8 +28,7 @@ export function parseValueBindingExpression(
     .filter(
       segment => segment !== '');
 
-  const path =
-    segments[0] ?? '';
+  const path = segments[0] ?? '';
 
   const pipes =
     segments
@@ -38,12 +37,10 @@ export function parseValueBindingExpression(
     .filter(
       (pipe): pipe is PipeSpec => pipe !== null);
 
-  return {
-    kind: 'value',
-    target,
-    path,
-    pipes
-  };
+  return { kind: 'value',
+           target,
+           path,
+           pipes };
 }
 
 /**
@@ -64,11 +61,9 @@ export function parseEventBindingExpression(
   const actionPath =
     expression.trim();
 
-  return {
-    kind: 'event',
-    eventName,
-    actionPath
-  };
+  return { kind: 'event',
+           eventName,
+           actionPath };
 }
 
 function parsePipe(
@@ -94,10 +89,8 @@ function parsePipe(
   }
 
   if (firstColon < 0) {
-    return {
-      name,
-      args: []
-    };
+    return { name,
+             args: [ ] };
   }
 
   const args =
@@ -105,10 +98,8 @@ function parsePipe(
       trimmed,
       firstColon + 1);
 
-  return {
-    name,
-    args
-  };
+  return { name,
+           args };
 }
 
 function parsePipeArgs(
@@ -116,7 +107,7 @@ function parsePipeArgs(
     index: number
   ): string[]
 {
-  const args: string[] = [];
+  const args: string[] = [ ];
 
   let i = index;
 
@@ -128,11 +119,17 @@ function parsePipeArgs(
       i++;
     }
 
-    if (i >= text.length || text[i] === '|') {
+    if (
+      i >= text.length
+      || text[i] === '|'
+    ) {
       break;
     }
 
-    if (text[i] === "'" || text[i] === '"') {
+    if (
+      text[i] === "'"
+      || text[i] === '"'
+    ) {
       const quote =
         text[i] as "'" | '"';
 
@@ -142,8 +139,7 @@ function parsePipeArgs(
       let escape = false;
 
       while (i < text.length) {
-        const char =
-          text[i];
+        const char = text[i];
 
         if (escape) {
           value += char;
@@ -172,10 +168,12 @@ function parsePipeArgs(
       let value = '';
 
       while (i < text.length) {
-        const char =
-          text[i];
+        const char = text[i];
 
-        if (char === ':' || char === '|') {
+        if (
+          char === ':'
+          || char === '|'
+        ) {
           break;
         }
 
@@ -194,12 +192,18 @@ function parsePipeArgs(
       i++;
     }
 
-    if (i < text.length && text[i] === ':') {
+    if (
+      i < text.length
+      && text[i] === ':'
+    ) {
       i++;
       continue;
     }
 
-    if (i < text.length && text[i] === '|') {
+    if (
+      i < text.length
+      && text[i] === '|'
+    ) {
       break;
     }
   }
@@ -213,15 +217,18 @@ function splitExpressionTokens(
     stripQuotes: boolean = false
   ): string[]
 {
-  const tokens: string[] = [];
+  const tokens: string[] = [ ];
 
   let current = '';
   let quote: "'" | '"' | null = null;
   let escape = false;
 
-  for (let index = 0; index < text.length; index++) {
-    const char =
-      text[index];
+  for (
+    let index = 0;
+    index < text.length;
+    index++
+  ) {
+    const char = text[index];
 
     if (escape) {
       current += char;
@@ -253,7 +260,10 @@ function splitExpressionTokens(
       continue;
     }
 
-    if (char === "'" || char === '"') {
+    if (
+      char === "'"
+      || char === '"'
+    ) {
       quote = char;
 
       if (!stripQuotes) {

@@ -20,17 +20,18 @@ export class IncrementVersionStrategy<T extends Record<string, any>>
     record: T
   ): T
   {
-    const version =
-      record[this.field];
+    const version = record[this.field];
 
     if (
-      typeof version === 'number'
+      typeof version
+      === 'number'
       && Number.isFinite(version)
     ) {
       return record;
     }
 
-    return { ...record, [this.field]: 1 };
+    return { ...record,
+             [this.field]: 1 };
   }
 
   verify(
@@ -45,21 +46,21 @@ export class IncrementVersionStrategy<T extends Record<string, any>>
     record: T
   ): T
   {
-    const version =
-      record[this.field];
+    const version = record[this.field];
 
     if (
-      typeof version !== 'number'
+      typeof version
+      !== 'number'
       || !Number.isFinite(version)
     ) {
       throw new Error(
         `Version field "${
           String(
             this.field)
-        }" does not contain a valid number.`
-      );
+        }" does not contain a valid number.`);
     }
 
-    return { ...record, [this.field]: version + 1 };
+    return { ...record,
+             [this.field]: version + 1 };
   }
 }

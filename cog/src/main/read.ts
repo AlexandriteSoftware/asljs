@@ -57,9 +57,9 @@ export function configureReadCommand(
       [ ])
     .action(
       async (
-        path: string,
-        readOptions: ReadCliOptions
-      ) =>
+          path: string,
+          readOptions: ReadCliOptions
+        ) =>
       {
         const options =
           program.opts<{

@@ -13,11 +13,9 @@ test(
   {
     const dom =
       new JSDOM(
-      '<!doctype html><html><body><div id="app-builder-root"></div></body></html>'
-    );
+        '<!doctype html><html><body><div id="app-builder-root"></div></body></html>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -25,16 +23,14 @@ test(
       renderAppBuilderShell();
 
       for (
-        const id of [
-          'workspace',
-          'app-workspace',
-          'first-app-setup',
-          'settings-modal',
-          'name-modal',
-          'project-settings-modal',
-          'share-modal',
-          'import-file'
-        ]
+        const id of [ 'workspace',
+                      'app-workspace',
+                      'first-app-setup',
+                      'settings-modal',
+                      'name-modal',
+                      'project-settings-modal',
+                      'share-modal',
+                      'import-file' ]
       ) {
         assert.notEqual(
           document.getElementById(id),

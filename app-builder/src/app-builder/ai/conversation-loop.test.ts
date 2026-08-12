@@ -12,7 +12,7 @@ test(
   () =>
   {
     assert.equal(
-      getConversationKickoffMessage([]),
+      getConversationKickoffMessage([ ]),
       'What would you like to create? You can describe it in simple words, and I will help shape the plan first.');
   });
 
@@ -22,7 +22,8 @@ test(
   {
     assert.equal(
       getConversationKickoffMessage(
-        ['README.md', 'app.js']),
+        [ 'README.md',
+          'app.js' ]),
       'What would you like to add or change? I will keep README.md as the current app state and put new ideas into PLAN.md.');
   });
 
@@ -32,7 +33,9 @@ test(
   {
     assert.equal(
       getConversationKickoffMessage(
-        ['README.md', 'PLAN.md', 'CHANGE.md']),
+        [ 'README.md',
+          'PLAN.md',
+          'CHANGE.md' ]),
       'What would you like to create? You can describe it in simple words, and I will help shape the plan first.');
   });
 
@@ -42,19 +45,16 @@ test(
   {
     const prompt =
       buildConversationPrompt(
-        [
-        { role: 'assistant',
-          text:
-            'What should the ball game be about?' },
-        { role: 'user',
-          text:
-            'A football game.' },
-        { role: 'assistant',
-          text:
-            'How many players should it have?' },
-        { role: 'user',
-          text: '2 players.' }
-      ]);
+        [ { role: 'assistant',
+            text:
+              'What should the ball game be about?' },
+          { role: 'user',
+            text: 'A football game.' },
+          { role: 'assistant',
+            text:
+              'How many players should it have?' },
+          { role: 'user',
+            text: '2 players.' } ]);
 
     assert.match(
       prompt,

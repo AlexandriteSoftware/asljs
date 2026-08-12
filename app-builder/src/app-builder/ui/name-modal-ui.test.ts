@@ -20,15 +20,15 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderNameModal());
+      new JSDOM(
+        renderNameModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
     try {
-      const confirmed: string[] = [];
+      const confirmed: string[] = [ ];
 
       const ui =
         createNameModalUi();
@@ -53,8 +53,9 @@ test(
 
       let focused = false;
 
-      input.focus = () =>
-      {
+      input.focus =
+        () =>
+        {
         focused = true;
       };
 
@@ -63,8 +64,10 @@ test(
           initialValue: ' Old Name ',
           selectText: false,
           onConfirm:
-            async value =>
-          {
+            async (
+                value
+              ) =>
+            {
             confirmed.push(value);
           } });
 
@@ -87,13 +90,15 @@ test(
       input.value = '  New Name  ';
 
       confirmButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         confirmed,
-        ['New Name']);
+        [ 'New Name' ]);
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -108,10 +113,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderNameModal());
+      new JSDOM(
+        renderNameModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -137,8 +142,9 @@ test(
 
       let focused = false;
 
-      input.focus = () =>
-      {
+      input.focus =
+        () =>
+        {
         focused = true;
       };
 
@@ -148,14 +154,16 @@ test(
           selectText: false,
           onConfirm:
             async () =>
-          {
+            {
             confirmed = true;
           } });
 
       input.value = '   ';
 
       confirmButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -168,7 +176,9 @@ test(
         true);
 
       modal.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),

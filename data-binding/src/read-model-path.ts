@@ -43,14 +43,16 @@ function readNestedPath(
 
   for (const part of parts) {
     if (
-      typeof current !== 'object'
+      typeof current
+      !== 'object'
       || current === null
       || !(part in current)
     ) {
       return null;
     }
 
-    current = (current as Record<string, unknown>)[part];
+    current =
+      (current as Record<string, unknown>)[part];
   }
 
   return current;

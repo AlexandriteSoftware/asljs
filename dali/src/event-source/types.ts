@@ -50,6 +50,7 @@ export class EventSourceConflictError extends Error
   {
     super(message);
 
-    this.name = 'EventSourceConflictError';
+    this.name =
+      'EventSourceConflictError';
   }
 }

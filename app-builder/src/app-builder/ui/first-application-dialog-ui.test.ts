@@ -20,26 +20,26 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderFirstApplicationDialog());
+      new JSDOM(
+        renderFirstApplicationDialog());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
     try {
-      const calls: Array<{ name: string; apiKey: string; }> = [];
+      const calls: Array<{ name: string; apiKey: string; }> = [ ];
 
       const ui =
         createFirstApplicationDialogUi(
           { onCreateApplication:
-              async values =>
-          {
+              async (
+                  values
+                ) =>
+              {
             calls.push(values);
           },
-            onCreateTodoSample:
-              async () =>
-          {} });
+            onCreateTodoSample: async () => { } });
 
       const dialog =
         document.getElementById(
@@ -82,16 +82,16 @@ test(
       apiKeyInput.value = '  sk-demo  ';
 
       createButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         calls,
-        [
-          { name: 'Demo App',
-            apiKey: 'sk-demo' }
-        ]);
+        [ { name: 'Demo App',
+            apiKey: 'sk-demo' } ]);
 
       ui.hide();
 
@@ -108,27 +108,31 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderFirstApplicationDialog());
+      new JSDOM(
+        renderFirstApplicationDialog());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
     try {
-      const createdApps: Array<{ name: string; apiKey: string; }> = [];
-      const createdSamples: Array<{ name: string; apiKey: string; }> = [];
+      const createdApps: Array<{ name: string; apiKey: string; }> = [ ];
+      const createdSamples: Array<{ name: string; apiKey: string; }> = [ ];
 
       const ui =
         createFirstApplicationDialogUi(
           { onCreateApplication:
-              async values =>
-          {
+              async (
+                  values
+                ) =>
+              {
             createdApps.push(values);
           },
             onCreateTodoSample:
-              async values =>
-          {
+              async (
+                  values
+                ) =>
+              {
             createdSamples.push(values);
           } });
 
@@ -154,8 +158,9 @@ test(
 
       let focused = false;
 
-      nameInput.focus = () =>
-      {
+      nameInput.focus =
+        () =>
+        {
         focused = true;
       };
 
@@ -163,7 +168,9 @@ test(
       nameInput.value = '   ';
 
       createButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -179,16 +186,16 @@ test(
       apiKeyInput.value = ' key ';
 
       sampleButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         createdSamples,
-        [
-          { name: 'Sample App',
-            apiKey: 'key' }
-        ]);
+        [ { name: 'Sample App',
+            apiKey: 'key' } ]);
     } finally {
       globalThis.document = previousDocument;
     }

@@ -1,7 +1,9 @@
-export type PipeFn = (
-  value: unknown,
-  ...args: string[]
-) => unknown;
+export type PipeFn =
+  (
+    value: unknown,
+    ...args: string[]
+  ) =>
+    unknown;
 
 /**
  * Represents pipe in data-binding attribute.

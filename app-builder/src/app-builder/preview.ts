@@ -252,8 +252,7 @@ export function renderPreview(
     return;
   }
 
-  let html =
-    htmlFile.content;
+  let html = htmlFile.content;
 
   const assetUrls =
     createVirtualAssetUrlMap(files);
@@ -274,13 +273,15 @@ export function renderPreview(
       assetUrls);
 
   if (cssFile !== null) {
-    html = html.replace(
-      /<link[^>]+href=["']style\.css["'][^>]*>/gi,
-      `<style>${resolvedCssContent}</style>`);
+    html =
+      html.replace(
+        /<link[^>]+href=["']style\.css["'][^>]*>/gi,
+        `<style>${resolvedCssContent}</style>`);
 
-    html = html.replace(
-      /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
-      `<style>${resolvedCssContent}</style>`);
+    html =
+      html.replace(
+        /<link[^>]+href=["']([^"']+\.css)["'][^>]*>/gi,
+        `<style>${resolvedCssContent}</style>`);
   }
 
   for (const file of files) {
@@ -293,17 +294,17 @@ export function renderPreview(
         /[.*+?^${}()|[\]\\]/g,
         '\\$&');
 
-    html = html.replace(
-      new RegExp(
-        `(<script[^>]*?)\\s+src=["']${escapedName}["']([^>]*)><\\/script>`,
-        'gi'
-      ),
-      (
-        _match,
-        beforeAttrs,
-        afterAttrs
-      ) =>
-      {
+    html =
+      html.replace(
+        new RegExp(
+          `(<script[^>]*?)\\s+src=["']${escapedName}["']([^>]*)><\\/script>`,
+          'gi'),
+        (
+            _match,
+            beforeAttrs,
+            afterAttrs
+          ) =>
+        {
         const attrs =
           `${String(beforeAttrs)} ${String(afterAttrs)}`;
 
@@ -316,20 +317,25 @@ export function renderPreview(
       });
   }
 
-  html = replaceHtmlAssetReferences(
-    html,
-    htmlFile.name,
-    assetUrls);
+  html =
+    replaceHtmlAssetReferences(
+      html,
+      htmlFile.name,
+      assetUrls);
 
-  html = injectPackageImportMap(
-    html,
-    files);
+  html =
+    injectPackageImportMap(
+      html,
+      files);
 
-  html = injectHostContext(
-    html,
-    options);
+  html =
+    injectHostContext(
+      html,
+      options);
 
-  html = injectEvalBridge(html);
+  html =
+    injectEvalBridge(html);
+
   frame.srcdoc = html;
 }
 
@@ -352,8 +358,7 @@ export async function evaluateInPreview(
   throw new Error(
     typeof payload.error === 'string'
       ? payload.error
-      : 'Unknown preview evaluation error.'
-  );
+      : 'Unknown preview evaluation error.');
 }
 
 export async function getPreviewDiagnostics(
@@ -371,16 +376,15 @@ export async function getPreviewDiagnostics(
     throw new Error(
       typeof payload.error === 'string'
         ? payload.error
-        : 'Failed to read preview diagnostics.'
-    );
+        : 'Failed to read preview diagnostics.');
   }
 
   const diagnostics =
     payload.diagnostics as RuntimeDiagnostics | undefined;
 
   return diagnostics
-    ?? { logs: [],
-         errors: [] };
+    ?? { logs: [ ],
+         errors: [ ] };
 }
 
 async function requestPreviewPayload(
@@ -390,32 +394,38 @@ async function requestPreviewPayload(
     responseType: string
   ): Promise<Record<string, unknown>>
 {
-  const frameWindow =
-    frame.contentWindow;
+  const frameWindow = frame.contentWindow;
 
   if (frameWindow === null) {
-    throw new Error('Preview frame is not available.');
+    throw new Error(
+      'Preview frame is not available.');
   }
 
   const requestId =
     crypto.randomUUID();
 
-  return new Promise<Record<string, unknown>>((resolve, reject) =>
+  return new Promise<Record<string, unknown>>((
+      resolve,
+      reject
+    ) =>
   {
     const timeoutId =
       window.setTimeout(
         () =>
-      {
+        {
         cleanup();
 
         reject(
-          new Error('Timed out waiting for app evaluation result.'));
+          new Error(
+            'Timed out waiting for app evaluation result.'));
       },
         5000);
 
     const onMessage =
-      (event: MessageEvent): void =>
-    {
+      (
+          event: MessageEvent
+        ): void =>
+      {
       if (event.source !== frameWindow) {
         return;
       }
@@ -497,10 +507,8 @@ function injectPackageImportMap(
   const imports =
     Object.fromEntries(
       versions.map(
-        ([name, version]) => [
-        name,
-        `https://esm.sh/${name}@${version}?bundle`
-      ]));
+        ([name, version]) => [ name,
+                               `https://esm.sh/${name}@${version}?bundle` ]));
 
   if (Object.keys(imports).length === 0) {
     return html;
@@ -542,22 +550,18 @@ function readImportMapVersions(
         ...(parsed.devDependencies ?? {}) };
 
     const names =
-      [
-      'asljs-eventful',
-      'asljs-observable',
-      'asljs-data-binding',
-      'asljs-components',
-      'asljs-dali',
-      'openai'
-    ];
+      [ 'asljs-eventful',
+        'asljs-observable',
+        'asljs-data-binding',
+        'asljs-components',
+        'asljs-dali',
+        'openai' ];
 
     const versions =
       names.map(
-        (name): [string, string] => [
-        name,
-        normalizeNpmVersion(
-          source[name])
-      ]);
+        (name): [string, string] => [ name,
+                                      normalizeNpmVersion(
+                                        source[name]) ]);
 
     return versions;
   } catch {
@@ -569,7 +573,11 @@ function normalizeNpmVersion(
     value: string | undefined
   ): string
 {
-  if (typeof value !== 'string' || value.trim() === '') {
+  if (
+    typeof value
+    !== 'string'
+    || value.trim() === ''
+  ) {
     return 'latest';
   }
 
@@ -586,14 +594,18 @@ function normalizeNpmVersion(
 function defaultImportMapPackages(
   ): Array<[string, string]>
 {
-  return [
-    ['asljs-eventful', 'latest'],
-    ['asljs-observable', 'latest'],
-    ['asljs-data-binding', 'latest'],
-    ['asljs-components', 'latest'],
-    ['asljs-dali', 'latest'],
-    ['openai', 'latest']
-  ];
+  return [ [ 'asljs-eventful',
+             'latest' ],
+           [ 'asljs-observable',
+             'latest' ],
+           [ 'asljs-data-binding',
+             'latest' ],
+           [ 'asljs-components',
+             'latest' ],
+           [ 'asljs-dali',
+             'latest' ],
+           [ 'openai',
+             'latest' ] ];
 }
 
 function injectHostContext(
@@ -677,7 +689,12 @@ function replaceHtmlAssetReferences(
 {
   return html.replace(
     /\b(src|href|poster)=(["'])([^"']+)\2/gi,
-    (match, attributeName, quote, originalPath) =>
+    (
+        match,
+        attributeName,
+        quote,
+        originalPath
+      ) =>
     {
       const resolved =
         resolveVirtualAssetReference(
@@ -701,7 +718,11 @@ function replaceCssAssetUrls(
 {
   return css.replace(
     /url\(\s*(["']?)([^"')]+)\1\s*\)/gi,
-    (match, quote, originalPath) =>
+    (
+        match,
+        quote,
+        originalPath
+      ) =>
     {
       const resolved =
         resolveVirtualAssetReference(
@@ -788,10 +809,13 @@ function normalizeVirtualPath(
       '/')
     .split('/');
 
-  const normalized: string[] = [];
+  const normalized: string[] = [ ];
 
   for (const part of parts) {
-    if (part === '' || part === '.') {
+    if (
+      part === ''
+      || part === '.'
+    ) {
       continue;
     }
 

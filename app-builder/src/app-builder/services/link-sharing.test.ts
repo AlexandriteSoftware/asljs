@@ -29,8 +29,8 @@ test(
           { uuid: 'u1',
             name: 'Demo' },
         files:
-          [{ name: 'index.html',
-             content: '<h1>Hi</h1>' }] };
+          [ { name: 'index.html',
+              content: '<h1>Hi</h1>' } ] };
 
     const share =
       await service.createShareUrl(payload);
@@ -116,8 +116,7 @@ test(
     const codec =
       { compress:
           async (_text: string) =>
-        await new Promise<string>(() =>
-        {}),
+        await new Promise<string>(() => { }),
         decompress:
           async (_value: string) => '' };
 

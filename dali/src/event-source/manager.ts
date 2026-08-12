@@ -8,7 +8,7 @@ export class EventSourceManager
 {
   constructor(
     public readonly local: EventSourceAdapter,
-    public readonly linked: EventSourceAdapter[] = []
+    public readonly linked: EventSourceAdapter[] = [ ]
   )
   {
   }
@@ -35,14 +35,14 @@ export class EventSourceManager
         (head?.sequence ?? 0) + 1;
 
       const transaction: EventSourceTransaction =
-        {
-        id: args.id ?? crypto.randomUUID(),
-        previousTransactionId,
-        sequence,
-        sagaId: args.sagaId,
-        createdAt: new Date().toISOString(),
-        events: args.events
-      };
+        { id:
+            args.id ?? crypto.randomUUID(),
+          previousTransactionId,
+          sequence,
+          sagaId: args.sagaId,
+          createdAt:
+            new Date().toISOString(),
+          events: args.events };
 
       try {
         for (const adapter of this.linked) {
@@ -53,10 +53,12 @@ export class EventSourceManager
             remoteHead?.id
             ?? null;
 
-          if (remotePrevious !== previousTransactionId) {
+          if (
+            remotePrevious
+            !== previousTransactionId
+          ) {
             throw new EventSourceConflictError(
-              `${adapter.name}: head mismatch before append.`
-            );
+              `${adapter.name}: head mismatch before append.`);
           }
 
           await adapter.append(
@@ -81,8 +83,7 @@ export class EventSourceManager
     }
 
     throw new EventSourceConflictError(
-      'Failed to append transaction after retries.'
-    );
+      'Failed to append transaction after retries.');
   }
 
   async synchronize(): Promise<void>
@@ -115,13 +116,18 @@ export class EventSourceManager
       localHead?.id
       ?? null;
 
-    let transactions: EventSourceTransaction[] = [];
+    let transactions: EventSourceTransaction[] = [ ];
 
     try {
-      transactions = await adapter.readAfter(fromId);
+      transactions =
+        await adapter.readAfter(fromId);
     } catch (error) {
-      if (error instanceof EventSourceConflictError) {
-        transactions = await adapter.readAfter(null);
+      if (
+        error
+        instanceof EventSourceConflictError
+      ) {
+        transactions =
+          await adapter.readAfter(null);
       } else {
         throw error;
       }
@@ -134,10 +140,12 @@ export class EventSourceManager
     let expected = fromId;
 
     for (const transaction of transactions) {
-      if (transaction.previousTransactionId !== expected) {
+      if (
+        transaction.previousTransactionId
+        !== expected
+      ) {
         throw new EventSourceConflictError(
-          `${adapter.name}: non-contiguous chain while pulling to local.`
-        );
+          `${adapter.name}: non-contiguous chain while pulling to local.`);
       }
 
       await this.local.append(

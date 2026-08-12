@@ -17,16 +17,13 @@ test(
   {
     const dom =
       new JSDOM(
-      '<button id="send"></button><div id="progress" class="hidden"></div><div id="messages"></div>'
-    );
+        '<button id="send"></button><div id="progress" class="hidden"></div><div id="messages"></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
-    const document =
-      dom.window.document;
+    const document = dom.window.document;
 
     const button =
       document.getElementById('send') as HTMLButtonElement;
@@ -89,27 +86,29 @@ test(
   () =>
   {
     const dom =
-      new JSDOM('<div id="choices" class="hidden"></div>');
+      new JSDOM(
+        '<div id="choices" class="hidden"></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
-    const document =
-      dom.window.document;
+    const document = dom.window.document;
 
     const choices =
       document.getElementById('choices') as HTMLElement;
 
-    const seen: string[] = [];
+    const seen: string[] = [ ];
 
     try {
       renderChatChoicesUi(
         choices,
         'How should it look?',
-        ['glowing ring', 'spinning block'],
-        value =>
+        [ 'glowing ring',
+          'spinning block' ],
+        (
+            value
+          ) =>
         {
           seen.push(value);
         });
@@ -134,7 +133,7 @@ test(
 
       assert.deepEqual(
         seen,
-        ['glowing ring']);
+        [ 'glowing ring' ]);
 
       clearChatChoicesUi(choices);
 

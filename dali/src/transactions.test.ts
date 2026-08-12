@@ -17,20 +17,21 @@ async function openTestDb(
 {
   return dbOpen(
     `transactions-test-${crypto.randomUUID()}`,
-    [db =>
+    [ (
+        db
+      ) =>
     {
       db.createObjectStore(
         'records',
         { keyPath: 'id' });
-    }]);
+    } ]);
 }
 
 test(
   `${TEST_SUITE}: txEnsure accepts read mode on readwrite transaction`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const tx =
       db.transaction(
@@ -49,8 +50,7 @@ test(
   `${TEST_SUITE}: txEnsure throws for inaccessible store`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const tx =
       db.transaction(
@@ -63,7 +63,9 @@ test(
           tx,
           'missing_store',
           TxMode.read),
-      (error: unknown) =>
+      (
+          error: unknown
+        ) =>
       {
         assert.ok(
           error instanceof TransactionStoreAccessError);

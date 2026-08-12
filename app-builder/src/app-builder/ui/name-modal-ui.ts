@@ -82,8 +82,7 @@ export function createNameModalUi(
   configureButton(
     elBtnConfirm,
     { text: 'OK',
-      className:
-        'btn btn-primary' });
+      className: 'btn btn-primary' });
 
   configureButton(
     elBtnCancel,
@@ -139,7 +138,9 @@ export function createNameModalUi(
 
   elInput.addEventListener(
     'keydown',
-    (event: KeyboardEvent) =>
+    (
+        event: KeyboardEvent
+      ) =>
     {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -149,7 +150,9 @@ export function createNameModalUi(
 
   elModal.addEventListener(
     'click',
-    (event: MouseEvent) =>
+    (
+        event: MouseEvent
+      ) =>
     {
       if (event.target === elModal) {
         close();

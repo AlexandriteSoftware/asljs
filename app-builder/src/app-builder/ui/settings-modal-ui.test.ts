@@ -20,10 +20,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderSettingsModal());
+      new JSDOM(
+        renderSettingsModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -33,7 +33,7 @@ test(
         theme: string;
         fontSizeText: string;
         maxToolStepsText: string;
-      }> = [];
+      }> = [ ];
 
       const ui =
         createSettingsModalUi(
@@ -43,8 +43,10 @@ test(
                              fontSize: 16,
                              maxToolSteps: 30 }),
             onSave:
-              async values =>
-          {
+              async (
+                  values
+                ) =>
+              {
             saved.push(values);
           } });
 
@@ -105,18 +107,18 @@ test(
       maxToolStepsInput.value = '42';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         saved,
-        [
-          { apiKey: 'sk-next',
+        [ { apiKey: 'sk-next',
             theme: 'dark',
             fontSizeText: '18',
-            maxToolStepsText: '42' }
-        ]);
+            maxToolStepsText: '42' } ]);
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -131,10 +133,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderSettingsModal());
+      new JSDOM(
+        renderSettingsModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -146,9 +148,7 @@ test(
                              theme: 'dark',
                              fontSize: 14,
                              maxToolSteps: 20 }),
-            onSave:
-              async () =>
-          {} });
+            onSave: async () => { } });
 
       const modal =
         document.getElementById(
@@ -161,7 +161,9 @@ test(
       await ui.open();
 
       cancelButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -170,7 +172,9 @@ test(
       await ui.open();
 
       modal.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       assert.equal(
         modal.classList.contains('hidden'),

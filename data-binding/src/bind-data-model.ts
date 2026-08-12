@@ -15,16 +15,17 @@ import { BindDataModelOptions,
          DataModel }
   from './types.js';
 
-const CONTEXT_ATTR =
-  'data-bind-context';
+const CONTEXT_ATTR = 'data-bind-context';
 
 const BIND_PREFIX = 'data-bind-';
 
-type WarnOnce = (
-  key: string,
-  message: string,
-  error?: unknown
-) => void;
+type WarnOnce =
+  (
+    key: string,
+    message: string,
+    error?: unknown
+  ) =>
+    void;
 
 /**
  * Applies `data-bind-*` bindings under a root element and wires optional
@@ -82,11 +83,11 @@ export function bindDataModel(
 
   const warnOnce: WarnOnce =
     (
-    key: string,
-    message: string,
-    error: unknown = null
-  ): void =>
-  {
+        key: string,
+        message: string,
+        error: unknown = null
+      ): void =>
+    {
     if (warned.has(key)) {
       return;
     }
@@ -123,9 +124,9 @@ function bindSubtree(
     nextPrefix: () => string
   ): () => void
 {
-  const disposers: Array<() => void> = [];
+  const disposers: Array<() => void> = [ ];
 
-  for (const child of [...root.children] as HTMLElement[]) {
+  for (const child of [ ...root.children ] as HTMLElement[]) {
     const contextPath =
       child.getAttribute(CONTEXT_ATTR);
 
@@ -174,7 +175,7 @@ function bindContextElement(
     nextPrefix: () => string
   ): () => void
 {
-  const ownDisposers: Array<() => void> = [];
+  const ownDisposers: Array<() => void> = [ ];
 
   bindElementAttributes(
     element,
@@ -189,7 +190,7 @@ function bindContextElement(
 
   const bindChildren =
     (): void =>
-  {
+    {
     childDisposer?.();
 
     const contextValue =
@@ -204,12 +205,13 @@ function bindContextElement(
       ? contextValue as DataModel
       : {} as DataModel;
 
-    childDisposer = bindSubtree(
-      element,
-      childModel,
-      options,
-      warnOnce,
-      nextPrefix);
+    childDisposer =
+      bindSubtree(
+        element,
+        childModel,
+        options,
+        warnOnce,
+        nextPrefix);
   };
 
   bindChildren();
@@ -223,7 +225,10 @@ function bindContextElement(
         contextPath,
         () => bindChildren());
 
-    if (typeof maybeUnsubscribe === 'function') {
+    if (
+      typeof maybeUnsubscribe
+      === 'function'
+    ) {
       unsubscribe = maybeUnsubscribe;
     }
   }
@@ -249,7 +254,7 @@ function bindElementAttributes(
     skipAttr?: string
   ): void
 {
-  for (const attribute of [...element.attributes]) {
+  for (const attribute of [ ...element.attributes ]) {
     if (!attribute.name.startsWith(BIND_PREFIX)) {
       continue;
     }
@@ -265,8 +270,7 @@ function bindElementAttributes(
       attribute.name.slice(
         BIND_PREFIX.length);
 
-    const expression =
-      attribute.value ?? '';
+    const expression = attribute.value ?? '';
 
     const spec =
       createBindingSpec(
@@ -311,7 +315,10 @@ function createBindingSpec(
     expression: string
   ): BindingSpec
 {
-  if (suffix.startsWith('on') && suffix.length > 2) {
+  if (
+    suffix.startsWith('on')
+    && suffix.length > 2
+  ) {
     return parseEventBindingExpression(
       suffix.slice(2),
       expression);
@@ -334,24 +341,26 @@ function resolveValueTarget(
     return { kind: 'html' };
   }
 
-  if (suffix.startsWith('class-') && suffix.length > 6) {
-    return {
-      kind: 'class',
-      name: suffix.slice(
-        'class-'.length)
-    };
+  if (
+    suffix.startsWith('class-')
+    && suffix.length > 6
+  ) {
+    return { kind: 'class',
+             name:
+               suffix.slice(
+                 'class-'.length) };
   }
 
-  if (suffix.startsWith('prop-') && suffix.length > 5) {
-    return {
-      kind: 'prop',
-      name: suffix.slice(
-        'prop-'.length)
-    };
+  if (
+    suffix.startsWith('prop-')
+    && suffix.length > 5
+  ) {
+    return { kind: 'prop',
+             name:
+               suffix.slice(
+                 'prop-'.length) };
   }
 
-  return {
-    kind: 'attr',
-    name: suffix
-  };
+  return { kind: 'attr',
+           name: suffix };
 }

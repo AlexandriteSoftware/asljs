@@ -20,12 +20,13 @@ test(
   {
     assert.equal(
       keyPathValid(
-        ['id']),
+        [ 'id' ]),
       true);
 
     assert.equal(
       keyPathValid(
-        ['projectId', 'date']),
+        [ 'projectId',
+          'date' ]),
       true);
   });
 
@@ -34,12 +35,12 @@ test(
   () =>
   {
     assert.equal(
-      keyPathValid([]),
+      keyPathValid([ ]),
       false);
 
     assert.equal(
       keyPathValid(
-        ['']),
+        [ '' ]),
       false);
   });
 
@@ -75,17 +76,22 @@ test(
 
     assert.equal(
       keyValueValid(
-        new Date('2026-03-27T00:00:00.000Z')),
+        new Date(
+          '2026-03-27T00:00:00.000Z')),
       true);
 
     assert.equal(
       keyValueValid(
-        new Uint8Array([1, 2, 3])),
+        new Uint8Array(
+          [ 1,
+            2,
+            3 ])),
       true);
 
     assert.equal(
       keyValueValid(
-        ['a', 1]),
+        [ 'a',
+          1 ]),
       true);
   });
 
@@ -112,7 +118,8 @@ test(
 
     assert.equal(
       keyValueValid(
-        ['a', undefined]),
+        [ 'a',
+          undefined ]),
       false);
   });
 
@@ -132,10 +139,12 @@ test(
     type TestRecord = { id: string; version: string; amount: number; };
 
     const keyDef: KeyPath<TestRecord> =
-      ['id'];
+      [ 'id' ];
 
     const record: TestRecord =
-      { id: 'a', version: 'v1', amount: 10 };
+      { id: 'a',
+        version: 'v1',
+        amount: 10 };
 
     assert.equal(
       keyGet(
@@ -151,16 +160,20 @@ test(
     type TestRecord = { id: string; version: string; amount: number; };
 
     const keyDef: KeyPath<TestRecord> =
-      ['id', 'version'];
+      [ 'id',
+        'version' ];
 
     const record: TestRecord =
-      { id: 'a', version: 'v1', amount: 10 };
+      { id: 'a',
+        version: 'v1',
+        amount: 10 };
 
     assert.deepEqual(
       keyGet(
         keyDef,
         record),
-      ['a', 'v1']);
+      [ 'a',
+        'v1' ]);
   });
 
 test(
@@ -174,10 +187,12 @@ test(
     };
 
     const keyDef: KeyPath<TestRecord> =
-      ['id'];
+      [ 'id' ];
 
     const record: TestRecord =
-      { id: undefined, version: 'v1', amount: 10 };
+      { id: undefined,
+        version: 'v1',
+        amount: 10 };
 
     assert.throws(
       () =>
@@ -193,14 +208,14 @@ test(
   {
     assert.equal(
       keyValid(
-        ['id'],
+        [ 'id' ],
         'a'),
       true);
 
     assert.equal(
       keyValid(
-        ['id'],
-        ['a']),
+        [ 'id' ],
+        [ 'a' ]),
       false);
   });
 
@@ -210,19 +225,23 @@ test(
   {
     assert.equal(
       keyValid(
-        ['id', 'version'],
-        ['a', 'v1']),
+        [ 'id',
+          'version' ],
+        [ 'a',
+          'v1' ]),
       true);
 
     assert.equal(
       keyValid(
-        ['id', 'version'],
-        ['a']),
+        [ 'id',
+          'version' ],
+        [ 'a' ]),
       false);
 
     assert.equal(
       keyValid(
-        ['id', 'version'],
+        [ 'id',
+          'version' ],
         'a'),
       false);
   });
@@ -234,7 +253,8 @@ test(
     assert.throws(
       () =>
         keyAssert(
-          ['id', 'version'],
+          [ 'id',
+            'version' ],
           'a'),
       TypeError);
   });

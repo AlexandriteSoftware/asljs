@@ -39,7 +39,8 @@ export function mustElement<T extends HTMLElement>(
     document.getElementById(id);
 
   if (element === null) {
-    throw new Error(`Missing element #${id}`);
+    throw new Error(
+      `Missing element #${id}`);
   }
 
   return element as T;
@@ -59,10 +60,8 @@ export function configureButton(
 
   setButtonContent(
     element,
-    { text:
-        options.text ?? '',
-      icon:
-        options.icon ?? '' });
+    { text: options.text ?? '',
+      icon: options.icon ?? '' });
 }
 
 export function setButtonContent(
@@ -93,7 +92,8 @@ export function configureTextInput(
   element.placeholder = options.placeholder ?? null;
   element.inputType = options.inputType ?? 'text';
 
-  element.controlClassName = options.className
+  element.controlClassName =
+    options.className
     ?? 'form-control bootstrap-input';
 }
 
@@ -107,7 +107,10 @@ export function configureSelect(
   ): void
 {
   element.controlClassName = options.className;
-  element.items = options.items ?? [];
+
+  element.items =
+    options.items ?? [ ];
+
   element.placeholder = options.placeholder ?? null;
 }
 

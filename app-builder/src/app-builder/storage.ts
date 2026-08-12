@@ -5,8 +5,7 @@ import { AppRecord,
          FileRecord }
   from './types.js';
 
-const DB_NAME =
-  'asljs-app-builder';
+const DB_NAME = 'asljs-app-builder';
 
 let dbRef: IDBDatabase | null = null;
 
@@ -17,10 +16,13 @@ async function getDb(
     return dbRef;
   }
 
-  dbRef = await dbOpen(
-    DB_NAME,
-    [db =>
-    {
+  dbRef =
+    await dbOpen(
+      DB_NAME,
+      [ (
+          db
+        ) =>
+      {
       db.createObjectStore(
         'apps',
         { keyPath: 'id' });
@@ -34,12 +36,16 @@ async function getDb(
         'byAppId',
         'appId',
         { unique: false });
-    }, db =>
-    {
+    },
+        (
+            db
+          ) =>
+        {
       db.createObjectStore(
         'chatSecrets',
         { keyPath: 'appId' });
-    }, ensureStores]);
+    },
+        ensureStores ]);
 
   return dbRef;
 }
@@ -76,8 +82,7 @@ function ensureStores(
 export async function listApps(
   ): Promise<AppRecord[]>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -92,8 +97,7 @@ export async function saveApp(
     app: AppRecord
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -108,12 +112,13 @@ export async function deleteApp(
     id: string
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
-      ['apps', 'files', 'chatSecrets'],
+      [ 'apps',
+        'files',
+        'chatSecrets' ],
       'readwrite');
 
   await dbRequestAsync(
@@ -139,8 +144,7 @@ export async function listFiles(
     appId: string
   ): Promise<FileRecord[]>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -157,8 +161,7 @@ export async function saveFile(
     file: FileRecord
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -173,8 +176,7 @@ export async function deleteFile(
     fileId: string
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -190,8 +192,7 @@ export async function replaceFiles(
     files: FileRecord[]
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -220,8 +221,7 @@ export async function loadAppOpenAiApiKey(
     appId: string
   ): Promise<string>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(
@@ -244,8 +244,7 @@ export async function saveAppOpenAiApiKey(
     apiKey: string
   ): Promise<void>
 {
-  const db =
-    await getDb();
+  const db = await getDb();
 
   const tx =
     db.transaction(

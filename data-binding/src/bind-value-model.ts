@@ -32,7 +32,7 @@ export function bindValueModel(
 
   const update =
     (): void =>
-  {
+    {
     const rawValue =
       readModelPath(
         model,
@@ -52,8 +52,7 @@ export function bindValueModel(
   update();
 
   if (spec.path === '') {
-    return () =>
-    {};
+    return () => { };
   }
 
   const maybeUnsubscribe =
@@ -62,9 +61,11 @@ export function bindValueModel(
       spec.path,
       () => update());
 
-  if (typeof maybeUnsubscribe !== 'function') {
-    return () =>
-    {};
+  if (
+    typeof maybeUnsubscribe
+    !== 'function'
+  ) {
+    return () => { };
   }
 
   return () => maybeUnsubscribe();
@@ -75,7 +76,7 @@ function compilePipes(
     registry: Record<string, PipeFn>
   ): CompiledPipe[]
 {
-  const compiled: CompiledPipe[] = [];
+  const compiled: CompiledPipe[] = [ ];
 
   for (const pipe of pipes) {
     const formatter =
@@ -83,12 +84,13 @@ function compilePipes(
 
     if (!formatter) {
       throw new Error(
-        `Unknown pipe: ${pipe.name}`
-      );
+        `Unknown pipe: ${pipe.name}`);
     }
 
     compiled.push(
-      { args: [...pipe.args], formatter });
+      { args:
+          [ ...pipe.args ],
+        formatter });
   }
 
   return compiled;
@@ -102,9 +104,10 @@ function applyPipes(
   let current = value;
 
   for (const pipe of pipes) {
-    current = pipe.formatter(
-      current,
-      ...pipe.args);
+    current =
+      pipe.formatter(
+        current,
+        ...pipe.args);
   }
 
   return current;

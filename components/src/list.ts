@@ -41,26 +41,25 @@ export type ListItem = Record<string, unknown>;
 export type ListItemsSource = ListItem[];
 
 export const ListModelDefinition: ComponentModelDefinition =
-  {
-  name: 'ListModelDefinition',
-  title: 'List',
-  properties: [{
-    name: 'items',
-    title: 'Items',
-    type: 'array',
-    description: 'Rows rendered by the list.'
-  }, {
-    name: 'context',
-    title: 'Context',
-    type: 'object',
-    description: 'Shared row binding context.'
-  }, {
-    name: 'theme',
-    title: 'Theme',
-    type: 'object',
-    description: 'Per-instance components theme override.'
-  }]
-};
+  { name:
+      'ListModelDefinition',
+    title: 'List',
+    properties:
+      [ { name: 'items',
+          title: 'Items',
+          type: 'array',
+          description:
+            'Rows rendered by the list.' },
+        { name: 'context',
+          title: 'Context',
+          type: 'object',
+          description:
+            'Shared row binding context.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description:
+            'Per-instance components theme override.' } ] };
 
 @customElement('asljs-list')
 export class List extends LitElement
@@ -68,7 +67,7 @@ export class List extends LitElement
   #containerTemplate: HTMLTemplateElement | null = null;
   #emptyTemplate: HTMLTemplateElement | null = null;
   #itemTemplate: HTMLTemplateElement | null = null;
-  #itemBindingDisposers: Array<() => void> = [];
+  #itemBindingDisposers: Array<() => void> = [ ];
   #itemsObserverDispose: (() => void) | null = null;
   #themeProvider: ThemeProviderLike | null = null;
   #warnedMissingItemTemplate = false;
@@ -81,7 +80,7 @@ export class List extends LitElement
 
   @property(
     { attribute: false })
-  accessor items: ListItemsSource = [];
+  accessor items: ListItemsSource = [ ];
 
   @property(
     { attribute: false })
@@ -214,7 +213,10 @@ export class List extends LitElement
     const emptyTemplate =
       this.#resolveTemplate('empty');
 
-    if (!emptyTemplate || this.items.length > 0) {
+    if (
+      !emptyTemplate
+      || this.items.length > 0
+    ) {
       return;
     }
 
@@ -237,8 +239,14 @@ export class List extends LitElement
     const itemTemplate =
       this.#resolveTemplate('item');
 
-    if (!itemTemplate || this.items.length === 0) {
-      if (!itemTemplate && this.items.length > 0) {
+    if (
+      !itemTemplate
+      || this.items.length === 0
+    ) {
+      if (
+        !itemTemplate
+        && this.items.length > 0
+      ) {
         this.#warnMissingItemTemplate();
       }
 
@@ -252,28 +260,32 @@ export class List extends LitElement
       return;
     }
 
-    const rowNodes: Node[] = [];
+    const rowNodes: Node[] = [ ];
 
-    const count =
-      this.items.length;
+    const count = this.items.length;
 
-    for (let index = 0; index < this.items.length; index++) {
-      const item =
-        this.items[index];
+    for (
+      let index = 0;
+      index < this.items.length;
+      index++
+    ) {
+      const item = this.items[index];
 
       const rowContext: ListRowContext =
-        {
-        item,
-        index,
-        context: this.#createRowScopeContext(
-          item,
-          index),
-        first: index === 0,
-        last: index === count - 1,
-        odd: index % 2 === 1,
-        even: index % 2 === 0,
-        count
-      };
+        { item,
+          index,
+          context:
+            this.#createRowScopeContext(
+              item,
+              index),
+          first: index === 0,
+          last:
+            index === count - 1,
+          odd:
+            index % 2 === 1,
+          even:
+            index % 2 === 0,
+          count };
 
       const fragment =
         itemTemplate.content.cloneNode(true) as DocumentFragment;
@@ -283,7 +295,7 @@ export class List extends LitElement
         rowContext);
 
       rowNodes.push(
-        ...[...fragment.childNodes]);
+        ...[ ...fragment.childNodes ]);
     }
 
     itemsHost.replaceChildren(
@@ -387,7 +399,8 @@ export class List extends LitElement
     if (
       this.context === null
       || this.context === undefined
-      || typeof this.context !== 'object'
+      || typeof this.context
+         !== 'object'
     ) {
       return this.context;
     }
@@ -402,11 +415,14 @@ export class List extends LitElement
     rowContext.index = index;
 
     for (const key of Object.keys(baseContext)) {
-      const value =
-        baseContext[key];
+      const value = baseContext[key];
 
-      if (typeof value === 'function') {
-        rowContext[key] = value.bind(rowContext);
+      if (
+        typeof value
+        === 'function'
+      ) {
+        rowContext[key] =
+          value.bind(rowContext);
       }
     }
 
@@ -419,7 +435,7 @@ export class List extends LitElement
       dispose();
     }
 
-    this.#itemBindingDisposers = [];
+    this.#itemBindingDisposers = [ ];
   }
 
   #syncItemsObserver(): void
@@ -434,15 +450,17 @@ export class List extends LitElement
       return;
     }
 
-    const unsubscribers: Array<() => void> = [];
+    const unsubscribers: Array<() => void> = [ ];
 
     const onCollectionChanged =
       (): void =>
-    {
+      {
       this.requestUpdate();
     };
 
-    for (const eventName of ['set', 'delete', 'define']) {
+    for (const eventName of [ 'set',
+                              'delete',
+                              'define' ]) {
       const unsubscribe =
         eventSource.on(
           eventName,
@@ -455,8 +473,9 @@ export class List extends LitElement
         });
     }
 
-    this.#itemsObserverDispose = () =>
-    {
+    this.#itemsObserverDispose =
+      () =>
+      {
       for (const unsubscribe of unsubscribers) {
         unsubscribe();
       }

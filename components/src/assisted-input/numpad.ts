@@ -14,32 +14,53 @@ import { AssistedInput,
 export type NumpadKeyDetail = AssistedInputKeyDetail;
 
 export const NumpadModelDefinition: ComponentModelDefinition =
-  {
-  name: 'NumpadModelDefinition',
-  title: 'Numpad',
-  properties: AssistedInputModelProperties
-};
+  { name:
+      'NumpadModelDefinition',
+    title: 'Numpad',
+    properties:
+      AssistedInputModelProperties };
 
 const BUTTONS: readonly AssistedInputButtonDefinition[] =
-  [
-  { key: 'Backspace', label: '⌫' },
-  { key: '/', label: '÷', className: 'op' },
-  { key: '*', label: '×', className: 'op' },
-  { key: '-', label: '−', className: 'op' },
-  { key: '7', label: '7' },
-  { key: '8', label: '8' },
-  { key: '9', label: '9' },
-  { key: '+', label: '+', className: 'op plus' },
-  { key: '4', label: '4' },
-  { key: '5', label: '5' },
-  { key: '6', label: '6' },
-  { key: '1', label: '1' },
-  { key: '2', label: '2' },
-  { key: '3', label: '3' },
-  { key: 'Enter', label: '⏎', className: 'enter' },
-  { key: '0', label: '0', className: 'zero' },
-  { key: '.', label: '.' }
-];
+  [ { key: 'Backspace',
+      label: '⌫' },
+    { key: '/',
+      label: '÷',
+      className: 'op' },
+    { key: '*',
+      label: '×',
+      className: 'op' },
+    { key: '-',
+      label: '−',
+      className: 'op' },
+    { key: '7',
+      label: '7' },
+    { key: '8',
+      label: '8' },
+    { key: '9',
+      label: '9' },
+    { key: '+',
+      label: '+',
+      className: 'op plus' },
+    { key: '4',
+      label: '4' },
+    { key: '5',
+      label: '5' },
+    { key: '6',
+      label: '6' },
+    { key: '1',
+      label: '1' },
+    { key: '2',
+      label: '2' },
+    { key: '3',
+      label: '3' },
+    { key: 'Enter',
+      label: '⏎',
+      className: 'enter' },
+    { key: '0',
+      label: '0',
+      className: 'zero' },
+    { key: '.',
+      label: '.' } ];
 
 @customElement('asljs-numpad')
 export class Numpad extends AssistedInput

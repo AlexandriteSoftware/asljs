@@ -24,17 +24,17 @@ import {
   createPinoLoggerProvider
 } from 'asljs-logging';
 
-await using loggerProvider =
-  createPinoLoggerProvider(
-    { level: 'information',
-      envVarPrefix: 'MY_APP_LOG_' });
+await using loggerProvider = createPinoLoggerProvider(
+  { level: 'information', envVarPrefix: 'MY_APP_LOG_' }
+);
 
-const logger =
-  loggerProvider.getLogger(
-    'my-context');
+const logger = loggerProvider.getLogger(
+  'my-context'
+);
 
 logger.information(
-  'started');
+  'started'
+);
 ```
 
 ## Environment Variables

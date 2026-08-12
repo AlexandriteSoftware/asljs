@@ -61,10 +61,9 @@ import {
   TmpDir
 } from 'asljs-tmpdir';
 
-await using loggerProvider =
-  createPinoLoggerProvider(
-    { level: 'trace' }
-  );
+await using loggerProvider = createPinoLoggerProvider(
+  { level: 'trace' }
+);
 
 using tmpDir = new TmpDir(
   loggerProvider.getLogger('TmpDir')

@@ -23,17 +23,19 @@ export class UuidVersionStrategy<T extends Record<string, any>>
     record: T
   ): T
   {
-    const version =
-      record[this.field];
+    const version = record[this.field];
 
     if (
-      typeof version === 'string'
+      typeof version
+      === 'string'
       && UUID_PATTERN.test(version)
     ) {
       return record;
     }
 
-    return { ...record, [this.field]: crypto.randomUUID() };
+    return { ...record,
+             [this.field]:
+               crypto.randomUUID() };
   }
 
   verify(
@@ -48,6 +50,8 @@ export class UuidVersionStrategy<T extends Record<string, any>>
     record: T
   ): T
   {
-    return { ...record, [this.field]: crypto.randomUUID() };
+    return { ...record,
+             [this.field]:
+               crypto.randomUUID() };
   }
 }

@@ -25,8 +25,7 @@ test(
 
     assert.deepEqual(
       model,
-      {
-        messages: model.messages,
+      { messages: model.messages,
         promptDraft: '',
         messagesScrollTop: 0,
         hasMessagesScrollTop: false,
@@ -34,12 +33,11 @@ test(
         lastResponseId: null,
         choicePrompt: null,
         progress: null,
-        sending: false
-      });
+        sending: false });
 
     assert.deepEqual(
       model.messages.read(),
-      []);
+      [ ]);
   });
 
 test(
@@ -53,21 +51,24 @@ test(
 
     const model =
       createAiChatModel(
-        {
-        messages: [{ role: 'assistant', content: 'Persisted answer' }],
-        promptDraft: 'next prompt',
-        messagesScrollTop: 42,
-        hasMessagesScrollTop: true,
-        missingKeyMessageShown: true,
-        lastResponseId: 'resp_1',
-        choicePrompt: {
-          message: 'Pick one',
-          options: [{ value: 'a', label: 'A' }],
-          behavior: 'send'
-        },
-        progress: { message: 'Waiting...', visible: true },
-        sending: true
-      });
+        { messages:
+            [ { role: 'assistant',
+                content: 'Persisted answer' } ],
+          promptDraft: 'next prompt',
+          messagesScrollTop: 42,
+          hasMessagesScrollTop: true,
+          missingKeyMessageShown: true,
+          lastResponseId: 'resp_1',
+          choicePrompt:
+            { message: 'Pick one',
+              options:
+                [ { value: 'a',
+                    label: 'A' } ],
+              behavior: 'send' },
+          progress:
+            { message: 'Waiting...',
+              visible: true },
+          sending: true });
 
     assert.equal(
       model.messages.read().length,
@@ -95,11 +96,15 @@ test(
 
     assert.deepEqual(
       model.choicePrompt,
-      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] });
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] });
 
     assert.deepEqual(
       model.progress,
-      { message: 'Waiting...', visible: true });
+      { message: 'Waiting...',
+        visible: true });
 
     assert.equal(
       model.sending,
@@ -128,7 +133,8 @@ test(
     const choicePromise =
       model.presentChoices(
         'Pick one',
-        ['a', 'b']);
+        [ 'a',
+          'b' ]);
 
     assert.equal(
       model.choicePrompt?.options.length,
@@ -149,17 +155,17 @@ test(
 
     assert.deepEqual(
       state,
-      {
-        messages: [],
+      { messages: [ ],
         promptDraft: '',
         messagesScrollTop: 0,
         hasMessagesScrollTop: false,
         missingKeyMessageShown: false,
         lastResponseId: null,
         choicePrompt: null,
-        progress: { message: 'Working', visible: true },
-        sending: false
-      });
+        progress:
+          { message: 'Working',
+            visible: true },
+        sending: false });
   });
 
 test(
@@ -177,7 +183,8 @@ test(
 
     await model.presentChoices(
       'Pick one',
-      ['a', 'b'],
+      [ 'a',
+        'b' ],
       'send');
 
     model.setProgress('Working');
@@ -188,15 +195,18 @@ test(
 
     assert.deepEqual(
       state.choicePrompt,
-      {
-        message: 'Pick one',
-        options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }],
-        behavior: 'send'
-      });
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'a' },
+            { value: 'b',
+              label: 'b' } ],
+        behavior: 'send' });
 
     assert.deepEqual(
       state.progress,
-      { message: 'Working', visible: true });
+      { message: 'Working',
+        visible: true });
 
     assert.equal(
       state.sending,
@@ -260,13 +270,17 @@ test(
 
     const restoredModel =
       createAiChatModel(
-        {
-        messages: [{ role: 'assistant', content: 'Restored' }],
-        promptDraft: 'restored draft'
-      });
+        { messages:
+            [ { role: 'assistant',
+                content: 'Restored' } ],
+          promptDraft: 'restored draft' });
 
-    chat.messages = restoredModel.messages;
-    chat.promptDraft = restoredModel.promptDraft;
+    chat.messages =
+      restoredModel.messages;
+
+    chat.promptDraft =
+      restoredModel.promptDraft;
+
     document.body.appendChild(chat);
     await settleDeep(chat);
 
@@ -304,12 +318,16 @@ test(
       'assistant',
       'Persisted session message');
 
-    first.choicePrompt = {
-      message: 'Pick one',
-      options: [{ value: 'a', label: 'A' }]
-    };
+    first.choicePrompt =
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] };
 
-    first.progress = { message: 'Waiting...', visible: true };
+    first.progress =
+      { message: 'Waiting...',
+        visible: true };
+
     first.sending = true;
     await Promise.resolve();
     await Promise.resolve();
@@ -334,11 +352,15 @@ test(
 
     assert.deepEqual(
       restored.choicePrompt,
-      { message: 'Pick one', options: [{ value: 'a', label: 'A' }] });
+      { message: 'Pick one',
+        options:
+          [ { value: 'a',
+              label: 'A' } ] });
 
     assert.deepEqual(
       restored.progress,
-      { message: 'Waiting...', visible: true });
+      { message: 'Waiting...',
+        visible: true });
 
     assert.equal(
       restored.sending,
@@ -369,7 +391,9 @@ test(
     } =
       await import('./index.js');
 
-    provider.theme = createBootstrapTheme();
+    provider.theme =
+      createBootstrapTheme();
+
     provider.appendChild(chat);
     document.body.appendChild(provider);
     await settleDeep(chat);
@@ -429,9 +453,12 @@ test(
 
     keyPrompt.addEventListener(
       'key-submit',
-      (event: Event) =>
+      (
+          event: Event
+        ) =>
       {
-        submittedKey = (event as CustomEvent<{ key: string; }>).detail.key;
+        submittedKey =
+          (event as CustomEvent<{ key: string; }>).detail.key;
       });
 
     const textInput =
@@ -454,7 +481,9 @@ test(
         innerInput.value = 'sk-test-key';
 
         innerInput.dispatchEvent(
-          new Event('input', { bubbles: true }));
+          new Event(
+            'input',
+            { bubbles: true }));
 
         await Promise.resolve();
       }
@@ -466,7 +495,9 @@ test(
       | null;
 
     button?.dispatchEvent(
-      new Event('click', { bubbles: true }));
+      new Event(
+        'click',
+        { bubbles: true }));
 
     await Promise.resolve();
 
@@ -486,23 +517,25 @@ test(
     const capturedRequests: Array<{
       url: string;
       init: RequestInit;
-    }> = [];
+    }> = [ ];
 
-    const originalFetch =
-      globalThis.fetch;
+    const originalFetch = globalThis.fetch;
 
-    globalThis.fetch = (async (
-      url: string,
-      init?: RequestInit
-    ): Promise<Response> =>
-    {
+    globalThis.fetch =
+      (async (
+          url: string,
+          init?: RequestInit
+        ): Promise<Response> =>
+      {
       capturedRequests.push(
-        { url, init: init ?? {} });
+        { url,
+          init:
+            init ?? {} });
 
-      return {
-        ok: true,
-        json: async () => ({ id: 'resp_1', output: [] })
-      } as unknown as Response;
+      return { ok: true,
+               json:
+                 async () => ({ id: 'resp_1',
+                                output: [ ] }) } as unknown as Response;
     }) as typeof fetch;
 
     try {
@@ -511,10 +544,8 @@ test(
 
       const result =
         await transport.postRequest(
-          {
-          model: 'gpt-4o',
-          input: []
-        });
+          { model: 'gpt-4o',
+            input: [ ] });
 
       assert.equal(
         capturedRequests.length,
@@ -565,7 +596,8 @@ async function loadAiChatModule(
   await ensureDom();
 
   if (aiChatModulePromise === null) {
-    aiChatModulePromise = import('./ai-chat.js');
+    aiChatModulePromise =
+      import('./ai-chat.js');
   }
 
   return aiChatModulePromise;
@@ -577,73 +609,135 @@ async function ensureDom(
   if (domRestore === null) {
     const dom =
       new JSDOM(
-      '<!doctype html><html><body></body></html>',
-      { url: 'https://asljs.test/' }
-    );
+        '<!doctype html><html><body></body></html>',
+        { url:
+            'https://asljs.test/' });
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      Document: globalThis.Document,
-      Event: globalThis.Event,
-      CustomEvent: globalThis.CustomEvent,
-      KeyboardEvent: globalThis.KeyboardEvent,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLButtonElement: globalThis.HTMLButtonElement,
-      HTMLInputElement: globalThis.HTMLInputElement,
-      HTMLSelectElement: globalThis.HTMLSelectElement,
-      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-      ShadowRoot: globalThis.ShadowRoot,
-      CSSStyleSheet: globalThis.CSSStyleSheet,
-      Node: globalThis.Node,
-      getComputedStyle: globalThis.getComputedStyle,
-      sessionStorage: globalThis.sessionStorage,
-      location: globalThis.location
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        Document: globalThis.Document,
+        Event: globalThis.Event,
+        CustomEvent:
+          globalThis.CustomEvent,
+        KeyboardEvent:
+          globalThis.KeyboardEvent,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLButtonElement:
+          globalThis.HTMLButtonElement,
+        HTMLInputElement:
+          globalThis.HTMLInputElement,
+        HTMLSelectElement:
+          globalThis.HTMLSelectElement,
+        HTMLTextAreaElement:
+          globalThis.HTMLTextAreaElement,
+        ShadowRoot:
+          globalThis.ShadowRoot,
+        CSSStyleSheet:
+          globalThis.CSSStyleSheet,
+        Node: globalThis.Node,
+        getComputedStyle:
+          globalThis.getComputedStyle,
+        sessionStorage:
+          globalThis.sessionStorage,
+        location: globalThis.location };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
     globalThis.Document = dom.window.Document;
     globalThis.Event = dom.window.Event;
-    globalThis.CustomEvent = dom.window.CustomEvent;
-    globalThis.KeyboardEvent = dom.window.KeyboardEvent;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLButtonElement = dom.window.HTMLButtonElement;
-    globalThis.HTMLInputElement = dom.window.HTMLInputElement;
-    globalThis.HTMLSelectElement = dom.window.HTMLSelectElement;
-    globalThis.HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
-    globalThis.ShadowRoot = dom.window.ShadowRoot;
-    globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
+
+    globalThis.CustomEvent =
+      dom.window.CustomEvent;
+
+    globalThis.KeyboardEvent =
+      dom.window.KeyboardEvent;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLButtonElement =
+      dom.window.HTMLButtonElement;
+
+    globalThis.HTMLInputElement =
+      dom.window.HTMLInputElement;
+
+    globalThis.HTMLSelectElement =
+      dom.window.HTMLSelectElement;
+
+    globalThis.HTMLTextAreaElement =
+      dom.window.HTMLTextAreaElement;
+
+    globalThis.ShadowRoot =
+      dom.window.ShadowRoot;
+
+    globalThis.CSSStyleSheet =
+      dom.window.CSSStyleSheet;
+
     globalThis.Node = dom.window.Node;
 
-    globalThis.getComputedStyle = dom.window.getComputedStyle.bind(
-      dom.window);
+    globalThis.getComputedStyle =
+      dom.window.getComputedStyle.bind(
+        dom.window);
 
-    globalThis.sessionStorage = dom.window.sessionStorage;
+    globalThis.sessionStorage =
+      dom.window.sessionStorage;
+
     globalThis.location = dom.window.location;
 
-    domRestore = () =>
-    {
+    domRestore =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
       globalThis.Event = previous.Event;
-      globalThis.CustomEvent = previous.CustomEvent;
-      globalThis.KeyboardEvent = previous.KeyboardEvent;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLButtonElement = previous.HTMLButtonElement;
-      globalThis.HTMLInputElement = previous.HTMLInputElement;
-      globalThis.HTMLSelectElement = previous.HTMLSelectElement;
-      globalThis.HTMLTextAreaElement = previous.HTMLTextAreaElement;
+
+      globalThis.CustomEvent =
+        previous.CustomEvent;
+
+      globalThis.KeyboardEvent =
+        previous.KeyboardEvent;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLButtonElement =
+        previous.HTMLButtonElement;
+
+      globalThis.HTMLInputElement =
+        previous.HTMLInputElement;
+
+      globalThis.HTMLSelectElement =
+        previous.HTMLSelectElement;
+
+      globalThis.HTMLTextAreaElement =
+        previous.HTMLTextAreaElement;
+
       globalThis.ShadowRoot = previous.ShadowRoot;
-      globalThis.CSSStyleSheet = previous.CSSStyleSheet;
+
+      globalThis.CSSStyleSheet =
+        previous.CSSStyleSheet;
+
       globalThis.Node = previous.Node;
-      globalThis.getComputedStyle = previous.getComputedStyle;
-      globalThis.sessionStorage = previous.sessionStorage;
+
+      globalThis.getComputedStyle =
+        previous.getComputedStyle;
+
+      globalThis.sessionStorage =
+        previous.sessionStorage;
+
       globalThis.location = previous.location;
     };
   }
@@ -659,7 +753,7 @@ async function settleDeep(
   await Promise.resolve();
 
   const nestedElements =
-    [...element.querySelectorAll('*')] as LitElementLike[];
+    [ ...element.querySelectorAll('*') ] as LitElementLike[];
 
   for (const nestedElement of nestedElements) {
     if ('updateComplete' in nestedElement) {

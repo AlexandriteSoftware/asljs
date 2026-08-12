@@ -20,19 +20,18 @@ export type AssistedInputButtonDefinition = {
 };
 
 export const AssistedInputModelProperties =
-  [{
-  name: 'characters',
-  title: 'Characters',
-  type: 'string',
-  description: 'Allowed single-character keys. Empty means no filter.'
-}] as const satisfies readonly ComponentModelPropertyDefinition[];
+  [ { name: 'characters',
+      title: 'Characters',
+      type: 'string',
+      description:
+        'Allowed single-character keys. Empty means no filter.' } ] as const satisfies readonly ComponentModelPropertyDefinition[];
 
 export const AssistedInputModelDefinition: ComponentModelDefinition =
-  {
-  name: 'AssistedInputModelDefinition',
-  title: 'Assisted Input',
-  properties: AssistedInputModelProperties
-};
+  { name:
+      'AssistedInputModelDefinition',
+    title: 'Assisted Input',
+    properties:
+      AssistedInputModelProperties };
 
 export abstract class AssistedInput extends LitElement
 {
@@ -67,7 +66,10 @@ export abstract class AssistedInput extends LitElement
       return true;
     }
 
-    if (button.key === undefined || button.key === '') {
+    if (
+      button.key === undefined
+      || button.key === ''
+    ) {
       return false;
     }
 
@@ -83,7 +85,10 @@ export abstract class AssistedInput extends LitElement
       return true;
     }
 
-    if (key === 'Backspace' || key === 'Enter') {
+    if (
+      key === 'Backspace'
+      || key === 'Enter'
+    ) {
       return true;
     }
 
@@ -102,13 +107,11 @@ export abstract class AssistedInput extends LitElement
       this.isButtonAllowed(button);
 
     const classes =
-      [
-      'key',
-      button.className ?? '',
-      allowed
+      [ 'key',
+        button.className ?? '',
+        allowed
         ? ''
-        : 'disallowed'
-    ]
+        : 'disallowed' ]
       .filter(Boolean)
       .join(' ');
 
@@ -136,7 +139,10 @@ export abstract class AssistedInput extends LitElement
     this.dispatchEvent(
       new CustomEvent<AssistedInputKeyDetail>(
         'key',
-        { detail: { key }, bubbles: true, composed: true }
+        { detail:
+            { key },
+          bubbles: true,
+          composed: true }
       ));
   }
 
@@ -145,8 +151,9 @@ export abstract class AssistedInput extends LitElement
     this.dispatchEvent(
       new CustomEvent(
         'submit',
-        { detail: {}, bubbles: true, composed: true }
-      ));
+        { detail: {},
+          bubbles: true,
+          composed: true }));
   }
 
   protected handleAction(
@@ -159,13 +166,16 @@ export abstract class AssistedInput extends LitElement
   }
 
   protected handleAssistedInputButtonClick = (
-    event: Event
-  ): void =>
+      event: Event
+    ): void =>
   {
     const button =
       event.currentTarget as HTMLButtonElement | null;
 
-    if (button === null || button.disabled) {
+    if (
+      button === null
+      || button.disabled
+    ) {
       return;
     }
 
@@ -186,7 +196,10 @@ export abstract class AssistedInput extends LitElement
     const key =
       button.getAttribute('data-key');
 
-    if (key === null || key === '') {
+    if (
+      key === null
+      || key === ''
+    ) {
       return;
     }
 
@@ -199,8 +212,8 @@ export abstract class AssistedInput extends LitElement
   };
 
   protected handleAssistedInputPointerDown = (
-    event: Event
-  ): void =>
+      event: Event
+    ): void =>
   {
     event.preventDefault();
   };

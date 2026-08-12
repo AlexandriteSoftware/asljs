@@ -5,7 +5,8 @@ export function renderGeneratingButtonUi(
 {
   button.disabled = generating;
 
-  button.innerHTML = generating
+  button.innerHTML =
+    generating
     ? '<span class="spinner"></span> Sending…'
     : 'Send';
 }
@@ -39,7 +40,8 @@ export function appendChatMessageUi(
 
   roleLabel.className = 'chat-msg-role';
 
-  roleLabel.textContent = role === 'user'
+  roleLabel.textContent =
+    role === 'user'
     ? 'You'
     : 'Assistant';
 
@@ -52,7 +54,9 @@ export function appendChatMessageUi(
   message.appendChild(roleLabel);
   message.appendChild(bubble);
   messagesElement.appendChild(message);
-  messagesElement.scrollTop = messagesElement.scrollHeight;
+
+  messagesElement.scrollTop =
+    messagesElement.scrollHeight;
 }
 
 export function renderChatChoicesUi(
@@ -64,7 +68,10 @@ export function renderChatChoicesUi(
 {
   containerElement.replaceChildren();
 
-  if (question.trim() === '' || options.length === 0) {
+  if (
+    question.trim() === ''
+    || options.length === 0
+  ) {
     containerElement.classList.add('hidden');
     return;
   }
@@ -72,7 +79,9 @@ export function renderChatChoicesUi(
   const questionElement =
     document.createElement('p');
 
-  questionElement.className = 'chat-choice-question';
+  questionElement.className =
+    'chat-choice-question';
+
   questionElement.textContent = question;
 
   containerElement.appendChild(
@@ -81,14 +90,18 @@ export function renderChatChoicesUi(
   const optionsElement =
     document.createElement('div');
 
-  optionsElement.className = 'chat-choice-options';
+  optionsElement.className =
+    'chat-choice-options';
 
   for (const option of options) {
     const button =
       document.createElement('button');
 
     button.type = 'button';
-    button.className = 'chat-choice-option';
+
+    button.className =
+      'chat-choice-option';
+
     button.textContent = option;
 
     button.addEventListener(

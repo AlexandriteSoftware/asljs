@@ -62,7 +62,8 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'attr', name: 'href' },
+      { kind: 'attr',
+        name: 'href' },
       'https://example.com');
 
     assert.equal(
@@ -71,7 +72,8 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'attr', name: 'href' },
+      { kind: 'attr',
+        name: 'href' },
       null);
 
     assert.equal(
@@ -80,12 +82,14 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'attr', name: 'href' },
+      { kind: 'attr',
+        name: 'href' },
       'https://example.com');
 
     writeBindingValue(
       element,
-      { kind: 'attr', name: 'href' },
+      { kind: 'attr',
+        name: 'href' },
       undefined);
 
     assert.equal(
@@ -106,7 +110,8 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'prop', name: 'value' },
+      { kind: 'prop',
+        name: 'value' },
       'abc');
 
     assert.equal(
@@ -126,7 +131,8 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'class', name: 'active' },
+      { kind: 'class',
+        name: 'active' },
       true);
 
     assert.equal(
@@ -135,7 +141,8 @@ test(
 
     writeBindingValue(
       element,
-      { kind: 'class', name: 'active' },
+      { kind: 'class',
+        name: 'active' },
       false);
 
     assert.equal(

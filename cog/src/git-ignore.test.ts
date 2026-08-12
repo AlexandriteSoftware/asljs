@@ -17,8 +17,7 @@ const logger =
     'git-ignore.test');
 
 test.after(
-  async () =>
-    await loggerProvider.dispose());
+  async () => await loggerProvider.dispose());
 
 test(
   'RQ203: GitIgnore filters paths using root and nested .gitignore files',

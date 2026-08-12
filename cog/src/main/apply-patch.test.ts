@@ -23,8 +23,7 @@ const logger =
     'main.apply-patch.test');
 
 test.after(
-  async () =>
-    await loggerProvider.dispose());
+  async () => await loggerProvider.dispose());
 
 test(
   'apply-patch accepts a patch when --patch-verify-cmd exits with zero',

@@ -21,7 +21,9 @@ test(
     const element =
       document.createElement('asljs-button') as Button;
 
-    element.icon = '<i class="bi bi-star"></i>';
+    element.icon =
+      '<i class="bi bi-star"></i>';
+
     element.text = 'Save';
     document.body.appendChild(element);
 
@@ -66,13 +68,11 @@ test(
 
     assert.deepEqual(
       ButtonModelDefinition.properties[0],
-      {
-        name: 'variant',
+      { name: 'variant',
         type: 'string',
         title: 'Variant',
         description:
-          'Variant key used to resolve theme defaults such as add or delete.'
-      });
+          'Variant key used to resolve theme defaults such as add or delete.' });
   });
 
 test(
@@ -90,11 +90,13 @@ test(
     const element =
       document.createElement('asljs-button') as Button;
 
-    provider.theme = {
-      button: {
-        variants: { add: { icon: '<i class="bi bi-plus"></i>', text: 'Add' } }
-      }
-    };
+    provider.theme =
+      { button:
+          { variants:
+              { add:
+                  { icon:
+                      '<i class="bi bi-plus"></i>',
+                    text: 'Add' } } } };
 
     element.variant = 'add';
     provider.appendChild(element);
@@ -128,14 +130,19 @@ test(
       document.createElement('asljs-button') as Button;
 
     element.variant = 'add';
-    element.icon = '<i class="bi bi-star"></i>';
+
+    element.icon =
+      '<i class="bi bi-star"></i>';
+
     element.text = 'Save';
 
-    element.theme = {
-      button: {
-        variants: { add: { icon: '<i class="bi bi-plus"></i>', text: 'Add' } }
-      }
-    };
+    element.theme =
+      { button:
+          { variants:
+              { add:
+                  { icon:
+                      '<i class="bi bi-plus"></i>',
+                    text: 'Add' } } } };
 
     document.body.appendChild(element);
 
@@ -264,9 +271,12 @@ test(
     const element =
       document.createElement('asljs-button') as Button;
 
-    provider.theme = {
-      button: { variants: { add: { icon: '<i class="bi bi-plus"></i>' } } }
-    };
+    provider.theme =
+      { button:
+          { variants:
+              { add:
+                  { icon:
+                      '<i class="bi bi-plus"></i>' } } } };
 
     element.variant = 'add';
     provider.appendChild(element);
@@ -297,7 +307,10 @@ test(
     const element =
       document.createElement('asljs-button') as Button;
 
-    provider.theme = { button: { className: 'btn btn-primary' } };
+    provider.theme =
+      { button:
+          { className: 'btn btn-primary' } };
+
     element.variant = 'add';
     provider.appendChild(element);
     document.body.appendChild(provider);
@@ -323,7 +336,11 @@ test(
       document.createElement('asljs-button') as Button;
 
     element.buttonClassName = 'btn btn-ghost';
-    element.theme = { button: { className: 'btn btn-primary' } };
+
+    element.theme =
+      { button:
+          { className: 'btn btn-primary' } };
+
     document.body.appendChild(element);
 
     await settle(element);
@@ -341,42 +358,68 @@ async function ensureDom(
 {
   if (restoreDom === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      Document: globalThis.Document,
-      Event: globalThis.Event,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      ShadowRoot: globalThis.ShadowRoot,
-      HTMLButtonElement: globalThis.HTMLButtonElement,
-      CSSStyleSheet: globalThis.CSSStyleSheet
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        Document: globalThis.Document,
+        Event: globalThis.Event,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        ShadowRoot:
+          globalThis.ShadowRoot,
+        HTMLButtonElement:
+          globalThis.HTMLButtonElement,
+        CSSStyleSheet:
+          globalThis.CSSStyleSheet };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
     globalThis.Document = dom.window.Document;
     globalThis.Event = dom.window.Event;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.ShadowRoot = dom.window.ShadowRoot;
-    globalThis.HTMLButtonElement = dom.window.HTMLButtonElement;
-    globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
 
-    restoreDom = () =>
-    {
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.ShadowRoot =
+      dom.window.ShadowRoot;
+
+    globalThis.HTMLButtonElement =
+      dom.window.HTMLButtonElement;
+
+    globalThis.CSSStyleSheet =
+      dom.window.CSSStyleSheet;
+
+    restoreDom =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
       globalThis.Event = previous.Event;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
       globalThis.ShadowRoot = previous.ShadowRoot;
-      globalThis.HTMLButtonElement = previous.HTMLButtonElement;
-      globalThis.CSSStyleSheet = previous.CSSStyleSheet;
+
+      globalThis.HTMLButtonElement =
+        previous.HTMLButtonElement;
+
+      globalThis.CSSStyleSheet =
+        previous.CSSStyleSheet;
     };
   }
 

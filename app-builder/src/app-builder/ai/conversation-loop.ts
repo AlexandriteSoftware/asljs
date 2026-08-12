@@ -33,14 +33,12 @@ export function buildConversationPrompt(
         }: ${message.text}`)
     .join('\n\n');
 
-  return [
-    'Conversation transcript:',
-    transcript,
-    '',
-    'Use the transcript to resolve short follow-up answers such as "yes",',
-    '"2 players", or "make it blue". The last user message is the newest',
-    'request.'
-  ].join('\n');
+  return [ 'Conversation transcript:',
+           transcript,
+           '',
+           'Use the transcript to resolve short follow-up answers such as "yes",',
+           '"2 players", or "make it blue". The last user message is the newest',
+           'request.' ].join('\n');
 }
 
 function formatRoleLabel(

@@ -20,32 +20,31 @@ import './select.js';
 import './text-input.js';
 
 const BOOLEAN_ITEMS =
-  [{ value: 'yes', label: 'Yes' }, {
-  value: 'no',
-  label: 'No'
-}];
+  [ { value: 'yes',
+      label: 'Yes' },
+    { value: 'no',
+      label: 'No' } ];
 
 export const PropertiesModelDefinition: ComponentModelDefinition =
-  {
-  name: 'PropertiesModelDefinition',
-  title: 'Properties',
-  properties: [{
-    name: 'definition',
-    title: 'Definition',
-    type: 'object',
-    description: 'Component model definition that drives the generated form.'
-  }, {
-    name: 'target',
-    title: 'Target',
-    type: 'object',
-    description: 'Target object updated by the generated controls.'
-  }, {
-    name: 'theme',
-    title: 'Theme',
-    type: 'object',
-    description: 'Theme forwarded to nested controls.'
-  }]
-};
+  { name:
+      'PropertiesModelDefinition',
+    title: 'Properties',
+    properties:
+      [ { name: 'definition',
+          title: 'Definition',
+          type: 'object',
+          description:
+            'Component model definition that drives the generated form.' },
+        { name: 'target',
+          title: 'Target',
+          type: 'object',
+          description:
+            'Target object updated by the generated controls.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description:
+            'Theme forwarded to nested controls.' } ] };
 
 @customElement(
   'asljs-properties')
@@ -72,7 +71,10 @@ export class Properties extends LitElement
 
   override render(): ReturnType<LitElement['render']>
   {
-    if (this.definition === null || this.target === null) {
+    if (
+      this.definition === null
+      || this.target === null
+    ) {
       return html``;
     }
 
@@ -108,7 +110,10 @@ export class Properties extends LitElement
       ?? isPrimitiveEditable(
         propertyDefinition.type);
 
-    if (propertyDefinition.type === 'boolean') {
+    if (
+      propertyDefinition.type
+      === 'boolean'
+    ) {
       return html`
         <asljs-select
             data-property-name=${propertyDefinition.name}
@@ -160,7 +165,11 @@ export class Properties extends LitElement
     event: Event
   ): void
   {
-    if (this.target === null || propertyDefinition.editable === false) {
+    if (
+      this.target === null
+      || propertyDefinition.editable
+         === false
+    ) {
       return;
     }
 
@@ -187,7 +196,11 @@ export class Properties extends LitElement
     event: Event
   ): void
   {
-    if (this.target === null || propertyDefinition.editable === false) {
+    if (
+      this.target === null
+      || propertyDefinition.editable
+         === false
+    ) {
       return;
     }
 
@@ -255,7 +268,10 @@ function formatPropertyValue(
     value: unknown
   ): string
 {
-  if (type === 'string' || type === 'number') {
+  if (
+    type === 'string'
+    || type === 'number'
+  ) {
     return value === null || value === undefined
       ? ''
       : String(value);

@@ -34,8 +34,7 @@ export function keyPathAssert(
 {
   if (!keyPathValid(keyPath)) {
     throw new TypeError(
-      'Key path must be a non-empty string or an array of non-empty strings.'
-    );
+      'Key path must be a non-empty string or an array of non-empty strings.');
   }
 }
 
@@ -50,11 +49,17 @@ export function keyValueValid(
     return false;
   }
 
-  if (typeof value === 'string') {
+  if (
+    typeof value
+    === 'string'
+  ) {
     return true;
   }
 
-  if (typeof value === 'number') {
+  if (
+    typeof value
+    === 'number'
+  ) {
     return Number.isFinite(value);
   }
 
@@ -72,7 +77,11 @@ export function keyValueValid(
   }
 
   if (Array.isArray(value)) {
-    for (let i = 0; i < value.length; i++) {
+    for (
+      let i = 0;
+      i < value.length;
+      i++
+    ) {
       if (!(i in value)) {
         return false;
       }
@@ -97,8 +106,7 @@ export function keyValueAssert(
 {
   if (!keyValueValid(value)) {
     throw new TypeError(
-      'Value is not a valid IndexedDB key value.'
-    );
+      'Value is not a valid IndexedDB key value.');
   }
 }
 
@@ -140,8 +148,7 @@ export function keyAssert(
     throw new TypeError(
       keyPathLength === 1
         ? 'Key must be a single value.'
-        : `Key must be an array of length ${keyPathLength}.`
-    );
+        : `Key must be an array of length ${keyPathLength}.`);
   }
 }
 
@@ -150,7 +157,10 @@ export function keyEqual(
     b: IDBValidKey
   ): boolean
 {
-  if (Array.isArray(a) && Array.isArray(b)) {
+  if (
+    Array.isArray(a)
+    && Array.isArray(b)
+  ) {
     return a.length === b.length
       && a.every(
         (v, i) =>
@@ -159,7 +169,10 @@ export function keyEqual(
             (b as IDBValidKey[])[i]!));
   }
 
-  if (a instanceof Date && b instanceof Date) {
+  if (
+    a instanceof Date
+    && b instanceof Date
+  ) {
     return a.getTime() === b.getTime();
   }
 
@@ -172,8 +185,7 @@ export function keyGet<R extends KeyRecord>(
   ): IDBValidKey
 {
   if (!Array.isArray(keyPath)) {
-    const keyValue =
-      record[keyPath];
+    const keyValue = record[keyPath];
 
     keyValueAssert(keyValue);
 
@@ -194,7 +206,11 @@ export function keyGet<R extends KeyRecord>(
     keyPath.length
   );
 
-  for (let i = 0; i < keyPath.length; i++) {
+  for (
+    let i = 0;
+    i < keyPath.length;
+    i++
+  ) {
     const keyValue =
       record[keyPath[i]];
 

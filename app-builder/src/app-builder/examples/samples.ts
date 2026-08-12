@@ -9,10 +9,8 @@ import todoSampleJson
   from './TODO-Sample.json?raw';
 
 const SAMPLE_JSON_SOURCES =
-  [
-  todoSampleJson,
-  pdfParserJson
-] as const;
+  [ todoSampleJson,
+    pdfParserJson ] as const;
 
 function getSamples(
   ): ImportedPayload[]
@@ -71,13 +69,21 @@ function normalizeSampleSource(
     source: unknown
   ): string
 {
-  if (typeof source === 'string') {
+  if (
+    typeof source
+    === 'string'
+  ) {
     return source;
   }
 
-  if (source !== null && typeof source === 'object') {
+  if (
+    source !== null
+    && typeof source
+       === 'object'
+  ) {
     return JSON.stringify(source);
   }
 
-  throw new Error('Invalid sample source format.');
+  throw new Error(
+    'Invalid sample source format.');
 }

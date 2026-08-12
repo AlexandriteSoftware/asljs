@@ -5,16 +5,15 @@ import { ComponentsTheme,
   from './theme.js';
 
 export const ThemeProviderModelDefinition: ComponentModelDefinition =
-  {
-  name: 'ThemeProviderModelDefinition',
-  title: 'Theme Provider',
-  properties: [{
-    name: 'theme',
-    title: 'Theme',
-    type: 'object',
-    description: 'Active components theme.'
-  }]
-};
+  { name:
+      'ThemeProviderModelDefinition',
+    title: 'Theme Provider',
+    properties:
+      [ { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description:
+            'Active components theme.' } ] };
 
 const ThemeProviderBase =
   (globalThis.HTMLElement
@@ -40,14 +39,15 @@ export class ThemeProvider extends ThemeProviderBase
     this.#theme = value ?? null;
 
     if (
-      typeof Event === 'function'
-      && 'dispatchEvent' in this
+      typeof Event
+      === 'function'
+      && 'dispatchEvent'
+         in this
     ) {
       this.dispatchEvent(
         new Event(
           THEME_CHANGED_EVENT_NAME,
-          { bubbles: false }
-        ));
+          { bubbles: false }));
     }
   }
 }

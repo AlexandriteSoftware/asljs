@@ -11,8 +11,7 @@ import { TextCompressionCodec }
 export function createNodeEsbuildGzipBase64UrlCodec(
   ): TextCompressionCodec
 {
-  return { compress:
-             compressTextInNode,
+  return { compress: compressTextInNode,
            decompress:
              decompressTextInNode };
 }
@@ -72,7 +71,10 @@ function extractDefaultExportExpression(
     compiledSource.match(
       /^\s*export\s+default\s+([\s\S]*?);?\s*$/);
 
-  if (directMatch !== null && directMatch[1] !== undefined) {
+  if (
+    directMatch !== null
+    && directMatch[1] !== undefined
+  ) {
     return directMatch[1];
   }
 
@@ -80,9 +82,13 @@ function extractDefaultExportExpression(
     compiledSource.match(
       /^\s*(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*([\s\S]*?);\s*export\s*\{\s*\1\s+as\s+default\s*\};?\s*$/);
 
-  if (aliasedMatch !== null && aliasedMatch[2] !== undefined) {
+  if (
+    aliasedMatch !== null
+    && aliasedMatch[2] !== undefined
+  ) {
     return aliasedMatch[2];
   }
 
-  throw new Error('Invalid compressed share token.');
+  throw new Error(
+    'Invalid compressed share token.');
 }

@@ -16,8 +16,10 @@ test(
     let output = '';
 
     process.stdout.write =
-      ((chunk: string | Uint8Array) =>
-    {
+      ((
+          chunk: string | Uint8Array
+        ) =>
+      {
       output += typeof chunk === 'string'
         ? chunk
         : Buffer.from(

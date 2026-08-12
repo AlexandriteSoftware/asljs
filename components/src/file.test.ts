@@ -46,14 +46,17 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider = {
-      loadFile: async () => ({
-        name: 'invoice.pdf',
-        blob: new Blob(['pdf'], { type: 'application/pdf' })
-      })
-    };
+    element.provider =
+      { loadFile:
+          async () => ({ name: 'invoice.pdf',
+                         blob:
+                           new Blob(
+                             [ 'pdf' ],
+                             { type: 'application/pdf' }) }) };
 
-    element.handlers = [file.createPdfFileHandler()];
+    element.handlers =
+      [ file.createPdfFileHandler() ];
+
     element.fileName = 'invoice.pdf';
 
     document.body.appendChild(element);
@@ -88,15 +91,16 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider = {
-      loadFile: async () => ({
-        name: 'logo.png',
-        mimeType: 'image/png',
-        dataUrl: 'data:image/png;base64,AQID'
-      })
-    };
+    element.provider =
+      { loadFile:
+          async () => ({ name: 'logo.png',
+                         mimeType: 'image/png',
+                         dataUrl:
+                           'data:image/png;base64,AQID' }) };
 
-    element.handlers = [file.createImageFileHandler()];
+    element.handlers =
+      [ file.createImageFileHandler() ];
+
     element.fileName = 'logo.png';
 
     document.body.appendChild(element);
@@ -132,11 +136,14 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider = {
-      loadFile: async () => ({ name: 'notes.md', text: '# hello' })
-    };
+    element.provider =
+      { loadFile:
+          async () => ({ name: 'notes.md',
+                         text: '# hello' }) };
 
-    element.handlers = [file.createTextFileHandler()];
+    element.handlers =
+      [ file.createTextFileHandler() ];
+
     element.fileName = 'notes.md';
 
     document.body.appendChild(element);
@@ -164,21 +171,29 @@ test(
     const file =
       await getFileModule();
 
-    const saved: Array<{ fileName: string; text: string; }> = [];
+    const saved: Array<{ fileName: string; text: string; }> = [ ];
 
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider = {
-      loadFile: async () => ({ name: 'app.js', text: 'console.log(1);' }),
-      saveText: async (fileName, text) =>
-      {
+    element.provider =
+      { loadFile:
+          async () => ({ name: 'app.js',
+                         text: 'console.log(1);' }),
+        saveText:
+          async (
+              fileName,
+              text
+            ) =>
+          {
         saved.push(
-          { fileName, text });
-      }
-    };
+          { fileName,
+            text });
+      } };
 
-    element.handlers = [file.createTextEditorFileHandler()];
+    element.handlers =
+      [ file.createTextEditorFileHandler() ];
+
     element.fileName = 'app.js';
 
     document.body.appendChild(element);
@@ -198,7 +213,8 @@ test(
 
     assert.deepEqual(
       saved,
-      [{ fileName: 'app.js', text: 'console.log(2);' }]);
+      [ { fileName: 'app.js',
+          text: 'console.log(2);' } ]);
   });
 
 test(
@@ -214,14 +230,18 @@ test(
     const element =
       document.createElement('asljs-file') as FileViewElement;
 
-    element.provider = {
-      loadFile: async () => ({
-        name: 'archive.bin',
-        blob: new Blob(['bin'], { type: 'application/octet-stream' })
-      })
-    };
+    element.provider =
+      { loadFile:
+          async () => ({ name: 'archive.bin',
+                         blob:
+                           new Blob(
+                             [ 'bin' ],
+                             { type:
+                                 'application/octet-stream' }) }) };
 
-    element.handlers = [file.createTextFileHandler()];
+    element.handlers =
+      [ file.createTextFileHandler() ];
+
     element.fileName = 'archive.bin';
 
     document.body.appendChild(element);
@@ -245,29 +265,46 @@ async function ensureDomAndFileLoaded(
 {
   if (domRestore === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-      HTMLIFrameElement: globalThis.HTMLIFrameElement,
-      HTMLImageElement: globalThis.HTMLImageElement,
-      Blob: globalThis.Blob,
-      Event: globalThis.Event,
-      URL: globalThis.URL
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLTextAreaElement:
+          globalThis.HTMLTextAreaElement,
+        HTMLIFrameElement:
+          globalThis.HTMLIFrameElement,
+        HTMLImageElement:
+          globalThis.HTMLImageElement,
+        Blob: globalThis.Blob,
+        Event: globalThis.Event,
+        URL: globalThis.URL };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
-    globalThis.HTMLIFrameElement = dom.window.HTMLIFrameElement;
-    globalThis.HTMLImageElement = dom.window.HTMLImageElement;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLTextAreaElement =
+      dom.window.HTMLTextAreaElement;
+
+    globalThis.HTMLIFrameElement =
+      dom.window.HTMLIFrameElement;
+
+    globalThis.HTMLImageElement =
+      dom.window.HTMLImageElement;
+
     globalThis.Blob = dom.window.Blob;
     globalThis.Event = dom.window.Event;
 
@@ -284,27 +321,37 @@ async function ensureDomAndFileLoaded(
           String(url),
           base === undefined
             ? undefined
-            : String(base)
-        );
+            : String(base));
       },
         globalThis.URL,
-        {
-        createObjectURL: () => `blob:test-${++counter}`,
-        revokeObjectURL: () =>
-        {}
-      });
+        { createObjectURL:
+            () => `blob:test-${++counter}`,
+          revokeObjectURL: () => { } });
 
-    globalThis.URL = mockedUrl as unknown as typeof globalThis.URL;
+    globalThis.URL =
+      mockedUrl as unknown as typeof globalThis.URL;
 
-    domRestore = () =>
-    {
+    domRestore =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLTextAreaElement = previous.HTMLTextAreaElement;
-      globalThis.HTMLIFrameElement = previous.HTMLIFrameElement;
-      globalThis.HTMLImageElement = previous.HTMLImageElement;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLTextAreaElement =
+        previous.HTMLTextAreaElement;
+
+      globalThis.HTMLIFrameElement =
+        previous.HTMLIFrameElement;
+
+      globalThis.HTMLImageElement =
+        previous.HTMLImageElement;
+
       globalThis.Blob = previous.Blob;
       globalThis.Event = previous.Event;
       globalThis.URL = previous.URL;
@@ -312,7 +359,9 @@ async function ensureDomAndFileLoaded(
   }
 
   if (!isComponentsLoaded) {
-    fileModule = await import('./file.js');
+    fileModule =
+      await import('./file.js');
+
     isComponentsLoaded = true;
   }
 }
@@ -323,7 +372,8 @@ async function getFileModule(
   await ensureDomAndFileLoaded();
 
   if (fileModule === null) {
-    throw new Error('Expected file module to be loaded.');
+    throw new Error(
+      'Expected file module to be loaded.');
   }
 
   return fileModule;
@@ -349,7 +399,11 @@ async function waitFor(
     maxTries: number = 20
   ): Promise<void>
 {
-  for (let index = 0; index < maxTries; index++) {
+  for (
+    let index = 0;
+    index < maxTries;
+    index++
+  ) {
     if (predicate()) {
       return;
     }
@@ -357,5 +411,6 @@ async function waitFor(
     await Promise.resolve();
   }
 
-  throw new Error('Timed out waiting for condition.');
+  throw new Error(
+    'Timed out waiting for condition.');
 }

@@ -8,26 +8,25 @@ import { ComponentModelDefinition }
   from './abstractions/model.js';
 
 export const FileViewModelDefinition: ComponentModelDefinition =
-  {
-  name: 'FileViewModelDefinition',
-  title: 'File View',
-  properties: [{
-    name: 'provider',
-    title: 'Provider',
-    type: 'object',
-    description: 'File provider used to load and optionally save files.'
-  }, {
-    name: 'handlers',
-    title: 'Handlers',
-    type: 'array',
-    description: 'Ordered file handlers from most specific to most general.'
-  }, {
-    name: 'fileName',
-    title: 'File name',
-    type: 'string',
-    description: 'Selected file name to preview.'
-  }]
-};
+  { name:
+      'FileViewModelDefinition',
+    title: 'File View',
+    properties:
+      [ { name: 'provider',
+          title: 'Provider',
+          type: 'object',
+          description:
+            'File provider used to load and optionally save files.' },
+        { name: 'handlers',
+          title: 'Handlers',
+          type: 'array',
+          description:
+            'Ordered file handlers from most specific to most general.' },
+        { name: 'fileName',
+          title: 'File name',
+          type: 'string',
+          description:
+            'Selected file name to preview.' } ] };
 
 export interface FileViewData
 {
@@ -84,7 +83,7 @@ export class FileView extends LitElement
 
   @property(
     { attribute: false })
-  accessor handlers: FileHandler[] = [];
+  accessor handlers: FileHandler[] = [ ];
 
   @property(
     { attribute: false })
@@ -138,7 +137,10 @@ export class FileView extends LitElement
       return;
     }
 
-    if (this.fileName === null || this.fileName.trim() === '') {
+    if (
+      this.fileName === null
+      || this.fileName.trim() === ''
+    ) {
       contentHost.replaceChildren(
         createMessageElement(
           'Select a file to preview.'));
@@ -146,8 +148,7 @@ export class FileView extends LitElement
       return;
     }
 
-    const provider =
-      this.provider;
+    const provider = this.provider;
 
     if (provider === null) {
       contentHost.replaceChildren(
@@ -165,7 +166,10 @@ export class FileView extends LitElement
       await provider.loadFile(
         this.fileName);
 
-    if (requestId !== this.#renderRequestId) {
+    if (
+      requestId
+      !== this.#renderRequestId
+    ) {
       return;
     }
 
@@ -182,7 +186,10 @@ export class FileView extends LitElement
         this.handlers,
         file);
 
-    if (requestId !== this.#renderRequestId) {
+    if (
+      requestId
+      !== this.#renderRequestId
+    ) {
       return;
     }
 
@@ -190,7 +197,8 @@ export class FileView extends LitElement
       const fallback =
         createFallbackElement(file);
 
-      this.#activeRenderState = { dispose: fallback.dispose };
+      this.#activeRenderState =
+        { dispose: fallback.dispose };
 
       contentHost.replaceChildren(
         fallback.element);
@@ -200,14 +208,20 @@ export class FileView extends LitElement
 
     const result =
       await handler.render(
-        { file, fileName: this.fileName, provider });
+        { file,
+          fileName: this.fileName,
+          provider });
 
-    if (requestId !== this.#renderRequestId) {
+    if (
+      requestId
+      !== this.#renderRequestId
+    ) {
       result.dispose?.();
       return;
     }
 
-    this.#activeRenderState = { dispose: result.dispose };
+    this.#activeRenderState =
+      { dispose: result.dispose };
 
     contentHost.replaceChildren(
       result.element);
@@ -223,10 +237,13 @@ export class FileView extends LitElement
 export function createPdfFileHandler(
   ): FileHandler
 {
-  return {
-    canDisplay: file => isPdfFile(file),
-    render: async ({ file }) =>
-    {
+  return { canDisplay:
+             file => isPdfFile(file),
+           render:
+             async (
+                 { file }
+               ) =>
+             {
       const source =
         await getObjectUrlSource(file);
 
@@ -237,7 +254,9 @@ export function createPdfFileHandler(
       const frame =
         document.createElement('iframe');
 
-      frame.src = `${source.url}#toolbar=1&navpanes=0`;
+      frame.src =
+        `${source.url}#toolbar=1&navpanes=0`;
+
       frame.title = file.name;
       frame.referrerPolicy = 'no-referrer';
       frame.style.width = '100%';
@@ -245,21 +264,21 @@ export function createPdfFileHandler(
       frame.style.minHeight = '32rem';
       frame.style.border = '0';
 
-      return {
-        element: frame,
-        dispose: source.dispose
-      };
-    }
-  };
+      return { element: frame,
+               dispose: source.dispose };
+    } };
 }
 
 export function createImageFileHandler(
   ): FileHandler
 {
-  return {
-    canDisplay: file => isImageFile(file),
-    render: async ({ file }) =>
-    {
+  return { canDisplay:
+             file => isImageFile(file),
+           render:
+             async (
+                 { file }
+               ) =>
+             {
       const source =
         await getObjectUrlSource(file);
 
@@ -277,21 +296,21 @@ export function createImageFileHandler(
       image.style.maxHeight = '100%';
       image.style.objectFit = 'contain';
 
-      return {
-        element: image,
-        dispose: source.dispose
-      };
-    }
-  };
+      return { element: image,
+               dispose: source.dispose };
+    } };
 }
 
 export function createTextFileHandler(
   ): FileHandler
 {
-  return {
-    canDisplay: file => isTextFile(file),
-    render: async ({ file }) =>
-    {
+  return { canDisplay:
+             file => isTextFile(file),
+           render:
+             async (
+                 { file }
+               ) =>
+             {
       const text =
         await resolveText(file);
 
@@ -306,20 +325,20 @@ export function createTextFileHandler(
       pre.style.margin = '0';
       pre.style.whiteSpace = 'pre-wrap';
 
-      return {
-        element: pre
-      };
-    }
-  };
+      return { element: pre };
+    } };
 }
 
 export function createTextEditorFileHandler(
   ): FileHandler
 {
-  return {
-    canDisplay: file => isTextFile(file),
-    render: async ({ file, fileName, provider }) =>
-    {
+  return { canDisplay:
+             file => isTextFile(file),
+           render:
+             async (
+                 { file, fileName, provider }
+               ) =>
+             {
       const text =
         await resolveText(file);
 
@@ -359,11 +378,8 @@ export function createTextEditorFileHandler(
           });
       }
 
-      return {
-        element: textArea
-      };
-    }
-  };
+      return { element: textArea };
+    } };
 }
 
 async function findHandler(
@@ -388,7 +404,9 @@ function createMessageElement(
     document.createElement('div');
 
   element.textContent = text;
-  element.style.color = 'var(--bs-secondary-color, #6c757d)';
+
+  element.style.color =
+    'var(--bs-secondary-color, #6c757d)';
 
   return element;
 }
@@ -396,10 +414,9 @@ function createMessageElement(
 function createUnavailableResult(
   ): FileHandlerRenderResult
 {
-  return {
-    element: createMessageElement(
-      'Preview unavailable for this file type.')
-  };
+  return { element:
+             createMessageElement(
+               'Preview unavailable for this file type.') };
 }
 
 function createFallbackElement(
@@ -419,13 +436,18 @@ function createFallbackElement(
 
   root.appendChild(message);
 
-  if (file.blob || file.dataUrl) {
+  if (
+    file.blob
+    || file.dataUrl
+  ) {
     const link =
       document.createElement('a');
 
     link.textContent = 'Open';
     link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+
+    link.rel =
+      'noopener noreferrer';
 
     if (file.dataUrl) {
       link.href = file.dataUrl;
@@ -440,18 +462,15 @@ function createFallbackElement(
     link.href = url;
     root.appendChild(link);
 
-    return {
-      element: root,
-      dispose: () =>
-      {
+    return { element: root,
+             dispose:
+               () =>
+               {
         URL.revokeObjectURL(url);
-      }
-    };
+      } };
   }
 
-  return {
-    element: root
-  };
+  return { element: root };
 }
 
 type ObjectUrlSource = { url: string; dispose?: () => void; };
@@ -461,9 +480,7 @@ async function getObjectUrlSource(
   ): Promise<ObjectUrlSource | null>
 {
   if (file.dataUrl) {
-    return {
-      url: file.dataUrl
-    };
+    return { url: file.dataUrl };
   }
 
   if (file.blob) {
@@ -471,37 +488,34 @@ async function getObjectUrlSource(
       isPdfFile(file)
       && normalizeMimeType(
         file.mimeType ?? file.blob.type)
-        !== 'application/pdf'
+         !== 'application/pdf'
     ) {
       const pdfBlob =
         new Blob(
-        [await file.blob.arrayBuffer()],
-        { type: 'application/pdf' }
-      );
+          [ await file.blob.arrayBuffer() ],
+          { type: 'application/pdf' });
 
       const pdfUrl =
         URL.createObjectURL(pdfBlob);
 
-      return {
-        url: pdfUrl,
-        dispose: () =>
-        {
+      return { url: pdfUrl,
+               dispose:
+                 () =>
+                 {
           URL.revokeObjectURL(pdfUrl);
-        }
-      };
+        } };
     }
 
     const url =
       URL.createObjectURL(
         file.blob);
 
-    return {
-      url,
-      dispose: () =>
-      {
+    return { url,
+             dispose:
+               () =>
+               {
         URL.revokeObjectURL(url);
-      }
-    };
+      } };
   }
 
   return null;
@@ -511,11 +525,17 @@ async function resolveText(
     file: FileViewData
   ): Promise<string | null>
 {
-  if (typeof file.text === 'string') {
+  if (
+    typeof file.text
+    === 'string'
+  ) {
     return file.text;
   }
 
-  if (file.blob && isTextFile(file)) {
+  if (
+    file.blob
+    && isTextFile(file)
+  ) {
     return await file.blob.text();
   }
 
@@ -549,7 +569,10 @@ function isTextFile(
     file: FileViewData
   ): boolean
 {
-  if (typeof file.text === 'string') {
+  if (
+    typeof file.text
+    === 'string'
+  ) {
     return true;
   }
 
@@ -558,8 +581,10 @@ function isTextFile(
       file.mimeType ?? file.blob?.type);
 
   return mimeType.startsWith('text/')
-    || ['application/json', 'application/xml', 'image/svg+xml'].includes(
-      mimeType)
+    || [ 'application/json',
+         'application/xml',
+         'image/svg+xml' ].includes(
+           mimeType)
     || /\.(txt|csv|json|xml|html|htm|md|markdown|svg)$/i.test(
       file.name);
 }

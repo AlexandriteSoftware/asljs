@@ -15,7 +15,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text='createdAt | date:"<&#39;yyyy|MM|dd&#39; \\\"hh:mm:ss\\\">"'></span>
           </div>
@@ -26,9 +27,14 @@ test(
 
     bindDataModel(
       root,
-      {
-        createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      });
+      { createdAt:
+          new Date(
+            2026,
+            3,
+            10,
+            13,
+            14,
+            15) });
 
     assert.equal(
       root.querySelector('span')?.textContent,

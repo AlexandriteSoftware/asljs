@@ -35,12 +35,15 @@ export function createSessionStorageAiChatStateStore(
 
   return { load:
              async (): Promise<Partial<AiChatSerializableState>> =>
-    {
+             {
       try {
         const raw =
           sessionStorage.getItem(storageKey);
 
-        if (raw === null || raw.trim() === '') {
+        if (
+          raw === null
+          || raw.trim() === ''
+        ) {
           return {};
         }
 
@@ -51,9 +54,9 @@ export function createSessionStorageAiChatStateStore(
     },
            save:
              async (
-      state: AiChatSerializableState
-    ): Promise<void> =>
-    {
+                 state: AiChatSerializableState
+               ): Promise<void> =>
+             {
       sessionStorage.setItem(
         storageKey,
         JSON.stringify(state));

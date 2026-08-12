@@ -20,10 +20,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderProjectSettingsModal());
+      new JSDOM(
+        renderProjectSettingsModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -32,18 +32,18 @@ test(
         name: string;
         authorName: string;
         authorEmail: string;
-      }> = [];
+      }> = [ ];
 
       const ui =
         createProjectSettingsModalUi(
           { onSave:
-              async values =>
-          {
+              async (
+                  values
+                ) =>
+              {
             saved.push(values);
           },
-            onDelete:
-              async () =>
-          {} });
+            onDelete: async () => { } });
 
       const modal =
         document.getElementById(
@@ -70,8 +70,7 @@ test(
       ui.open(
         { name: 'Starter',
           authorName: 'Jane',
-          authorEmail:
-            'jane@example.com' });
+          authorEmail: 'jane@example.com' });
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -91,21 +90,22 @@ test(
 
       nameInput.value = '  Updated App  ';
       authorNameInput.value = '  Alex  ';
-      authorEmailInput.value = '  alex@example.com  ';
+
+      authorEmailInput.value =
+        '  alex@example.com  ';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         saved,
-        [
-          { name: 'Updated App',
+        [ { name: 'Updated App',
             authorName: 'Alex',
-            authorEmail:
-              'alex@example.com' }
-        ]);
+            authorEmail: 'alex@example.com' } ]);
 
       assert.equal(
         modal.classList.contains('hidden'),
@@ -120,10 +120,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderProjectSettingsModal());
+      new JSDOM(
+        renderProjectSettingsModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
@@ -135,12 +135,12 @@ test(
         createProjectSettingsModalUi(
           { onSave:
               async () =>
-          {
+              {
             saved = true;
           },
             onDelete:
               async () =>
-          {
+              {
             deleted = true;
           } });
 
@@ -164,8 +164,9 @@ test(
 
       let focused = false;
 
-      nameInput.focus = () =>
-      {
+      nameInput.focus =
+        () =>
+        {
         focused = true;
       };
 
@@ -177,7 +178,9 @@ test(
       nameInput.value = '   ';
 
       saveButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
@@ -190,7 +193,9 @@ test(
         true);
 
       deleteButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 

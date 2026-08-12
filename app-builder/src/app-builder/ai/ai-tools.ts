@@ -196,160 +196,174 @@ function openAiToolDefinition(
                properties:
                  properties || {},
                required:
-                 required || [],
+                 required || [ ],
                additionalProperties: false },
            strict: true };
 }
 
 export const OPENAI_TOOLS: OpenAiToolDefinition[] =
-  [
-  openAiToolDefinition(
+  [ openAiToolDefinition(
     'listFileset',
     'List all file paths in the virtual filesystem.'),
-  openAiToolDefinition(
-    'listFilesByMask',
-    'List file paths that match a glob-like mask such as src/*.js or assets/**/*.png.',
-    { mask:
-        { type: 'string' },
-      maxFiles:
-        { type: 'number' } },
-    ['mask', 'maxFiles']),
-  openAiToolDefinition(
-    'readFile',
-    'Read the full text content of a file.',
-    { path:
-        { type: 'string' } },
-    ['path']),
-  openAiToolDefinition(
-    'readFiles',
-    'Read several files in one step. Use maxCharsPerFile to cap each returned file content.',
-    { paths:
-        { type: 'array',
-          items:
-            { type: 'string' } },
-      maxCharsPerFile:
-        { type: 'number' } },
-    ['paths', 'maxCharsPerFile']),
-  openAiToolDefinition(
-    'readFilesByMask',
-    'Read all files that match a glob-like mask in one step. Use maxFiles and maxCharsPerFile to keep results bounded.',
-    { mask:
-        { type: 'string' },
-      maxFiles:
-        { type: 'number' },
-      maxCharsPerFile:
-        { type: 'number' } },
-    ['mask', 'maxFiles', 'maxCharsPerFile']),
-  openAiToolDefinition(
-    'readFileData',
-    'Read a binary-safe file stored as a data URL. Returns MIME type, base64 payload, and data URL, or null when the file is plain text.',
-    { path:
-        { type: 'string' } },
-    ['path']),
-  openAiToolDefinition(
-    'setFilesContent',
-    'Create or fully replace several text files in one step.',
-    { files:
-        { type: 'array',
-          items:
-            { type: 'object',
-              properties:
-                { path:
-                    { type: 'string' },
-                  content:
-                    { type: 'string' } },
-              required:
-                ['path', 'content'],
-              additionalProperties: false } } },
-    ['files']),
-  openAiToolDefinition(
-    'setFileData',
-    'Create or replace a binary-safe file from base64 data. Use this for image assets that should be referenced by path from HTML or CSS.',
-    { path:
-        { type: 'string' },
-      mimeType:
-        { type: 'string' },
-      base64:
-        { type: 'string' } },
-    ['path', 'mimeType', 'base64']),
-  openAiToolDefinition(
-    'setFileContent',
-    'Create or fully replace file content.',
-    { path:
-        { type: 'string' },
-      content:
-        { type: 'string' } },
-    ['path', 'content']),
-  openAiToolDefinition(
-    'replaceFilePart',
-    'Replace part of a file by exact search string.',
-    { path:
-        { type: 'string' },
-      search:
-        { type: 'string' },
-      replacement:
-        { type: 'string' },
-      replaceAll:
-        { type: 'boolean' } },
-    ['path', 'search', 'replacement', 'replaceAll']),
-  openAiToolDefinition(
-    'deleteFile',
-    'Delete a file from the virtual filesystem.',
-    { path:
-        { type: 'string' } },
-    ['path']),
-  openAiToolDefinition(
-    'grep',
-    'Search matching files with a regular expression and return matching lines.',
-    { mask:
-        { type: 'string' },
-      pattern:
-        { type: 'string' },
-      flags:
-        { type: 'string' },
-      maxMatches:
-        { type: 'number' } },
-    ['mask', 'pattern', 'flags', 'maxMatches']),
-  openAiToolDefinition(
-    'choose',
-    'Show a short list of clickable choices in the chat UI. Use this when asking the user to pick from a few clear options.',
-    { question:
-        { type: 'string' },
-      options:
-        { type: 'array',
-          items:
-            { type: 'string' } } },
-    ['question', 'options']),
-  openAiToolDefinition(
-    'evalInApp',
-    'Evaluate JavaScript in the running app document context.',
-    { code:
-        { type: 'string' } },
-    ['code']),
-  openAiToolDefinition(
-    'assertInApp',
-    'Run a JavaScript check in the app context and fail if it throws or returns false.',
-    { code:
-        { type: 'string' },
-      message:
-        { type: 'string' } },
-    ['code', 'message']),
-  openAiToolDefinition(
-    'runAppTests',
-    'Run the JavaScript test module stored in app.tests.js or another specified file. The app restarts before each test.',
-    { path:
-        { type: 'string' } },
-    ['path']),
-  openAiToolDefinition(
-    'startGeneration',
-    'Queue the generation lane to start after the current chat turn finishes.'),
-  openAiToolDefinition(
-    'getAppDiagnostics',
-    'Get current runtime logs and errors from the running app.'),
-  openAiToolDefinition(
-    'runAppAndCollectDiagnostics',
-    'Run the app and collect runtime logs and errors after startup.')
-];
+    openAiToolDefinition(
+      'listFilesByMask',
+      'List file paths that match a glob-like mask such as src/*.js or assets/**/*.png.',
+      { mask:
+          { type: 'string' },
+        maxFiles:
+          { type: 'number' } },
+      [ 'mask',
+        'maxFiles' ]),
+    openAiToolDefinition(
+      'readFile',
+      'Read the full text content of a file.',
+      { path:
+          { type: 'string' } },
+      [ 'path' ]),
+    openAiToolDefinition(
+      'readFiles',
+      'Read several files in one step. Use maxCharsPerFile to cap each returned file content.',
+      { paths:
+          { type: 'array',
+            items:
+              { type: 'string' } },
+        maxCharsPerFile:
+          { type: 'number' } },
+      [ 'paths',
+        'maxCharsPerFile' ]),
+    openAiToolDefinition(
+      'readFilesByMask',
+      'Read all files that match a glob-like mask in one step. Use maxFiles and maxCharsPerFile to keep results bounded.',
+      { mask:
+          { type: 'string' },
+        maxFiles:
+          { type: 'number' },
+        maxCharsPerFile:
+          { type: 'number' } },
+      [ 'mask',
+        'maxFiles',
+        'maxCharsPerFile' ]),
+    openAiToolDefinition(
+      'readFileData',
+      'Read a binary-safe file stored as a data URL. Returns MIME type, base64 payload, and data URL, or null when the file is plain text.',
+      { path:
+          { type: 'string' } },
+      [ 'path' ]),
+    openAiToolDefinition(
+      'setFilesContent',
+      'Create or fully replace several text files in one step.',
+      { files:
+          { type: 'array',
+            items:
+              { type: 'object',
+                properties:
+                  { path:
+                      { type: 'string' },
+                    content:
+                      { type: 'string' } },
+                required:
+                  [ 'path',
+                    'content' ],
+                additionalProperties: false } } },
+      [ 'files' ]),
+    openAiToolDefinition(
+      'setFileData',
+      'Create or replace a binary-safe file from base64 data. Use this for image assets that should be referenced by path from HTML or CSS.',
+      { path:
+          { type: 'string' },
+        mimeType:
+          { type: 'string' },
+        base64:
+          { type: 'string' } },
+      [ 'path',
+        'mimeType',
+        'base64' ]),
+    openAiToolDefinition(
+      'setFileContent',
+      'Create or fully replace file content.',
+      { path:
+          { type: 'string' },
+        content:
+          { type: 'string' } },
+      [ 'path',
+        'content' ]),
+    openAiToolDefinition(
+      'replaceFilePart',
+      'Replace part of a file by exact search string.',
+      { path:
+          { type: 'string' },
+        search:
+          { type: 'string' },
+        replacement:
+          { type: 'string' },
+        replaceAll:
+          { type: 'boolean' } },
+      [ 'path',
+        'search',
+        'replacement',
+        'replaceAll' ]),
+    openAiToolDefinition(
+      'deleteFile',
+      'Delete a file from the virtual filesystem.',
+      { path:
+          { type: 'string' } },
+      [ 'path' ]),
+    openAiToolDefinition(
+      'grep',
+      'Search matching files with a regular expression and return matching lines.',
+      { mask:
+          { type: 'string' },
+        pattern:
+          { type: 'string' },
+        flags:
+          { type: 'string' },
+        maxMatches:
+          { type: 'number' } },
+      [ 'mask',
+        'pattern',
+        'flags',
+        'maxMatches' ]),
+    openAiToolDefinition(
+      'choose',
+      'Show a short list of clickable choices in the chat UI. Use this when asking the user to pick from a few clear options.',
+      { question:
+          { type: 'string' },
+        options:
+          { type: 'array',
+            items:
+              { type: 'string' } } },
+      [ 'question',
+        'options' ]),
+    openAiToolDefinition(
+      'evalInApp',
+      'Evaluate JavaScript in the running app document context.',
+      { code:
+          { type: 'string' } },
+      [ 'code' ]),
+    openAiToolDefinition(
+      'assertInApp',
+      'Run a JavaScript check in the app context and fail if it throws or returns false.',
+      { code:
+          { type: 'string' },
+        message:
+          { type: 'string' } },
+      [ 'code',
+        'message' ]),
+    openAiToolDefinition(
+      'runAppTests',
+      'Run the JavaScript test module stored in app.tests.js or another specified file. The app restarts before each test.',
+      { path:
+          { type: 'string' } },
+      [ 'path' ]),
+    openAiToolDefinition(
+      'startGeneration',
+      'Queue the generation lane to start after the current chat turn finishes.'),
+    openAiToolDefinition(
+      'getAppDiagnostics',
+      'Get current runtime logs and errors from the running app.'),
+    openAiToolDefinition(
+      'runAppAndCollectDiagnostics',
+      'Run the app and collect runtime logs and errors after startup.') ];
 
 const DEFAULT_DIAGNOSTICS_DELAY_MS = 350;
 
@@ -360,7 +374,7 @@ export function createAppRuntimeTools(
   async function listFilesetTool(
     ): Promise<string[]>
   {
-    return [...context.getFiles()]
+    return [ ...context.getFiles() ]
       .map(
         file => file.name)
       .sort(
@@ -394,7 +408,8 @@ export function createAppRuntimeTools(
         item => item.name === resolvedPath);
 
     if (file === undefined) {
-      throw new Error(`File not found: ${path}`);
+      throw new Error(
+        `File not found: ${path}`);
     }
 
     return file.content;
@@ -408,9 +423,10 @@ export function createAppRuntimeTools(
     const result: Record<string, string> = {};
 
     for (const path of paths) {
-      result[path] = limitToolText(
-        await readFileTool(path),
-        maxCharsPerFile);
+      result[path] =
+        limitToolText(
+          await readFileTool(path),
+          maxCharsPerFile);
     }
 
     return result;
@@ -493,7 +509,8 @@ export function createAppRuntimeTools(
     await context.saveFile(created);
 
     context.setFiles(
-      [...context.getFiles(), created]);
+      [ ...context.getFiles(),
+        created ]);
 
     context.setActiveFileName(
       created.name);
@@ -551,7 +568,10 @@ export function createAppRuntimeTools(
 
     context.setFiles(remaining);
 
-    if (context.getActiveFileName() === path) {
+    if (
+      context.getActiveFileName()
+      === path
+    ) {
       context.setActiveFileName(
         pickVisibleFileName(remaining));
     }
@@ -565,7 +585,8 @@ export function createAppRuntimeTools(
     ): Promise<void>
   {
     if (search === '') {
-      throw new Error('Search text cannot be empty.');
+      throw new Error(
+        'Search text cannot be empty.');
     }
 
     const resolvedPath =
@@ -574,20 +595,23 @@ export function createAppRuntimeTools(
         path);
 
     if (resolvedPath === null) {
-      throw new Error(`File not found: ${path}`);
+      throw new Error(
+        `File not found: ${path}`);
     }
 
     const original =
       await readFileTool(resolvedPath);
 
     if (!original.includes(search)) {
-      throw new Error(`Search text not found in ${resolvedPath}.`);
+      throw new Error(
+        `Search text not found in ${resolvedPath}.`);
     }
 
     let next = original;
 
     if (replaceAll) {
-      next = original.split(search).join(replacement);
+      next =
+        original.split(search).join(replacement);
     } else {
       const firstIndex =
         original.indexOf(search);
@@ -599,13 +623,13 @@ export function createAppRuntimeTools(
 
       if (secondIndex !== -1) {
         throw new Error(
-          'Search text is ambiguous. Use replaceAll=true or provide a more specific search block.'
-        );
+          'Search text is ambiguous. Use replaceAll=true or provide a more specific search block.');
       }
 
-      next = original.slice(
-        0,
-        firstIndex)
+      next =
+        original.slice(
+          0,
+          firstIndex)
         + replacement
         + original.slice(
           firstIndex + search.length);
@@ -621,7 +645,8 @@ export function createAppRuntimeTools(
     ): Promise<unknown>
   {
     if (context.getFiles().length === 0) {
-      throw new Error('No files available to run.');
+      throw new Error(
+        'No files available to run.');
     }
 
     context.runApp();
@@ -647,7 +672,7 @@ export function createAppRuntimeTools(
   {
     const matches: Array<
       { path: string; line: number; text: string; }
-    > = [];
+    > = [ ];
 
     const regex =
       createSearchRegex(
@@ -666,7 +691,11 @@ export function createAppRuntimeTools(
       const lines =
         content.split(/\r?\n/);
 
-      for (let index = 0; index < lines.length; index += 1) {
+      for (
+        let index = 0;
+        index < lines.length;
+        index += 1
+      ) {
         regex.lastIndex = 0;
 
         if (
@@ -678,10 +707,8 @@ export function createAppRuntimeTools(
 
         matches.push(
           { path,
-            line:
-              index + 1,
-            text:
-              lines[index] });
+            line: index + 1,
+            text: lines[index] });
 
         if (matches.length >= maxMatches) {
           return matches;
@@ -708,11 +735,13 @@ export function createAppRuntimeTools(
         option => option !== '');
 
     if (normalizedQuestion === '') {
-      throw new Error('Choice question cannot be empty.');
+      throw new Error(
+        'Choice question cannot be empty.');
     }
 
     if (normalizedOptions.length < 2) {
-      throw new Error('Choice options must include at least two items.');
+      throw new Error(
+        'Choice options must include at least two items.');
     }
 
     context.showChoicePrompt(
@@ -729,7 +758,8 @@ export function createAppRuntimeTools(
       await evalInAppTool(code);
 
     if (result === false) {
-      throw new Error(message?.trim() || 'App assertion returned false.');
+      throw new Error(
+        message?.trim() || 'App assertion returned false.');
     }
 
     return result;
@@ -753,7 +783,8 @@ export function createAppRuntimeTools(
         path);
 
     if (resolvedPath === null) {
-      throw new Error(`Test file not found: ${path}`);
+      throw new Error(
+        `Test file not found: ${path}`);
     }
 
     const tests =
@@ -761,7 +792,7 @@ export function createAppRuntimeTools(
         resolvedPath,
         await readFileTool(resolvedPath));
 
-    const results: AppTestResult[] = [];
+    const results: AppTestResult[] = [ ];
 
     for (const testCase of tests) {
       try {
@@ -774,34 +805,33 @@ export function createAppRuntimeTools(
           { evalInApp:
               code => context.evaluateInApp(code),
             assertInApp:
-              async (code, message) =>
-          {
+              async (
+                  code,
+                  message
+                ) =>
+              {
             const result =
               await context.evaluateInApp(code);
 
             if (result === false) {
               throw new Error(
-                message?.trim() || 'App assertion returned false.'
-              );
+                message?.trim() || 'App assertion returned false.');
             }
 
             return result;
           },
             getAppDiagnostics:
               getAppDiagnosticsTool,
-            wait:
-              context.wait };
+            wait: context.wait };
 
         await testCase.run(helpers);
 
         results.push(
-          { name:
-              testCase.name,
+          { name: testCase.name,
             ok: true });
       } catch (error) {
         results.push(
-          { name:
-              testCase.name,
+          { name: testCase.name,
             ok: false,
             error:
               error instanceof Error
@@ -811,8 +841,7 @@ export function createAppRuntimeTools(
     }
 
     return { path: resolvedPath,
-             total:
-               results.length,
+             total: results.length,
              passed:
                results.filter(
                  result => result.ok).length,
@@ -842,41 +871,34 @@ export function createAppRuntimeTools(
   async function startGenerationTool(
     ): Promise<string>
   {
-    if (context.startGeneration === undefined) {
-      throw new Error('Generation control is not available in this lane.');
+    if (
+      context.startGeneration
+      === undefined
+    ) {
+      throw new Error(
+        'Generation control is not available in this lane.');
     }
 
     return context.startGeneration();
   }
 
-  return { listFileset:
-             listFilesetTool,
-           listFilesByMask:
-             listFilesByMaskTool,
+  return { listFileset: listFilesetTool,
+           listFilesByMask: listFilesByMaskTool,
            readFile: readFileTool,
            readFiles: readFilesTool,
-           readFilesByMask:
-             readFilesByMaskTool,
-           readFileData:
-             readFileDataTool,
-           setFilesContent:
-             setFilesContentTool,
-           setFileData:
-             setFileDataTool,
-           setFileContent:
-             setFileContentTool,
+           readFilesByMask: readFilesByMaskTool,
+           readFileData: readFileDataTool,
+           setFilesContent: setFilesContentTool,
+           setFileData: setFileDataTool,
+           setFileContent: setFileContentTool,
            deleteFile: deleteFileTool,
-           replaceFilePart:
-             replaceFilePartTool,
+           replaceFilePart: replaceFilePartTool,
            grep: grepTool,
            choose: chooseTool,
            evalInApp: evalInAppTool,
-           assertInApp:
-             assertInAppTool,
-           runAppTests:
-             runAppTestsTool,
-           startGeneration:
-             startGenerationTool,
+           assertInApp: assertInAppTool,
+           runAppTests: runAppTestsTool,
+           startGeneration: startGenerationTool,
            getAppDiagnostics:
              getAppDiagnosticsTool,
            runAppAndCollectDiagnostics:
@@ -891,7 +913,8 @@ function requireCurrentAppId(
     context.getCurrentAppId();
 
   if (appId === null) {
-    throw new Error('No active app. Create or open an app first.');
+    throw new Error(
+      'No active app. Create or open an app first.');
   }
 
   return appId;
@@ -915,11 +938,13 @@ function normalizeToolPath(
       '');
 
   if (normalized === '') {
-    throw new Error('Path cannot be empty.');
+    throw new Error(
+      'Path cannot be empty.');
   }
 
   if (normalized.includes('..')) {
-    throw new Error('Parent path segments are not allowed.');
+    throw new Error(
+      'Parent path segments are not allowed.');
   }
 
   return normalized;
@@ -940,11 +965,13 @@ function normalizeMimeType(
     mimeType.trim().toLowerCase();
 
   if (normalized === '') {
-    throw new Error('MIME type cannot be empty.');
+    throw new Error(
+      'MIME type cannot be empty.');
   }
 
   if (!/^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i.test(normalized)) {
-    throw new Error(`Invalid MIME type: ${mimeType}`);
+    throw new Error(
+      `Invalid MIME type: ${mimeType}`);
   }
 
   return normalized;
@@ -965,11 +992,13 @@ function normalizeBase64Data(
       '');
 
   if (trimmed === '') {
-    throw new Error('Base64 data cannot be empty.');
+    throw new Error(
+      'Base64 data cannot be empty.');
   }
 
   if (!/^[a-z0-9+/]+=*$/i.test(trimmed)) {
-    throw new Error('Base64 data contains invalid characters.');
+    throw new Error(
+      'Base64 data contains invalid characters.');
   }
 
   return trimmed;
@@ -982,7 +1011,8 @@ function limitToolText(
 {
   if (
     !Number.isFinite(
-      maxCharsPerFile) || maxCharsPerFile <= 0
+      maxCharsPerFile)
+    || maxCharsPerFile <= 0
   ) {
     return value;
   }
@@ -1053,7 +1083,9 @@ function createMaskRegex(
       /::DOUBLE_STAR::/g,
       '.*');
 
-  return new RegExp(`^${pattern}$`, 'i');
+  return new RegExp(
+    `^${pattern}$`,
+    'i');
 }
 
 function createSearchRegex(
@@ -1064,13 +1096,14 @@ function createSearchRegex(
   const normalizedFlags =
     Array.from(
       new Set(
-      flags.replace(
-        /g/g,
-        '').split('')
-    ))
+        flags.replace(
+          /g/g,
+          '').split('')))
     .join('');
 
-  return new RegExp(pattern, normalizedFlags);
+  return new RegExp(
+    pattern,
+    normalizedFlags);
 }
 
 function normalizePositiveInteger(
@@ -1078,7 +1111,10 @@ function normalizePositiveInteger(
     fallback: number
   ): number
 {
-  if (!Number.isFinite(value) || value <= 0) {
+  if (
+    !Number.isFinite(value)
+    || value <= 0
+  ) {
     return fallback;
   }
 
@@ -1115,8 +1151,7 @@ async function parseJavaScriptAppTests(
 
   if (!Array.isArray(rawTests)) {
     throw new Error(
-      'Test module must export an array or an object with a tests array as the default export.'
-    );
+      'Test module must export an array or an object with a tests array as the default export.');
   }
 
   return rawTests.map(
@@ -1131,29 +1166,43 @@ function normalizeModuleTestCase(
     index: number
   ): AppTestCase
 {
-  if (value === null || typeof value !== 'object') {
-    throw new Error(`Invalid test case at index ${index}.`);
+  if (
+    value === null
+    || typeof value
+       !== 'object'
+  ) {
+    throw new Error(
+      `Invalid test case at index ${index}.`);
   }
 
   const testCase =
     value as AppTestModuleCase;
 
-  if (typeof testCase.name !== 'string' || testCase.name.trim() === '') {
-    throw new Error(`Test case ${index + 1} is missing a name.`);
+  if (
+    typeof testCase.name
+    !== 'string'
+    || testCase.name.trim() === ''
+  ) {
+    throw new Error(
+      `Test case ${index + 1} is missing a name.`);
   }
 
-  if (typeof testCase.run !== 'function') {
-    throw new Error(`Test case ${testCase.name} is missing run().`);
+  if (
+    typeof testCase.run
+    !== 'function'
+  ) {
+    throw new Error(
+      `Test case ${testCase.name} is missing run().`);
   }
 
-  const run =
-    testCase.run;
+  const run = testCase.run;
 
-  return { name:
-             testCase.name,
+  return { name: testCase.name,
            run:
-             async helpers =>
-    {
+             async (
+                 helpers
+               ) =>
+             {
       await run(helpers);
     } };
 }
@@ -1165,9 +1214,11 @@ function parseLegacyJsonAppTests(
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(content);
+    parsed =
+      JSON.parse(content);
   } catch {
-    throw new Error('Test suite file must be valid JSON.');
+    throw new Error(
+      'Test suite file must be valid JSON.');
   }
 
   const rawTests =
@@ -1177,39 +1228,58 @@ function parseLegacyJsonAppTests(
 
   if (!Array.isArray(rawTests)) {
     throw new Error(
-      'Test suite file must be an array or an object with a tests array.'
-    );
+      'Test suite file must be an array or an object with a tests array.');
   }
 
   return rawTests.map(
-    (value, index) =>
+    (
+        value,
+        index
+      ) =>
     {
-      if (value === null || typeof value !== 'object') {
-        throw new Error(`Invalid test case at index ${index}.`);
+      if (
+        value === null
+        || typeof value
+           !== 'object'
+      ) {
+        throw new Error(
+          `Invalid test case at index ${index}.`);
       }
 
       const testCase =
         value as { name?: unknown; code?: unknown; };
 
-      if (typeof testCase.name !== 'string' || testCase.name.trim() === '') {
-        throw new Error(`Test case ${index + 1} is missing a name.`);
+      if (
+        typeof testCase.name
+        !== 'string'
+        || testCase.name.trim() === ''
+      ) {
+        throw new Error(
+          `Test case ${index + 1} is missing a name.`);
       }
 
-      if (typeof testCase.code !== 'string' || testCase.code.trim() === '') {
-        throw new Error(`Test case ${testCase.name} is missing code.`);
+      if (
+        typeof testCase.code
+        !== 'string'
+        || testCase.code.trim() === ''
+      ) {
+        throw new Error(
+          `Test case ${testCase.name} is missing code.`);
       }
 
-      return { name:
-                 testCase.name,
+      return { name: testCase.name,
                run:
-                 async helpers =>
-        {
+                 async (
+                     helpers
+                   ) =>
+                 {
           const result =
             await helpers.evalInApp(
               testCase.code as string);
 
           if (result === false) {
-            throw new Error('Test returned false.');
+            throw new Error(
+              'Test returned false.');
           }
         } };
     });
@@ -1243,7 +1313,11 @@ export function isResponseFunctionCall(
     value: unknown
   ): value is ResponseFunctionCall
 {
-  if (typeof value !== 'object' || value === null) {
+  if (
+    typeof value
+    !== 'object'
+    || value === null
+  ) {
     return false;
   }
 
@@ -1254,8 +1328,13 @@ export function readFunctionName(
     toolCall: ResponseFunctionCall
   ): string
 {
-  if (typeof toolCall.name !== 'string' || toolCall.name.trim() === '') {
-    throw new Error('Tool call missing function name.');
+  if (
+    typeof toolCall.name
+    !== 'string'
+    || toolCall.name.trim() === ''
+  ) {
+    throw new Error(
+      'Tool call missing function name.');
   }
 
   return toolCall.name;
@@ -1265,8 +1344,13 @@ export function readCallId(
     toolCall: ResponseFunctionCall
   ): string
 {
-  if (typeof toolCall.call_id !== 'string' || toolCall.call_id.trim() === '') {
-    throw new Error('Tool call missing call_id.');
+  if (
+    typeof toolCall.call_id
+    !== 'string'
+    || toolCall.call_id.trim() === ''
+  ) {
+    throw new Error(
+      'Tool call missing call_id.');
   }
 
   return toolCall.call_id;
@@ -1532,25 +1616,39 @@ function parseToolArguments(
     return {};
   }
 
-  if (typeof raw === 'object' && raw !== null) {
+  if (
+    typeof raw
+    === 'object'
+    && raw !== null
+  ) {
     return raw;
   }
 
-  if (typeof raw !== 'string') {
-    throw new Error('Invalid tool arguments value.');
+  if (
+    typeof raw
+    !== 'string'
+  ) {
+    throw new Error(
+      'Invalid tool arguments value.');
   }
 
   try {
     const parsed =
       JSON.parse(raw) as unknown;
 
-    if (typeof parsed !== 'object' || parsed === null) {
-      throw new Error('Tool arguments must be a JSON object.');
+    if (
+      typeof parsed
+      !== 'object'
+      || parsed === null
+    ) {
+      throw new Error(
+        'Tool arguments must be a JSON object.');
     }
 
     return parsed as Record<string, unknown>;
   } catch {
-    throw new Error('Invalid tool arguments JSON.');
+    throw new Error(
+      'Invalid tool arguments JSON.');
   }
 }
 
@@ -1560,15 +1658,21 @@ function readStringArg(
     defaultValue?: string
   ): string
 {
-  const value =
-    args[key];
+  const value = args[key];
 
-  if (value === undefined && defaultValue !== undefined) {
+  if (
+    value === undefined
+    && defaultValue !== undefined
+  ) {
     return defaultValue;
   }
 
-  if (typeof value !== 'string') {
-    throw new Error(`Tool argument "${key}" must be a string.`);
+  if (
+    typeof value
+    !== 'string'
+  ) {
+    throw new Error(
+      `Tool argument "${key}" must be a string.`);
   }
 
   return value;
@@ -1579,14 +1683,15 @@ function readStringArrayArg(
     key: string
   ): string[]
 {
-  const value =
-    args[key];
+  const value = args[key];
 
   if (
-    !Array.isArray(value) || value.some(
+    !Array.isArray(value)
+    || value.some(
       item => typeof item !== 'string')
   ) {
-    throw new Error(`Tool argument "${key}" must be an array of strings.`);
+    throw new Error(
+      `Tool argument "${key}" must be an array of strings.`);
   }
 
   return value as string[];
@@ -1597,37 +1702,46 @@ function readFileContentEntriesArg(
     key: string
   ): FileContentEntry[]
 {
-  const value =
-    args[key];
+  const value = args[key];
 
   if (!Array.isArray(value)) {
-    throw new Error(`Tool argument "${key}" must be an array.`);
+    throw new Error(
+      `Tool argument "${key}" must be an array.`);
   }
 
   return value.map(
-    (entry, index) =>
+    (
+        entry,
+        index
+      ) =>
     {
-      if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      if (
+        typeof entry
+        !== 'object'
+        || entry === null
+        || Array.isArray(entry)
+      ) {
         throw new Error(
-          `Tool argument "${key}" entry ${index + 1} must be an object.`
-        );
+          `Tool argument "${key}" entry ${index + 1} must be an object.`);
       }
 
       const file =
         entry as Record<string, unknown>;
 
-      if (typeof file.path !== 'string' || typeof file.content !== 'string') {
+      if (
+        typeof file.path
+        !== 'string'
+        || typeof file.content
+           !== 'string'
+      ) {
         throw new Error(
           `Tool argument "${key}" entry ${
             index + 1
-          } must include string path and content fields.`
-        );
+          } must include string path and content fields.`);
       }
 
-      return { path:
-                 file.path,
-               content:
-                 file.content };
+      return { path: file.path,
+               content: file.content };
     });
 }
 
@@ -1637,15 +1751,19 @@ function readNumberArg(
     defaultValue: number
   ): number
 {
-  const value =
-    args[key];
+  const value = args[key];
 
   if (value === undefined) {
     return defaultValue;
   }
 
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    throw new Error(`Tool argument "${key}" must be a number.`);
+  if (
+    typeof value
+    !== 'number'
+    || Number.isNaN(value)
+  ) {
+    throw new Error(
+      `Tool argument "${key}" must be a number.`);
   }
 
   return value;
@@ -1657,15 +1775,18 @@ function readBooleanArg(
     defaultValue: boolean
   ): boolean
 {
-  const value =
-    args[key];
+  const value = args[key];
 
   if (value === undefined) {
     return defaultValue;
   }
 
-  if (typeof value !== 'boolean') {
-    throw new Error(`Tool argument "${key}" must be a boolean.`);
+  if (
+    typeof value
+    !== 'boolean'
+  ) {
+    throw new Error(
+      `Tool argument "${key}" must be a boolean.`);
   }
 
   return value;

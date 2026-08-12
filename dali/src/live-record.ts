@@ -86,10 +86,13 @@ export class LiveRecord<T extends Record<string, any>>
 
     // Subscribe to committed table changes first to avoid missing events
     // that occur between construction and the initial load completing.
-    this.#unsubscribe = subscribeFn(
-      {
-        add: record =>
-        {
+    this.#unsubscribe =
+      subscribeFn(
+        { add:
+            (
+                record
+              ) =>
+            {
           if (!this.#matchesKey(record)) {
             return;
           }
@@ -97,9 +100,11 @@ export class LiveRecord<T extends Record<string, any>>
           this.#loadVersion++;
           this.#setRecord(record);
         },
-
-        update: record =>
-        {
+          update:
+            (
+                record
+              ) =>
+            {
           if (!this.#matchesKey(record)) {
             return;
           }
@@ -107,9 +112,11 @@ export class LiveRecord<T extends Record<string, any>>
           this.#loadVersion++;
           this.#setRecord(record);
         },
-
-        delete: record =>
-        {
+          delete:
+            (
+                record
+              ) =>
+            {
           if (!this.#matchesKey(record)) {
             return;
           }
@@ -117,25 +124,25 @@ export class LiveRecord<T extends Record<string, any>>
           this.#loadVersion++;
           this.#setRecord(null);
         },
-
-        clear: () =>
-        {
+          clear:
+            () =>
+            {
           this.#loadVersion++;
           this.#setRecord(null);
-        }
-      });
+        } });
 
     // Load initial state asynchronously.
     // If a relevant committed event fires before this load settles,
     // the event handler increments #loadVersion and the stale load
     // result is discarded below.
-    const capturedVersion =
-      this.#loadVersion;
+    const capturedVersion = this.#loadVersion;
 
     loadFn(
       this.#key)
       .then(
-        record =>
+        (
+            record
+          ) =>
         {
           if (this.#disposed) {
             return;
@@ -148,7 +155,9 @@ export class LiveRecord<T extends Record<string, any>>
           this.#setRecord(record);
         })
       .catch(
-        error =>
+        (
+            error
+          ) =>
         {
           console.error(
             'LiveRecord: initial load failed',
@@ -229,8 +238,7 @@ export class LiveRecord<T extends Record<string, any>>
       return;
     }
 
-    const previous =
-      this.#current;
+    const previous = this.#current;
 
     this.#current = value;
 
@@ -241,11 +249,9 @@ export class LiveRecord<T extends Record<string, any>>
     // observable watch system internally and are not part of the public domain
     // event surface.
     const payload: LiveRecordSetPayload<T> =
-      {
-      property: 'record',
-      value,
-      previous
-    };
+      { property: 'record',
+        value,
+        previous };
 
     (this as any).emit(
       'set:record',

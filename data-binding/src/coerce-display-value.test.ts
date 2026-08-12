@@ -27,7 +27,8 @@ test(
   {
     const result =
       coerceDisplayValue(
-        new Date('2026-01-02T03:04:05.000Z'));
+        new Date(
+          '2026-01-02T03:04:05.000Z'));
 
     assert.equal(
       result,

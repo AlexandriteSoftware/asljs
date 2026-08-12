@@ -79,27 +79,30 @@ test(
 
     const propertyByName =
       new Map(
-      TextInputModelDefinition.properties.map(
-        property => [property.name, property])
-    );
+        TextInputModelDefinition.properties.map(
+          property => [ property.name,
+                        property ]));
 
     assert.deepEqual(
       propertyByName.get('errorMessage'),
-      {
-        name: 'errorMessage',
+      { name: 'errorMessage',
         type: 'string',
         title: 'Error message',
-        description: 'Current validation message or null.',
-        editable: false
-      });
+        description:
+          'Current validation message or null.',
+        editable: false });
 
     assert.deepEqual(
       propertyByName.get('rows'),
-      { name: 'rows', type: 'number', title: 'Rows' });
+      { name: 'rows',
+        type: 'number',
+        title: 'Rows' });
 
     assert.deepEqual(
       propertyByName.get('multiline'),
-      { name: 'multiline', type: 'boolean', title: 'Multiline' });
+      { name: 'multiline',
+        type: 'boolean',
+        title: 'Multiline' });
   });
 
 test(
@@ -111,7 +114,8 @@ test(
 
     element.value = 'bad';
 
-    element.validator = value =>
+    element.validator =
+      value =>
       value === 'ok'
         ? null
         : 'Value is invalid';
@@ -154,12 +158,15 @@ test(
     const bootstrapThemeModule =
       await import('./themes/bootstrap-theme.js');
 
-    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.theme =
+      bootstrapThemeModule.createBootstrapTheme();
+
     element.label = 'Title';
     element.description = 'Shown below';
     element.value = 'Hello';
 
-    element.validator = value =>
+    element.validator =
+      value =>
       value === 'ok'
         ? null
         : 'Value is invalid';
@@ -222,7 +229,9 @@ test(
     const bootstrapThemeModule =
       await import('./themes/bootstrap-theme.js');
 
-    element.theme = bootstrapThemeModule.createBootstrapTheme();
+    element.theme =
+      bootstrapThemeModule.createBootstrapTheme();
+
     element.multiline = true;
     element.value = 'Hello';
 
@@ -303,11 +312,13 @@ test(
 
     await settle(element);
 
-    const received: TextInputChangeDetail[] = [];
+    const received: TextInputChangeDetail[] = [ ];
 
     element.addEventListener(
       'input',
-      event =>
+      (
+          event
+        ) =>
       {
         received.push(
           ((event as unknown) as CustomEvent<TextInputChangeDetail>).detail);
@@ -321,11 +332,9 @@ test(
     input.dispatchEvent(
       new window.Event(
         'input',
-        { bubbles: true }
-      ));
+        { bubbles: true }));
 
-    const receivedDetail =
-      received[0];
+    const receivedDetail = received[0];
 
     if (receivedDetail === undefined) {
       assert.fail(
@@ -378,8 +387,8 @@ test(
     textarea.dispatchEvent(
       new window.KeyboardEvent(
         'keydown',
-        { key: 'Enter', bubbles: true }
-      ));
+        { key: 'Enter',
+          bubbles: true }));
 
     assert.equal(
       changes,
@@ -388,8 +397,9 @@ test(
     textarea.dispatchEvent(
       new window.KeyboardEvent(
         'keydown',
-        { key: 'Enter', ctrlKey: true, bubbles: true }
-      ));
+        { key: 'Enter',
+          ctrlKey: true,
+          bubbles: true }));
 
     assert.equal(
       changes,
@@ -406,7 +416,9 @@ test(
     element.multiline = true;
     element.autoExtend = true;
     element.autoExtendMaxRows = 2;
-    element.value = 'Line 1\nLine 2\nLine 3';
+
+    element.value =
+      'Line 1\nLine 2\nLine 3';
 
     document.body.appendChild(element);
 
@@ -427,7 +439,8 @@ test(
     const element =
       await createElement();
 
-    element.innerHTML = `
+    element.innerHTML =
+      `
         <template data-slot="template">
           <div>
             <div data-role="control-host"></div>
@@ -459,7 +472,8 @@ test(
     const element =
       await createElement();
 
-    element.innerHTML = `
+    element.innerHTML =
+      `
         <template data-slot="input">
           <div class="control-shell">
             <input class="custom-control"
@@ -511,34 +525,58 @@ async function ensureDomAndModuleLoaded(
 {
   if (domRestore === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLInputElement: globalThis.HTMLInputElement,
-      HTMLTextAreaElement: globalThis.HTMLTextAreaElement,
-      Event: globalThis.Event,
-      CustomEvent: globalThis.CustomEvent,
-      KeyboardEvent: globalThis.KeyboardEvent,
-      getComputedStyle: globalThis.getComputedStyle
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLInputElement:
+          globalThis.HTMLInputElement,
+        HTMLTextAreaElement:
+          globalThis.HTMLTextAreaElement,
+        Event: globalThis.Event,
+        CustomEvent:
+          globalThis.CustomEvent,
+        KeyboardEvent:
+          globalThis.KeyboardEvent,
+        getComputedStyle:
+          globalThis.getComputedStyle };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLInputElement = dom.window.HTMLInputElement;
-    globalThis.HTMLTextAreaElement = dom.window.HTMLTextAreaElement;
-    globalThis.Event = dom.window.Event;
-    globalThis.CustomEvent = dom.window.CustomEvent;
-    globalThis.KeyboardEvent = dom.window.KeyboardEvent;
 
-    globalThis.getComputedStyle = ((element: Element): CSSStyleDeclaration =>
-    {
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLInputElement =
+      dom.window.HTMLInputElement;
+
+    globalThis.HTMLTextAreaElement =
+      dom.window.HTMLTextAreaElement;
+
+    globalThis.Event = dom.window.Event;
+
+    globalThis.CustomEvent =
+      dom.window.CustomEvent;
+
+    globalThis.KeyboardEvent =
+      dom.window.KeyboardEvent;
+
+    globalThis.getComputedStyle =
+      ((
+          element: Element
+        ): CSSStyleDeclaration =>
+      {
       const style =
         dom.window.getComputedStyle(element);
 
@@ -570,18 +608,34 @@ async function ensureDomAndModuleLoaded(
       return style;
     }) as typeof globalThis.getComputedStyle;
 
-    domRestore = () =>
-    {
+    domRestore =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLInputElement = previous.HTMLInputElement;
-      globalThis.HTMLTextAreaElement = previous.HTMLTextAreaElement;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLInputElement =
+        previous.HTMLInputElement;
+
+      globalThis.HTMLTextAreaElement =
+        previous.HTMLTextAreaElement;
+
       globalThis.Event = previous.Event;
-      globalThis.CustomEvent = previous.CustomEvent;
-      globalThis.KeyboardEvent = previous.KeyboardEvent;
-      globalThis.getComputedStyle = previous.getComputedStyle;
+
+      globalThis.CustomEvent =
+        previous.CustomEvent;
+
+      globalThis.KeyboardEvent =
+        previous.KeyboardEvent;
+
+      globalThis.getComputedStyle =
+        previous.getComputedStyle;
     };
   }
 

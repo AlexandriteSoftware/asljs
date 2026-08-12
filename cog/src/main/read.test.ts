@@ -21,8 +21,7 @@ const logger =
     'main.read.test');
 
 test.after(
-  async () =>
-    await loggerProvider.dispose());
+  async () => await loggerProvider.dispose());
 
 test(
   'read CLI normalises Windows path separators in stored update pattern',

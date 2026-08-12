@@ -15,8 +15,7 @@ const loggerProvider =
   createLoggerProvider();
 
 test.after(
-  async () =>
-    await loggerProvider.dispose());
+  async () => await loggerProvider.dispose());
 
 test(
   'RQ205: FilesystemLocationResolver resolvers files: relative, base = root',

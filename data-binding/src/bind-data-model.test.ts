@@ -9,15 +9,15 @@ import { test }
 import { bindDataModel }
   from './bind-data-model.js';
 
-const TEST_SUITE =
-  'bind-data-model';
+const TEST_SUITE = 'bind-data-model';
 
 test(
   `${TEST_SUITE}: applies pipes and writes to text target`,
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="name | upper"></span>
           </div>
@@ -40,7 +40,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="name | default:unknown"></span>
           </div>
@@ -74,7 +75,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="user.name"></span>
           </div>
@@ -85,7 +87,8 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     bindDataModel(
       root,
@@ -101,7 +104,8 @@ test(
       root.querySelector('span')?.textContent,
       'Bob');
 
-    model.user = { name: 'Carol' };
+    model.user =
+      { name: 'Carol' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -113,7 +117,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="isActive | yesno"></span>
           </div>
@@ -125,14 +130,12 @@ test(
     bindDataModel(
       root,
       { isActive: true },
-      {
-        pipes: {
-          yesno: value =>
+      { pipes:
+          { yesno:
+              value =>
             value
               ? 'Yes'
-              : 'No'
-        }
-      });
+              : 'No' } });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -144,7 +147,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="name | missing"></span>
           </div>
@@ -166,7 +170,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-html="content | wrap:'<span>':'</span>'"></div>
           </div>
@@ -178,15 +183,13 @@ test(
     bindDataModel(
       root,
       { content: 'Hello' },
-      {
-        pipes: {
-          wrap: (
+      { pipes:
+          { wrap:
+              (
             value,
             before,
             after
-          ) => `${before}${value}${after}`
-        }
-      });
+          ) => `${before}${value}${after}` } });
 
     assert.equal(
       root.querySelector('div')?.innerHTML,
@@ -198,7 +201,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
           </div>
         `);
@@ -217,9 +221,14 @@ test(
 
     bindDataModel(
       root,
-      {
-        createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      });
+      { createdAt:
+          new Date(
+            2026,
+            3,
+            10,
+            13,
+            14,
+            15) });
 
     assert.equal(
       span.textContent,
@@ -231,7 +240,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="createdAt | date:'<yyyy|MM|dd &quot;hh:mm:ss&quot;>'"></span>
           </div>
@@ -242,9 +252,14 @@ test(
 
     bindDataModel(
       root,
-      {
-        createdAt: new Date(2026, 3, 10, 13, 14, 15)
-      });
+      { createdAt:
+          new Date(
+            2026,
+            3,
+            10,
+            13,
+            14,
+            15) });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -256,7 +271,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <a data-bind-href="url"></a>
             <a data-bind-title="name | blankAsNull"></a>
@@ -268,22 +284,20 @@ test(
 
     bindDataModel(
       root,
-      {
-        url: undefined,
-        name: ''
-      },
-      {
-        pipes: {
-          blankAsNull: value =>
-          {
+      { url: undefined,
+        name: '' },
+      { pipes:
+          { blankAsNull:
+              (
+                  value
+                ) =>
+              {
             if (value === '') {
               return null;
             }
 
             return value;
-          }
-        }
-      });
+          } } });
 
     const links =
       root.querySelectorAll('a');
@@ -302,7 +316,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <button data-bind-onclick="activate"></button>
           </div>
@@ -311,16 +326,15 @@ test(
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const model =
       createReactiveModel(
-        {
-        activate: () =>
-        {
+        { activate:
+            () =>
+            {
           calls.push('first');
-        }
-      });
+        } });
 
     bindDataModel(
       root,
@@ -332,8 +346,9 @@ test(
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.activate = () =>
-    {
+    model.activate =
+      () =>
+      {
       calls.push('second');
     };
 
@@ -344,7 +359,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['first', 'second']);
+      [ 'first',
+        'second' ]);
   });
 
 test(
@@ -352,7 +368,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <button data-bind-onclick="user.activate"></button>
           </div>
@@ -361,18 +378,16 @@ test(
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const model =
       observable(
-        {
-        user: {
-          activate: () =>
-          {
+        { user:
+            { activate:
+                () =>
+                {
             calls.push('first');
-          }
-        }
-      });
+          } } });
 
     bindDataModel(
       root,
@@ -384,27 +399,30 @@ test(
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.user.activate = () =>
-    {
+    model.user.activate =
+      () =>
+      {
       calls.push('second');
     };
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.user = {
-      activate: () =>
-      {
+    model.user =
+      { activate:
+          () =>
+          {
         calls.push('third');
-      }
-    };
+      } };
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second', 'third']);
+      [ 'first',
+        'second',
+        'third' ]);
   });
 
 test(
@@ -412,7 +430,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <button data-bind-onclick="activate"></button>
           </div>
@@ -421,16 +440,15 @@ test(
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
 
-    const calls: number[] = [];
+    const calls: number[] = [ ];
 
     const model =
       createReactiveModel(
-        {
-        activate: () =>
-        {
+        { activate:
+            () =>
+            {
           calls.push(1);
-        }
-      });
+        } });
 
     const dispose =
       bindDataModel(
@@ -447,7 +465,7 @@ test(
 
     assert.deepEqual(
       calls,
-      []);
+      [ ]);
   });
 
 test(
@@ -455,7 +473,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <a data-bind-href="url"
                data-bind-text="label | upper"
@@ -471,16 +490,18 @@ test(
 
     const model =
       createReactiveModel(
-        {
-        url: 'https://example.com',
-        label: 'details',
-        isActive: true,
-        openDetails: (event: Event) =>
-        {
+        { url:
+            'https://example.com',
+          label: 'details',
+          isActive: true,
+          openDetails:
+            (
+                event: Event
+              ) =>
+            {
           event.preventDefault();
           clicks += 1;
-        }
-      });
+        } });
 
     bindDataModel(
       root,
@@ -502,7 +523,9 @@ test(
       true);
 
     const clickEvent =
-      new dom.window.MouseEvent('click', { cancelable: true });
+      new dom.window.MouseEvent(
+        'click',
+        { cancelable: true });
 
     anchor.dispatchEvent(clickEvent);
 
@@ -520,7 +543,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -533,7 +557,8 @@ test(
 
     bindDataModel(
       root,
-      { user: { name: 'Alice' } });
+      { user:
+          { name: 'Alice' } });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -545,7 +570,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="link">
               <a data-bind-href="url" data-bind-text="label"></a>
@@ -558,7 +584,10 @@ test(
 
     bindDataModel(
       root,
-      { link: { url: 'https://example.com', label: 'Example' } });
+      { link:
+          { url:
+              'https://example.com',
+            label: 'Example' } });
 
     const anchor =
       root.querySelector('a') as HTMLAnchorElement;
@@ -577,7 +606,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="item">
               <button data-bind-class-active="selected" data-bind-prop-disabled="locked"></button>
@@ -590,7 +620,9 @@ test(
 
     bindDataModel(
       root,
-      { item: { selected: true, locked: false } });
+      { item:
+          { selected: true,
+            locked: false } });
 
     const button =
       root.querySelector('button') as HTMLButtonElement;
@@ -609,7 +641,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="item">
               <button data-bind-onclick="save"></button>
@@ -620,11 +653,13 @@ test(
     const root =
       dom.window.document.getElementById('root') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     bindDataModel(
       root,
-      { item: { save: () => calls.push('saved') } });
+      { item:
+          { save:
+              () => calls.push('saved') } });
 
     const button =
       root.querySelector('button') as HTMLButtonElement;
@@ -634,7 +669,7 @@ test(
 
     assert.deepEqual(
       calls,
-      ['saved']);
+      [ 'saved' ]);
   });
 
 test(
@@ -642,7 +677,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="item">
               <div data-bind-context="author">
@@ -657,7 +693,9 @@ test(
 
     bindDataModel(
       root,
-      { item: { author: { name: 'Bob' } } });
+      { item:
+          { author:
+              { name: 'Bob' } } });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -669,7 +707,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -682,7 +721,8 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     bindDataModel(
       root,
@@ -692,7 +732,8 @@ test(
       root.querySelector('span')?.textContent,
       'Alice');
 
-    model.user = { name: 'Carol' };
+    model.user =
+      { name: 'Carol' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -704,7 +745,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -717,7 +759,8 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     bindDataModel(
       root,
@@ -735,7 +778,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="item">
               <span data-bind-text="name"></span>
@@ -750,7 +794,8 @@ test(
       () =>
         bindDataModel(
           root,
-          { item: null as unknown as Record<string, unknown> }));
+          { item:
+              null as unknown as Record<string, unknown> }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -762,7 +807,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="item">
               <span data-bind-text="name"></span>
@@ -777,7 +823,8 @@ test(
       () =>
         bindDataModel(
           root,
-          { item: undefined as unknown as Record<string, unknown> }));
+          { item:
+              undefined as unknown as Record<string, unknown> }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -789,7 +836,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -802,16 +850,17 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     bindDataModel(
       root,
       model as unknown as Record<string, unknown>);
 
-    const oldUser =
-      model.user;
+    const oldUser = model.user;
 
-    model.user = { name: 'Carol' };
+    model.user =
+      { name: 'Carol' };
 
     // mutating the old user object should no longer update the span
     oldUser.name = 'Stale';
@@ -826,7 +875,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -839,7 +889,8 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     const dispose =
       bindDataModel(
@@ -848,7 +899,8 @@ test(
 
     dispose();
 
-    model.user = { name: 'Carol' };
+    model.user =
+      { name: 'Carol' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -860,7 +912,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <div data-bind-context="user">
               <span data-bind-text="name"></span>
@@ -873,7 +926,8 @@ test(
 
     const model =
       observable(
-        { user: null as unknown });
+        { user:
+            null as unknown });
 
     bindDataModel(
       root,
@@ -883,7 +937,8 @@ test(
       root.querySelector('span')?.textContent,
       '');
 
-    model.user = { name: 'Dave' };
+    model.user =
+      { name: 'Dave' };
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -895,7 +950,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div id="root">
             <span data-bind-text="title"></span>
             <div data-bind-context="user">
@@ -909,7 +965,9 @@ test(
 
     bindDataModel(
       root,
-      { title: 'Hello', user: { name: 'Alice' } });
+      { title: 'Hello',
+        user:
+          { name: 'Alice' } });
 
     const spans =
       root.querySelectorAll('span');
@@ -943,10 +1001,13 @@ function createReactiveModel(
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
   const model: ReactiveModel =
-    {
-    ...initial,
-    on: (event, listener) =>
-    {
+    { ...initial,
+      on:
+        (
+            event,
+            listener
+          ) =>
+        {
       if (!listeners.has(event)) {
         listeners.set(
           event,
@@ -957,8 +1018,12 @@ function createReactiveModel(
 
       return () => listeners.get(event)?.delete(listener) ?? false;
     },
-    emit: (event, ...args) =>
-    {
+      emit:
+        (
+            event,
+            ...args
+          ) =>
+        {
       const registered =
         listeners.get(event);
 
@@ -970,8 +1035,7 @@ function createReactiveModel(
         listener(
           ...args);
       }
-    }
-  };
+    } };
 
   return model;
 }

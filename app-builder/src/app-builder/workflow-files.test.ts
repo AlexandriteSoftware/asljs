@@ -25,7 +25,9 @@ test(
     assert.deepEqual(
       files.map(
         file => file.name),
-      [README_FILE, PLAN_FILE, CHANGE_FILE]);
+      [ README_FILE,
+        PLAN_FILE,
+        CHANGE_FILE ]);
 
     assert.match(
       files[0].content,
@@ -40,16 +42,12 @@ test(
       ensureWorkflowFiles(
         { appId: 'app-1',
           appName: 'Demo App',
-          createId:
-            () => 'new-file',
+          createId: () => 'new-file',
           files:
-            [
-          { id: 'f1',
-            appId: 'app-1',
-            name: README_FILE,
-            content:
-              '# Existing README' }
-        ] });
+            [ { id: 'f1',
+                appId: 'app-1',
+                name: README_FILE,
+                content: '# Existing README' } ] });
 
     assert.equal(
       result.changed,
@@ -62,7 +60,9 @@ test(
     assert.deepEqual(
       result.files.map(
         file => file.name),
-      [README_FILE, PLAN_FILE, CHANGE_FILE]);
+      [ README_FILE,
+        PLAN_FILE,
+        CHANGE_FILE ]);
   });
 
 test(
@@ -70,16 +70,19 @@ test(
   () =>
   {
     assert.equal(
-      hasOnlyWorkflowFiles([]),
+      hasOnlyWorkflowFiles([ ]),
       true);
 
     assert.equal(
       hasOnlyWorkflowFiles(
-        [README_FILE, PLAN_FILE, CHANGE_FILE]),
+        [ README_FILE,
+          PLAN_FILE,
+          CHANGE_FILE ]),
       true);
 
     assert.equal(
       hasOnlyWorkflowFiles(
-        [README_FILE, 'app.js']),
+        [ README_FILE,
+          'app.js' ]),
       false);
   });

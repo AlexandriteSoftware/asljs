@@ -1,11 +1,11 @@
+import { type Logger }
+  from 'asljs-logging';
 import fs
   from 'node:fs/promises';
 import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { type Logger }
-  from 'asljs-logging';
 import { Envelope }
   from './envelope.js';
 

@@ -1,5 +1,4 @@
-export const SAGA_STORE_NAME =
-  'saga_transactions';
+export const SAGA_STORE_NAME = 'saga_transactions';
 
 export const SAGA_ENTRIES_STORE_NAME = 'saga_entries';
 

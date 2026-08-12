@@ -15,17 +15,16 @@ import { AiTools,
 
 const TEST_TOOLS: AiTools =
   { listFileset:
-      async () => ['index.html'],
+      async () => [ 'index.html' ],
     listFilesByMask:
-      async () => ['index.html'],
+      async () => [ 'index.html' ],
     readFile:
       async () => 'content',
     readFiles:
       async () => ({ 'index.html': 'content' }),
     readFilesByMask:
       async () => ({ 'index.html': 'content' }),
-    readFileData:
-      async () => null,
+    readFileData: async () => null,
     setFilesContent:
       async () => undefined,
     setFileData:
@@ -36,43 +35,39 @@ const TEST_TOOLS: AiTools =
       async () => undefined,
     replaceFilePart:
       async () => undefined,
-    grep:
-      async () => [],
+    grep: async () => [ ],
     choose:
       async () => undefined,
-    evalInApp:
-      async () => null,
-    assertInApp:
-      async () => true,
+    evalInApp: async () => null,
+    assertInApp: async () => true,
     runAppTests:
       async () => ({ path: 'app.tests.js',
                      total: 0,
                      passed: 0,
                      failed: 0,
-                     results: [] }),
+                     results: [ ] }),
     startGeneration:
       async () => 'queued',
-    getAppDiagnostics:
-      async () => null,
-    runAppAndCollectDiagnostics:
-      async () => null };
+    getAppDiagnostics: async () => null,
+    runAppAndCollectDiagnostics: async () => null };
 
 test(
   'generateApp returns output_text summary with injected transport',
   async () =>
   {
-    const requests: unknown[] = [];
+    const requests: unknown[] = [ ];
 
     const transport: AiResponsesTransport =
       { createResponse:
-          async request =>
-      {
+          async (
+              request
+            ) =>
+          {
         requests.push(request);
 
         return { id: 'resp-1',
-                 output_text:
-                   'Completed summary',
-                 output: [] };
+                 output_text: 'Completed summary',
+                 output: [ ] };
       } };
 
     const result =
@@ -96,13 +91,15 @@ test(
   'generateApp executes tool calls and sends function_call_output via transport',
   async () =>
   {
-    const requests: Array<Record<string, unknown>> = [];
+    const requests: Array<Record<string, unknown>> = [ ];
     let callCount = 0;
 
     const transport: AiResponsesTransport =
       { createResponse:
-          async request =>
-      {
+          async (
+              request
+            ) =>
+          {
         requests.push(
           request as Record<string, unknown>);
 
@@ -111,13 +108,10 @@ test(
         if (callCount === 1) {
           return { id: 'resp-1',
                    output:
-                     [
-              { type:
-                  'function_call',
-                name: 'listFileset',
-                call_id: 'call-1',
-                arguments: '{}' }
-            ] };
+                     [ { type: 'function_call',
+                         name: 'listFileset',
+                         call_id: 'call-1',
+                         arguments: '{}' } ] };
         }
 
         const toolOutputs =
@@ -140,16 +134,11 @@ test(
           '{"ok":true,"value":["index.html"]}');
 
         return { output:
-                   [
-            { type: 'message',
-              role: 'assistant',
-              content:
-                [
-                { type: 'output_text',
-                  text:
-                    'Applied update.' }
-              ] }
-          ] };
+                   [ { type: 'message',
+                       role: 'assistant',
+                       content:
+                         [ { type: 'output_text',
+                             text: 'Applied update.' } ] } ] };
       } };
 
     const result =
@@ -184,7 +173,7 @@ test(
     const transport: AiResponsesTransport =
       { createResponse:
           async () =>
-      {
+          {
         throw new Error('Transport failed');
       } };
 
@@ -207,13 +196,10 @@ test(
       { createResponse:
           async () => ({ id: 'resp-1',
                          output:
-                           [
-          { type:
-              'function_call',
-            name: 'listFileset',
-            call_id: 'call-1',
-            arguments: '{}' }
-        ] }) };
+                           [ { type: 'function_call',
+                               name: 'listFileset',
+                               call_id: 'call-1',
+                               arguments: '{}' } ] }) };
 
     await assert.rejects(
       () =>
@@ -223,8 +209,7 @@ test(
           DEFAULT_MODEL,
           TEST_TOOLS,
           { initialToolStepLimit: 0,
-            onToolStepLimit:
-              async () => false,
+            onToolStepLimit: async () => false,
             transport }),
       error => error instanceof ToolStepLimitExceededError);
   });
@@ -239,25 +224,22 @@ test(
     const transport: AiResponsesTransport =
       { createResponse:
           async () =>
-      {
+          {
         transportCalls += 1;
 
         if (transportCalls <= 2) {
           return { id:
                      `resp-${transportCalls}`,
                    output:
-                     [
-              { type:
-                  'function_call',
-                name: 'listFileset',
-                call_id:
-                  `call-${transportCalls}`,
-                arguments: {} }
-            ] };
+                     [ { type: 'function_call',
+                         name: 'listFileset',
+                         call_id:
+                           `call-${transportCalls}`,
+                         arguments: {} } ] };
         }
 
         return { output_text: 'done',
-                 output: [] };
+                 output: [ ] };
       } };
 
     const result =
@@ -269,7 +251,7 @@ test(
         { initialToolStepLimit: 1,
           onToolStepLimit:
             async () =>
-        {
+            {
           onToolStepLimitCalls += 1;
           return true;
         },
@@ -290,32 +272,28 @@ test(
   {
     const transport: AiModelsTransport =
       { listModels:
-          async apiKey =>
-      {
+          async (
+              apiKey
+            ) =>
+          {
         assert.equal(
           apiKey,
           'test-key');
 
-        return [
-          { id: 'gpt-5-mini',
-            created: 1 },
-          { id:
-              'gpt-5.4-codex',
-            created: 2 }
-        ];
+        return [ { id: 'gpt-5-mini',
+                   created: 1 },
+                 { id: 'gpt-5.4-codex',
+                   created: 2 } ];
       } };
 
     assert.deepEqual(
       await listAvailableModels(
         'test-key',
         transport),
-      [
-        { id: 'gpt-5-mini',
+      [ { id: 'gpt-5-mini',
           created: 1 },
-        { id:
-            'gpt-5.4-codex',
-          created: 2 }
-      ]);
+        { id: 'gpt-5.4-codex',
+          created: 2 } ]);
   });
 
 test(
@@ -325,13 +303,14 @@ test(
     const transport: AiModelsTransport =
       { listModels:
           async () =>
-      {
-        throw new Error('should not be called');
+          {
+        throw new Error(
+          'should not be called');
       } };
 
     assert.deepEqual(
       await listAvailableModels(
         '',
         transport),
-      []);
+      [ ]);
   });

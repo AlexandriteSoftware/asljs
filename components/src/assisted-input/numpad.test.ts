@@ -68,9 +68,12 @@ test(
 
     element.addEventListener(
       'key',
-      event =>
+      (
+          event
+        ) =>
       {
-        receivedKey = (event as CustomEvent<{ key: string; }>).detail.key;
+        receivedKey =
+          (event as CustomEvent<{ key: string; }>).detail.key;
       });
 
     getButton(
@@ -87,45 +90,76 @@ async function ensureDomAndModuleLoaded(
 {
   if (restoreDom === null) {
     const dom =
-      new JSDOM('<!doctype html><html><body></body></html>');
+      new JSDOM(
+        '<!doctype html><html><body></body></html>');
 
     const previous =
-      {
-      window: globalThis.window,
-      document: globalThis.document,
-      Document: globalThis.Document,
-      Event: globalThis.Event,
-      CustomEvent: globalThis.CustomEvent,
-      customElements: globalThis.customElements,
-      HTMLElement: globalThis.HTMLElement,
-      HTMLButtonElement: globalThis.HTMLButtonElement,
-      ShadowRoot: globalThis.ShadowRoot,
-      CSSStyleSheet: globalThis.CSSStyleSheet
-    };
+      { window: globalThis.window,
+        document: globalThis.document,
+        Document: globalThis.Document,
+        Event: globalThis.Event,
+        CustomEvent:
+          globalThis.CustomEvent,
+        customElements:
+          globalThis.customElements,
+        HTMLElement:
+          globalThis.HTMLElement,
+        HTMLButtonElement:
+          globalThis.HTMLButtonElement,
+        ShadowRoot:
+          globalThis.ShadowRoot,
+        CSSStyleSheet:
+          globalThis.CSSStyleSheet };
 
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
     globalThis.document = dom.window.document;
     globalThis.Document = dom.window.Document;
     globalThis.Event = dom.window.Event;
-    globalThis.CustomEvent = dom.window.CustomEvent;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
-    globalThis.HTMLButtonElement = dom.window.HTMLButtonElement;
-    globalThis.ShadowRoot = dom.window.ShadowRoot;
-    globalThis.CSSStyleSheet = dom.window.CSSStyleSheet;
 
-    restoreDom = () =>
-    {
+    globalThis.CustomEvent =
+      dom.window.CustomEvent;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    globalThis.HTMLButtonElement =
+      dom.window.HTMLButtonElement;
+
+    globalThis.ShadowRoot =
+      dom.window.ShadowRoot;
+
+    globalThis.CSSStyleSheet =
+      dom.window.CSSStyleSheet;
+
+    restoreDom =
+      () =>
+      {
       globalThis.window = previous.window;
       globalThis.document = previous.document;
       globalThis.Document = previous.Document;
       globalThis.Event = previous.Event;
-      globalThis.CustomEvent = previous.CustomEvent;
-      globalThis.customElements = previous.customElements;
-      globalThis.HTMLElement = previous.HTMLElement;
-      globalThis.HTMLButtonElement = previous.HTMLButtonElement;
+
+      globalThis.CustomEvent =
+        previous.CustomEvent;
+
+      globalThis.customElements =
+        previous.customElements;
+
+      globalThis.HTMLElement =
+        previous.HTMLElement;
+
+      globalThis.HTMLButtonElement =
+        previous.HTMLButtonElement;
+
       globalThis.ShadowRoot = previous.ShadowRoot;
-      globalThis.CSSStyleSheet = previous.CSSStyleSheet;
+
+      globalThis.CSSStyleSheet =
+        previous.CSSStyleSheet;
     };
   }
 

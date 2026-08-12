@@ -97,8 +97,7 @@ export function createFirstApplicationDialogUi(
     elBtnCreate,
     { text:
         'Create Application',
-      className:
-        'btn btn-primary' });
+      className: 'btn btn-primary' });
 
   configureButton(
     elBtnCreateSample,
@@ -174,7 +173,9 @@ export function createFirstApplicationDialogUi(
 
   elNameInput.addEventListener(
     'keydown',
-    (event: KeyboardEvent) =>
+    (
+        event: KeyboardEvent
+      ) =>
     {
       if (event.key === 'Enter') {
         event.preventDefault();

@@ -6,11 +6,13 @@ import { DataModel,
          EventBindingSpec }
   from './types.js';
 
-type ActionFn = (
-  event: Event,
-  model: DataModel,
-  element: Element
-) => unknown;
+type ActionFn =
+  (
+    event: Event,
+    model: DataModel,
+    element: Element
+  ) =>
+    unknown;
 
 export function bindEventModel(
     element: HTMLElement,
@@ -31,16 +33,22 @@ export function bindEventModel(
 
   const refreshAction =
     (): void =>
-  {
-    currentAction = readModelPath(
-      model,
-      spec.actionPath);
+    {
+    currentAction =
+      readModelPath(
+        model,
+        spec.actionPath);
   };
 
   const listener =
-    (event: Event): void =>
-  {
-    if (typeof currentAction !== 'function') {
+    (
+        event: Event
+      ): void =>
+    {
+    if (
+      typeof currentAction
+      !== 'function'
+    ) {
       warnOnce(
         `${warnPrefix}:missing-action:${spec.actionPath}`,
         `${warnPrefix}: action '${spec.actionPath}' is not a function`);
@@ -75,7 +83,10 @@ export function bindEventModel(
         spec.actionPath,
         () => refreshAction());
 
-    if (typeof maybeUnsubscribe === 'function') {
+    if (
+      typeof maybeUnsubscribe
+      === 'function'
+    ) {
       unsubscribe = maybeUnsubscribe;
     }
   }

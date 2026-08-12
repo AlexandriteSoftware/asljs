@@ -50,13 +50,11 @@ export function buildChangeListFromPlan(
         ? line
         : `- ${line}`);
 
-  return [
-    '# CHANGE',
-    '',
-    'Current generation cycle:',
-    '',
-    ...items
-  ].join('\n');
+  return [ '# CHANGE',
+           '',
+           'Current generation cycle:',
+           '',
+           ...items ].join('\n');
 }
 
 function normalizeWorkflowBody(
@@ -66,7 +64,9 @@ function normalizeWorkflowBody(
 {
   return content
     .replace(
-      new RegExp(`^#\\s+${heading}\\s*$`, 'im'),
+      new RegExp(
+        `^#\\s+${heading}\\s*$`,
+        'im'),
       '')
     .trim();
 }

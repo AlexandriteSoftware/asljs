@@ -5,11 +5,16 @@ import { test }
 import { formatDate }
   from './date-formatting.js';
 
-const TEST_SUITE =
-  'date-formatting';
+const TEST_SUITE = 'date-formatting';
 
 const date =
-  new Date(2026, 0, 5, 8, 9, 4);
+  new Date(
+    2026,
+    0,
+    5,
+    8,
+    9,
+    4);
 
 test(
   `${TEST_SUITE}: formats yyyy`,

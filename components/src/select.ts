@@ -30,9 +30,11 @@ export interface SelectItem
   disabled?: boolean;
 }
 
-export type SelectValidator = (
-  value: string
-) => string | null;
+export type SelectValidator =
+  (
+    value: string
+  ) =>
+    string | null;
 
 export interface SelectChangeDetail
 {
@@ -66,54 +68,68 @@ type SelectTemplateModel = Observable<{
 }>;
 
 export const SelectModelDefinition: ComponentModelDefinition =
-  {
-  name: 'SelectModelDefinition',
-  title: 'Select',
-  properties: [
-    { name: 'label', title: 'Label', type: 'string' },
-    { name: 'description', title: 'Description', type: 'string' },
-    {
-      name: 'validator',
-      title: 'Validator',
-      type: 'function',
-      description: 'Validation function that returns an error message or null.'
-    },
-    {
-      name: 'theme',
-      title: 'Theme',
-      type: 'object',
-      description: 'Per-instance components theme override.'
-    },
-    { name: 'value', title: 'Value', type: 'string' },
-    { name: 'placeholder', title: 'Placeholder', type: 'string' },
-    { name: 'items', title: 'Items', type: 'array' },
-    { name: 'disabled', title: 'Disabled', type: 'boolean' },
-    { name: 'controlClassName', title: 'Control class name', type: 'string' },
-    {
-      name: 'status',
-      title: 'Status',
-      type: 'object',
-      description: 'Observable draft status object.',
-      editable: false
-    },
-    {
-      name: 'draftValue',
-      title: 'Draft value',
-      type: 'string',
-      description: 'Current in-progress selection.',
-      editable: false
-    },
-    { name: 'isEmpty', title: 'Is empty', type: 'boolean', editable: false },
-    { name: 'isValid', title: 'Is valid', type: 'boolean', editable: false },
-    {
-      name: 'errorMessage',
-      title: 'Error message',
-      type: 'string',
-      description: 'Current validation message or null.',
-      editable: false
-    }
-  ]
-};
+  { name:
+      'SelectModelDefinition',
+    title: 'Select',
+    properties:
+      [ { name: 'label',
+          title: 'Label',
+          type: 'string' },
+        { name: 'description',
+          title: 'Description',
+          type: 'string' },
+        { name: 'validator',
+          title: 'Validator',
+          type: 'function',
+          description:
+            'Validation function that returns an error message or null.' },
+        { name: 'theme',
+          title: 'Theme',
+          type: 'object',
+          description:
+            'Per-instance components theme override.' },
+        { name: 'value',
+          title: 'Value',
+          type: 'string' },
+        { name: 'placeholder',
+          title: 'Placeholder',
+          type: 'string' },
+        { name: 'items',
+          title: 'Items',
+          type: 'array' },
+        { name: 'disabled',
+          title: 'Disabled',
+          type: 'boolean' },
+        { name: 'controlClassName',
+          title:
+            'Control class name',
+          type: 'string' },
+        { name: 'status',
+          title: 'Status',
+          type: 'object',
+          description:
+            'Observable draft status object.',
+          editable: false },
+        { name: 'draftValue',
+          title: 'Draft value',
+          type: 'string',
+          description:
+            'Current in-progress selection.',
+          editable: false },
+        { name: 'isEmpty',
+          title: 'Is empty',
+          type: 'boolean',
+          editable: false },
+        { name: 'isValid',
+          title: 'Is valid',
+          type: 'boolean',
+          editable: false },
+        { name: 'errorMessage',
+          title: 'Error message',
+          type: 'string',
+          description:
+            'Current validation message or null.',
+          editable: false } ] };
 
 @customElement('asljs-select')
 export class Select extends LitElement
@@ -129,8 +145,7 @@ export class Select extends LitElement
   #controlChangeListener: (() => void) | null = null;
   #idBase = `asljs-select-${nextSelectId++}`;
   #model: SelectTemplateModel = observable(
-    {
-      label: '',
+    { label: '',
       description: '',
       errorMessage: '',
       hideLabel: true,
@@ -138,19 +153,19 @@ export class Select extends LitElement
       hideError: true,
       hasError: false,
       isEmpty: true,
-      inputId: `${this.#idBase}-control`,
-      descriptionId: `${this.#idBase}-description`,
-      errorId: `${this.#idBase}-error`
-    });
+      inputId:
+        `${this.#idBase}-control`,
+      descriptionId:
+        `${this.#idBase}-description`,
+      errorId:
+        `${this.#idBase}-error` });
 
   readonly status: SelectStatus = observable(
-    {
-      draftValue: '',
+    { draftValue: '',
       isEmpty: true,
       isValid: true,
       errorMessage: null,
-      dirty: false
-    });
+      dirty: false });
 
   @property(
     { attribute: false })
@@ -178,7 +193,7 @@ export class Select extends LitElement
 
   @property(
     { attribute: false })
-  accessor items: SelectItem[] = [];
+  accessor items: SelectItem[] = [ ];
 
   @property(
     { attribute: false })
@@ -271,21 +286,24 @@ export class Select extends LitElement
 
   #captureTemplates(): void
   {
-    this.#templateElement = cloneNamedTemplate(
-      this,
-      'template');
+    this.#templateElement =
+      cloneNamedTemplate(
+        this,
+        'template');
 
-    this.#selectTemplateElement = cloneNamedTemplate(
-      this,
-      'select');
+    this.#selectTemplateElement =
+      cloneNamedTemplate(
+        this,
+        'select');
   }
 
   #syncThemeProvider(): void
   {
     this.#disposeThemeProvider();
 
-    this.#themeProvider = findThemeProvider(
-      this);
+    this.#themeProvider =
+      findThemeProvider(
+        this);
 
     if (this.#themeProvider === null) {
       return;
@@ -312,8 +330,9 @@ export class Select extends LitElement
 
   #applyExternalValue(): void
   {
-    this.status.draftValue = normalizeText(
-      this.value);
+    this.status.draftValue =
+      normalizeText(
+        this.value);
 
     this.#syncModelState();
     this.#syncControlState();
@@ -331,12 +350,12 @@ export class Select extends LitElement
 
     let errorMessage: string | null = null;
 
-    const validator =
-      this.validator;
+    const validator = this.validator;
 
     if (validator !== null) {
-      errorMessage = validator(
-        this.status.draftValue);
+      errorMessage =
+        validator(
+          this.status.draftValue);
     }
 
     const isEmpty =
@@ -392,9 +411,10 @@ export class Select extends LitElement
     const fragment =
       template.content.cloneNode(true) as DocumentFragment;
 
-    this.#templateDispose = bindDataModel(
-      fragment,
-      this.#model as unknown as Record<string, unknown>);
+    this.#templateDispose =
+      bindDataModel(
+        fragment,
+        this.#model as unknown as Record<string, unknown>);
 
     templateHost.replaceChildren(fragment);
     this.#mountControl();
@@ -450,20 +470,26 @@ export class Select extends LitElement
     const mountedControl =
       this.#createMountedControl(controlHost);
 
-    this.#controlTemplateDispose = bindDataModel(
-      mountedControl.fragment,
-      this.#model as unknown as Record<string, unknown>);
+    this.#controlTemplateDispose =
+      bindDataModel(
+        mountedControl.fragment,
+        this.#model as unknown as Record<string, unknown>);
 
     controlHost.replaceChildren(
       mountedControl.fragment);
 
-    this.#control = mountedControl.control;
-    this.#controlBaseClassName = mountedControl.className;
-    this.#controlInvalidClassName = mountedControl.invalidClassName;
+    this.#control =
+      mountedControl.control;
+
+    this.#controlBaseClassName =
+      mountedControl.className;
+
+    this.#controlInvalidClassName =
+      mountedControl.invalidClassName;
 
     const changeListener =
       (): void =>
-    {
+      {
       if (this.#control === null) {
         return;
       }
@@ -478,8 +504,9 @@ export class Select extends LitElement
       'change',
       changeListener);
 
-    this.#controlChangeListener = () =>
-    {
+    this.#controlChangeListener =
+      () =>
+      {
       this.#control?.removeEventListener(
         'change',
         changeListener);
@@ -490,8 +517,7 @@ export class Select extends LitElement
 
   #syncControlState(): void
   {
-    const control =
-      this.#control;
+    const control = this.#control;
 
     if (control === null) {
       return;
@@ -538,7 +564,10 @@ export class Select extends LitElement
       ? ''
       : candidateValues[0] ?? '';
 
-    if (this.status.draftValue !== nextValue) {
+    if (
+      this.status.draftValue
+      !== nextValue
+    ) {
       this.status.draftValue = nextValue;
       this.#syncModelState();
     }
@@ -547,11 +576,16 @@ export class Select extends LitElement
     control.id = this.#model.inputId;
     control.disabled = this.disabled;
 
-    control.className = joinClassNames(
-      this.#controlBaseClassName,
-      this.controlClassName);
+    control.className =
+      joinClassNames(
+        this.#controlBaseClassName,
+        this.controlClassName);
 
-    if (this.#controlInvalidClassName !== null && !this.status.isValid) {
+    if (
+      this.#controlInvalidClassName
+      !== null
+      && !this.status.isValid
+    ) {
       control.classList.add(
         this.#controlInvalidClassName);
     }
@@ -587,16 +621,16 @@ export class Select extends LitElement
       return createFallbackMountedControl(controlHost);
     }
 
-    return {
-      fragment,
-      control,
-      className: resolveInitialControlClassName(
-        control,
-        controlHost),
-      invalidClassName: resolveInitialControlInvalidClassName(
-        control,
-        controlHost)
-    };
+    return { fragment,
+             control,
+             className:
+               resolveInitialControlClassName(
+                 control,
+                 controlHost),
+             invalidClassName:
+               resolveInitialControlInvalidClassName(
+                 control,
+                 controlHost) };
   }
 
   #dispatchValueEvent(
@@ -604,19 +638,20 @@ export class Select extends LitElement
   ): void
   {
     const detail: SelectChangeDetail =
-      {
-      value: this.status.draftValue,
-      isEmpty: this.status.isEmpty,
-      isValid: this.status.isValid,
-      errorMessage: this.status.errorMessage,
-      dirty: this.status.dirty
-    };
+      { value:
+          this.status.draftValue,
+        isEmpty: this.status.isEmpty,
+        isValid: this.status.isValid,
+        errorMessage:
+          this.status.errorMessage,
+        dirty: this.status.dirty };
 
     this.dispatchEvent(
       new CustomEvent(
         name,
-        { detail, bubbles: true, composed: true }
-      ));
+        { detail,
+          bubbles: true,
+          composed: true }));
   }
 
   #disposeControlBindings(): void
@@ -651,7 +686,11 @@ function normalizeOptionalText(
     value: string | null | undefined
   ): string | null
 {
-  if (value === null || value === undefined || value === '') {
+  if (
+    value === null
+    || value === undefined
+    || value === ''
+  ) {
     return null;
   }
 
@@ -664,11 +703,9 @@ function normalizeItems(
 {
   return items
     .map(
-      item => ({
-        value: item.value,
-        label: item.label,
-        disabled: item.disabled ?? false
-      }))
+      item => ({ value: item.value,
+                 label: item.label,
+                 disabled: item.disabled ?? false }))
     .filter(
       item => item.label.trim() !== '');
 }
@@ -677,7 +714,7 @@ function resolveAriaDescribedBy(
     model: SelectTemplateModel
   ): string
 {
-  const ids: string[] = [];
+  const ids: string[] = [ ];
 
   if (!model.hideDescription) {
     ids.push(
@@ -747,7 +784,8 @@ function createDefaultSelectTemplate(
   const template =
     document.createElement('template');
 
-  template.innerHTML = slotName === 'template'
+  template.innerHTML =
+    slotName === 'template'
     ? `
           <div>
             <label
@@ -782,16 +820,16 @@ function createFallbackMountedControl(
 
   fragment.append(control);
 
-  return {
-    fragment,
-    control,
-    className: resolveInitialControlClassName(
-      control,
-      controlHost),
-    invalidClassName: resolveInitialControlInvalidClassName(
-      control,
-      controlHost)
-  };
+  return { fragment,
+           control,
+           className:
+             resolveInitialControlClassName(
+               control,
+               controlHost),
+           invalidClassName:
+             resolveInitialControlInvalidClassName(
+               control,
+               controlHost) };
 }
 
 function joinClassNames(

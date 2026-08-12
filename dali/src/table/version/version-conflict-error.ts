@@ -9,6 +9,7 @@ export class VersionConflictError extends Error
     super(
       `Version conflict for key ${String(key)}.`);
 
-    this.name = 'VersionConflictError';
+    this.name =
+      'VersionConflictError';
   }
 }

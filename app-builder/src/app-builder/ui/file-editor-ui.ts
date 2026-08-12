@@ -47,26 +47,23 @@ export function renderFileSelectUi(
   const selectElement =
     options.selectElement;
 
-  const visibleFiles =
-    options.files;
+  const visibleFiles = options.files;
 
   if (visibleFiles.length === 0) {
-    selectElement.items = [
-      { value: '',
-        label: 'No files',
-        disabled: true }
-    ];
+    selectElement.items =
+      [ { value: '',
+          label: 'No files',
+          disabled: true } ];
 
     selectElement.value = '';
     selectElement.disabled = true;
     return;
   }
 
-  selectElement.items = visibleFiles.map(
-    file => ({ value:
-                 file.name,
-               label:
-                 file.name }));
+  selectElement.items =
+    visibleFiles.map(
+      file => ({ value: file.name,
+                 label: file.name }));
 
   const active =
     options.activeFileName !== null
@@ -85,8 +82,10 @@ export function renderFileContentUi(
 {
   const provider: FileViewProvider =
     { loadFile:
-        async (fileName: string): Promise<FileViewData | null> =>
-    {
+        async (
+            fileName: string
+          ): Promise<FileViewData | null> =>
+        {
       const file =
         options.files.find(
           item => item.name === fileName);
@@ -100,18 +99,13 @@ export function renderFileContentUi(
           file.content);
 
       if (fileData !== null) {
-        return { name:
-                   file.name,
-                 mimeType:
-                   fileData.mimeType,
-                 dataUrl:
-                   fileData.dataUrl };
+        return { name: file.name,
+                 mimeType: fileData.mimeType,
+                 dataUrl: fileData.dataUrl };
       }
 
-      return { name:
-                 file.name,
-               text:
-                 file.content };
+      return { name: file.name,
+               text: file.content };
     } };
 
   if (options.onSaveText !== undefined) {
@@ -120,11 +114,11 @@ export function renderFileContentUi(
 
   options.fileElement.provider = provider;
 
-  options.fileElement.handlers = [
-    createPdfFileHandler(),
-    createImageFileHandler(),
-    createTextEditorFileHandler()
-  ];
+  options.fileElement.handlers =
+    [ createPdfFileHandler(),
+      createImageFileHandler(),
+      createTextEditorFileHandler() ];
 
-  options.fileElement.fileName = options.activeFileName;
+  options.fileElement.fileName =
+    options.activeFileName;
 }

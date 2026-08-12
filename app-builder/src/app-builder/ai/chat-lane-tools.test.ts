@@ -10,18 +10,12 @@ import { createChatLaneTools }
 function makeBaseTools(
   ): AiTools
 {
-  return { listFileset:
-             async () => [],
-           listFilesByMask:
-             async () => [],
-           readFile:
-             async () => '',
-           readFiles:
-             async () => ({}),
-           readFilesByMask:
-             async () => ({}),
-           readFileData:
-             async () => null,
+  return { listFileset: async () => [ ],
+           listFilesByMask: async () => [ ],
+           readFile: async () => '',
+           readFiles: async () => ({}),
+           readFilesByMask: async () => ({}),
+           readFileData: async () => null,
            setFilesContent:
              async () => undefined,
            setFileData:
@@ -32,26 +26,21 @@ function makeBaseTools(
              async () => undefined,
            replaceFilePart:
              async () => undefined,
-           grep:
-             async () => [],
+           grep: async () => [ ],
            choose:
              async () => undefined,
-           evalInApp:
-             async () => null,
-           assertInApp:
-             async () => true,
+           evalInApp: async () => null,
+           assertInApp: async () => true,
            runAppTests:
              async () => ({ path: 'app.tests.js',
                             total: 0,
                             passed: 0,
                             failed: 0,
-                            results: [] }),
+                            results: [ ] }),
            startGeneration:
              async () => 'queued',
-           getAppDiagnostics:
-             async () => null,
-           runAppAndCollectDiagnostics:
-             async () => null };
+           getAppDiagnostics: async () => null,
+           runAppAndCollectDiagnostics: async () => null };
 }
 
 test(
@@ -85,7 +74,7 @@ test(
         { planFileName: 'PLAN.md',
           startGeneration:
             async () =>
-        {
+            {
           called = true;
           return 'queued';
         } });

@@ -17,16 +17,16 @@ import { AssistedInput,
 export type LetterpadKeyDetail = AssistedInputKeyDetail;
 
 export const LetterpadModelDefinition: ComponentModelDefinition =
-  {
-  name: 'LetterpadModelDefinition',
-  title: 'Letterpad',
-  properties: [...AssistedInputModelProperties, {
-    name: 'collapsed',
-    title: 'Collapsed',
-    type: 'boolean',
-    description: 'Whether the letterpad is collapsed.'
-  }]
-};
+  { name:
+      'LetterpadModelDefinition',
+    title: 'Letterpad',
+    properties:
+      [ ...AssistedInputModelProperties,
+        { name: 'collapsed',
+          title: 'Collapsed',
+          type: 'boolean',
+          description:
+            'Whether the letterpad is collapsed.' } ] };
 
 const KEYBOARD_ICON_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true" focusable="false">'
@@ -34,37 +34,65 @@ const KEYBOARD_ICON_SVG =
   + '</svg>';
 
 const BUTTONS: readonly AssistedInputButtonDefinition[] =
-  [
-  { action: 'toggle', className: 'toggle' },
-  { key: 'a', label: 'A' },
-  { key: 'b', label: 'B' },
-  { key: 'c', label: 'C' },
-  { key: 'd', label: 'D' },
-  { key: 'e', label: 'E' },
-  { key: 'f', label: 'F' },
-  { key: 'g', label: 'G' },
-  { key: 'h', label: 'H' },
-  { key: 'i', label: 'I' },
-  { key: 'j', label: 'J' },
-  { key: 'k', label: 'K' },
-  { key: 'l', label: 'L' },
-  { key: 'm', label: 'M' },
-  { key: 'n', label: 'N' },
-  { key: 'o', label: 'O' },
-  { key: 'p', label: 'P' },
-  { key: 'q', label: 'Q' },
-  { key: 'r', label: 'R' },
-  { key: 'Backspace', label: '⌫' },
-  { key: 's', label: 'S' },
-  { key: 't', label: 'T' },
-  { key: 'u', label: 'U' },
-  { key: 'v', label: 'V' },
-  { key: 'Enter', label: '⏎', className: 'enter' },
-  { key: 'w', label: 'W' },
-  { key: 'x', label: 'X' },
-  { key: 'y', label: 'Y' },
-  { key: 'z', label: 'Z' }
-];
+  [ { action: 'toggle',
+      className: 'toggle' },
+    { key: 'a',
+      label: 'A' },
+    { key: 'b',
+      label: 'B' },
+    { key: 'c',
+      label: 'C' },
+    { key: 'd',
+      label: 'D' },
+    { key: 'e',
+      label: 'E' },
+    { key: 'f',
+      label: 'F' },
+    { key: 'g',
+      label: 'G' },
+    { key: 'h',
+      label: 'H' },
+    { key: 'i',
+      label: 'I' },
+    { key: 'j',
+      label: 'J' },
+    { key: 'k',
+      label: 'K' },
+    { key: 'l',
+      label: 'L' },
+    { key: 'm',
+      label: 'M' },
+    { key: 'n',
+      label: 'N' },
+    { key: 'o',
+      label: 'O' },
+    { key: 'p',
+      label: 'P' },
+    { key: 'q',
+      label: 'Q' },
+    { key: 'r',
+      label: 'R' },
+    { key: 'Backspace',
+      label: '⌫' },
+    { key: 's',
+      label: 'S' },
+    { key: 't',
+      label: 'T' },
+    { key: 'u',
+      label: 'U' },
+    { key: 'v',
+      label: 'V' },
+    { key: 'Enter',
+      label: '⏎',
+      className: 'enter' },
+    { key: 'w',
+      label: 'W' },
+    { key: 'x',
+      label: 'X' },
+    { key: 'y',
+      label: 'Y' },
+    { key: 'z',
+      label: 'Z' } ];
 
 @customElement(
   'asljs-letterpad')
@@ -132,7 +160,8 @@ export class Letterpad extends AssistedInput
     `;
 
   @property(
-    { reflect: true, type: Boolean })
+    { reflect: true,
+      type: Boolean })
   accessor collapsed = false;
 
   protected override get defaultAriaLabel(): string {
@@ -176,7 +205,8 @@ export class Letterpad extends AssistedInput
         button,
         unsafeHTML(
           KEYBOARD_ICON_SVG),
-        { ariaLabel: this.#toggleLabel, title: this.#toggleLabel });
+        { ariaLabel: this.#toggleLabel,
+          title: this.#toggleLabel });
     }
 
     return this.renderAssistedInputButton(

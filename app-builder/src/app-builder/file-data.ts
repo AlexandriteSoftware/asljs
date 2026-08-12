@@ -23,8 +23,7 @@ export function readFileDataInfo(
 
   return { mimeType:
              match[1].toLowerCase(),
-           base64:
-             match[2],
+           base64: match[2],
            dataUrl: trimmed };
 }
 

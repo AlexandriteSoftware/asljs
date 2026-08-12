@@ -20,12 +20,11 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'name',
-        pipes: []
-      });
+        pipes: [ ] });
   });
 
 test(
@@ -39,15 +38,16 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'html' },
+      { kind: 'value',
+        target:
+          { kind: 'html' },
         path: 'body',
-        pipes: [
-          { name: 'default', args: ['N/A'] },
-          { name: 'upper', args: [] }
-        ]
-      });
+        pipes:
+          [ { name: 'default',
+              args:
+                [ 'N/A' ] },
+            { name: 'upper',
+              args: [ ] } ] });
   });
 
 test(
@@ -56,19 +56,21 @@ test(
   {
     const spec =
       parseValueBindingExpression(
-        { kind: 'attr', name: 'title' },
+        { kind: 'attr',
+          name: 'title' },
         'updatedAt | date:yyyy-MM-dd');
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'attr', name: 'title' },
+      { kind: 'value',
+        target:
+          { kind: 'attr',
+            name: 'title' },
         path: 'updatedAt',
-        pipes: [
-          { name: 'date', args: ['yyyy-MM-dd'] }
-        ]
-      });
+        pipes:
+          [ { name: 'date',
+              args:
+                [ 'yyyy-MM-dd' ] } ] });
   });
 
 test(
@@ -82,14 +84,15 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'html' },
+      { kind: 'value',
+        target:
+          { kind: 'html' },
         path: 'body',
-        pipes: [
-          { name: 'wrap', args: ['<span>', '</span>'] }
-        ]
-      });
+        pipes:
+          [ { name: 'wrap',
+              args:
+                [ '<span>',
+                  '</span>' ] } ] });
   });
 
 test(
@@ -103,14 +106,14 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'createdAt',
-        pipes: [
-          { name: 'date', args: ['<\'yyyy|MM|dd\' "hh:mm:ss">'] }
-        ]
-      });
+        pipes:
+          [ { name: 'date',
+              args:
+                [ '<\'yyyy|MM|dd\' "hh:mm:ss">' ] } ] });
   });
 
 test(
@@ -124,14 +127,14 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'createdAt',
-        pipes: [
-          { name: 'date', args: ['<\'yyyy|MM|dd\' "hh:mm:ss">'] }
-        ]
-      });
+        pipes:
+          [ { name: 'date',
+              args:
+                [ '<\'yyyy|MM|dd\' "hh:mm:ss">' ] } ] });
   });
 
 test(
@@ -145,14 +148,15 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'amount',
-        pipes: [
-          { name: 'fixed', args: ['2', 'GBP'] }
-        ]
-      });
+        pipes:
+          [ { name: 'fixed',
+              args:
+                [ '2',
+                  'GBP' ] } ] });
   });
 
 test(
@@ -166,14 +170,14 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'createdAt',
-        pipes: [
-          { name: 'date', args: ['yyyy|MM|dd hh:mm:ss'] }
-        ]
-      });
+        pipes:
+          [ { name: 'date',
+              args:
+                [ 'yyyy|MM|dd hh:mm:ss' ] } ] });
   });
 
 test(
@@ -187,7 +191,8 @@ test(
 
     assert.deepEqual(
       spec.pipes,
-      [{ name: 'lower', args: [] }]);
+      [ { name: 'lower',
+          args: [ ] } ]);
   });
 
 test(
@@ -201,11 +206,9 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'event',
+      { kind: 'event',
         eventName: 'click',
-        actionPath: 'activate'
-      });
+        actionPath: 'activate' });
   });
 
 test(
@@ -219,9 +222,8 @@ test(
 
     assert.deepEqual(
       spec,
-      {
-        kind: 'event',
+      { kind: 'event',
         eventName: 'click',
-        actionPath: 'activate | preventDefault | stopPropagation'
-      });
+        actionPath:
+          'activate | preventDefault | stopPropagation' });
   });

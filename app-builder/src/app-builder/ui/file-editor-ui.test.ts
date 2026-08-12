@@ -35,13 +35,12 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM('<div id="files"></div>');
+      new JSDOM(
+        '<div id="files"></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
-    const previousWindow =
-      globalThis.window;
+    const previousWindow = globalThis.window;
 
     const previousCustomElements =
       globalThis.customElements;
@@ -50,12 +49,17 @@ test(
       globalThis.HTMLElement;
 
     globalThis.document = dom.window.document;
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
 
-    const document =
-      dom.window.document;
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
+
+    const document = dom.window.document;
 
     const select =
       document.getElementById(
@@ -66,18 +70,14 @@ test(
 
     const fileElement: TestFileElement =
       { provider: null,
-        handlers: [],
+        handlers: [ ],
         fileName: null };
 
     const files =
-      [
-      { name: 'index.html',
-        content:
-          '<html></html>' },
-      { name: 'app.js',
-        content:
-          'console.log(1);' }
-    ];
+      [ { name: 'index.html',
+          content: '<html></html>' },
+        { name: 'app.js',
+          content: 'console.log(1);' } ];
 
     try {
       ui.renderFileSelectUi(
@@ -113,12 +113,14 @@ test(
       assert.deepEqual(
         loaded,
         { name: 'app.js',
-          text:
-            'console.log(1);' });
+          text: 'console.log(1);' });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;
-      globalThis.customElements = previousCustomElements;
+
+      globalThis.customElements =
+        previousCustomElements;
+
       globalThis.HTMLElement = previousHTMLElement;
     }
   });
@@ -128,30 +130,26 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM('<div id="files"></div>');
+      new JSDOM(
+        '<div id="files"></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     globalThis.document = dom.window.document;
 
-    const document =
-      dom.window.document;
+    const document = dom.window.document;
 
     const select =
       document.getElementById(
         'files') as unknown as TestSelectElement;
 
     const files =
-      [
-      { name: '.README.md',
-        content: '# previous' },
-      { name: 'README.md',
-        content: '# current' },
-      { name: 'app.js',
-        content:
-          'console.log(1);' }
-    ];
+      [ { name: '.README.md',
+          content: '# previous' },
+        { name: 'README.md',
+          content: '# current' },
+        { name: 'app.js',
+          content: 'console.log(1);' } ];
 
     const ui =
       await importFileEditorUi();
@@ -169,7 +167,9 @@ test(
       assert.deepEqual(
         select.items.map(
           option => option.value),
-        ['.README.md', 'README.md', 'app.js']);
+        [ '.README.md',
+          'README.md',
+          'app.js' ]);
 
       assert.equal(
         select.value,
@@ -186,11 +186,9 @@ test(
     const dom =
       new JSDOM('<div></div>');
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
-    const previousWindow =
-      globalThis.window;
+    const previousWindow = globalThis.window;
 
     const previousCustomElements =
       globalThis.customElements;
@@ -199,16 +197,22 @@ test(
       globalThis.HTMLElement;
 
     globalThis.document = dom.window.document;
-    globalThis.window = dom.window as unknown as typeof globalThis.window;
-    globalThis.customElements = dom.window.customElements;
-    globalThis.HTMLElement = dom.window.HTMLElement;
+
+    globalThis.window =
+      dom.window as unknown as typeof globalThis.window;
+
+    globalThis.customElements =
+      dom.window.customElements;
+
+    globalThis.HTMLElement =
+      dom.window.HTMLElement;
 
     const ui =
       await importFileEditorUi();
 
     const fileElement: TestFileElement =
       { provider: null,
-        handlers: [],
+        handlers: [ ],
         fileName: null };
 
     try {
@@ -216,14 +220,10 @@ test(
         { fileElement:
             fileElement as never,
           files:
-            [
-            { name:
-                'assets/logo.png',
-              content:
-                'data:image/png;base64,AQID' }
-          ],
-          activeFileName:
-            'assets/logo.png' });
+            [ { name: 'assets/logo.png',
+                content:
+                  'data:image/png;base64,AQID' } ],
+          activeFileName: 'assets/logo.png' });
 
       const imagePreview =
         await fileElement.provider?.loadFile(
@@ -231,15 +231,17 @@ test(
 
       assert.deepEqual(
         imagePreview,
-        { name:
-            'assets/logo.png',
+        { name: 'assets/logo.png',
           mimeType: 'image/png',
           dataUrl:
             'data:image/png;base64,AQID' });
     } finally {
       globalThis.document = previousDocument;
       globalThis.window = previousWindow;
-      globalThis.customElements = previousCustomElements;
+
+      globalThis.customElements =
+        previousCustomElements;
+
       globalThis.HTMLElement = previousHTMLElement;
     }
   });

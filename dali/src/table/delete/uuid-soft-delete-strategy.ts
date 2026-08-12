@@ -3,10 +3,12 @@ import { DeleteStrategy }
 
 type IndexQueryMapping = { index: string; key: IDBValidKey; };
 
-type IndexQueryMapper = (
-  index: string,
-  key: IDBValidKey
-) => IndexQueryMapping | null;
+type IndexQueryMapper =
+  (
+    index: string,
+    key: IDBValidKey
+  ) =>
+    IndexQueryMapping | null;
 
 export class UuidSoftDeleteStrategy<
   T extends Record<string, any>
@@ -38,10 +40,9 @@ export class UuidSoftDeleteStrategy<
       return record;
     }
 
-    return {
-      ...record,
-      [this.deletedField]: crypto.randomUUID()
-    };
+    return { ...record,
+             [this.deletedField]:
+               crypto.randomUUID() };
   }
 
   mapIndexQuery(

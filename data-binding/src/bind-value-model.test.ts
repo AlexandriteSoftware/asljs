@@ -11,8 +11,7 @@ import { bindValueModel }
 import { ValueBindingSpec }
   from './types.js';
 
-const TEST_SUITE =
-  'bind-value-model';
+const TEST_SUITE = 'bind-value-model';
 
 test(
   `${TEST_SUITE}: applies configured pipes in order`,
@@ -28,26 +27,27 @@ test(
       { value: 4 };
 
     const spec: ValueBindingSpec =
-      {
-      kind: 'value',
-      target: { kind: 'text' },
-      path: 'value',
-      pipes: [
-        { name: 'add', args: ['2'] },
-        { name: 'mul', args: ['3'] }
-      ]
-    };
+      { kind: 'value',
+        target:
+          { kind: 'text' },
+        path: 'value',
+        pipes:
+          [ { name: 'add',
+              args:
+                [ '2' ] },
+            { name: 'mul',
+              args:
+                [ '3' ] } ] };
 
     bindValueModel(
       element,
       spec,
       model,
-      {
-        pipes: {
-          add: (value, amount) => Number(value) + Number(amount),
-          mul: (value, factor) => Number(value) * Number(factor)
-        }
-      });
+      { pipes:
+          { add:
+              (value, amount) => Number(value) + Number(amount),
+            mul:
+              (value, factor) => Number(value) * Number(factor) } });
 
     assert.equal(
       element.textContent,
@@ -68,14 +68,13 @@ test(
       { value: 'A' };
 
     const spec: ValueBindingSpec =
-      {
-      kind: 'value',
-      target: { kind: 'text' },
-      path: 'value',
-      pipes: [
-        { name: 'missing', args: [] }
-      ]
-    };
+      { kind: 'value',
+        target:
+          { kind: 'text' },
+        path: 'value',
+        pipes:
+          [ { name: 'missing',
+              args: [ ] } ] };
 
     assert.throws(
       () =>
@@ -101,14 +100,13 @@ test(
       { value: 'X' };
 
     const spec: ValueBindingSpec =
-      {
-      kind: 'value',
-      target: { kind: 'text' },
-      path: 'value',
-      pipes: [
-        { name: 'boom', args: [] }
-      ]
-    };
+      { kind: 'value',
+        target:
+          { kind: 'text' },
+        path: 'value',
+        pipes:
+          [ { name: 'boom',
+              args: [ ] } ] };
 
     assert.throws(
       () =>
@@ -116,14 +114,12 @@ test(
           element,
           spec,
           model,
-          {
-            pipes: {
-              boom: () =>
-              {
+          { pipes:
+              { boom:
+                  () =>
+                  {
                 throw new Error('broken');
-              }
-            }
-          }),
+              } } }),
       /broken/);
   });
 
@@ -132,7 +128,8 @@ test(
   () =>
   {
     const dom =
-      new JSDOM(`
+      new JSDOM(
+        `
           <div>
             <span></span>
             <div></div>
@@ -148,30 +145,26 @@ test(
         'div div') as HTMLElement;
 
     const model: Record<string, unknown> =
-      {
-      textValue: null,
-      htmlValue: undefined
-    };
+      { textValue: null,
+        htmlValue: undefined };
 
     bindValueModel(
       textElement,
-      {
-        kind: 'value',
-        target: { kind: 'text' },
+      { kind: 'value',
+        target:
+          { kind: 'text' },
         path: 'textValue',
-        pipes: []
-      },
+        pipes: [ ] },
       model,
       {});
 
     bindValueModel(
       htmlElement,
-      {
-        kind: 'value',
-        target: { kind: 'html' },
+      { kind: 'value',
+        target:
+          { kind: 'html' },
         path: 'htmlValue',
-        pipes: []
-      },
+        pipes: [ ] },
       model,
       {});
 
@@ -196,15 +189,15 @@ test(
 
     const model =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     const spec: ValueBindingSpec =
-      {
-      kind: 'value',
-      target: { kind: 'text' },
-      path: 'user.name',
-      pipes: []
-    };
+      { kind: 'value',
+        target:
+          { kind: 'text' },
+        path: 'user.name',
+        pipes: [ ] };
 
     const dispose =
       bindValueModel(
@@ -223,7 +216,8 @@ test(
       element.textContent,
       'Bob');
 
-    model.user = { name: 'Carol' };
+    model.user =
+      { name: 'Carol' };
 
     assert.equal(
       element.textContent,

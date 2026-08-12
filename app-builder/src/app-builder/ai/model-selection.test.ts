@@ -14,13 +14,10 @@ test(
   {
     const model =
       selectPreferredChatModel(
-        [
-        { id: 'gpt-5.4' },
-        { id: 'gpt-5-mini' },
-        { id: 'gpt-5-nano' },
-        { id:
-            'gpt-5.3-codex' }
-      ]);
+        [ { id: 'gpt-5.4' },
+          { id: 'gpt-5-mini' },
+          { id: 'gpt-5-nano' },
+          { id: 'gpt-5.3-codex' } ]);
 
     assert.equal(
       model,
@@ -33,22 +30,16 @@ test(
   {
     assert.equal(
       selectPreferredCodeModel(
-        [
-          { id:
-              'gpt-5.3-codex' },
+        [ { id: 'gpt-5.3-codex' },
           { id: 'gpt-5.4' },
-          { id:
-              'gpt-5.4-codex' }
-        ]),
+          { id: 'gpt-5.4-codex' } ]),
       'gpt-5.4-codex');
 
     assert.equal(
       selectPreferredCodeModel(
-        [
-          { id: 'gpt-5.3' },
+        [ { id: 'gpt-5.3' },
           { id: 'gpt-5.4' },
-          { id: 'gpt-5-mini' }
-        ]),
+          { id: 'gpt-5-mini' } ]),
       'gpt-5.4');
   });
 
@@ -59,29 +50,27 @@ test(
     assert.equal(
       shouldUseCodeGenerationModel(
         'Fix the broken submit button.',
-        []),
+        [ ]),
       true);
 
     assert.equal(
       shouldUseCodeGenerationModel(
         'yes',
-        [
-          { role: 'assistant',
+        [ { role: 'assistant',
             text:
-              'Shall I build these changes?' }
-        ]),
+              'Shall I build these changes?' } ]),
       true);
 
     assert.equal(
       shouldUseCodeGenerationModel(
         'Make the plan clearer.',
-        []),
+        [ ]),
       false);
 
     assert.equal(
       shouldUseCodeGenerationModel(
         'What should the score screen show?',
-        []),
+        [ ]),
       false);
   });
 
@@ -91,17 +80,11 @@ test(
   {
     assert.deepEqual(
       dedupeModels(
-        [
-          { id: 'gpt-5.4' },
+        [ { id: 'gpt-5.4' },
           { id: 'GPT-5.4' },
-          { id:
-              'gpt-5.4-codex' }
-        ]),
-      [
-        { id: 'gpt-5.4',
+          { id: 'gpt-5.4-codex' } ]),
+      [ { id: 'gpt-5.4',
           created: 0 },
-        { id:
-            'gpt-5.4-codex',
-          created: 0 }
-      ]);
+        { id: 'gpt-5.4-codex',
+          created: 0 } ]);
   });

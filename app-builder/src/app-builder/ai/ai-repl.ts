@@ -14,8 +14,7 @@ const OPENAI_RESPONSES_URL =
 export type AiModel = string;
 export type AvailableModelResult = { id: string; created?: number; };
 
-export const DEFAULT_MODEL: AiModel =
-  'gpt-5.3-codex';
+export const DEFAULT_MODEL: AiModel = 'gpt-5.3-codex';
 
 export const DEFAULT_MAX_TOOL_STEPS = 20;
 
@@ -40,7 +39,9 @@ export class ToolStepLimitExceededError extends Error
     super(
       TOOL_STEP_LIMIT_EXCEEDED_MESSAGE);
 
-    this.name = 'ToolStepLimitExceededError';
+    this.name =
+      'ToolStepLimitExceededError';
+
     this.stepsCompleted = info.stepsCompleted;
     this.stepLimit = info.stepLimit;
   }
@@ -53,7 +54,8 @@ export class GenerationStoppedError extends Error
     super(
       GENERATION_STOPPED_MESSAGE);
 
-    this.name = 'GenerationStoppedError';
+    this.name =
+      'GenerationStoppedError';
   }
 }
 
@@ -110,31 +112,28 @@ export type AiModelsTransport = {
 
 const DEFAULT_TRANSPORT: AiResponsesTransport =
   { createResponse:
-      async request =>
-  {
+      async (
+          request
+        ) =>
+      {
     const response =
       await fetch(
         OPENAI_RESPONSES_URL,
         { method: 'POST',
           headers:
-            { 'Content-Type':
-                'application/json',
+            { 'Content-Type': 'application/json',
               Authorization:
                 `Bearer ${request.apiKey}` },
           body:
             JSON.stringify(
-              { model:
-                  request.model,
+              { model: request.model,
                 instructions:
                   request.instructions,
-                temperature:
-                  request.temperature,
+                temperature: request.temperature,
                 previous_response_id:
                   request.previous_response_id,
-                input:
-                  request.input,
-                tools:
-                  request.tools }) });
+                input: request.input,
+                tools: request.tools }) });
 
     if (!response.ok) {
       const errorPayload =
@@ -154,8 +153,10 @@ const DEFAULT_TRANSPORT: AiResponsesTransport =
 
 const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
   { listModels:
-      async apiKey =>
-  {
+      async (
+          apiKey
+        ) =>
+      {
     const response =
       await fetch(
         OPENAI_RESPONSES_URL.replace(
@@ -163,8 +164,7 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
           '/models'),
         { method: 'GET',
           headers:
-            { Authorization:
-                `Bearer ${apiKey}` } });
+            { Authorization: `Bearer ${apiKey}` } });
 
     if (!response.ok) {
       const errorPayload =
@@ -186,7 +186,8 @@ const DEFAULT_MODELS_TRANSPORT: AiModelsTransport =
       !Array.isArray(
         payload.data)
     ) {
-      throw new Error('OpenAI returned an unexpected model list format.');
+      throw new Error(
+        'OpenAI returned an unexpected model list format.');
     }
 
     return payload.data
@@ -212,7 +213,7 @@ export async function listAvailableModels(
   ): Promise<AvailableModelResult[]>
 {
   if (apiKey.trim() === '') {
-    return [];
+    return [ ];
   }
 
   return transport.listModels(apiKey);
@@ -226,8 +227,7 @@ export async function generateApp(
     options?: GenerateAppOptions
   ): Promise<AgentRunResult>
 {
-  const transport =
-    options?.transport ?? DEFAULT_TRANSPORT;
+  const transport = options?.transport ?? DEFAULT_TRANSPORT;
 
   const systemPrompt =
     options?.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
@@ -242,7 +242,10 @@ export async function generateApp(
   let step = 0;
 
   while (true) {
-    if (options?.shouldStop?.() === true) {
+    if (
+      options?.shouldStop?.()
+      === true
+    ) {
       throw new GenerationStoppedError();
     }
 
@@ -258,8 +261,9 @@ export async function generateApp(
         ?? false;
 
       if (!shouldContinue) {
-        throw new ToolStepLimitExceededError({ stepsCompleted: step,
-                                               stepLimit });
+        throw new ToolStepLimitExceededError(
+          { stepsCompleted: step,
+            stepLimit });
       }
 
       stepLimit += TOOL_STEP_EXTENSION;
@@ -275,8 +279,7 @@ export async function generateApp(
           model,
           instructions: systemPrompt,
           temperature: 0.1,
-          previous_response_id:
-            previousResponseId,
+          previous_response_id: previousResponseId,
           input,
           tools: OPENAI_TOOLS });
 
@@ -285,8 +288,7 @@ export async function generateApp(
         data.output)
     ) {
       throw new Error(
-        'AI returned an unexpected response format.'
-      );
+        'AI returned an unexpected response format.');
     }
 
     const toolCalls =
@@ -307,10 +309,13 @@ export async function generateApp(
           : summary };
     }
 
-    const toolOutputs: ResponseFunctionCallOutput[] = [];
+    const toolOutputs: ResponseFunctionCallOutput[] = [ ];
 
     for (const toolCall of toolCalls) {
-      if (options?.shouldStop?.() === true) {
+      if (
+        options?.shouldStop?.()
+        === true
+      ) {
         throw new GenerationStoppedError();
       }
 
@@ -335,7 +340,8 @@ export async function generateApp(
       options,
       `Step ${step + 1}: submitted ${toolOutputs.length} tool result(s).`);
 
-    previousResponseId = typeof data.id === 'string'
+    previousResponseId =
+      typeof data.id === 'string'
       ? data.id
       : previousResponseId;
 
@@ -390,7 +396,11 @@ function extractResponsesSummary(
     data: ResponsesResult
   ): string
 {
-  if (typeof data.output_text === 'string' && data.output_text.trim() !== '') {
+  if (
+    typeof data.output_text
+    === 'string'
+    && data.output_text.trim() !== ''
+  ) {
     return data.output_text.trim();
   }
 
@@ -406,7 +416,7 @@ function extractResponsesSummary(
     .filter(
       (item): item is ResponsesOutputMessage => item.type === 'message')
     .flatMap(
-      item => item.content ?? [])
+      item => item.content ?? [ ])
     .map(
       item => item.text ?? '')
     .map(

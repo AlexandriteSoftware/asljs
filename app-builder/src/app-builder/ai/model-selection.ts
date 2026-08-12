@@ -21,7 +21,7 @@ export function dedupeModels(
 {
   const seen = new Set<string>();
 
-  const normalized: AvailableAiModel[] = [];
+  const normalized: AvailableAiModel[] = [ ];
 
   for (const model of models) {
     const id =
@@ -30,7 +30,8 @@ export function dedupeModels(
       : '';
 
     if (
-      id === '' || seen.has(
+      id === ''
+      || seen.has(
         id.toLowerCase())
     ) {
       continue;
@@ -71,7 +72,7 @@ export function shouldUseCodeGenerationModel(
   }
 
   const lastAssistantMessage =
-    [...messages]
+    [ ...messages ]
     .reverse()
     .find(
       message => message.role === 'assistant')
@@ -260,7 +261,11 @@ function compareNumericTokens(
       left.length,
       right.length);
 
-  for (let index = 0; index < length; index += 1) {
+  for (
+    let index = 0;
+    index < length;
+    index += 1
+  ) {
     const delta =
       (left[index] ?? -1) - (right[index] ?? -1);
 

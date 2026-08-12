@@ -36,11 +36,13 @@ export function sagaSetup(
     const entryStore =
       db.createObjectStore(
         entryStoreName,
-        { keyPath: 'id', autoIncrement: true });
+        { keyPath: 'id',
+          autoIncrement: true });
 
     entryStore.createIndex(
       'by_saga_sequence',
-      ['sagaId', 'sequence'],
+      [ 'sagaId',
+        'sequence' ],
       { unique: true });
 
     entryStore.createIndex(

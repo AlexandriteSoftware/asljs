@@ -13,11 +13,9 @@ test(
   {
     const dom =
       new JSDOM(
-      '<div id="panels"></div><section id="panel"></section><div id="toggle"></div>'
-    );
+        '<div id="panels"></div><section id="panel"></section><div id="toggle"></div>');
 
-    const document =
-      dom.window.document;
+    const document = dom.window.document;
 
     const panels =
       document.getElementById('panels') as HTMLElement;
@@ -36,8 +34,7 @@ test(
         { panelElement: panel,
           toggleButtonElement: button,
           panelsElement: panels,
-          collapsedPanelsClass:
-            'chat-collapsed',
+          collapsedPanelsClass: 'chat-collapsed',
           expandedText: 'Chat',
           collapsedText: 'Chat',
           expandedIcon:

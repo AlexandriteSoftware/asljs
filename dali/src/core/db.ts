@@ -4,9 +4,9 @@ export function dbRequestAsync<T>(
 {
   return new Promise(
     (
-      resolve,
-      reject
-    ) =>
+        resolve,
+        reject
+      ) =>
     {
       request.addEventListener(
         'success',
@@ -23,11 +23,9 @@ export function dbRequestAsync<T>(
           reject(
             request.error
               ?? new Error(
-                'IndexedDB request failed'
-              ));
+                'IndexedDB request failed'));
         });
-    }
-  );
+    });
 }
 
 export function dbOpen(
@@ -37,9 +35,9 @@ export function dbOpen(
 {
   return new Promise<IDBDatabase>(
     (
-      resolve,
-      reject
-    ) =>
+        resolve,
+        reject
+      ) =>
     {
       const request =
         indexedDB.open(
@@ -48,7 +46,9 @@ export function dbOpen(
 
       request.addEventListener(
         'upgradeneeded',
-        e =>
+        (
+            e
+          ) =>
         {
           const updates =
             upgrades.slice(
@@ -76,8 +76,7 @@ export function dbOpen(
         {
           reject(
             new Error(
-              'Database opening is blocked'
-            ));
+              'Database opening is blocked'));
         });
 
       request.addEventListener(
@@ -87,8 +86,7 @@ export function dbOpen(
           reject(
             request.error
               ?? new Error(
-                'Failed to open database'
-              ));
+                'Failed to open database'));
         });
     }
   );
@@ -100,9 +98,9 @@ export function dbDelete(
 {
   return new Promise(
     (
-      resolve,
-      reject
-    ) =>
+        resolve,
+        reject
+      ) =>
     {
       const request =
         indexedDB.deleteDatabase(name);
@@ -120,8 +118,7 @@ export function dbDelete(
         {
           reject(
             new Error(
-              'Database deletion is blocked'
-            ));
+              'Database deletion is blocked'));
         });
 
       request.addEventListener(
@@ -131,9 +128,7 @@ export function dbDelete(
           reject(
             request.error
               ?? new Error(
-                'Failed to delete database'
-              ));
+                'Failed to delete database'));
         });
-    }
-  );
+    });
 }

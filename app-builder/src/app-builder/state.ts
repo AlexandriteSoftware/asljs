@@ -19,11 +19,11 @@ export type AppBuilderState = {
 
 export const state =
   observable(
-    { apps: [],
+    { apps: [ ],
       currentAppId: null,
-      files: [],
+      files: [ ],
       activeFileName: null,
-      chatMessages: [],
+      chatMessages: [ ],
       generating: false,
       generationBusy: false,
       generationStatus: '',

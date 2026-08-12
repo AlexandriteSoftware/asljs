@@ -91,10 +91,7 @@ export async function read(
       .findIndex(
         file => file.path === target.path);
 
-    if (
-      fileIndex
-      === -1
-    ) {
+    if (fileIndex === -1) {
       envelope.files
         .push(
           file);

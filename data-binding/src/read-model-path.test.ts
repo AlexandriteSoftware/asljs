@@ -5,8 +5,7 @@ import { test }
 import { readModelPath }
   from './read-model-path.js';
 
-const TEST_SUITE =
-  'read-model-path';
+const TEST_SUITE = 'read-model-path';
 
 test(
   `${TEST_SUITE}: reads nested property path`,
@@ -14,7 +13,8 @@ test(
   {
     const value =
       readModelPath(
-        { meta: { caption: 'Hi' } },
+        { meta:
+            { caption: 'Hi' } },
         'meta.caption');
 
     assert.equal(
@@ -27,9 +27,11 @@ test(
   () =>
   {
     const model =
-      {
-      get: (path: string) => `value:${path}`
-    } as Record<string, unknown>;
+      { get:
+          (path: string) => `value:${path}` } as Record<
+      string,
+      unknown
+    >;
 
     const value =
       readModelPath(

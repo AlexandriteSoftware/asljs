@@ -11,8 +11,7 @@ import { bindEventModel }
 import { EventBindingSpec }
   from './types.js';
 
-const TEST_SUITE =
-  'bind-event-model';
+const TEST_SUITE = 'bind-event-model';
 
 test(
   `${TEST_SUITE}: invokes resolved handler and updates reactively`,
@@ -24,41 +23,38 @@ test(
     const button =
       dom.window.document.querySelector('button') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const model =
       createReactiveModel(
-        {
-        activate: (
-          _event: Event,
-          _model: Record<string, unknown>,
-          _element: Element
-        ) =>
-        {
+        { activate:
+            (
+                _event: Event,
+                _model: Record<string, unknown>,
+                _element: Element
+              ) =>
+            {
           calls.push('first');
-        }
-      });
+        } });
 
     const spec: EventBindingSpec =
-      {
-      kind: 'event',
-      eventName: 'click',
-      actionPath: 'activate'
-    };
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'activate' };
 
     bindEventModel(
       button,
       spec,
       model,
       'event[0]',
-      () =>
-      {});
+      () => { });
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.activate = () =>
-    {
+    model.activate =
+      () =>
+      {
       calls.push('second');
     };
 
@@ -69,7 +65,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['first', 'second']);
+      [ 'first',
+        'second' ]);
   });
 
 test(
@@ -82,23 +79,20 @@ test(
     const button =
       dom.window.document.querySelector('button') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const model =
       createReactiveModel(
-        {
-        activate: () =>
-        {
+        { activate:
+            () =>
+            {
           calls.push('active');
-        }
-      });
+        } });
 
     const spec: EventBindingSpec =
-      {
-      kind: 'event',
-      eventName: 'click',
-      actionPath: 'activate'
-    };
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'activate' };
 
     const dispose =
       bindEventModel(
@@ -106,13 +100,13 @@ test(
         spec,
         model,
         'event[2]',
-        () =>
-      {});
+        () => { });
 
     dispose();
 
-    model.activate = () =>
-    {
+    model.activate =
+      () =>
+      {
       calls.push('updated');
     };
 
@@ -123,7 +117,7 @@ test(
 
     assert.deepEqual(
       calls,
-      []);
+      [ ]);
   });
 
 test(
@@ -136,58 +130,56 @@ test(
     const button =
       dom.window.document.querySelector('button') as HTMLElement;
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const model =
       observable(
-        {
-        user: {
-          activate: () =>
-          {
+        { user:
+            { activate:
+                () =>
+                {
             calls.push('first');
-          }
-        }
-      });
+          } } });
 
     const spec: EventBindingSpec =
-      {
-      kind: 'event',
-      eventName: 'click',
-      actionPath: 'user.activate'
-    };
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'user.activate' };
 
     bindEventModel(
       button,
       spec,
       model as unknown as Record<string, unknown>,
       'event[3]',
-      () =>
-      {});
+      () => { });
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.user.activate = () =>
-    {
+    model.user.activate =
+      () =>
+      {
       calls.push('second');
     };
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
-    model.user = {
-      activate: () =>
-      {
+    model.user =
+      { activate:
+          () =>
+          {
         calls.push('third');
-      }
-    };
+      } };
 
     button.dispatchEvent(
       new dom.window.Event('click'));
 
     assert.deepEqual(
       calls,
-      ['first', 'second', 'third']);
+      [ 'first',
+        'second',
+        'third' ]);
   });
 
 type ReactiveModel =
@@ -210,10 +202,13 @@ function createReactiveModel(
   const listeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
   const model: ReactiveModel =
-    {
-    ...initial,
-    on: (event, listener) =>
-    {
+    { ...initial,
+      on:
+        (
+            event,
+            listener
+          ) =>
+        {
       if (!listeners.has(event)) {
         listeners.set(
           event,
@@ -224,8 +219,12 @@ function createReactiveModel(
 
       return () => listeners.get(event)?.delete(listener) ?? false;
     },
-    emit: (event, ...args) =>
-    {
+      emit:
+        (
+            event,
+            ...args
+          ) =>
+        {
       const registered =
         listeners.get(event);
 
@@ -237,8 +236,7 @@ function createReactiveModel(
         listener(
           ...args);
       }
-    }
-  };
+    } };
 
   return model;
 }

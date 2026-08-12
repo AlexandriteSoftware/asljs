@@ -29,7 +29,9 @@ async function openTestDb(
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [db =>
+    [ (
+        db
+      ) =>
     {
       const store =
         db.createObjectStore(
@@ -40,7 +42,7 @@ async function openTestDb(
         'by_value',
         'value',
         { unique: false });
-    }]);
+    } ]);
 }
 
 async function seed(
@@ -50,7 +52,7 @@ async function seed(
 {
   const tx =
     db.transaction(
-      ['items'],
+      [ 'items' ],
       TxMode.readWrite);
 
   const store =
@@ -72,15 +74,20 @@ async function waitFor(
     Date.now();
 
   while (!predicate()) {
-    if (Date.now() - started > timeoutMs) {
-      throw new Error('Timed out waiting for condition');
+    if (
+      Date.now()
+      - started
+      > timeoutMs
+    ) {
+      throw new Error(
+        'Timed out waiting for condition');
     }
 
-    await new Promise(resolve =>
+    await new Promise(
+      resolve =>
       setTimeout(
         resolve,
-        0)
-    );
+        0));
   }
 }
 
@@ -88,15 +95,14 @@ test(
   `${TEST_SUITE}: getAll returns all rows`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     await seed(
       db,
-      [
-        { id: 'a', value: '10' },
-        { id: 'b', value: '20' }
-      ]);
+      [ { id: 'a',
+          value: '10' },
+        { id: 'b',
+          value: '20' } ]);
 
     const table =
       new Table<TestRecordFields>(
@@ -119,15 +125,15 @@ test(
 
     assert.deepEqual(
       ids,
-      ['a', 'b']);
+      [ 'a',
+        'b' ]);
   });
 
 test(
   `${TEST_SUITE}: notify receiver receives events and supports unsubscribe`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const table =
       new Table<TestRecordFields>(
@@ -135,49 +141,51 @@ test(
       db
     );
 
-    const events: string[] = [];
+    const events: string[] = [ ];
 
     const receiver: TableEventsReceiver<TestRecordFields> =
-      {
-      add(record)
+      { add(record)
       {
         events.push(
           `add:${record.id}`);
       },
-      update(record)
+        update(record)
       {
         events.push(
           `update:${record.id}:${record.value}`);
       },
-      delete(record)
+        delete(record)
       {
         events.push(
           `delete:${record.id}`);
       },
-      clear(records)
+        clear(records)
       {
         events.push(
           `clear:${records.length}`);
-      }
-    };
+      } };
 
     const unsubscribe =
       table.notify(
         receiver);
 
     await table.add(
-      { id: 'a', value: '10' });
+      { id: 'a',
+        value: '10' });
 
     await table.update(
-      { id: 'a', value: '20' });
+      { id: 'a',
+        value: '20' });
 
     await table.delete('a');
 
     await table.add(
-      { id: 'b', value: '30' });
+      { id: 'b',
+        value: '30' });
 
     await table.add(
-      { id: 'c', value: '40' });
+      { id: 'c',
+        value: '40' });
 
     await table.clear();
 
@@ -186,18 +194,29 @@ test(
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']);
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'add:c',
+        'clear:2' ]);
 
     assert.equal(
       unsubscribe(),
       true);
 
     await table.add(
-      { id: 'd', value: '50' });
+      { id: 'd',
+        value: '50' });
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'add:c', 'clear:2']);
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'add:c',
+        'clear:2' ]);
 
     assert.equal(
       unsubscribe(),
@@ -217,12 +236,14 @@ async function openVersionedTestDb(
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [db =>
+    [ (
+        db
+      ) =>
     {
       db.createObjectStore(
         'items',
         { keyPath: 'id' });
-    }]);
+    } ]);
 }
 
 test(
@@ -236,12 +257,15 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     const result =
       await table.add(
-        { id: 'a', value: '10', version: Number.NaN });
+        { id: 'a',
+          value: '10',
+          version: Number.NaN });
 
     assert.equal(
       result.version,
@@ -266,12 +290,15 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     const result =
       await table.add(
-        { id: 'a', value: '10', version: 5 });
+        { id: 'a',
+          value: '10',
+          version: 5 });
 
     assert.equal(
       result.version,
@@ -289,16 +316,21 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await assert.rejects(
       () =>
         table.update(
-          { id: 'a', value: '20', version: 1 }),
+          { id: 'a',
+            value: '20',
+            version: 1 }),
       /expectedVersion is required/);
   });
 
@@ -313,23 +345,33 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await assert.rejects(
       () =>
         table.update(
-          { id: 'a', value: '20', version: 1 },
+          { id: 'a',
+            value: '20',
+            version: 1 },
           999),
-      (error: unknown) =>
+      (
+          error: unknown
+        ) =>
       {
         assert.ok(
           error instanceof TableVersionConflictError);
 
-        if (error instanceof TableVersionConflictError) {
+        if (
+          error
+          instanceof TableVersionConflictError
+        ) {
           assert.equal(
             error.expectedVersion,
             999);
@@ -354,15 +396,20 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     const result =
       await table.update(
-        { id: 'a', value: '20', version: 1 },
+        { id: 'a',
+          value: '20',
+          version: 1 },
         1);
 
     assert.equal(
@@ -392,11 +439,14 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await assert.rejects(
       () => table.delete('a'),
@@ -414,18 +464,23 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await assert.rejects(
       () =>
         table.delete(
           'a',
           999),
-      (error: unknown) =>
+      (
+          error: unknown
+        ) =>
       {
         assert.ok(
           error instanceof TableVersionConflictError);
@@ -445,11 +500,14 @@ test(
       new Table<VersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new IncrementTableVersionStrategy('version') }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version') }
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await table.delete(
       'a',
@@ -474,12 +532,15 @@ test(
       new Table<UuidVersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new UuidTableVersionStrategy('version') }
+      { versionStrategy:
+          new UuidTableVersionStrategy('version') }
     );
 
     const result =
       await table.add(
-        { id: 'a', value: '10', version: '' });
+        { id: 'a',
+          value: '10',
+          version: '' });
 
     assert.match(
       result.version,
@@ -497,16 +558,21 @@ test(
       new Table<UuidVersionedRecordFields>(
       'items',
       db,
-      { versionStrategy: new UuidTableVersionStrategy('version') }
+      { versionStrategy:
+          new UuidTableVersionStrategy('version') }
     );
 
     const added =
       await table.add(
-        { id: 'a', value: '10', version: '' });
+        { id: 'a',
+          value: '10',
+          version: '' });
 
     const updated =
       await table.update(
-        { id: 'a', value: '20', version: added.version },
+        { id: 'a',
+          value: '20',
+          version: added.version },
         added.version);
 
     assert.notEqual(
@@ -532,10 +598,14 @@ test(
     );
 
     await table.add(
-      { id: 'a', value: '10', version: 1 });
+      { id: 'a',
+        value: '10',
+        version: 1 });
 
     await table.update(
-      { id: 'a', value: '20', version: 1 });
+      { id: 'a',
+        value: '20',
+        version: 1 });
 
     await table.delete('a');
 
@@ -561,7 +631,9 @@ async function openSoftDeleteTestDb(
 {
   return dbOpen(
     `table-test-${crypto.randomUUID()}`,
-    [db =>
+    [ (
+        db
+      ) =>
     {
       const store =
         db.createObjectStore(
@@ -576,10 +648,11 @@ async function openSoftDeleteTestDb(
       if (includeDeletedAwareIndex) {
         store.createIndex(
           'deleted:by_customer',
-          ['deleted', 'customerId'],
+          [ 'deleted',
+            'customerId' ],
           { unique: false });
       }
-    }]);
+    } ]);
 }
 
 async function getRawRecord(
@@ -589,7 +662,7 @@ async function getRawRecord(
 {
   const tx =
     db.transaction(
-      ['items'],
+      [ 'items' ],
       TxMode.read);
 
   const store =
@@ -615,14 +688,23 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      { deleteStrategy: new UuidSoftDeleteTableDeleteStrategy('deleted') }
+      { deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy('deleted') }
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+      { id: 'b',
+        customerId: 'c1',
+        value: 'B',
+        deleted: '',
+        version: 1 });
 
     await table.delete('b');
 
@@ -646,7 +728,7 @@ test(
     assert.deepEqual(
       all.map(
         record => record.id),
-      ['a']);
+      [ 'a' ]);
   });
 
 test(
@@ -660,21 +742,32 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      { deleteStrategy: new UuidSoftDeleteTableDeleteStrategy('deleted') }
+      { deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy('deleted') }
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+      { id: 'b',
+        customerId: 'c1',
+        value: 'B',
+        deleted: '',
+        version: 1 });
 
     await table.delete('b');
 
     const records =
       await table.scan(
-        record =>
-      {
+        (
+            record
+          ) =>
+        {
         assert.notEqual(
           record.id,
           'b');
@@ -685,7 +778,7 @@ test(
     assert.deepEqual(
       records.map(
         record => record.id),
-      ['a']);
+      [ 'a' ]);
   });
 
 test(
@@ -701,19 +794,20 @@ test(
     >(
       'deleted',
       (
-        index: string,
-        key: IDBValidKey
-      ) =>
+          index: string,
+          key: IDBValidKey
+        ) =>
       {
         const mappedKey =
           Array.isArray(key)
-          ? ['', ...key]
-          : ['', key];
+          ? [ '',
+              ...key ]
+          : [ '',
+              key ];
 
-        return {
-          index: `deleted:${index}`,
-          key: mappedKey as unknown as IDBValidKey
-        };
+        return { index: `deleted:${index}`,
+                 key:
+                   mappedKey as unknown as IDBValidKey };
       }
     );
 
@@ -725,10 +819,18 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+      { id: 'b',
+        customerId: 'c1',
+        value: 'B',
+        deleted: '',
+        version: 1 });
 
     await table.delete('b');
 
@@ -740,7 +842,7 @@ test(
     assert.deepEqual(
       records.map(
         record => record.id),
-      ['a']);
+      [ 'a' ]);
   });
 
 test(
@@ -754,33 +856,40 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      {
-        deleteStrategy: new UuidSoftDeleteTableDeleteStrategy(
-          'deleted',
-          (
-            index: string,
-            key: IDBValidKey
-          ) =>
-          {
+      { deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy(
+            'deleted',
+            (
+                index: string,
+                key: IDBValidKey
+              ) =>
+            {
             const mappedKey =
               Array.isArray(key)
-              ? ['', ...key]
-              : ['', key];
+              ? [ '',
+                  ...key ]
+              : [ '',
+                  key ];
 
-            return {
-              index: `deleted:${index}`,
-              key: mappedKey as unknown as IDBValidKey
-            };
-          }
-        )
-      }
+            return { index: `deleted:${index}`,
+                     key:
+                       mappedKey as unknown as IDBValidKey };
+          }) }
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+      { id: 'b',
+        customerId: 'c1',
+        value: 'B',
+        deleted: '',
+        version: 1 });
 
     await table.delete('b');
 
@@ -792,7 +901,7 @@ test(
     assert.deepEqual(
       records.map(
         record => record.id),
-      ['a']);
+      [ 'a' ]);
   });
 
 test(
@@ -803,23 +912,20 @@ test(
       await openSoftDeleteTestDb(false);
 
     const strategy: TableDeleteStrategy<SoftDeleteRecordFields> =
-      {
-      isDeleted(record)
+      { isDeleted(record)
       {
         return record.deleted.length > 0;
       },
-      delete(record)
+        delete(record)
       {
         if (record.deleted.length > 0) {
           return record;
         }
 
-        return {
-          ...record,
-          deleted: crypto.randomUUID()
-        };
-      }
-    };
+        return { ...record,
+                 deleted:
+                   crypto.randomUUID() };
+      } };
 
     const table =
       new Table<SoftDeleteRecordFields>(
@@ -829,10 +935,18 @@ test(
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.add(
-      { id: 'b', customerId: 'c1', value: 'B', deleted: '', version: 1 });
+      { id: 'b',
+        customerId: 'c1',
+        value: 'B',
+        deleted: '',
+        version: 1 });
 
     await table.delete('b');
 
@@ -844,7 +958,7 @@ test(
     assert.deepEqual(
       records.map(
         record => record.id),
-      ['a']);
+      [ 'a' ]);
   });
 
 test(
@@ -877,24 +991,26 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      {
-        versionStrategy: new IncrementTableVersionStrategy('version'),
-        deleteStrategy: new UuidSoftDeleteTableDeleteStrategy('deleted')
-      }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version'),
+        deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy('deleted') }
     );
 
-    const events: SoftDeleteRecordFields[] = [];
+    const events: SoftDeleteRecordFields[] = [ ];
 
     table.notify(
-      {
-        delete(record)
+      { delete(record)
         {
           events.push(record);
-        }
-      });
+        } });
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await assert.rejects(
       () => table.delete('a'),
@@ -948,14 +1064,18 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      {
-        versionStrategy: new IncrementTableVersionStrategy('version'),
-        deleteStrategy: new UuidSoftDeleteTableDeleteStrategy('deleted')
-      }
+      { versionStrategy:
+          new IncrementTableVersionStrategy('version'),
+        deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy('deleted') }
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.delete(
       'a',
@@ -997,18 +1117,23 @@ test(
       new Table<SoftDeleteRecordFields>(
       'items',
       db,
-      { deleteStrategy: new UuidSoftDeleteTableDeleteStrategy('deleted') }
+      { deleteStrategy:
+          new UuidSoftDeleteTableDeleteStrategy('deleted') }
     );
 
     await table.add(
-      { id: 'a', customerId: 'c1', value: 'A', deleted: '', version: 1 });
+      { id: 'a',
+        customerId: 'c1',
+        value: 'A',
+        deleted: '',
+        version: 1 });
 
     await table.delete('a');
     await table.clear();
 
     const tx =
       db.transaction(
-        ['items'],
+        [ 'items' ],
         TxMode.read);
 
     const records =
@@ -1035,10 +1160,9 @@ test(
 function createTestBroadcastService(
   ): TableBroadcastService
 {
-  const handlers: Array<(m: TableBroadcastMessage) => void> = [];
+  const handlers: Array<(m: TableBroadcastMessage) => void> = [ ];
 
-  return {
-    publish(message)
+  return { publish(message)
     {
       for (const h of handlers) {
         try {
@@ -1046,7 +1170,7 @@ function createTestBroadcastService(
         } catch { /* swallow */ }
       }
     },
-    subscribe(handler)
+           subscribe(handler)
     {
       handlers.push(handler);
 
@@ -1061,16 +1185,14 @@ function createTestBroadcastService(
             1);
         }
       };
-    }
-  };
+    } };
 }
 
 test(
   `${TEST_SUITE}: notify (local) subscribers do not receive remote broadcast messages`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
@@ -1091,20 +1213,19 @@ test(
       { broadcastService: broadcast }
     );
 
-    const localEvents: string[] = [];
+    const localEvents: string[] = [ ];
 
     localTable.notify(
-      {
-        add(record)
+      { add(record)
         {
           localEvents.push(
             `add:${record.id}`);
-        }
-      });
+        } });
 
     // Remote tab adds a record; its broadcast reaches localTable.
     await remoteTable.add(
-      { id: 'r1', value: 'remote' });
+      { id: 'r1',
+        value: 'remote' });
 
     await waitFor(
       () => localEvents.length > 0,
@@ -1116,7 +1237,7 @@ test(
     // The local-only subscriber must NOT have been called.
     assert.deepEqual(
       localEvents,
-      []);
+      [ ]);
 
     remoteTable.dispose();
     localTable.dispose();
@@ -1126,8 +1247,7 @@ test(
   `${TEST_SUITE}: observe subscribers receive both local and remote events`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
@@ -1146,35 +1266,42 @@ test(
       { broadcastService: broadcast }
     );
 
-    const observed: Array<{ source: string; id: string; event: string; }> = [];
+    const observed: Array<{ source: string; id: string; event: string; }> = [ ];
 
     localTable.observe(
-      event =>
+      (
+          event
+        ) =>
       {
         if (event.eventType === 'add') {
           observed.push(
-            { source: event.source, event: 'add', id: event.record.id });
+            { source: event.source,
+              event: 'add',
+              id: event.record.id });
         }
       });
 
     // Local write — observed as 'local'.
     await localTable.add(
-      { id: 'l1', value: 'local' });
+      { id: 'l1',
+        value: 'local' });
 
     // Remote write — observed as 'remote'.
     await remoteTable.add(
-      { id: 'r1', value: 'remote' });
+      { id: 'r1',
+        value: 'remote' });
 
     await waitFor(
       () => observed.length === 2);
 
     assert.deepEqual(
       observed,
-      [{ source: 'local', event: 'add', id: 'l1' }, {
-        source: 'remote',
-        event: 'add',
-        id: 'r1'
-      }]);
+      [ { source: 'local',
+          event: 'add',
+          id: 'l1' },
+        { source: 'remote',
+          event: 'add',
+          id: 'r1' } ]);
 
     remoteTable.dispose();
     localTable.dispose();
@@ -1184,8 +1311,7 @@ test(
   `${TEST_SUITE}: observe unsubscribe stops delivery`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
@@ -1197,12 +1323,14 @@ test(
       { broadcastService: broadcast }
     );
 
-    const events: string[] = [];
+    const events: string[] = [ ];
 
     const unsubscribe =
       table.observe(
-        event =>
-      {
+        (
+            event
+          ) =>
+        {
         if (event.eventType === 'add') {
           events.push(
             event.record.id);
@@ -1210,7 +1338,8 @@ test(
       });
 
     await table.add(
-      { id: 'a', value: '1' });
+      { id: 'a',
+        value: '1' });
 
     await waitFor(
       () => events.length === 1);
@@ -1224,7 +1353,8 @@ test(
       false);
 
     await table.add(
-      { id: 'b', value: '2' });
+      { id: 'b',
+        value: '2' });
 
     await waitFor(
       () => events.length > 1,
@@ -1235,7 +1365,7 @@ test(
 
     assert.deepEqual(
       events,
-      ['a']);
+      [ 'a' ]);
 
     table.dispose();
   });
@@ -1244,27 +1374,24 @@ test(
   `${TEST_SUITE}: remote messages are not re-broadcast`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
 
-    const published: TableBroadcastMessage[] = [];
+    const published: TableBroadcastMessage[] = [ ];
 
     // Wrap the service to capture publish calls.
     const spied: TableBroadcastService =
-      {
-      publish(msg)
+      { publish(msg)
       {
         published.push(msg);
         broadcast.publish(msg);
       },
-      subscribe(handler)
+        subscribe(handler)
       {
         return broadcast.subscribe(handler);
-      }
-    };
+      } };
 
     const remoteTable =
       new Table<TestRecordFields>(
@@ -1280,14 +1407,15 @@ test(
       { broadcastService: spied }
     );
 
-    const observed: TableObservedEvent<TestRecordFields>[] = [];
+    const observed: TableObservedEvent<TestRecordFields>[] = [ ];
 
     localTable.observe(
       event => observed.push(event));
 
     // Remote publishes one message.
     await remoteTable.add(
-      { id: 'r1', value: 'x' });
+      { id: 'r1',
+        value: 'x' });
 
     await waitFor(
       () => observed.length === 1);
@@ -1310,8 +1438,7 @@ test(
   `${TEST_SUITE}: echo suppression — a table ignores its own broadcast messages`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
@@ -1323,13 +1450,14 @@ test(
       { broadcastService: broadcast }
     );
 
-    const observed: TableObservedEvent<TestRecordFields>[] = [];
+    const observed: TableObservedEvent<TestRecordFields>[] = [ ];
 
     table.observe(
       event => observed.push(event));
 
     await table.add(
-      { id: 'a', value: '1' });
+      { id: 'a',
+        value: '1' });
 
     await waitFor(
       () => observed.length === 1);
@@ -1351,8 +1479,7 @@ test(
   `${TEST_SUITE}: no broadcast published when broadcastService is absent`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     // Table without a broadcast service.
     const table =
@@ -1361,26 +1488,25 @@ test(
       db
     );
 
-    const events: string[] = [];
+    const events: string[] = [ ];
 
     table.notify(
-      {
-        add(record)
+      { add(record)
         {
           events.push(
             record.id);
-        }
-      });
+        } });
 
     await table.add(
-      { id: 'a', value: '1' });
+      { id: 'a',
+        value: '1' });
 
     await waitFor(
       () => events.length === 1);
 
     assert.deepEqual(
       events,
-      ['a']);
+      [ 'a' ]);
     // No errors thrown; no broadcast machinery involved.
   });
 
@@ -1388,8 +1514,7 @@ test(
   `${TEST_SUITE}: observe receives all four event types from a remote table`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     const broadcast =
       createTestBroadcastService();
@@ -1408,10 +1533,12 @@ test(
       { broadcastService: broadcast }
     );
 
-    const observed: string[] = [];
+    const observed: string[] = [ ];
 
     localTable.observe(
-      event =>
+      (
+          event
+        ) =>
       {
         if (event.eventType === 'add') {
           observed.push(
@@ -1429,15 +1556,18 @@ test(
       });
 
     await remoteTable.add(
-      { id: 'a', value: '10' });
+      { id: 'a',
+        value: '10' });
 
     await remoteTable.update(
-      { id: 'a', value: '20' });
+      { id: 'a',
+        value: '20' });
 
     await remoteTable.delete('a');
 
     await remoteTable.add(
-      { id: 'b', value: '30' });
+      { id: 'b',
+        value: '30' });
 
     await remoteTable.clear();
 
@@ -1446,7 +1576,11 @@ test(
 
     assert.deepEqual(
       observed,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']);
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'clear:1' ]);
 
     remoteTable.dispose();
     localTable.dispose();
@@ -1456,8 +1590,7 @@ test(
   `${TEST_SUITE}: backward compatibility — existing local notify still works without broadcastService`,
   async () =>
   {
-    const db =
-      await openTestDb();
+    const db = await openTestDb();
 
     // Plain Table without any new options.
     const table =
@@ -1466,43 +1599,44 @@ test(
       db
     );
 
-    const events: string[] = [];
+    const events: string[] = [ ];
 
     const unsubscribe =
       table.notify(
-        {
-        add(record)
+        { add(record)
         {
           events.push(
             `add:${record.id}`);
         },
-        update(record)
+          update(record)
         {
           events.push(
             `update:${record.id}:${record.value}`);
         },
-        delete(record)
+          delete(record)
         {
           events.push(
             `delete:${record.id}`);
         },
-        clear(records)
+          clear(records)
         {
           events.push(
             `clear:${records.length}`);
-        }
-      });
+        } });
 
     await table.add(
-      { id: 'a', value: '10' });
+      { id: 'a',
+        value: '10' });
 
     await table.update(
-      { id: 'a', value: '20' });
+      { id: 'a',
+        value: '20' });
 
     await table.delete('a');
 
     await table.add(
-      { id: 'b', value: '30' });
+      { id: 'b',
+        value: '30' });
 
     await table.clear();
 
@@ -1511,7 +1645,11 @@ test(
 
     assert.deepEqual(
       events,
-      ['add:a', 'update:a:20', 'delete:a', 'add:b', 'clear:1']);
+      [ 'add:a',
+        'update:a:20',
+        'delete:a',
+        'add:b',
+        'clear:1' ]);
 
     assert.equal(
       unsubscribe(),

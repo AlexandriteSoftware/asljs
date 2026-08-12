@@ -133,29 +133,24 @@ export function createShareModalUi(
 
   configureButton(
     elBtnShareLink,
-    { text:
-        'Share with link',
-      className:
-        'btn btn-primary' });
+    { text: 'Share with link',
+      className: 'btn btn-primary' });
 
   configureButton(
     elBtnShareDownload,
-    { text:
-        'Download export',
+    { text: 'Download export',
       className:
         'btn btn-outline-secondary' });
 
   configureButton(
     elBtnCopyText,
-    { text:
-        'Copy as text link',
+    { text: 'Copy as text link',
       className:
         'btn btn-outline-secondary' });
 
   configureButton(
     elBtnCopyHtml,
-    { text:
-        'Copy as HTML link',
+    { text: 'Copy as HTML link',
       className:
         'btn btn-outline-secondary' });
 
@@ -184,7 +179,9 @@ export function createShareModalUi(
     elBtnShareLink.disabled = true;
     elBtnCopyText.disabled = true;
     elBtnCopyHtml.disabled = true;
-    elStatus.textContent = 'Preparing share link...';
+
+    elStatus.textContent =
+      'Preparing share link...';
 
     try {
       const prepared =
@@ -205,7 +202,8 @@ export function createShareModalUi(
         return;
       }
 
-      elStatus.textContent = error instanceof Error
+      elStatus.textContent =
+        error instanceof Error
         ? error.message
         : String(error);
     }
@@ -229,7 +227,8 @@ export function createShareModalUi(
       await navigator.clipboard.writeText(
         elOutput.value);
 
-      elStatus.textContent = 'Share link copied to clipboard.';
+      elStatus.textContent =
+        'Share link copied to clipboard.';
     } catch {
       elOutput.focus();
       elOutput.select();
@@ -257,20 +256,25 @@ export function createShareModalUi(
 
     try {
       if (
-        typeof ClipboardItem !== 'undefined'
-        && navigator.clipboard.write !== undefined
+        typeof ClipboardItem
+        !== 'undefined'
+        && navigator.clipboard.write
+           !== undefined
       ) {
         await navigator.clipboard.write(
-          [
-            new ClipboardItem(
-              { 'text/html':
-                  new Blob([html], { type: 'text/html' }),
-                'text/plain':
-                  new Blob([url], { type: 'text/plain' }) }
-            )
-          ]);
+          [ new ClipboardItem(
+            { 'text/html':
+                new Blob(
+                  [ html ],
+                  { type: 'text/html' }),
+              'text/plain':
+                new Blob(
+                  [ url ],
+                  { type: 'text/plain' }) }) ]);
 
-        elStatus.textContent = 'HTML link copied to clipboard.';
+        elStatus.textContent =
+          'HTML link copied to clipboard.';
+
         return;
       }
 
@@ -368,7 +372,9 @@ export function createShareModalUi(
 
   elModal.addEventListener(
     'click',
-    (event: MouseEvent) =>
+    (
+        event: MouseEvent
+      ) =>
     {
       if (event.target === elModal) {
         close();

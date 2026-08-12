@@ -1,8 +1,8 @@
 export const TxMode =
-  {
-  read: 'readonly' as IDBTransactionMode,
-  readWrite: 'readwrite' as IDBTransactionMode
-};
+  { read:
+      'readonly' as IDBTransactionMode,
+    readWrite:
+      'readwrite' as IDBTransactionMode };
 
 export function txDone(
     tx: IDBTransaction
@@ -10,9 +10,9 @@ export function txDone(
 {
   return new Promise(
     (
-      resolve,
-      reject
-    ) =>
+        resolve,
+        reject
+      ) =>
     {
       tx.addEventListener(
         'complete',
@@ -36,8 +36,7 @@ export function txDone(
           reject(
             tx.error);
         });
-    }
-  );
+    });
 }
 
 export function txReuseOrCreate(
@@ -51,7 +50,7 @@ export function txReuseOrCreate(
     const storeNamesArray =
       Array.isArray(storeNames)
       ? storeNames
-      : [storeNames];
+      : [ storeNames ];
 
     for (const storeName of storeNamesArray) {
       txEnsure(
@@ -106,7 +105,8 @@ export class UnsupportedTransactionModeError extends Error
     super(
       `Unsupported transaction mode "${mode}"`);
 
-    this.name = 'UnsupportedTransactionModeError';
+    this.name =
+      'UnsupportedTransactionModeError';
   }
 }
 
@@ -119,7 +119,8 @@ export class TransactionReadModeRequiredError extends Error
     super(
       `Transaction does not have read access to the store "${storeName}".`);
 
-    this.name = 'TransactionReadModeRequiredError';
+    this.name =
+      'TransactionReadModeRequiredError';
   }
 }
 
@@ -132,7 +133,8 @@ export class TransactionWriteModeRequiredError extends Error
     super(
       `Transaction does not have write access to the store "${storeName}".`);
 
-    this.name = 'TransactionWriteModeRequiredError';
+    this.name =
+      'TransactionWriteModeRequiredError';
   }
 }
 
@@ -145,7 +147,8 @@ export class TransactionStoreAccessError extends Error
     super(
       `Transaction does not have access to the store "${storeName}".`);
 
-    this.name = 'TransactionStoreAccessError';
+    this.name =
+      'TransactionStoreAccessError';
   }
 }
 
@@ -165,7 +168,7 @@ export function txRead(
   }
 
   return db.transaction(
-    [storeName],
+    [ storeName ],
     TxMode.read);
 }
 
@@ -185,6 +188,6 @@ export function txWrite(
   }
 
   return db.transaction(
-    [storeName],
+    [ storeName ],
     TxMode.readWrite);
 }

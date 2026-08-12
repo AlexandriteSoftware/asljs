@@ -27,8 +27,7 @@ const logger =
     'commands.read.test');
 
 test.after(
-  async () =>
-    await loggerProvider.dispose());
+  async () => await loggerProvider.dispose());
 
 function emptyEnvelope(
   ): Envelope

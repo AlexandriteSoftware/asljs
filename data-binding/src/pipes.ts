@@ -7,7 +7,11 @@ import { BindDataModelOptions,
   from './types.js';
 
 const DATE_STYLE_NAMES =
-  new Set(['short', 'medium', 'long', 'full']);
+  new Set(
+    [ 'short',
+      'medium',
+      'long',
+      'full' ]);
 
 /**
  * Creates the built-in value pipes used by data-bind value bindings.
@@ -38,9 +42,11 @@ export function createBuiltInPipes(
     locale?: string
   ): Record<string, PipeFn>
 {
-  return {
-    string: value =>
-    {
+  return { string:
+             (
+                 value
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -50,8 +56,11 @@ export function createBuiltInPipes(
 
       return coerceDisplayValue(value);
     },
-    number: value =>
-    {
+           number:
+             (
+                 value
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -69,11 +78,12 @@ export function createBuiltInPipes(
 
       return '';
     },
-    currency: (
-      value,
-      code = 'USD'
-    ) =>
-    {
+           currency:
+             (
+                 value,
+                 code = 'USD'
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -90,15 +100,16 @@ export function createBuiltInPipes(
 
       return new Intl.NumberFormat(
         locale,
-        { style: 'currency', currency: code }
-      )
+        { style: 'currency',
+          currency: code })
         .format(numeric);
     },
-    date: (
-      value,
-      format = 'short'
-    ) =>
-    {
+           date:
+             (
+                 value,
+                 format = 'short'
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -112,11 +123,12 @@ export function createBuiltInPipes(
         locale,
         false);
     },
-    datetime: (
-      value,
-      format = 'short'
-    ) =>
-    {
+           datetime:
+             (
+                 value,
+                 format = 'short'
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -130,11 +142,12 @@ export function createBuiltInPipes(
         locale,
         true);
     },
-    fixed: (
-      value,
-      digitsText = '2'
-    ) =>
-    {
+           fixed:
+             (
+                 value,
+                 digitsText = '2'
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -161,8 +174,11 @@ export function createBuiltInPipes(
 
       return numeric.toFixed(digits);
     },
-    upper: value =>
-    {
+           upper:
+             (
+                 value
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -172,8 +188,11 @@ export function createBuiltInPipes(
 
       return coerceDisplayValue(value).toUpperCase();
     },
-    lower: value =>
-    {
+           lower:
+             (
+                 value
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -183,11 +202,12 @@ export function createBuiltInPipes(
 
       return coerceDisplayValue(value).toLowerCase();
     },
-    json: (
-      value,
-      spacesText = '0'
-    ) =>
-    {
+           json:
+             (
+                 value,
+                 spacesText = '0'
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -208,11 +228,12 @@ export function createBuiltInPipes(
 
       return formatted ?? '';
     },
-    default: (
-      value,
-      ...fallbackParts
-    ) =>
-    {
+           default:
+             (
+                 value,
+                 ...fallbackParts
+               ) =>
+             {
       if (
         value === null
         || value === undefined
@@ -226,8 +247,7 @@ export function createBuiltInPipes(
 
       return value;
     },
-    safeHtml: value => value
-  };
+           safeHtml: value => value };
 }
 
 /**
@@ -250,10 +270,8 @@ export function mergePipes(
   const builtIns =
     createBuiltInPipes();
 
-  return {
-    ...builtIns,
-    ...(options?.pipes ?? {})
-  };
+  return { ...builtIns,
+           ...(options?.pipes ?? {}) };
 }
 
 function formatDateOrIntl(
@@ -277,13 +295,12 @@ function formatDateOrIntl(
     return withTime
       ? new Intl.DateTimeFormat(
         locale,
-        { dateStyle: style, timeStyle: style }
-      )
+        { dateStyle: style,
+          timeStyle: style })
         .format(dt)
       : new Intl.DateTimeFormat(
         locale,
-        { dateStyle: style }
-      )
+        { dateStyle: style })
         .format(dt);
   }
 
@@ -304,8 +321,10 @@ function asDate(
   }
 
   if (
-    typeof value === 'string'
-    || typeof value === 'number'
+    typeof value
+    === 'string'
+    || typeof value
+       === 'number'
   ) {
     const dt =
       new Date(value);

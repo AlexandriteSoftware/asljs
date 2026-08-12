@@ -26,7 +26,8 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
           <template data-slot="container">
             <section class="rows"
                      data-role="items"></section>
@@ -44,10 +45,11 @@ test(
           </template>
         `;
 
-    list.items = [{ title: 'First', url: '/first' }, {
-      title: 'Second',
-      url: '/second'
-    }];
+    list.items =
+      [ { title: 'First',
+          url: '/first' },
+        { title: 'Second',
+          url: '/second' } ];
 
     document.body.appendChild(list);
 
@@ -134,7 +136,8 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
           <template data-slot="empty">
             <div data-role="empty-value">No rows</div>
           </template>
@@ -143,7 +146,7 @@ test(
           </template>
         `;
 
-    list.items = [];
+    list.items = [ ];
 
     document.body.appendChild(list);
 
@@ -172,7 +175,8 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
           <template data-slot="item">
             <div data-bind-text="item.title"></div>
           </template>
@@ -180,7 +184,7 @@ test(
 
     const items =
       observable(
-        [{ title: 'A' }]);
+        [ { title: 'A' } ]);
 
     list.items = items;
 
@@ -202,16 +206,15 @@ test(
           '[data-bind-text="item.title"]').length === 2);
 
     const renderedTitles =
-      [
-      ...list.querySelectorAll(
-        '[data-bind-text="item.title"]')
-    ]
+      [ ...list.querySelectorAll(
+        '[data-bind-text="item.title"]') ]
       .map(
         element => element.textContent);
 
     assert.deepEqual(
       renderedTitles,
-      ['A', 'B']);
+      [ 'A',
+        'B' ]);
   });
 
 test(
@@ -228,13 +231,15 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
         <template data-slot="item">
           <div data-bind-text="item.title"></div>
         </template>
       `;
 
-    list.items = [{ title: 'Plain' }];
+    list.items =
+      [ { title: 'Plain' } ];
 
     document.body.appendChild(list);
 
@@ -257,7 +262,7 @@ test(
 
     resetDomBody();
 
-    const selectedIds: string[] = [];
+    const selectedIds: string[] = [ ];
 
     const list =
       document.createElement('asljs-list') as HTMLElement & {
@@ -266,25 +271,26 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
         <template data-slot="item">
           <button data-bind-text="item.title"
                   data-bind-onclick="context.select"></button>
         </template>
       `;
 
-    list.context = {
-      select(this: { item: { id: string; }; })
+    list.context =
+      { select(this: { item: { id: string; }; })
       {
         selectedIds.push(
           this.item.id);
-      }
-    };
+      } };
 
-    list.items = [
-      { id: 'a', title: 'First' },
-      { id: 'b', title: 'Second' }
-    ];
+    list.items =
+      [ { id: 'a',
+          title: 'First' },
+        { id: 'b',
+          title: 'Second' } ];
 
     document.body.appendChild(list);
 
@@ -301,7 +307,8 @@ test(
 
     assert.deepEqual(
       selectedIds,
-      ['a', 'b']);
+      [ 'a',
+        'b' ]);
   });
 
 test(
@@ -315,11 +322,9 @@ test(
       await import('./themes/theme.js');
 
     setDefaultTheme(
-      {
-        list: {
-          item: '<div class="theme-row" data-bind-text="item.title"></div>'
-        }
-      });
+      { list:
+          { item:
+              '<div class="theme-row" data-bind-text="item.title"></div>' } });
 
     try {
       const list =
@@ -328,7 +333,9 @@ test(
         updateComplete: Promise<boolean>;
       };
 
-      list.items = [{ title: 'From default theme' }];
+      list.items =
+        [ { title:
+              'From default theme' } ];
 
       document.body.appendChild(list);
 
@@ -360,14 +367,12 @@ test(
         theme: unknown;
       };
 
-    provider.theme = {
-      list: {
-        container:
-          '<section class="theme-container" data-role="items"></section>',
-        item:
-          '<article class="theme-card" data-bind-text="item.title"></article>'
-      }
-    };
+    provider.theme =
+      { list:
+          { container:
+              '<section class="theme-container" data-role="items"></section>',
+            item:
+              '<article class="theme-card" data-bind-text="item.title"></article>' } };
 
     const list =
       document.createElement('asljs-list') as HTMLElement & {
@@ -375,7 +380,9 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.items = [{ title: 'From provider theme' }];
+    list.items =
+      [ { title:
+            'From provider theme' } ];
 
     provider.appendChild(list);
     document.body.appendChild(provider);
@@ -415,14 +422,18 @@ test(
       updateComplete: Promise<boolean>;
     };
 
-    list.innerHTML = `
+    list.innerHTML =
+      `
         <template data-slot="item">
           <div data-bind-text="item.title"></div>
         </template>
       `;
 
-    list.theme = bootstrapThemeModule.createBootstrapTheme();
-    list.items = [{ title: 'Bootstrap' }];
+    list.theme =
+      bootstrapThemeModule.createBootstrapTheme();
+
+    list.items =
+      [ { title: 'Bootstrap' } ];
 
     document.body.appendChild(list);
 
@@ -451,11 +462,9 @@ test(
       await import('./themes/theme.js');
 
     setDefaultTheme(
-      {
-        list: {
-          item: '<div class="theme-row" data-bind-text="item.title"></div>'
-        }
-      });
+      { list:
+          { item:
+              '<div class="theme-row" data-bind-text="item.title"></div>' } });
 
     try {
       const list =
@@ -464,13 +473,15 @@ test(
         updateComplete: Promise<boolean>;
       };
 
-      list.innerHTML = `
+      list.innerHTML =
+        `
           <template data-slot="item">
             <div class="local-row" data-bind-text="item.title"></div>
           </template>
         `;
 
-      list.items = [{ title: 'Local wins' }];
+      list.items =
+        [ { title: 'Local wins' } ];
 
       document.body.appendChild(list);
 
@@ -499,13 +510,15 @@ test(
 
     resetDomBody();
 
-    const warnings: string[] = [];
+    const warnings: string[] = [ ];
 
-    const previousWarn =
-      console.warn;
+    const previousWarn = console.warn;
 
-    console.warn = (...args: unknown[]) =>
-    {
+    console.warn =
+      (
+          ...args: unknown[]
+        ) =>
+      {
       warnings.push(
         String(
           args[0] ?? ''));
@@ -518,16 +531,17 @@ test(
         updateComplete: Promise<boolean>;
       };
 
-      list.innerHTML = `
+      list.innerHTML =
+        `
           <template data-slot="item">
             <button data-bind-onclick="context.select"
                     data-bind-text="item.title"></button>
           </template>
         `;
 
-      list.items = [
-        { id: 'a', title: 'First' }
-      ];
+      list.items =
+        [ { id: 'a',
+            title: 'First' } ];
 
       document.body.appendChild(list);
 
@@ -558,13 +572,15 @@ test(
 
     resetDomBody();
 
-    const warnings: string[] = [];
+    const warnings: string[] = [ ];
 
-    const previousWarn =
-      console.warn;
+    const previousWarn = console.warn;
 
-    console.warn = (...args: unknown[]) =>
-    {
+    console.warn =
+      (
+          ...args: unknown[]
+        ) =>
+      {
       warnings.push(
         String(
           args[0] ?? ''));
@@ -577,7 +593,8 @@ test(
         updateComplete: Promise<boolean>;
       };
 
-      list.items = [{ title: 'A' }];
+      list.items =
+        [ { title: 'A' } ];
 
       document.body.appendChild(list);
 
@@ -602,13 +619,15 @@ test(
 
     resetDomBody();
 
-    const warnings: string[] = [];
+    const warnings: string[] = [ ];
 
-    const previousWarn =
-      console.warn;
+    const previousWarn = console.warn;
 
-    console.warn = (...args: unknown[]) =>
-    {
+    console.warn =
+      (
+          ...args: unknown[]
+        ) =>
+      {
       warnings.push(
         String(
           args[0] ?? ''));
@@ -621,7 +640,8 @@ test(
         updateComplete: Promise<boolean>;
       };
 
-      list.innerHTML = `
+      list.innerHTML =
+        `
           <template data-slot="container">
             <div class="rows"></div>
           </template>
@@ -630,7 +650,8 @@ test(
           </template>
         `;
 
-      list.items = [{ title: 'A' }];
+      list.items =
+        [ { title: 'A' } ];
 
       document.body.appendChild(list);
 
@@ -656,7 +677,8 @@ async function ensureDomAndListLoaded(
   ): Promise<void>
 {
   if (domRestore === null) {
-    domRestore = installDom();
+    domRestore =
+      installDom();
   }
 
   if (!isComponentsLoaded) {
@@ -684,7 +706,11 @@ async function waitFor(
     predicate: () => boolean
   ): Promise<void>
 {
-  for (let index = 0; index < 50; index++) {
+  for (
+    let index = 0;
+    index < 50;
+    index++
+  ) {
     if (predicate()) {
       return;
     }
@@ -698,8 +724,11 @@ async function waitFor(
 function nextTick(
   ): Promise<void>
 {
-  return new Promise(resolve =>
-  {
+  return new Promise(
+    (
+        resolve
+      ) =>
+    {
     setTimeout(
       () =>
       {
@@ -714,36 +743,56 @@ function installDom(
 {
   const dom =
     new JSDOM(
-    '<!doctype html><html><body></body></html>'
-  );
+      '<!doctype html><html><body></body></html>');
 
   const previous =
-    {
-    window: (globalThis as any).window,
-    document: (globalThis as any).document,
-    customElements: (globalThis as any).customElements,
-    HTMLElement: (globalThis as any).HTMLElement,
-    Event: (globalThis as any).Event,
-    CustomEvent: (globalThis as any).CustomEvent,
-    Node: (globalThis as any).Node,
-    DocumentFragment: (globalThis as any).DocumentFragment,
-    requestAnimationFrame: (globalThis as any).requestAnimationFrame
-  };
+    { window:
+        (globalThis as any).window,
+      document:
+        (globalThis as any).document,
+      customElements:
+        (globalThis as any).customElements,
+      HTMLElement:
+        (globalThis as any).HTMLElement,
+      Event:
+        (globalThis as any).Event,
+      CustomEvent:
+        (globalThis as any).CustomEvent,
+      Node:
+        (globalThis as any).Node,
+      DocumentFragment:
+        (globalThis as any).DocumentFragment,
+      requestAnimationFrame:
+        (globalThis as any).requestAnimationFrame };
 
   (globalThis as any).window = dom.window;
   (globalThis as any).document = dom.window.document;
-  (globalThis as any).customElements = dom.window.customElements;
-  (globalThis as any).HTMLElement = dom.window.HTMLElement;
-  (globalThis as any).Event = dom.window.Event;
-  (globalThis as any).CustomEvent = dom.window.CustomEvent;
-  (globalThis as any).Node = dom.window.Node;
-  (globalThis as any).DocumentFragment = dom.window.DocumentFragment;
 
-  if ((globalThis as any).requestAnimationFrame === undefined) {
-    (globalThis as any).requestAnimationFrame = (
-      callback: FrameRequestCallback
-    ) =>
-    {
+  (globalThis as any).customElements =
+    dom.window.customElements;
+
+  (globalThis as any).HTMLElement =
+    dom.window.HTMLElement;
+
+  (globalThis as any).Event = dom.window.Event;
+
+  (globalThis as any).CustomEvent =
+    dom.window.CustomEvent;
+
+  (globalThis as any).Node = dom.window.Node;
+
+  (globalThis as any).DocumentFragment =
+    dom.window.DocumentFragment;
+
+  if (
+    (globalThis as any).requestAnimationFrame
+    === undefined
+  ) {
+    (globalThis as any).requestAnimationFrame =
+      (
+          callback: FrameRequestCallback
+        ) =>
+      {
       return setTimeout(
         () =>
         {
@@ -758,13 +807,26 @@ function installDom(
   {
     (globalThis as any).window = previous.window;
     (globalThis as any).document = previous.document;
-    (globalThis as any).customElements = previous.customElements;
-    (globalThis as any).HTMLElement = previous.HTMLElement;
+
+    (globalThis as any).customElements =
+      previous.customElements;
+
+    (globalThis as any).HTMLElement =
+      previous.HTMLElement;
+
     (globalThis as any).Event = previous.Event;
-    (globalThis as any).CustomEvent = previous.CustomEvent;
+
+    (globalThis as any).CustomEvent =
+      previous.CustomEvent;
+
     (globalThis as any).Node = previous.Node;
-    (globalThis as any).DocumentFragment = previous.DocumentFragment;
-    (globalThis as any).requestAnimationFrame = previous.requestAnimationFrame;
+
+    (globalThis as any).DocumentFragment =
+      previous.DocumentFragment;
+
+    (globalThis as any).requestAnimationFrame =
+      previous.requestAnimationFrame;
+
     dom.window.close();
   };
 }

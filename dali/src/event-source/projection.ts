@@ -21,7 +21,7 @@ export async function eventSourceGetAll(
   const ltx =
     txReuseOrCreate(
       tx,
-      [storeName],
+      [ storeName ],
       TxMode.read,
       db);
 
@@ -47,7 +47,7 @@ export async function eventSourceProjectionGet(
   const tx =
     txReuseOrCreate(
       null,
-      [storeName],
+      [ storeName ],
       TxMode.read,
       db);
 
@@ -70,7 +70,7 @@ export async function eventSourceProjectionSet(
   const tx =
     txReuseOrCreate(
       null,
-      [storeName],
+      [ storeName ],
       TxMode.readWrite,
       db);
 
@@ -117,11 +117,10 @@ export class EventSourceProjectionManager
       await this.apply(transaction);
 
       await this.projectionWriter(
-        {
-          projectionId: this.projectionId,
+        { projectionId: this.projectionId,
           appliedTransactionId: transaction.id,
-          updatedAt: new Date().toISOString()
-        });
+          updatedAt:
+            new Date().toISOString() });
 
       applied += 1;
     }

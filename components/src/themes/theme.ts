@@ -1,8 +1,10 @@
 export type ThemeTemplateFactory<
   TComponent extends HTMLElement = HTMLElement
-> = (
-  component: TComponent
-) => string | HTMLTemplateElement | null | undefined;
+> =
+  (
+    component: TComponent
+  ) =>
+    string | HTMLTemplateElement | null | undefined;
 
 export type ThemeTemplateValue<
   TComponent extends HTMLElement = HTMLElement
@@ -15,9 +17,11 @@ export type ThemeTemplateValue<
 
 export type ThemeTextFactory<
   TComponent extends HTMLElement = HTMLElement
-> = (
-  component: TComponent
-) => string | null | undefined;
+> =
+  (
+    component: TComponent
+  ) =>
+    string | null | undefined;
 
 export type ThemeTextValue<
   TComponent extends HTMLElement = HTMLElement
@@ -79,15 +83,17 @@ export const THEME_CHANGED_EVENT_NAME =
   'asljs-theme-changed';
 
 const PACKAGE_DEFAULT_THEME: ComponentsTheme =
-  {
-  button: {
-    variants: {
-      add: { icon: '&#xF26E;', text: 'Add' },
-      delete: { icon: '&#xF5DE;', text: 'Delete' },
-      settings: { icon: '&#xF3E5;', text: 'Settings' }
-    }
-  }
-};
+  { button:
+      { variants:
+          { add:
+              { icon: '&#xF26E;',
+                text: 'Add' },
+            delete:
+              { icon: '&#xF5DE;',
+                text: 'Delete' },
+            settings:
+              { icon: '&#xF3E5;',
+                text: 'Settings' } } } };
 
 let defaultTheme: ComponentsTheme = {};
 
@@ -105,10 +111,8 @@ function mergeSection<
     return undefined;
   }
 
-  return {
-    ...(baseSection ?? {}),
-    ...(overrideSection ?? {})
-  } as TSection;
+  return { ...(baseSection ?? {}),
+           ...(overrideSection ?? {}) } as TSection;
 }
 
 function mergeButtonVariants(
@@ -128,12 +132,11 @@ function mergeButtonVariants(
   }
 
   const variantNames =
-    new Set([
-    ...Object.keys(
-      baseVariants ?? {}),
-    ...Object.keys(
-      overrideVariants ?? {})
-  ]);
+    new Set(
+      [ ...Object.keys(
+        baseVariants ?? {}),
+        ...Object.keys(
+          overrideVariants ?? {}) ]);
 
   const mergedVariants: Record<
     string,
@@ -141,9 +144,10 @@ function mergeButtonVariants(
   > = {};
 
   for (const variantName of variantNames) {
-    mergedVariants[variantName] = mergeSection(
-      baseVariants?.[variantName],
-      overrideVariants?.[variantName]);
+    mergedVariants[variantName] =
+      mergeSection(
+        baseVariants?.[variantName],
+        overrideVariants?.[variantName]);
   }
 
   return mergedVariants;
@@ -161,39 +165,41 @@ function mergeButtonThemeDefinition(
     return undefined;
   }
 
-  return {
-    ...(baseTheme ?? {}),
-    ...(overrideTheme ?? {}),
-    variants: mergeButtonVariants(
-      baseTheme?.variants,
-      overrideTheme?.variants)
-  };
+  return { ...(baseTheme ?? {}),
+           ...(overrideTheme ?? {}),
+           variants:
+             mergeButtonVariants(
+               baseTheme?.variants,
+               overrideTheme?.variants) };
 }
 
 export function getDefaultTheme(
   ): ComponentsTheme
 {
-  return {
-    button: mergeButtonThemeDefinition(
-      PACKAGE_DEFAULT_THEME.button,
-      defaultTheme.button),
-    list: mergeSection(
-      PACKAGE_DEFAULT_THEME.list,
-      defaultTheme.list),
-    textInput: mergeSection(
-      PACKAGE_DEFAULT_THEME.textInput,
-      defaultTheme.textInput),
-    select: mergeSection(
-      PACKAGE_DEFAULT_THEME.select,
-      defaultTheme.select)
-  };
+  return { button:
+             mergeButtonThemeDefinition(
+               PACKAGE_DEFAULT_THEME.button,
+               defaultTheme.button),
+           list:
+             mergeSection(
+               PACKAGE_DEFAULT_THEME.list,
+               defaultTheme.list),
+           textInput:
+             mergeSection(
+               PACKAGE_DEFAULT_THEME.textInput,
+               defaultTheme.textInput),
+           select:
+             mergeSection(
+               PACKAGE_DEFAULT_THEME.select,
+               defaultTheme.select) };
 }
 
 export function setDefaultTheme(
     theme: ComponentsTheme | null | undefined
   ): void
 {
-  defaultTheme = theme ?? {};
+  defaultTheme =
+    theme ?? {};
 }
 
 export function getComponentVariantList(
@@ -210,7 +216,7 @@ export function getComponentVariantList(
       return Object.keys(
         resolvedTheme.button?.variants ?? {});
     default:
-      return [];
+      return [ ];
   }
 }
 
@@ -246,7 +252,10 @@ export function resolveThemeTemplate(
     return null;
   }
 
-  if (typeof resolvedSource === 'string') {
+  if (
+    typeof resolvedSource
+    === 'string'
+  ) {
     const template =
       document.createElement('template');
 

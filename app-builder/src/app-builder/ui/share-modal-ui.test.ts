@@ -20,10 +20,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderShareModal());
+      new JSDOM(
+        renderShareModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     const previousNavigator =
       globalThis.navigator;
@@ -41,17 +41,17 @@ test(
       const prepareCalls: Array<{
         minified: boolean;
         excludeNonApplicationFiles: boolean;
-      }> = [];
+      }> = [ ];
 
       const ui =
         createShareModalUi(
-          { canOpen:
-              () => true,
-            readAppName:
-              () => 'Demo App',
+          { canOpen: () => true,
+            readAppName: () => 'Demo App',
             prepareLink:
-              async shareOptions =>
-          {
+              async (
+                  shareOptions
+                ) =>
+              {
             prepareCalls.push(shareOptions);
 
             return { url:
@@ -59,9 +59,7 @@ test(
                      status:
                        `ready ${prepareCalls.length}` };
           },
-            downloadExport:
-              async () =>
-          {} });
+            downloadExport: async () => { } });
 
       const modal =
         document.getElementById('share-modal') as HTMLElement;
@@ -87,10 +85,8 @@ test(
 
       assert.deepEqual(
         prepareCalls,
-        [
-          { minified: false,
-            excludeNonApplicationFiles: false }
-        ]);
+        [ { minified: false,
+            excludeNonApplicationFiles: false } ]);
 
       assert.equal(
         output.value,
@@ -103,18 +99,18 @@ test(
       minified.checked = true;
 
       minified.dispatchEvent(
-        new dom.window.Event('change', { bubbles: true }));
+        new dom.window.Event(
+          'change',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         prepareCalls,
-        [
-          { minified: false,
+        [ { minified: false,
             excludeNonApplicationFiles: false },
           { minified: true,
-            excludeNonApplicationFiles: false }
-        ]);
+            excludeNonApplicationFiles: false } ]);
 
       assert.equal(
         output.value,
@@ -130,8 +126,7 @@ test(
         globalThis,
         'navigator',
         { configurable: true,
-          value:
-            previousNavigator });
+          value: previousNavigator });
     }
   });
 
@@ -140,10 +135,10 @@ test(
   async () =>
   {
     const dom =
-      new JSDOM(renderShareModal());
+      new JSDOM(
+        renderShareModal());
 
-    const previousDocument =
-      globalThis.document;
+    const previousDocument = globalThis.document;
 
     const previousNavigator =
       globalThis.navigator;
@@ -151,12 +146,12 @@ test(
     globalThis.document = dom.window.document;
 
     try {
-      const copied: string[] = [];
+      const copied: string[] = [ ];
 
       const downloads: Array<{
         minified: boolean;
         excludeNonApplicationFiles: boolean;
-      }> = [];
+      }> = [ ];
 
       let canOpen = false;
 
@@ -167,24 +162,26 @@ test(
           value:
             { clipboard:
                 { writeText:
-                    async (value: string) =>
-              {
+                    async (
+                        value: string
+                      ) =>
+                    {
                 copied.push(value);
               } } } });
 
       const ui =
         createShareModalUi(
-          { canOpen:
-              () => canOpen,
-            readAppName:
-              () => 'Demo App',
+          { canOpen: () => canOpen,
+            readAppName: () => 'Demo App',
             prepareLink:
               async () => ({ url:
                                'https://example.test/shared',
                              status: 'ready' }),
             downloadExport:
-              async options =>
-          {
+              async (
+                  options
+                ) =>
+              {
             downloads.push(options);
           } });
 
@@ -215,27 +212,29 @@ test(
       await flushMicrotasks();
 
       shareButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         copied,
-        ['https://example.test/shared']);
+        [ 'https://example.test/shared' ]);
 
       excludeTests.checked = true;
 
       downloadButton.dispatchEvent(
-        new dom.window.MouseEvent('click', { bubbles: true }));
+        new dom.window.MouseEvent(
+          'click',
+          { bubbles: true }));
 
       await flushMicrotasks();
 
       assert.deepEqual(
         downloads,
-        [
-          { minified: false,
-            excludeNonApplicationFiles: true }
-        ]);
+        [ { minified: false,
+            excludeNonApplicationFiles: true } ]);
     } finally {
       globalThis.document = previousDocument;
 
@@ -243,7 +242,6 @@ test(
         globalThis,
         'navigator',
         { configurable: true,
-          value:
-            previousNavigator });
+          value: previousNavigator });
     }
   });

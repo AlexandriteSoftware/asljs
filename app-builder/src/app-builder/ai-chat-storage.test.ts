@@ -13,15 +13,15 @@ test(
   {
     const dom =
       new JSDOM(
-      '',
-      { url:
-          'https://example.test/' }
-    );
+        '',
+        { url:
+            'https://example.test/' });
 
     const previousSessionStorage =
       globalThis.sessionStorage;
 
-    globalThis.sessionStorage = dom.window.sessionStorage;
+    globalThis.sessionStorage =
+      dom.window.sessionStorage;
 
     try {
       const store =
@@ -29,8 +29,8 @@ test(
 
       await store.save(
         { messages:
-            [{ role: 'assistant',
-               content: 'Hi' }],
+            [ { role: 'assistant',
+                content: 'Hi' } ],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -43,8 +43,8 @@ test(
       assert.deepEqual(
         await store.load(),
         { messages:
-            [{ role: 'assistant',
-               content: 'Hi' }],
+            [ { role: 'assistant',
+                content: 'Hi' } ],
           promptDraft: 'next',
           messagesScrollTop: 12,
           hasMessagesScrollTop: true,
@@ -54,6 +54,7 @@ test(
           progress: null,
           sending: false });
     } finally {
-      globalThis.sessionStorage = previousSessionStorage;
+      globalThis.sessionStorage =
+        previousSessionStorage;
     }
   });

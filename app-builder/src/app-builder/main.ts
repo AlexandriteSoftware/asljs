@@ -264,13 +264,9 @@ let sharePreparationId = 0;
 let browserEsbuildApiPromise: Promise<BrowserEsbuildApi> | null = null;
 
 let availableModels: AvailableAiModel[] =
-  [
-  { id:
-      DEFAULT_CHAT_MODEL },
-  { id:
-      DEFAULT_CODE_MODEL },
-  { id: DEFAULT_MODEL }
-];
+  [ { id: DEFAULT_CHAT_MODEL },
+    { id: DEFAULT_CODE_MODEL },
+    { id: DEFAULT_MODEL } ];
 
 let generationStopRequested = false;
 let currentAppOpenAiApiKey = '';
@@ -282,18 +278,15 @@ setMobileWorkspaceTab('chat');
 const firstApplicationDialog =
   createFirstApplicationDialogUi(
     { onCreateApplication: createFirstApp,
-      onCreateTodoSample:
-        createTodoSampleApp });
+      onCreateTodoSample: createTodoSampleApp });
 
 const nameModal =
   createNameModalUi();
 
 const projectSettingsModal =
   createProjectSettingsModalUi(
-    { onSave:
-        saveProjectSettings,
-      onDelete:
-        confirmDeleteApp });
+    { onSave: saveProjectSettings,
+      onDelete: confirmDeleteApp });
 
 const settingsModal =
   createSettingsModalUi(
@@ -315,10 +308,8 @@ const shareModal =
         () => getCurrentApp() !== undefined,
       readAppName:
         () => getCurrentApp()?.name ?? 'Shared app',
-      prepareLink:
-        prepareShareLink,
-      downloadExport:
-        downloadShareExport });
+      prepareLink: prepareShareLink,
+      downloadExport: downloadShareExport });
 
 type BrowserEsbuildApi = {
   transform: (
@@ -467,22 +458,18 @@ function setMobileWorkspaceTab(
     tab: MobileWorkspaceTab;
     button: AppBuilderButtonElement;
   }[] =
-    [
-    { tab: 'chat',
-      button:
-        elMobileTabChat },
-    { tab: 'files',
-      button:
-        elMobileTabFiles },
-    { tab: 'run',
-      button: elMobileTabRun }
-  ];
+    [ { tab: 'chat',
+        button: elMobileTabChat },
+      { tab: 'files',
+        button: elMobileTabFiles },
+      { tab: 'run',
+        button: elMobileTabRun } ];
 
   for (const item of tabs) {
-    const active =
-      item.tab === tab;
+    const active = item.tab === tab;
 
-    item.button.buttonClassName = active
+    item.button.buttonClassName =
+      active
       ? 'btn btn-primary flex-fill'
       : 'btn btn-outline-secondary flex-fill';
 
@@ -495,19 +482,20 @@ function setMobileWorkspaceTab(
 function renderPreviewTitle(
   ): void
 {
-  elPreviewTitle.textContent = getCurrentApp()?.name ?? 'Preview';
+  elPreviewTitle.textContent =
+    getCurrentApp()?.name ?? 'Preview';
 }
 
 function getLinkSharingService(
   ): LinkSharingService
 {
-  linkSharingService = linkSharingService
+  linkSharingService =
+    linkSharingService
     ?? createLinkSharingService(
       { codec:
           createBrowserTextCompressionCodec(),
         baseUrl: SHARE_BASE_URL,
-        hashPrefix:
-          IMPORT_HASH_PREFIX,
+        hashPrefix: IMPORT_HASH_PREFIX,
         maxUrlLength:
           SHARE_MAX_URL_LENGTH });
 
@@ -544,8 +532,9 @@ async function refreshCurrentAppOpenAiApiKey(
     return currentAppOpenAiApiKey;
   }
 
-  currentAppOpenAiApiKey = await loadAppOpenAiApiKey(
-    state.currentAppId);
+  currentAppOpenAiApiKey =
+    await loadAppOpenAiApiKey(
+      state.currentAppId);
 
   return currentAppOpenAiApiKey;
 }
@@ -618,7 +607,10 @@ function getFontSize(
     Math.floor(
       candidate as number);
 
-  if (normalized < 12 || normalized > 20) {
+  if (
+    normalized < 12
+    || normalized > 20
+  ) {
     return DEFAULT_FONT_SIZE;
   }
 
@@ -632,14 +624,18 @@ function applyAppearanceSettings(
     'data-bs-theme',
     getTheme());
 
-  document.documentElement.style.fontSize = `${getFontSize()}px`;
+  document.documentElement.style.fontSize =
+    `${getFontSize()}px`;
 }
 
 function normalizeExistingUuid(
     value: unknown
   ): string | null
 {
-  if (typeof value !== 'string') {
+  if (
+    typeof value
+    !== 'string'
+  ) {
     return null;
   }
 
@@ -663,20 +659,27 @@ async function ensureAppsHaveUniqueUuids(
 {
   const used = new Set<string>();
 
-  const normalized: AppRecord[] = [];
+  const normalized: AppRecord[] = [ ];
 
   for (const app of apps) {
     let uuid =
       normalizeExistingUuid(
         (app as { uuid?: unknown; }).uuid);
 
-    if (uuid === null || used.has(uuid)) {
-      uuid = createAppUuid();
+    if (
+      uuid === null
+      || used.has(uuid)
+    ) {
+      uuid =
+        createAppUuid();
     }
 
     used.add(uuid);
 
-    if ((app as { uuid?: unknown; }).uuid === uuid) {
+    if (
+      (app as { uuid?: unknown; }).uuid
+      === uuid
+    ) {
       normalized.push(app);
       continue;
     }
@@ -707,8 +710,9 @@ async function saveAppAndReplaceInState(
 {
   await saveApp(app);
 
-  state.apps = state.apps.map(
-    item => (
+  state.apps =
+    state.apps.map(
+      item => (
       item.id === app.id
         ? app
         : item
@@ -788,30 +792,37 @@ const appRuntimeTools =
   createAppRuntimeTools(
     { getCurrentAppId:
         () => state.currentAppId,
-      getFiles:
-        () => state.files,
+      getFiles: () => state.files,
       setFiles:
-        files =>
-    {
+        (
+            files
+          ) =>
+        {
       state.files = files;
     },
       getActiveFileName:
         () => state.activeFileName,
       setActiveFileName:
-        fileName =>
-    {
+        (
+            fileName
+          ) =>
+        {
       state.activeFileName = fileName;
     },
       createFileId: randomId,
       saveFile:
-        async file =>
-    {
+        async (
+            file
+          ) =>
+        {
       await saveFile(file);
       await regenerateCurrentAppUuidForFileChange();
     },
       deleteFileById:
-        async id =>
-    {
+        async (
+            id
+          ) =>
+        {
       await deleteFile(id);
       await regenerateCurrentAppUuidForFileChange();
     },
@@ -823,12 +834,14 @@ const appRuntimeTools =
         code),
       getAppDiagnostics:
         () => getPreviewDiagnostics(elPreviewFrame),
-      showChoicePrompt:
-        showChoicePrompt,
+      showChoicePrompt: showChoicePrompt,
       wait:
         milliseconds =>
-      new Promise(resolve =>
-      {
+      new Promise(
+        (
+            resolve
+          ) =>
+        {
         window.setTimeout(
           resolve,
           milliseconds);
@@ -839,13 +852,10 @@ function renderAppList(
 {
   renderAppListUi(
     { selectElement: elAppSelect,
-      apps:
-        state.apps,
-      currentAppId:
-        state.currentAppId,
+      apps: state.apps,
+      currentAppId: state.currentAppId,
       newActionValue: APP_ACTION_NEW,
-      importActionValue:
-        APP_ACTION_IMPORT });
+      importActionValue: APP_ACTION_IMPORT });
 }
 
 function renderWorkspace(
@@ -886,8 +896,7 @@ async function createFirstApp(
         randomId(),
       uuid:
         createAppUuid(),
-      name:
-        values.name,
+      name: values.name,
       createdAt:
         now(),
       updatedAt:
@@ -908,7 +917,9 @@ async function createFirstApp(
       app.name,
       randomId));
 
-  state.apps = [...state.apps, app];
+  state.apps =
+    [ ...state.apps,
+      app ];
 
   await openApp(
     app.id);
@@ -942,8 +953,7 @@ async function createTodoSampleApp(
       uuid:
         createAppUuid(),
       name,
-      author:
-        sample.author,
+      author: sample.author,
       createdAt:
         now(),
       updatedAt:
@@ -967,7 +977,9 @@ async function createTodoSampleApp(
     app.id,
     files);
 
-  state.apps = [...state.apps, app];
+  state.apps =
+    [ ...state.apps,
+      app ];
 
   await openApp(
     app.id);
@@ -978,8 +990,7 @@ function renderFileSelect(
 {
   renderFileSelectUi(
     { selectElement: elFileSelect,
-      files:
-        state.files,
+      files: state.files,
       activeFileName:
         state.activeFileName });
 }
@@ -989,18 +1000,23 @@ function renderFileContent(
 {
   renderFileContentUi(
     { fileElement: elFileView,
-      files:
-        state.files,
+      files: state.files,
       activeFileName:
         state.activeFileName,
       onSaveText:
-        async (fileName, text) =>
-      {
+        async (
+            fileName,
+            text
+          ) =>
+        {
         const file =
           state.files.find(
             item => item.name === fileName);
 
-        if (file === undefined || file.content === text) {
+        if (
+          file === undefined
+          || file.content === text
+        ) {
           return;
         }
 
@@ -1015,7 +1031,9 @@ function setGenerating(
   ): void
 {
   state.generating = value;
-  elBtnStartGeneration.disabled = value || state.generationBusy;
+
+  elBtnStartGeneration.disabled =
+    value || state.generationBusy;
 }
 
 function setGenerationBusy(
@@ -1080,17 +1098,16 @@ function resetChatConversation(
 function syncStateChatMessagesFromAiChatModel(
   ): void
 {
-  state.chatMessages = currentAiChatModel === null
-    ? []
+  state.chatMessages =
+    currentAiChatModel === null
+    ? [ ]
     : currentAiChatModel.messages
       .read()
       .filter(
         isUserOrAssistantMessage)
       .map(
-        message => ({ role:
-                        message.role,
-                      text:
-                        message.content }));
+        message => ({ role: message.role,
+                      text: message.content }));
 }
 
 function isUserOrAssistantMessage(
@@ -1110,12 +1127,11 @@ async function mountAiChatForCurrentApp(
   if (state.currentAppId === null) {
     currentAiChatModel = null;
     elChatRoot.replaceChildren();
-    state.chatMessages = [];
+    state.chatMessages = [ ];
     return;
   }
 
-  const appId =
-    state.currentAppId;
+  const appId = state.currentAppId;
 
   const model =
     createAiChatModel();
@@ -1130,19 +1146,19 @@ async function mountAiChatForCurrentApp(
         createAppBuilderAiChatSecretsAndSettingsProvider(
           { appId,
             readChatModel: getChatModel,
-            readInitialToolStepLimit:
-              getMaxToolSteps }),
+            readInitialToolStepLimit: getMaxToolSteps }),
       ...(transport !== null
         ? { transport }
         : {}),
       stateStore:
         createSessionStorageAiChatStateStore(appId),
       getRequestContext:
-        () => ({ currentAppId:
-                   state.currentAppId }),
+        () => ({ currentAppId: state.currentAppId }),
       buildRequestInput:
-        ({ model: chatModel }: { model: AiChatModel; }) =>
-      {
+        (
+            { model: chatModel }: { model: AiChatModel; }
+          ) =>
+        {
         const transcript =
           buildConversationPrompt(
             chatModel.messages
@@ -1150,33 +1166,25 @@ async function mountAiChatForCurrentApp(
             .filter(
               isUserOrAssistantMessage)
             .map(
-              (message: { role: 'user' | 'assistant'; content: string; }) => ({ role:
-                                                                                  message.role,
-                                                                                text:
-                                                                                  message.content })));
+              (message: { role: 'user' | 'assistant'; content: string; }) => ({ role: message.role,
+                                                                                text: message.content })));
 
-        return [
-          { role: 'system',
-            content:
-              CHAT_SYSTEM_PROMPT },
-          { role: 'user',
-            content: transcript }
-        ];
+        return [ { role: 'system',
+                   content: CHAT_SYSTEM_PROMPT },
+                 { role: 'user',
+                   content: transcript } ];
       },
-      getTools:
-        () => OPENAI_TOOLS,
+      getTools: () => OPENAI_TOOLS,
       executeTool:
         async (
         name: string,
         argumentsJson: string
       ): Promise<string> =>
         executeToolCall(
-          { type:
-              'function_call',
+          { type: 'function_call',
             name,
             arguments: argumentsJson,
-            call_id:
-              `app-chat:${name}` },
+            call_id: `app-chat:${name}` },
           appRuntimeTools) }
   );
 
@@ -1188,23 +1196,29 @@ async function mountAiChatForCurrentApp(
       'asljs-ai-chat') as AppBuilderAiChatElement;
 
   if (apiKey !== '') {
-    component.options = buildChatOptions(
-      new OpenAiTransport(apiKey));
+    component.options =
+      buildChatOptions(
+        new OpenAiTransport(apiKey));
 
     elChatRoot.replaceChildren(component);
   } else {
-    component.options = buildChatOptions(null);
+    component.options =
+      buildChatOptions(null);
 
     const keyPrompt =
       document.createElement(
         'asljs-ai-chat-key') as AppBuilderAiChatKeyElement;
 
-    keyPrompt.label = 'Enter your OpenAI API key to start chatting';
+    keyPrompt.label =
+      'Enter your OpenAI API key to start chatting';
+
     keyPrompt.submitLabel = 'Start chatting';
 
     keyPrompt.addEventListener(
       'key-submit',
-      (event: Event) =>
+      (
+          event: Event
+        ) =>
       {
         const detail =
           (event as CustomEvent<AiChatKeySubmitDetail>).detail;
@@ -1224,8 +1238,9 @@ async function mountAiChatForCurrentApp(
             {
               currentAppOpenAiApiKey = submittedKey;
 
-              component.options = buildChatOptions(
-                new OpenAiTransport(submittedKey));
+              component.options =
+                buildChatOptions(
+                  new OpenAiTransport(submittedKey));
 
               keyPrompt.remove();
             });
@@ -1234,7 +1249,9 @@ async function mountAiChatForCurrentApp(
     const container =
       document.createElement('div');
 
-    container.className = 'chat-key-container';
+    container.className =
+      'chat-key-container';
+
     container.appendChild(keyPrompt);
     container.appendChild(component);
 
@@ -1247,7 +1264,11 @@ async function mountAiChatForCurrentApp(
 async function persistCurrentFile(
   ): Promise<void>
 {
-  if (state.activeFileName === null || state.currentAppId === null) {
+  if (
+    state.activeFileName
+    === null
+    || state.currentAppId === null
+  ) {
     return;
   }
 
@@ -1266,8 +1287,7 @@ async function persistCurrentFile(
     return;
   }
 
-  const newContent =
-    textArea.value;
+  const newContent = textArea.value;
 
   if (file.content === newContent) {
     return;
@@ -1284,8 +1304,7 @@ async function openApp(
 {
   state.currentAppId = id;
 
-  const files =
-    await listFiles(id);
+  const files = await listFiles(id);
 
   const app =
     state.apps.find(
@@ -1295,8 +1314,7 @@ async function openApp(
     ensureWorkflowFiles(
       { files,
         appId: id,
-        appName:
-          app?.name ?? 'Untitled App',
+        appName: app?.name ?? 'Untitled App',
         createId: randomId });
 
   if (ensured.changed) {
@@ -1307,8 +1325,9 @@ async function openApp(
 
   state.files = ensured.files;
 
-  state.activeFileName = pickFirstFileName(
-    ensured.files);
+  state.activeFileName =
+    pickFirstFileName(
+      ensured.files);
 
   await refreshCurrentAppOpenAiApiKey();
   await refreshAvailableModels();
@@ -1330,8 +1349,10 @@ function promptNewApp(
       initialValue: '',
       selectText: false,
       onConfirm:
-        async (name: string) =>
-      {
+        async (
+            name: string
+          ) =>
+        {
         const app: AppRecord =
           { id:
               randomId(),
@@ -1352,7 +1373,9 @@ function promptNewApp(
             app.name,
             randomId));
 
-        state.apps = [...state.apps, app];
+        state.apps =
+          [ ...state.apps,
+            app ];
 
         await openApp(
           app.id);
@@ -1372,12 +1395,13 @@ function promptRenameApp(
 
   nameModal.open(
     { title: 'Rename App',
-      initialValue:
-        app.name,
+      initialValue: app.name,
       selectText: true,
       onConfirm:
-        async (name: string) =>
-      {
+        async (
+            name: string
+          ) =>
+        {
         const updated: AppRecord =
           { ...app,
             name,
@@ -1386,8 +1410,9 @@ function promptRenameApp(
 
         await saveApp(updated);
 
-        state.apps = state.apps.map(
-          item => (
+        state.apps =
+          state.apps.map(
+            item => (
             item.id === app.id
               ? updated
               : item
@@ -1407,12 +1432,9 @@ function openProjectSettings(
   }
 
   projectSettingsModal.open(
-    { name:
-        app.name,
-      authorName:
-        app.author?.name ?? '',
-      authorEmail:
-        app.author?.email ?? '' });
+    { name: app.name,
+      authorName: app.author?.name ?? '',
+      authorEmail: app.author?.email ?? '' });
 }
 
 async function saveProjectSettings(
@@ -1434,27 +1456,25 @@ async function saveProjectSettings(
   const author: AppAuthor | undefined =
     values.authorName !== '' || values.authorEmail !== ''
       ? { ...(values.authorName !== ''
-          ? { name:
-                values.authorName }
+          ? { name: values.authorName }
           : {}),
           ...(values.authorEmail !== ''
-          ? { email:
-                values.authorEmail }
+          ? { email: values.authorEmail }
           : {}) }
       : undefined;
 
   const updated: AppRecord =
     { ...app,
-      name:
-        values.name,
+      name: values.name,
       author,
       updatedAt:
         now() };
 
   await saveApp(updated);
 
-  state.apps = state.apps.map(
-    item => (
+  state.apps =
+    state.apps.map(
+      item => (
       item.id === app.id
         ? updated
         : item
@@ -1482,11 +1502,12 @@ async function confirmDeleteApp(
   await deleteApp(
     app.id);
 
-  state.apps = state.apps.filter(
-    item => item.id !== app.id);
+  state.apps =
+    state.apps.filter(
+      item => item.id !== app.id);
 
   state.currentAppId = null;
-  state.files = [];
+  state.files = [ ];
   state.activeFileName = null;
   resetChatConversation();
   elPreviewFrame.src = 'about:blank';
@@ -1551,12 +1572,10 @@ async function handleStartGeneration(
   try {
     const result =
       await generateApp(
-        [
-        'Implement the pending changes listed in CHANGE.md.',
-        'Use README.md as the current implemented app state.',
-        'Work through CHANGE.md, update app files, update README.md, and clear CHANGE.md when the cycle is complete.',
-        'Do not consume new changes that may later appear in PLAN.md during this cycle.'
-      ].join('\n'),
+        [ 'Implement the pending changes listed in CHANGE.md.',
+          'Use README.md as the current implemented app state.',
+          'Work through CHANGE.md, update app files, update README.md, and clear CHANGE.md when the cycle is complete.',
+          'Do not consume new changes that may later appear in PLAN.md during this cycle.' ].join('\n'),
         apiKey,
         getCodeGenerationModel(),
         appRuntimeTools,
@@ -1571,8 +1590,10 @@ async function handleStartGeneration(
           confirm(
             `Generation reached ${stepsCompleted} tool steps without finishing. Continue for 12 more steps?`),
           onProgress:
-            message =>
-        {
+            (
+                message
+              ) =>
+            {
           setGenerationStatus(message);
         } });
 
@@ -1589,7 +1610,10 @@ async function handleStartGeneration(
 
     handleRun();
   } catch (error) {
-    if (error instanceof GenerationStoppedError) {
+    if (
+      error
+      instanceof GenerationStoppedError
+    ) {
       setGenerationStatus(
         'Generation stopped.');
 
@@ -1658,8 +1682,7 @@ async function buildExportPayload(
 
   return buildExportPayloadModel(
     { app,
-      files:
-        state.files });
+      files: state.files });
 }
 
 function downloadExportPayload(
@@ -1667,8 +1690,9 @@ function downloadExportPayload(
   ): void
 {
   const blob =
-    new Blob([JSON.stringify(payload)], { type:
-                                            'application/json' });
+    new Blob(
+      [ JSON.stringify(payload) ],
+      { type: 'application/json' });
 
   const url =
     URL.createObjectURL(blob);
@@ -1678,7 +1702,8 @@ function downloadExportPayload(
 
   link.href = url;
 
-  link.download = `${
+  link.download =
+    `${
     payload.name.replace(
       /\s+/g,
       '-')
@@ -1699,11 +1724,12 @@ async function buildSharePayload(
     await buildExportPayload();
 
   if (options.excludeNonApplicationFiles) {
-    payload = { ...payload,
-                files:
-                  Object.fromEntries(
-                    Object.entries(
-                      payload.files)
+    payload =
+      { ...payload,
+        files:
+          Object.fromEntries(
+            Object.entries(
+              payload.files)
           .filter(
             ([fileName]) => !shouldExcludeNonApplicationFileFromShare(fileName))) };
   }
@@ -1738,12 +1764,16 @@ async function transformWithBrowserEsbuild(
 async function getBrowserEsbuildApi(
   ): Promise<BrowserEsbuildApi>
 {
-  if (browserEsbuildApiPromise !== null) {
+  if (
+    browserEsbuildApiPromise
+    !== null
+  ) {
     return browserEsbuildApiPromise;
   }
 
-  browserEsbuildApiPromise = (async () =>
-  {
+  browserEsbuildApiPromise =
+    (async () =>
+    {
     await esbuildWasm.initialize(
       { wasmURL: esbuildWasmUrl,
         worker: true });
@@ -1797,8 +1827,7 @@ function setWorkspaceMode(
     mode: 'edit' | 'run'
   ): void
 {
-  const collapsed =
-    mode === 'run';
+  const collapsed = mode === 'run';
 
   elPanels.classList.toggle(
     'chat-collapsed',
@@ -1875,8 +1904,7 @@ async function importPayload(
   const plan =
     createImportPlan(
       { payload,
-        existingApps:
-          state.apps,
+        existingApps: state.apps,
         navigateToExistingById:
           options.navigateToExistingById,
         now:
@@ -1907,7 +1935,9 @@ async function importPayload(
     plan.app.id,
     plan.files);
 
-  state.apps = [...state.apps, plan.app];
+  state.apps =
+    [ ...state.apps,
+      plan.app ];
 
   await openApp(
     plan.app.id);
@@ -1926,8 +1956,7 @@ async function handleImportFile(
   }
 
   try {
-    const text =
-      await file.text();
+    const text = await file.text();
 
     const payload =
       parseImportedPayloadText(text);
@@ -1973,7 +2002,10 @@ async function handleImportFromHashOnStartup(
   const token =
     getImportHashToken();
 
-  if (token === null || token.trim() === '') {
+  if (
+    token === null
+    || token.trim() === ''
+  ) {
     return false;
   }
 
@@ -1986,7 +2018,7 @@ async function handleImportFromHashOnStartup(
   try {
     const decodedToken =
       (() =>
-    {
+      {
       try {
         return decodeURIComponent(token);
       } catch {
@@ -2074,20 +2106,25 @@ async function withTimeout<T>(
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   const timeoutPromise =
-    new Promise<T>((_, reject) =>
-  {
-    timeoutId = globalThis.setTimeout(
-      () =>
-      {
+    new Promise<T>((
+        _,
+        reject
+      ) =>
+    {
+    timeoutId =
+      globalThis.setTimeout(
+        () =>
+        {
         reject(
           new Error(timeoutMessage));
       },
-      timeoutMs);
+        timeoutMs);
   });
 
   try {
     return await Promise.race(
-      [promise, timeoutPromise]);
+      [ promise,
+        timeoutPromise ]);
   } finally {
     if (timeoutId !== undefined) {
       globalThis.clearTimeout(timeoutId);
@@ -2107,13 +2144,12 @@ async function prepareShareLink(
 {
   sharePreparationId += 1;
 
-  const requestId =
-    sharePreparationId;
+  const requestId = sharePreparationId;
 
   const linkResult =
     await withTimeout(
       (async () =>
-    {
+      {
       const payload =
         await buildSharePayload(options);
 
@@ -2124,12 +2160,10 @@ async function prepareShareLink(
 
   if (requestId !== sharePreparationId) {
     throw new Error(
-      'Share link preparation was superseded by a newer request.'
-    );
+      'Share link preparation was superseded by a newer request.');
   }
 
-  return { url:
-             linkResult.url,
+  return { url: linkResult.url,
            status:
              buildShareStatusMessage(
                linkResult.url.length,
@@ -2164,7 +2198,8 @@ async function saveSettingsFromModal(
 
   delete settings.apiKey;
 
-  settings.theme = values.theme === 'light'
+  settings.theme =
+    values.theme === 'light'
     ? 'light'
     : DEFAULT_THEME;
 
@@ -2173,7 +2208,8 @@ async function saveSettingsFromModal(
       values.fontSizeText,
       10);
 
-  settings.fontSize = Number.isFinite(parsedFontSize)
+  settings.fontSize =
+    Number.isFinite(parsedFontSize)
       && parsedFontSize >= 12
       && parsedFontSize <= 20
     ? parsedFontSize
@@ -2184,7 +2220,8 @@ async function saveSettingsFromModal(
       values.maxToolStepsText,
       10);
 
-  settings.maxToolSteps = Number.isFinite(parsed) && parsed >= 1
+  settings.maxToolSteps =
+    Number.isFinite(parsed) && parsed >= 1
     ? parsed
     : DEFAULT_MAX_TOOL_STEPS;
 
@@ -2200,7 +2237,10 @@ async function saveSettingsFromModal(
       state.currentAppId,
       currentAppOpenAiApiKey);
 
-    if (prevKey !== currentAppOpenAiApiKey) {
+    if (
+      prevKey
+      !== currentAppOpenAiApiKey
+    ) {
       await mountAiChatForCurrentApp();
     }
   }
@@ -2218,9 +2258,10 @@ function syncModelSelectOptions(
   const currentValue =
     readControlValue(selectElement);
 
-  selectElement.items = modelIds.map(
-    modelId => ({ value: modelId,
-                  label: modelId }));
+  selectElement.items =
+    modelIds.map(
+      modelId => ({ value: modelId,
+                    label: modelId }));
 
   if (modelIds.includes(currentValue)) {
     writeControlValue(
@@ -2242,14 +2283,12 @@ function refreshLaneModelSelectOptions(
 {
   const modelIds =
     dedupeModels(
-      [
-      ...availableModels,
-      { id:
-          getChatModel() },
-      { id:
-          getCodeGenerationModel() }
-    ]).map(
-      model => model.id);
+      [ ...availableModels,
+        { id:
+            getChatModel() },
+        { id:
+            getCodeGenerationModel() } ]).map(
+              model => model.id);
 
   syncModelSelectOptions(
     elChatModelSelect,
@@ -2272,7 +2311,11 @@ function pickSavedOrDefaultModel(
       availableModels).map(
         model => model.id);
 
-  if (typeof savedValue === 'string' && modelIds.includes(savedValue)) {
+  if (
+    typeof savedValue
+    === 'string'
+    && modelIds.includes(savedValue)
+  ) {
     return savedValue;
   }
 
@@ -2289,8 +2332,9 @@ function saveChatModelSelection(
   const settings =
     loadSettings();
 
-  settings.chatModel = readControlValue(
-    elChatModelSelect);
+  settings.chatModel =
+    readControlValue(
+      elChatModelSelect);
 
   saveSettings(settings);
 }
@@ -2301,8 +2345,9 @@ function saveGenerationModelSelection(
   const settings =
     loadSettings();
 
-  settings.generationModel = readControlValue(
-    elGenerationModelSelect);
+  settings.generationModel =
+    readControlValue(
+      elGenerationModelSelect);
 
   saveSettings(settings);
 }
@@ -2336,21 +2381,26 @@ async function writeCurrentFileContent(
     existing.content = content;
     await saveFile(existing);
     await regenerateCurrentAppUuidForFileChange();
-    state.files = [...state.files];
+
+    state.files =
+      [ ...state.files ];
+
     return;
   }
 
   const created =
     { id:
         randomId(),
-      appId:
-        state.currentAppId,
+      appId: state.currentAppId,
       name: fileName,
       content };
 
   await saveFile(created);
   await regenerateCurrentAppUuidForFileChange();
-  state.files = [...state.files, created];
+
+  state.files =
+    [ ...state.files,
+      created ];
 }
 
 async function refreshAvailableModels(
@@ -2361,14 +2411,11 @@ async function refreshAvailableModels(
     apiKey.trim();
 
   if (trimmedApiKey === '') {
-    availableModels = dedupeModels(
-      [
-        { id:
-            DEFAULT_CHAT_MODEL },
-        { id:
-            DEFAULT_CODE_MODEL },
-        { id: DEFAULT_MODEL }
-      ]);
+    availableModels =
+      dedupeModels(
+        [ { id: DEFAULT_CHAT_MODEL },
+          { id: DEFAULT_CODE_MODEL },
+          { id: DEFAULT_MODEL } ]);
 
     refreshLaneModelSelectOptions();
     return;
@@ -2378,29 +2425,23 @@ async function refreshAvailableModels(
     const models =
       await listAvailableModels(trimmedApiKey);
 
-    availableModels = dedupeModels(
-      [
-        ...models,
-        { id:
-            DEFAULT_CHAT_MODEL },
-        { id:
-            DEFAULT_CODE_MODEL },
-        { id: DEFAULT_MODEL }
-      ]);
+    availableModels =
+      dedupeModels(
+        [ ...models,
+          { id: DEFAULT_CHAT_MODEL },
+          { id: DEFAULT_CODE_MODEL },
+          { id: DEFAULT_MODEL } ]);
   } catch (error) {
     console.warn(
       'Could not load OpenAI models:',
       error);
 
-    availableModels = dedupeModels(
-      [
-        ...availableModels,
-        { id:
-            DEFAULT_CHAT_MODEL },
-        { id:
-            DEFAULT_CODE_MODEL },
-        { id: DEFAULT_MODEL }
-      ]);
+    availableModels =
+      dedupeModels(
+        [ ...availableModels,
+          { id: DEFAULT_CHAT_MODEL },
+          { id: DEFAULT_CODE_MODEL },
+          { id: DEFAULT_MODEL } ]);
   }
 
   refreshLaneModelSelectOptions();
@@ -2416,11 +2457,9 @@ function toggleAppsCollapsed(
 
   togglePanelUi(
     { panelElement: elPanelChat,
-      toggleButtonElement:
-        elBtnToggleChat,
+      toggleButtonElement: elBtnToggleChat,
       panelsElement: elPanels,
-      collapsedPanelsClass:
-        'chat-collapsed',
+      collapsedPanelsClass: 'chat-collapsed',
       expandedText: 'Chat',
       collapsedText: 'Chat',
       expandedIcon:
@@ -2439,11 +2478,9 @@ function toggleFilesCollapsed(
 
   togglePanelUi(
     { panelElement: elPanelEditor,
-      toggleButtonElement:
-        elBtnToggleFiles,
+      toggleButtonElement: elBtnToggleFiles,
       panelsElement: elPanels,
-      collapsedPanelsClass:
-        'files-collapsed',
+      collapsedPanelsClass: 'files-collapsed',
       expandedText: 'Files',
       collapsedText: 'Files',
       expandedIcon:
@@ -2590,7 +2627,10 @@ elAppSelect.addEventListener(
       return;
     }
 
-    if (value !== '' && value !== state.currentAppId) {
+    if (
+      value !== ''
+      && value !== state.currentAppId
+    ) {
       void openApp(value);
     }
   });
@@ -2602,7 +2642,11 @@ elFileSelect.addEventListener(
     const next =
       readControlValue(elFileSelect);
 
-    if (next === '' || next === state.activeFileName) {
+    if (
+      next === ''
+      || next
+         === state.activeFileName
+    ) {
       return;
     }
 
@@ -2617,23 +2661,56 @@ elImportFile.addEventListener(
     void handleImportFile();
   });
 
-window.listFileset = appRuntimeTools.listFileset;
-window.listFilesByMask = appRuntimeTools.listFilesByMask;
-window.readFile = appRuntimeTools.readFile;
-window.readFiles = appRuntimeTools.readFiles;
-window.readFilesByMask = appRuntimeTools.readFilesByMask;
-window.readFileData = appRuntimeTools.readFileData;
-window.setFilesContent = appRuntimeTools.setFilesContent;
-window.setFileData = appRuntimeTools.setFileData;
-window.setFileContent = appRuntimeTools.setFileContent;
-window.replaceFilePart = appRuntimeTools.replaceFilePart;
-window.deleteFile = appRuntimeTools.deleteFile;
-window.grep = appRuntimeTools.grep;
-window.choose = appRuntimeTools.choose;
-window.evalInApp = appRuntimeTools.evalInApp;
-window.assertInApp = appRuntimeTools.assertInApp;
-window.runAppTests = appRuntimeTools.runAppTests;
-window.getAppDiagnostics = appRuntimeTools.getAppDiagnostics;
+window.listFileset =
+  appRuntimeTools.listFileset;
+
+window.listFilesByMask =
+  appRuntimeTools.listFilesByMask;
+
+window.readFile =
+  appRuntimeTools.readFile;
+
+window.readFiles =
+  appRuntimeTools.readFiles;
+
+window.readFilesByMask =
+  appRuntimeTools.readFilesByMask;
+
+window.readFileData =
+  appRuntimeTools.readFileData;
+
+window.setFilesContent =
+  appRuntimeTools.setFilesContent;
+
+window.setFileData =
+  appRuntimeTools.setFileData;
+
+window.setFileContent =
+  appRuntimeTools.setFileContent;
+
+window.replaceFilePart =
+  appRuntimeTools.replaceFilePart;
+
+window.deleteFile =
+  appRuntimeTools.deleteFile;
+
+window.grep =
+  appRuntimeTools.grep;
+
+window.choose =
+  appRuntimeTools.choose;
+
+window.evalInApp =
+  appRuntimeTools.evalInApp;
+
+window.assertInApp =
+  appRuntimeTools.assertInApp;
+
+window.runAppTests =
+  appRuntimeTools.runAppTests;
+
+window.getAppDiagnostics =
+  appRuntimeTools.getAppDiagnostics;
 
 window.runAppAndCollectDiagnostics =
   appRuntimeTools.runAppAndCollectDiagnostics;
@@ -2668,7 +2745,7 @@ async function init(
 
   if (apps.length > 0) {
     const sorted =
-      [...apps].sort(
+      [ ...apps ].sort(
         (a, b) =>
         b.updatedAt.localeCompare(
           a.updatedAt));
@@ -2677,15 +2754,17 @@ async function init(
       sorted[0].id);
   } else {
     state.currentAppId = null;
-    state.files = [];
+    state.files = [ ];
     state.activeFileName = null;
-    state.chatMessages = [];
+    state.chatMessages = [ ];
     renderWorkspace();
   }
 }
 
 init().catch(
-  error =>
+  (
+      error
+    ) =>
   {
     console.error(
       'App Builder init failed:',

@@ -8,10 +8,12 @@ export type SharePayloadMinifyLoader =
   | 'tsx'
   | 'css';
 
-export type SharePayloadTransformer = (
-  source: string,
-  loader: SharePayloadMinifyLoader
-) => Promise<string>;
+export type SharePayloadTransformer =
+  (
+    source: string,
+    loader: SharePayloadMinifyLoader
+  ) =>
+    Promise<string>;
 
 export async function minifySharePayload(
     payload: ExportPayload,
@@ -29,15 +31,17 @@ export async function minifySharePayload(
       resolveLoaderFromFileName(fileName);
 
     if (loader !== null) {
-      files[fileName] = await transform(
-        content,
-        loader);
+      files[fileName] =
+        await transform(
+          content,
+          loader);
 
       continue;
     }
 
     if (isHtmlFile(fileName)) {
-      files[fileName] = compactHtml(content);
+      files[fileName] =
+        compactHtml(content);
     }
   }
 
@@ -94,13 +98,15 @@ function compactHtml(
     html: string
   ): string
 {
-  const preservedBlocks: string[] = [];
+  const preservedBlocks: string[] = [ ];
 
   const withPlaceholders =
     html.replace(
       /<(pre|textarea|script|style)\b[\s\S]*?<\/\1>/gi,
-      (block: string) =>
-    {
+      (
+          block: string
+        ) =>
+      {
       const index =
         preservedBlocks.push(block) - 1;
 

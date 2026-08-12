@@ -6,7 +6,9 @@ export const PLAN_FILE = 'PLAN.md';
 export const CHANGE_FILE = 'CHANGE.md';
 
 const WORKFLOW_FILE_ORDER =
-  [README_FILE, PLAN_FILE, CHANGE_FILE] as const;
+  [ README_FILE,
+    PLAN_FILE,
+    CHANGE_FILE ] as const;
 
 export function createDefaultWorkflowFiles(
     appId: string,
@@ -36,12 +38,11 @@ export function ensureWorkflowFiles(
 {
   const existingByName =
     new Set(
-    options.files.map(
-      file => file.name.toLowerCase())
-  );
+      options.files.map(
+        file => file.name.toLowerCase()));
 
   const nextFiles =
-    [...options.files];
+    [ ...options.files ];
 
   let changed = false;
 
@@ -56,8 +57,7 @@ export function ensureWorkflowFiles(
     nextFiles.push(
       { id:
           options.createId(),
-        appId:
-          options.appId,
+        appId: options.appId,
         name: fileName,
         content:
           buildDefaultWorkflowContent(
@@ -89,21 +89,17 @@ export function hasOnlyWorkflowFiles(
 export function createEmptyPlanContent(
   ): string
 {
-  return [
-    '# PLAN',
-    '',
-    'Pending changes for the next generation cycle go here.'
-  ].join('\n');
+  return [ '# PLAN',
+           '',
+           'Pending changes for the next generation cycle go here.' ].join('\n');
 }
 
 export function createEmptyChangeContent(
   ): string
 {
-  return [
-    '# CHANGE',
-    '',
-    'Active implementation changes for the current generation cycle go here.'
-  ].join('\n');
+  return [ '# CHANGE',
+           '',
+           'Active implementation changes for the current generation cycle go here.' ].join('\n');
 }
 
 function sortWorkflowFilesFirst(
@@ -113,11 +109,15 @@ function sortWorkflowFilesFirst(
   const priority =
     new Map<string, number>(
     WORKFLOW_FILE_ORDER.map(
-      (name, index) => [name, index])
+      (name, index) => [ name,
+                         index ])
   );
 
-  return [...files].sort(
-    (left, right) =>
+  return [ ...files ].sort(
+    (
+        left,
+        right
+      ) =>
     {
       const leftPriority =
         priority.get(
@@ -143,14 +143,12 @@ function buildDefaultWorkflowContent(
 {
   switch (fileName) {
     case README_FILE:
-      return [
-        `# ${appName}`,
-        '',
-        '## State',
-        '',
-        '- This app is empty.',
-        '- No changes have been implemented yet.'
-      ].join('\n');
+      return [ `# ${appName}`,
+               '',
+               '## State',
+               '',
+               '- This app is empty.',
+               '- No changes have been implemented yet.' ].join('\n');
 
     case PLAN_FILE:
       return createEmptyPlanContent();

@@ -1,8 +1,8 @@
-import { HostConsole }
-  from '../console.js';
 import { type Logger,
          type LoggerProvider }
   from 'asljs-logging';
+import { HostConsole }
+  from '../console.js';
 
 export interface ExecutionContext
 {

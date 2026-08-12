@@ -17,13 +17,15 @@ export function renderAppBuilderShell(
       'app-builder-root');
 
   if (root === null) {
-    throw new Error('Missing #app-builder-root.');
+    throw new Error(
+      'Missing #app-builder-root.');
   }
 
   const template =
     document.createElement('template');
 
-  template.innerHTML = `
+  template.innerHTML =
+    `
     ${renderWorkspace()}
     ${renderSettingsModal()}
     ${renderNameModal()}

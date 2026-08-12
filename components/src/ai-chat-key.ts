@@ -40,7 +40,8 @@ export class AiChatKeyPrompt extends LitElement
   accessor submitLabel: string = 'Save key';
 
   @property(
-    { type: Boolean, attribute: false })
+    { type: Boolean,
+      attribute: false })
   accessor disabled: boolean = false;
 
   override createRenderRoot(): this
@@ -76,7 +77,9 @@ export class AiChatKeyPrompt extends LitElement
     `;
   }
 
-  #handleKeydown = (event: Event): void =>
+  #handleKeydown = (
+      event: Event
+    ): void =>
   {
     const keyboardEvent =
       event as KeyboardEvent;
@@ -110,7 +113,10 @@ export class AiChatKeyPrompt extends LitElement
     this.dispatchEvent(
       new CustomEvent<AiChatKeySubmitDetail>(
         'key-submit',
-        { detail: { key }, bubbles: true, composed: true }
+        { detail:
+            { key },
+          bubbles: true,
+          composed: true }
       ));
   }
 }
