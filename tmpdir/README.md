@@ -51,13 +51,13 @@ console.log(
 ### With logging
 
 ```ts
-import { createPinoLoggerProvider }
+import { PinoLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
 
 await using loggerProvider =
-  createPinoLoggerProvider(
+  new PinoLoggerProvider(
     { level: 'trace' });
 
 const logger =

@@ -1,32 +1,39 @@
 import { Logger }
   from './logger.js';
 
-
-export class NullLogger implements Logger {
+export class NullLogger implements Logger
+{
   level = 'silent';
 
   isLevelEnabled(
     level: string
-  ): boolean {
+  ): boolean
+  {
     return level === 'silent';
   }
 
-  trace(): void {
+  trace(): void
+  {
   }
 
-  debug(): void {
+  debug(): void
+  {
   }
 
-  information(): void {
+  information(): void
+  {
   }
 
-  warning(): void {
+  warning(): void
+  {
   }
 
-  error(): void {
+  error(): void
+  {
   }
 
-  scope(): Logger {
+  scope(): Logger
+  {
     return new NullLogger();
   }
 }

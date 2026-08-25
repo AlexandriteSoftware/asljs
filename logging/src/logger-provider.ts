@@ -1,8 +1,8 @@
 import { Logger }
   from './logger.js';
 
-
-export interface LoggerProvider {
+export interface LoggerProvider
+{
   getLogger(
     context?: string
   ): Logger;

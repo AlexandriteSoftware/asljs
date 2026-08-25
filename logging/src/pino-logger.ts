@@ -3,20 +3,22 @@ import pino
 import { Logger }
   from './logger.js';
 
-export class PinoLogger implements Logger {
+export class PinoLogger implements Logger
+{
   readonly #logger: pino.Logger;
 
   constructor(
-      logger: pino.Logger,
-      public readonly level: string
-    )
+    logger: pino.Logger,
+    public readonly level: string
+  )
   {
     this.#logger = logger;
   }
 
   isLevelEnabled(
     level: string
-  ): boolean {
+  ): boolean
+  {
     let pinoLogLevel;
 
     if (level === 'information') {
@@ -35,7 +37,8 @@ export class PinoLogger implements Logger {
   trace(
     message: string,
     ...params: any[]
-  ): void {
+  ): void
+  {
     this.#logger.trace(
       message,
       ...params);
@@ -44,7 +47,8 @@ export class PinoLogger implements Logger {
   debug(
     message: string,
     ...params: any[]
-  ): void {
+  ): void
+  {
     this.#logger.debug(
       message,
       ...params);
@@ -53,7 +57,8 @@ export class PinoLogger implements Logger {
   information(
     message: string,
     ...params: any[]
-  ): void {
+  ): void
+  {
     this.#logger.info(
       message,
       ...params);
@@ -62,7 +67,8 @@ export class PinoLogger implements Logger {
   warning(
     message: string,
     ...params: any[]
-  ): void {
+  ): void
+  {
     this.#logger.warn(
       message,
       ...params);
@@ -71,7 +77,8 @@ export class PinoLogger implements Logger {
   error(
     message: string,
     ...params: any[]
-  ): void {
+  ): void
+  {
     this.#logger.error(
       message,
       ...params);

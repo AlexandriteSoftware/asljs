@@ -3,9 +3,11 @@
 > Part of [Alexandrite Software Library][1] – a set of high‑quality, performant
 > JavaScript libraries for everyday use.
 
-Shared logger provider abstraction used by ASLJS packages.
+Defines logging abstractions and provides implementation of these abstractions
+with [Pino][2] logger.
 
 [1]: https://github.com/AlexandriteSoftware/asljs
+[2]: https://getpino.io/
 
 ## Installation
 
@@ -21,8 +23,13 @@ NPM Package: [asljs-logging][21]
 
 ```ts
 import {
-  createPinoLoggerProvider
+  PinoLoggerProvider,
+  PinoLoggerProviderOptionsBuilder
 } from 'asljs-logging';
+
+const options = new PinoLoggerProviderOptionsBuilder()
+  .fromEn('MY_APP_LOG_')
+  .build();
 
 await using loggerProvider = createPinoLoggerProvider(
   { level: 'information', envVarPrefix: 'MY_APP_LOG_' }

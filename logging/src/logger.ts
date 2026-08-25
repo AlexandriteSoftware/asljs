@@ -1,4 +1,5 @@
-export interface Logger {
+export interface Logger
+{
   readonly level: string;
 
   isLevelEnabled(

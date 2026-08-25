@@ -2,15 +2,15 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createPinoLoggerProvider }
+import { PinoLoggerProvider }
   from './pino-logger-provider.js';
 
 test(
-  'factory returns null provider for silent level',
+  'PinoLoggerProvider returns logger with silent level',
   () =>
   {
     const loggerProvider =
-      createPinoLoggerProvider(
+      new PinoLoggerProvider(
         { level: 'silent' });
 
     const logger =

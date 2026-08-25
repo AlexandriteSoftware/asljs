@@ -13,5 +13,6 @@ test(
       Object.keys(logging).sort(),
       [ 'NullLogger',
         'NullLoggerProvider',
-        'createPinoLoggerProvider' ]);
+        'PinoLoggerProvider',
+        'PinoLoggerProviderOptionsBuilder' ]);
   });

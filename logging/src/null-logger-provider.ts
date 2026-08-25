@@ -5,30 +5,22 @@ import { Logger }
 import { NullLogger }
   from './null-logger.js';
 
-
-export class NullLoggerProvider
-  implements
-    LoggerProvider
+export class NullLoggerProvider implements LoggerProvider
 {
-  readonly #logger: Logger =
-    new NullLogger();
+  readonly #logger: Logger = new NullLogger();
 
-  getLogger(
-    ): Logger
+  getLogger(): Logger
   {
     return this.#logger;
   }
 
-  dispose(
-    ): Promise<void>
+  dispose(): Promise<void>
   {
     return Promise.resolve();
   }
 
-  [Symbol.asyncDispose](
-    ): Promise<void>
+  [Symbol.asyncDispose](): Promise<void>
   {
     return this.dispose();
   }
 }
-
