@@ -21,6 +21,7 @@ Libraries:
 - [data-binding][DBND] - declarative DOM bindings via `data-model`.
 - [dali][DALI] - IndexedDB data layer with typed table abstractions.
 - [eventful][EVT] - adds on/off/emit to any object.
+- [logging][LOG] - provides logging utilities.
 - [machine][MCH] - provides a state-machine framework for organizing control
   flow.
 - [money][MNY] - provides utilities for handling monetary values.
@@ -32,6 +33,7 @@ Libraries:
 [DBND]: <./data-binding/README.md>
 [DALI]: <./dali/README.md>
 [EVT]: <./eventful/README.md>
+[LOG]: <./logging/README.md>
 [MCH]: <./machine/README.md>
 [MNY]: <./money/README.md>
 [OBS]: <./observable/README.md>

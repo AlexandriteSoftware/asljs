@@ -2,27 +2,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createPinoLoggerProvider,
-         NullLogger }
-  from './logging.js';
-
-test(
-  'null logger enables only silent level',
-  () =>
-  {
-    const logger =
-      new NullLogger();
-
-    assert.equal(
-      logger.isLevelEnabled(
-        'silent'),
-      true);
-
-    assert.equal(
-      logger.isLevelEnabled(
-        'trace'),
-      false);
-  });
+import { createPinoLoggerProvider }
+  from './pino-logger-provider.js';
 
 test(
   'factory returns null provider for silent level',

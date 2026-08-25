@@ -28,51 +28,50 @@ NPM Package: [asljs-tmpdir][21]
 
 ### Basic
 
-```js
-import {
-  TmpDir
-} from 'asljs-tmpdir';
+```ts
+import { TmpDir }
+  from 'asljs-tmpdir';
 
-using tmpDir = new TmpDir();
+using tmpDir =
+  new TmpDir();
 
 await tmpDir.writeText(
   'example/file.txt',
-  'Hello, world!'
-);
+  'Hello, world!');
 
 console.log(
   await tmpDir.readText(
-    'example/file.txt'
-  )
-);
+    'example/file.txt'));
 
 // the temporary directory and its contents
 // will be automatically deleted at the end of
 // the using block
 ```
 
-### Optional logger
+### With logging
 
-```js
-import {
-  createPinoLoggerProvider
-} from 'asljs-logging';
-import {
-  TmpDir
-} from 'asljs-tmpdir';
+```ts
+import { createPinoLoggerProvider }
+  from 'asljs-logging';
+import { TmpDir }
+  from 'asljs-tmpdir';
 
-await using loggerProvider = createPinoLoggerProvider(
-  { level: 'trace' }
-);
+await using loggerProvider =
+  createPinoLoggerProvider(
+    { level: 'trace' });
 
-using tmpDir = new TmpDir(
-  loggerProvider.getLogger('TmpDir')
-);
+const logger =
+  loggerProvider
+    .getLogger(
+      'TmpDir');
+
+using tmpDir =
+  new TmpDir(
+    logger);
 
 await tmpDir.writeText(
   'example/file.txt',
-  'Hello, world!'
-);
+  'Hello, world!');
 ```
 
 ## License

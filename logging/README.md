@@ -3,7 +3,7 @@
 > Part of [Alexandrite Software Library][1] – a set of high‑quality, performant
 > JavaScript libraries for everyday use.
 
-Shared logger provider abstraction used by ASLJS Node.js packages.
+Shared logger provider abstraction used by ASLJS packages.
 
 [1]: https://github.com/AlexandriteSoftware/asljs
 
