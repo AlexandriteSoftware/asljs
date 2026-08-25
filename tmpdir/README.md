@@ -62,12 +62,10 @@ await using loggerProvider =
 
 const logger =
   loggerProvider
-    .getLogger(
-      'TmpDir');
+    .getLogger('TmpDir');
 
 using tmpDir =
-  new TmpDir(
-    logger);
+  new TmpDir(logger);
 
 await tmpDir.writeText(
   'example/file.txt',

@@ -22,37 +22,32 @@ NPM Package: [asljs-logging][21]
 ## Usage
 
 ```ts
-import {
-  PinoLoggerProvider,
-  PinoLoggerProviderOptionsBuilder
-} from 'asljs-logging';
+import { PinoLoggerProvider,
+         PinoLoggerProviderOptionsBuilder }
+  from 'asljs-logging';
 
-const options = new PinoLoggerProviderOptionsBuilder()
-  .fromEn('MY_APP_LOG_')
-  .build();
+const options =
+  new PinoLoggerProviderOptionsBuilder()
+    .fromEnvironmentVariables('MY_APP_LOG_')
+    .build();
 
-await using loggerProvider = createPinoLoggerProvider(
-  { level: 'information', envVarPrefix: 'MY_APP_LOG_' }
-);
+await using loggerProvider =
+  new PinoLoggerProvider(options);
 
-const logger = loggerProvider.getLogger(
-  'my-context'
-);
+const logger =
+  loggerProvider
+    .getLogger('my-context');
 
-logger.information(
-  'started'
-);
+logger.information('started');
 ```
 
 ## Environment Variables
 
-By default, `createPinoLoggerProvider()` uses `ASLJS_LOG_` and reads:
+By default, `PinoLoggerProviderOptionsBuilder.fromEnvironmentVariables()` reads
+environment variables prefixed with `ASLJS_LOG_`:
 
 - `ASLJS_LOG_LEVEL`
 - `ASLJS_LOG_FILE`
-
-The prefix can be overridden by `envVarPrefix` option or
-`ASLJS_LOG_ENV_VAR_PREFIX`.
 
 ## License
 

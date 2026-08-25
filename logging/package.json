@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
-    "format:md": "dprint fmt --config ../dprint.json \"*.md\"",
+    "format:md": "dprint fmt --config ../dprint.md.json \"*.md\"",
     "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
     "format:sfmt": "sfmt format \"src/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:md && npm run format:sfmt",
@@ -34,7 +34,7 @@
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "test:watch": "node --watch --test build/**/*.test.js",
     "release:patch": "node ../common/dist/toolkit.js release-patch",
-    "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
+    "all": "npm i && npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "keywords": [
     "logging",
