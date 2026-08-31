@@ -3,10 +3,12 @@ import { Command }
 import { read,
          ReadParameters }
   from '../commands/read.js';
-import { EnvelopeContainer }
-  from '../envelope/container.js';
+import { envelopeData }
+  from '../tools/envelope.js';
 import { Envelope }
-  from '../envelope/envelope.js';
+  from '../working-folder/envelope.js';
+import { WorkingFolder }
+  from '../working-folder/working-folder.js';
 import { resolveEnvelopePath }
   from './env.js';
 import { ExecutionContext,
@@ -49,16 +51,20 @@ async function updateCmd(
       options.envelopePath);
 
   const envelopeContainer =
-    new EnvelopeContainer(
+    new WorkingFolder(
       context.logger);
 
   const envelope =
     await envelopeContainer.loadEnvelope(
       envelopePath);
 
-  await updateEnvelopeFiles(
-    envelope,
-    context);
+  context.automation.setData(
+    envelopeData,
+    envelope);
+
+  await context.automation.run(
+    context.automation.createTask(
+      'envelope-update-files'));
 
   await envelopeContainer.saveEnvelope(
     envelopePath);

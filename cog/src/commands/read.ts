@@ -2,9 +2,6 @@ import fsp
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { Envelope,
-         EnvelopeFile }
-  from '../envelope/envelope.js';
 import { LocationResolver }
   from '../location.js';
 import { createLoggerProvider }
@@ -15,6 +12,9 @@ import { Command as CommandParameters }
   from '../model/command.js';
 import { RollbackFeed }
   from '../model/rollback.js';
+import { Envelope,
+         EnvelopeFile }
+  from '../working-folder/envelope.js';
 
 const textDecoder =
   new TextDecoder(

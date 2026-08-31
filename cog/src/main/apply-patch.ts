@@ -2,24 +2,15 @@ import { Command }
   from 'commander';
 import { spawn }
   from 'node:child_process';
-import { read,
-         ReadParameters }
-  from '../commands/read.js';
-import { Remove,
-         remove }
-  from '../commands/remove.js';
-import { Write,
-         write }
-  from '../commands/write.js';
-import { EnvelopeContainer }
-  from '../envelope/container.js';
-import { Envelope }
-  from '../envelope/envelope.js';
 import { loadPatch }
   from '../model/patch.js';
-import { BackupRollbackFeed,
-         RollbackFeed }
+import { BackupRollbackFeed }
   from '../model/rollback.js';
+import { envelopeData,
+         rollbackFeedData }
+  from '../tools/envelope.js';
+import { WorkingFolder }
+  from '../working-folder/working-folder.js';
 import { ensureBackupFileDoesNotExist,
          resolveBackupPath }
   from './backup.js';
@@ -30,8 +21,15 @@ import { ensurePatchFileExists,
 import { ExecutionContext,
          MainOptions }
   from './types.js';
-import { updateEnvelopeFiles }
-  from './update.js';
+
+const patchCommandTasks =
+  new Map(
+    [ [ 'read',
+        'envelope-add-files' ],
+      [ 'write',
+        'envelope-write-file' ],
+      [ 'remove',
+        'envelope-remove-file' ] ]);
 
 export function configureApplyPatchCommand(
     program: Command,
@@ -101,7 +99,7 @@ async function applyPatch(
       backupPath);
 
   const envelopeContainer =
-    new EnvelopeContainer(
+    new WorkingFolder(
       context.logger);
 
   const envelope =
@@ -112,20 +110,37 @@ async function applyPatch(
     await loadPatch(
       patchPath);
 
+  context.automation.setData(
+    envelopeData,
+    envelope);
+
+  context.automation.setData(
+    rollbackFeedData,
+    rollbackFeed);
+
   try {
     for (const command of patch.commands) {
-      await applyPatchCommand(
-        context,
-        envelope,
-        command,
-        rollbackFeed);
+      const taskName =
+        patchCommandTasks.get(
+          command.command);
+
+      if (!taskName) {
+        throw new Error(
+          `Unknown patch command ${command.command}`);
+      }
+
+      await context.automation.run(
+        context.automation.createTask(
+          taskName,
+          command));
     }
 
     await verifyPatch(
       options.patchVerifyCmd);
 
-    await updateEnvelopeFiles(
-      envelope);
+    await context.automation.run(
+      context.automation.createTask(
+        'envelope-update-files'));
 
     await envelopeContainer.saveEnvelope(envelopePath);
 
@@ -135,36 +150,6 @@ async function applyPatch(
     await rollbackFeed.delete();
 
     throw error;
-  }
-}
-
-async function applyPatchCommand(
-    context: ExecutionContext,
-    envelope: Envelope,
-    command: { command: string; },
-    rollbackFeed: RollbackFeed
-  ): Promise<void>
-{
-  if (command.command === 'read') {
-    await read(
-      envelope,
-      command as unknown as ReadParameters,
-      rollbackFeed,
-      context);
-  } else if (command.command === 'write') {
-    await write(
-      envelope,
-      command as unknown as Write,
-      rollbackFeed);
-  } else if (command.command === 'remove') {
-    await remove(
-      envelope,
-      command as unknown as Remove,
-      rollbackFeed,
-      context);
-  } else {
-    throw new Error(
-      `Unknown patch command ${command.command}`);
   }
 }
 

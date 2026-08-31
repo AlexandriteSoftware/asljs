@@ -165,3 +165,25 @@ git reset --soft origin/$env:BRANCH
 git commit -m "... commit message ..."
 git push
 ```
+
+## How to get all changes in subfolder since a specific tag
+
+```pwsh
+# Show all commits that changed a subfolder since a tag:
+git log <tag>..HEAD -- path/to/subfolder
+
+# Show changed files
+git diff --name-status <tag>..HEAD -- path/to/subfolder
+
+# Show the complete patch between the tag and HEAD for a subfolder
+git diff <tag>..HEAD -- path/to/subfolder
+
+# Show the complete patch between the tag and working folder for a subfolder
+git diff <tag> -- path/to/subfolder
+
+# Compact commit history
+git log --oneline <tag>..HEAD -- path/to/subfolder
+
+# Include changes from commits reachable from either side
+git diff <tag>...HEAD -- path/to/subfolder
+```

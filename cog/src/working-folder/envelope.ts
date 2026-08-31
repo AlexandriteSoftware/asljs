@@ -4,6 +4,7 @@ import { ReadParameters }
 export interface Envelope
 {
   instruction: string;
+  task?: string;
   files: EnvelopeFile[];
 }
 
@@ -14,4 +15,8 @@ export interface EnvelopeFile
   content?: string;
   complete?: boolean;
   update?: ReadParameters;
+}
+
+export class EnvelopeBuilder
+{
 }

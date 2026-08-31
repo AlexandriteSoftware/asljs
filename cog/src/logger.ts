@@ -1,15 +1,14 @@
-import { createPinoLoggerProvider,
-         type Logger,
-         type LoggerOptions,
-         type LoggerProvider,
-         NullLoggerProvider }
+import { type LoggerProvider,
+         PinoLoggerProvider,
+         type PinoLoggerProviderOptions,
+         PinoLoggerProviderOptionsBuilder }
   from 'asljs-logging';
 
 /**
  * Creates a logger provider with the specified options.
  *
- * If options are not provided, tries to initialise from environment variables.
- * If no environment variables are set, defaults to level 'silent'.
+ * Explicit options take precedence over environment variables, which take
+ * precedence over the default level 'information'.
  *
  * Environment variables:
  *
@@ -18,30 +17,29 @@ import { createPinoLoggerProvider,
  * - `COG_LOG_FILE`: The file path to write logs to (if specified).
  */
 export function createLoggerProvider(
-    options: Partial<LoggerOptions> = {}
+    options: Partial<PinoLoggerProviderOptions> = {}
   ): LoggerProvider
 {
-  const level =
-    options.level
-    ?? process.env.COG_LOG_LEVEL
-    ?? 'silent';
+  const builder =
+    new PinoLoggerProviderOptionsBuilder()
+    .fromEnvironmentVariables('COG_LOG_');
 
-  const file =
-    options.file === null
-    ? undefined
-    : options.file
-      ?? process.env.COG_LOG_FILE
-      ?? undefined;
-
-  const loggerOptions: Partial<LoggerOptions> =
-    { level,
-      file,
-      envVarPrefix: 'COG_LOG_' };
-
-  if (level === 'silent') {
-    return new NullLoggerProvider();
+  if (options.file) {
+    builder.withFile(
+      options.file);
   }
 
-  return createPinoLoggerProvider(
-    loggerOptions);
+  if (options.level) {
+    builder.withLevel(
+      options.level);
+  }
+
+  const providerOptions =
+    builder.build();
+
+  const provider =
+    new PinoLoggerProvider(
+      providerOptions);
+
+  return provider;
 }

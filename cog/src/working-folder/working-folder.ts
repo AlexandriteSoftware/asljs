@@ -9,7 +9,7 @@ import { fileURLToPath }
 import { Envelope }
   from './envelope.js';
 
-export class EnvelopeContainer
+export class WorkingFolder
 {
   private readonly logger: Logger;
 

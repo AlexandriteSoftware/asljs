@@ -6,10 +6,10 @@ import { join }
   from 'node:path';
 import test
   from 'node:test';
-import { Envelope }
-  from '../envelope/envelope.js';
 import { createLoggerProvider }
   from '../logger.js';
+import { Envelope }
+  from '../working-folder/envelope.js';
 import { read }
   from './read.js';
 

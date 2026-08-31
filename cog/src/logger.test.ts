@@ -6,7 +6,7 @@ import { createLoggerProvider }
   from './logger.js';
 
 test(
-  'createLoggerProvider defaults to silent logger',
+  'createLoggerProvider defaults to information',
   () =>
   {
     const loggerProvider =
@@ -25,15 +25,15 @@ test(
 
     assert.strictEqual(
       logger.isLevelEnabled('info'),
-      false);
+      true);
 
     assert.strictEqual(
       logger.isLevelEnabled('warn'),
-      false);
+      true);
 
     assert.strictEqual(
       logger.isLevelEnabled('error'),
-      false);
+      true);
 
     void loggerProvider.dispose();
   });

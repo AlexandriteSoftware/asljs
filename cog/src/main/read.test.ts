@@ -4,10 +4,10 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { Envelope }
-  from '../envelope/envelope.js';
 import { createLoggerProvider }
   from '../logger.js';
+import { Envelope }
+  from '../working-folder/envelope.js';
 import { main }
   from './main.js';
 import { argv }

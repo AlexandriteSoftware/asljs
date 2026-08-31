@@ -1,10 +1,10 @@
 import { Command }
   from 'commander';
-import { EnvelopeContainer }
-  from '../envelope/container.js';
 import { Envelope,
          EnvelopeFile }
-  from '../envelope/envelope.js';
+  from '../working-folder/envelope.js';
+import { WorkingFolder }
+  from '../working-folder/working-folder.js';
 import { resolveEnvelopePath }
   from './env.js';
 import { ExecutionContext,
@@ -47,7 +47,7 @@ async function listCmd(
       options.envelopePath);
 
   const envelopeContainer =
-    new EnvelopeContainer(
+    new WorkingFolder(
       context.logger);
 
   const envelope =

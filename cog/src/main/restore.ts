@@ -1,9 +1,5 @@
 import { Command }
   from 'commander';
-import { existsSync }
-  from 'node:fs';
-import { BackupRollbackFeed }
-  from '../model/rollback.js';
 import { resolveBackupPath }
   from './backup.js';
 import { resolveEnvelopePath }
@@ -14,7 +10,7 @@ import { ExecutionContext,
 
 export function configureRestoreCommand(
     program: Command,
-    _context: ExecutionContext
+    context: ExecutionContext
   ): void
 {
   program
@@ -31,6 +27,7 @@ export function configureRestoreCommand(
         }>();
 
         await restoreCmd(
+          context,
           { envelopePath:
               resolveEnvelopePath(
                 options.envelope) });
@@ -38,6 +35,7 @@ export function configureRestoreCommand(
 }
 
 async function restoreCmd(
+    context: ExecutionContext,
     options: MainOptions = {}
   ): Promise<void>
 {
@@ -49,14 +47,8 @@ async function restoreCmd(
     resolveBackupPath(
       envelopePath);
 
-  if (
-    !existsSync(
-      backupPath)
-  ) {
-    throw new Error(
-      `backup.json does not exist: ${backupPath}`);
-  }
-
-  await BackupRollbackFeed.restoreAndDelete(
-    backupPath);
+  await context.automation.run(
+    context.automation.createTask(
+      'restore',
+      { backupPath }));
 }
