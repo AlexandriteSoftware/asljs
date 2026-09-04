@@ -1,13 +1,9 @@
-import { type ReadParameters }
-  from '../commands/read.js';
-import { type Remove }
-  from '../commands/remove.js';
-import { type Write }
-  from '../commands/write.js';
 import { type CopilotRequest }
   from '../copilot.js';
 import { TaskRegistry }
   from '../task.js';
+import { type ReadParameters }
+  from '../tools/read.js';
 import { BuildTask,
          type BuildTaskParameters }
   from './build.js';
@@ -20,27 +16,30 @@ import { CommitIfChangedTask,
 import { CommitTask,
          type CommitTaskParameters }
   from './commit.js';
+import { ContextAddFilesTask }
+  from './context-add-files.js';
+import { ContextInstructionTask,
+         type ContextInstructionTaskParameters }
+  from './context-instruction.js';
+import { ContextProcessTask,
+         type ContextProcessTaskParameters }
+  from './context-process.js';
+import { ContextRemoveFileTask,
+         type ContextRemoveFileTaskParameters }
+  from './context-remove-file.js';
+import { ContextTaskTask,
+         type ContextTaskTaskParameters }
+  from './context-task.js';
+import { ContextUpdateFilesTask }
+  from './context-update-files.js';
+import { ContextWriteFileTask,
+         type ContextWriteFileTaskParameters }
+  from './context-write-file.js';
 import { CopilotCheckTask,
          type CopilotCheckTaskParameters }
   from './copilot-check.js';
 import { CopilotTask }
   from './copilot.js';
-import { EnvelopeAddFilesTask }
-  from './envelope-add-files.js';
-import { EnvelopeInstructionTask,
-         type EnvelopeInstructionTaskParameters }
-  from './envelope-instruction.js';
-import { EnvelopeProcessTask }
-  from './envelope-process.js';
-import { EnvelopeRemoveFileTask }
-  from './envelope-remove-file.js';
-import { EnvelopeTaskTask,
-         type EnvelopeTaskTaskParameters }
-  from './envelope-task.js';
-import { EnvelopeUpdateFilesTask }
-  from './envelope-update-files.js';
-import { EnvelopeWriteFileTask }
-  from './envelope-write-file.js';
 import { ExtractTodosTask,
          type ExtractTodosTaskParameters }
   from './extract-todos.js';
@@ -56,9 +55,6 @@ import { GetChangedFilesTask,
 import { GetCommitMessageTask,
          type GetCommitMessageTaskParameters }
   from './get-commit-message.js';
-import { RestoreTask,
-         type RestoreTaskParameters }
-  from './restore.js';
 import { TestTask,
          type TestTaskParameters }
   from './test.js';
@@ -79,7 +75,9 @@ export function registerCoreTasks(
         'send a prompt to the Copilot service',
       parameters:
         [ { name: 'prompt',
-            type: 'string' } ] });
+            type: 'string' },
+          { name: 'files',
+            type: 'object[]' } ] });
 
   registry.register(
     'copilot-check',
@@ -146,13 +144,12 @@ export function registerCoreTasks(
             type: 'string[]' } ] });
 
   registry.register(
-    'envelope-add-files',
+    'context-add-files',
     parameters =>
-      new EnvelopeAddFilesTask(
+      new ContextAddFilesTask(
         parameters as ReadParameters),
     { description:
-        'add matching files to the envelope',
-      requiresEnvelope: true,
+        'add matching files to the context',
       parameters:
         [ { name: 'pattern',
             type: 'string' },
@@ -168,13 +165,12 @@ export function registerCoreTasks(
             type: 'boolean' } ] });
 
   registry.register(
-    'envelope-write-file',
+    'context-write-file',
     parameters =>
-      new EnvelopeWriteFileTask(
-        parameters as Write),
+      new ContextWriteFileTask(
+        parameters as ContextWriteFileTaskParameters),
     { description:
         'create a project file or replace its content',
-      requiresEnvelope: true,
       parameters:
         [ { name: 'path',
             type: 'string' },
@@ -182,65 +178,49 @@ export function registerCoreTasks(
             type: 'string' } ] });
 
   registry.register(
-    'envelope-remove-file',
+    'context-remove-file',
     parameters =>
-      new EnvelopeRemoveFileTask(
-        parameters as Remove),
+      new ContextRemoveFileTask(
+        parameters as ContextRemoveFileTaskParameters),
     { description:
         'remove a project file and its envelope entry',
-      requiresEnvelope: true,
       parameters:
         [ { name: 'path',
             type: 'string' } ] });
 
   registry.register(
-    'envelope-update-files',
-    () => new EnvelopeUpdateFilesTask(),
+    'context-update-files',
+    () => new ContextUpdateFilesTask(),
     { description:
-        'refresh envelope files using their update commands',
-      requiresEnvelope: true });
+        'refresh envelope files using their update commands' });
 
   registry.register(
-    'envelope-instruction',
+    'context-instruction',
     parameters =>
-      new EnvelopeInstructionTask(
-        parameters as EnvelopeInstructionTaskParameters),
+      new ContextInstructionTask(
+        parameters as ContextInstructionTaskParameters),
     { description:
         'set the instruction field of the envelope',
-      requiresEnvelope: true,
       parameters:
         [ { name: 'instruction',
             type: 'string' } ] });
 
   registry.register(
-    'envelope-task',
+    'context-task',
     parameters =>
-      new EnvelopeTaskTask(
-        parameters as EnvelopeTaskTaskParameters),
+      new ContextTaskTask(
+        parameters as ContextTaskTaskParameters),
     { description:
         'set the task field of the envelope',
-      requiresEnvelope: true,
       parameters:
         [ { name: 'task',
             type: 'string' } ] });
 
   registry.register(
-    'envelope-process',
-    () => new EnvelopeProcessTask(),
+    'context-process',
+    () => new ContextProcessTask(),
     { description:
-        'send the envelope instruction, task, and files to the copilot task',
-      requiresEnvelope: true });
-
-  registry.register(
-    'restore',
-    parameters =>
-      new RestoreTask(
-        parameters as RestoreTaskParameters),
-    { description:
-        'restore files from backup.json',
-      parameters:
-        [ { name: 'backupPath',
-            type: 'string' } ] });
+        'send the envelope instruction, task, and files to the copilot task' });
 
   registry.register(
     'get-commit-message',

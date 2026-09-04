@@ -10,7 +10,7 @@ documentation updates, generated output, and common repository tasks.
 Install dependencies from the repository root:
 
 ```pwsh
-npm ci
+npm i
 ```
 
 The repo is an npm workspace monorepo. Published libraries are validated and
@@ -164,6 +164,16 @@ git fetch origin
 git reset --soft origin/$env:BRANCH
 git commit -m "... commit message ..."
 git push
+```
+
+## How to check that working folder version is released one
+
+```pwsh
+$folder = 'sfmt'
+$latestReleaseTag = `
+  $(git tag --list "$("asljs-$folder")*" --sort=-version:refname | `
+    Select-Object -First 1)
+git diff $latestReleaseTag -- $folder > diff-$folder.tmp
 ```
 
 ## How to get all changes in subfolder since a specific tag

@@ -13,23 +13,17 @@ test(
       formatConfig(
         { envelopePath:
             '/work/envelope.json',
-          patchPath: '/work/patch.json',
-          patchVerifyCmd: 'npm test',
           logLevel: 'debug',
           logFile: '/work/cog.log' },
         { COG_LOG_LEVEL: 'debug',
           COG_LOG_FILE: '/work/cog.log',
           COG_ENVELOPE_PATH:
-            '/work/envelope.json',
-          COG_PATCH_PATH: '/work/patch.json',
-          COG_PATCH_VERIFY_CMD: 'npm test' });
+            '/work/envelope.json' });
 
     assert.equal(
       output,
       [ 'Environment:',
         '  envelope=/work/envelope.json',
-        '  patch=/work/patch.json',
-        '  patchVerifyCmd=npm test',
         '  logLevel=debug',
         '  logFile=/work/cog.log',
         '',
@@ -37,8 +31,6 @@ test(
         '  COG_LOG_LEVEL=debug',
         '  COG_LOG_FILE=/work/cog.log',
         '  COG_ENVELOPE_PATH=/work/envelope.json',
-        '  COG_PATCH_PATH=/work/patch.json',
-        '  COG_PATCH_VERIFY_CMD=npm test',
         '' ].join(
           '\n'));
   });
@@ -50,8 +42,6 @@ test(
     const output =
       formatConfig(
         { envelopePath: '',
-          patchPath: '',
-          patchVerifyCmd: '',
           logLevel: 'silent',
           logFile: '' },
         {});
@@ -63,8 +53,4 @@ test(
     assert.match(
       output,
       /COG_ENVELOPE_PATH=/);
-
-    assert.match(
-      output,
-      /COG_PATCH_PATH=/);
   });

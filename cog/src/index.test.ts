@@ -4,11 +4,10 @@ import test
   from 'node:test';
 import { AsljsFormatterTool,
          Context,
+         ContextAddFilesTask,
          DefaultTaskRunner,
          DotnetCliTool,
          DprintFormatterTool,
-         EnvelopeAddFilesTask,
-         EnvelopeTool,
          ExtractTodosTask,
          FormatChangedFilesTask,
          GetChangedFilesTask,
@@ -80,11 +79,7 @@ test(
       'function');
 
     assert.equal(
-      typeof EnvelopeTool,
-      'function');
-
-    assert.equal(
-      typeof EnvelopeAddFilesTask,
+      typeof ContextAddFilesTask,
       'function');
 
     assert.equal(

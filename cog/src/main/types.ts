@@ -17,6 +17,4 @@ export interface ExecutionContext
 export interface MainOptions
 {
   envelopePath?: string;
-  patchPath?: string;
-  patchVerifyCmd?: string;
 }

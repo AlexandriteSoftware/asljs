@@ -27,8 +27,6 @@ import { DotnetCliTool }
   from '../tools/dotnet.js';
 import { DprintFormatterTool }
   from '../tools/dprint-formatter.js';
-import { EnvelopeTool }
-  from '../tools/envelope.js';
 import { GitTool }
   from '../tools/git.js';
 import { JbDotnetFormatterTool }
@@ -39,8 +37,6 @@ import { NpmCliTool }
   from '../tools/npm.js';
 import { TodoTool }
   from '../tools/todo.js';
-import { configureApplyPatchCommand }
-  from './apply-patch.js';
 import { configureConfigCommand }
   from './config.js';
 import { configureListCommand }
@@ -49,8 +45,6 @@ import { readLoggerOptions }
   from './logger-options.js';
 import { configureReadCommand }
   from './read.js';
-import { configureRestoreCommand }
-  from './restore.js';
 import { configureTaskCommands }
   from './tasks.js';
 import { ExecutionContext }
@@ -101,13 +95,15 @@ export async function main(
   const copilotTool =
     new CopilotAcpTool(
       loggerProvider.getLogger(
-        'CopilotAcpTool'));
+        'CopilotAcpTool'),
+      { taskRegistry });
 
   serviceProvider.register<CopilotService>(
     'copilot',
     () =>
       new CopilotAcpService(
-        copilotTool));
+        copilotTool)
+  );
 
   const automation =
     new Context(
@@ -132,8 +128,6 @@ export async function main(
             [ 'dprint-formatter',
               new DprintFormatterTool(
                 commandRunner) ],
-            [ 'envelope',
-              new EnvelopeTool() ],
             [ 'git',
               new GitTool(
                 commandRunner) ],
@@ -170,9 +164,6 @@ export async function main(
         '--envelope <path>',
         'path to the envelope JSON file')
       .option(
-        '--patch <path>',
-        'path to the patch JSON file')
-      .option(
         '--loglevel <level>',
         'logging level, for example trace or information')
       .option(
@@ -189,14 +180,6 @@ export async function main(
       context);
 
     configureUpdateCommand(
-      program,
-      context);
-
-    configureRestoreCommand(
-      program,
-      context);
-
-    configureApplyPatchCommand(
       program,
       context);
 

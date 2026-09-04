@@ -18,7 +18,8 @@ export type TaskParameterType =
   | 'string'
   | 'number'
   | 'boolean'
-  | 'string[]';
+  | 'string[]'
+  | 'object[]';
 
 export interface TaskParameter
 {

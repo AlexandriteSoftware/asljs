@@ -48,9 +48,9 @@ test(
 
     const runner: CommandRunner =
       { run(
-          _command,
-          arguments_
-        ): Promise<CommandResult>
+        _command,
+        arguments_
+      ): Promise<CommandResult>
       {
         calls.push(
           [ ...arguments_ ]);
@@ -118,8 +118,8 @@ test(
           contentBase64:
             Buffer.from(
               'new content')
-              .toString(
-                'base64') } ]);
+          .toString(
+            'base64') } ]);
 
     assert.deepEqual(
       calls.at(-2),

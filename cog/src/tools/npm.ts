@@ -73,8 +73,7 @@ export class NpmCliTool implements Tool
     options: NpmCommandOptions
   ): Promise<void>
   {
-    const { command,
-            prefixArguments } =
+    const { command, prefixArguments } =
       resolveNpmCommand();
 
     const commandArguments =
@@ -105,17 +104,16 @@ export class NpmCliTool implements Tool
       const output =
         [ result.stdout.trim(),
           result.stderr.trim() ]
-          .filter(
-            line =>
-              line.length > 0)
-          .join(
-            '\n');
+        .filter(
+          line => line.length > 0)
+        .join(
+          '\n');
 
       throw new Error(
         `npm run ${script} failed with exit code ${result.exitCode}`
           + (output.length > 0
-          ? `: ${output}`
-          : ''));
+            ? `: ${output}`
+            : ''));
     }
   }
 }

@@ -4,6 +4,8 @@ import test
   from 'node:test';
 import { createLoggerProvider }
   from '../logger.js';
+import { TaskRegistry }
+  from '../task.js';
 import { CopilotAcpTool }
   from './copilot.js';
 
@@ -126,6 +128,61 @@ test(
       await assert.rejects(
         tool.start(),
         /already running/);
+    } finally {
+      await tool.stop();
+    }
+  });
+
+test(
+  'copilot tool connects the task MCP server when configured',
+  async () =>
+  {
+    const agent =
+      `
+      let buffer = '';
+      process.stdin.setEncoding('utf8');
+      process.stdin.on('data', chunk => {
+        buffer += chunk;
+        const lines = buffer.split('\\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.trim() === '') continue;
+          const message = JSON.parse(line);
+          process.stdout.write(JSON.stringify({
+            jsonrpc: '2.0',
+            id: message.id,
+            result: message.method === 'session/new'
+              ? { sessionId:
+                    message.params.mcpServers.length === 1
+                    && message.params.mcpServers[0].name
+                       === 'asljs-cog-tasks'
+                    ? 'task-session'
+                    : 'missing-task-server' }
+              : { protocolVersion: 1 }
+          }) + '\\n');
+        }
+      });
+      `;
+
+    const tool =
+      new CopilotAcpTool(
+        loggerProvider.getLogger(
+          'CopilotAcpTool'),
+        { command: process.execPath,
+          args:
+            [ '-e',
+              agent ],
+          taskRegistry:
+            new TaskRegistry(),
+          taskServerPath: 'task-server.js',
+          timeoutMs: 10000 });
+
+    await tool.start();
+
+    try {
+      assert.equal(
+        tool.sessionId,
+        'task-session');
     } finally {
       await tool.stop();
     }

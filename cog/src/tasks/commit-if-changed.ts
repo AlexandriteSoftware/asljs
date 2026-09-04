@@ -54,8 +54,9 @@ export class CommitIfChangedTask implements Task<string | null>
     const message =
       await context.run(
         context.createTask<string>(
-          'commit',
-          { workingDirectory }));
+        'commit',
+        { workingDirectory }
+      ));
 
     context.logger.debug(
       'commit-if-changed: done');

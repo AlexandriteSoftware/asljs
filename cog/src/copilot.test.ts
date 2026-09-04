@@ -72,22 +72,22 @@ test(
         return Promise.resolve();
       },
         prompt(
-            text: string
-          ): Promise<string>
-        {
-          calls.push(
-            `prompt:${text}`);
+        text: string
+      ): Promise<string>
+      {
+        calls.push(
+          `prompt:${text}`);
 
-          return Promise.resolve(
-            `reply to ${text}`);
-        },
+        return Promise.resolve(
+          `reply to ${text}`);
+      },
         stop(): Promise<void>
-        {
-          calls.push(
-            'stop');
+      {
+        calls.push(
+          'stop');
 
-          return Promise.resolve();
-        } } as unknown as CopilotAcpTool;
+        return Promise.resolve();
+      } } as unknown as CopilotAcpTool;
 
     const service =
       new CopilotAcpService(
@@ -128,12 +128,12 @@ test(
         return Promise.resolve();
       },
         stop(): Promise<void>
-        {
-          calls.push(
-            'stop');
+      {
+        calls.push(
+          'stop');
 
-          return Promise.resolve();
-        } } as unknown as CopilotAcpTool;
+        return Promise.resolve();
+      } } as unknown as CopilotAcpTool;
 
     await new CopilotAcpService(
       tool)
@@ -142,4 +142,53 @@ test(
     assert.deepEqual(
       calls,
       [ ]);
+  });
+
+test(
+  'CopilotAcpService adds request files to the prompt',
+  async () =>
+  {
+    let prompt = '';
+
+    const tool =
+      { start(): Promise<void>
+      {
+        return Promise.resolve();
+      },
+        prompt(
+        text: string
+      ): Promise<string>
+      {
+        prompt = text;
+
+        return Promise.resolve(
+          'done');
+      },
+        stop(): Promise<void>
+      {
+        return Promise.resolve();
+      } } as unknown as CopilotAcpTool;
+
+    const service =
+      new CopilotAcpService(
+        tool);
+
+    await service.complete(
+      { prompt: 'Review this.',
+        files:
+          [ { path: 'src/app.ts',
+              type: 'text',
+              content: 'const value = 1;' } ] });
+
+    assert.match(
+      prompt,
+      /Review this\./);
+
+    assert.match(
+      prompt,
+      /File: src\/app\.ts/);
+
+    assert.match(
+      prompt,
+      /const value = 1;/);
   });

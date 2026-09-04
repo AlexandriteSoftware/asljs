@@ -2,9 +2,7 @@ import { Command }
   from 'commander';
 import { read,
          ReadParameters }
-  from '../commands/read.js';
-import { envelopeData }
-  from '../tools/envelope.js';
+  from '../tools/read.js';
 import { Envelope }
   from '../working-folder/envelope.js';
 import { WorkingFolder }
@@ -58,13 +56,17 @@ async function updateCmd(
     await envelopeContainer.loadEnvelope(
       envelopePath);
 
-  context.automation.setData(
-    envelopeData,
-    envelope);
+  context.automation.files.splice(
+    0,
+    context.automation.files.length,
+    ...envelope.files);
 
   await context.automation.run(
     context.automation.createTask(
-      'envelope-update-files'));
+      'context-update-files'));
+
+  envelope.files =
+    context.automation.files;
 
   await envelopeContainer.saveEnvelope(
     envelopePath);
@@ -84,7 +86,7 @@ export async function updateEnvelopeFiles(
 
   for (const command of updateCommands) {
     await read(
-      envelope,
+      envelope.files,
       command);
 
     context?.console.writeLine(

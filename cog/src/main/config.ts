@@ -6,8 +6,6 @@ import { ExecutionContext }
 export interface CogConfigSettings
 {
   envelopePath: string;
-  patchPath: string;
-  patchVerifyCmd: string;
   logLevel: string;
   logFile: string;
 }
@@ -28,7 +26,6 @@ export function configureConfigCommand(
         const options =
           program.opts<{
           envelope?: string;
-          patch?: string;
         }>();
 
         const settings =
@@ -65,12 +62,6 @@ export function formatConfig(
     `  envelope=${settings.envelopePath}`);
 
   output.push(
-    `  patch=${settings.patchPath}`);
-
-  output.push(
-    `  patchVerifyCmd=${settings.patchVerifyCmd}`);
-
-  output.push(
     `  logLevel=${settings.logLevel}`);
 
   output.push(
@@ -84,9 +75,7 @@ export function formatConfig(
   outputEnvVars(
     'COG_LOG_LEVEL',
     'COG_LOG_FILE',
-    'COG_ENVELOPE_PATH',
-    'COG_PATCH_PATH',
-    'COG_PATCH_VERIFY_CMD');
+    'COG_ENVELOPE_PATH');
 
   output.push('');
 
@@ -111,20 +100,12 @@ export function formatConfig(
 function getCurrentSettings(
     options: {
     envelope?: string;
-    patch?: string;
   }
   ): CogConfigSettings
 {
   return { envelopePath:
              options.envelope
       ?? process.env.COG_ENVELOPE_PATH
-      ?? '',
-           patchPath:
-             options.patch
-      ?? process.env.COG_PATCH_PATH
-      ?? '',
-           patchVerifyCmd:
-             process.env.COG_PATCH_VERIFY_CMD
       ?? '',
            logLevel:
              process.env.COG_LOG_LEVEL

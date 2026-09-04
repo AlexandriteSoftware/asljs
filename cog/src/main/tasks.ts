@@ -1,11 +1,13 @@
 import { Command }
   from 'commander';
+import { Context }
+  from '../context.js';
 import { type TaskDefinition,
          type TaskParameter,
          TaskRegistry }
   from '../task.js';
-import { envelopeData }
-  from '../tools/envelope.js';
+import { type Envelope }
+  from '../working-folder/envelope.js';
 import { WorkingFolder }
   from '../working-folder/working-folder.js';
 import { resolveEnvelopePath }
@@ -113,8 +115,8 @@ async function runTask(
     ? workingFolder.envelope
     : await workingFolder.initializeEnvelope();
 
-  context.automation.setData(
-    envelopeData,
+  loadContext(
+    context.automation,
     envelope);
 
   const result =
@@ -123,10 +125,40 @@ async function runTask(
         definition.name,
         parameters));
 
+  saveContext(
+    context.automation,
+    envelope);
+
   await workingFolder.saveEnvelope(
     envelopePath);
 
   return result;
+}
+
+function loadContext(
+    context: Context,
+    envelope: Envelope
+  ): void
+{
+  context.instruction =
+    envelope.instruction;
+
+  context.task = envelope.task;
+
+  context.files.splice(
+    0,
+    context.files.length,
+    ...envelope.files);
+}
+
+function saveContext(
+    context: Context,
+    envelope: Envelope
+  ): void
+{
+  envelope.instruction = context.instruction;
+  envelope.task = context.task;
+  envelope.files = context.files;
 }
 
 function writeJson(
@@ -167,6 +199,10 @@ function buildParameters(
       ? parseNumber(
         parameter.name,
         value)
+      : parameter.type === 'object[]'
+      ? parseObjects(
+        parameter.name,
+        value)
       : value;
   }
 
@@ -187,7 +223,10 @@ function toOptionFlags(
     return flag;
   }
 
-  return parameter.type === 'string[]'
+  return (
+      parameter.type === 'string[]'
+      || parameter.type === 'object[]'
+    )
     ? `${flag} <value...>`
     : `${flag} <value>`;
 }
@@ -215,4 +254,29 @@ function parseNumber(
   }
 
   return parsed;
+}
+
+function parseObjects(
+    name: string,
+    value: unknown
+  ): unknown[]
+{
+  if (!Array.isArray(value)) {
+    throw new Error(
+      `${name} must be an array`);
+  }
+
+  return value.map(
+    (
+        item
+      ) =>
+    {
+      try {
+        return JSON.parse(
+          String(item)) as unknown;
+      } catch {
+        throw new Error(
+          `${name} items must be JSON objects`);
+      }
+    });
 }

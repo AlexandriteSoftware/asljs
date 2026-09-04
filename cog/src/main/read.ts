@@ -1,9 +1,7 @@
 import { Command }
   from 'commander';
 import { ReadParameters }
-  from '../commands/read.js';
-import { envelopeData }
-  from '../tools/envelope.js';
+  from '../tools/read.js';
 import { Envelope }
   from '../working-folder/envelope.js';
 import { WorkingFolder }
@@ -145,14 +143,18 @@ async function readCmd(
     'calling read() with parameters: %o',
     parameters);
 
-  context.automation.setData(
-    envelopeData,
-    envelope);
+  context.automation.files.splice(
+    0,
+    context.automation.files.length,
+    ...envelope.files);
 
   await context.automation.run(
     context.automation.createTask(
-      'envelope-add-files',
+      'context-add-files',
       parameters));
+
+  envelope.files =
+    context.automation.files;
 
   await envelopeContainer.saveEnvelope(
     envelopePath);

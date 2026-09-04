@@ -33,31 +33,25 @@ test(
         registry.create(
           'find-todo'),
         registry.create(
-          'envelope-add-files',
-          { command: 'read',
-            pattern: '*.txt' }),
+          'context-add-files',
+          { pattern: '*.txt' }),
         registry.create(
-          'envelope-write-file',
-          { command: 'write',
-            path: 'file.txt',
+          'context-write-file',
+          { path: 'file.txt',
             content: '' }),
         registry.create(
-          'envelope-remove-file',
-          { command: 'remove',
-            path: 'file.txt' }),
+          'context-remove-file',
+          { path: 'file.txt' }),
         registry.create(
-          'envelope-update-files'),
+          'context-update-files'),
         registry.create(
-          'envelope-instruction',
+          'context-instruction',
           { instruction: 'instruction' }),
         registry.create(
-          'envelope-task',
+          'context-task',
           { task: 'task' }),
         registry.create(
-          'envelope-process'),
-        registry.create(
-          'restore',
-          { backupPath: 'backup.json' }),
+          'context-process'),
         registry.create(
           'get-commit-message'),
         registry.create(
@@ -75,5 +69,5 @@ test(
 
     assert.equal(
       tasks.length,
-      21);
+      20);
   });

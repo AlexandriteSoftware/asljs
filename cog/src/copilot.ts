@@ -1,3 +1,5 @@
+import { type ContextFile }
+  from './context.js';
 import { type Service }
   from './service.js';
 import { type CopilotAcpTool }
@@ -6,6 +8,7 @@ import { type CopilotAcpTool }
 export interface CopilotRequest
 {
   prompt: string;
+  files?: ContextFile[];
 }
 
 export interface CopilotResponse
@@ -43,7 +46,8 @@ export class CopilotAcpService implements CopilotService
 
     return { content:
                await this.tool.prompt(
-                 request.prompt) };
+                 buildPrompt(
+                   request)) };
   }
 
   async dispose(): Promise<void>
@@ -54,4 +58,43 @@ export class CopilotAcpService implements CopilotService
       await this.tool.stop();
     }
   }
+}
+
+function buildPrompt(
+    request: CopilotRequest
+  ): string
+{
+  const sections =
+    request.files?.map(
+      formatFile)
+    ?? [ ];
+
+  if (request.prompt.trim().length > 0) {
+    sections.unshift(
+      request.prompt);
+  }
+
+  return sections.join(
+    '\n\n');
+}
+
+function formatFile(
+    file: ContextFile
+  ): string
+{
+  const label =
+    file.complete === false
+    ? `File: ${file.path} (partial)`
+    : `File: ${file.path}`;
+
+  const body =
+    file.type === 'text'
+    ? file.content ?? ''
+    : '(binary content omitted)';
+
+  return [ label,
+           '```',
+           body,
+           '```' ].join(
+             '\n');
 }

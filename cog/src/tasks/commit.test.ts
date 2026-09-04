@@ -25,9 +25,9 @@ test(
 
     const runner: CommandRunner =
       { run(
-          _command,
-          arguments_
-        ): Promise<CommandResult>
+        _command,
+        arguments_
+      ): Promise<CommandResult>
       {
         calls.push(
           [ ...arguments_ ]);

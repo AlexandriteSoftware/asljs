@@ -2,18 +2,15 @@ import fsp
   from 'node:fs/promises';
 import path
   from 'node:path';
+import { type ContextFile }
+  from '../context.js';
 import { LocationResolver }
   from '../location.js';
 import { createLoggerProvider }
   from '../logger.js';
 import { ExecutionContext }
   from '../main/types.js';
-import { Command as CommandParameters }
-  from '../model/command.js';
-import { RollbackFeed }
-  from '../model/rollback.js';
-import { Envelope,
-         EnvelopeFile }
+import { type Envelope }
   from '../working-folder/envelope.js';
 
 const textDecoder =
@@ -24,7 +21,7 @@ const textDecoder =
 const defaultLines = 150;
 const defaultSizeKb = 15;
 
-export interface ReadParameters extends CommandParameters
+export interface ReadParameters
 {
   pattern: string;
   exclude?: string[];
@@ -32,6 +29,7 @@ export interface ReadParameters extends CommandParameters
   sizeKb?: number;
   readToEnd?: boolean;
   withBinaryB64?: boolean;
+  command?: string;
 }
 
 interface ReadTarget
@@ -49,12 +47,16 @@ interface ReadLimits
 }
 
 export async function read(
-    envelope: Envelope,
+    files: ContextFile[] | Envelope,
     parameters: ReadParameters,
-    _rollbackFeed?: RollbackFeed,
     context?: ExecutionContext
   ): Promise<void>
 {
+  const targetFiles =
+    Array.isArray(files)
+    ? files
+    : files.files;
+
   if (!parameters.pattern) {
     throw new Error(
       'Read command pattern is required');
@@ -87,30 +89,24 @@ export async function read(
             normalizedParameters.withBinaryB64 ?? false });
 
     const fileIndex =
-      envelope.files
+      targetFiles
       .findIndex(
         file => file.path === target.path);
 
     if (fileIndex === -1) {
-      envelope.files
+      targetFiles
         .push(
           file);
 
       context?.console.writeLine(
         `added ${target.path}`);
     } else {
-      envelope.files[fileIndex] = file;
+      targetFiles[fileIndex] = file;
 
       context?.console.writeLine(
         `refreshed ${target.path}`);
     }
   }
-}
-
-export async function rollbackRead(
-    _rollbackFeed: RollbackFeed
-  ): Promise<void>
-{
 }
 
 function normalizeReadParameters(
@@ -213,7 +209,7 @@ async function getEnvelopeFile(
     target: ReadTarget,
     update: ReadParameters,
     limits: ReadLimits
-  ): Promise<EnvelopeFile>
+  ): Promise<ContextFile>
 {
   const data =
     await fsp.readFile(

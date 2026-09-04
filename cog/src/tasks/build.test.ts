@@ -62,10 +62,10 @@ test(
     assert.deepEqual(
       await context(
         { run(): Promise<CommandResult>
-        {
-          throw new Error(
-            'should not run a command');
-        } })
+          {
+            throw new Error(
+              'should not run a command');
+          } })
         .run(
           new BuildTask(
             { workingDirectory: workspace.path })),
@@ -91,19 +91,19 @@ test(
     assert.deepEqual(
       await context(
         { run(
-          command,
-          arguments_
-        ): Promise<CommandResult>
-        {
-          calls.push(
-            [ command,
-              ...arguments_ ]);
+            command,
+            arguments_
+          ): Promise<CommandResult>
+          {
+            calls.push(
+              [ command,
+                ...arguments_ ]);
 
-          return Promise.resolve(
-            { exitCode: 0,
-              stdout: '',
-              stderr: '' });
-        } })
+            return Promise.resolve(
+              { exitCode: 0,
+                stdout: '',
+                stderr: '' });
+          } })
         .run(
           new BuildTask(
             { workingDirectory: workspace.path })),
@@ -140,9 +140,9 @@ test(
               stdout: '',
               stderr: 'error CS1: broken' });
         } })
-        .run(
-          new BuildTask(
-            { workingDirectory: workspace.path }));
+      .run(
+        new BuildTask(
+          { workingDirectory: workspace.path }));
 
     assert.equal(
       result.tool,

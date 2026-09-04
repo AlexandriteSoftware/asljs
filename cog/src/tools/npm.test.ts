@@ -57,8 +57,7 @@ test(
       { arguments:
           [ '--watch=false' ] });
 
-    const { command,
-            prefixArguments } =
+    const { command, prefixArguments } =
       resolveNpmCommand();
 
     assert.deepEqual(

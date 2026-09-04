@@ -7,6 +7,7 @@ export {
 
 export {
   Context,
+  type ContextFile,
   type ContextOptions
 } from './context.js';
 
@@ -62,35 +63,36 @@ export {
 } from './tasks/copilot-check.js';
 
 export {
-  EnvelopeAddFilesTask
-} from './tasks/envelope-add-files.js';
+  ContextAddFilesTask
+} from './tasks/context-add-files.js';
 
 export {
-  EnvelopeInstructionTask,
-  type EnvelopeInstructionTaskParameters
-} from './tasks/envelope-instruction.js';
+  ContextInstructionTask,
+  type ContextInstructionTaskParameters
+} from './tasks/context-instruction.js';
 
 export {
-  EnvelopeProcessTask,
-  type EnvelopeProcessTaskParameters
-} from './tasks/envelope-process.js';
+  ContextProcessTask,
+  type ContextProcessTaskParameters
+} from './tasks/context-process.js';
 
 export {
-  EnvelopeRemoveFileTask
-} from './tasks/envelope-remove-file.js';
+  ContextRemoveFileTask
+} from './tasks/context-remove-file.js';
 
 export {
-  EnvelopeTaskTask,
-  type EnvelopeTaskTaskParameters
-} from './tasks/envelope-task.js';
+  ContextTaskTask,
+  type ContextTaskTaskParameters
+} from './tasks/context-task.js';
 
 export {
-  EnvelopeUpdateFilesTask
-} from './tasks/envelope-update-files.js';
+  ContextUpdateFilesTask
+} from './tasks/context-update-files.js';
 
 export {
-  EnvelopeWriteFileTask
-} from './tasks/envelope-write-file.js';
+  ContextWriteFileTask,
+  type ContextWriteFileTaskParameters
+} from './tasks/context-write-file.js';
 
 export {
   ExtractTodosTask,
@@ -122,11 +124,6 @@ export {
 } from './tasks/register.js';
 
 export {
-  RestoreTask,
-  type RestoreTaskParameters
-} from './tasks/restore.js';
-
-export {
   TestTask,
   type TestTaskParameters,
   type TestTaskResult
@@ -155,12 +152,6 @@ export {
 export {
   DprintFormatterTool
 } from './tools/dprint-formatter.js';
-
-export {
-  envelopeData,
-  EnvelopeTool,
-  rollbackFeedData
-} from './tools/envelope.js';
 
 export {
   GitTool,

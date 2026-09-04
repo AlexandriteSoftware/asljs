@@ -5,7 +5,7 @@
 Sends a single completion request to the shared Copilot service and returns
 its response. This is the lowest-level way to talk to Copilot from a
 workflow; other tasks (`GetCommitMessageTask`, `TodoTask`,
-`EnvelopeProcessTask`) build a prompt and then either call this task or the
+   `ContextProcessTask`) build a prompt and then either call this task or the
 service directly.
 
 ## Parameters
@@ -13,6 +13,7 @@ service directly.
 `CopilotRequest`:
 
 - `prompt` (`string`, required).
+- `files` (`ContextFile[]`, optional) - files to append to the Copilot request.
 
 ## How it works
 

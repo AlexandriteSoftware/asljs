@@ -11,15 +11,11 @@ import { SingletonServiceProvider }
 import { DefaultTaskRunner,
          TaskRegistry }
   from '../task.js';
-import { envelopeData }
-  from '../tools/envelope.js';
-import { type Envelope }
-  from '../working-folder/envelope.js';
-import { EnvelopeProcessTask }
-  from './envelope-process.js';
+import { ContextProcessTask }
+  from './context-process.js';
 
 test(
-  'envelope-process task sends the envelope content through the copilot task',
+  'context-process task sends context through the copilot task',
   async () =>
   {
     const prompts: string[] = [ ];
@@ -32,38 +28,34 @@ test(
       parameters => ({ run(): Promise<CopilotResponse>
         {
           prompts.push(
-            (parameters as { prompt: string; }).prompt);
+            JSON.stringify(
+              parameters));
 
           return Promise.resolve(
             { content: 'done' });
         } }));
 
-    const envelope: Envelope =
-      { instruction: 'Fix the bug.',
-        task:
-          'Address the failing test.',
-        files:
-          [ { path: 'src/code.ts',
-              type: 'text',
-              content: 'const x = 1;' },
-            { path: 'image.png',
-              type: 'binary',
-              complete: false } ] };
-
     const context =
       new Context(
-        { taskFactory: registry,
+        { instruction: 'Fix the bug.',
+          task:
+            'Address the failing test.',
+          files:
+            [ { path: 'src/code.ts',
+                type: 'text',
+                content: 'const x = 1;' },
+              { path: 'image.png',
+                type: 'binary',
+                complete: false } ],
+          taskFactory: registry,
           taskRunner:
             new DefaultTaskRunner(),
           serviceProvider:
-            new SingletonServiceProvider(),
-          data:
-            [ [ envelopeData,
-                envelope ] ] });
+            new SingletonServiceProvider() });
 
     const response =
       await context.run(
-        new EnvelopeProcessTask());
+        new ContextProcessTask());
 
     assert.deepEqual(
       response,
@@ -83,17 +75,13 @@ test(
 
     assert.match(
       prompts[0],
-      /File: src\/code\.ts/);
+      /"path":"src\/code\.ts"/);
 
     assert.match(
       prompts[0],
-      /const x = 1;/);
+      /"content":"const x = 1;"/);
 
     assert.match(
       prompts[0],
-      /File: image\.png \(partial\)/);
-
-    assert.match(
-      prompts[0],
-      /\(binary content omitted\)/);
+      /"path":"image\.png"/);
   });

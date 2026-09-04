@@ -34,17 +34,17 @@ function commandRunner(
   ): CommandRunner
 {
   return { run(
-        _command,
-        arguments_
-      ): Promise<CommandResult>
+      _command,
+      arguments_
+    ): Promise<CommandResult>
     {
       const key = arguments_[0];
 
       return Promise.resolve(
         results[key]
-        ?? { exitCode: 0,
-             stdout: '',
-             stderr: '' });
+          ?? { exitCode: 0,
+               stdout: '',
+               stderr: '' });
     } };
 }
 
@@ -125,12 +125,12 @@ test(
                         { exitCode: 0,
                           stdout: 'true\n',
                           stderr: '' },
-                      'diff':
+                      diff:
                         { exitCode: 0,
                           stdout:
                             'diff --git a/x b/x\n',
                           stderr: '' },
-                      'status':
+                      status:
                         { exitCode: 0,
                           stdout: '?? new-file.txt\0',
                           stderr: '' } })) ] ] });

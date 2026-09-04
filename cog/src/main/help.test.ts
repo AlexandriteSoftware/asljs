@@ -49,5 +49,5 @@ test(
 
     assert.match(
       output,
-      /envelope-add-files/);
+      /context-add-files/);
   });

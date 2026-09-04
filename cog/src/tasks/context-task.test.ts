@@ -9,22 +9,13 @@ import { SingletonServiceProvider }
 import { DefaultTaskRunner,
          TaskRegistry }
   from '../task.js';
-import { EnvelopeTool,
-         envelopeData }
-  from '../tools/envelope.js';
-import { type Envelope }
-  from '../working-folder/envelope.js';
-import { EnvelopeTaskTask }
-  from './envelope-task.js';
+import { ContextTaskTask }
+  from './context-task.js';
 
 test(
-  'envelope-task task sets the envelope task',
+  'context-task task sets the context task',
   async () =>
   {
-    const envelope: Envelope =
-      { instruction: '',
-        files: [ ] };
-
     const context =
       new Context(
         { taskFactory:
@@ -33,19 +24,14 @@ test(
             new DefaultTaskRunner(),
           serviceProvider:
             new SingletonServiceProvider(),
-          data:
-            [ [ envelopeData,
-                envelope ] ],
-          tools:
-            [ [ 'envelope',
-                new EnvelopeTool() ] ] });
+          task: '' });
 
     await context.run(
-      new EnvelopeTaskTask(
+      new ContextTaskTask(
         { task:
             'implement the feature' }));
 
     assert.equal(
-      envelope.task,
+      context.task,
       'implement the feature');
   });

@@ -228,7 +228,7 @@ function buildPrompt(
   ): string
 {
   return [ 'Implement the following TODO in the codebase, then remove the TODO '
-      + 'comment.',
+    + 'comment.',
            `File: ${todo.file}`,
            `Lines: ${todo.startLine}-${todo.endLine}`,
            'TODO:',
@@ -237,6 +237,6 @@ function buildPrompt(
            todo.excerpt,
            `If you implement it, reply with exactly: ${doneMarker}`,
            'If you cannot implement it, do not change any files and reply with '
-      + `${stopMarker} followed by the reason.` ].join(
-        '\n\n');
+    + `${stopMarker} followed by the reason.` ].join(
+      '\n\n');
 }

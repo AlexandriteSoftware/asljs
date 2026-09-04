@@ -67,8 +67,8 @@ export class CleanWorkingFolderTask implements Task<string>
               path.resolve(
                 workingDirectory,
                 untrackedPath)))
-              .toString(
-                'base64') });
+            .toString(
+              'base64') });
     }
 
     const envelope: CleanWorkingFolderEnvelope =

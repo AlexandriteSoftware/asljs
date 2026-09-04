@@ -3,6 +3,10 @@ import { type Logger }
 import { type ChildProcessWithoutNullStreams,
          spawn }
   from 'node:child_process';
+import { fileURLToPath }
+  from 'node:url';
+import { type TaskRegistry }
+  from '../task.js';
 import { type Tool }
   from './tool.js';
 
@@ -14,6 +18,8 @@ export interface CopilotAcpOptions
   shell?: boolean;
   protocolVersion?: number;
   timeoutMs?: number;
+  taskRegistry?: TaskRegistry;
+  taskServerPath?: string;
 }
 
 interface PendingRequest
@@ -142,7 +148,8 @@ export class CopilotAcpTool implements Tool
         await this.#request(
           'session/new',
           { cwd,
-            mcpServers: [ ] }) as { sessionId: string; };
+            mcpServers:
+              this.#getMcpServers() }) as { sessionId: string; };
 
       this.#sessionId = session.sessionId;
 
@@ -294,6 +301,26 @@ export class CopilotAcpTool implements Tool
   {
     this.#child?.stdin.write(
       `${JSON.stringify(message)}\n`);
+  }
+
+  #getMcpServers(): Record<string, unknown>[]
+  {
+    if (!this.options.taskRegistry) {
+      return [ ];
+    }
+
+    const serverPath =
+      this.options.taskServerPath
+      ?? fileURLToPath(
+        new URL(
+          '../mcp.js',
+          import.meta.url));
+
+    return [ { name: 'asljs-cog-tasks',
+               command: process.execPath,
+               args:
+                 [ serverPath ],
+               env: [ ] } ];
   }
 
   #receive(

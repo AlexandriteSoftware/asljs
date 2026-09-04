@@ -19,9 +19,9 @@ function recordingRunner(
   return { calls,
            runner:
              { run(
-          command,
-          arguments_
-        ): Promise<CommandResult>
+        command,
+        arguments_
+      ): Promise<CommandResult>
       {
         calls.push(
           [ command,
@@ -29,9 +29,9 @@ function recordingRunner(
 
         return Promise.resolve(
           results[calls.length - 1]
-          ?? { exitCode: 0,
-               stdout: '',
-               stderr: '' });
+            ?? { exitCode: 0,
+                 stdout: '',
+                 stderr: '' });
       } } };
 }
 

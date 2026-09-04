@@ -53,7 +53,6 @@ The built-in task registry includes:
 - `envelope-instruction`;
 - `envelope-task`;
 - `envelope-process`;
-- `restore`;
 - `get-commit-message`;
 - `commit`;
 - `commit-if-changed`;
@@ -65,16 +64,11 @@ The built-in task registry includes:
 `envelope-update-files` is a workflow task: it creates and runs an
 `envelope-add-files` task for every stored file update command.
 
-Patch command names stay `read`, `write`, and `remove`. `apply-patch` maps them
-to the `envelope-add-files`, `envelope-write-file`, and `envelope-remove-file`
-tasks, and fails on an unknown command.
-
 ### Context
 
 `Context` is shared for an automation run. It provides:
 
-- shared data for runtime objects such as the current envelope and rollback
-  feed;
+- shared data for runtime objects such as the current envelope;
 - named variables for workflow configuration and intermediate values;
 - a task factory;
 - a task runner;
@@ -93,7 +87,7 @@ Built-in tools include:
 
 - `envelope`, which owns envelope building: adding read files, writing and
   removing project files, and listing stored update parameters. It also owns the
-  `envelope` and `rollbackFeed` context data keys;
+  `envelope` context data key;
 - `todos`, which collects TODO entries from files matching glob patterns;
 - `copilot`, which runs Copilot CLI as an ACP server and exchanges prompts with
   it;
@@ -281,9 +275,9 @@ A workflow is a task that composes other tasks. Representative workflows are:
 
 ## Built-in envelope automation
 
-The existing envelope and transactional patch behavior is retained as built-in
-tasks and CLI workflows. It operates by creating and maintaining an envelope,
-and applying commands to project files and the envelope.
+Envelope operations are built-in tasks and CLI workflows. Copilot receives the
+same tasks as MCP tools when its ACP session starts, so tasks are the single
+integration surface for automation.
 
 ## Envelope
 
@@ -302,115 +296,16 @@ Layout:
 
 Envelope is serialised to JSON as follows:
 
-```json
-{
-  "files": [
-    {
-      "path": "path/to/file",
-      "complete": true,
-      "type": "text",
-      "update": "command to update file"
-    }
-  ],
-  "instruction": "instruction text",
-  "task": "task text"
-}
-```
+## Copilot task tools
 
-Current envelope folder is stored in `envelope.json`:
+When `CopilotAcpTool.start()` creates an ACP session, it supplies a stdio MCP
+server named `asljs-cog-tasks`. The server lists every registered task as an MCP
+tool. A tool call runs the corresponding task through the normal COG CLI and
+returns its JSON result or failure.
 
-```json
-{
-  "envelope": "timestamp"
-}
-```
-
-## File update commands
-
-Each file may have an `update` property. This property stores a read command
-that refreshes the file content.
-
-## Backup and rollback feed
-
-`apply-patch` uses `backup.json` in the envelope directory to make patch
-application transactional. The backup file is managed through a rollback feed.
-
-Backup format:
-
-```json
-{
-  "files": [
-    {
-      "path": "path/to/file",
-      "existed": true,
-      "content": "base64-encoded previous file content"
-    },
-    {
-      "path": "path/to/new-file",
-      "existed": false
-    }
-  ]
-}
-```
-
-A file state is saved to backup before every update or removal. If the same file
-is updated multiple times, each previous state is appended. Rollback replays the
-backup from last to first.
-
-Rollback responsibility belongs to command modules:
-
-- Command functions accept a rollback feed.
-- Commands that mutate local files must save rollback state to the feed before
-  mutating files.
-- Each command file exports a rollback function for the command.
-- `read` rollback is a no-op because read does not mutate local project files.
-- `write` rollback restores the latest file state from the feed.
-- `remove` rollback restores the latest file state from the feed.
-
-`main.ts` owns rollback feed lifecycle and command dispatch only. It must not
-contain command-specific file backup logic.
-
-If the process crashes or is killed and `backup.json` remains, the next
-`apply-patch` must stop before applying anything. The user can run `restore` to
-restore the backup and remove `backup.json`, or manually delete `backup.json` to
-complete the backup without restoring.
-
-When the patch fails because of verification failure, `apply-patch` must restore
-the backup and remove `backup.json`.
-
-## Patch
-
-Patch is a series of commands that are applied to the envelope.
-
-Commands:
-
-- `read`: reads files and adds them to the envelope.
-- `write`: creates a file or sets content of a file.
-- `remove`: removes a file.
-- `replace`: replaces part of the file, specified by search, with new content,
-  specified by replacement.
-- `rename`: renames a file.
-
-## Applying patch
-
-`apply-patch` command applies the patch transactionally.
-
-The command must:
-
-1. Stop if `backup.json` already exists.
-2. Create a rollback feed backed by `backup.json`.
-3. Apply patch commands to local files and the in-memory envelope.
-4. Pass the rollback feed to each command.
-5. Let commands save rollback state before mutating local files.
-6. On any failure, restore backup entries from last to first, delete
-   `backup.json`, and rethrow the error.
-7. Run the patch verification command, if configured.
-8. If verification fails, restore backup entries from last to first, delete
-   `backup.json`, and rethrow the error.
-9. After patching is complete and verified, run update commands for files in the
-   envelope.
-10. Save the envelope.
-11. Delete `backup.json`.
+Task tool schemas are derived from `TaskRegistry` definitions. Parameters use
+the registered task parameter types, and envelope tasks use the configured
+envelope path from `COG_ENVELOPE_PATH`.
 
 ## CLI
 
@@ -421,32 +316,9 @@ The command must:
   `Complete`, and `Type`.
 - `update` refreshes envelope files by running each file's stored update
   command.
-- `restore` restores files from `backup.json` and removes `backup.json`.
-- `apply-patch [--patch-verify-cmd <command>]` transactionally applies the
-  patch. If `backup.json` exists, it stops before applying anything.
-  `--patch-verify-cmd` specifies the command used to verify the applied patch
-  and takes precedence over `COG_PATCH_VERIFY_CMD`.
+- registered task commands run tasks directly; envelope tasks load and save the
+  envelope when their definition requires it.
 - `config` prints current resolved settings and key environment variables.
-
-## Patch verification
-
-`apply-patch` supports an apply-patch-specific `--patch-verify-cmd <command>`
-argument.
-
-The verify command is selected in this order:
-
-1. `--patch-verify-cmd <command>`
-2. `COG_PATCH_VERIFY_CMD`
-3. no verification command
-
-The verify command runs in the current working directory after patch commands
-are applied and before the patch is accepted.
-
-If the command exits with code `0`, the patch is valid.
-
-If the command exits with any non-zero code, the patch is invalid and
-`apply-patch` must fail. Since verification happens before the patch is
-accepted, verification failure must use the normal transactional rollback path.
 
 ## List command
 

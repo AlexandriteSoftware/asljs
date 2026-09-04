@@ -42,18 +42,16 @@ export function toCommandIssues(
 {
   const message =
     error instanceof Error
-      ? error.message
-      : String(error);
+    ? error.message
+    : String(error);
 
   return message
     .split(
       '\n')
     .map(
-      line =>
-        line.trim())
+      line => line.trim())
     .filter(
-      line =>
-        line.length > 0);
+      line => line.length > 0);
 }
 
 async function fileExists(

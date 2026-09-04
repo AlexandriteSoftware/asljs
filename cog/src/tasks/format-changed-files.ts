@@ -120,12 +120,12 @@ export class FormatChangedFilesTask implements Task<string[]>
     const formattedFiles =
       files.filter(
         file =>
-          typeScriptFiles.includes(
-            file)
-          || markdownFiles.includes(
-            file)
-          || csharpFiles.includes(
-            file));
+        typeScriptFiles.includes(
+          file)
+        || markdownFiles.includes(
+          file)
+        || csharpFiles.includes(
+          file));
 
     context.logger.debug(
       'format-changed-files: done, formatted %d file(s)',

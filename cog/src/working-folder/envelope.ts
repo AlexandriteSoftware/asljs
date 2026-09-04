@@ -1,5 +1,5 @@
-import { ReadParameters }
-  from '../commands/read.js';
+import { type ContextFile }
+  from '../context.js';
 
 export interface Envelope
 {
@@ -8,14 +8,7 @@ export interface Envelope
   files: EnvelopeFile[];
 }
 
-export interface EnvelopeFile
-{
-  path: string;
-  type: 'text' | 'binary';
-  content?: string;
-  complete?: boolean;
-  update?: ReadParameters;
-}
+export type EnvelopeFile = ContextFile;
 
 export class EnvelopeBuilder
 {

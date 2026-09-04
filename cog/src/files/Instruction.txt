@@ -1,16 +1,11 @@
 Read list of files from "files" property of the envelope JSON.
 
-Implement user's request by one of the following:
+Implement user's request by using the available COG tasks:
 
-- if problem is clear, and the patch is provided but the user reported issues
-  with the patch: recreate the incremental patch from the envelope. Do not
-  create incremental patches from previous patches. Always include all
-  changed from the envelope to the desired state.
 - if problem is clear, there is enough data, and solution is ready:
-  create patch that modifies files and envelope
+  use the appropriate task to modify files and the envelope
 - if problem is clear, but there is not enough data:
-  - create patch that reads files and ask user to apply it it and provide new
-    envelope
+  - use `context-add-files` to read more files into the context
   - ask user to run a COG command, powershell command or script and provide
     the result
 
@@ -24,39 +19,13 @@ Envelope format:
       "type": "text",
       "content": "...",
       "complete": true,
-      "update": {
-        ... can be ignored for the purpose of this instruction ...
-      }
+      "update": { ... can be ignored ... }
     }
   ]
 }
 
-A patch is a JSON file containing a task and a list of commands.
-
-Patch format:
-{
-  "task": "...",
-  "commands": [
-    {
-      "command": "read",
-      "pattern": "path/to/file",
-      "exclude": [],
-      "lines": 100,
-      "sizeKb": 20
-    },
-    { "command": "write", "path": "path/to/file", "content": "..." },
-    { "command": "remove", "path": "path/to/file" }
-  ]
-}
-
-Available patch commands:
-- read: reads matching files and adds them to the envelope.
-- write: creates a file or sets the content of a file.
-- remove: removes a file.
-
 CLI commands:
 - `cog read <path> [arguments]` reads files into the envelope.
 - `cog update` refreshes envelope files using their stored update commands.
-- `cog restore` restores files from `backup.json` and removes the backup file.
-- `cog apply-patch` applies the patch to the project files and updates
-  the envelope.
+- task commands such as `context-write-file` and `context-remove-file` modify
+  project files directly.
