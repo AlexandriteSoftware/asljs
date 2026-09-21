@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execExtract }
@@ -32,17 +32,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execExtract(
-          environment,
+          context,
           { path: 'one.md',
             kind: 'headings' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           [ { level: 1,
               text: 'One',
               slug: 'one',
@@ -60,17 +60,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execExtract(
-          environment,
+          context,
           { path: 'one.md',
             kind: 'headings',
             format: 'text' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           '# One (line 6)\n');
       });
   });
@@ -85,17 +85,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execExtract(
-          environment,
+          context,
           { path: 'one.md',
             kind: 'all',
             format: 'text' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'title: One',
             'tags: a',
             '# One (line 6)',
@@ -119,7 +119,7 @@ test(
         await assert.rejects(
           () =>
           execExtract(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'one.md',
               kind: 'outline' }),
           /Unknown extraction kind/);
@@ -127,7 +127,7 @@ test(
         await assert.rejects(
           () =>
           execExtract(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'notes.txt',
               kind: 'headings' }),
           /only supported for markdown/);

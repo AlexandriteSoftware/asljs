@@ -3,6 +3,8 @@ import { LoggerProvider,
   from 'asljs-logging';
 import { LinkGraph }
   from './graph.js';
+import { McpClient }
+  from './mcp/client.js';
 import { createDefaultReaderRegistry }
   from './readers/registry.js';
 import { ReaderRegistry }
@@ -37,6 +39,12 @@ export interface Environment
    * Readers used to extract text from library files.
    */
   readers: ReaderRegistry;
+
+  /**
+   * Opens the client used to reach the server. A host that already has a
+   * connection, and tests, replace it.
+   */
+  openClient?: () => Promise<McpClient>;
 
   /**
    * In-memory index of the articles and the links between them.

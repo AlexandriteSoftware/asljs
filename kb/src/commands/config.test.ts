@@ -37,6 +37,10 @@ test(
         assert.match(
           output,
           /^readable: .*\.md.*\.pdf/m);
+
+        assert.match(
+          output,
+          /^server: none$/m);
       });
   });
 

@@ -1,24 +1,14 @@
-import { Environment }
-  from '../environment.js';
 import { ExtractedCodeBlock,
          ExtractedHeading,
          ExtractedLink,
          ExtractedTable,
-         ExtractedTask,
-         ExtractionKind,
-         extractData,
-         toExtractionKind }
+         ExtractedTask }
   from '../extract.js';
-import { readTextFile }
-  from '../files.js';
-import { parseMarkdown }
-  from '../markdown.js';
-import { isMarkdown }
-  from '../notes.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface ExtractCommandOptions
 {
@@ -32,7 +22,7 @@ export interface ExtractCommandOptions
  * output, because the result is structured data.
  */
 export async function execExtract(
-    environment: Environment,
+    context: CommandContext,
     options: ExtractCommandOptions
   ): Promise<void>
 {
@@ -41,128 +31,179 @@ export async function execExtract(
       options.format,
       'json');
 
-  const kind =
-    toExtractionKind(options.kind);
-
-  if (!isMarkdown(options.path)) {
-    throw new Error(
-      `Extraction is only supported for markdown files: ${options.path}`);
-  }
-
-  const text =
-    await readTextFile(
-      environment.library,
-      options.path);
-
-  const document =
-    parseMarkdown(
-      text,
-      options.path);
-
   const data =
-    extractData(
-      document,
-      kind);
+    await context.client.call(
+      'kb_extract',
+      { path: options.path,
+        kind: options.kind });
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      data);
-
-    return;
-  }
-
-  writeLines(
-    environment,
-    renderText(
-      kind,
+  writeResult(
+    context.environment,
+    format,
+    data,
+    describe(
+      options.kind,
       data));
 }
 
-function renderText(
-    kind: ExtractionKind,
+function describe(
+    kind: string,
     data: unknown
   ): string[]
 {
   if (kind === 'all') {
-    const all =
-      data as Record<string, unknown>;
-
-    return [ ...renderText(
-      'front-matter',
-      all.frontMatter),
-             ...renderText(
-               'headings',
-               all.headings),
-             ...renderText(
-               'links',
-               all.links),
-             ...renderText(
-               'tasks',
-               all.tasks),
-             ...renderText(
-               'tables',
-               all.tables),
-             ...renderText(
-               'code',
-               all.code) ];
+    return describeAll(
+      data as Record<string, unknown>);
   }
 
   if (kind === 'front-matter') {
-    if (
-      data === null
-      || typeof data
-         !== 'object'
-    ) {
-      return [ ];
-    }
-
-    return Object.entries(
-      data as Record<string, unknown>)
-      .map(
-        ([ key, value ]) =>
-        `${key}: ${
-          Array.isArray(value)
-            ? value.join(', ')
-            : String(value)}`);
+    return describeFrontMatter(data);
   }
 
   if (kind === 'headings') {
-    return (data as ExtractedHeading[]).map(
-      heading =>
-      `${'#'.repeat(heading.level)} ${heading.text} (line ${heading.line})`);
+    return (data as ExtractedHeading[]).map(describeHeading);
   }
 
   if (kind === 'links') {
-    return (data as ExtractedLink[]).map(
-      link =>
-      `${link.kind} ${link.target}${
-        link.text === ''
-          ? ''
-          : ` - ${link.text}`} (line ${link.line})`);
+    return (data as ExtractedLink[]).map(describeLink);
   }
 
   if (kind === 'tasks') {
-    return (data as ExtractedTask[]).map(
-      task =>
-      `[${
-        task.checked
-          ? 'x'
-          : ' '}] ${task.text} (line ${task.line})`);
+    return (data as ExtractedTask[]).map(describeTask);
   }
 
   if (kind === 'tables') {
-    return (data as ExtractedTable[]).map(
-      table =>
-      `table ${table.headers.length} column(s), ${
-        table.rows.length} row(s) (line ${table.line})`);
+    return (data as ExtractedTable[]).map(describeTable);
   }
 
-  return (data as ExtractedCodeBlock[]).map(
-    code =>
-    `${
-      code.language === ''
-        ? 'code'
-        : code.language} ${
-      code.value.split('\n').length} line(s) (line ${code.line})`);
+  return (data as ExtractedCodeBlock[]).map(describeCode);
+}
+
+function describeAll(
+    data: Record<string, unknown>
+  ): string[]
+{
+  return [ ...describe(
+    'front-matter',
+    data.frontMatter),
+           ...describe(
+             'headings',
+             data.headings),
+           ...describe(
+             'links',
+             data.links),
+           ...describe(
+             'tasks',
+             data.tasks),
+           ...describe(
+             'tables',
+             data.tables),
+           ...describe(
+             'code',
+             data.code) ];
+}
+
+function describeFrontMatter(
+    data: unknown
+  ): string[]
+{
+  if (
+    data === null
+    || typeof data
+       !== 'object'
+  ) {
+    return [ ];
+  }
+
+  const lines: string[] = [ ];
+
+  for (const [ key, value ] of Object.entries(data)) {
+    lines.push(
+      `${key}: ${asText(value)}`);
+  }
+
+  return lines;
+}
+
+function describeHeading(
+    heading: ExtractedHeading
+  ): string
+{
+  return `${'#'.repeat(heading.level)} ${heading.text} (line ${
+    heading.line})`;
+}
+
+function describeLink(
+    link: ExtractedLink
+  ): string
+{
+  return `${link.kind} ${link.target}${suffix(link.text)} (line ${
+    link.line})`;
+}
+
+function describeTask(
+    task: ExtractedTask
+  ): string
+{
+  return `[${mark(task.checked)}] ${task.text} (line ${task.line})`;
+}
+
+function describeTable(
+    table: ExtractedTable
+  ): string
+{
+  return `table ${table.headers.length} column(s), ${
+    table.rows.length} row(s) (line ${table.line})`;
+}
+
+function describeCode(
+    code: ExtractedCodeBlock
+  ): string
+{
+  return `${language(code.language)} ${
+    code.value.split('\n').length} line(s) (line ${code.line})`;
+}
+
+function asText(
+    value: unknown
+  ): string
+{
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+
+  return String(value);
+}
+
+function suffix(
+    text: string
+  ): string
+{
+  if (text === '') {
+    return '';
+  }
+
+  return ` - ${text}`;
+}
+
+function mark(
+    checked: boolean
+  ): string
+{
+  if (checked) {
+    return 'x';
+  }
+
+  return ' ';
+}
+
+function language(
+    value: string
+  ): string
+{
+  if (value === '') {
+    return 'code';
+  }
+
+  return value;
 }

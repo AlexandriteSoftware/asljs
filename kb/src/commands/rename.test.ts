@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execRename }
@@ -27,16 +27,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execRename(
-          environment,
+          context,
           { path: 'notes/budget.md',
             name: 'finance.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'move notes/budget.md -> notes/finance.md',
             'update inbox/quick.md:3:5 budget -> finance',
             'update notes/plan.md:3:5 budget.md -> finance.md',
@@ -60,18 +60,18 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execRename(
-          environment,
+          context,
           { path: 'notes/budget.md',
             name: 'finance.md',
             format: 'json' });
 
         const result =
           JSON.parse(
-            environment.stdout.toString()) as
+            context.environment.stdout.toString()) as
             { target: string;
               files: { path: string; }[]; };
 
@@ -99,7 +99,7 @@ test(
         await assert.rejects(
           () =>
           execRename(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'notes/budget.md',
               name:
                 'archive/finance.md' }),

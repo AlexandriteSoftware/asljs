@@ -1,11 +1,11 @@
-import path
-  from 'node:path';
 import { Command }
   from 'commander';
 import { execBacklinks }
   from './commands/backlinks.js';
 import { execConfig }
   from './commands/config.js';
+import { CommandContext }
+  from './commands/context.js';
 import { execCopy }
   from './commands/copy.js';
 import { execExtract }
@@ -46,13 +46,19 @@ import { resolveLibraryRoot }
   from './library.js';
 import { createLoggerProvider }
   from './logger.js';
+import { McpClient,
+         openClient }
+  from './mcp/client.js';
 
 /**
  * Run the `kb` command line interface.
  *
+ * Every command that touches the library is carried out by a server: a
+ * running one when there is one, and otherwise one started for that command
+ * and shut down afterwards. The CLI parses, asks, and renders.
+ *
  * Returns 0 on success and 1 on failure. Commands that report a negative
- * outcome, such as `search` without matches, set `environment.exitCode`
- * instead.
+ * outcome, such as `search` without matches, set `environment.exitCode`.
  */
 export async function runCli(
     args: string[],
@@ -61,12 +67,12 @@ export async function runCli(
 {
   const ownEnvironment = !environment;
 
-  environment =
+  const active =
     environment
     ?? createEnvironment();
 
   const cli =
-    createCli(environment);
+    createCli(active);
 
   if (args.length === 0) {
     cli.outputHelp();
@@ -81,31 +87,81 @@ export async function runCli(
 
     return 0;
   } catch (error) {
-    if (
-      writeCommanderError(
-        environment,
-        error,
-        cli)
-    ) {
-      return 1;
-    }
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : String(error);
-
-    if (message) {
-      environment.stderr.write(
-        `${message}\n`);
-    }
-
-    return 1;
+    return reportFailure(
+      active,
+      cli,
+      error);
   } finally {
     if (ownEnvironment) {
-      await environment.dispose();
+      await active.dispose();
     }
   }
+}
+
+/**
+ * Carry out one command through a server, and close the connection when it is
+ * done. An internal server is shut down by that close.
+ */
+async function through<TOptions>(
+    environment: Environment,
+    action: (
+      context: CommandContext,
+      options: TOptions
+    ) => Promise<void>,
+    options: TOptions
+  ): Promise<void>
+{
+  const resolved =
+    environment.resolve(action);
+
+  const client =
+    await clientFor(environment);
+
+  try {
+    await resolved(
+      { environment,
+        client },
+      options);
+  } finally {
+    await client.close();
+  }
+}
+
+function clientFor(
+    environment: Environment
+  ): Promise<McpClient>
+{
+  if (environment.openClient) {
+    return environment.openClient();
+  }
+
+  return openClient(environment.library);
+}
+
+function reportFailure(
+    environment: Environment,
+    cli: Command,
+    error: unknown
+  ): number
+{
+  if (
+    writeCommanderError(
+      environment,
+      cli,
+      error)
+  ) {
+    return 1;
+  }
+
+  const message =
+    messageOf(error);
+
+  if (message !== '') {
+    environment.stderr.write(
+      `${message}\n`);
+  }
+
+  return 1;
 }
 
 function createCli(
@@ -155,14 +211,28 @@ function createCli(
         applyGlobalOptions(
           environment,
           actionCommand.optsWithGlobals());
-
-        environment
-          .loggerProvider
-          .getLogger()
-          .trace(
-            `command ${actionCommand.name()}`);
       });
 
+  addLibraryCommands(
+    cli,
+    environment);
+
+  addLinkCommands(
+    cli,
+    environment);
+
+  addToolCommands(
+    cli,
+    environment);
+
+  return cli;
+}
+
+function addLibraryCommands(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('list')
     .description(
       'List library entries matching a glob pattern')
@@ -176,20 +246,15 @@ function createCli(
       '--hidden',
       'Include dot files and dot folders')
     .action(
-      async (
-          pattern,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execList)(
-          environment,
-          { pattern,
-            kind: options.kind,
-            hidden: options.hidden === true,
-            format:
-              formatOption(command) });
-      });
+      async (pattern, options, command) =>
+      await through(
+        environment,
+        execList,
+        { pattern,
+          kind: options.kind,
+          hidden: options.hidden === true,
+          format:
+            formatOption(command) }));
 
   cli.command('read')
     .description(
@@ -198,18 +263,13 @@ function createCli(
       '<path>',
       'Library-relative path')
     .action(
-      async (
-          value,
-          _,
-          command
-        ) =>
-      {
-        await environment.resolve(execRead)(
-          environment,
-          { path: value,
-            format:
-              formatOption(command) });
-      });
+      async (value, _, command) =>
+      await through(
+        environment,
+        execRead,
+        { path: value,
+          format:
+            formatOption(command) }));
 
   cli.command('write')
     .description(
@@ -224,20 +284,15 @@ function createCli(
       '--overwrite',
       'Replace the file when it already exists')
     .action(
-      async (
-          value,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execWrite)(
-          environment,
-          { path: value,
-            content: options.content,
-            overwrite: options.overwrite === true,
-            format:
-              formatOption(command) });
-      });
+      async (value, options, command) =>
+      await through(
+        environment,
+        execWrite,
+        { path: value,
+          content: options.content,
+          overwrite: options.overwrite === true,
+          format:
+            formatOption(command) }));
 
   cli.command('new')
     .description(
@@ -258,24 +313,19 @@ function createCli(
       '--overwrite',
       'Replace the note when it already exists')
     .action(
-      async (
-          value,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execNew)(
-          environment,
-          { path: value,
-            title:
-              filterStringOption(options.title),
-            tags:
-              splitCommaSeparatedOption(options.tags),
-            body: options.body,
-            overwrite: options.overwrite === true,
-            format:
-              formatOption(command) });
-      });
+      async (value, options, command) =>
+      await through(
+        environment,
+        execNew,
+        { path: value,
+          title:
+            filterStringOption(options.title),
+          tags:
+            splitCommaSeparatedOption(options.tags),
+          body: options.body,
+          overwrite: options.overwrite === true,
+          format:
+            formatOption(command) }));
 
   cli.command('mkdir')
     .description(
@@ -284,19 +334,58 @@ function createCli(
       '<path>',
       'Library-relative path')
     .action(
-      async (
-          value,
-          _,
-          command
-        ) =>
-      {
-        await environment.resolve(execMkdir)(
-          environment,
-          { path: value,
-            format:
-              formatOption(command) });
-      });
+      async (value, _, command) =>
+      await through(
+        environment,
+        execMkdir,
+        { path: value,
+          format:
+            formatOption(command) }));
 
+  cli.command('copy')
+    .description(
+      'Copy a file or folder')
+    .argument('<source>')
+    .argument('<target>')
+    .option(
+      '--overwrite',
+      'Replace the target when it already exists')
+    .action(
+      async (source, target, options, command) =>
+      await through(
+        environment,
+        execCopy,
+        { source,
+          target,
+          overwrite: options.overwrite === true,
+          format:
+            formatOption(command) }));
+
+  cli.command('remove')
+    .description(
+      'Remove a file or folder')
+    .argument(
+      '<path>',
+      'Library-relative path')
+    .option(
+      '--recursive',
+      'Remove a folder with its content')
+    .action(
+      async (value, options, command) =>
+      await through(
+        environment,
+        execRemove,
+        { path: value,
+          recursive: options.recursive === true,
+          format:
+            formatOption(command) }));
+}
+
+function addLinkCommands(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('move')
     .description(
       'Move a file or folder, rewriting the links it would break')
@@ -312,23 +401,17 @@ function createCli(
       '--dry-run',
       'Report the move and the edits without performing them')
     .action(
-      async (
-          source,
+      async (source, target, options, command) =>
+      await through(
+        environment,
+        execMove,
+        { source,
           target,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execMove)(
-          environment,
-          { source,
-            target,
-            overwrite: options.overwrite === true,
-            updateLinks: options.updateLinks !== false,
-            dryRun: options.dryRun === true,
-            format:
-              formatOption(command) });
-      });
+          overwrite: options.overwrite === true,
+          updateLinks: options.updateLinks !== false,
+          dryRun: options.dryRun === true,
+          format:
+            formatOption(command) }));
 
   cli.command('rename')
     .description(
@@ -349,73 +432,66 @@ function createCli(
       '--dry-run',
       'Report the rename and the edits without performing them')
     .action(
-      async (
-          value,
+      async (value, name, options, command) =>
+      await through(
+        environment,
+        execRename,
+        { path: value,
           name,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execRename)(
-          environment,
-          { path: value,
-            name,
-            overwrite: options.overwrite === true,
-            updateLinks: options.updateLinks !== false,
-            dryRun: options.dryRun === true,
-            format:
-              formatOption(command) });
-      });
+          overwrite: options.overwrite === true,
+          updateLinks: options.updateLinks !== false,
+          dryRun: options.dryRun === true,
+          format:
+            formatOption(command) }));
 
-  cli.command('copy')
+  cli.command('backlinks')
     .description(
-      'Copy a file or folder')
-    .argument('<source>')
-    .argument('<target>')
-    .option(
-      '--overwrite',
-      'Replace the target when it already exists')
-    .action(
-      async (
-          source,
-          target,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execCopy)(
-          environment,
-          { source,
-            target,
-            overwrite: options.overwrite === true,
-            format:
-              formatOption(command) });
-      });
-
-  cli.command('remove')
-    .description(
-      'Remove a file or folder')
+      'List the markdown links that point at an entry')
     .argument(
       '<path>',
       'Library-relative path')
     .option(
-      '--recursive',
-      'Remove a folder with its content')
+      '--pattern <pattern>',
+      'Glob pattern limiting the documents to scan')
+    .option(
+      '--hidden',
+      'Include dot files and dot folders')
+    .option(
+      '--include-self',
+      'Include links the document makes to itself')
     .action(
-      async (
-          value,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execRemove)(
-          environment,
-          { path: value,
-            recursive: options.recursive === true,
-            format:
-              formatOption(command) });
-      });
+      async (value, options, command) =>
+      await through(
+        environment,
+        execBacklinks,
+        { path: value,
+          pattern: options.pattern,
+          hidden: options.hidden === true,
+          includeSelf: options.includeSelf === true,
+          format:
+            formatOption(command) }));
 
+  cli.command('graph')
+    .description(
+      'Report the article and link collections')
+    .argument(
+      '[path]',
+      'Library-relative path of an article to describe')
+    .action(
+      async (value, _, command) =>
+      await through(
+        environment,
+        execGraph,
+        { path: value,
+          format:
+            formatOption(command) }));
+}
+
+function addToolCommands(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('search')
     .description(
       'Search the text of every readable document')
@@ -438,59 +514,22 @@ function createCli(
       '--max-results <count>',
       'Maximum number of matches to report')
     .action(
-      async (
-          query,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execSearch)(
-          environment,
-          { query,
-            pattern: options.pattern,
-            regex: options.regex === true,
-            caseSensitive:
-              options.caseSensitive === true,
-            hidden: options.hidden === true,
-            maxResults:
-              parseCountOption(
-                options.maxResults,
-                '--max-results'),
-            format:
-              formatOption(command) });
-      });
-
-  cli.command('backlinks')
-    .description(
-      'List the markdown links that point at an entry')
-    .argument(
-      '<path>',
-      'Library-relative path')
-    .option(
-      '--pattern <pattern>',
-      'Glob pattern limiting the documents to scan')
-    .option(
-      '--hidden',
-      'Include dot files and dot folders')
-    .option(
-      '--include-self',
-      'Include links the document makes to itself')
-    .action(
-      async (
-          value,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execBacklinks)(
-          environment,
-          { path: value,
-            pattern: options.pattern,
-            hidden: options.hidden === true,
-            includeSelf: options.includeSelf === true,
-            format:
-              formatOption(command) });
-      });
+      async (query, options, command) =>
+      await through(
+        environment,
+        execSearch,
+        { query,
+          pattern: options.pattern,
+          regex: options.regex === true,
+          caseSensitive:
+            options.caseSensitive === true,
+          hidden: options.hidden === true,
+          maxResults:
+            parseCountOption(
+              options.maxResults,
+              '--max-results'),
+          format:
+            formatOption(command) }));
 
   cli.command('format')
     .description(
@@ -505,20 +544,15 @@ function createCli(
       '--hidden',
       'Include dot files and dot folders')
     .action(
-      async (
-          pattern,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execFormat)(
-          environment,
-          { pattern,
-            check: options.check === true,
-            hidden: options.hidden === true,
-            format:
-              formatOption(command) });
-      });
+      async (pattern, options, command) =>
+      await through(
+        environment,
+        execFormat,
+        { pattern,
+          check: options.check === true,
+          hidden: options.hidden === true,
+          format:
+            formatOption(command) }));
 
   cli.command('extract')
     .description(
@@ -530,48 +564,14 @@ function createCli(
       '<path>',
       'Library-relative path')
     .action(
-      async (
+      async (kind, value, _, command) =>
+      await through(
+        environment,
+        execExtract,
+        { path: value,
           kind,
-          value,
-          _,
-          command
-        ) =>
-      {
-        await environment.resolve(execExtract)(
-          environment,
-          { path: value,
-            kind,
-            format:
-              formatOption(command) });
-      });
-
-  cli.command('graph')
-    .description(
-      'Report the article and link collections')
-    .argument(
-      '[path]',
-      'Library-relative path of an article to describe')
-    .option(
-      '--pattern <pattern>',
-      'Glob pattern limiting the documents to index')
-    .option(
-      '--hidden',
-      'Include dot files and dot folders')
-    .action(
-      async (
-          value,
-          options,
-          command
-        ) =>
-      {
-        await environment.resolve(execGraph)(
-          environment,
-          { path: value,
-            pattern: options.pattern,
-            hidden: options.hidden === true,
-            format:
-              formatOption(command) });
-      });
+          format:
+            formatOption(command) }));
 
   cli.command('info')
     .description(
@@ -580,45 +580,31 @@ function createCli(
       '<path>',
       'Library-relative path')
     .action(
-      async (
-          value,
-          _,
-          command
-        ) =>
-      {
-        await environment.resolve(execInfo)(
-          environment,
-          { path: value,
-            format:
-              formatOption(command) });
-      });
+      async (value, _, command) =>
+      await through(
+        environment,
+        execInfo,
+        { path: value,
+          format:
+            formatOption(command) }));
 
   cli.command('config')
     .description(
       'Print the effective configuration')
     .action(
-      async (
-          _,
-          command
-        ) =>
-      {
-        await environment.resolve(execConfig)(
-          environment,
-          { format:
-              formatOption(command) });
-      });
+      async (_, command) =>
+      await environment.resolve(execConfig)(
+        environment,
+        { format:
+            formatOption(command) }));
 
   cli.command('version')
     .description(
       'Print the current package version')
     .action(
       async () =>
-      {
-        await environment.resolve(execVersion)(
-          environment);
-      });
-
-  return cli;
+      await environment.resolve(execVersion)(
+        environment));
 }
 
 function applyGlobalOptions(
@@ -626,20 +612,9 @@ function applyGlobalOptions(
     options: Record<string, unknown>
   ): void
 {
-  const level =
-    filterStringOption(options.loglevel);
-
-  const file =
-    filterStringOption(options.logfile);
-
   const loggerProvider =
     createLoggerProvider(
-      { ...(level === ''
-          ? {}
-          : { level }),
-        ...(file === ''
-          ? {}
-          : { file }) });
+      loggerOptionsFrom(options));
 
   environment.onDispose(
     async (): Promise<void> =>
@@ -653,6 +628,29 @@ function applyGlobalOptions(
     resolveLibraryRoot(
       environment.cwd,
       filterStringOption(options.library));
+}
+
+function loggerOptionsFrom(
+    options: Record<string, unknown>
+  ): { level?: string; file?: string; }
+{
+  const resolved: { level?: string; file?: string; } = {};
+
+  const level =
+    filterStringOption(options.loglevel);
+
+  if (level !== '') {
+    resolved.level = level;
+  }
+
+  const file =
+    filterStringOption(options.logfile);
+
+  if (file !== '') {
+    resolved.file = file;
+  }
+
+  return resolved;
 }
 
 function formatOption(
@@ -691,21 +689,14 @@ function parseCountOption(
 
 function writeCommanderError(
     environment: Environment,
-    error: unknown,
-    cli: Command
+    cli: Command,
+    error: unknown
   ): boolean
 {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
   const code =
-    (error as Error & { code?: string; }).code;
+    commanderCode(error);
 
-  if (
-    typeof code
-    !== 'string'
-  ) {
+  if (code === null) {
     return false;
   }
 
@@ -713,14 +704,10 @@ function writeCommanderError(
     code
     === 'commander.optionMissingArgument'
   ) {
-    const optionName =
-      tryExtractOptionName(error.message);
-
     environment.stderr.write(
-      `${
-        optionName
-          ? `Option ${optionName} requires a value.`
-          : 'Option requires a value.'}\n`);
+      `${optionText(
+        error,
+        'requires a value')}\n`);
 
     return true;
   }
@@ -729,31 +716,8 @@ function writeCommanderError(
     code
     === 'commander.unknownOption'
   ) {
-    const optionName =
-      tryExtractOptionName(error.message);
-
     environment.stderr.write(
-      `${
-        optionName
-          ? `Unknown option: ${optionName}.`
-          : 'Unknown option.'}\n`);
-
-    return true;
-  }
-
-  if (
-    code
-    === 'commander.unknownCommand'
-    || code
-       === 'commander.missingArgument'
-    || code
-       === 'commander.excessArguments'
-  ) {
-    environment.stderr.write(
-      `${error.message}\n`);
-
-    cli.outputHelp(
-      { error: true });
+      `${unknownOptionText(error)}\n`);
 
     return true;
   }
@@ -765,25 +729,106 @@ function writeCommanderError(
     return true;
   }
 
+  if (isUsageError(code)) {
+    environment.stderr.write(
+      `${messageOf(error)}\n`);
+
+    cli.outputHelp(
+      { error: true });
+
+    return true;
+  }
+
   return false;
 }
 
-function tryExtractOptionName(
-    message: string
+function isUsageError(
+    code: string
+  ): boolean
+{
+  return code === 'commander.unknownCommand'
+    || code === 'commander.missingArgument'
+    || code === 'commander.excessArguments';
+}
+
+function commanderCode(
+    error: unknown
+  ): string | null
+{
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  const code =
+    (error as Error & { code?: string; }).code;
+
+  if (
+    typeof code
+    !== 'string'
+  ) {
+    return null;
+  }
+
+  return code;
+}
+
+function optionText(
+    error: unknown,
+    suffix: string
+  ): string
+{
+  const name =
+    optionName(error);
+
+  if (name === null) {
+    return `Option ${suffix}.`;
+  }
+
+  return `Option ${name} ${suffix}.`;
+}
+
+function unknownOptionText(
+    error: unknown
+  ): string
+{
+  const name =
+    optionName(error);
+
+  if (name === null) {
+    return 'Unknown option.';
+  }
+
+  return `Unknown option: ${name}.`;
+}
+
+function optionName(
+    error: unknown
   ): string | null
 {
   const match =
-    /'(--[^ <']+)/.exec(message);
+    /'(--[^ <']+)/.exec(
+      messageOf(error));
 
   const group =
     match?.[1]?.trim();
 
   if (
-    !group
+    group === undefined
     || group === ''
   ) {
     return null;
   }
 
   return group;
+}
+
+function messageOf(
+    error: unknown
+  ): string
+{
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
 }

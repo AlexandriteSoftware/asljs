@@ -1,11 +1,10 @@
-import { findBacklinks }
+import { Backlink }
   from '../backlinks.js';
-import { Environment }
-  from '../environment.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface BacklinksCommandOptions
 {
@@ -22,7 +21,7 @@ export interface BacklinksCommandOptions
  * conditionals.
  */
 export async function execBacklinks(
-    environment: Environment,
+    context: CommandContext,
     options: BacklinksCommandOptions
   ): Promise<void>
 {
@@ -30,27 +29,28 @@ export async function execBacklinks(
     resolveOutputFormat(options.format);
 
   const backlinks =
-    await findBacklinks(
-      environment.library,
-      options.path,
-      { pattern: options.pattern,
-        hidden: options.hidden === true,
-        includeSelf: options.includeSelf === true });
+    await context.client.call(
+      'kb_backlinks',
+      { path: options.path,
+        pattern: options.pattern,
+        hidden: options.hidden,
+        includeSelf: options.includeSelf }) as Backlink[];
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      backlinks);
-  } else {
-    writeLines(
-      environment,
-      backlinks.map(
-        backlink =>
-        `${backlink.path}:${backlink.line}:${backlink.column}: ${
-          backlink.kind} ${backlink.target}`));
-  }
+  writeResult(
+    context.environment,
+    format,
+    backlinks,
+    backlinks.map(describe));
 
   if (backlinks.length === 0) {
-    environment.exitCode = 1;
+    context.environment.exitCode = 1;
   }
+}
+
+function describe(
+    backlink: Backlink
+  ): string
+{
+  return `${backlink.path}:${backlink.line}:${backlink.column}: ${
+    backlink.kind} ${backlink.target}`;
 }

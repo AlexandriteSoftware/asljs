@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execMkdir }
@@ -18,15 +18,15 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execMkdir(
-          environment,
+          context,
           { path: 'archive/2026' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'archive/2026\n');
       });
   });
@@ -41,17 +41,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execMkdir(
-          environment,
+          context,
           { path: 'archive',
             format: 'json' });
 
         assert.equal(
           JSON.parse(
-            environment.stdout.toString()).kind,
+            context.environment.stdout.toString()).kind,
           'folder');
       });
   });

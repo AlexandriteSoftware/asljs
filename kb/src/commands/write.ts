@@ -1,18 +1,17 @@
-import { Environment }
-  from '../environment.js';
-import { writeTextFile }
+import { LibraryEntry }
   from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface WriteCommandOptions
 {
   path: string;
 
   /**
-   * Text to write. When omitted, the content is read from standard input.
+   * Text to write. Read from standard input when absent.
    */
   content?: string;
 
@@ -21,7 +20,7 @@ export interface WriteCommandOptions
 }
 
 export async function execWrite(
-    environment: Environment,
+    context: CommandContext,
     options: WriteCommandOptions
   ): Promise<void>
 {
@@ -29,38 +28,43 @@ export async function execWrite(
     resolveOutputFormat(options.format);
 
   const content =
-    typeof options.content === 'string'
-      ? options.content
-      : await readInput(environment);
+    await contentOf(
+      context,
+      options);
 
   const entry =
-    await writeTextFile(
-      environment.library,
-      options.path,
-      content,
-      { overwrite: options.overwrite === true });
+    await context.client.call(
+      'kb_write',
+      { path: options.path,
+        content,
+        overwrite: options.overwrite }) as LibraryEntry;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      entry);
-
-    return;
-  }
-
-  writeLine(
-    environment,
-    entry.path);
+  writeResult(
+    context.environment,
+    format,
+    entry,
+    [ entry.path ]);
 }
 
-async function readInput(
-    environment: Environment
+async function contentOf(
+    context: CommandContext,
+    options: WriteCommandOptions
   ): Promise<string>
 {
-  if (!environment.readInput) {
+  if (
+    typeof options.content
+    === 'string'
+  ) {
+    return options.content;
+  }
+
+  const readInput =
+    context.environment.readInput;
+
+  if (!readInput) {
     throw new Error(
       'No content provided. Use --content or pipe the text into stdin.');
   }
 
-  return await environment.readInput();
+  return await readInput();
 }

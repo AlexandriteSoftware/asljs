@@ -1,11 +1,11 @@
-import { Environment }
-  from '../environment.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
-import { searchLibrary }
+import { SearchMatch,
+         SearchReport }
   from '../search.js';
+import { CommandContext }
+  from './context.js';
 
 export interface SearchCommandOptions
 {
@@ -23,7 +23,7 @@ export interface SearchCommandOptions
  * nothing matches, so that the command composes with shell conditionals.
  */
 export async function execSearch(
-    environment: Environment,
+    context: CommandContext,
     options: SearchCommandOptions
   ): Promise<void>
 {
@@ -31,35 +31,35 @@ export async function execSearch(
     resolveOutputFormat(options.format);
 
   const report =
-    await searchLibrary(
-      environment.library,
-      environment.readers,
+    await context.client.call(
+      'kb_search',
       { query: options.query,
         pattern: options.pattern,
-        regex: options.regex === true,
+        regex: options.regex,
         ignoreCase:
           options.caseSensitive !== true,
-        hidden: options.hidden === true,
-        maxResults: options.maxResults });
+        hidden: options.hidden,
+        maxResults: options.maxResults }) as SearchReport;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      report);
-  } else {
-    writeLines(
-      environment,
-      report.matches.map(
-        match =>
-        `${match.path}:${match.line}:${match.column}: ${match.text}`));
-  }
+  writeResult(
+    context.environment,
+    format,
+    report,
+    report.matches.map(describe));
 
   for (const skipped of report.skippedFiles) {
-    environment.stderr.write(
+    context.environment.stderr.write(
       `Skipped ${skipped.path}: ${skipped.reason}\n`);
   }
 
   if (report.matches.length === 0) {
-    environment.exitCode = 1;
+    context.environment.exitCode = 1;
   }
+}
+
+function describe(
+    match: SearchMatch
+  ): string
+{
+  return `${match.path}:${match.line}:${match.column}: ${match.text}`;
 }

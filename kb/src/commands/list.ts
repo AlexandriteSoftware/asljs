@@ -1,12 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { EntryKind,
-         listEntries }
+import { LibraryEntry }
   from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface ListCommandOptions
 {
@@ -17,7 +15,7 @@ export interface ListCommandOptions
 }
 
 export async function execList(
-    environment: Environment,
+    context: CommandContext,
     options: ListCommandOptions = {}
   ): Promise<void>
 {
@@ -25,53 +23,26 @@ export async function execList(
     resolveOutputFormat(options.format);
 
   const entries =
-    await listEntries(
-      environment.library,
+    await context.client.call(
+      'kb_list',
       { pattern: options.pattern,
-        kind:
-          toKind(options.kind),
-        hidden: options.hidden === true });
+        kind: options.kind,
+        hidden: options.hidden }) as LibraryEntry[];
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      entries);
-
-    return;
-  }
-
-  writeLines(
-    environment,
-    entries.map(
-      entry =>
-      entry.kind === 'folder'
-        ? `${entry.path}/`
-        : entry.path));
+  writeResult(
+    context.environment,
+    format,
+    entries,
+    entries.map(describe));
 }
 
-function toKind(
-    value: unknown
-  ): EntryKind | 'any'
+function describe(
+    entry: LibraryEntry
+  ): string
 {
-  if (
-    typeof value
-    !== 'string'
-    || value.trim() === ''
-  ) {
-    return 'any';
+  if (entry.kind === 'folder') {
+    return `${entry.path}/`;
   }
 
-  const kind =
-    value.trim().toLowerCase();
-
-  if (
-    kind === 'file'
-    || kind === 'folder'
-    || kind === 'any'
-  ) {
-    return kind;
-  }
-
-  throw new Error(
-    `Unknown entry kind: ${value.trim()}. Use file, folder or any.`);
+  return entry.path;
 }

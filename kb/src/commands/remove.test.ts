@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execRemove }
@@ -18,15 +18,15 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execRemove(
-          environment,
+          context,
           { path: 'one.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'one.md\n');
       });
   });
@@ -41,25 +41,25 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await assert.rejects(
           () =>
           execRemove(
-            environment,
+            context,
             { path: 'notes' }),
           /not empty/);
 
         await execRemove(
-          environment,
+          context,
           { path: 'notes',
             recursive: true,
             format: 'json' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           { path: 'notes' });
       });
   });

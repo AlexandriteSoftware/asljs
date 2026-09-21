@@ -1,12 +1,10 @@
-import { Environment }
-  from '../environment.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
-import { RelocateResult,
-         renameEntry }
+import { RelocateResult }
   from '../relocate.js';
+import { CommandContext }
+  from './context.js';
 
 export interface RenameCommandOptions
 {
@@ -19,7 +17,7 @@ export interface RenameCommandOptions
 }
 
 export async function execRename(
-    environment: Environment,
+    context: CommandContext,
     options: RenameCommandOptions
   ): Promise<void>
 {
@@ -27,25 +25,18 @@ export async function execRename(
     resolveOutputFormat(options.format);
 
   const result =
-    await renameEntry(
-      environment.library,
-      options.path,
-      options.name,
-      { overwrite: options.overwrite === true,
-        updateLinks: options.updateLinks !== false,
-        dryRun: options.dryRun === true,
-        graph: environment.graph });
+    await context.client.call(
+      'kb_rename',
+      { path: options.path,
+        name: options.name,
+        overwrite: options.overwrite,
+        updateLinks: options.updateLinks,
+        dryRun: options.dryRun }) as RelocateResult;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      result);
-
-    return;
-  }
-
-  writeLines(
-    environment,
+  writeResult(
+    context.environment,
+    format,
+    result,
     renderRelocation(result));
 }
 
@@ -58,9 +49,7 @@ export function renderRelocation(
   ): string[]
 {
   const prefix =
-    result.dryRun
-      ? 'would '
-      : '';
+    prefixFor(result.dryRun);
 
   const lines =
     [ `${prefix}move ${result.source} -> ${result.target}` ];
@@ -80,4 +69,15 @@ export function renderRelocation(
   }
 
   return lines;
+}
+
+function prefixFor(
+    dryRun: boolean
+  ): string
+{
+  if (dryRun) {
+    return 'would ';
+  }
+
+  return '';
 }

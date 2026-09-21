@@ -23,6 +23,41 @@ For CLI usage in a project or a notes folder:
 npx kb --library ./notes list
 ```
 
+## How A Command Runs
+
+The CLI does not touch the library. Every command that reads or changes it is
+carried out by a server, and the CLI parses the arguments, asks, and renders
+the answer.
+
+For each command:
+
+- if a server is already serving that library, the CLI connects to it, so the
+  command is answered from that server's warm index;
+- otherwise the CLI starts a server for that one command, and shuts it down
+  when it is done.
+
+A server is found at an address derived from the library root, so nothing has
+to be configured and no discovery file is written. `kb config` reports the
+address and whether anything is listening there:
+
+```text
+endpoint: /tmp/asljs-kb-90542ecd1d4b82be.sock
+server: running
+```
+
+To leave a server running, so that commands connect instead of starting one:
+
+```bash
+kb-mcp --library ./notes --listen
+```
+
+A listening server outlives its standard input and stops on SIGINT or
+SIGTERM. Its index follows the library, so a file written by one command is
+visible to the next one immediately.
+
+`version` and `config` are the only commands that do not go through a server,
+because they describe the tool rather than the library.
+
 ## The Library
 
 Every command works inside one library root. The root is resolved in this
@@ -282,15 +317,16 @@ The library is two collections: the articles, and the links between them.
 `LinkGraph` holds both in memory, with every link destination resolved once,
 at index time, by the rules above.
 
-`kb-mcp` builds the index before it serves its first request and then keeps it
+A server builds the index before it serves its first request and then keeps it
 current by watching the library, so link questions are answered from memory
 rather than by re-reading the library. `kb_backlinks` is served from the index,
 except when `pattern` narrows the documents to scan, which the index cannot
 express; that request falls back to a direct scan.
 
-The CLI is a one-shot process with no index to reuse, so `kb backlinks` always
-scans directly. Both paths share one set of resolution rules and are pinned to
-the same answers by test.
+A server started for one command is started without an index, because building
+one to answer a single question costs more than the question. That server
+answers by scanning directly. Both paths share one set of resolution rules and
+are pinned to the same answers by test.
 
 ```bash
 kb graph
@@ -359,6 +395,14 @@ The server indexes the library at startup and watches it for changes, so
 `kb_backlinks` and `kb_graph` answer from memory. `kb_graph` reports `live`,
 which says whether the answer came from the index the server keeps current or
 from one built for that one request.
+
+Options:
+
+- `--library <path>` - library root.
+- `--listen [address]` - also serve an address, which the CLI finds on its
+  own. Without an address, the address of the library is used.
+- `--no-index` - do not index or watch. The CLI passes this to the server it
+  starts for one command, where an index would be built and thrown away.
 
 Standard output carries the JSON-RPC stream, so the MCP server logs nothing
 unless `KB_LOG_FILE` names a file to write to.

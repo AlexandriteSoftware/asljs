@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execList }
@@ -22,13 +22,13 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
-        await execList(environment);
+        await execList(context);
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'notes/\nnotes/one.md\nreadme.md\n');
       });
   });
@@ -43,18 +43,18 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execList(
-          environment,
+          context,
           { pattern: '**/*.md',
             kind: 'file',
             format: 'json' });
 
         const entries =
           JSON.parse(
-            environment.stdout.toString()) as
+            context.environment.stdout.toString()) as
             { path: string; }[];
 
         assert.deepEqual(
@@ -65,7 +65,7 @@ test(
   });
 
 test(
-  'list rejects an unknown kind',
+  'list reports the rejection the server makes',
   async () =>
   {
     await withLibrary(
@@ -77,8 +77,8 @@ test(
         await assert.rejects(
           () =>
           execList(
-            createTestEnvironment(library),
+            createTestContext(library),
             { kind: 'document' }),
-          /Unknown entry kind/);
+          /must be file, folder or any/);
       });
   });

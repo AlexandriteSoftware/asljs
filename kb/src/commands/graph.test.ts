@@ -4,7 +4,7 @@ import test
   from 'node:test';
 import { createLinkGraph }
   from '../graph.js';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execGraph }
@@ -27,13 +27,13 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
-        await execGraph(environment);
+        await execGraph(context);
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'articles: 2\nlinks: 2\nexternal: 1\n');
       });
   });
@@ -48,15 +48,15 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execGraph(
-          environment,
+          context,
           { path: 'notes/budget.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'path: notes/budget.md',
             'title: The budget',
             'outgoing: 0',
@@ -76,17 +76,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execGraph(
-          environment,
+          context,
           { path: 'notes/plan.md',
             format: 'json' });
 
         const report =
           JSON.parse(
-            environment.stdout.toString()) as
+            context.environment.stdout.toString()) as
             { article: { title: string; };
               outgoing: { target: string; to: string[]; }[]; };
 
@@ -115,20 +115,20 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
-        environment.graph =
+        context.environment.graph =
           await createLinkGraph(library.path);
 
         await library.writeText(
           'notes/extra.md',
           '# Extra\n');
 
-        await execGraph(environment);
+        await execGraph(context);
 
         assert.match(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           /^articles: 2$/m);
       });
   });

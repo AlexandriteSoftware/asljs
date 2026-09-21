@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execWrite }
@@ -20,16 +20,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execWrite(
-          environment,
+          context,
           { path: 'notes/one.md',
             content: '# One\n' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'notes/one.md\n');
 
         assert.equal(
@@ -50,14 +50,14 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(
+        const context =
+          createTestContext(
             library,
             { readInput:
                 () => Promise.resolve('# Piped\n') });
 
         await execWrite(
-          environment,
+          context,
           { path: 'one.md' });
 
         assert.equal(
@@ -81,7 +81,7 @@ test(
         await assert.rejects(
           () =>
           execWrite(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'one.md' }),
           /No content provided/);
       });

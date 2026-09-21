@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execSearch }
@@ -23,19 +23,19 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execSearch(
-          environment,
+          context,
           { query: 'budget' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'notes/one.md:3:5: The budget line.\n');
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           undefined);
       });
   });
@@ -50,19 +50,19 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execSearch(
-          environment,
+          context,
           { query: 'missing' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           '');
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           1);
       });
   });
@@ -77,17 +77,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execSearch(
-          environment,
+          context,
           { query: 'one',
             format: 'json' });
 
         const report =
           JSON.parse(
-            environment.stdout.toString()) as
+            context.environment.stdout.toString()) as
             { searchedFiles: number; matches: unknown[]; };
 
         assert.equal(
@@ -110,16 +110,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execSearch(
-          environment,
+          context,
           { query: 'BUDGET',
             caseSensitive: true });
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           1);
       });
   });

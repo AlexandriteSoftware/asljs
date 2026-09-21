@@ -4,9 +4,30 @@ import test
   from 'node:test';
 import { runCli }
   from './cli.js';
+import { createInProcessClient }
+  from './mcp/client.js';
 import { createTestEnvironment,
          withLibrary }
   from './testing/library.js';
+
+/**
+ * The CLI reaches a server for every library command. Tests give it one in
+ * this process, so no second process is started.
+ */
+function testEnvironment(
+    library: Parameters<typeof createTestEnvironment>[0]
+  ): ReturnType<typeof createTestEnvironment>
+{
+  const environment =
+    createTestEnvironment(library);
+
+  environment.openClient =
+    () =>
+    Promise.resolve(
+      createInProcessClient(environment));
+
+  return environment;
+}
 
 const FILES =
   { 'notes/one.md':
@@ -23,7 +44,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -48,7 +69,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -74,9 +95,9 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(
-            library,
-            { library: 'unset' });
+          testEnvironment(library);
+
+        environment.library = 'unset';
 
         assert.equal(
           await runCli(
@@ -103,7 +124,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -138,7 +159,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -166,7 +187,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -192,7 +213,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -217,7 +238,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -243,7 +264,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         assert.equal(
           await runCli(
@@ -271,7 +292,7 @@ test(
         ) =>
       {
         const environment =
-          createTestEnvironment(library);
+          testEnvironment(library);
 
         const { execVersion } =
           await import('./commands/version.js');

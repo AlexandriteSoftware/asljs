@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execInfo }
@@ -19,15 +19,15 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execInfo(
-          environment,
+          context,
           { path: 'one.md' });
 
         const output =
-          environment.stdout.toString();
+          context.environment.stdout.toString();
 
         assert.match(
           output,
@@ -57,17 +57,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execInfo(
-          environment,
+          context,
           { path: 'one.md',
             format: 'json' });
 
         const summary =
           JSON.parse(
-            environment.stdout.toString()) as
+            context.environment.stdout.toString()) as
             { headings: number; };
 
         assert.equal(

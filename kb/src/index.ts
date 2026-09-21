@@ -97,10 +97,27 @@ export {
   handleMessage,
   PROTOCOL_VERSION,
   runMcpServer,
+  serveEndpoint,
   SERVER_NAME,
+  type EndpointServer,
   type JsonRpcMessage,
   type JsonRpcResponse
 } from './mcp/server.js';
+
+export {
+  connectToEndpoint,
+  createInProcessClient,
+  openClient,
+  startInternalServer,
+  type ClientKind,
+  type McpClient,
+  type OpenClientOptions
+} from './mcp/client.js';
+
+export {
+  endpointFor,
+  endpointIsFile
+} from './mcp/endpoint.js';
 
 export {
   main as runMcpMain

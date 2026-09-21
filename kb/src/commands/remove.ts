@@ -1,11 +1,8 @@
-import { Environment }
-  from '../environment.js';
-import { removeEntry }
-  from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface RemoveCommandOptions
 {
@@ -15,7 +12,7 @@ export interface RemoveCommandOptions
 }
 
 export async function execRemove(
-    environment: Environment,
+    context: CommandContext,
     options: RemoveCommandOptions
   ): Promise<void>
 {
@@ -23,20 +20,14 @@ export async function execRemove(
     resolveOutputFormat(options.format);
 
   const removed =
-    await removeEntry(
-      environment.library,
-      options.path,
-      { recursive: options.recursive === true });
+    await context.client.call(
+      'kb_remove',
+      { path: options.path,
+        recursive: options.recursive }) as { path: string; };
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      { path: removed });
-
-    return;
-  }
-
-  writeLine(
-    environment,
-    removed);
+  writeResult(
+    context.environment,
+    format,
+    removed,
+    [ removed.path ]);
 }

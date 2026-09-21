@@ -1,11 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { copyEntry }
+import { TransferResult }
   from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface CopyCommandOptions
 {
@@ -16,7 +15,7 @@ export interface CopyCommandOptions
 }
 
 export async function execCopy(
-    environment: Environment,
+    context: CommandContext,
     options: CopyCommandOptions
   ): Promise<void>
 {
@@ -24,21 +23,15 @@ export async function execCopy(
     resolveOutputFormat(options.format);
 
   const result =
-    await copyEntry(
-      environment.library,
-      options.source,
-      options.target,
-      { overwrite: options.overwrite === true });
+    await context.client.call(
+      'kb_copy',
+      { source: options.source,
+        target: options.target,
+        overwrite: options.overwrite }) as TransferResult;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      result);
-
-    return;
-  }
-
-  writeLine(
-    environment,
-    `${result.source} -> ${result.target}`);
+  writeResult(
+    context.environment,
+    format,
+    result,
+    [ `${result.source} -> ${result.target}` ]);
 }

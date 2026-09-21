@@ -64,6 +64,30 @@ export function writeLine(
 }
 
 /**
+ * Write a result in the requested format: the value as JSON, or the lines
+ * that render it as text.
+ */
+export function writeResult(
+    environment: Environment,
+    format: OutputFormat,
+    value: unknown,
+    lines: string[]
+  ): void
+{
+  if (format === 'json') {
+    writeJson(
+      environment,
+      value);
+
+    return;
+  }
+
+  writeLines(
+    environment,
+    lines);
+}
+
+/**
  * Write a list of lines. Nothing is written for an empty list.
  */
 export function writeLines(

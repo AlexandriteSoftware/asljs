@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execNew }
@@ -20,18 +20,18 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execNew(
-          environment,
+          context,
           { path: 'notes/idea',
             title: 'An idea',
             tags:
               [ 'inbox' ] });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'notes/idea.md\n');
 
         const text =
@@ -59,17 +59,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execNew(
-          environment,
+          context,
           { path: 'one.md',
             format: 'json' });
 
         assert.equal(
           JSON.parse(
-            environment.stdout.toString()).path,
+            context.environment.stdout.toString()).path,
           'one.md');
       });
   });

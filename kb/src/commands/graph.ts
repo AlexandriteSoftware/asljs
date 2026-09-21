@@ -1,94 +1,101 @@
-import { Environment }
-  from '../environment.js';
-import { createLinkGraph }
+import { Article,
+         GraphLink,
+         GraphStats }
   from '../graph.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface GraphCommandOptions
 {
   path?: string;
-  pattern?: string;
-  hidden?: boolean;
   format?: string;
 }
 
+interface ArticleReport
+{
+  article: Article | null;
+  outgoing: GraphLink[];
+  incoming: GraphLink[];
+}
+
 /**
- * Report the article and link collections.
- *
- * A one-shot command has no index to reuse, so it builds one, unless the host
- * already keeps one current.
+ * Report the article and link collections, or describe one article.
  */
 export async function execGraph(
-    environment: Environment,
+    context: CommandContext,
     options: GraphCommandOptions = {}
   ): Promise<void>
 {
   const format =
     resolveOutputFormat(options.format);
 
-  const graph =
-    environment.graph
-    ?? await createLinkGraph(
-      environment.library,
-      { pattern: options.pattern,
-        hidden: options.hidden === true });
+  const result =
+    await context.client.call(
+      'kb_graph',
+      { path: options.path });
 
   if (
     options.path === undefined
     || options.path === ''
   ) {
     const stats =
-      graph.stats();
+      result as GraphStats;
 
-    if (format === 'json') {
-      writeJson(
-        environment,
-        stats);
-
-      return;
-    }
-
-    writeLines(
-      environment,
-      [ `articles: ${stats.articles}`,
-        `links: ${stats.links}`,
-        `external: ${stats.external}` ]);
+    writeResult(
+      context.environment,
+      format,
+      stats,
+      describeStats(stats));
 
     return;
   }
 
-  const article =
-    graph.article(options.path) ?? null;
+  const report =
+    result as ArticleReport;
 
-  const outgoing =
-    graph.outgoing(options.path);
+  writeResult(
+    context.environment,
+    format,
+    report,
+    describeArticle(
+      options.path,
+      report));
+}
 
-  const incoming =
-    graph.incoming(options.path);
+function describeStats(
+    stats: GraphStats
+  ): string[]
+{
+  return [ `articles: ${stats.articles}`,
+           `links: ${stats.links}`,
+           `external: ${stats.external}` ];
+}
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      { article,
-        outgoing,
-        incoming });
+function describeArticle(
+    documentPath: string,
+    report: ArticleReport
+  ): string[]
+{
+  const lines =
+    [ `path: ${documentPath}`,
+      `title: ${report.article?.title ?? ''}`,
+      `outgoing: ${report.outgoing.length}` ];
 
-    return;
+  for (const link of report.outgoing) {
+    lines.push(
+      `  -> ${link.target} (line ${link.line})`);
   }
 
-  writeLines(
-    environment,
-    [ `path: ${options.path}`,
-      `title: ${article?.title ?? ''}`,
-      `outgoing: ${outgoing.length}`,
-      ...outgoing.map(
-        link =>
-        `  -> ${link.target} (line ${link.line})`),
-      `incoming: ${incoming.length}`,
-      ...incoming.map(
-        link =>
-        `  <- ${link.from}:${link.line}:${link.column} ${link.target}`) ]);
+  lines.push(
+    `incoming: ${report.incoming.length}`);
+
+  for (const link of report.incoming) {
+    lines.push(
+      `  <- ${link.from}:${link.line}:${link.column} ${link.target}`);
+  }
+
+  return lines;
 }

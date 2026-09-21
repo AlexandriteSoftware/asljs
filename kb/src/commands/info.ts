@@ -1,11 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { summarizeDocument }
+import { DocumentSummary }
   from '../notes.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface InfoCommandOptions
 {
@@ -14,7 +13,7 @@ export interface InfoCommandOptions
 }
 
 export async function execInfo(
-    environment: Environment,
+    context: CommandContext,
     options: InfoCommandOptions
   ): Promise<void>
 {
@@ -22,19 +21,21 @@ export async function execInfo(
     resolveOutputFormat(options.format);
 
   const summary =
-    await summarizeDocument(
-      environment.library,
-      environment.readers,
-      options.path);
+    await context.client.call(
+      'kb_info',
+      { path: options.path }) as DocumentSummary;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      summary);
+  writeResult(
+    context.environment,
+    format,
+    summary,
+    describe(summary));
+}
 
-    return;
-  }
-
+function describe(
+    summary: DocumentSummary
+  ): string[]
+{
   const lines =
     [ `path: ${summary.path}`,
       `kind: ${summary.kind}`,
@@ -43,15 +44,15 @@ export async function execInfo(
       `lines: ${summary.lines}`,
       `words: ${summary.words}` ];
 
-  if (summary.kind === 'markdown') {
-    lines.push(
-      `title: ${summary.title ?? ''}`,
-      `headings: ${summary.headings ?? 0}`,
-      `links: ${summary.links ?? 0}`,
-      `tasks: ${summary.tasks?.done ?? 0}/${summary.tasks?.total ?? 0}`);
+  if (summary.kind !== 'markdown') {
+    return lines;
   }
 
-  writeLines(
-    environment,
-    lines);
+  lines.push(
+    `title: ${summary.title ?? ''}`,
+    `headings: ${summary.headings ?? 0}`,
+    `links: ${summary.links ?? 0}`,
+    `tasks: ${summary.tasks?.done ?? 0}/${summary.tasks?.total ?? 0}`);
+
+  return lines;
 }

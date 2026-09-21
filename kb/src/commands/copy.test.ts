@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execCopy }
@@ -20,16 +20,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execCopy(
-          environment,
+          context,
           { source: 'one.md',
             target: 'archive/one.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'one.md -> archive/one.md\n');
 
         assert.equal(
@@ -50,18 +50,18 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execCopy(
-          environment,
+          context,
           { source: 'one.md',
             target: 'two.md',
             format: 'json' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           { source: 'one.md',
             target: 'two.md' });
       });

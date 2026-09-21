@@ -2,9 +2,13 @@ import { NullLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
+import { CommandContext }
+  from '../commands/context.js';
 import { createEnvironment,
          Environment }
   from '../environment.js';
+import { createInProcessClient }
+  from '../mcp/client.js';
 
 /**
  * Write a set of library files, keyed by library-relative path.
@@ -44,6 +48,27 @@ export async function withLibrary<T>(
   } finally {
     await library[Symbol.asyncDispose]();
   }
+}
+
+/**
+ * Create a command context for a temporary library.
+ *
+ * The client calls the tools in this process, which is the tool layer a
+ * command works through without the cost of a second process.
+ */
+export function createTestContext(
+    tmpDir: TmpDir,
+    environment: Partial<Environment> = {}
+  ): CommandContext
+{
+  const resolved =
+    createTestEnvironment(
+      tmpDir,
+      environment);
+
+  return { environment: resolved,
+           client:
+             createInProcessClient(resolved) };
 }
 
 /**

@@ -1,11 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { createFolder }
+import { LibraryEntry }
   from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface MkdirCommandOptions
 {
@@ -14,7 +13,7 @@ export interface MkdirCommandOptions
 }
 
 export async function execMkdir(
-    environment: Environment,
+    context: CommandContext,
     options: MkdirCommandOptions
   ): Promise<void>
 {
@@ -22,19 +21,13 @@ export async function execMkdir(
     resolveOutputFormat(options.format);
 
   const entry =
-    await createFolder(
-      environment.library,
-      options.path);
+    await context.client.call(
+      'kb_mkdir',
+      { path: options.path }) as LibraryEntry;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      entry);
-
-    return;
-  }
-
-  writeLine(
-    environment,
-    entry.path);
+  writeResult(
+    context.environment,
+    format,
+    entry,
+    [ entry.path ]);
 }

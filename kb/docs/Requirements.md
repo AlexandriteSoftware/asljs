@@ -4,6 +4,33 @@ KB is a knowledge base tool for a markdown library. It provides file and folder
 operations, full text search, formatting, and structured data extraction,
 through a command line interface and through an MCP server.
 
+## Structure
+
+The package has one implementation of every library operation, and it is
+reached in one way: as a tool on the MCP server.
+
+The command line interface is a client. It parses arguments, asks the server
+to carry the command out, and renders the answer. It performs no library
+operation itself.
+
+A client reaches a server in one of two ways:
+
+- if a server is already serving that library, it connects to it, and the
+  command is answered from that server's index;
+- otherwise it starts a server for that one command, and shuts it down when
+  the command is done.
+
+The address of a server is derived from the library root, so a client finds
+one without configuration and without a discovery file. A refused connection
+means no server is there. A peer that answers but does not identify itself as
+a knowledge base server is treated as no server.
+
+A server started for one command is started without an index, because
+building one to answer a single question costs more than the question.
+
+Two commands do not go through a server, because they describe the tool
+rather than the library: the version, and the configuration.
+
 ## Library
 
 All work happens inside one library root.
@@ -233,9 +260,8 @@ that reports no file name, triggers a rebuild. Recursive watching is not
 available on every platform; where it cannot start, the failure is logged and
 the index stops following changes rather than failing the host.
 
-The MCP server indexes at startup and watches. The CLI does not: a one-shot
-process has no index to reuse, so it scans directly, and a CLI command that
-needs the collections builds an index for that one request.
+A server indexes at startup and watches, unless it was told not to. A server
+started to answer one command is told not to, and answers by scanning.
 
 Backlinks are answered from the index when a host keeps one, and by a direct
 scan otherwise. Both paths apply the same resolution rules and return the same
@@ -264,8 +290,16 @@ over `KB_LOG_LEVEL` and `KB_LOG_FILE`.
 
 ## MCP Server
 
-The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 over stdio
-and implements `initialize`, `tools/list` and `tools/call`.
+The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 and
+implements `initialize`, `tools/list` and `tools/call`.
+
+It serves standard input, and, when asked to listen, an address as well. Each
+connection to that address is an independent stream over the same library and
+the same index. A server that only serves standard input is done when standard
+input ends; one that listens outlives it and stops on SIGINT or SIGTERM.
+
+A socket file outlives the process that listened on it, so one left by a
+previous run is cleared before listening and removed on shutdown.
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
 `kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`,

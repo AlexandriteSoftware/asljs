@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execMove }
@@ -25,16 +25,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execMove(
-          environment,
+          context,
           { source: 'notes/budget.md',
             target: 'archive/budget.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'move notes/budget.md -> archive/budget.md',
             'update notes/plan.md:3:5 budget.md -> ../archive/budget.md',
             '' ].join('\n'));
@@ -57,17 +57,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execMove(
-          environment,
+          context,
           { source: 'notes/budget.md',
             target: 'archive/budget.md',
             updateLinks: false });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'notes/budget.md -> archive/budget.md\n');
 
         assert.equal(
@@ -88,17 +88,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execMove(
-          environment,
+          context,
           { source: 'notes/budget.md',
             target: 'archive/budget.md',
             dryRun: true });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'would move notes/budget.md -> archive/budget.md',
             'would update notes/plan.md:3:5 budget.md -> '
             + '../archive/budget.md',
@@ -123,19 +123,19 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await assert.rejects(
           () =>
           execMove(
-            environment,
+            context,
             { source: 'one.md',
               target: 'two.md' }),
           /Target already exists/);
 
         await execMove(
-          environment,
+          context,
           { source: 'one.md',
             target: 'two.md',
             overwrite: true,
@@ -143,7 +143,7 @@ test(
 
         assert.equal(
           JSON.parse(
-            environment.stdout.toString()).target,
+            context.environment.stdout.toString()).target,
           'two.md');
       });
   });

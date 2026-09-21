@@ -1,3 +1,7 @@
+import fs
+  from 'node:fs/promises';
+import { createServer }
+  from 'node:net';
 import { Readable }
   from 'node:stream';
 import { Logger }
@@ -6,6 +10,8 @@ import { Environment }
   from '../environment.js';
 import { packageVersion }
   from '../commands/version.js';
+import { endpointIsFile }
+  from './endpoint.js';
 import { createTools,
          McpTool }
   from './tools.js';
@@ -146,6 +152,82 @@ export async function runMcpServer(
         resolve));
 
   await Promise.all(pending);
+}
+
+export interface EndpointServer
+{
+  close: () => Promise<void>;
+}
+
+/**
+ * Serve the tools on an endpoint, so that a client can find this server
+ * instead of starting one of its own.
+ *
+ * Each connection is an independent JSON-RPC stream over the same library and
+ * the same index.
+ */
+export async function serveEndpoint(
+    environment: Environment,
+    endpoint: string
+  ): Promise<EndpointServer>
+{
+  await removeStaleEndpoint(endpoint);
+
+  const server =
+    createServer(
+      (
+          socket
+        ) =>
+      {
+        void runMcpServer(
+          environment,
+          socket,
+          line => socket.write(line));
+      });
+
+  await new Promise<void>(
+    (
+        resolve,
+        reject
+      ) =>
+    {
+      server.once(
+        'error',
+        reject);
+
+      server.listen(
+        endpoint,
+        resolve);
+    });
+
+  return { close:
+             (): Promise<void> =>
+           new Promise<void>(
+             (
+                 resolve
+               ) =>
+             {
+               server.close(() => resolve());
+             })
+             .then(
+               () => removeStaleEndpoint(endpoint)) };
+}
+
+/**
+ * A socket file outlives the process that listened on it, so a previous run
+ * leaves one behind that has to be cleared before listening again.
+ */
+async function removeStaleEndpoint(
+    endpoint: string
+  ): Promise<void>
+{
+  if (!endpointIsFile(endpoint)) {
+    return;
+  }
+
+  await fs.rm(
+    endpoint,
+    { force: true });
 }
 
 async function respond(

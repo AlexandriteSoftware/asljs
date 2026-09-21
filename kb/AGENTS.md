@@ -5,13 +5,27 @@
 Use this file as AI-facing guidance for `asljs-kb`.
 
 This package manages a markdown knowledge base: file and folder operations,
-full text search, formatting, and structured data extraction, exposed through
-the `kb` CLI and the `kb-mcp` MCP server.
+full text search, formatting, and structured data extraction.
+
+There is one way in: the MCP server. The `kb` CLI is a client of it, not a
+second implementation.
 
 ## AI Quick Reference
 
 Public behavior at a glance:
 
+- the CLI carries out no library operation itself; it connects to a running
+  server, or starts one for that command and shuts it down
+- a server is found at an address derived from the library root, so nothing is
+  configured and no discovery file is written
+- `kb-mcp --listen` leaves a server running; it outlives its standard input
+  and stops on SIGINT or SIGTERM
+- `--no-index` starts a server without an index, which is what the CLI does
+  for a server it starts for one command
+- `version` and `config` are the only CLI commands that do not go through a
+  server, because they describe the tool rather than the library
+- argument validation belongs to the tools, so the CLI passes values through
+  and reports what the server rejects
 - every operation happens inside one library root, resolved from `--library`,
   then `KB_LIBRARY`, then the working directory
 - paths are library-relative POSIX paths, and a path that escapes the library
@@ -72,7 +86,9 @@ Do not assume:
 - that scanned PDF files are searchable; there is no OCR
 - that `format` rewrites YAML front matter; it does not
 - that internal modules such as `output.js` are part of the public API
-- that `environment.graph` is always set; it is absent in a one-shot process
+- that `environment.graph` is always set; it is absent in a server started
+  with `--no-index`
+- that a CLI command can call a core function directly; it calls a tool
 - that the index is authoritative for file content; it holds links and titles,
   not text
 - that `moveEntry` repairs links; only `relocateEntry` does
@@ -83,6 +99,11 @@ Do not assume:
 
 - Use `runCli(...)` for the behavior of the `kb` executable, and
   `runMcpServer(...)` for the behavior of `kb-mcp`.
+- Use `openClient(...)` to reach a library the way the CLI does, and
+  `createInProcessClient(...)` when a test needs the tool layer without a
+  process.
+- Add a capability as a tool first. A CLI command is a caller of a tool, so a
+  command without a tool cannot exist.
 - Use `resolveLibraryPath` and `toLibraryPath` rather than joining paths, so
   that containment stays enforced.
 - Use `listEntries` rather than walking the filesystem, so that the exclusion
@@ -112,6 +133,10 @@ Do not assume:
   numbers differently for non-verbatim readers.
 - If changing a CLI command, then re-check the text and the JSON output, and
   the exit code for `search`, `backlinks` and `format --check`.
+- If adding a CLI command, then add the tool it calls; never reach past the
+  client into the library.
+- If changing the client, then re-check that closing it releases the socket
+  and stops a server it started, or the process will not exit.
 - If changing link extraction, then re-check `backlinks.ts`, which resolves
   `ExtractedLink` targets into library paths, and `graph.ts`, which indexes
   what it resolves.

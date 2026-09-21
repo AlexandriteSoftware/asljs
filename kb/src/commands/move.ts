@@ -1,13 +1,12 @@
-import { Environment }
-  from '../environment.js';
-import { moveEntry }
+import { TransferResult }
   from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLines }
+         writeResult }
   from '../output.js';
-import { relocateEntry }
+import { RelocateResult }
   from '../relocate.js';
+import { CommandContext }
+  from './context.js';
 import { renderRelocation }
   from './rename.js';
 
@@ -27,54 +26,41 @@ export interface MoveCommandOptions
 }
 
 export async function execMove(
-    environment: Environment,
+    context: CommandContext,
     options: MoveCommandOptions
   ): Promise<void>
 {
   const format =
     resolveOutputFormat(options.format);
 
-  if (options.updateLinks === false) {
-    const result =
-      await moveEntry(
-        environment.library,
-        options.source,
-        options.target,
-        { overwrite: options.overwrite === true });
-
-    if (format === 'json') {
-      writeJson(
-        environment,
-        result);
-
-      return;
-    }
-
-    writeLines(
-      environment,
-      [ `${result.source} -> ${result.target}` ]);
-
-    return;
-  }
-
   const result =
-    await relocateEntry(
-      environment.library,
-      options.source,
-      options.target,
-      { overwrite: options.overwrite === true,
-        dryRun: options.dryRun === true,
-        graph: environment.graph });
+    await context.client.call(
+      'kb_move',
+      { source: options.source,
+        target: options.target,
+        overwrite: options.overwrite,
+        updateLinks: options.updateLinks,
+        dryRun: options.dryRun });
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      result);
+  if (options.updateLinks === false) {
+    const transfer =
+      result as TransferResult;
+
+    writeResult(
+      context.environment,
+      format,
+      transfer,
+      [ `${transfer.source} -> ${transfer.target}` ]);
 
     return;
   }
 
-  writeLines(
-    environment,
-    renderRelocation(result));
+  const relocation =
+    result as RelocateResult;
+
+  writeResult(
+    context.environment,
+    format,
+    relocation,
+    renderRelocation(relocation));
 }

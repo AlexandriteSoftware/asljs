@@ -1,11 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { createNote }
-  from '../notes.js';
+import { LibraryEntry }
+  from '../files.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface NewCommandOptions
 {
@@ -18,7 +17,7 @@ export interface NewCommandOptions
 }
 
 export async function execNew(
-    environment: Environment,
+    context: CommandContext,
     options: NewCommandOptions
   ): Promise<void>
 {
@@ -26,23 +25,17 @@ export async function execNew(
     resolveOutputFormat(options.format);
 
   const entry =
-    await createNote(
-      environment.library,
-      options.path,
-      { title: options.title,
+    await context.client.call(
+      'kb_new',
+      { path: options.path,
+        title: options.title,
         tags: options.tags,
         body: options.body,
-        overwrite: options.overwrite === true });
+        overwrite: options.overwrite }) as LibraryEntry;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      entry);
-
-    return;
-  }
-
-  writeLine(
-    environment,
-    entry.path);
+  writeResult(
+    context.environment,
+    format,
+    entry,
+    [ entry.path ]);
 }

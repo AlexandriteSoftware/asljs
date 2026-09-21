@@ -1,12 +1,10 @@
-import { Environment }
-  from '../environment.js';
-import { formatLibrary }
+import { FormatReport }
   from '../format.js';
 import { resolveOutputFormat,
-         writeJson,
-         writeLine,
-         writeLines }
+         writeResult }
   from '../output.js';
+import { CommandContext }
+  from './context.js';
 
 export interface FormatCommandOptions
 {
@@ -23,7 +21,7 @@ export interface FormatCommandOptions
 }
 
 export async function execFormat(
-    environment: Environment,
+    context: CommandContext,
     options: FormatCommandOptions = {}
   ): Promise<void>
 {
@@ -34,40 +32,68 @@ export async function execFormat(
     options.check === true;
 
   const report =
-    await formatLibrary(
-      environment.library,
+    await context.client.call(
+      'kb_format',
       { pattern: options.pattern,
         write: !check,
-        hidden: options.hidden === true });
+        hidden: options.hidden }) as FormatReport;
 
-  if (format === 'json') {
-    writeJson(
-      environment,
-      report);
-  } else {
-    writeLines(
-      environment,
-      report.files
-        .filter(
-          file => file.changed)
-        .map(
-          file =>
-          check
-            ? `would reformat ${file.path}`
-            : `formatted ${file.path}`));
-
-    writeLine(
-      environment,
-      `${report.changed} of ${report.files.length} file(s) ${
-        check
-          ? 'need formatting'
-          : 'formatted'}`);
-  }
+  writeResult(
+    context.environment,
+    format,
+    report,
+    describe(
+      report,
+      check));
 
   if (
     check
     && report.changed > 0
   ) {
-    environment.exitCode = 1;
+    context.environment.exitCode = 1;
   }
+}
+
+function describe(
+    report: FormatReport,
+    check: boolean
+  ): string[]
+{
+  const lines: string[] = [ ];
+
+  for (const file of report.files) {
+    if (!file.changed) {
+      continue;
+    }
+
+    lines.push(
+      `${verb(check)} ${file.path}`);
+  }
+
+  lines.push(
+    `${report.changed} of ${report.files.length} file(s) ${summary(check)}`);
+
+  return lines;
+}
+
+function verb(
+    check: boolean
+  ): string
+{
+  if (check) {
+    return 'would reformat';
+  }
+
+  return 'formatted';
+}
+
+function summary(
+    check: boolean
+  ): string
+{
+  if (check) {
+    return 'need formatting';
+  }
+
+  return 'formatted';
 }

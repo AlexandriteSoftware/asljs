@@ -4,7 +4,7 @@ import fs
   from 'node:fs/promises';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execFormat }
@@ -21,13 +21,13 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
-        await execFormat(environment);
+        await execFormat(context);
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'formatted one.md\n1 of 1 file(s) formatted\n');
 
         assert.equal(
@@ -49,19 +49,19 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execFormat(
-          environment,
+          context,
           { check: true });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           'would reformat one.md\n1 of 1 file(s) need formatting\n');
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           1);
 
         assert.equal(
@@ -82,16 +82,16 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execFormat(
-          environment,
+          context,
           { format: 'json' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           { files:
               [ { path: 'one.md',
                   changed: false } ],

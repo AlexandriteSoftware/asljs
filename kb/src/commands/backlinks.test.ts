@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execBacklinks }
@@ -25,21 +25,21 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execBacklinks(
-          environment,
+          context,
           { path: 'notes/budget.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           [ 'inbox/quick.md:3:6: wiki budget',
             'notes/plan.md:3:5: inline budget.md',
             '' ].join('\n'));
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           undefined);
       });
   });
@@ -54,19 +54,19 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execBacklinks(
-          environment,
+          context,
           { path: 'notes/orphan.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           '');
 
         assert.equal(
-          environment.exitCode,
+          context.environment.exitCode,
           1);
       });
   });
@@ -81,18 +81,18 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execBacklinks(
-          environment,
+          context,
           { path: 'notes/budget.md',
             pattern: 'notes/**/*.md',
             format: 'json' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           [ { path: 'notes/plan.md',
               line: 3,
               column: 5,

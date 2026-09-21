@@ -2,7 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestEnvironment,
+import { createTestContext,
          withLibrary }
   from '../testing/library.js';
 import { execRead }
@@ -18,15 +18,15 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execRead(
-          environment,
+          context,
           { path: 'one.md' });
 
         assert.equal(
-          environment.stdout.toString(),
+          context.environment.stdout.toString(),
           '# One\n');
       });
   });
@@ -41,17 +41,17 @@ test(
           library
         ) =>
       {
-        const environment =
-          createTestEnvironment(library);
+        const context =
+          createTestContext(library);
 
         await execRead(
-          environment,
+          context,
           { path: 'one.md',
             format: 'json' });
 
         assert.deepEqual(
           JSON.parse(
-            environment.stdout.toString()),
+            context.environment.stdout.toString()),
           { path: 'one.md',
             reader: 'text',
             verbatim: true,
@@ -73,14 +73,14 @@ test(
         await assert.rejects(
           () =>
           execRead(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'notes' }),
           /Not a file/);
 
         await assert.rejects(
           () =>
           execRead(
-            createTestEnvironment(library),
+            createTestContext(library),
             { path: 'image.bin' }),
           /Unsupported file type/);
       });
