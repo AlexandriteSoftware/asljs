@@ -158,8 +158,48 @@ them.
 Each backlink carries the path of the linking document, a one-based line and
 column, the link kind, the target as written, and the link text.
 
-Moving an entry does not rewrite the links that point at it. Backlinks report
-what a move or a removal would break; the edit is left to the caller.
+Backlinks report what a move or a removal would break. A move repairs them; a
+removal leaves them, since there is nothing to point at.
+
+## Moving And Renaming
+
+A relocation is a move that keeps the library's links valid. A rename is a
+relocation inside the folder the entry already sits in, and rejects a name that
+carries a path separator.
+
+Two sets of links change, and both are rewritten:
+
+- the links in other documents that point at the moved entry;
+- the relative links inside a moved document, which were relative to the folder
+  it left.
+
+A folder move carries every file it holds, so each contributes one old path to
+new path pair. A link between two documents that moved together keeps its
+relative path and is left alone.
+
+Rewriting keeps the style a link was written in:
+
+- a target starting with `/` stays root-absolute;
+- a target written without an extension stays without one;
+- a fragment or query string survives unchanged;
+- a wiki link written as a bare name changes only when the name changes, and
+  keeps its alias;
+- a reference use is never rewritten, because it carries no path; its
+  definition is.
+
+Links that are not rewritten:
+
+- a link whose destination cannot be resolved, which is left alone rather than
+  guessed at;
+- a link that needs an edit but cannot be located in the source. It is reported
+  as skipped, and its document is left untouched, so nothing is written blind.
+
+A dry run reports the move and every edit without performing either. Link
+rewriting can be switched off, which reduces the operation to a plain move.
+
+When a host keeps an index, a relocation updates it for the entries that moved
+and the documents that changed, so the index is current as soon as the call
+returns rather than when the watcher catches up.
 
 ## Link Index
 
@@ -204,8 +244,8 @@ answers.
 ## Command Line Interface
 
 The CLI is `kb`. Commands are `list`, `read`, `write`, `new`, `mkdir`, `move`,
-`copy`, `remove`, `search`, `backlinks`, `graph`, `format`, `extract`, `info`,
-`config` and `version`.
+`rename`, `copy`, `remove`, `search`, `backlinks`, `graph`, `format`,
+`extract`, `info`, `config` and `version`.
 
 Output format is `text` or `json`, chosen with the global `--format` option.
 `extract` defaults to `json`, because its result is structured data; every
@@ -228,9 +268,10 @@ The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 over stdio
 and implements `initialize`, `tools/list` and `tools/call`.
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
-`kb_format`, `kb_extract` and `kb_info`. Each declares a JSON Schema for its
-arguments, validates them, and returns its result as JSON text.
+`kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`,
+`kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each declares a JSON
+Schema for its arguments, validates them, and returns its result as JSON
+text.
 
 The server indexes the library before serving its first request, and watches it
 afterwards, so link questions are answered from memory.

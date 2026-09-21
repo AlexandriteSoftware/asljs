@@ -2,6 +2,9 @@ import { findBacklinks }
   from '../backlinks.js';
 import { createLinkGraph }
   from '../graph.js';
+import { relocateEntry,
+         renameEntry }
+  from '../relocate.js';
 import { Environment }
   from '../environment.js';
 import { EntryKind,
@@ -227,25 +230,124 @@ export function createTools(
             'path')) },
            { name: 'kb_move',
              description:
-               'Move or rename a file or folder. When the target is an '
-               + 'existing '
-        + 'folder, the source is moved into it.',
+               'Move or rename a file or folder, rewriting the links the move '
+               + 'would otherwise break, in the documents that point at it '
+               + 'and inside the documents that moved. Set updateLinks to '
+               + 'false to move without touching any link.',
              inputSchema:
-               transferSchema(),
+               objectSchema(
+                 { source:
+                     stringProperty(
+                       'Library-relative path of the entry to move.'),
+                   target:
+                     stringProperty(
+                       'Library-relative path of the destination.'),
+                   overwrite:
+                     booleanProperty(
+                       'Replace the target when it already exists.'),
+                   updateLinks:
+                     booleanProperty(
+                       'Rewrite the links the move would break. Defaults to '
+                       + 'true.'),
+                   dryRun:
+                     booleanProperty(
+                       'Report the move and the edits without performing '
+                       + 'them.') },
+                 [ 'source',
+                   'target' ]),
+             invoke:
+               async (
+                   args
+                 ) =>
+               {
+               const updateLinks =
+                 optionalBoolean(
+                   args,
+                   'updateLinks');
+
+               const overwrite =
+                 optionalBoolean(
+                   args,
+                   'overwrite');
+
+               if (updateLinks === false) {
+                 return await moveEntry(
+                   environment.library,
+                   requireString(
+                     args,
+                     'source'),
+                   requireString(
+                     args,
+                     'target'),
+                   { overwrite });
+               }
+
+               return await relocateEntry(
+                 environment.library,
+                 requireString(
+                   args,
+                   'source'),
+                 requireString(
+                   args,
+                   'target'),
+                 { overwrite,
+                   dryRun:
+                     optionalBoolean(
+                       args,
+                       'dryRun'),
+                   graph: environment.graph });
+             } },
+
+           { name: 'kb_rename',
+             description:
+               'Rename an entry inside the folder it already sits in, '
+               + 'rewriting the links the rename would otherwise break, wiki '
+               + 'links included.',
+             inputSchema:
+               objectSchema(
+                 { path:
+                     stringProperty(
+                       'Library-relative path of the entry to rename.'),
+                   name:
+                     stringProperty(
+                       'New name, without a folder.'),
+                   overwrite:
+                     booleanProperty(
+                       'Replace the target when it already exists.'),
+                   updateLinks:
+                     booleanProperty(
+                       'Rewrite the links the rename would break. Defaults '
+                       + 'to true.'),
+                   dryRun:
+                     booleanProperty(
+                       'Report the rename and the edits without performing '
+                       + 'them.') },
+                 [ 'path',
+                   'name' ]),
              invoke:
                async args =>
-        await moveEntry(
-          environment.library,
-          requireString(
-            args,
-            'source'),
-          requireString(
-            args,
-            'target'),
-          { overwrite:
-              optionalBoolean(
-                args,
-                'overwrite') }) },
+               await renameEntry(
+                 environment.library,
+                 requireString(
+                   args,
+                   'path'),
+                 requireString(
+                   args,
+                   'name'),
+                 { overwrite:
+                     optionalBoolean(
+                       args,
+                       'overwrite'),
+                   updateLinks:
+                     optionalBoolean(
+                       args,
+                       'updateLinks'),
+                   dryRun:
+                     optionalBoolean(
+                       args,
+                       'dryRun'),
+                   graph: environment.graph }) },
+
            { name: 'kb_copy',
              description:
                'Copy a file or folder. When the target is an existing folder, '

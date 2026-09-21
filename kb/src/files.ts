@@ -404,6 +404,37 @@ export async function removeEntry(
     absolute);
 }
 
+/**
+ * Resolve the final path of a move or a copy, without performing it.
+ *
+ * When the target is an existing folder, the entry lands inside it under its
+ * own name, so the caller cannot work the destination out by path math alone.
+ */
+export async function resolveTransferTarget(
+    root: string,
+    source: string,
+    target: string
+  ): Promise<string>
+{
+  const absoluteSource =
+    resolveLibraryPath(
+      root,
+      source);
+
+  const requestedTarget =
+    resolveLibraryPath(
+      root,
+      target);
+
+  return toLibraryPath(
+    root,
+    await isFolder(requestedTarget)
+      ? path.join(
+        requestedTarget,
+        path.basename(absoluteSource))
+      : requestedTarget);
+}
+
 async function planTransfer(
     root: string,
     source: string,

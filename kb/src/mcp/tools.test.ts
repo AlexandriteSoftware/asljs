@@ -55,6 +55,7 @@ test(
             'kb_new',
             'kb_mkdir',
             'kb_move',
+            'kb_rename',
             'kb_copy',
             'kb_remove',
             'kb_search',
@@ -154,7 +155,8 @@ test(
             'kb_move')
             .invoke(
               { source: 'notes/one.md',
-                target: 'archive/one.md' }),
+                target: 'archive/one.md',
+                updateLinks: false }),
           { source: 'notes/one.md',
             target: 'archive/one.md' });
 
@@ -178,6 +180,92 @@ test(
             library.resolve('notes/two.md'),
             'utf8'),
           /# Two/);
+      });
+  });
+
+test(
+  'kb_move rewrites the links it would break',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n',
+        'notes/plan.md':
+          '# Plan\n\nSee [budget](budget.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        environment.graph =
+          await createLinkGraph(library.path);
+
+        const tools =
+          createTools(environment);
+
+        const result =
+          await toolNamed(
+            tools,
+            'kb_move')
+            .invoke(
+              { source: 'notes/budget.md',
+                target: 'archive/budget.md' }) as
+            { target: string;
+              files: { path: string; edits: unknown[]; }[]; };
+
+        assert.equal(
+          result.target,
+          'archive/budget.md');
+
+        assert.deepEqual(
+          result.files.map(
+            file => [ file.path,
+                      file.edits.length ]),
+          [ [ 'notes/plan.md',
+              1 ] ]);
+
+        assert.equal(
+          await fs.readFile(
+            library.resolve('notes/plan.md'),
+            'utf8'),
+          '# Plan\n\nSee [budget](../archive/budget.md).\n');
+
+        // The index follows the move without waiting for the watcher.
+        assert.equal(
+          environment.graph.article('archive/budget.md')?.title,
+          'Budget');
+      });
+  });
+
+test(
+  'kb_rename rewrites wiki links to the renamed document',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n',
+        'inbox/quick.md':
+          '# Quick\n\nSee [[budget]].\n' },
+      async (
+          library
+        ) =>
+      {
+        const tools =
+          createTools(
+            createTestEnvironment(library));
+
+        await toolNamed(
+          tools,
+          'kb_rename')
+          .invoke(
+            { path: 'notes/budget.md',
+              name: 'finance.md' });
+
+        assert.equal(
+          await fs.readFile(
+            library.resolve('inbox/quick.md'),
+            'utf8'),
+          '# Quick\n\nSee [[finance]].\n');
       });
   });
 

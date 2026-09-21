@@ -20,6 +20,7 @@ export {
   createFolder,
   DEFAULT_EXCLUDES,
   listEntries,
+  resolveTransferTarget,
   moveEntry,
   readTextFile,
   removeEntry,
@@ -84,6 +85,7 @@ export {
 
 export {
   documentLine,
+  documentOffset,
   formatMarkdown,
   parseMarkdown,
   splitFrontMatter,
@@ -135,6 +137,23 @@ export {
   TEXT_EXTENSIONS,
   TextReader
 } from './readers/text-reader.js';
+
+export {
+  relocateEntry,
+  renameEntry,
+  type RelocatedFile,
+  type RelocateOptions,
+  type RelocateResult
+} from './relocate.js';
+
+export {
+  retarget,
+  rewriteLinks,
+  type LinkEdit,
+  type PathMapping,
+  type RewriteResult,
+  type SkippedLink
+} from './link-rewrite.js';
 
 export {
   searchLibrary,

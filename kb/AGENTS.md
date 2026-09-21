@@ -25,6 +25,11 @@ Public behavior at a glance:
   for verbatim readers and the extracted text for PDF
 - `move` and `copy` place the source inside the target when the target is an
   existing folder, and otherwise treat the target as the final path
+- `kb move` and `kb rename` rewrite the links the move would break, in the
+  documents that point at the entry and inside the documents that moved;
+  `--no-update-links` moves without touching a link
+- `moveEntry` is the plain filesystem move and touches no link; `relocateEntry`
+  is the one that repairs the library
 - an existing target is never replaced unless `overwrite` is set
 - `remove` refuses a non-empty folder unless `recursive` is set, and always
   refuses the library root
@@ -70,8 +75,9 @@ Do not assume:
 - that `environment.graph` is always set; it is absent in a one-shot process
 - that the index is authoritative for file content; it holds links and titles,
   not text
-- that moving an entry repairs the links that point at it; it does not, and
-  `findBacklinks` is what reports them
+- that `moveEntry` repairs links; only `relocateEntry` does
+- that every link is rewritten; one that cannot be resolved, or cannot be
+  located in the source, is reported and left alone
 
 ## Preferred Usage Patterns
 
@@ -85,6 +91,8 @@ Do not assume:
   with regular expressions.
 - Use `findBacklinks` rather than grepping for a file name, because a raw
   search misses relative paths, root paths and wiki names.
+- Use `relocateEntry` to move a document, and `moveEntry` only when links must
+  stay exactly as they are.
 - Use `LinkGraph` when the process outlives one request; use `findBacklinks`
   when it does not.
 - Use `createDefaultReaderRegistry` to get the supported file types, and
@@ -109,6 +117,10 @@ Do not assume:
   what it resolves.
 - If changing link resolution, then keep the direct scan and the index in
   agreement; `graph.test.ts` asserts they answer identically.
+- If changing link resolution, then re-check `link-rewrite.ts`, which turns a
+  resolved target back into a target as written.
+- If changing markdown parsing, then re-check `bodyOffset`, because rewriting
+  edits the source by node offset.
 - If changing the index, then re-check `remove`, because a stale entry in an
   incoming index outlives the document that wrote it.
 - If adding or renaming a public export, then update `src/index.test.ts`, which
@@ -135,5 +147,5 @@ npm -w kb run build
 - `asljs-kb` does not index or cache; every command reads the filesystem.
 - `asljs-kb` does not render markdown to HTML.
 - `asljs-kb` does not perform OCR, and does not write PDF files.
-- `asljs-kb` does not rewrite links when an entry is moved; `kb backlinks`
-  reports them, and the edit is left to the caller.
+- `asljs-kb` rewrites links only for a move or a rename; it does not repair
+  links that were already broken.

@@ -1,5 +1,7 @@
 import assert
   from 'node:assert/strict';
+import fs
+  from 'node:fs/promises';
 import test
   from 'node:test';
 import { createTestEnvironment,
@@ -8,12 +10,17 @@ import { createTestEnvironment,
 import { execMove }
   from './move.js';
 
+const FILES =
+  { 'notes/budget.md': '# Budget\n',
+    'notes/plan.md':
+      '# Plan\n\nSee [budget](budget.md).\n' };
+
 test(
-  'move prints the source and the target',
+  'move reports the transfer and every link it rewrote',
   async () =>
   {
     await withLibrary(
-      { 'one.md': '# One\n' },
+      FILES,
       async (
           library
         ) =>
@@ -23,12 +30,85 @@ test(
 
         await execMove(
           environment,
-          { source: 'one.md',
-            target: 'notes/one.md' });
+          { source: 'notes/budget.md',
+            target: 'archive/budget.md' });
 
         assert.equal(
           environment.stdout.toString(),
-          'one.md -> notes/one.md\n');
+          [ 'move notes/budget.md -> archive/budget.md',
+            'update notes/plan.md:3:5 budget.md -> ../archive/budget.md',
+            '' ].join('\n'));
+
+        assert.equal(
+          await fs.readFile(
+            library.resolve('notes/plan.md'),
+            'utf8'),
+          '# Plan\n\nSee [budget](../archive/budget.md).\n');
+      });
+  });
+
+test(
+  'move leaves links alone when asked',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        await execMove(
+          environment,
+          { source: 'notes/budget.md',
+            target: 'archive/budget.md',
+            updateLinks: false });
+
+        assert.equal(
+          environment.stdout.toString(),
+          'notes/budget.md -> archive/budget.md\n');
+
+        assert.equal(
+          await fs.readFile(
+            library.resolve('notes/plan.md'),
+            'utf8'),
+          '# Plan\n\nSee [budget](budget.md).\n');
+      });
+  });
+
+test(
+  'move reports a dry run without changing anything',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        await execMove(
+          environment,
+          { source: 'notes/budget.md',
+            target: 'archive/budget.md',
+            dryRun: true });
+
+        assert.equal(
+          environment.stdout.toString(),
+          [ 'would move notes/budget.md -> archive/budget.md',
+            'would update notes/plan.md:3:5 budget.md -> '
+            + '../archive/budget.md',
+            '' ].join('\n'));
+
+        assert.equal(
+          await fs.readFile(
+            library.resolve('notes/plan.md'),
+            'utf8'),
+          '# Plan\n\nSee [budget](budget.md).\n');
       });
   });
 

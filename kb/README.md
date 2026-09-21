@@ -100,7 +100,10 @@ File and folder operations:
 - `kb new <path>` - create a markdown note with front matter; `.md` is added
   when the path has no extension.
 - `kb mkdir <path>` - create a folder, including missing parents.
-- `kb move <source> <target>` - move or rename an entry.
+- `kb move <source> <target>` - move an entry, rewriting the links it would
+  break.
+- `kb rename <path> <name>` - rename an entry in place, rewriting the links it
+  would break.
 - `kb copy <source> <target>` - copy an entry.
 - `kb remove <path>` - remove an entry; `--recursive` is required for a
   non-empty folder.
@@ -150,8 +153,8 @@ kb move notes/one.md archive/two.md # archive/two.md
 
 An existing target is never replaced unless `--overwrite` is given.
 
-Moving an entry does not rewrite the links that point at it. Run
-`kb backlinks` first to see what a move would break.
+`kb move` and `kb rename` rewrite the links the move would otherwise break.
+See [Moving With Links](#moving-with-links).
 
 ## Search
 
@@ -184,6 +187,52 @@ to the whole file, front matter included.
 - `front-matter` - the parsed YAML mapping, or `null`.
 - `all` - every kind above, in one object.
 
+## Moving With Links
+
+`kb move` and `kb rename` repair the library as they go, in both directions:
+
+- the links elsewhere that point at the moved entry are retargeted to where it
+  now sits;
+- the relative links inside a moved document are rewritten, because they were
+  relative to the folder it left.
+
+```bash
+kb rename notes/budget.md finance.md
+```
+
+```text
+move notes/budget.md -> notes/finance.md
+update inbox/one.md:3:5 ../notes/budget.md -> ../notes/finance.md
+update inbox/one.md:3:38 budget -> finance
+```
+
+A folder move carries every document inside it, so links that cross the folder
+boundary are repaired while links between two documents that moved together are
+left alone:
+
+```bash
+kb move notes archive/notes
+```
+
+```text
+move notes -> archive/notes
+update archive/notes/budget.md:3:29 ../inbox/one.md -> ../../inbox/one.md
+update inbox/one.md:3:5 ../notes/budget.md -> ../archive/notes/budget.md
+```
+
+Rewriting keeps the style a link was written in: a root-absolute target stays
+root-absolute, a target written without an extension stays without one, and a
+fragment or query string survives. A wiki link written as a bare name only
+changes when the name changes, which makes a rename rewrite it and a move leave
+it alone; its alias is kept.
+
+Use `--dry-run` to see the move and every edit without performing either, and
+`--no-update-links` to move without touching any link.
+
+A link whose destination cannot be resolved is left alone rather than guessed
+at. A link that needs an edit but cannot be located in the source is reported
+as `skipped` and its file is left untouched, so nothing is written blind.
+
 ## Backlinks
 
 `kb backlinks <path>` scans the markdown documents of the library and reports
@@ -200,8 +249,9 @@ archive/2025.md:31:1: definition ../notes/budget.md
 inbox/quick.md:3:16: wiki budget
 ```
 
-The entry does not have to exist, so this answers two questions: what a rename
-would break, and what still points at a note that is already gone.
+The entry does not have to exist, so this answers two questions: what a move
+would break, and what still points at a note that is already gone. To move and
+repair in one step, use `kb move`, which is built on the same resolution.
 
 A link counts as pointing at the entry when:
 
@@ -300,9 +350,10 @@ preserved verbatim, because re-printing YAML would lose comments and key order.
 ```
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
-`kb_format`, `kb_extract` and `kb_info`. Each returns its result as JSON text,
-and reports a failure as an error result rather than as a protocol error.
+`kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`,
+`kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each returns its result as
+JSON text, and reports a failure as an error result rather than as a protocol
+error.
 
 The server indexes the library at startup and watches it for changes, so
 `kb_backlinks` and `kb_graph` answer from memory. `kb_graph` reports `live`,

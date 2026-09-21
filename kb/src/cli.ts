@@ -28,6 +28,8 @@ import { execRead }
   from './commands/read.js';
 import { execRemove }
   from './commands/remove.js';
+import { execRename }
+  from './commands/rename.js';
 import { execSearch }
   from './commands/search.js';
 import { execVersion }
@@ -297,12 +299,18 @@ function createCli(
 
   cli.command('move')
     .description(
-      'Move or rename a file or folder')
+      'Move a file or folder, rewriting the links it would break')
     .argument('<source>')
     .argument('<target>')
     .option(
       '--overwrite',
       'Replace the target when it already exists')
+    .option(
+      '--no-update-links',
+      'Move without rewriting any link')
+    .option(
+      '--dry-run',
+      'Report the move and the edits without performing them')
     .action(
       async (
           source,
@@ -316,6 +324,45 @@ function createCli(
           { source,
             target,
             overwrite: options.overwrite === true,
+            updateLinks: options.updateLinks !== false,
+            dryRun: options.dryRun === true,
+            format:
+              formatOption(command) });
+      });
+
+  cli.command('rename')
+    .description(
+      'Rename an entry in place, rewriting the links it would break')
+    .argument(
+      '<path>',
+      'Library-relative path')
+    .argument(
+      '<name>',
+      'New name, without a folder')
+    .option(
+      '--overwrite',
+      'Replace the target when it already exists')
+    .option(
+      '--no-update-links',
+      'Rename without rewriting any link')
+    .option(
+      '--dry-run',
+      'Report the rename and the edits without performing them')
+    .action(
+      async (
+          value,
+          name,
+          options,
+          command
+        ) =>
+      {
+        await environment.resolve(execRename)(
+          environment,
+          { path: value,
+            name,
+            overwrite: options.overwrite === true,
+            updateLinks: options.updateLinks !== false,
+            dryRun: options.dryRun === true,
             format:
               formatOption(command) });
       });

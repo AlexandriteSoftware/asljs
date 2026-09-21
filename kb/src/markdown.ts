@@ -55,8 +55,14 @@ export interface MarkdownDocument
   frontMatter: FrontMatter;
 
   /**
+   * Character offset of `body` inside `text`, so that a node offset can be
+   * mapped onto the full document.
+   */
+  bodyOffset: number;
+
+  /**
    * Syntax tree of `body`. Node positions are relative to `body`; use
-   * `documentLine` to map them onto the full document.
+   * `documentLine` and `documentOffset` to map them onto the full document.
    */
   root: Root;
 }
@@ -146,6 +152,7 @@ export function parseMarkdown(
            text,
            body,
            frontMatter,
+           bodyOffset: text.length - body.length,
            root };
 }
 
@@ -159,6 +166,18 @@ export function documentLine(
   ): number
 {
   return bodyLine + document.frontMatter.lines;
+}
+
+/**
+ * Map a character offset in `document.body` onto an offset in the full
+ * document text.
+ */
+export function documentOffset(
+    document: MarkdownDocument,
+    bodyOffset: number
+  ): number
+{
+  return bodyOffset + document.bodyOffset;
 }
 
 /**
