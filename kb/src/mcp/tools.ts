@@ -1,5 +1,7 @@
 import { findBacklinks }
   from '../backlinks.js';
+import { createLinkGraph }
+  from '../graph.js';
 import { Environment }
   from '../environment.js';
 import { EntryKind,
@@ -367,24 +369,85 @@ export function createTools(
                        'Include links the document makes to itself.') },
                  [ 'path' ]),
              invoke:
-               async args =>
-        await findBacklinks(
-          environment.library,
-          requireString(
-            args,
-            'path'),
-          { pattern:
-              optionalString(
-                args,
-                'pattern'),
-            hidden:
-              optionalBoolean(
-                args,
-                'hidden'),
-            includeSelf:
-              optionalBoolean(
-                args,
-                'includeSelf') }) },
+               async (
+                   args
+                 ) =>
+               {
+               const target =
+                 requireString(
+                   args,
+                   'path');
+
+               const includeSelf =
+                 optionalBoolean(
+                   args,
+                   'includeSelf');
+
+               const pattern =
+                 optionalString(
+                   args,
+                   'pattern');
+
+               // The index covers the whole library, so it can only answer a
+               // request that does not narrow the documents to scan.
+               if (
+                 environment.graph
+                 && pattern === undefined
+               ) {
+                 return environment.graph.backlinksTo(
+                   target,
+                   { includeSelf });
+               }
+
+               return await findBacklinks(
+                 environment.library,
+                 target,
+                 { pattern,
+                   hidden:
+                     optionalBoolean(
+                       args,
+                       'hidden'),
+                   includeSelf });
+             } },
+
+           { name: 'kb_graph',
+             description:
+               'Inspect the in-memory index of articles and links. Without a '
+               + 'path it reports index statistics; with one it reports that '
+               + 'article, the links it writes and the links that point at '
+               + 'it.',
+             inputSchema:
+               objectSchema(
+                 { path:
+                     stringProperty(
+                       'Library-relative path of an article to describe.') }),
+             invoke:
+               async (
+                   args
+                 ) =>
+               {
+               const graph =
+                 environment.graph
+                 ?? await createLinkGraph(environment.library);
+
+               const target =
+                 optionalString(
+                   args,
+                   'path');
+
+               if (target === undefined) {
+                 return { ...graph.stats(),
+                          live: environment.graph !== undefined };
+               }
+
+               return { article:
+                          graph.article(target) ?? null,
+                        outgoing:
+                          graph.outgoing(target),
+                        incoming:
+                          graph.incoming(target) };
+             } },
+
            { name: 'kb_format',
              description:
                'Format markdown files. Set `write` to false to report the '

@@ -6,6 +6,8 @@ import test
   from 'node:test';
 import { LibraryEntry }
   from '../files.js';
+import { createLinkGraph }
+  from '../graph.js';
 import { createTestEnvironment,
          withLibrary }
   from '../testing/library.js';
@@ -57,6 +59,7 @@ test(
             'kb_remove',
             'kb_search',
             'kb_backlinks',
+            'kb_graph',
             'kb_format',
             'kb_extract',
             'kb_info' ]);
@@ -209,6 +212,181 @@ test(
           report.matches.map(match => match.path),
           [ 'manual.pdf',
             'notes/one.md' ]);
+      });
+  });
+
+test(
+  'kb_backlinks answers from the index when one is attached',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n',
+        'notes/plan.md':
+          '# Plan\n\nSee [budget](budget.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        environment.graph =
+          await createLinkGraph(library.path);
+
+        const tools =
+          createTools(environment);
+
+        const fromIndex =
+          await toolNamed(
+            tools,
+            'kb_backlinks')
+            .invoke(
+              { path: 'notes/budget.md' });
+
+        // A file written behind the index is invisible until the index is
+        // told, which is what proves the answer came from memory.
+        await fs.writeFile(
+          library.resolve('notes/later.md'),
+          '# Later\n\nAlso [budget](budget.md).\n',
+          'utf8');
+
+        assert.deepEqual(
+          await toolNamed(
+            tools,
+            'kb_backlinks')
+            .invoke(
+              { path: 'notes/budget.md' }),
+          fromIndex);
+
+        await environment.graph.update('notes/later.md');
+
+        assert.deepEqual(
+          (await toolNamed(
+            tools,
+            'kb_backlinks')
+            .invoke(
+              { path: 'notes/budget.md' }) as { path: string; }[])
+            .map(
+              backlink => backlink.path),
+          [ 'notes/later.md',
+            'notes/plan.md' ]);
+      });
+  });
+
+test(
+  'kb_backlinks scans directly when a pattern narrows the documents',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n',
+        'notes/plan.md':
+          '# Plan\n\nSee [budget](budget.md).\n',
+        'archive/old.md':
+          '# Old\n\nSee [budget](../notes/budget.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        environment.graph =
+          await createLinkGraph(library.path);
+
+        const tools =
+          createTools(environment);
+
+        assert.deepEqual(
+          (await toolNamed(
+            tools,
+            'kb_backlinks')
+            .invoke(
+              { path: 'notes/budget.md',
+                pattern: 'archive/**/*.md' }) as { path: string; }[])
+            .map(
+              backlink => backlink.path),
+          [ 'archive/old.md' ]);
+      });
+  });
+
+test(
+  'kb_graph reports the index and one article',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n',
+        'notes/plan.md':
+          '# Plan\n\nSee [budget](budget.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        environment.graph =
+          await createLinkGraph(library.path);
+
+        const tools =
+          createTools(environment);
+
+        assert.deepEqual(
+          await toolNamed(
+            tools,
+            'kb_graph')
+            .invoke({}),
+          { articles: 2,
+            links: 1,
+            external: 0,
+            live: true });
+
+        const article =
+          await toolNamed(
+            tools,
+            'kb_graph')
+            .invoke(
+              { path: 'notes/budget.md' }) as
+            { article: { title: string; };
+              outgoing: unknown[];
+              incoming: { from: string; }[]; };
+
+        assert.equal(
+          article.article.title,
+          'Budget');
+
+        assert.deepEqual(
+          article.outgoing,
+          [ ]);
+
+        assert.deepEqual(
+          article.incoming.map(link => link.from),
+          [ 'notes/plan.md' ]);
+      });
+  });
+
+test(
+  'kb_graph builds an index on demand when none is attached',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/budget.md': '# Budget\n' },
+      async (
+          library
+        ) =>
+      {
+        const tools =
+          createTools(
+            createTestEnvironment(library));
+
+        assert.deepEqual(
+          await toolNamed(
+            tools,
+            'kb_graph')
+            .invoke({}),
+          { articles: 1,
+            links: 0,
+            external: 0,
+            live: false });
       });
   });
 

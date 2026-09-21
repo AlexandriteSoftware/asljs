@@ -12,6 +12,8 @@ import { execExtract }
   from './commands/extract.js';
 import { execFormat }
   from './commands/format.js';
+import { execGraph }
+  from './commands/graph.js';
 import { execInfo }
   from './commands/info.js';
 import { execList }
@@ -492,6 +494,34 @@ function createCli(
           environment,
           { path: value,
             kind,
+            format:
+              formatOption(command) });
+      });
+
+  cli.command('graph')
+    .description(
+      'Report the article and link collections')
+    .argument(
+      '[path]',
+      'Library-relative path of an article to describe')
+    .option(
+      '--pattern <pattern>',
+      'Glob pattern limiting the documents to index')
+    .option(
+      '--hidden',
+      'Include dot files and dot folders')
+    .action(
+      async (
+          value,
+          options,
+          command
+        ) =>
+      {
+        await environment.resolve(execGraph)(
+          environment,
+          { path: value,
+            pattern: options.pattern,
+            hidden: options.hidden === true,
             format:
               formatOption(command) });
       });

@@ -215,6 +215,30 @@ export function resolveLinkTarget(
     target);
 }
 
+/**
+ * True when the link addresses a document by bare name rather than by path,
+ * which is how a wiki link without a slash resolves.
+ */
+export function isNameLink(
+    link: ExtractedLink
+  ): boolean
+{
+  return link.kind === 'wiki'
+    && !link.target.includes('/');
+}
+
+/**
+ * Name of a document, without its folder and without its extension.
+ */
+export function documentName(
+    value: string
+  ): string
+{
+  return path.basename(
+    value,
+    path.extname(value));
+}
+
 function referencesTarget(
     root: string,
     documentPath: string,
@@ -232,10 +256,7 @@ function referencesTarget(
     return false;
   }
 
-  if (
-    link.kind === 'wiki'
-    && !link.target.includes('/')
-  ) {
+  if (isNameLink(link)) {
     return candidates.includes(
       documentName(targetPath));
   }
@@ -266,18 +287,6 @@ function candidatesFrom(
     toLibraryPath(
       root,
       resolved));
-}
-
-/**
- * Name of a document, without its folder and without its extension.
- */
-function documentName(
-    value: string
-  ): string
-{
-  return path.basename(
-    value,
-    path.extname(value));
 }
 
 function withMarkdownCandidates(

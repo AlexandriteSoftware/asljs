@@ -115,6 +115,8 @@ Search, formatting, and extraction:
 - `kb extract <kind> <path>` - extract `headings`, `links`, `tasks`, `tables`,
   `code`, `front-matter` or `all` from a markdown document.
 - `kb backlinks <path>` - list the markdown links that point at an entry.
+- `kb graph [path]` - report the article and link collections, or describe one
+  article and its links in both directions.
 - `kb info <path>` - print a summary of a document.
 
 Diagnostics:
@@ -224,6 +226,58 @@ reported on its own; its `[id]: path` definition is.
 
 Only markdown documents are scanned, since only they carry links.
 
+## The Link Index
+
+The library is two collections: the articles, and the links between them.
+`LinkGraph` holds both in memory, with every link destination resolved once,
+at index time, by the rules above.
+
+`kb-mcp` builds the index before it serves its first request and then keeps it
+current by watching the library, so link questions are answered from memory
+rather than by re-reading the library. `kb_backlinks` is served from the index,
+except when `pattern` narrows the documents to scan, which the index cannot
+express; that request falls back to a direct scan.
+
+The CLI is a one-shot process with no index to reuse, so `kb backlinks` always
+scans directly. Both paths share one set of resolution rules and are pinned to
+the same answers by test.
+
+```bash
+kb graph
+```
+
+```text
+articles: 128
+links: 412
+external: 63
+```
+
+```bash
+kb graph notes/budget.md
+```
+
+```text
+path: notes/budget.md
+title: The budget
+outgoing: 2
+  -> ../archive/2025.md (line 12)
+  -> https://example.com (line 18)
+incoming: 3
+  <- archive/2025.md:14:3 ../notes/budget.md
+  <- inbox/quick.md:3:16 budget
+  <- notes/plan.md:7:5 budget.md
+```
+
+Watching follows the library live: a change naming a markdown file re-indexes
+that one file, and anything else, such as a renamed folder, rebuilds the index.
+Changes are debounced, so a burst of writes collapses into one update.
+Recursive watching is not available on every platform; where it cannot start,
+the server logs it, keeps serving, and the index simply stops following
+changes.
+
+The index covers markdown documents only, under the same exclusion rules as
+`kb list`.
+
 ## Formatting
 
 `kb format` re-prints markdown in the repository markdown style: ATX headings,
@@ -246,9 +300,14 @@ preserved verbatim, because re-printing YAML would lose comments and key order.
 ```
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_format`,
-`kb_extract` and `kb_info`. Each returns its result as JSON text, and reports a
-failure as an error result rather than as a protocol error.
+`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
+`kb_format`, `kb_extract` and `kb_info`. Each returns its result as JSON text,
+and reports a failure as an error result rather than as a protocol error.
+
+The server indexes the library at startup and watches it for changes, so
+`kb_backlinks` and `kb_graph` answer from memory. `kb_graph` reports `live`,
+which says whether the answer came from the index the server keeps current or
+from one built for that one request.
 
 Standard output carries the JSON-RPC stream, so the MCP server logs nothing
 unless `KB_LOG_FILE` names a file to write to.

@@ -161,11 +161,51 @@ column, the link kind, the target as written, and the link text.
 Moving an entry does not rewrite the links that point at it. Backlinks report
 what a move or a removal would break; the edit is left to the caller.
 
+## Link Index
+
+The library is modelled as two collections: the articles, and the links between
+them. `LinkGraph` holds both in memory.
+
+An article carries its library path, its title, its size, and its modification
+time. The title is the `title` front matter value, else the first level 1
+heading, else the file name without its extension.
+
+A link carries the document it is written in, its line and column, its kind,
+the target as written, its text, and the library paths it resolves to.
+Destinations are resolved once, at index time, by the backlink rules above. A
+link that leaves the library resolves to nothing and is counted as external.
+
+The index covers markdown documents only, under the same exclusion rules as
+listing.
+
+Maintenance:
+
+- the whole library is indexed on a rebuild;
+- one document is re-indexed on an update, which replaces what was held for it;
+- an update for a document that is gone, or that is not markdown, removes it;
+- removing a document drops it and every link it wrote, but not the links that
+  point at it, so a removed document still reports its backlinks.
+
+A host keeps the index current by watching the library. Changes are debounced,
+so a burst collapses into one update. A change naming a markdown file
+re-indexes that file; anything else, such as a renamed folder or a platform
+that reports no file name, triggers a rebuild. Recursive watching is not
+available on every platform; where it cannot start, the failure is logged and
+the index stops following changes rather than failing the host.
+
+The MCP server indexes at startup and watches. The CLI does not: a one-shot
+process has no index to reuse, so it scans directly, and a CLI command that
+needs the collections builds an index for that one request.
+
+Backlinks are answered from the index when a host keeps one, and by a direct
+scan otherwise. Both paths apply the same resolution rules and return the same
+answers.
+
 ## Command Line Interface
 
 The CLI is `kb`. Commands are `list`, `read`, `write`, `new`, `mkdir`, `move`,
-`copy`, `remove`, `search`, `backlinks`, `format`, `extract`, `info`, `config`
-and `version`.
+`copy`, `remove`, `search`, `backlinks`, `graph`, `format`, `extract`, `info`,
+`config` and `version`.
 
 Output format is `text` or `json`, chosen with the global `--format` option.
 `extract` defaults to `json`, because its result is structured data; every
@@ -188,9 +228,12 @@ The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 over stdio
 and implements `initialize`, `tools/list` and `tools/call`.
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_format`,
-`kb_extract` and `kb_info`. Each declares a JSON Schema for its arguments,
-validates them, and returns its result as JSON text.
+`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
+`kb_format`, `kb_extract` and `kb_info`. Each declares a JSON Schema for its
+arguments, validates them, and returns its result as JSON text.
+
+The server indexes the library before serving its first request, and watches it
+afterwards, so link questions are answered from memory.
 
 A tool failure is reported as a successful response carrying `isError`, as the
 protocol requires. Only an unknown method produces a JSON-RPC error.

@@ -1,6 +1,8 @@
 import { LoggerProvider,
          NullLoggerProvider }
   from 'asljs-logging';
+import { LinkGraph }
+  from './graph.js';
 import { createDefaultReaderRegistry }
   from './readers/registry.js';
 import { ReaderRegistry }
@@ -35,6 +37,14 @@ export interface Environment
    * Readers used to extract text from library files.
    */
   readers: ReaderRegistry;
+
+  /**
+   * In-memory index of the articles and the links between them.
+   *
+   * Set by a long-running host, such as the MCP server, which keeps it
+   * current. Absent in a one-shot process, where callers scan directly.
+   */
+  graph?: LinkGraph;
 
   /**
    * Read the whole standard input. Provided by the CLI host; absent when the

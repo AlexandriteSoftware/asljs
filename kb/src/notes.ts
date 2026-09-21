@@ -13,7 +13,8 @@ import { LibraryEntry,
   from './files.js';
 import { resolveLibraryPath }
   from './library.js';
-import { parseMarkdown }
+import { MarkdownDocument,
+         parseMarkdown }
   from './markdown.js';
 import { ReaderRegistry }
   from './readers/reader.js';
@@ -175,9 +176,6 @@ export async function summarizeDocument(
     const tasks =
       extractTasks(document);
 
-    const frontMatterTitle =
-      document.frontMatter.data?.title;
-
     return { path: entry.path,
              kind: 'markdown',
              size: entry.size,
@@ -197,13 +195,9 @@ export async function summarizeDocument(
                    tasks.filter(
                      task => task.checked).length },
              title:
-               typeof frontMatterTitle === 'string'
-                 ? frontMatterTitle
-                 : headings.find(
-                   heading => heading.level === 1)?.text
-                   ?? path.basename(
-                     entry.path,
-                     path.extname(entry.path)) };
+               documentTitle(
+                 document,
+                 entry.path) };
   }
 
   const text =
@@ -220,6 +214,33 @@ export async function summarizeDocument(
              countWords(text),
            lines:
              countLines(text) };
+}
+
+/**
+ * Title of a markdown document: the `title` front matter value, else the first
+ * level 1 heading, else the file name without its extension.
+ */
+export function documentTitle(
+    document: MarkdownDocument,
+    documentPath: string
+  ): string
+{
+  const frontMatterTitle =
+    document.frontMatter.data?.title;
+
+  if (
+    typeof frontMatterTitle
+    === 'string'
+  ) {
+    return frontMatterTitle;
+  }
+
+  return extractHeadings(document)
+    .find(
+      heading => heading.level === 1)?.text
+    ?? path.basename(
+      documentPath,
+      path.extname(documentPath));
 }
 
 /**

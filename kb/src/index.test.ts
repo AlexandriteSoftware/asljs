@@ -14,6 +14,7 @@ test(
       [ 'DEFAULT_EXCLUDES',
         'EXTRACTION_KINDS',
         'LibraryPathError',
+        'LinkGraph',
         'PROTOCOL_VERSION',
         'PdfReader',
         'ReaderRegistry',
@@ -24,10 +25,12 @@ test(
         'createDefaultReaderRegistry',
         'createEnvironment',
         'createFolder',
+        'createLinkGraph',
         'createLoggerProvider',
         'createNote',
         'createTools',
         'documentLine',
+        'documentTitle',
         'extractCodeBlocks',
         'extractData',
         'extractHeadings',
@@ -59,6 +62,7 @@ test(
         'toLibraryPath',
         'toPlainText',
         'toSlug',
+        'watchLibrary',
         'writeTextFile' ]);
   });
 

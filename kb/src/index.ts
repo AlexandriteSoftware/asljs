@@ -55,6 +55,15 @@ export {
 } from './extract.js';
 
 export {
+  createLinkGraph,
+  LinkGraph,
+  type Article,
+  type GraphLink,
+  type GraphStats,
+  type LinkGraphOptions
+} from './graph.js';
+
+export {
   formatLibrary,
   type FormatFileResult,
   type FormatOptions,
@@ -102,6 +111,7 @@ export {
 
 export {
   createNote,
+  documentTitle,
   isMarkdown,
   summarizeDocument,
   type CreateNoteOptions,
@@ -132,3 +142,9 @@ export {
   type SearchOptions,
   type SearchReport
 } from './search.js';
+
+export {
+  watchLibrary,
+  type LibraryWatcher,
+  type WatchOptions
+} from './watcher.js';

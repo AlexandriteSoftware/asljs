@@ -69,7 +69,7 @@ test(
 
         assert.equal(
           result.tools.length,
-          13);
+          14);
 
         assert.equal(
           result.tools[0]?.name,

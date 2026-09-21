@@ -37,6 +37,14 @@ Public behavior at a glance:
   the linking document
 - a backlinks target does not have to exist, so a rename or a deletion can be
   checked before and after
+- `LinkGraph` holds the articles and the links between them in memory, with
+  every destination resolved at index time
+- the MCP server indexes at startup and keeps the index current by watching the
+  library; the CLI has no index and scans directly
+- `kb_backlinks` answers from the index, except when `pattern` is given, which
+  the index cannot express and which falls back to a direct scan
+- the index covers markdown documents only, under the `listEntries` exclusion
+  rules
 - `kb search` exits with 1 when nothing matches, `kb backlinks` exits with 1
   when nothing links to the entry, and `kb format --check` exits with 1 when a
   file needs formatting
@@ -50,6 +58,7 @@ Use this package when:
 - you need structured data out of markdown: headings, links, tasks, tables,
   code blocks, front matter
 - you need to know what links to a document before renaming or removing it
+- a long-running host needs link answers without re-reading the library
 
 Do not assume:
 
@@ -58,6 +67,9 @@ Do not assume:
 - that scanned PDF files are searchable; there is no OCR
 - that `format` rewrites YAML front matter; it does not
 - that internal modules such as `output.js` are part of the public API
+- that `environment.graph` is always set; it is absent in a one-shot process
+- that the index is authoritative for file content; it holds links and titles,
+  not text
 - that moving an entry repairs the links that point at it; it does not, and
   `findBacklinks` is what reports them
 
@@ -73,6 +85,8 @@ Do not assume:
   with regular expressions.
 - Use `findBacklinks` rather than grepping for a file name, because a raw
   search misses relative paths, root paths and wiki names.
+- Use `LinkGraph` when the process outlives one request; use `findBacklinks`
+  when it does not.
 - Use `createDefaultReaderRegistry` to get the supported file types, and
   register a `DocumentReader` to add one.
 - Keep stable public usage on the package-root exports; treat other `src/*`
@@ -91,7 +105,12 @@ Do not assume:
 - If changing a CLI command, then re-check the text and the JSON output, and
   the exit code for `search`, `backlinks` and `format --check`.
 - If changing link extraction, then re-check `backlinks.ts`, which resolves
-  `ExtractedLink` targets into library paths.
+  `ExtractedLink` targets into library paths, and `graph.ts`, which indexes
+  what it resolves.
+- If changing link resolution, then keep the direct scan and the index in
+  agreement; `graph.test.ts` asserts they answer identically.
+- If changing the index, then re-check `remove`, because a stale entry in an
+  incoming index outlives the document that wrote it.
 - If adding or renaming a public export, then update `src/index.test.ts`, which
   pins the package-root API.
 - If adding an MCP tool, then update the tool list assertions in
