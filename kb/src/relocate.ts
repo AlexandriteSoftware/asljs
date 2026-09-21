@@ -131,12 +131,11 @@ export async function relocateEntry(
     options.updateLinks !== false;
 
   const referencing =
-    updateLinks
-      ? await findReferencingDocuments(
-        root,
-        mapping,
-        options.graph)
-      : new Set<string>();
+    await documentsPointingAt(
+      root,
+      mapping,
+      updateLinks,
+      options.graph);
 
   if (options.dryRun !== true) {
     await moveEntry(
@@ -242,32 +241,23 @@ async function rewriteDocument(
   const [ previousPath,
           currentPath ] = entry;
 
-  const readPath =
-    dryRun
-      ? previousPath
-      : currentPath;
-
   const text =
-    await readTextFile(
+    await readIfPresent(
       root,
-      readPath)
-      .catch(() => null);
+      pathToRead(
+        dryRun,
+        previousPath,
+        currentPath));
 
   if (text === null) {
     return null;
   }
 
-  const document =
-    parseMarkdown(
-      text,
-      currentPath);
-
-  const moved =
-    previousPath !== currentPath;
-
   const result =
     rewriteLinks(
-      document,
+      parseMarkdown(
+        text,
+        currentPath),
       currentPath,
       mapping,
       link =>
@@ -277,7 +267,7 @@ async function rewriteDocument(
         link,
         mapping,
         existing,
-        moved));
+        previousPath !== currentPath));
 
   if (
     result.edits.length === 0
@@ -301,6 +291,24 @@ async function rewriteDocument(
   return { path: currentPath,
            edits: result.edits,
            skipped: result.skipped };
+}
+
+/**
+ * Text of a document, or `null` when it is not there. A document can vanish
+ * between being listed and being read.
+ */
+async function readIfPresent(
+    root: string,
+    documentPath: string
+  ): Promise<string | null>
+{
+  try {
+    return await readTextFile(
+      root,
+      documentPath);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -401,6 +409,42 @@ async function buildMapping(
   return mapping;
 }
 
+/**
+ * A dry run has not moved anything, so a document is still read where it was.
+ */
+function pathToRead(
+    dryRun: boolean,
+    previousPath: string,
+    currentPath: string
+  ): string
+{
+  if (dryRun) {
+    return previousPath;
+  }
+
+  return currentPath;
+}
+
+/**
+ * Nothing refers to the move when links are not being rewritten.
+ */
+async function documentsPointingAt(
+    root: string,
+    mapping: PathMapping,
+    updateLinks: boolean,
+    graph: LinkGraph | undefined
+  ): Promise<Set<string>>
+{
+  if (!updateLinks) {
+    return new Set<string>();
+  }
+
+  return await findReferencingDocuments(
+    root,
+    mapping,
+    graph);
+}
+
 async function findReferencingDocuments(
     root: string,
     mapping: PathMapping,
@@ -410,15 +454,11 @@ async function findReferencingDocuments(
   const documents = new Set<string>();
 
   for (const from of mapping.keys()) {
-    const backlinks: Backlink[] =
-      graph
-        ? graph.backlinksTo(
-          from,
-          { includeSelf: true })
-        : await findBacklinks(
-          root,
-          from,
-          { includeSelf: true });
+    const backlinks =
+      await backlinksTo(
+        root,
+        from,
+        graph);
 
     for (const backlink of backlinks) {
       documents.add(backlink.path);
@@ -426,6 +466,27 @@ async function findReferencingDocuments(
   }
 
   return documents;
+}
+
+/**
+ * Backlinks from the index when there is one, and from a scan otherwise.
+ */
+async function backlinksTo(
+    root: string,
+    documentPath: string,
+    graph: LinkGraph | undefined
+  ): Promise<Backlink[]>
+{
+  if (graph) {
+    return graph.backlinksTo(
+      documentPath,
+      { includeSelf: true });
+  }
+
+  return await findBacklinks(
+    root,
+    documentPath,
+    { includeSelf: true });
 }
 
 /**
@@ -484,6 +545,21 @@ async function refreshGraph(
 }
 
 /**
+ * A path beside an entry, in the folder it already sits in.
+ */
+function siblingPath(
+    folder: string,
+    name: string
+  ): string
+{
+  if (folder === '.') {
+    return name;
+  }
+
+  return `${folder}/${name}`;
+}
+
+/**
  * Rename an entry inside the folder it already sits in.
  */
 export async function renameEntry(
@@ -514,8 +590,8 @@ export async function renameEntry(
   return await relocateEntry(
     root,
     sourcePath,
-    folder === '.'
-      ? name
-      : `${folder}/${name}`,
+    siblingPath(
+      folder,
+      name),
     options);
 }

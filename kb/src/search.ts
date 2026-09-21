@@ -1,5 +1,7 @@
 import { listEntries }
   from './files.js';
+import { messageOf }
+  from './formatting.js';
 import { resolveLibraryPath }
   from './library.js';
 import { ReaderRegistry }
@@ -59,10 +61,6 @@ export interface SearchOptions
    */
   maxResults?: number;
 
-  /**
-   * Maximum number of matches to report per file. Defaults to 20.
-   */
-  maxMatchesPerFile?: number;
 }
 
 export interface SearchReport
@@ -101,23 +99,13 @@ export async function searchLibrary(
     options: SearchOptions
   ): Promise<SearchReport>
 {
-  if (
-    typeof options.query
-    !== 'string'
-    || options.query === ''
-  ) {
-    throw new Error(
-      'Search query must be a non-empty string.');
-  }
+  requireQuery(options.query);
 
   const expression =
     createExpression(options);
 
   const maxResults =
     options.maxResults ?? DEFAULT_MAX_RESULTS;
-
-  const maxMatchesPerFile =
-    options.maxMatchesPerFile ?? DEFAULT_MAX_MATCHES_PER_FILE;
 
   const entries =
     await listEntries(
@@ -126,68 +114,124 @@ export async function searchLibrary(
         kind: 'file',
         hidden: options.hidden });
 
-  const matches: SearchMatch[] = [ ];
-
-  const skippedFiles: { path: string; reason: string; }[] = [ ];
-
-  let searchedFiles = 0;
-
-  let truncated = false;
+  const report: SearchReport =
+    { matches: [ ],
+      searchedFiles: 0,
+      skippedFiles: [ ],
+      truncated: false };
 
   for (const entry of entries) {
     if (!readers.supports(entry.path)) {
       continue;
     }
 
-    if (matches.length >= maxResults) {
-      truncated = true;
+    if (
+      report.matches.length
+      >= maxResults
+    ) {
+      report.truncated = true;
 
       break;
     }
 
-    let text: string;
-
-    try {
-      text =
-        await readers.readText(
-          resolveLibraryPath(
-            root,
-            entry.path));
-    } catch (error) {
-      skippedFiles.push(
-        { path: entry.path,
-          reason:
-            error instanceof Error
-              ? error.message
-              : String(error) });
-
-      continue;
-    }
-
-    searchedFiles += 1;
-
-    const fileMatches =
-      findMatches(
-        entry.path,
-        text,
-        expression,
-        maxMatchesPerFile);
-
-    for (const match of fileMatches) {
-      if (matches.length >= maxResults) {
-        truncated = true;
-
-        break;
-      }
-
-      matches.push(match);
-    }
+    await searchFile(
+      root,
+      readers,
+      entry.path,
+      expression,
+      maxResults,
+      report);
   }
 
-  return { matches,
-           searchedFiles,
-           skippedFiles,
-           truncated };
+  return report;
+}
+
+/**
+ * Search one file, adding what it holds to the report.
+ */
+async function searchFile(
+    root: string,
+    readers: ReaderRegistry,
+    documentPath: string,
+    expression: RegExp,
+    maxResults: number,
+    report: SearchReport
+  ): Promise<void>
+{
+  const text =
+    await readText(
+      root,
+      readers,
+      documentPath,
+      report);
+
+  if (text === null) {
+    return;
+  }
+
+  report.searchedFiles += 1;
+
+  const found =
+    findMatches(
+      documentPath,
+      text,
+      expression,
+      DEFAULT_MAX_MATCHES_PER_FILE);
+
+  for (const match of found) {
+    if (
+      report.matches.length
+      >= maxResults
+    ) {
+      report.truncated = true;
+
+      return;
+    }
+
+    report.matches.push(match);
+  }
+}
+
+/**
+ * Text of one file, or `null` when its reader could not produce any, which
+ * the report records as a skipped file.
+ */
+async function readText(
+    root: string,
+    readers: ReaderRegistry,
+    documentPath: string,
+    report: SearchReport
+  ): Promise<string | null>
+{
+  const absolute =
+    resolveLibraryPath(
+      root,
+      documentPath);
+
+  try {
+    return await readers.readText(absolute);
+  } catch (error) {
+    report.skippedFiles.push(
+      { path: documentPath,
+        reason:
+          messageOf(error) });
+
+    return null;
+  }
+}
+
+function requireQuery(
+    query: unknown
+  ): void
+{
+  if (
+    typeof query
+    !== 'string'
+    || query === ''
+  ) {
+    throw new Error(
+      'Search query must be a non-empty string.');
+  }
 }
 
 function findMatches(
@@ -241,9 +285,7 @@ function createExpression(
   ): RegExp
 {
   const flags =
-    options.ignoreCase === false
-      ? 'g'
-      : 'gi';
+    searchFlags(options.ignoreCase);
 
   if (options.regex !== true) {
     return new RegExp(
@@ -258,10 +300,22 @@ function createExpression(
   } catch (error) {
     throw new Error(
       `Invalid regular expression: ${
-        error instanceof Error
-          ? error.message
-          : String(error)}`);
+        messageOf(error)}`);
   }
+}
+
+/**
+ * Matching ignores case unless that was switched off.
+ */
+function searchFlags(
+    ignoreCase: boolean | undefined
+  ): string
+{
+  if (ignoreCase === false) {
+    return 'g';
+  }
+
+  return 'gi';
 }
 
 function escapeRegExp(

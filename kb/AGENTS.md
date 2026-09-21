@@ -153,6 +153,22 @@ Do not assume:
 - If adding an MCP tool, then update the tool list assertions in
   `src/mcp/tools.test.ts` and `src/mcp/server.test.ts`.
 
+## Code Shape
+
+The package keeps to a shape that the reader can hold in their head. When
+changing it, keep to it:
+
+- no conditional expressions; use an early return, an `if`, or a named helper
+  that answers the question;
+- one job per function, named for that job. The median function is under
+  twenty lines, and the ones above fifty are declarative: command definitions
+  and tool schemas, which are data rather than logic;
+- no promise chains; `await` a statement at a time, and catch where the
+  failure is handled;
+- a branch that picks between two values belongs in a helper named for what it
+  picks, not inline in the expression that uses it;
+- an option that no caller can reach is not configuration; delete it.
+
 ## Validation
 
 From the repository root:

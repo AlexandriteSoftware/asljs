@@ -10,6 +10,20 @@ import { DocumentReader }
  * is actually read. Scanned PDFs without a text layer produce empty text; this
  * reader does not perform OCR.
  */
+/**
+ * One page per entry, whether the engine reported pages or one block.
+ */
+function asPages(
+    text: string | string[]
+  ): string[]
+{
+  if (Array.isArray(text)) {
+    return text;
+  }
+
+  return [ text ];
+}
+
 export class PdfReader
   implements DocumentReader
 {
@@ -40,9 +54,7 @@ export class PdfReader
         { mergePages: false });
 
     const pages =
-      Array.isArray(text)
-        ? text
-        : [ text ];
+      asPages(text);
 
     return pages
       .map(page => page.trim())

@@ -2,7 +2,8 @@ import path
   from 'node:path';
 import { stringify as stringifyYaml }
   from 'yaml';
-import { extractHeadings,
+import { ExtractedTask,
+         extractHeadings,
          extractLinks,
          extractTasks }
   from './extract.js';
@@ -28,11 +29,6 @@ export interface CreateNoteOptions
   title?: string;
 
   tags?: string[];
-
-  /**
-   * Additional front matter values, merged over the generated ones.
-   */
-  frontMatter?: Record<string, unknown>;
 
   /**
    * Body text placed under the heading.
@@ -98,12 +94,9 @@ export async function createNote(
     withMarkdownExtension(value);
 
   const title =
-    options.title
-    && options.title.trim() !== ''
-      ? options.title.trim()
-      : path.basename(
-        notePath,
-        path.extname(notePath));
+    noteTitle(
+      options.title,
+      notePath);
 
   const created =
     (options.now ?? new Date()).toISOString();
@@ -111,25 +104,13 @@ export async function createNote(
   const frontMatter: Record<string, unknown> =
     { title,
       created,
-      ...(options.tags
-        && options.tags.length > 0
-        ? { tags: options.tags }
-        : {}),
-      ...(options.frontMatter ?? {}) };
-
-  const body =
-    options.body
-    && options.body.trim() !== ''
-      ? `${options.body.trim()}\n`
-      : '';
+      ...tagsOf(options.tags) };
 
   const content =
     `---\n${
       stringifyYaml(frontMatter).trimEnd()
     }\n---\n\n# ${title}\n${
-      body === ''
-        ? ''
-        : `\n${body}`}`;
+      bodyOf(options.body)}`;
 
   return await writeTextFile(
     root,
@@ -160,46 +141,65 @@ export async function summarizeDocument(
   }
 
   if (isMarkdown(entry.path)) {
-    const text =
-      await readTextFile(
-        root,
-        entry.path);
-
-    const document =
-      parseMarkdown(
-        text,
-        entry.path);
-
-    const headings =
-      extractHeadings(document);
-
-    const tasks =
-      extractTasks(document);
-
-    return { path: entry.path,
-             kind: 'markdown',
-             size: entry.size,
-             modified: entry.modified,
-             words:
-               countWords(document.body),
-             lines:
-               countLines(text),
-             frontMatter:
-               document.frontMatter.data,
-             headings: headings.length,
-             links:
-               extractLinks(document).length,
-             tasks:
-               { total: tasks.length,
-                 done:
-                   tasks.filter(
-                     task => task.checked).length },
-             title:
-               documentTitle(
-                 document,
-                 entry.path) };
+    return await summarizeMarkdown(
+      root,
+      entry);
   }
 
+  return await summarizeOther(
+    root,
+    readers,
+    entry);
+}
+
+async function summarizeMarkdown(
+    root: string,
+    entry: LibraryEntry
+  ): Promise<DocumentSummary>
+{
+  const text =
+    await readTextFile(
+      root,
+      entry.path);
+
+  const document =
+    parseMarkdown(
+      text,
+      entry.path);
+
+  const tasks =
+    extractTasks(document);
+
+  return { path: entry.path,
+           kind: 'markdown',
+           size: entry.size,
+           modified: entry.modified,
+           words:
+             countWords(document.body),
+           lines:
+             countLines(text),
+           frontMatter:
+             document.frontMatter.data,
+           headings:
+             extractHeadings(document).length,
+           links:
+             extractLinks(document).length,
+           tasks:
+             { total: tasks.length,
+               done:
+                 countDone(tasks) },
+           title:
+             documentTitle(
+               document,
+               entry.path) };
+}
+
+async function summarizeOther(
+    root: string,
+    readers: ReaderRegistry,
+    entry: LibraryEntry
+  ): Promise<DocumentSummary>
+{
   const text =
     await readers.readText(
       resolveLibraryPath(
@@ -214,6 +214,76 @@ export async function summarizeDocument(
              countWords(text),
            lines:
              countLines(text) };
+}
+
+function countDone(
+    tasks: ExtractedTask[]
+  ): number
+{
+  let done = 0;
+
+  for (const task of tasks) {
+    if (task.checked) {
+      done += 1;
+    }
+  }
+
+  return done;
+}
+
+/**
+ * Title of a new note: the one that was asked for, else the file name.
+ */
+function noteTitle(
+    requested: string | undefined,
+    notePath: string
+  ): string
+{
+  const title =
+    (requested ?? '').trim();
+
+  if (title !== '') {
+    return title;
+  }
+
+  return path.basename(
+    notePath,
+    path.extname(notePath));
+}
+
+/**
+ * Front matter carries tags only when there are some.
+ */
+function tagsOf(
+    tags: string[] | undefined
+  ): Record<string, unknown>
+{
+  if (
+    !tags
+    || tags.length === 0
+  ) {
+    return {};
+  }
+
+  return { tags };
+}
+
+/**
+ * Body text, placed one blank line under the heading. Empty when there is
+ * none, so the note ends after its heading.
+ */
+function bodyOf(
+    body: string | undefined
+  ): string
+{
+  const text =
+    (body ?? '').trim();
+
+  if (text === '') {
+    return '';
+  }
+
+  return `\n${text}\n`;
 }
 
 /**

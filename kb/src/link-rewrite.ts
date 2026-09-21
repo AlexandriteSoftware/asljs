@@ -35,6 +35,13 @@ export interface SkippedLink
   reason: string;
 }
 
+interface Replacement
+{
+  start: number;
+  end: number;
+  value: string;
+}
+
 export interface RewriteResult
 {
   text: string;
@@ -76,46 +83,30 @@ export function rewriteLinks(
 
   const skipped: SkippedLink[] = [ ];
 
-  const replacements: { start: number; end: number; value: string; }[] = [ ];
+  const replacements: Replacement[] = [ ];
 
   for (const link of extractLinks(document)) {
-    if (link.kind === 'reference') {
-      continue;
-    }
-
-    const before =
-      resolveTarget(link);
-
-    if (before === null) {
-      continue;
-    }
-
-    const after =
-      mapping.get(before) ?? before;
-
     const target =
-      retarget(
+      targetAfterMove(
         link,
         documentPath,
-        after);
+        mapping,
+        resolveTarget);
 
-    if (
-      target === null
-      || target === link.target
-    ) {
+    if (target === null) {
       continue;
     }
-
-    const span =
-      locate(
-        document,
-        link);
 
     const edit =
       { line: link.line,
         column: link.column,
         from: link.target,
         to: target };
+
+    const span =
+      locate(
+        document,
+        link);
 
     if (!span) {
       skipped.push(
@@ -140,6 +131,43 @@ export function rewriteLinks(
                replacements),
            edits,
            skipped };
+}
+
+/**
+ * What a link should say after the move, or `null` when it should not change.
+ */
+function targetAfterMove(
+    link: ExtractedLink,
+    documentPath: string,
+    mapping: PathMapping,
+    resolveTarget: (link: ExtractedLink) => string | null
+  ): string | null
+{
+  if (link.kind === 'reference') {
+    return null;
+  }
+
+  const before =
+    resolveTarget(link);
+
+  if (before === null) {
+    return null;
+  }
+
+  const after =
+    mapping.get(before) ?? before;
+
+  const target =
+    retarget(
+      link,
+      documentPath,
+      after);
+
+  if (target === link.target) {
+    return null;
+  }
+
+  return target;
 }
 
 /**
@@ -196,9 +224,9 @@ export function retarget(
   return `${
     keepExtensionStyle(
       link.target,
-      relative === ''
-        ? to
-        : relative)}${location}`;
+      relativeOr(
+        relative,
+        to))}${location}`;
 }
 
 /**
@@ -213,13 +241,9 @@ function locate(
   ): { start: number; end: number; } | null
 {
   const start =
-    link.kind === 'wiki'
-      ? findInLine(
-        document,
-        link)
-      : findInNode(
-        document,
-        link);
+    startOfTarget(
+      document,
+      link);
 
   if (start === null) {
     return null;
@@ -227,6 +251,41 @@ function locate(
 
   return { start,
            end: start + link.target.length };
+}
+
+/**
+ * A path that stays inside the same folder relativises to nothing, and the
+ * full path stands in for it.
+ */
+function relativeOr(
+    relative: string,
+    to: string
+  ): string
+{
+  if (relative === '') {
+    return to;
+  }
+
+  return relative;
+}
+
+/**
+ * A wiki link has no node of its own, so it is found differently.
+ */
+function startOfTarget(
+    document: MarkdownDocument,
+    link: ExtractedLink
+  ): number | null
+{
+  if (link.kind === 'wiki') {
+    return findInLine(
+      document,
+      link);
+  }
+
+  return findInNode(
+    document,
+    link);
 }
 
 /**
@@ -399,7 +458,7 @@ function linkNodes(
 
 function applyReplacements(
     text: string,
-    replacements: { start: number; end: number; value: string; }[]
+    replacements: Replacement[]
   ): string
 {
   let result = text;

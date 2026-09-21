@@ -23,17 +23,9 @@ export class TextReader
 {
   readonly name = 'text';
 
-  readonly extensions: string[];
+  readonly extensions = TEXT_EXTENSIONS;
 
   readonly verbatim = true;
-
-  constructor(
-      extensions: string[] = TEXT_EXTENSIONS
-    )
-  {
-    this.extensions =
-      [ ...extensions ];
-  }
 
   async readText(
       filePath: string

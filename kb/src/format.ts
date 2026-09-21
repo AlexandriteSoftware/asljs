@@ -1,6 +1,7 @@
 import fs
   from 'node:fs/promises';
-import { listEntries }
+import { globPattern,
+         listEntries }
   from './files.js';
 import { resolveLibraryPath }
   from './library.js';
@@ -65,10 +66,9 @@ export async function formatLibrary(
     await listEntries(
       root,
       { pattern:
-          options.pattern
-          && options.pattern.trim() !== ''
-            ? options.pattern
-            : DEFAULT_PATTERN,
+          globPattern(
+            options.pattern,
+            DEFAULT_PATTERN),
         kind: 'file',
         hidden: options.hidden });
 

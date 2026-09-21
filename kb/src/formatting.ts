@@ -52,3 +52,17 @@ export function splitCommaSeparatedOption(
     .filter(
       entry => entry.length > 0);
 }
+
+/**
+ * Message of a failure, whatever was thrown.
+ */
+export function messageOf(
+    error: unknown
+  ): string
+{
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}

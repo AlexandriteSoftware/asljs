@@ -12,6 +12,8 @@ import { Environment }
   from '../environment.js';
 import { endpointFor }
   from './endpoint.js';
+import { readLines }
+  from './lines.js';
 import { handleMessage,
          SERVER_NAME }
   from './server.js';
@@ -298,30 +300,12 @@ function createConnection(
 
   let nextId = 1;
 
-  let buffer = '';
-
-  input.setEncoding('utf8');
-
-  input.on(
-    'data',
-    (
-        chunk: string
-      ) =>
-    {
-      buffer += chunk;
-
-      const lines =
-        buffer.split('\n');
-
-      buffer =
-        lines.pop() ?? '';
-
-      for (const line of lines) {
-        deliver(
-          line,
-          pending);
-      }
-    });
+  readLines(
+    input,
+    line =>
+    deliver(
+      line,
+      pending));
 
   input.on(
     'close',

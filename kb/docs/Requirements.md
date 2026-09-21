@@ -111,8 +111,8 @@ Search scans every file that matches the pattern and has a registered reader.
 - at most one match is reported per line;
 - each match carries the file path, a one-based line, a one-based column, and
   the trimmed text of the line;
-- `maxMatchesPerFile` caps the matches taken from one file, and `maxResults`
-  caps the whole result and marks it truncated;
+- at most twenty matches are taken from one file, and `maxResults` caps the
+  whole result and marks it truncated;
 - a file whose reader fails is skipped and reported with its reason.
 
 Line numbers refer to the text the reader produced. For a verbatim reader that

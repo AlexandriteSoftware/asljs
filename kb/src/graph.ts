@@ -1,3 +1,5 @@
+import { Stats }
+  from 'node:fs';
 import fs
   from 'node:fs/promises';
 import { Backlink,
@@ -8,13 +10,15 @@ import { Backlink,
 import { extractLinks,
          LinkKind }
   from './extract.js';
-import { listEntries,
+import { globPattern,
+         listEntries,
          readTextFile }
   from './files.js';
 import { resolveLibraryPath,
          toLibraryPath }
   from './library.js';
-import { parseMarkdown }
+import { MarkdownDocument,
+         parseMarkdown }
   from './markdown.js';
 import { documentTitle,
          isMarkdown }
@@ -98,6 +102,21 @@ export interface LinkGraphOptions
  * Link destinations are resolved once, at index time, with the same rules
  * `findBacklinks` applies.
  */
+const DEFAULT_PATTERN = '**/*.md';
+
+function describeFile(
+    stats: Stats
+  ): { size: number; modified: string; } | null
+{
+  if (!stats.isFile()) {
+    return null;
+  }
+
+  return { size: stats.size,
+           modified:
+             stats.mtime.toISOString() };
+}
+
 export class LinkGraph
 {
   readonly #root: string;
@@ -236,10 +255,9 @@ export class LinkGraph
       await listEntries(
         this.#root,
         { pattern:
-            this.#options.pattern
-            && this.#options.pattern.trim() !== ''
-              ? this.#options.pattern
-              : '**/*.md',
+            globPattern(
+              this.#options.pattern,
+              DEFAULT_PATTERN),
           kind: 'file',
           hidden: this.#options.hidden });
 
@@ -293,49 +311,71 @@ export class LinkGraph
         size: entry.size,
         modified: entry.modified });
 
-    const links =
-      extractLinks(document)
-        .map(
-          link => ({ from: target,
-                     line: link.line,
-                     column: link.column,
-                     kind: link.kind,
-                     target: link.target,
-                     text: link.text,
-                     to:
-                       resolveLinkTarget(
-                         this.#root,
-                         target,
-                         link) }));
+    this.#addLinks(
+      target,
+      document);
+  }
+
+  /**
+   * Record the links one document writes, in both directions.
+   */
+  #addLinks(
+      documentPath: string,
+      document: MarkdownDocument
+    ): void
+  {
+    const links: GraphLink[] = [ ];
+
+    for (const link of extractLinks(document)) {
+      links.push(
+        { from: documentPath,
+          line: link.line,
+          column: link.column,
+          kind: link.kind,
+          target: link.target,
+          text: link.text,
+          to:
+            resolveLinkTarget(
+              this.#root,
+              documentPath,
+              link) });
+    }
 
     this.#outgoing.set(
-      target,
+      documentPath,
       links);
 
     for (const link of links) {
-      if (link.to.length === 0) {
-        this.#external += 1;
+      this.#addIncoming(link);
+    }
+  }
+
+  #addIncoming(
+      link: GraphLink
+    ): void
+  {
+    if (link.to.length === 0) {
+      this.#external += 1;
+
+      return;
+    }
+
+    const index =
+      this.#indexFor(link);
+
+    for (const key of link.to) {
+      const existing =
+        index.get(key);
+
+      if (!existing) {
+        index.set(
+          key,
+          [ link ]);
 
         continue;
       }
 
-      const index =
-        isNameLink(link)
-          ? this.#incomingByName
-          : this.#incomingByPath;
-
-      for (const key of link.to) {
-        const existing =
-          index.get(key);
-
-        if (existing) {
-          existing.push(link);
-        } else {
-          index.set(
-            key,
-            [ link ]);
-        }
-      }
+      existing.push(link);
     }
   }
 
@@ -368,9 +408,7 @@ export class LinkGraph
       }
 
       const index =
-        isNameLink(link)
-          ? this.#incomingByName
-          : this.#incomingByPath;
+        this.#indexFor(link);
 
       for (const key of link.to) {
         const remaining =
@@ -389,22 +427,36 @@ export class LinkGraph
     }
   }
 
+  /**
+   * A link that addresses a document by name is indexed by that name; every
+   * other link is indexed by the paths it may address.
+   */
+  #indexFor(
+      link: GraphLink
+    ): Map<string, GraphLink[]>
+  {
+    if (isNameLink(link)) {
+      return this.#incomingByName;
+    }
+
+    return this.#incomingByPath;
+  }
+
   async #statOrNull(
       documentPath: string
     ): Promise<{ size: number; modified: string; } | null>
   {
-    return await fs.stat(
+    const absolute =
       resolveLibraryPath(
         this.#root,
-        documentPath))
-      .then(
-        stats =>
-        stats.isFile()
-          ? { size: stats.size,
-              modified:
-                stats.mtime.toISOString() }
-          : null)
-      .catch(() => null);
+        documentPath);
+
+    try {
+      return describeFile(
+        await fs.stat(absolute));
+    } catch {
+      return null;
+    }
   }
 
   #toPath(

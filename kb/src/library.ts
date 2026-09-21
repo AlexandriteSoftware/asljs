@@ -111,9 +111,7 @@ export function isInsideLibrary(
   }
 
   return normalizedValue.startsWith(
-    normalizedRoot.endsWith(path.sep)
-      ? normalizedRoot
-      : `${normalizedRoot}${path.sep}`);
+    withTrailingSeparator(normalizedRoot));
 }
 
 /**
@@ -122,15 +120,38 @@ export function isInsideLibrary(
  * The explicit value wins, then the `KB_LIBRARY` environment variable, then
  * the working directory.
  */
+function trimmed(
+    value: string | null | undefined
+  ): string
+{
+  if (
+    typeof value
+    !== 'string'
+  ) {
+    return '';
+  }
+
+  return value.trim();
+}
+
+function withTrailingSeparator(
+    value: string
+  ): string
+{
+  if (value.endsWith(path.sep)) {
+    return value;
+  }
+
+  return `${value}${path.sep}`;
+}
+
 export function resolveLibraryRoot(
     cwd: string,
     value?: string | null
   ): string
 {
   const explicit =
-    typeof value === 'string'
-      ? value.trim()
-      : '';
+    trimmed(value);
 
   if (explicit !== '') {
     return path.normalize(

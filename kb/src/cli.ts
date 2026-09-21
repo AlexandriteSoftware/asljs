@@ -40,6 +40,7 @@ import { createEnvironment,
          Environment }
   from './environment.js';
 import { filterStringOption,
+         messageOf,
          splitCommaSeparatedOption }
   from './formatting.js';
 import { resolveLibraryRoot }
@@ -233,6 +234,40 @@ function addLibraryCommands(
     environment: Environment
   ): void
 {
+  addList(
+    cli,
+    environment);
+
+  addRead(
+    cli,
+    environment);
+
+  addWrite(
+    cli,
+    environment);
+
+  addNew(
+    cli,
+    environment);
+
+  addMkdir(
+    cli,
+    environment);
+
+  addCopy(
+    cli,
+    environment);
+
+  addRemove(
+    cli,
+    environment);
+}
+
+function addList(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('list')
     .description(
       'List library entries matching a glob pattern')
@@ -255,7 +290,13 @@ function addLibraryCommands(
           hidden: options.hidden === true,
           format:
             formatOption(command) }));
+}
 
+function addRead(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('read')
     .description(
       'Print the text of a document')
@@ -270,7 +311,13 @@ function addLibraryCommands(
         { path: value,
           format:
             formatOption(command) }));
+}
 
+function addWrite(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('write')
     .description(
       'Write a text file, creating missing folders')
@@ -293,7 +340,13 @@ function addLibraryCommands(
           overwrite: options.overwrite === true,
           format:
             formatOption(command) }));
+}
 
+function addNew(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('new')
     .description(
       'Create a markdown note with front matter')
@@ -326,7 +379,13 @@ function addLibraryCommands(
           overwrite: options.overwrite === true,
           format:
             formatOption(command) }));
+}
 
+function addMkdir(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('mkdir')
     .description(
       'Create a folder, including missing parents')
@@ -341,7 +400,13 @@ function addLibraryCommands(
         { path: value,
           format:
             formatOption(command) }));
+}
 
+function addCopy(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('copy')
     .description(
       'Copy a file or folder')
@@ -360,7 +425,13 @@ function addLibraryCommands(
           overwrite: options.overwrite === true,
           format:
             formatOption(command) }));
+}
 
+function addRemove(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('remove')
     .description(
       'Remove a file or folder')
@@ -382,6 +453,28 @@ function addLibraryCommands(
 }
 
 function addLinkCommands(
+    cli: Command,
+    environment: Environment
+  ): void
+{
+  addMove(
+    cli,
+    environment);
+
+  addRename(
+    cli,
+    environment);
+
+  addBacklinks(
+    cli,
+    environment);
+
+  addGraph(
+    cli,
+    environment);
+}
+
+function addMove(
     cli: Command,
     environment: Environment
   ): void
@@ -412,7 +505,13 @@ function addLinkCommands(
           dryRun: options.dryRun === true,
           format:
             formatOption(command) }));
+}
 
+function addRename(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('rename')
     .description(
       'Rename an entry in place, rewriting the links it would break')
@@ -443,7 +542,13 @@ function addLinkCommands(
           dryRun: options.dryRun === true,
           format:
             formatOption(command) }));
+}
 
+function addBacklinks(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('backlinks')
     .description(
       'List the markdown links that point at an entry')
@@ -470,7 +575,13 @@ function addLinkCommands(
           includeSelf: options.includeSelf === true,
           format:
             formatOption(command) }));
+}
 
+function addGraph(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('graph')
     .description(
       'Report the article and link collections')
@@ -488,6 +599,36 @@ function addLinkCommands(
 }
 
 function addToolCommands(
+    cli: Command,
+    environment: Environment
+  ): void
+{
+  addSearch(
+    cli,
+    environment);
+
+  addFormat(
+    cli,
+    environment);
+
+  addExtract(
+    cli,
+    environment);
+
+  addInfo(
+    cli,
+    environment);
+
+  addConfig(
+    cli,
+    environment);
+
+  addVersion(
+    cli,
+    environment);
+}
+
+function addSearch(
     cli: Command,
     environment: Environment
   ): void
@@ -530,7 +671,13 @@ function addToolCommands(
               '--max-results'),
           format:
             formatOption(command) }));
+}
 
+function addFormat(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('format')
     .description(
       'Format markdown files in place')
@@ -553,7 +700,13 @@ function addToolCommands(
           hidden: options.hidden === true,
           format:
             formatOption(command) }));
+}
 
+function addExtract(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('extract')
     .description(
       'Extract structured data from a markdown document')
@@ -572,7 +725,13 @@ function addToolCommands(
           kind,
           format:
             formatOption(command) }));
+}
 
+function addInfo(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('info')
     .description(
       'Print a summary of a document')
@@ -587,7 +746,13 @@ function addToolCommands(
         { path: value,
           format:
             formatOption(command) }));
+}
 
+function addConfig(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('config')
     .description(
       'Print the effective configuration')
@@ -597,7 +762,13 @@ function addToolCommands(
         environment,
         { format:
             formatOption(command) }));
+}
 
+function addVersion(
+    cli: Command,
+    environment: Environment
+  ): void
+{
   cli.command('version')
     .description(
       'Print the current package version')
@@ -822,13 +993,3 @@ function optionName(
   return group;
 }
 
-function messageOf(
-    error: unknown
-  ): string
-{
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-}

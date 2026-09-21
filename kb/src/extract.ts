@@ -1,6 +1,9 @@
 import { Code,
+         Definition,
          Heading,
+         Image,
          Link,
+         LinkReference,
          ListItem,
          Node,
          Parent,
@@ -113,88 +116,134 @@ export function extractLinks(
         node
       ) =>
     {
-      if (node.type === 'link') {
-        const link =
-          node as Link;
-
-        links.push(
-          { kind: 'inline',
-            target: link.url,
-            text:
-              toPlainText(link),
-            ...positionOf(
-              document,
-              link) });
-
-        return;
-      }
-
-      if (node.type === 'image') {
-        const image =
-          node as Link & { alt?: string | null; };
-
-        links.push(
-          { kind: 'image',
-            target: image.url,
-            text: image.alt ?? '',
-            ...positionOf(
-              document,
-              image) });
-
-        return;
-      }
-
-      if (node.type === 'linkReference') {
-        const reference =
-          node as Parent & { identifier: string; };
-
-        links.push(
-          { kind: 'reference',
-            target:
-              reference.identifier,
-            text:
-              toPlainText(reference),
-            ...positionOf(
-              document,
-              reference) });
-
-        return;
-      }
-
-      if (node.type === 'definition') {
-        const definition =
-          node as Node & { identifier: string; url: string; };
-
-        links.push(
-          { kind: 'definition',
-            target: definition.url,
-            text:
-              definition.identifier,
-            ...positionOf(
-              document,
-              definition) });
-
-        return;
-      }
-
-      if (node.type === 'text') {
-        const text =
-          node as Text;
-
-        for (const match of text.value.matchAll(WIKI_LINK_PATTERN)) {
-          links.push(
-            { kind: 'wiki',
-              target:
-                (match[1] ?? '').trim(),
-              text:
-                (match[2] ?? match[1] ?? '').trim(),
-              ...offsetPositionOf(
-                document,
-                text,
-                match.index) });
-        }
-      }
+      links.push(
+        ...linksOf(
+          document,
+          node));
     });
+
+  return links;
+}
+
+/**
+ * The links one node carries. A text node carries as many as it holds wiki
+ * links; every other kind carries one or none.
+ */
+function linksOf(
+    document: MarkdownDocument,
+    node: Node
+  ): ExtractedLink[]
+{
+  if (node.type === 'link') {
+    return [ inlineLink(
+      document,
+      node as Link) ];
+  }
+
+  if (node.type === 'image') {
+    return [ imageLink(
+      document,
+      node as Image) ];
+  }
+
+  if (node.type === 'linkReference') {
+    return [ referenceLink(
+      document,
+      node as LinkReference) ];
+  }
+
+  if (node.type === 'definition') {
+    return [ definitionLink(
+      document,
+      node as Definition) ];
+  }
+
+  if (node.type === 'text') {
+    return wikiLinks(
+      document,
+      node as Text);
+  }
+
+  return [ ];
+}
+
+function inlineLink(
+    document: MarkdownDocument,
+    link: Link
+  ): ExtractedLink
+{
+  return { kind: 'inline',
+           target: link.url,
+           text:
+             toPlainText(link),
+           ...positionOf(
+             document,
+             link) };
+}
+
+function imageLink(
+    document: MarkdownDocument,
+    image: Image
+  ): ExtractedLink
+{
+  return { kind: 'image',
+           target: image.url,
+           text: image.alt ?? '',
+           ...positionOf(
+             document,
+             image) };
+}
+
+function referenceLink(
+    document: MarkdownDocument,
+    reference: LinkReference
+  ): ExtractedLink
+{
+  return { kind: 'reference',
+           target:
+             reference.identifier,
+           text:
+             toPlainText(reference),
+           ...positionOf(
+             document,
+             reference) };
+}
+
+function definitionLink(
+    document: MarkdownDocument,
+    definition: Definition
+  ): ExtractedLink
+{
+  return { kind: 'definition',
+           target: definition.url,
+           text:
+             definition.identifier,
+           ...positionOf(
+             document,
+             definition) };
+}
+
+function wikiLinks(
+    document: MarkdownDocument,
+    text: Text
+  ): ExtractedLink[]
+{
+  const links: ExtractedLink[] = [ ];
+
+  for (const match of text.value.matchAll(WIKI_LINK_PATTERN)) {
+    const target =
+      (match[1] ?? '').trim();
+
+    links.push(
+      { kind: 'wiki',
+        target,
+        text:
+          (match[2] ?? target).trim(),
+        ...offsetPositionOf(
+          document,
+          text,
+          match.index) });
+  }
 
   return links;
 }
@@ -518,14 +567,26 @@ export function extractData(
 /**
  * Parse `value` as an extraction kind, rejecting unknown values.
  */
+function asKindName(
+    value: unknown
+  ): string
+{
+  if (
+    typeof value
+    !== 'string'
+  ) {
+    return '';
+  }
+
+  return value.trim().toLowerCase();
+}
+
 export function toExtractionKind(
     value: unknown
   ): ExtractionKind
 {
   const kind =
-    typeof value === 'string'
-      ? value.trim().toLowerCase()
-      : '';
+    asKindName(value);
 
   const known =
     EXTRACTION_KINDS.find(

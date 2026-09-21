@@ -1,6 +1,9 @@
 import fs
   from 'node:fs/promises';
-import { createServer }
+import { messageOf }
+  from '../formatting.js';
+import { createServer,
+         Server }
   from 'node:net';
 import { Readable }
   from 'node:stream';
@@ -12,6 +15,8 @@ import { packageVersion }
   from '../commands/version.js';
 import { endpointIsFile }
   from './endpoint.js';
+import { readLines }
+  from './lines.js';
 import { createTools,
          McpTool }
   from './tools.js';
@@ -113,36 +118,22 @@ export async function runMcpServer(
 
   const pending: Promise<void>[] = [ ];
 
-  let buffer = '';
-
-  input.setEncoding('utf8');
-
-  input.on(
-    'data',
+  readLines(
+    input,
     (
-        chunk: string
+        line
       ) =>
     {
-      buffer += chunk;
-
-      const lines =
-        buffer.split('\n');
-
-      buffer =
-        lines.pop() ?? '';
-
-      for (const line of lines) {
-        if (line.trim() === '') {
-          continue;
-        }
-
-        pending.push(
-          respond(
-            line,
-            tools,
-            write,
-            logger));
+      if (line.trim() === '') {
+        return;
       }
+
+      pending.push(
+        respond(
+          line,
+          tools,
+          write,
+          logger));
     });
 
   await new Promise<void>(
@@ -201,16 +192,25 @@ export async function serveEndpoint(
     });
 
   return { close:
-             (): Promise<void> =>
-           new Promise<void>(
-             (
-                 resolve
-               ) =>
+             async (): Promise<void> =>
              {
-               server.close(() => resolve());
-             })
-             .then(
-               () => removeStaleEndpoint(endpoint)) };
+             await stopListening(server);
+
+             await removeStaleEndpoint(endpoint);
+           } };
+}
+
+function stopListening(
+    server: Server
+  ): Promise<void>
+{
+  return new Promise<void>(
+    (
+        resolve
+      ) =>
+    {
+      server.close(() => resolve());
+    });
 }
 
 /**
@@ -302,18 +302,31 @@ async function callTool(
     return { content:
                [ { type: 'text',
                    text:
-                     result === undefined
-                       ? `${tool.name} completed`
-                       : JSON.stringify(
-                         result,
-                         null,
-                         2) } ] };
+                     describeResult(
+                       tool.name,
+                       result) } ] };
   } catch (error) {
     return toolError(
-      error instanceof Error
-        ? error.message
-        : String(error));
+      messageOf(error));
   }
+}
+
+/**
+ * A tool that answers with nothing says so, rather than sending no text.
+ */
+function describeResult(
+    name: string,
+    result: unknown
+  ): string
+{
+  if (result === undefined) {
+    return `${name} completed`;
+  }
+
+  return JSON.stringify(
+    result,
+    null,
+    2);
 }
 
 function toolError(

@@ -20,7 +20,6 @@ export {
   createFolder,
   DEFAULT_EXCLUDES,
   listEntries,
-  resolveTransferTarget,
   moveEntry,
   readTextFile,
   removeEntry,
@@ -72,7 +71,6 @@ export {
 } from './format.js';
 
 export {
-  isInsideLibrary,
   LibraryPathError,
   resolveLibraryPath,
   resolveLibraryRoot,
@@ -85,7 +83,6 @@ export {
 
 export {
   documentLine,
-  documentOffset,
   formatMarkdown,
   parseMarkdown,
   splitFrontMatter,
@@ -105,18 +102,15 @@ export {
 } from './mcp/server.js';
 
 export {
-  connectToEndpoint,
   createInProcessClient,
   openClient,
-  startInternalServer,
   type ClientKind,
   type McpClient,
   type OpenClientOptions
 } from './mcp/client.js';
 
 export {
-  endpointFor,
-  endpointIsFile
+  endpointFor
 } from './mcp/endpoint.js';
 
 export {
@@ -164,11 +158,7 @@ export {
 } from './relocate.js';
 
 export {
-  retarget,
-  rewriteLinks,
   type LinkEdit,
-  type PathMapping,
-  type RewriteResult,
   type SkippedLink
 } from './link-rewrite.js';
 

@@ -3,7 +3,8 @@ import { watch,
   from 'node:fs';
 import { Logger }
   from 'asljs-logging';
-import { toPosixPath }
+import { messageOf,
+         toPosixPath }
   from './formatting.js';
 import { LinkGraph }
   from './graph.js';
@@ -33,6 +34,41 @@ export interface LibraryWatcher
 }
 
 const DEFAULT_DEBOUNCE_MS = 100;
+
+/**
+ * A rebuild covers everything, so it names no single path.
+ */
+function report(
+    options: WatchOptions,
+    rebuilt: boolean,
+    paths: string[]
+  ): void
+{
+  if (rebuilt) {
+    options.onApplied?.([ ]);
+
+    return;
+  }
+
+  options.onApplied?.(paths);
+}
+
+/**
+ * Not every platform reports which file changed.
+ */
+function changedPath(
+    fileName: string | Buffer | null
+  ): string
+{
+  if (
+    typeof fileName
+    !== 'string'
+  ) {
+    return '';
+  }
+
+  return toPosixPath(fileName);
+}
 
 /**
  * Keep a link graph current by watching the library for changes.
@@ -89,16 +125,14 @@ export function watchLibrary(
         } catch (error) {
           options.logger?.warning(
             `Failed to apply library changes: ${
-              error instanceof Error
-                ? error.message
-                : String(error)}`);
+              messageOf(error)}`);
         }
 
         if (!closed) {
-          options.onApplied?.(
-            full
-              ? [ ]
-              : paths);
+          report(
+            options,
+            full,
+            paths);
         }
       })();
     };
@@ -133,9 +167,7 @@ export function watchLibrary(
           }
 
           const changed =
-            typeof fileName === 'string'
-              ? toPosixPath(fileName)
-              : '';
+            changedPath(fileName);
 
           if (
             changed === ''
@@ -151,9 +183,7 @@ export function watchLibrary(
   } catch (error) {
     options.logger?.warning(
       `Cannot watch the library for changes: ${
-        error instanceof Error
-          ? error.message
-          : String(error)}`);
+        messageOf(error)}`);
   }
 
   return { close:

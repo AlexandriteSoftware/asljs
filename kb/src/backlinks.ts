@@ -4,7 +4,8 @@ import { ExtractedLink,
          extractLinks,
          LinkKind }
   from './extract.js';
-import { listEntries,
+import { globPattern,
+         listEntries,
          readTextFile }
   from './files.js';
 import { isInsideLibrary,
@@ -95,10 +96,9 @@ export async function findBacklinks(
     await listEntries(
       root,
       { pattern:
-          options.pattern
-          && options.pattern.trim() !== ''
-            ? options.pattern
-            : DEFAULT_PATTERN,
+          globPattern(
+            options.pattern,
+            DEFAULT_PATTERN),
         kind: 'file',
         hidden: options.hidden });
 

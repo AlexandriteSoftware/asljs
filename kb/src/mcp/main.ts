@@ -5,6 +5,8 @@ import { createLinkGraph }
   from '../graph.js';
 import { resolveLibraryRoot }
   from '../library.js';
+import { messageOf }
+  from '../formatting.js';
 import { createLoggerProvider }
   from '../logger.js';
 import { watchLibrary }
@@ -239,9 +241,9 @@ async function startEndpoint(
     environment.loggerProvider.getLogger('kb.mcp');
 
   const endpoint =
-    requested === ''
-      ? endpointFor(environment.library)
-      : requested;
+    addressOf(
+      environment,
+      requested);
 
   try {
     const server =
@@ -257,6 +259,21 @@ async function startEndpoint(
     logger.warning(
       `Cannot listen on ${endpoint}: ${messageOf(error)}`);
   }
+}
+
+/**
+ * An address that was asked for, or the address of the library.
+ */
+function addressOf(
+    environment: Environment,
+    requested: string
+  ): string
+{
+  if (requested === '') {
+    return endpointFor(environment.library);
+  }
+
+  return requested;
 }
 
 /**
@@ -304,13 +321,3 @@ function valueAt(
   return value;
 }
 
-function messageOf(
-    error: unknown
-  ): string
-{
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return String(error);
-}

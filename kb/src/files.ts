@@ -1,3 +1,5 @@
+import { Stats }
+  from 'node:fs';
 import fs
   from 'node:fs/promises';
 import path
@@ -53,10 +55,6 @@ export interface ListOptions
    */
   hidden?: boolean;
 
-  /**
-   * Additional glob patterns to exclude, on top of `DEFAULT_EXCLUDES`.
-   */
-  excludes?: string[];
 }
 
 export interface OverwriteOptions
@@ -94,6 +92,28 @@ export const DEFAULT_EXCLUDES =
 const DEFAULT_PATTERN = '**/*';
 
 /**
+ * Take a glob pattern, or the fallback when none was given.
+ */
+export function globPattern(
+    value: string | undefined,
+    fallback: string
+  ): string
+{
+  if (value === undefined) {
+    return fallback;
+  }
+
+  const pattern =
+    value.trim();
+
+  if (pattern === '') {
+    return fallback;
+  }
+
+  return toPosixPath(pattern);
+}
+
+/**
  * List library entries matching a glob pattern, sorted by path.
  */
 export async function listEntries(
@@ -102,20 +122,16 @@ export async function listEntries(
   ): Promise<LibraryEntry[]>
 {
   const pattern =
-    options.pattern
-    && options.pattern.trim() !== ''
-      ? toPosixPath(
-        options.pattern.trim())
-      : DEFAULT_PATTERN;
+    globPattern(
+      options.pattern,
+      DEFAULT_PATTERN);
 
   const matches =
     await glob(
       pattern,
       { cwd: root,
         dot: options.hidden === true,
-        ignore:
-          [ ...DEFAULT_EXCLUDES,
-            ...(options.excludes ?? [ ]) ],
+        ignore: DEFAULT_EXCLUDES,
         nodir: false,
         absolute: true });
 
@@ -426,13 +442,17 @@ export async function resolveTransferTarget(
       root,
       target);
 
+  if (await isFolder(requestedTarget)) {
+    return toLibraryPath(
+      root,
+      path.join(
+        requestedTarget,
+        path.basename(absoluteSource)));
+  }
+
   return toLibraryPath(
     root,
-    await isFolder(requestedTarget)
-      ? path.join(
-        requestedTarget,
-        path.basename(absoluteSource))
-      : requestedTarget);
+    requestedTarget);
 }
 
 async function planTransfer(
@@ -454,17 +474,13 @@ async function planTransfer(
         absoluteSource)}`);
   }
 
-  const requestedTarget =
+  const absoluteTarget =
     resolveLibraryPath(
       root,
-      target);
-
-  const absoluteTarget =
-    await isFolder(requestedTarget)
-      ? path.join(
-        requestedTarget,
-        path.basename(absoluteSource))
-      : requestedTarget;
+      await resolveTransferTarget(
+        root,
+        source,
+        target));
 
   if (absoluteTarget === absoluteSource) {
     throw new Error(
@@ -511,8 +527,7 @@ async function describe(
   ): Promise<LibraryEntry | null>
 {
   const stats =
-    await fs.lstat(absolute)
-      .catch(() => null);
+    await statOrNull(absolute);
 
   if (!stats) {
     return null;
@@ -525,37 +540,61 @@ async function describe(
     return null;
   }
 
-  return { path:
-             toLibraryPath(
-               root,
-               absolute),
-           kind:
-             stats.isDirectory()
-               ? 'folder'
-               : 'file',
-           size:
-             stats.isDirectory()
-               ? 0
-               : stats.size,
-           modified:
-             stats.mtime.toISOString() };
+  const entryPath =
+    toLibraryPath(
+      root,
+      absolute);
+
+  const modified =
+    stats.mtime.toISOString();
+
+  if (stats.isDirectory()) {
+    return { path: entryPath,
+             kind: 'folder',
+             size: 0,
+             modified };
+  }
+
+  return { path: entryPath,
+           kind: 'file',
+           size: stats.size,
+           modified };
 }
 
 async function exists(
     absolute: string
   ): Promise<boolean>
 {
-  return await fs.lstat(absolute)
-    .then(() => true)
-    .catch(() => false);
+  const stats =
+    await statOrNull(absolute);
+
+  return stats !== null;
 }
 
 async function isFolder(
     absolute: string
   ): Promise<boolean>
 {
-  return await fs.lstat(absolute)
-    .then(
-      stats => stats.isDirectory())
-    .catch(() => false);
+  const stats =
+    await statOrNull(absolute);
+
+  if (!stats) {
+    return false;
+  }
+
+  return stats.isDirectory();
+}
+
+/**
+ * Stats of an entry, or `null` when it is not there.
+ */
+async function statOrNull(
+    absolute: string
+  ): Promise<Stats | null>
+{
+  try {
+    return await fs.lstat(absolute);
+  } catch {
+    return null;
+  }
 }
