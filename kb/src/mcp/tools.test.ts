@@ -56,6 +56,7 @@ test(
             'kb_copy',
             'kb_remove',
             'kb_search',
+            'kb_backlinks',
             'kb_format',
             'kb_extract',
             'kb_info' ]);

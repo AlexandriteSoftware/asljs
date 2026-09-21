@@ -23,14 +23,25 @@ export type LinkKind =
   | 'inline'
   | 'image'
   | 'reference'
+  | 'definition'
   | 'wiki';
 
 export interface ExtractedLink
 {
   kind: LinkKind;
+
+  /**
+   * Link destination as written. For `reference` this is the definition
+   * identifier rather than a path; the matching `definition` entry carries
+   * the path.
+   */
   target: string;
+
   text: string;
+
   line: number;
+
+  column: number;
 }
 
 export interface ExtractedTask
@@ -111,10 +122,9 @@ export function extractLinks(
             target: link.url,
             text:
               toPlainText(link),
-            line:
-              lineOf(
-                document,
-                link) });
+            ...positionOf(
+              document,
+              link) });
 
         return;
       }
@@ -127,10 +137,9 @@ export function extractLinks(
           { kind: 'image',
             target: image.url,
             text: image.alt ?? '',
-            line:
-              lineOf(
-                document,
-                image) });
+            ...positionOf(
+              document,
+              image) });
 
         return;
       }
@@ -145,10 +154,25 @@ export function extractLinks(
               reference.identifier,
             text:
               toPlainText(reference),
-            line:
-              lineOf(
-                document,
-                reference) });
+            ...positionOf(
+              document,
+              reference) });
+
+        return;
+      }
+
+      if (node.type === 'definition') {
+        const definition =
+          node as Node & { identifier: string; url: string; };
+
+        links.push(
+          { kind: 'definition',
+            target: definition.url,
+            text:
+              definition.identifier,
+            ...positionOf(
+              document,
+              definition) });
 
         return;
       }
@@ -164,10 +188,10 @@ export function extractLinks(
                 (match[1] ?? '').trim(),
               text:
                 (match[2] ?? match[1] ?? '').trim(),
-              line:
-                lineOf(
-                  document,
-                  text) });
+              ...offsetPositionOf(
+                document,
+                text,
+                match.index) });
         }
       }
     });
@@ -362,6 +386,62 @@ function lineOf(
   return documentLine(
     document,
     line);
+}
+
+function positionOf(
+    document: MarkdownDocument,
+    node: Node
+  ): { line: number; column: number; }
+{
+  return { line:
+             lineOf(
+               document,
+               node),
+           column:
+             node.position?.start.column ?? 1 };
+}
+
+/**
+ * Position of a match inside the value of a text node.
+ *
+ * Node positions cover the whole text node, which may span several lines, so
+ * the offset of the match has to be walked. The value of a text node is the
+ * decoded text, so a line holding character references or escapes can report
+ * a column that is slightly short of the source column.
+ */
+function offsetPositionOf(
+    document: MarkdownDocument,
+    node: Text,
+    offset: number
+  ): { line: number; column: number; }
+{
+  const prefix =
+    node.value.slice(
+      0,
+      offset);
+
+  const breaks =
+    prefix.split('\n');
+
+  const start =
+    node.position?.start
+    ?? { line: 1,
+         column: 1 };
+
+  if (breaks.length === 1) {
+    return { line:
+               documentLine(
+                 document,
+                 start.line),
+             column: start.column + offset };
+  }
+
+  return { line:
+             documentLine(
+               document,
+               start.line + breaks.length - 1),
+           column:
+             (breaks[breaks.length - 1] ?? '').length + 1 };
 }
 
 export type ExtractionKind =

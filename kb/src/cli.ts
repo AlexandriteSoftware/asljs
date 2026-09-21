@@ -2,6 +2,8 @@ import path
   from 'node:path';
 import { Command }
   from 'commander';
+import { execBacklinks }
+  from './commands/backlinks.js';
 import { execConfig }
   from './commands/config.js';
 import { execCopy }
@@ -405,6 +407,38 @@ function createCli(
               parseCountOption(
                 options.maxResults,
                 '--max-results'),
+            format:
+              formatOption(command) });
+      });
+
+  cli.command('backlinks')
+    .description(
+      'List the markdown links that point at an entry')
+    .argument(
+      '<path>',
+      'Library-relative path')
+    .option(
+      '--pattern <pattern>',
+      'Glob pattern limiting the documents to scan')
+    .option(
+      '--hidden',
+      'Include dot files and dot folders')
+    .option(
+      '--include-self',
+      'Include links the document makes to itself')
+    .action(
+      async (
+          value,
+          options,
+          command
+        ) =>
+      {
+        await environment.resolve(execBacklinks)(
+          environment,
+          { path: value,
+            pattern: options.pattern,
+            hidden: options.hidden === true,
+            includeSelf: options.includeSelf === true,
             format:
               formatOption(command) });
       });

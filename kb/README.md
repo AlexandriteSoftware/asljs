@@ -114,6 +114,7 @@ Search, formatting, and extraction:
   files that need formatting without writing them.
 - `kb extract <kind> <path>` - extract `headings`, `links`, `tasks`, `tables`,
   `code`, `front-matter` or `all` from a markdown document.
+- `kb backlinks <path>` - list the markdown links that point at an entry.
 - `kb info <path>` - print a summary of a document.
 
 Diagnostics:
@@ -129,9 +130,10 @@ Global options:
 - `--loglevel <level>` and `--logfile <path>` - logging, also settable through
   `KB_LOG_LEVEL` and `KB_LOG_FILE`.
 
-Exit codes are `0` on success and `1` on failure. Two commands report a
-negative outcome with `1` as well: `search` when nothing matches, and
-`format --check` when at least one file needs formatting.
+Exit codes are `0` on success and `1` on failure. Three commands report a
+negative outcome with `1` as well: `search` when nothing matches, `backlinks`
+when nothing links to the entry, and `format --check` when at least one file
+needs formatting.
 
 ## Moving And Copying
 
@@ -145,6 +147,9 @@ kb move notes/one.md archive/two.md # archive/two.md
 ```
 
 An existing target is never replaced unless `--overwrite` is given.
+
+Moving an entry does not rewrite the links that point at it. Run
+`kb backlinks` first to see what a move would break.
 
 ## Search
 
@@ -177,6 +182,48 @@ to the whole file, front matter included.
 - `front-matter` - the parsed YAML mapping, or `null`.
 - `all` - every kind above, in one object.
 
+## Backlinks
+
+`kb backlinks <path>` scans the markdown documents of the library and reports
+every link that points at one entry, with the file, line, column, link kind and
+the target as written:
+
+```bash
+kb backlinks notes/budget.md
+```
+
+```text
+archive/2025.md:14:3: inline ../notes/budget.md
+archive/2025.md:31:1: definition ../notes/budget.md
+inbox/quick.md:3:16: wiki budget
+```
+
+The entry does not have to exist, so this answers two questions: what a rename
+would break, and what still points at a note that is already gone.
+
+A link counts as pointing at the entry when:
+
+- it is a wiki link written as a bare name, and the entry has that name, in any
+  folder;
+- it is a wiki link containing a slash, and that path, resolved from the
+  library root, is the entry;
+- it starts with `/`, and that path, resolved from the library root, is the
+  entry;
+- it is any other relative target that, resolved from the folder of the linking
+  document, is the entry.
+
+Fragments and query strings are dropped before resolving, so
+`budget.md#summary` counts. A target without an extension also matches the
+markdown file of that name, so `[budget](budget)` counts. External URLs, bare
+fragments such as `[here](#plan)`, and paths that leave the library never
+count.
+
+Inline links, images, and link reference definitions are all reported, because
+each holds a path that a rename has to update. A `[text][id]` reference is not
+reported on its own; its `[id]: path` definition is.
+
+Only markdown documents are scanned, since only they carry links.
+
 ## Formatting
 
 `kb format` re-prints markdown in the repository markdown style: ATX headings,
@@ -199,9 +246,9 @@ preserved verbatim, because re-printing YAML would lose comments and key order.
 ```
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_format`, `kb_extract` and
-`kb_info`. Each returns its result as JSON text, and reports a failure as an
-error result rather than as a protocol error.
+`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_format`,
+`kb_extract` and `kb_info`. Each returns its result as JSON text, and reports a
+failure as an error result rather than as a protocol error.
 
 Standard output carries the JSON-RPC stream, so the MCP server logs nothing
 unless `KB_LOG_FILE` names a file to write to.

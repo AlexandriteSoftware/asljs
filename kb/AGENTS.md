@@ -30,8 +30,16 @@ Public behavior at a glance:
   refuses the library root
 - `format` preserves front matter verbatim and re-prints only the body
 - extraction line numbers refer to the whole file, front matter included
-- `kb search` exits with 1 when nothing matches; `kb format --check` exits with
-  1 when a file needs formatting
+- `extractLinks` reports inline links, images, reference uses, reference
+  definitions and wiki links, each with a line and a column
+- backlinks scan markdown documents only, and resolve wiki names anywhere in
+  the library, `/` paths from the root, and everything else from the folder of
+  the linking document
+- a backlinks target does not have to exist, so a rename or a deletion can be
+  checked before and after
+- `kb search` exits with 1 when nothing matches, `kb backlinks` exits with 1
+  when nothing links to the entry, and `kb format --check` exits with 1 when a
+  file needs formatting
 - the MCP server reports tool failures as error results, not protocol errors
 
 Use this package when:
@@ -41,6 +49,7 @@ Use this package when:
 - you need text search that also covers PDF text layers
 - you need structured data out of markdown: headings, links, tasks, tables,
   code blocks, front matter
+- you need to know what links to a document before renaming or removing it
 
 Do not assume:
 
@@ -49,6 +58,8 @@ Do not assume:
 - that scanned PDF files are searchable; there is no OCR
 - that `format` rewrites YAML front matter; it does not
 - that internal modules such as `output.js` are part of the public API
+- that moving an entry repairs the links that point at it; it does not, and
+  `findBacklinks` is what reports them
 
 ## Preferred Usage Patterns
 
@@ -60,6 +71,8 @@ Do not assume:
   rules stay consistent.
 - Use `parseMarkdown` plus the `extract*` helpers rather than parsing markdown
   with regular expressions.
+- Use `findBacklinks` rather than grepping for a file name, because a raw
+  search misses relative paths, root paths and wiki names.
 - Use `createDefaultReaderRegistry` to get the supported file types, and
   register a `DocumentReader` to add one.
 - Keep stable public usage on the package-root exports; treat other `src/*`
@@ -76,7 +89,9 @@ Do not assume:
 - If adding a reader, then re-check `verbatim`, because search reports line
   numbers differently for non-verbatim readers.
 - If changing a CLI command, then re-check the text and the JSON output, and
-  the exit code for `search` and `format --check`.
+  the exit code for `search`, `backlinks` and `format --check`.
+- If changing link extraction, then re-check `backlinks.ts`, which resolves
+  `ExtractedLink` targets into library paths.
 - If adding or renaming a public export, then update `src/index.test.ts`, which
   pins the package-root API.
 - If adding an MCP tool, then update the tool list assertions in
@@ -101,4 +116,5 @@ npm -w kb run build
 - `asljs-kb` does not index or cache; every command reads the filesystem.
 - `asljs-kb` does not render markdown to HTML.
 - `asljs-kb` does not perform OCR, and does not write PDF files.
-- `asljs-kb` does not rewrite links when an entry is moved.
+- `asljs-kb` does not rewrite links when an entry is moved; `kb backlinks`
+  reports them, and the edit is left to the caller.

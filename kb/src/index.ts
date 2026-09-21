@@ -1,4 +1,11 @@
 export {
+  findBacklinks,
+  resolveLinkTarget,
+  type Backlink,
+  type BacklinkOptions
+} from './backlinks.js';
+
+export {
   runCli
 } from './cli.js';
 

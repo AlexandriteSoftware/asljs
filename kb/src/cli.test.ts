@@ -126,6 +126,36 @@ test(
   });
 
 test(
+  'runCli passes backlinks options through',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/one.md': '# One\n',
+        'notes/two.md':
+          '# Two\n\nSee [one](one.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          createTestEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'backlinks',
+              'notes/one.md',
+              '--pattern',
+              'notes/**/*.md' ],
+            environment),
+          0);
+
+        assert.equal(
+          environment.stdout.toString(),
+          'notes/two.md:3:5: inline one.md\n');
+      });
+  });
+
+test(
   'runCli reports command failures on stderr',
   async () =>
   {

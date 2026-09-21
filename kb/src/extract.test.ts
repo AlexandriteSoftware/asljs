@@ -89,6 +89,55 @@ test(
   });
 
 test(
+  'extractLinks reports definitions with their destination',
+  () =>
+  {
+    const withDefinition =
+      parseMarkdown(
+        [ '# One',
+          '',
+          'A [reference][two] link.',
+          '',
+          '[two]: notes/two.md',
+          '' ].join('\n'));
+
+    assert.deepEqual(
+      extractLinks(withDefinition)
+        .map(
+          link => [ link.kind,
+                    link.target,
+                    link.line,
+                    link.column ]),
+      [ [ 'reference',
+          'two',
+          3,
+          3 ],
+        [ 'definition',
+          'notes/two.md',
+          5,
+          1 ] ]);
+  });
+
+test(
+  'extractLinks positions a wiki link inside a multi-line paragraph',
+  () =>
+  {
+    const paragraph =
+      parseMarkdown(
+        [ 'A first line of text,',
+          'then [[a target]] on the second line.',
+          '' ].join('\n'));
+
+    assert.deepEqual(
+      extractLinks(paragraph)
+        .map(
+          link => [ link.line,
+                    link.column ]),
+      [ [ 2,
+          6 ] ]);
+  });
+
+test(
   'extractTasks reports checked state',
   () =>
   {

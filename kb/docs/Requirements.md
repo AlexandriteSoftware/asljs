@@ -115,8 +115,10 @@ yields `null`.
 The supported kinds are:
 
 - `headings`: level, text, GitHub-style anchor slug, line;
-- `links`: inline links, images, reference links and `[[wiki links]]`, each
-  with kind, target, text, line;
+- `links`: inline links, images, reference uses, reference definitions and
+  `[[wiki links]]`, each with kind, target, text, line and column. A reference
+  use carries the definition identifier as its target; the matching definition
+  carries the path;
 - `tasks`: GFM task list items with their checked state;
 - `tables`: GFM tables, as a header row plus body rows;
 - `code`: fenced and indented code blocks, with language and content;
@@ -125,11 +127,45 @@ The supported kinds are:
 
 Reported line numbers refer to the whole document, front matter included.
 
+## Backlinks
+
+Backlinks answer which documents link to one entry.
+
+Only markdown documents are scanned, because only they carry links. The entry
+itself does not have to exist, so backlinks can be inspected before a file is
+created, and after it is moved or removed.
+
+A link points at the entry when one of these holds:
+
+- if the link is a wiki link written as a bare name, then it matches any
+  document with that name, in any folder;
+- if the link is a wiki link containing a slash, then its path is resolved from
+  the library root;
+- if the target starts with `/`, then its path is resolved from the library
+  root;
+- otherwise the target is resolved from the folder of the linking document.
+
+Before resolving, the fragment and the query string are dropped, so an anchored
+link counts. A target without an extension also matches the markdown file of
+that name.
+
+These never count: a reference use, which carries an identifier rather than a
+path; an external URL; a bare fragment; and a path that leaves the library.
+
+By default a document's links to itself are excluded; `includeSelf` includes
+them.
+
+Each backlink carries the path of the linking document, a one-based line and
+column, the link kind, the target as written, and the link text.
+
+Moving an entry does not rewrite the links that point at it. Backlinks report
+what a move or a removal would break; the edit is left to the caller.
+
 ## Command Line Interface
 
 The CLI is `kb`. Commands are `list`, `read`, `write`, `new`, `mkdir`, `move`,
-`copy`, `remove`, `search`, `format`, `extract`, `info`, `config` and
-`version`.
+`copy`, `remove`, `search`, `backlinks`, `format`, `extract`, `info`, `config`
+and `version`.
 
 Output format is `text` or `json`, chosen with the global `--format` option.
 `extract` defaults to `json`, because its result is structured data; every
@@ -140,6 +176,7 @@ Exit codes:
 - `0` on success;
 - `1` on failure, with the message written to standard error;
 - `1` from `search` when nothing matches;
+- `1` from `backlinks` when nothing links to the entry;
 - `1` from `format --check` when at least one file needs formatting.
 
 Logging is off the output path. `--loglevel` and `--logfile` take precedence
@@ -151,9 +188,9 @@ The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 over stdio
 and implements `initialize`, `tools/list` and `tools/call`.
 
 The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_format`, `kb_extract` and
-`kb_info`. Each declares a JSON Schema for its arguments, validates them, and
-returns its result as JSON text.
+`kb_move`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_format`,
+`kb_extract` and `kb_info`. Each declares a JSON Schema for its arguments,
+validates them, and returns its result as JSON text.
 
 A tool failure is reported as a successful response carrying `isError`, as the
 protocol requires. Only an unknown method produces a JSON-RPC error.

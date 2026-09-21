@@ -1,3 +1,5 @@
+import { findBacklinks }
+  from '../backlinks.js';
 import { Environment }
   from '../environment.js';
 import { EntryKind,
@@ -343,6 +345,46 @@ export function createTools(
               optionalNumber(
                 args,
                 'maxResults') }) },
+           { name: 'kb_backlinks',
+             description:
+               'List the markdown links that point at one entry, with the '
+               + 'file, line, column and the link target as written. The entry '
+               + 'does not have to exist, so this also answers what a rename '
+               + 'would break.',
+             inputSchema:
+               objectSchema(
+                 { path:
+                     stringProperty(
+                       'Library-relative path of the entry to find links to.'),
+                   pattern:
+                     stringProperty(
+                       'Glob pattern limiting the documents to scan.'),
+                   hidden:
+                     booleanProperty(
+                       'Include dot files and dot folders.'),
+                   includeSelf:
+                     booleanProperty(
+                       'Include links the document makes to itself.') },
+                 [ 'path' ]),
+             invoke:
+               async args =>
+        await findBacklinks(
+          environment.library,
+          requireString(
+            args,
+            'path'),
+          { pattern:
+              optionalString(
+                args,
+                'pattern'),
+            hidden:
+              optionalBoolean(
+                args,
+                'hidden'),
+            includeSelf:
+              optionalBoolean(
+                args,
+                'includeSelf') }) },
            { name: 'kb_format',
              description:
                'Format markdown files. Set `write` to false to report the '
