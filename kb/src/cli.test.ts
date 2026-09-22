@@ -1,0 +1,317 @@
+import assert
+  from 'node:assert/strict';
+import test
+  from 'node:test';
+import { runCli }
+  from './cli.js';
+import { createInProcessClient }
+  from './mcp/client.js';
+import { createTestEnvironment,
+         withLibrary }
+  from './testing/library.js';
+
+/**
+ * The CLI reaches a server for every library command. Tests give it one in
+ * this process, so no second process is started.
+ */
+function testEnvironment(
+    library: Parameters<typeof createTestEnvironment>[0]
+  ): ReturnType<typeof createTestEnvironment>
+{
+  const environment =
+    createTestEnvironment(library);
+
+  environment.openClient =
+    () =>
+    Promise.resolve(
+      createInProcessClient(environment));
+
+  return environment;
+}
+
+const FILES =
+  { 'notes/one.md':
+      '# One\n\nThe budget line.\n' };
+
+test(
+  'runCli prints help when no arguments are given',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ ],
+            environment),
+          0);
+
+        assert.match(
+          environment.stdout.toString(),
+          /Usage: kb/);
+      });
+  });
+
+test(
+  'runCli runs a command against the library root',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'list',
+              '**/*.md' ],
+            environment),
+          0);
+
+        assert.equal(
+          environment.stdout.toString(),
+          'notes/one.md\n');
+      });
+  });
+
+test(
+  'runCli resolves --library relative to the working directory',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        environment.library = 'unset';
+
+        assert.equal(
+          await runCli(
+            [ '--library',
+              'notes',
+              'list' ],
+            environment),
+          0);
+
+        assert.equal(
+          environment.stdout.toString(),
+          'one.md\n');
+      });
+  });
+
+test(
+  'runCli honours the global --format option',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ '--format',
+              'json',
+              'search',
+              'budget' ],
+            environment),
+          0);
+
+        const report =
+          JSON.parse(
+            environment.stdout.toString()) as
+            { matches: unknown[]; };
+
+        assert.equal(
+          report.matches.length,
+          1);
+      });
+  });
+
+test(
+  'runCli passes backlinks options through',
+  async () =>
+  {
+    await withLibrary(
+      { 'notes/one.md': '# One\n',
+        'notes/two.md':
+          '# Two\n\nSee [one](one.md).\n' },
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'backlinks',
+              'notes/one.md',
+              '--pattern',
+              'notes/**/*.md' ],
+            environment),
+          0);
+
+        assert.equal(
+          environment.stdout.toString(),
+          'notes/two.md:3:5: inline one.md\n');
+      });
+  });
+
+test(
+  'runCli reports command failures on stderr',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'read',
+              'missing.md' ],
+            environment),
+          1);
+
+        assert.match(
+          environment.stderr.toString(),
+          /does not exist/);
+      });
+  });
+
+test(
+  'runCli reports an unknown command with help',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'index' ],
+            environment),
+          1);
+
+        assert.match(
+          environment.stderr.toString(),
+          /unknown command/i);
+      });
+  });
+
+test(
+  'runCli reports an unknown option',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'list',
+              '--deep' ],
+            environment),
+          1);
+
+        assert.match(
+          environment.stderr.toString(),
+          /Unknown option: --deep\./);
+      });
+  });
+
+test(
+  'runCli rejects a non-positive --max-results value',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        assert.equal(
+          await runCli(
+            [ 'search',
+              'budget',
+              '--max-results',
+              '0' ],
+            environment),
+          1);
+
+        assert.match(
+          environment.stderr.toString(),
+          /requires a positive integer/);
+      });
+  });
+
+test(
+  'runCli uses the registered command implementation',
+  async () =>
+  {
+    await withLibrary(
+      FILES,
+      async (
+          library
+        ) =>
+      {
+        const environment =
+          testEnvironment(library);
+
+        const { execVersion } =
+          await import('./commands/version.js');
+
+        environment.register(
+          execVersion,
+          (): Promise<void> =>
+          {
+            environment.stdout.write('replaced\n');
+
+            return Promise.resolve();
+          });
+
+        await runCli(
+          [ 'version' ],
+          environment);
+
+        assert.equal(
+          environment.stdout.toString(),
+          'replaced\n');
+      });
+  });

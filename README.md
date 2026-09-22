@@ -11,6 +11,7 @@ Applications:
 Tools:
 
 - [cog][COG] - AI agents context manager.
+- [kb][KB] - knowledge base CLI and MCP server for markdown libraries.
 - [part][PRT] - defines project artefacts in markdown and validates them with
   rules.
 - [sfmt][SFMT] - code formatter for TypeScript.
@@ -39,6 +40,7 @@ Libraries:
 [OBS]: <./observable/README.md>
 [TDR]: <./tmpdir/README.md>
 [COG]: <./cog/README.md>
+[KB]: <./kb/README.md>
 [PRT]: <./part/README.md>
 [SFMT]: <./sfmt/README.md>
 [APPS]: <./app-builder/README.md>
