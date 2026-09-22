@@ -3,64 +3,67 @@ import { type CopilotRequest }
 import { TaskRegistry }
   from '../task.js';
 import { type ReadParameters }
-  from '../tools/read.js';
-import { BuildTask,
-         type BuildTaskParameters }
-  from './build.js';
-import { CleanWorkingFolderTask,
-         type CleanWorkingFolderTaskParameters }
-  from './clean-working-folder.js';
-import { CommitIfChangedTask,
-         type CommitIfChangedTaskParameters }
-  from './commit-if-changed.js';
-import { CommitTask,
-         type CommitTaskParameters }
-  from './commit.js';
+  from '../tasks/context/read.js';
 import { ContextAddFilesTask }
-  from './context-add-files.js';
+  from './context/context-add-files.js';
 import { ContextInstructionTask,
          type ContextInstructionTaskParameters }
-  from './context-instruction.js';
+  from './context/context-instruction.js';
 import { ContextProcessTask,
          type ContextProcessTaskParameters }
-  from './context-process.js';
+  from './context/context-process.js';
 import { ContextRemoveFileTask,
          type ContextRemoveFileTaskParameters }
-  from './context-remove-file.js';
+  from './context/context-remove-file.js';
 import { ContextTaskTask,
          type ContextTaskTaskParameters }
-  from './context-task.js';
+  from './context/context-task.js';
 import { ContextUpdateFilesTask }
-  from './context-update-files.js';
+  from './context/context-update-files.js';
 import { ContextWriteFileTask,
          type ContextWriteFileTaskParameters }
-  from './context-write-file.js';
+  from './context/context-write-file.js';
 import { CopilotCheckTask,
          type CopilotCheckTaskParameters }
-  from './copilot-check.js';
+  from './copilot/copilot-check.js';
 import { CopilotTask }
-  from './copilot.js';
-import { ExtractTodosTask,
-         type ExtractTodosTaskParameters }
-  from './extract-todos.js';
-import { FindTodoTask,
-         type FindTodoTaskParameters }
-  from './find-todo.js';
-import { FormatChangedFilesTask,
-         type FormatChangedFilesTaskParameters }
-  from './format-changed-files.js';
+  from './copilot/copilot.js';
+import { CleanWorkingFolderTask,
+         type CleanWorkingFolderTaskParameters }
+  from './git/clean-working-folder.js';
+import { CommitIfChangedTask,
+         type CommitIfChangedTaskParameters }
+  from './git/commit-if-changed.js';
+import { CommitTask,
+         type CommitTaskParameters }
+  from './git/commit.js';
 import { GetChangedFilesTask,
          type GetChangedFilesTaskParameters }
-  from './get-changed-files.js';
+  from './git/get-changed-files.js';
 import { GetCommitMessageTask,
          type GetCommitMessageTaskParameters }
-  from './get-commit-message.js';
+  from './git/get-commit-message.js';
+import { GetUntrackedFilesTask,
+         type GetUntrackedFilesTaskParameters }
+  from './git/get-untracked-files.js';
+import { BuildTask,
+         type BuildTaskParameters }
+  from './workflow/build.js';
+import { ExtractTodosTask,
+         type ExtractTodosTaskParameters }
+  from './workflow/extract-todos.js';
+import { FindTodoTask,
+         type FindTodoTaskParameters }
+  from './workflow/find-todo.js';
+import { FormatChangedFilesTask,
+         type FormatChangedFilesTaskParameters }
+  from './workflow/format-changed-files.js';
 import { TestTask,
          type TestTaskParameters }
-  from './test.js';
+  from './workflow/test.js';
 import { TodoTask,
          type TodoTaskParameters }
-  from './todo.js';
+  from './workflow/todo.js';
 
 export function registerCoreTasks(
     registry: TaskRegistry
@@ -97,6 +100,17 @@ export function registerCoreTasks(
         parameters as GetChangedFilesTaskParameters),
     { description:
         'list modified and untracked files',
+      parameters:
+        [ { name: 'workingDirectory',
+            type: 'string' } ] });
+
+  registry.register(
+    'get-untracked-files',
+    parameters =>
+      new GetUntrackedFilesTask(
+        parameters as GetUntrackedFilesTaskParameters),
+    { description:
+        'list untracked files',
       parameters:
         [ { name: 'workingDirectory',
             type: 'string' } ] });

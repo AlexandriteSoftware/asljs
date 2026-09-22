@@ -1,7 +1,7 @@
 # Requirements
 
 COG is a framework for developing and running automations. It also provides a
-command line host for built-in project and envelope tasks.
+command line host for built-in and externally supplied tasks.
 
 ## Framework
 
@@ -20,7 +20,8 @@ creators. `DefaultTaskRunner` invokes a task with the current context.
 
 A registration may include a definition with a description, parameter list, and
 `requiresEnvelope`. Each parameter has a name and a type of `string`, `number`,
-`boolean`, or `string[]`. `definitions()` returns those descriptions.
+`boolean`, `string[]`, or `object[]`. A parameter with `position: true` is a
+required positional CLI argument. `definitions()` returns those descriptions.
 
 The CLI builds one command per registered task from those definitions, so a new
 task becomes callable without editing the CLI. Parameter names map to options in
@@ -38,11 +39,40 @@ so `--loglevel <level>` and `--logfile <path>` control it. Explicit options take
 precedence over `COG_LOG_LEVEL` and `COG_LOG_FILE`, which take precedence over
 the default level `information`.
 
+Tasks are the only public automation building block. Task categories group
+related tasks in source folders, for example `tasks/git/get-changed-files.ts`
+and `tasks/git/get-untracked-files.ts`. Process and protocol adapters are
+implementation details used by category tasks, not a second automation layer.
+
+### External task modules and CLI context
+
+The `--tasks-dir <path>` global option may be supplied multiple times. Before
+the CLI creates commands, COG recursively imports each `.js` and `.mjs` module
+in the supplied directories. A module participates by exporting
+`registerTasks(registry)`, which registers one or more tasks. This allows task
+collections such as `az` and `git` to be selected with repeated options.
+
+The `--init-context <path>` global option loads an initial JSON array before the
+task runs. Each entry has a `type`, `data`, and optional `name`. Named data is
+stored in the context under its name; unnamed data is stored under its type. A
+SQL task can therefore call `context.requireData('SQLSERVER1')` for a named
+connection or `context.requireData('db-connection')` when no name is supplied.
+
+The `--context <path>` global option is the persistent context store. It loads
+the same JSON format when the file exists, then writes it after every task run,
+including nested task runs. `--init-context` values are applied after persisted
+values, so explicit initialization values take precedence for that invocation.
+
+Tasks should declare a useful description and all command inputs. They may
+create and run other tasks through `context.createTask()` and `context.run()`,
+and may update a named context bucket through `context.setData(name, value)`.
+
 The built-in task registry includes:
 
 - `copilot`;
 - `copilot-check`;
 - `get-changed-files`;
+- `get-untracked-files`;
 - `format-changed-files`;
 - `extract-todos`;
 - `find-todo`;

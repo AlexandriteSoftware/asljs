@@ -2,7 +2,7 @@ import { Command }
   from 'commander';
 import { read,
          ReadParameters }
-  from '../tools/read.js';
+  from '../tasks/context/read.js';
 import { Envelope }
   from '../working-folder/envelope.js';
 import { WorkingFolder }

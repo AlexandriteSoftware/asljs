@@ -26,6 +26,7 @@ export interface TaskParameter
   name: string;
   type: TaskParameterType;
   description?: string;
+  position?: boolean;
 }
 
 export interface TaskDefinition
@@ -34,6 +35,13 @@ export interface TaskDefinition
   description?: string;
   parameters?: TaskParameter[];
   requiresEnvelope?: boolean;
+}
+
+export interface TaskModule
+{
+  registerTasks(
+    registry: TaskRegistry
+  ): void | Promise<void>;
 }
 
 export interface TaskFactory

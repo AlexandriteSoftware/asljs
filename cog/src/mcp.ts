@@ -5,6 +5,8 @@ import { CopilotAcpService,
   from './copilot.js';
 import { createLoggerProvider }
   from './logger.js';
+import { NodeCommandRunner }
+  from './node-command-runner.js';
 import { SingletonServiceProvider }
   from './service.js';
 import { DefaultTaskRunner,
@@ -12,26 +14,24 @@ import { DefaultTaskRunner,
          type TaskParameter,
          TaskRegistry }
   from './task.js';
+import { CopilotAcpTool }
+  from './tasks/copilot/acp-client.js';
+import { AsljsFormatterTool }
+  from './tasks/formatting/asljs-formatter.js';
+import { DprintFormatterTool }
+  from './tasks/formatting/dprint-formatter.js';
+import { JbDotnetFormatterTool }
+  from './tasks/formatting/jb-dotnet-formatter.js';
+import { GitTool }
+  from './tasks/git/git.js';
 import { registerCoreTasks }
   from './tasks/register.js';
-import { AsljsFormatterTool }
-  from './tools/asljs-formatter.js';
-import { CopilotAcpTool }
-  from './tools/copilot.js';
 import { DotnetCliTool }
-  from './tools/dotnet.js';
-import { DprintFormatterTool }
-  from './tools/dprint-formatter.js';
-import { GitTool }
-  from './tools/git.js';
-import { JbDotnetFormatterTool }
-  from './tools/jb-dotnet-formatter.js';
-import { NodeCommandRunner }
-  from './tools/node-command-runner.js';
+  from './tasks/workflow/dotnet.js';
 import { NpmCliTool }
-  from './tools/npm.js';
+  from './tasks/workflow/npm.js';
 import { TodoTool }
-  from './tools/todo.js';
+  from './tasks/workflow/todo-reader.js';
 
 interface JsonRpcMessage
 {

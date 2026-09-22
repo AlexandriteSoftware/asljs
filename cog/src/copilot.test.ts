@@ -8,7 +8,7 @@ import { CopilotAcpService,
 import { SingletonServiceProvider }
   from './service.js';
 import { type CopilotAcpTool }
-  from './tools/copilot.js';
+  from './tasks/copilot/acp-client.js';
 
 test(
   'copilot service is reused across requests',

@@ -12,31 +12,31 @@ import { CopilotAcpService,
   from '../copilot.js';
 import { createLoggerProvider }
   from '../logger.js';
+import { NodeCommandRunner }
+  from '../node-command-runner.js';
 import { SingletonServiceProvider }
   from '../service.js';
 import { DefaultTaskRunner,
          TaskRegistry }
   from '../task.js';
+import { CopilotAcpTool }
+  from '../tasks/copilot/acp-client.js';
+import { AsljsFormatterTool }
+  from '../tasks/formatting/asljs-formatter.js';
+import { DprintFormatterTool }
+  from '../tasks/formatting/dprint-formatter.js';
+import { JbDotnetFormatterTool }
+  from '../tasks/formatting/jb-dotnet-formatter.js';
+import { GitTool }
+  from '../tasks/git/git.js';
 import { registerCoreTasks }
   from '../tasks/register.js';
-import { AsljsFormatterTool }
-  from '../tools/asljs-formatter.js';
-import { CopilotAcpTool }
-  from '../tools/copilot.js';
 import { DotnetCliTool }
-  from '../tools/dotnet.js';
-import { DprintFormatterTool }
-  from '../tools/dprint-formatter.js';
-import { GitTool }
-  from '../tools/git.js';
-import { JbDotnetFormatterTool }
-  from '../tools/jb-dotnet-formatter.js';
-import { NodeCommandRunner }
-  from '../tools/node-command-runner.js';
+  from '../tasks/workflow/dotnet.js';
 import { NpmCliTool }
-  from '../tools/npm.js';
+  from '../tasks/workflow/npm.js';
 import { TodoTool }
-  from '../tools/todo.js';
+  from '../tasks/workflow/todo-reader.js';
 import { configureConfigCommand }
   from './config.js';
 import { configureListCommand }
@@ -45,12 +45,24 @@ import { readLoggerOptions }
   from './logger-options.js';
 import { configureReadCommand }
   from './read.js';
+import { readTaskDirectories,
+         registerTaskDirectories }
+  from './task-directories.js';
 import { configureTaskCommands }
   from './tasks.js';
 import { ExecutionContext }
   from './types.js';
 import { configureUpdateCommand }
   from './update.js';
+
+function collect(
+    value: string,
+    values: string[]
+  ): string[]
+{
+  return [ ...values,
+           value ];
+}
 
 type PackageMetadata = {
   version: string;
@@ -82,6 +94,11 @@ export async function main(
 
   registerCoreTasks(
     taskRegistry);
+
+  await registerTaskDirectories(
+    taskRegistry,
+    readTaskDirectories(
+      argv));
 
   const serviceProvider =
     new SingletonServiceProvider();
@@ -163,6 +180,17 @@ export async function main(
       .option(
         '--envelope <path>',
         'path to the envelope JSON file')
+      .option(
+        '--tasks-dir <path>',
+        'directory containing task modules',
+        collect,
+        [ ])
+      .option(
+        '--context <path>',
+        'path to persisted context JSON data')
+      .option(
+        '--init-context <path>',
+        'path to initial context JSON data')
       .option(
         '--loglevel <level>',
         'logging level, for example trace or information')

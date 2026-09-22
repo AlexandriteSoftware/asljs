@@ -27,6 +27,8 @@ test(
         registry.create(
           'get-changed-files'),
         registry.create(
+          'get-untracked-files'),
+        registry.create(
           'format-changed-files'),
         registry.create(
           'extract-todos'),
@@ -69,5 +71,5 @@ test(
 
     assert.equal(
       tasks.length,
-      20);
+      21);
   });

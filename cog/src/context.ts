@@ -1,6 +1,8 @@
 import { type Logger,
          NullLogger }
   from 'asljs-logging';
+import { type CommandRunner }
+  from './command-runner.js';
 import { type Service,
          type ServiceProvider }
   from './service.js';
@@ -9,9 +11,9 @@ import { type Task,
          type TaskRunner }
   from './task.js';
 import { type ReadParameters }
-  from './tools/read.js';
+  from './tasks/context/read.js';
 import { type Tool }
-  from './tools/tool.js';
+  from './tool.js';
 
 export interface ContextFile
 {
@@ -22,11 +24,19 @@ export interface ContextFile
   update?: ReadParameters;
 }
 
+export interface ContextDataItem
+{
+  name: string;
+  type: string;
+  data: unknown;
+}
+
 export interface ContextOptions
 {
   taskFactory: TaskFactory;
   taskRunner: TaskRunner;
   serviceProvider: ServiceProvider;
+  commandRunner?: CommandRunner;
   logger?: Logger;
   data?: Iterable<readonly [string, unknown]>;
   variables?: Iterable<readonly [string, unknown]>;
@@ -39,12 +49,15 @@ export interface ContextOptions
 export class Context
 {
   readonly #data: Map<string, unknown>;
+  readonly #dataTypes = new Map<string, string>();
   readonly #variables: Map<string, unknown>;
   readonly #tools: Map<string, Tool>;
+  #persist?: () => void;
 
   readonly taskFactory: TaskFactory;
   readonly taskRunner: TaskRunner;
   readonly serviceProvider: ServiceProvider;
+  readonly commandRunner?: CommandRunner;
   readonly logger: Logger;
   readonly files: ContextFile[];
   instruction: string;
@@ -59,6 +72,9 @@ export class Context
 
     this.serviceProvider =
       options.serviceProvider;
+
+    this.commandRunner =
+      options.commandRunner;
 
     this.logger =
       options.logger
@@ -114,12 +130,39 @@ export class Context
 
   setData(
     name: string,
-    value: unknown
+    value: unknown,
+    type: string = name
   ): void
   {
     this.#data.set(
       name,
       value);
+
+    this.#dataTypes.set(
+      name,
+      type);
+
+    this.#persist?.();
+  }
+
+  dataItems(): ContextDataItem[]
+  {
+    return [ ...this.#data.entries() ]
+      .map(
+        ([name, data]) => ({ name,
+                             type:
+                               this.#dataTypes.get(
+                                 name)
+            ?? name,
+                             data }));
+  }
+
+  setPersistence(
+    persist: (() => void) | undefined
+  ): void
+  {
+    this.#persist = persist;
+    this.#persist?.();
   }
 
   getVariable<T>(
@@ -180,8 +223,12 @@ export class Context
     task: Task<TResult>
   ): Promise<TResult>
   {
-    return await this.taskRunner.run(
-      task,
-      this);
+    try {
+      return await this.taskRunner.run(
+        task,
+        this);
+    } finally {
+      this.#persist?.();
+    }
   }
 }

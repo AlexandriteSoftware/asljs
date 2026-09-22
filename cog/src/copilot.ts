@@ -3,7 +3,7 @@ import { type ContextFile }
 import { type Service }
   from './service.js';
 import { type CopilotAcpTool }
-  from './tools/copilot.js';
+  from './tasks/copilot/acp-client.js';
 
 export interface CopilotRequest
 {

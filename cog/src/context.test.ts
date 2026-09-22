@@ -10,7 +10,7 @@ import { DefaultTaskRunner,
          TaskRegistry }
   from './task.js';
 import { type Tool }
-  from './tools/tool.js';
+  from './tool.js';
 
 test(
   'context provides shared variables, data, and tools',

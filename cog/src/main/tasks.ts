@@ -12,6 +12,10 @@ import { WorkingFolder }
   from '../working-folder/working-folder.js';
 import { resolveEnvelopePath }
   from './env.js';
+import { loadInitialContext,
+         loadPersistedContext,
+         saveContext as saveContextData }
+  from './initial-context.js';
 import { ExecutionContext }
   from './types.js';
 
@@ -43,7 +47,22 @@ export function configureTaskCommands(
         definition.description
           ?? `run the ${definition.name} task`);
 
+    const positionalParameters =
+      (definition.parameters ?? [ ])
+      .filter(
+        parameter => parameter.position);
+
+    for (const parameter of positionalParameters) {
+      command.argument(
+        `<${parameter.name}>`,
+        parameter.description);
+    }
+
     for (const parameter of definition.parameters ?? [ ]) {
+      if (parameter.position) {
+        continue;
+      }
+
       command.option(
         toOptionFlags(
           parameter),
@@ -53,9 +72,23 @@ export function configureTaskCommands(
 
     command.action(
       async (
-          options: Record<string, unknown>
+          ...values: unknown[]
         ) =>
       {
+        const options =
+          values[positionalParameters.length] as Record<
+          string,
+          unknown
+        >;
+
+        for (
+          let index = 0;
+          index < positionalParameters.length;
+          index++
+        ) {
+          options[positionalParameters[index].name] = values[index];
+        }
+
         const result =
           await runTask(
             context,
@@ -63,6 +96,8 @@ export function configureTaskCommands(
             options,
             program.opts<{
             envelope?: string;
+            initContext?: string;
+            context?: string;
           }>());
 
         if (
@@ -81,9 +116,32 @@ async function runTask(
     context: ExecutionContext,
     definition: TaskDefinition,
     options: Record<string, unknown>,
-    programOptions: { envelope?: string; }
+    programOptions: {
+    envelope?: string;
+    initContext?: string;
+    context?: string;
+  }
   ): Promise<unknown>
 {
+  loadPersistedContext(
+    context.automation,
+    programOptions.context);
+
+  loadInitialContext(
+    context.automation,
+    programOptions.initContext);
+
+  if (
+    programOptions.context
+    !== undefined
+  ) {
+    context.automation.setPersistence(
+      () =>
+        saveContextData(
+          context.automation,
+          programOptions.context!));
+  }
+
   const parameters =
     buildParameters(
       definition,
