@@ -41,3 +41,11 @@ graph from each package `dependencies` and `devDependencies`, and runs
 script. Independent packages run in alphabetical order. Packages without the
 requested script are skipped. Throws when the workspace packages form a
 dependency cycle.
+
+## print-file <path>
+
+> Print the contents of a file to standard output.
+
+Reads the file at the given path, resolved against the current working
+directory, and writes it to standard output without its trailing newline. Use it
+to show repository notes at the end of another script.

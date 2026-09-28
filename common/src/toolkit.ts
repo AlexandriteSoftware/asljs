@@ -18,6 +18,8 @@ import { clean }
   from './commands/clean.js';
 import { ensureCleanWorkingDirectory }
   from './commands/ensure-clean-working-directory.js';
+import { printFile }
+  from './commands/print-file.js';
 import { releasePatch }
   from './commands/release-patch.js';
 import { runAll }
@@ -39,6 +41,8 @@ const actions: Map<string, (args?: string[]) => Promise<void>> =
         ensureCleanWorkingDirectory ],
       [ 'tag-release-revision',
         tagReleaseRevision ],
+      [ 'print-file',
+        printFile ],
       [ 'release-patch',
         releasePatch ],
       [ 'run-all',

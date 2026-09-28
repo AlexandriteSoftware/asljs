@@ -8,7 +8,7 @@
     "format:json": "dprint fmt --config ./dprint.json \"*.json\"",
     "format:md": "dprint fmt --config ./dprint.json \"*.md\"",
     "format": "npm run format:json && npm run format:md",
-    "check-packages": "npm outdated",
+    "check-packages": "npm outdated || node ./common/dist/toolkit.js print-file check-packages.md",
     "remove-local-modules": "node ./common/dist/toolkit.js clean cog/node_modules common/node_modules components/node_modules dali/node_modules data/node_modules eventful/node_modules kb/node_modules logging/node_modules machine/node_modules money/node_modules observable/node_modules part/node_modules tmpdir/node_modules",
     "all": "node ./common/dist/toolkit.js run-all"
   },
