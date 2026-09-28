@@ -26,8 +26,8 @@ by tooling.
   `guards.ts`); kebab-case for composite names (`observable-object.ts`).
 - **Functions and variables**: camelCase.
 - **Types, interfaces, and classes**: PascalCase.
-- **Constants**: SCREAMING_SNAKE_CASE only for file-level values that are
-  deeply immutable, such as primitives and frozen literals. Everything else is
+- **Constants**: SCREAMING_SNAKE_CASE only for file-level values that are deeply
+  immutable, such as primitives and frozen literals. Everything else is
   camelCase, including file-level bindings that hold mutable objects or
   constructed services, and any constant declared inside a class, method, or
   function.
@@ -49,8 +49,8 @@ by tooling.
 - Files that contain only types and interfaces are exempt from runtime tests.
   Where a generic or conditional type carries real logic, cover it with
   type-level assertions (`@ts-expect-error` for shapes that must not compile,
-  equality assertions for shapes that must) rather than with runtime
-  assertions, which cannot observe a type at all.
+  equality assertions for shapes that must) rather than with runtime assertions,
+  which cannot observe a type at all.
 - Unexported helpers are covered through the public API that uses them; do not
   export something solely to make it testable.
 - Test files are named with `.test.ts` suffix and live in the same directory as
