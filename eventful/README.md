@@ -42,7 +42,12 @@ These behaviors are part of the supported contract, not just current examples:
 - `eventful` adds `on`, `once`, `off`, `emit`, `emitAsync`, and `has`
 - `eventful` also acts as a package-level global emitter
 - strict mode propagates listener errors
-- non-strict mode isolates listener failures through the configured error path
+- non-strict mode isolates listener failures through the configured error
+  path; a failure that no `error` hook and no package-level `error` listener
+  consumed is rethrown from a microtask, so it surfaces as an unhandled error
+  instead of disappearing
+- a listener subscribed or removed during `emit` takes effect on the next
+  emit, not the one in progress
 - `ListenerError` protects against recursive failures in global error handling
 
 ### Preferred Patterns
@@ -313,15 +318,20 @@ obj.emit('tick', 2); // no-op; already unsubscribed
 
 ### off(event, listener)
 
-Removes a listener for the specified event.
+Removes a listener for the specified event. A listener registered with `once`
+is removed by passing the same function that was given to `once`.
 
 - `event` (String | Symbol): The event name.
 - `listener` (Function): The callback function to be removed.
 
+Returns `true` if a listener was removed, otherwise `false`.
+
 ### emit(event, ...args)
 
 Emits the specified event, invoking all registered listeners with the provided
-arguments.
+arguments. The listener set is captured before dispatch, so subscribing or
+unsubscribing from inside a listener affects the next emit rather than the one
+in progress.
 
 - `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.

@@ -14,6 +14,13 @@ import { ErrorFn,
          TraceFn }
   from './types.js';
 
+const ONCE_LISTENER =
+  Symbol(
+    'eventful.once.listener');
+
+const EMPTY_LISTENERS: readonly Function[] =
+  Object.freeze([ ]);
+
 const eventfulImpl =
   <T extends object | Function | undefined>(
       object: T = Object.create(null),
@@ -62,6 +69,16 @@ const eventfulImpl =
   const enhanced =
     (object as unknown) !== eventful;
 
+  const isTraced =
+    (
+        action: Parameters<TraceFn>[0]
+      ): boolean =>
+    {
+    return traceHook !== null
+      || (enhanced
+        && eventful.has(action));
+  };
+
   const traceFn: TraceFn =
     (
         action: Parameters<TraceFn>[0],
@@ -80,11 +97,11 @@ const eventfulImpl =
     }
   };
 
-  traceFn(
-    'new',
-    { object });
-
-  const emptySet = new Set<Function>();
+  if (isTraced('new')) {
+    traceFn(
+      'new',
+      { object });
+  }
 
   const map = new Map<EventName, Set<Function>>();
 
@@ -151,8 +168,22 @@ const eventfulImpl =
       return false;
     }
 
-    const deleted =
+    let deleted =
       listeners.delete(listener);
+
+    if (!deleted) {
+      for (const candidate of listeners) {
+        if (
+          (candidate as { [ONCE_LISTENER]?: Function; })[ONCE_LISTENER]
+          === listener
+        ) {
+          deleted =
+            listeners.delete(candidate);
+
+          break;
+        }
+      }
+    }
 
     if (listeners.size === 0) {
       map.delete(event);
@@ -189,9 +220,25 @@ const eventfulImpl =
         listener);
     }
 
+    // An error nobody consumed would otherwise vanish. Rethrowing it from a
+    // microtask leaves this dispatch intact and hands the error to the
+    // platform's unhandled-error channel instead of discarding it.
+    const consumed =
+      errorHook !== null
+      || strict
+      || eventful.has('error');
+
     eventful.emit(
       'error',
       errorArgs);
+
+    if (!consumed) {
+      queueMicrotask(
+        () =>
+        {
+          throw err;
+        });
+    }
   }
 
   function on(
@@ -202,11 +249,13 @@ const eventfulImpl =
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
-    traceFn(
-      'on',
-      { object,
-        event,
-        listener });
+    if (isTraced('on')) {
+      traceFn(
+        'on',
+        { object,
+          event,
+          listener });
+    }
 
     add(
       event,
@@ -231,18 +280,26 @@ const eventfulImpl =
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
+    const wrapper =
+      (
+          ...args: unknown[]
+        ): void =>
+      {
+      off();
+
+      listener(
+        ...args);
+    };
+
+    Object.defineProperty(
+      wrapper,
+      ONCE_LISTENER,
+      { value: listener });
+
     const off =
       on(
         event,
-        (
-            ...args: unknown[]
-          ) =>
-        {
-        off();
-
-        listener(
-          ...args);
-      });
+        wrapper);
 
     return off;
   }
@@ -255,11 +312,13 @@ const eventfulImpl =
     eventNameTypeGuard(event);
     functionTypeGuard(listener);
 
-    traceFn(
-      'off',
-      { object,
-        event,
-        listener });
+    if (isTraced('off')) {
+      traceFn(
+        'off',
+        { object,
+          event,
+          listener });
+    }
 
     return remove(
       event,
@@ -283,22 +342,30 @@ const eventfulImpl =
     eventNameTypeGuard(event);
 
     const listeners =
-      map.get(event)
-      || emptySet;
+      map.get(event);
 
-    traceFn(
-      'emit',
-      { object,
-        listeners:
-          [ ...listeners ],
-        event,
-        args });
+    // The set is copied so that listeners added or removed by a listener take
+    // effect on the next emit, not on this one.
+    const snapshot: readonly Function[] =
+      listeners
+      ? [ ...listeners ]
+      : EMPTY_LISTENERS;
 
-    if (listeners.size === 0) {
+    if (isTraced('emit')) {
+      traceFn(
+        'emit',
+        { object,
+          listeners:
+            [ ...snapshot ],
+          event,
+          args });
+    }
+
+    if (snapshot.length === 0) {
       return;
     }
 
-    for (const listener of listeners) {
+    for (const listener of snapshot) {
       try {
         listener(
           ...args);
@@ -323,23 +390,29 @@ const eventfulImpl =
     eventNameTypeGuard(event);
 
     const listeners =
-      map.get(event)
-      || emptySet;
+      map.get(event);
 
-    traceFn(
-      'emitAsync',
-      { object,
-        listeners:
-          [ ...listeners ],
-        event,
-        args });
+    const snapshot: readonly Function[] =
+      listeners
+      ? [ ...listeners ]
+      : EMPTY_LISTENERS;
 
-    if (listeners.size === 0) {
+    if (isTraced('emitAsync')) {
+      traceFn(
+        'emitAsync',
+        { object,
+          listeners:
+            [ ...snapshot ],
+          event,
+          args });
+    }
+
+    if (snapshot.length === 0) {
       return;
     }
 
     const calls =
-      [ ...listeners ].map(
+      snapshot.map(
         async (
             listener
           ) =>

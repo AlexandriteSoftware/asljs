@@ -110,7 +110,11 @@ export interface EventfulOptions
 {
   /**
    * If true, exceptions from listeners are propagated (fail fast).
-   * When false, errors are isolated (ignored) after calling `error` hook.
+   * When false, errors are isolated: the remaining listeners still run, and
+   * the error is offered to the `error` hook and to the package-level
+   * `error` event. An error that neither consumes is rethrown from a
+   * microtask, so it reaches the platform's unhandled-error channel rather
+   * than being discarded.
    */
   strict?: boolean;
 
@@ -124,6 +128,8 @@ export interface EventfulOptions
   /**
    * Optional error hook. Receives structured context of listener failures
    * (error, object, event, listener). Called for sync and async errors.
+   * Providing it counts as consuming the error, which suppresses the
+   * microtask rethrow described on `strict`.
    */
   error?: ErrorFn;
 }

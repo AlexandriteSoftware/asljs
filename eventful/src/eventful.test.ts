@@ -1,7 +1,13 @@
 import assert
   from 'node:assert/strict';
+import { spawnSync }
+  from 'node:child_process';
+import { resolve }
+  from 'node:path';
 import test
   from 'node:test';
+import { pathToFileURL }
+  from 'node:url';
 import { EventfulBase }
   from './eventful-base.js';
 import { eventful }
@@ -238,8 +244,18 @@ test(
   `${TEST_SUITE}: exceptions in listeners are suppressed in async emit by default`,
   async () =>
   {
+    const errors: unknown[] = [ ];
+
     const obj =
-      eventful();
+      eventful(
+        {},
+        { error:
+            (
+                args
+              ) =>
+            {
+          errors.push(args.error);
+        } });
 
     obj.on(
       'test',
@@ -250,6 +266,10 @@ test(
 
     await assert.doesNotReject(
       () => obj.emitAsync('test'));
+
+    assert.equal(
+      errors.length,
+      1);
   });
 
 function assertEventfulMethods(
@@ -287,29 +307,53 @@ function assertEventfulMethods(
 }
 
 test(
-  `${TEST_SUITE}: exceptions in listeners are suppressed in async emit by default`,
+  `${TEST_SUITE}: a rejected listener does not reject async emit`,
   async () =>
   {
+    const errors: unknown[] = [ ];
+
     const obj =
-      eventful();
+      eventful(
+        {},
+        { error:
+            (
+                args
+              ) =>
+            {
+          errors.push(args.error);
+        } });
 
     obj.on(
       'test',
-      () =>
+      async () =>
       {
         throw new Error('test error');
       });
 
     await assert.doesNotReject(
       () => obj.emitAsync('test'));
+
+    assert.equal(
+      errors.length,
+      1);
   });
 
 test(
   `${TEST_SUITE}: exceptions in listeners are suppressed in emit by default`,
   () =>
   {
+    const errors: unknown[] = [ ];
+
     const obj =
-      eventful();
+      eventful(
+        {},
+        { error:
+            (
+                args
+              ) =>
+            {
+          errors.push(args.error);
+        } });
 
     obj.on(
       'test',
@@ -320,6 +364,10 @@ test(
 
     assert.doesNotThrow(
       () => obj.emit('test'));
+
+    assert.equal(
+      errors.length,
+      1);
   });
 
 test(
@@ -506,6 +554,233 @@ test(
   });
 
 test(
+  `${TEST_SUITE}: once fires a listener only once`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    let calls = 0;
+
+    obj.once(
+      'e',
+      () =>
+      {
+        calls += 1;
+      });
+
+    obj.emit('e');
+    obj.emit('e');
+
+    assert.equal(
+      calls,
+      1);
+
+    assert.equal(
+      obj.has('e'),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: off removes a once listener by its original function`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    let calls = 0;
+
+    const listener =
+      (): void =>
+      {
+      calls += 1;
+    };
+
+    obj.once(
+      'e',
+      listener);
+
+    assert.equal(
+      obj.off(
+        'e',
+        listener),
+      true);
+
+    assert.equal(
+      obj.has('e'),
+      false);
+
+    obj.emit('e');
+
+    assert.equal(
+      calls,
+      0);
+  });
+
+test(
+  `${TEST_SUITE}: off reports false when the listener is not registered`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    obj.once(
+      'e',
+      () => { });
+
+    assert.equal(
+      obj.off(
+        'e',
+        () => { }),
+      false);
+
+    assert.equal(
+      obj.has('e'),
+      true);
+  });
+
+test(
+  `${TEST_SUITE}: the unsubscribe closure of once is idempotent`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const off =
+      obj.once(
+        'e',
+        () => { });
+
+    assert.equal(
+      off(),
+      true);
+
+    assert.equal(
+      off(),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: emit does not deliver to listeners added during dispatch`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const calls: string[] = [ ];
+
+    obj.on(
+      'e',
+      () =>
+      {
+        calls.push('first');
+
+        obj.on(
+          'e',
+          () =>
+          {
+            calls.push('added');
+          });
+      });
+
+    obj.emit('e');
+
+    assert.deepEqual(
+      calls,
+      [ 'first' ]);
+
+    obj.emit('e');
+
+    assert.deepEqual(
+      calls,
+      [ 'first',
+        'first',
+        'added' ]);
+  });
+
+test(
+  `${TEST_SUITE}: emit still delivers to a listener removed during dispatch`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const calls: string[] = [ ];
+
+    const second =
+      (): void =>
+      {
+      calls.push('second');
+    };
+
+    obj.on(
+      'e',
+      () =>
+      {
+        calls.push('first');
+
+        obj.off(
+          'e',
+          second);
+      });
+
+    obj.on(
+      'e',
+      second);
+
+    obj.emit('e');
+
+    assert.deepEqual(
+      calls,
+      [ 'first',
+        'second' ]);
+
+    obj.emit('e');
+
+    assert.deepEqual(
+      calls,
+      [ 'first',
+        'second',
+        'first' ]);
+  });
+
+test(
+  `${TEST_SUITE}: the global emitter observes emit on enhanced objects`,
+  () =>
+  {
+    const seen: unknown[] = [ ];
+
+    const off =
+      eventful.on(
+        'emit',
+        (
+            payload
+          ) =>
+        {
+        seen.push(payload);
+      });
+
+    try {
+      const obj =
+        eventful({});
+
+      obj.on(
+        'e',
+        () => { });
+
+      obj.emit(
+        'e',
+        1);
+    } finally {
+      off();
+    }
+
+    assert.equal(
+      seen.length > 0,
+      true);
+  });
+
+test(
   `${TEST_SUITE}: has reflects subscribe and unsubscribe`,
   () =>
   {
@@ -554,21 +829,102 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: emit ignores errors when no error hook (non-strict)`,
+  `${TEST_SUITE}: emit does not throw when no error hook (non-strict)`,
   () =>
   {
-    const obj =
-      eventful();
+    const off =
+      eventful.on(
+        'error',
+        () => { });
 
-    obj.on(
-      'x',
-      () =>
-      {
-        throw new Error('boom');
-      });
+    try {
+      const obj =
+        eventful();
 
-    assert.doesNotThrow(
-      () => obj.emit('x'));
+      obj.on(
+        'x',
+        () =>
+        {
+          throw new Error('boom');
+        });
+
+      assert.doesNotThrow(
+        () => obj.emit('x'));
+    } finally {
+      off();
+    }
+  });
+
+test(
+  `${TEST_SUITE}: an unconsumed listener error reaches the platform`,
+  () =>
+  {
+    // The rethrow lands on the platform's unhandled-error channel, which in
+    // node terminates the process, so it can only be observed from a child.
+    const source =
+      `import { eventful } from '${
+      pathToFileURL(
+        resolve(
+          import.meta.dirname,
+          'index.js')).href
+    }';
+       const obj = eventful({});
+       obj.on('x', () => { throw new Error('unconsumed boom'); });
+       obj.emit('x');
+       console.log('emit returned');`;
+
+    const result =
+      spawnSync(
+        process.execPath,
+        [ '--input-type=module',
+          '--eval',
+          source ],
+        { encoding: 'utf8' });
+
+    assert.equal(
+      result.stdout.includes('emit returned'),
+      true);
+
+    assert.equal(
+      result.stderr.includes('unconsumed boom'),
+      true);
+
+    assert.notEqual(
+      result.status,
+      0);
+  });
+
+test(
+  `${TEST_SUITE}: a consumed listener error does not reach the platform`,
+  () =>
+  {
+    const source =
+      `import { eventful } from '${
+      pathToFileURL(
+        resolve(
+          import.meta.dirname,
+          'index.js')).href
+    }';
+       const obj = eventful({}, { error: () => {} });
+       obj.on('x', () => { throw new Error('consumed boom'); });
+       obj.emit('x');
+       console.log('emit returned');`;
+
+    const result =
+      spawnSync(
+        process.execPath,
+        [ '--input-type=module',
+          '--eval',
+          source ],
+        { encoding: 'utf8' });
+
+    assert.equal(
+      result.stdout.includes('emit returned'),
+      true);
+
+    assert.equal(
+      result.status,
+      0);
   });
 
 test(
