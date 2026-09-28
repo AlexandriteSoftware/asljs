@@ -1,4 +1,4 @@
-# RELEASE
+# Release
 
 Each package is released independently, from the repository root.
 
