@@ -2,7 +2,7 @@
   from 'node:test';
 import assert
   from 'node:assert/strict';
-import { createPinoLoggerProvider,
+import { NullLoggerProvider,
          createRuleValidationContext }
   from 'asljs-part';
 import { tmpDirFactory }
@@ -11,7 +11,7 @@ import { validate }
   from './Article_RL3.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 test.after(
   () =>

@@ -619,7 +619,7 @@ function isArtefactPropertyType(
   const normalised =
     type.trim().replaceAll(
       '`',
-      '');
+      '').toLowerCase();
 
   return normalised === 'artefact'
     || normalised === 'artefact[]';

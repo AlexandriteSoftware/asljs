@@ -5,14 +5,14 @@ import assert
   from 'node:assert/strict';
 import { tmpDirFactory }
   from './testing/tmpDir.js';
-import { createPinoLoggerProvider,
+import { NullLoggerProvider,
          createRuleValidationContext }
   from 'asljs-part';
 import { validate }
   from './Article_RL1.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 after(
   () => {

@@ -26,7 +26,6 @@ export async function getData(
   const repositoryRoot =
     path.resolve(
       artefact.path,
-      '..',
       '..');
 
   const localDeps =
