@@ -36,7 +36,10 @@ export function log(
   console.error(
     message.replace(
       /%[sdo]/g,
-      m => {
+      (
+          m
+        ) =>
+      {
         const param =
           params.shift();
 

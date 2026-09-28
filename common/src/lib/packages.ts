@@ -1,7 +1,7 @@
 import path
   from 'node:path';
-import { readPackageJSON,
-         PackageJson }
+import { PackageJson,
+         readPackageJSON }
   from 'pkg-types';
 import { ROOT_DIR }
   from '../api.js';
@@ -31,16 +31,20 @@ export async function getWorkspacePackageDirs(
 
   if (
     !Array.isArray(
-      rootPackageJson.workspaces))
-  {
+      rootPackageJson.workspaces)
+  ) {
     throw new Error(
       'Root package.json must define a workspaces array.');
   }
 
   return rootPackageJson.workspaces.map(
-    workspace => {
+    (
+        workspace
+      ) =>
+    {
       if (
-        typeof workspace !== 'string'
+        typeof workspace
+        !== 'string'
         || workspace.trim() === ''
       ) {
         throw new Error(
@@ -61,14 +65,13 @@ export async function getPackageJson(
     await readPackageJSON(
       packageJsonPath);
 
-  const name =
-    packageJson.name;
+  const name = packageJson.name;
 
-  const version =
-    packageJson.version;
+  const version = packageJson.version;
 
   if (
-    typeof name !== 'string'
+    typeof name
+    !== 'string'
     || name.trim() === ''
   ) {
     throw new Error(
@@ -76,7 +79,8 @@ export async function getPackageJson(
   }
 
   if (
-    typeof version !== 'string'
+    typeof version
+    !== 'string'
     || version.trim() === ''
   ) {
     throw new Error(

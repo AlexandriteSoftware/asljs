@@ -30,3 +30,14 @@ root.
 Verifies the git tree is clean, runs package validation, bumps the patch
 version, updates workspace dependents, publishes the package, commits release
 files, tags the release, and pushes commits and tags.
+
+## run-all [script]
+
+> Run a workspace script across all workspaces in dependency order.
+
+Reads the workspaces listed in the root `package.json`, builds the dependency
+graph from each package `dependencies` and `devDependencies`, and runs
+`npm run <script>` in every workspace, dependencies first. Defaults to the `all`
+script. Independent packages run in alphabetical order. Packages without the
+requested script are skipped. Throws when the workspace packages form a
+dependency cycle.

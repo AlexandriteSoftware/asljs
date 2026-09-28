@@ -5,7 +5,8 @@ import path
 import { PKG_COMMON_DIR }
   from '../api.js';
 
-export interface CommandDoc {
+export interface CommandDoc
+{
   actionKey: string;
   actionSummary: string;
   helpText: string;
@@ -28,10 +29,9 @@ export function getActionHelpText(
 {
   return commandDocs
     .map(
-      commandDoc => [
-        `${commandDoc.actionKey}: ${commandDoc.actionSummary}`,
-        commandDoc.helpText,
-      ].join('\n'))
+      commandDoc =>
+        [ `${commandDoc.actionKey}: ${commandDoc.actionSummary}`,
+          commandDoc.helpText ].join('\n'))
     .join('\n\n');
 }
 
@@ -52,14 +52,15 @@ export function parseToolkitDocs(
       'toolkit.md must start with "# toolkit".');
   }
 
-  const commands = [];
+  const commands = [ ];
 
   let lineIndex = 1;
 
   while (lineIndex < lines.length) {
-    while (lineIndex < lines.length
-           && lines[lineIndex].trim() === '')
-    {
+    while (
+      lineIndex < lines.length
+      && lines[lineIndex].trim() === ''
+    ) {
       lineIndex += 1;
     }
 
@@ -67,8 +68,7 @@ export function parseToolkitDocs(
       break;
     }
 
-    const headingLine =
-      lines[lineIndex];
+    const headingLine = lines[lineIndex];
 
     if (!headingLine.startsWith('## ')) {
       throw new Error(
@@ -80,14 +80,14 @@ export function parseToolkitDocs(
 
     lineIndex += 1;
 
-    while (lineIndex < lines.length
-           && lines[lineIndex].trim() === '')
-    {
+    while (
+      lineIndex < lines.length
+      && lines[lineIndex].trim() === ''
+    ) {
       lineIndex += 1;
     }
 
-    const summaryLine =
-      lines[lineIndex] ?? '';
+    const summaryLine = lines[lineIndex] ?? '';
 
     if (!summaryLine.startsWith('> ')) {
       throw new Error(
@@ -99,17 +99,19 @@ export function parseToolkitDocs(
 
     lineIndex += 1;
 
-    while (lineIndex < lines.length
-           && lines[lineIndex].trim() === '')
-    {
+    while (
+      lineIndex < lines.length
+      && lines[lineIndex].trim() === ''
+    ) {
       lineIndex += 1;
     }
 
-    const helpLines = [];
+    const helpLines = [ ];
 
-    while (lineIndex < lines.length
-           && !lines[lineIndex].startsWith('## '))
-    {
+    while (
+      lineIndex < lines.length
+      && !lines[lineIndex].startsWith('## ')
+    ) {
       helpLines.push(
         lines[lineIndex]);
 

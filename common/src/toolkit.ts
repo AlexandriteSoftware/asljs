@@ -8,38 +8,41 @@
  * DEVELOPMENT.md, and RELEASE.md in the repository root.
  */
 
-import process
-  from 'node:process';
 import console
   from 'node:console';
+import process
+  from 'node:process';
 import { pathToFileURL }
   from 'node:url';
-import { getActionHelpText,
-         getCommandDocs }
-  from './lib/actions.js';
 import { clean }
   from './commands/clean.js';
 import { ensureCleanWorkingDirectory }
   from './commands/ensure-clean-working-directory.js';
 import { releasePatch }
   from './commands/release-patch.js';
+import { runAll }
+  from './commands/run-all.js';
 import { tagReleaseRevision }
   from './commands/tag-release-revision.js';
+import { getActionHelpText,
+         getCommandDocs }
+  from './lib/actions.js';
 
 const commandDocs =
   await getCommandDocs();
 
 const actions: Map<string, (args?: string[]) => Promise<void>> =
-  new Map([
-    [ 'clean',
-      clean ],
-    [ 'ensure-clean-working-directory',
-      ensureCleanWorkingDirectory ],
-    [ 'tag-release-revision',
-      tagReleaseRevision ],
-    [ 'release-patch',
-      releasePatch ],
-  ]);
+  new Map(
+    [ [ 'clean',
+        clean ],
+      [ 'ensure-clean-working-directory',
+        ensureCleanWorkingDirectory ],
+      [ 'tag-release-revision',
+        tagReleaseRevision ],
+      [ 'release-patch',
+        releasePatch ],
+      [ 'run-all',
+        runAll ] ]);
 
 export async function main(
     args: string[]
@@ -53,7 +56,7 @@ export async function main(
     console.log(
       `Available actions:\n\n${getActionHelpText(commandDocs)}`);
 
-      process.exit(0);
+    process.exit(0);
   }
 
   const selectedAction =
@@ -78,8 +81,7 @@ export async function main(
 
 // checks that the script is being run directly, not imported
 if (process.argv[1]) {
-  const programArg =
-    process.argv[1];
+  const programArg = process.argv[1];
 
   const processArgvPath =
     pathToFileURL(programArg).href;
@@ -93,8 +95,8 @@ if (process.argv[1]) {
     } catch (error) {
       const message =
         error instanceof Error
-          ? error.message
-          : String(error);
+        ? error.message
+        : String(error);
 
       console.error(message);
 

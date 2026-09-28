@@ -4,9 +4,9 @@ import { log,
 import { start }
   from './process.js';
 
-
 export function tagRepository(
-  tag: string): void
+    tag: string
+  ): void
 {
   log(
     'Creating tag: %s',
@@ -16,7 +16,10 @@ export function tagRepository(
     start(
       `git tag -l "${tag}"`,
       { cwd: ROOT_DIR,
-        stdio: [ 'ignore', 'pipe', 'inherit' ] });
+        stdio:
+          [ 'ignore',
+            'pipe',
+            'inherit' ] });
 
   const gitTags =
     gatTagOutput.trim();

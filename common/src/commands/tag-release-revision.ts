@@ -1,7 +1,7 @@
-import { getReleaseTagId }
-  from './release-patch.js';
 import { tagRepository }
   from '../lib/repository.js';
+import { getReleaseTagId }
+  from './release-patch.js';
 
 export async function tagReleaseRevision(
   ): Promise<void>

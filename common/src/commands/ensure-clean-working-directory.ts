@@ -11,10 +11,14 @@ export async function ensureCleanWorkingDirectory(
     start(
       'git status --porcelain',
       { cwd: ROOT_DIR,
-        stdio: [ 'ignore', 'pipe', 'inherit' ] });
+        stdio:
+          [ 'ignore',
+            'pipe',
+            'inherit' ] });
 
   if (
-    typeof output === 'string'
+    typeof output
+    === 'string'
     && output.trim() !== ''
   ) {
     throw new Error(

@@ -11,8 +11,9 @@ export async function clean(
 {
   const pathsToClean =
     args && args.length > 0
-      ? args
-      : [ 'dist', 'build' ];
+    ? args
+    : [ 'dist',
+        'build' ];
 
   const cwd =
     process.cwd();
@@ -37,7 +38,10 @@ export async function clean(
       await fs.stat(
         fullPathToClean);
     } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      if (
+        (err as NodeJS.ErrnoException).code
+        !== 'ENOENT'
+      ) {
         throw err;
       }
 

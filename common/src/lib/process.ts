@@ -6,7 +6,7 @@ import { log }
 
 export function start(
     command: string,
-    options: Partial<ExecSyncOptionsWithStringEncoding> = { }
+    options: Partial<ExecSyncOptionsWithStringEncoding> = {}
   ): string
 {
   const currentWorkingDir =

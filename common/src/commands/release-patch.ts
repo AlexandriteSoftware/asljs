@@ -1,18 +1,18 @@
+import { PackageJson }
+  from 'pkg-types';
 import { log,
          ROOT_DIR }
   from '../api.js';
-import { start,
-         startSequence }
-  from '../lib/process.js';
 import { getPackageJson,
          getPackageJsonPath }
   from '../lib/packages.js';
-import { ensureCleanWorkingDirectory }
-  from './ensure-clean-working-directory.js';
-import { PackageJson }
-  from 'pkg-types';
+import { start,
+         startSequence }
+  from '../lib/process.js';
 import { tagRepository }
   from '../lib/repository.js';
+import { ensureCleanWorkingDirectory }
+  from './ensure-clean-working-directory.js';
 
 export async function releasePatch(
   ): Promise<void>
@@ -72,8 +72,7 @@ function verifyReleaseTarget(
     packageJson: PackageJson
   ): void
 {
-  const name =
-    packageJson.name;
+  const name = packageJson.name;
 
   if (
     !name
@@ -88,8 +87,7 @@ function verifyReleaseTarget(
       `Refusing release: ${packageJson.name} is private.`);
   }
 
-  const version =
-    packageJson.version;
+  const version = packageJson.version;
 
   if (
     !version
