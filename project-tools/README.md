@@ -1,6 +1,11 @@
-# common
+# project-tools
 
-The shared code for ASLJS projects.
+Repository maintenance commands for ASLJS projects, run as
+`project-tools <action>`. Not published.
+
+The package is a workspace, so npm links its `project-tools` binary into
+`node_modules/.bin`, and its `prepare` script builds `dist` on install. Every
+workspace script reaches it by name rather than by path.
 
 ## Notes
 

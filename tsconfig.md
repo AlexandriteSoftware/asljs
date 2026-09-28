@@ -112,9 +112,6 @@ Neither folder is hand-edited.
   `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
   `types: ["vite/client", "node"]`. It is a browser app: `tsc` only typechecks
   it, and `vite build` produces `app-builder/dist/`.
-- `common` has the full three-file layout but is not listed in the root
-  `workspaces` array. It is consumed by path from other workspace scripts, as
-  `node ../common/dist/toolkit.js`.
 
 ### Compiler options
 
@@ -126,10 +123,11 @@ Neither folder is hand-edited.
   pinned baseline; without them the DOM globals they use do not resolve.
 - `dali` declares `lib: ["ES2025", "DOM"]` in both configs, which it needs for
   IndexedDB. It is the only workspace that asks for DOM in build compilation.
-- `types: ["node"]` appears in the build configs of `cog`, `common`, `kb`,
-  `logging`, `part` and `sfmt`. It is redundant there, because the build base
-  already sets it. In dist configs it is the opt-in out of `types: []`, and it
-  is declared by `cog`, `common`, `kb`, `logging`, `part`, `sfmt` and `tmpdir`.
+- `types: ["node"]` appears in the build configs of `cog`, `kb`, `logging`,
+  `part`, `project-tools` and `sfmt`. It is redundant there, because the build
+  base already sets it. In dist configs it is the opt-in out of `types: []`, and
+  it is declared by `cog`, `kb`, `logging`, `part`, `project-tools`, `sfmt` and
+  `tmpdir`.
 
 ### DOM reaching build compilation indirectly
 
