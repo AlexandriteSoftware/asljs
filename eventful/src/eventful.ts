@@ -4,6 +4,10 @@ import { asFunction,
          isFunction,
          isObject }
   from './guards.js';
+import { instanceId,
+         nextMessageContext,
+         runInMessageContext }
+  from './message-context.js';
 import { ErrorFn,
          Eventful,
          EventfulFn,
@@ -100,7 +104,9 @@ const eventfulImpl =
   if (isTraced('new')) {
     traceFn(
       'new',
-      { object });
+      { object,
+        id:
+          instanceId(object) });
   }
 
   const map = new Map<EventName, Set<Function>>();
@@ -253,6 +259,8 @@ const eventfulImpl =
       traceFn(
         'on',
         { object,
+          id:
+            instanceId(object),
           event,
           listener });
     }
@@ -316,6 +324,8 @@ const eventfulImpl =
       traceFn(
         'off',
         { object,
+          id:
+            instanceId(object),
           event,
           listener });
     }
@@ -351,35 +361,46 @@ const eventfulImpl =
       ? [ ...listeners ]
       : EMPTY_LISTENERS;
 
+    const context =
+      nextMessageContext();
+
     if (isTraced('emit')) {
       traceFn(
         'emit',
         { object,
+          id:
+            instanceId(object),
           listeners:
             [ ...snapshot ],
           event,
-          args });
+          args,
+          ...context });
     }
 
     if (snapshot.length === 0) {
       return false;
     }
 
-    for (const listener of snapshot) {
-      try {
-        listener(
-          ...args);
-      } catch (err) {
-        reportListenerError(
-          event,
-          listener,
-          err);
+    runInMessageContext(
+      context,
+      (): void =>
+      {
+        for (const listener of snapshot) {
+          try {
+            listener(
+              ...args);
+          } catch (err) {
+            reportListenerError(
+              event,
+              listener,
+              err);
 
-        if (strict) {
-          throw err;
+            if (strict) {
+              throw err;
+            }
+          }
         }
-      }
-    }
+      });
 
     return true;
   }
@@ -399,14 +420,20 @@ const eventfulImpl =
       ? [ ...listeners ]
       : EMPTY_LISTENERS;
 
+    const context =
+      nextMessageContext();
+
     if (isTraced('emitAsync')) {
       traceFn(
         'emitAsync',
         { object,
+          id:
+            instanceId(object),
           listeners:
             [ ...snapshot ],
           event,
-          args });
+          args,
+          ...context });
     }
 
     if (snapshot.length === 0) {
@@ -420,8 +447,11 @@ const eventfulImpl =
           ) =>
         {
         try {
-          await listener(
-            ...args);
+          await runInMessageContext(
+            context,
+            () =>
+              listener(
+                ...args));
         } catch (err) {
           reportListenerError(
             event,

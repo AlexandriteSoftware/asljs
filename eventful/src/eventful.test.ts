@@ -1092,3 +1092,146 @@ export function createRecorder(
            records:
              (): TraceRecord[] => records };
 }
+
+test(
+  `${TEST_SUITE}: trace reports the emitter identity and message context`,
+  () =>
+  {
+    const traced: Array<Record<string, unknown>> = [ ];
+
+    const cart =
+      eventful(
+        {},
+        { trace:
+            (
+                action,
+                payload
+              ) =>
+            {
+          traced.push(
+            { action,
+              ...payload });
+        } });
+
+    cart.on(
+      'checkout',
+      () => { });
+
+    cart.emit('checkout');
+
+    const emitted =
+      traced.find(
+        entry => entry.action === 'emit');
+
+    assert.ok(emitted);
+
+    assert.equal(
+      typeof emitted.id,
+      'string');
+
+    assert.equal(
+      emitted.causationId,
+      null);
+
+    assert.equal(
+      emitted.correlationId,
+      emitted.messageId);
+  });
+
+test(
+  `${TEST_SUITE}: an event emitted by a listener is caused by the first`,
+  () =>
+  {
+    const emits: Array<Record<string, unknown>> = [ ];
+
+    const trace =
+      (
+          action: string,
+          payload: Record<string, unknown>
+        ): void =>
+      {
+      if (action === 'emit') {
+        emits.push(payload);
+      }
+    };
+
+    const basket =
+      eventful(
+        {},
+        { trace:
+            trace as never });
+
+    const cart =
+      eventful(
+        {},
+        { trace:
+            trace as never });
+
+    basket.on(
+      'stocked',
+      () => { });
+
+    cart.on(
+      'checkout',
+      () =>
+      {
+        basket.emit('stocked');
+      });
+
+    cart.emit('checkout');
+
+    assert.equal(
+      emits.length,
+      2);
+
+    const [first, second] = emits;
+
+    assert.equal(
+      second.causationId,
+      first.messageId);
+
+    assert.equal(
+      second.correlationId,
+      first.correlationId);
+
+    assert.notEqual(
+      second.id,
+      first.id);
+  });
+
+test(
+  `${TEST_SUITE}: a later, unrelated emit starts its own correlation`,
+  () =>
+  {
+    const emits: Array<Record<string, unknown>> = [ ];
+
+    const cart =
+      eventful(
+        {},
+        { trace:
+            (
+                action,
+                payload
+              ) =>
+            {
+          if (action === 'emit') {
+            emits.push(
+              payload as unknown as Record<string, unknown>);
+          }
+        } });
+
+    cart.on(
+      'checkout',
+      () => { });
+
+    cart.emit('checkout');
+    cart.emit('checkout');
+
+    assert.notEqual(
+      emits[1].correlationId,
+      emits[0].correlationId);
+
+    assert.equal(
+      emits[1].causationId,
+      null);
+  });

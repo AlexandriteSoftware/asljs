@@ -42,6 +42,20 @@ export class ListenerError extends Error implements ListenerErrorArgs
   }
 }
 
+/**
+ * Identity of a single message, and its place in the chain that produced it.
+ *
+ * `correlationId` is shared by every message in one interaction.
+ * `causationId` is the message whose dispatch caused this one, and is null for
+ * a message that starts an interaction.
+ */
+export interface MessageContext
+{
+  messageId: string;
+  correlationId: string;
+  causationId: string | null;
+}
+
 type TraceAction =
   | 'new'
   | 'on'
@@ -52,33 +66,42 @@ type TraceAction =
 type TracePayloadByAction = {
   new: {
     object: object | Function;
+    id: string;
   };
 
   on: {
     object: object | Function;
+    id: string;
     event: EventName;
     listener: Function;
   };
 
   off: {
     object: object | Function;
+    id: string;
     event: EventName;
     listener: Function;
   };
 
-  emit: {
-    object: object | Function;
-    listeners: Function[];
-    event: EventName;
-    args: unknown[];
-  };
+  emit:
+    & {
+      object: object | Function;
+      id: string;
+      listeners: Function[];
+      event: EventName;
+      args: unknown[];
+    }
+    & MessageContext;
 
-  emitAsync: {
-    object: object | Function;
-    listeners: Function[];
-    event: EventName;
-    args: unknown[];
-  };
+  emitAsync:
+    & {
+      object: object | Function;
+      id: string;
+      listeners: Function[];
+      event: EventName;
+      args: unknown[];
+    }
+    & MessageContext;
 };
 
 export type TraceFn =

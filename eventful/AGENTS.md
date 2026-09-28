@@ -14,7 +14,8 @@ Exports from `src/index.ts`:
 - `eventful`
 - `EventfulBase`
 - `EventfulLike`, `isEventfulLike`, `asEventfulLike`
-- event-related types and `ListenerError`
+- `instanceId`, `getCurrentMessageContext`, `runInMessageContext`
+- event-related types, `MessageContext`, and `ListenerError`
 
 ## AI Quick Reference
 

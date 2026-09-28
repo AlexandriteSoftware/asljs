@@ -48,6 +48,13 @@ export function createTracer(
 
             delete emitPayload.listeners;
 
+            // Identity and message ids are assigned per run, so they are not
+            // comparable between runs. The eventful tests cover them.
+            delete emitPayload.id;
+            delete emitPayload.messageId;
+            delete emitPayload.correlationId;
+            delete emitPayload.causationId;
+
             if (
               payload.event === 'define'
               || payload.event.match(/^define:/)
@@ -60,9 +67,16 @@ export function createTracer(
                 payload: emitPayload });
             break;
           default:
+            const defaultPayload =
+              Object.assign(
+                {},
+                payload);
+
+            delete defaultPayload.id;
+
             result.push(
               { action,
-                payload });
+                payload: defaultPayload });
             break;
         }
       }

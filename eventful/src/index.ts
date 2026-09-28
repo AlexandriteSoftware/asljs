@@ -22,5 +22,12 @@ export {
   type EventName,
   type Listener,
   type ListenerErrorArgs,
+  type MessageContext,
   type TraceFn
 } from './types.js';
+
+export {
+  getCurrentMessageContext,
+  instanceId,
+  runInMessageContext
+} from './message-context.js';

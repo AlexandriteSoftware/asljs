@@ -1,7 +1,7 @@
 # eventful
 
-> Part of [Alexandrite Software Library][#1] – a set of high‑quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] – a set of high‑quality, performant
+> JavaScript libraries for everyday use.
 
 Lightweight event helper adding on/off/emit to any object.
 
@@ -30,11 +30,11 @@ The package-root export surface includes:
 
 ### Special Behavior
 
-`eventful` is not only an object enhancer. The package-level `eventful`
-function also acts as a global emitter for lifecycle and error events.
+`eventful` is not only an object enhancer. The package-level `eventful` function
+also acts as a global emitter for lifecycle and error events.
 
-If you change lifecycle, tracing, or listener-error behavior, then preserve
-that package-level emitter contract.
+If you change lifecycle, tracing, or listener-error behavior, then preserve that
+package-level emitter contract.
 
 ### Stable Behavior
 
@@ -43,36 +43,37 @@ These behaviors are part of the supported contract, not just current examples:
 - `eventful` adds `on`, `once`, `off`, `emit`, `emitAsync`, and `has`
 - `eventful` also acts as a package-level global emitter
 - strict mode propagates listener errors
-- non-strict mode isolates listener failures through the configured error
-  path; a failure that no `error` hook and no package-level `error` listener
-  consumed is rethrown from a microtask, so it surfaces as an unhandled error
-  instead of disappearing
-- a listener subscribed or removed during `emit` takes effect on the next
-  emit, not the one in progress
+- non-strict mode isolates listener failures through the configured error path;
+  a failure that no `error` hook and no package-level `error` listener consumed
+  is rethrown from a microtask, so it surfaces as an unhandled error instead of
+  disappearing
+- a listener subscribed or removed during `emit` takes effect on the next emit,
+  not the one in progress
 - `ListenerError` protects against recursive failures in global error handling
 
 ### Preferred Patterns
 
 - If you are enhancing a plain object, then use `eventful(target)`.
-- If you are enhancing an existing class instance and cannot change
-  inheritance, then call `eventful(this)` in the constructor.
+- If you are enhancing an existing class instance and cannot change inheritance,
+  then call `eventful(this)` in the constructor.
 - If you control a new class hierarchy and event support is part of the type
   design, then extend `EventfulBase`.
-- If you are writing TypeScript and want typed listener signatures, then
-  declare an event map and use the exported `Eventful<...>` types.
+- If you are writing TypeScript and want typed listener signatures, then declare
+  an event map and use the exported `Eventful<...>` types.
 
 ### Basic (JavaScript)
 
 Adding events to an object, add listeners, and emit events:
 
 ```js
-import { eventful } from 'asljs-eventful';
+import {
+  eventful
+} from 'asljs-eventful';
 
 const obj = eventful({ name: 'Alice' });
 
-obj.on('greet',
-  msg => console.log(`${msg}, ${obj.name}!`));
- 
+obj.on('greet', msg => console.log(`${msg}, ${obj.name}!`));
+
 // writes "Hello, Alice!" to console
 obj.emit('greet', 'Hello');
 ```
@@ -80,16 +81,16 @@ obj.emit('greet', 'Hello');
 ### Basic (TypeScript)
 
 ```ts
-import { eventful, type Eventful } from 'asljs-eventful';
+import {
+  type Eventful,
+  eventful
+} from 'asljs-eventful';
 
-type Events =
-  { greet: [msg: string] };
+type Events = { greet: [msg: string]; };
 
-const obj: { name: string } & Eventful<Events> =
-  eventful({ name: 'Alice' });
+const obj: { name: string; } & Eventful<Events> = eventful({ name: 'Alice' });
 
-obj.on('greet',
-  msg => console.log(`${msg}, ${obj.name}!`));
+obj.on('greet', msg => console.log(`${msg}, ${obj.name}!`));
 
 // writes "Hello, Alice!" to console
 obj.emit('greet', 'Hello');
@@ -100,19 +101,25 @@ obj.emit('greet', 'Hello');
 Adding events to a class via inheritance:
 
 ```js
-import { EventfulBase } from 'asljs-eventful';
+import {
+  EventfulBase
+} from 'asljs-eventful';
 
-class MyClass extends EventfulBase {
-  constructor(name) {
+class MyClass extends EventfulBase
+{
+  constructor(name)
+  {
     super();
 
     this.name = name;
   }
 
-  greet() {
+  greet()
+  {
     this.emit(
       'greet',
-      `Hello, ${this.name}`);
+      `Hello, ${this.name}`
+    );
   }
 }
 ```
@@ -120,21 +127,27 @@ class MyClass extends EventfulBase {
 ### Inheritance (TypeScript)
 
 ```ts
-import { EventfulBase } from 'asljs-eventful';
+import {
+  EventfulBase
+} from 'asljs-eventful';
 
-class MyClass extends EventfulBase {
+class MyClass extends EventfulBase
+{
   name: string;
 
-  constructor(name: string) {
+  constructor(name: string)
+  {
     super();
 
     this.name = name;
   }
 
-  greet() {
+  greet()
+  {
     this.emit(
       'greet',
-      `Hello, ${this.name}`);
+      `Hello, ${this.name}`
+    );
   }
 }
 ```
@@ -144,19 +157,25 @@ class MyClass extends EventfulBase {
 Adding events to an existing class during construction:
 
 ```js
-import { eventful } from 'asljs-eventful';
+import {
+  eventful
+} from 'asljs-eventful';
 
-export class MyClass {
-  constructor(name) {
+export class MyClass
+{
+  constructor(name)
+  {
     eventful(this);
 
     this.name = name;
   }
 
-  greet() {
+  greet()
+  {
     this.emit(
       'greet',
-      `Hello, ${this.name}`);
+      `Hello, ${this.name}`
+    );
   }
 }
 ```
@@ -164,12 +183,15 @@ export class MyClass {
 ### Construction (TypeScript)
 
 ```ts
-import { eventful, type Eventful } from 'asljs-eventful';
+import {
+  type Eventful,
+  eventful
+} from 'asljs-eventful';
 
-type MyClassEvents =
-  { greet: [message: string]; };
+type MyClassEvents = { greet: [message: string]; };
 
-export class MyClass implements Eventful<MyClassEvents> {
+export class MyClass implements Eventful<MyClassEvents>
+{
   name: string;
 
   declare on: Eventful<MyClassEvents>['on'];
@@ -179,16 +201,19 @@ export class MyClass implements Eventful<MyClassEvents> {
   declare emitAsync: Eventful<MyClassEvents>['emitAsync'];
   declare has: Eventful<MyClassEvents>['has'];
 
-  constructor(name: string) {
+  constructor(name: string)
+  {
     eventful(this);
 
     this.name = name;
   }
 
-  greet() {
+  greet()
+  {
     this.emit(
       'greet',
-      `Hello, ${this.name}`);
+      `Hello, ${this.name}`
+    );
   }
 }
 ```
@@ -198,15 +223,18 @@ export class MyClass implements Eventful<MyClassEvents> {
 Trace event invocations to console:
 
 ```js
-const obj =
-  eventful(
-    { },
-    { trace:
-        (action, payload) => {
-          console.log(
-            `Action: ${action}`,
-            payload);
-        } });
+const obj = eventful(
+  {},
+  {
+    trace: (action, payload) =>
+    {
+      console.log(
+        `Action: ${action}`,
+        payload
+      );
+    }
+  }
+);
 
 // Tracing (event, payload):
 // - 'new' on creation, { object }
@@ -219,24 +247,27 @@ const obj =
 Custom error handler for listener errors:
 
 ```js
-const obj =
-  eventful(
-    { },
-    { error:
-        ({ error, object, event, listener }) => {
-          console.error(
-            `Error in listener for event "${event}"`,
-            error);
-        } });
+const obj = eventful(
+  {},
+  {
+    error: ({ error, object, event, listener }) =>
+    {
+      console.error(
+        `Error in listener for event "${event}"`,
+        error
+      );
+    }
+  }
+);
 ```
 
 Strict mode to propagate listener errors:
 
 ```js
-const obj =
-  eventful(
-    { },
-    { strict: true });
+const obj = eventful(
+  {},
+  { strict: true }
+);
 ```
 
 ### Global Events
@@ -246,19 +277,21 @@ const obj =
 per-instance `trace` hook and also emitted as global events on `eventful`.
 
 ```js
-const offNew =
-  eventful.on(
-    'new',
-    ({ object }) => {
-      console.log('created', object);
-    });
+const offNew = eventful.on(
+  'new',
+  ({ object }) =>
+  {
+    console.log('created', object);
+  }
+);
 
-const offError =
-  eventful.on(
-    'error',
-    ({ error, object, event }) => {
-      console.error('listener error', event, error);
-    });
+const offError = eventful.on(
+  'error',
+  ({ error, object, event }) =>
+  {
+    console.error('listener error', event, error);
+  }
+);
 
 // Later
 offNew();
@@ -273,17 +306,19 @@ throws a `ListenerError` (an `Error` subclass with fields
 
 ### eventful([target], [options])
 
-Wraps the `target` object with event capabilities. If no target is provided,
-a new empty object is created.
+Wraps the `target` object with event capabilities. If no target is provided, a
+new empty object is created.
 
 - `target` (Object): The object to be enhanced with event capabilities.
 - `options` (Object): Configuration options.
   - `error` (Function | null): Optional error hook called with
     `{ error, object, event, listener }`.
   - `trace` (Function | null): Optional trace hook called with
-    `(action, payload)`.
-  - `strict` (Boolean): If true, propagates listener errors; otherwise they
-    are isolated. Defaults to false.
+    `(action, payload)`. Every payload carries `id`, the emitter identity;
+    `emit` and `emitAsync` payloads also carry `messageId`, `correlationId` and
+    `causationId`.
+  - `strict` (Boolean): If true, propagates listener errors; otherwise they are
+    isolated. Defaults to false.
 
 ### on(event, listener)
 
@@ -311,7 +346,8 @@ Example:
 ```js
 obj.once(
   'tick',
-  n => console.log('first only', n));
+  n => console.log('first only', n)
+);
 
 obj.emit('tick', 1); // logs
 obj.emit('tick', 2); // no-op; already unsubscribed
@@ -319,8 +355,8 @@ obj.emit('tick', 2); // no-op; already unsubscribed
 
 ### off(event, listener)
 
-Removes a listener for the specified event. A listener registered with `once`
-is removed by passing the same function that was given to `once`.
+Removes a listener for the specified event. A listener registered with `once` is
+removed by passing the same function that was given to `once`.
 
 - `event` (String | Symbol): The event name.
 - `listener` (Function): The callback function to be removed.
@@ -341,9 +377,9 @@ Returns `true` if the event had at least one listener, otherwise `false`.
 
 ### emitAsync(event, ...args)
 
-Emits the specified event asynchronously, running listeners in parallel.
-In non-strict mode, all listeners run and rejections are isolated; in strict
-mode, the first rejection causes the returned promise to reject.
+Emits the specified event asynchronously, running listeners in parallel. In
+non-strict mode, all listeners run and rejections are isolated; in strict mode,
+the first rejection causes the returned promise to reject.
 
 - `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
@@ -363,8 +399,8 @@ Returns `true` if there are listeners, otherwise `false`.
 Example:
 
 ```js
-const off =
-  obj.on('e', () => {});
+const off = obj.on('e', () =>
+{});
 
 console.log(obj.has('e')); // true
 off();
@@ -378,7 +414,78 @@ MIT License. See [LICENSE](LICENSE.md) for details.
 ## Related Packages
 
 - If you need property change tracking, see `asljs-observable`.
-- If you need DOM binding built on observable state, see
-  `asljs-data-binding`.
+- If you need DOM binding built on observable state, see `asljs-data-binding`.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+
+## Instance identity and message context
+
+A trace is only readable if you can tell who sent what, and what caused it.
+Every trace payload carries the identity of the object it came from, and every
+emit carries the identity of the message.
+
+### instanceId(object)
+
+Returns a stable `<Type>#<n>` identifier for an instance, assigning one on first
+use. Instances are held weakly, so identifying one does not keep it alive.
+
+```js
+import {
+  eventful,
+  instanceId
+} from 'asljs-eventful';
+
+class Cart
+{}
+
+const cart = eventful(new Cart());
+
+instanceId(cart); // 'Cart#1'
+```
+
+### Message context
+
+Each emit is a message with three ids:
+
+- `messageId` identifies this message.
+- `correlationId` is shared by every message in one interaction.
+- `causationId` is the message whose dispatch caused this one, or null when the
+  message starts an interaction.
+
+The ids are opaque. The counter is process wide, so do not depend on particular
+values or on a message being the first one.
+
+A message emitted by a listener is caused by the message being dispatched, and
+joins its correlation, so a chain of events is recoverable from the trace alone:
+
+```js
+cart.on('checkout', () => basket.emit('stocked'));
+
+cart.emit('checkout');
+// emit  Cart#1   checkout  { messageId: A, correlationId: A, causationId: null }
+// emit  Basket#1 stocked   { messageId: B, correlationId: A, causationId: A }
+```
+
+### getCurrentMessageContext() and runInMessageContext(context, fn)
+
+`getCurrentMessageContext` returns the message being dispatched on this call
+stack, or null outside a dispatch.
+
+The context is ambient on the call stack, so it reaches emits a listener makes
+synchronously. A listener that emits _after awaiting_ has already left that
+stack, and its message starts a new correlation. To keep the chain across an
+await, capture the context and restore it:
+
+```js
+cart.on('checkout', async () =>
+{
+  const context = getCurrentMessageContext();
+
+  await settle();
+
+  runInMessageContext(context, () => basket.emit('stocked'));
+});
+```
+
+For a worked example of forwarding these ids to OpenTelemetry, see
+[docs/opentelemetry.md](docs/opentelemetry.md).
