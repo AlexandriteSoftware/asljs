@@ -387,7 +387,7 @@ const eventfulImpl =
   async function emitAsync(
       event: EventName,
       ...args: unknown[]
-    ): Promise<void>
+    ): Promise<boolean>
   {
     eventNameTypeGuard(event);
 
@@ -410,7 +410,7 @@ const eventfulImpl =
     }
 
     if (snapshot.length === 0) {
-      return;
+      return false;
     }
 
     const calls =
@@ -437,6 +437,8 @@ const eventfulImpl =
     await (strict
       ? Promise.all(calls)
       : Promise.allSettled(calls));
+
+    return true;
   }
 };
 

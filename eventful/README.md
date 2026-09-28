@@ -348,7 +348,9 @@ mode, the first rejection causes the returned promise to reject.
 - `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
 
-Returns a Promise that resolves when all listeners have been invoked.
+Returns a Promise that resolves when all listeners have been invoked. The
+resolved value is `true` if the event had at least one listener, otherwise
+`false`.
 
 ### has(event)
 

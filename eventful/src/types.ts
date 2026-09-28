@@ -174,11 +174,12 @@ export interface Eventful<E extends EventMap = EventMap>
   /**
    * Emit an event and wait for all listeners (run in parallel).
    * Errors are isolated (ignored) unless `strict` is true.
+   * Resolves to true if the event had at least one listener.
    */
   emitAsync<K extends keyof E & EventName>(
     event: K,
     ...args: E[K]
-  ): Promise<void>;
+  ): Promise<boolean>;
 
   /**
    * Returns true if there is at least one listener for the event.

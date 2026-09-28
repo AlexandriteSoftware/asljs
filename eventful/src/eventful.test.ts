@@ -808,6 +808,33 @@ test(
   });
 
 test(
+  `${TEST_SUITE}: async emit reports whether the event had listeners`,
+  async () =>
+  {
+    const obj =
+      eventful({});
+
+    assert.equal(
+      await obj.emitAsync('e'),
+      false);
+
+    const off =
+      obj.on(
+        'e',
+        async () => { });
+
+    assert.equal(
+      await obj.emitAsync('e'),
+      true);
+
+    off();
+
+    assert.equal(
+      await obj.emitAsync('e'),
+      false);
+  });
+
+test(
   `${TEST_SUITE}: has reflects subscribe and unsubscribe`,
   () =>
   {
