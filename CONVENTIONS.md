@@ -26,31 +26,32 @@ by tooling.
   `guards.ts`); kebab-case for composite names (`observable-object.ts`).
 - **Functions and variables**: camelCase.
 - **Types, interfaces, and classes**: PascalCase.
-- **Constants and enum-like values**: camelCase, when constant is within class,
-  method or function. SCREAMING_SNAKE_CASE when on file level.
-- Internal/private helpers are unexported; they live in the same file as their
-  consumer.
+- **Constants**: SCREAMING_SNAKE_CASE only for file-level values that are
+  deeply immutable, such as primitives and frozen literals. Everything else is
+  camelCase, including file-level bindings that hold mutable objects or
+  constructed services, and any constant declared inside a class, method, or
+  function.
 
 ## Encapsulation
 
-- Use `Map` and `Set` for dynamic key/value and membership state.
 - Do not expose internal collections directly; return safe views (e.g. spread
   copies, boolean results, or counters).
 - Injected methods use **non-enumerable** property descriptors
   (`enumerable: false`) unless the method is intended for public iteration.
-- Idempotent operations (e.g. unsubscribe closures) must return a consistent
-  result (`boolean`) on repeated calls.
-
-## Explicit return types
-
-All **declared functions** (function declarations, class methods) must have
-explicit return types. Inline expressions, typed function expressions,
-higher-order callbacks, and arrow functions with direct `const` assertions are
-exempt (matching the ESLint rule configuration).
+- Idempotent operations (e.g. unsubscribe closures) are safe to call repeatedly
+  and report whether the call did anything: the first call returns `true`, and
+  every later call returns `false` without side effects.
 
 ## Testing
 
-- All code files (even ones containing interfaces/types only) should have a
-  corresponding test file with at least basic coverage.
+- Every file with runtime behaviour has a corresponding test file with at least
+  basic coverage.
+- Files that contain only types and interfaces are exempt from runtime tests.
+  Where a generic or conditional type carries real logic, cover it with
+  type-level assertions (`@ts-expect-error` for shapes that must not compile,
+  equality assertions for shapes that must) rather than with runtime
+  assertions, which cannot observe a type at all.
+- Unexported helpers are covered through the public API that uses them; do not
+  export something solely to make it testable.
 - Test files are named with `.test.ts` suffix and live in the same directory as
   the code they test.
