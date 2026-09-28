@@ -1,11 +1,17 @@
 {
+  "include": ["${configDir}/src/**/*.ts"],
+  "exclude": ["${configDir}/src/**/*.test.ts"],
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": false,
+    "lib": ["ESNext"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "outDir": "${configDir}/dist",
+    "rootDir": "${configDir}/src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "types": []
   }
 }

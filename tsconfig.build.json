@@ -1,9 +1,11 @@
 {
   "extends": "./tsconfig.dist.json",
+  "exclude": [],
   "compilerOptions": {
     "lib": ["ESNext"],
     "types": ["node"],
     "declaration": false,
+    "outDir": "${configDir}/build",
     "sourceMap": true,
     "inlineSources": true
   }
