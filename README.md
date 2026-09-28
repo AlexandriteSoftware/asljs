@@ -5,8 +5,8 @@ By Alexandrite Software Ltd. In JavaScript (with TypeScript).
 
 Applications:
 
-- [app-builder][APPS] - a demo application that uses the libraries to
-  build a simple app with AI-assisted features.
+- [app-builder][APPS] - a demo application that uses the libraries to build a
+  simple app with AI-assisted features.
 
 Tools:
 

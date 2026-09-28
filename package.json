@@ -38,7 +38,7 @@
     "acorn": "^8.17.0",
     "asljs-sfmt": "^0.1.5",
     "asljs-tmpdir": "^0.1.9",
-    "dprint": "^0.55.2",
+    "dprint": "^0.57.4",
     "eslint": "^10.7.0",
     "fake-indexeddb": "^6.2.4",
     "globals": "^17.7.0",

@@ -13,7 +13,7 @@ Where `<package>` is the name of the package to release, e.g. `eventful` or
 
 ## What `release:patch` does
 
-See [common/src/commands/release-patch.ts][11] for the implementation of
-the `release:patch` command.
+See [common/src/commands/release-patch.ts][11] for the implementation of the
+`release:patch` command.
 
 [11]: common/src/commands/release-patch.ts
