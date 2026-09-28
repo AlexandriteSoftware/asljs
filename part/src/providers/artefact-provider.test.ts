@@ -6,7 +6,7 @@ import path
   from 'node:path';
 import test
   from 'node:test';
-import { createPinoLoggerProvider }
+import { NullLoggerProvider }
   from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
@@ -14,7 +14,7 @@ import { providersFactory }
   from './providers.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 test.after(
   () =>

@@ -21,8 +21,10 @@ import { execVersion }
 import { createEnvironment,
          Environment }
   from './environment.js';
-import { createPinoLoggerProvider,
-         LoggerOptions }
+import { LoggerProvider,
+         NullLoggerProvider,
+         PinoLoggerProvider,
+         PinoLoggerProviderOptionsBuilder }
   from 'asljs-logging';
 
 export async function runCli(
@@ -128,20 +130,24 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
-        const loggerOptions: Partial<LoggerOptions> =
-          { envVarPrefix: 'PART_LOG_' };
+        const loggerOptionsBuilder =
+          new PinoLoggerProviderOptionsBuilder()
+            .withLevel('silent')
+            .fromEnvironmentVariables('PART_LOG_');
 
         if (options.loglevel) {
-          loggerOptions.level = options.loglevel;
+          loggerOptionsBuilder.withLevel(
+            options.loglevel);
         }
 
         if (options.logfile) {
-          loggerOptions.file = options.logfile;
+          loggerOptionsBuilder.withFile(
+            options.logfile);
         }
 
         const loggerProvider =
-          createPinoLoggerProvider(
-            loggerOptions);
+          createLoggerProvider(
+            loggerOptionsBuilder);
 
         environment.onDispose(
           async (): Promise<void> =>
@@ -568,4 +574,23 @@ function parseWithPropertiesOption(
   }
 
   return items;
+}
+
+/**
+ * Logging is off unless the command line options or the PART_LOG_ environment
+ * variables ask for it.
+ */
+function createLoggerProvider(
+    loggerOptionsBuilder: PinoLoggerProviderOptionsBuilder
+  ): LoggerProvider
+{
+  const loggerOptions =
+    loggerOptionsBuilder.build();
+
+  if (loggerOptions.level === 'silent') {
+    return new NullLoggerProvider();
+  }
+
+  return new PinoLoggerProvider(
+    loggerOptions);
 }

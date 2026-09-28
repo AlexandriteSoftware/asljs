@@ -14,7 +14,10 @@ import baseConfig
 import { FormatterDefinition,
          SupportedFileType }
   from './formatter.js';
-import { createPinoLoggerProvider }
+import { LoggerProvider,
+         NullLoggerProvider,
+         PinoLoggerProvider,
+         PinoLoggerProviderOptionsBuilder }
   from 'asljs-logging';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
@@ -116,7 +119,7 @@ function getFormattersForPath(
   ): FormatterDefinition[]
 {
   const loggerProvider =
-    createPinoLoggerProvider();
+    createLoggerProvider();
 
   const fileType =
     getFileType(path);
@@ -326,4 +329,23 @@ export function getFileType(
   }
 
   return null;
+}
+
+/**
+ * Logging is off unless the ASLJS_LOG_ environment variables ask for it.
+ */
+function createLoggerProvider(
+  ): LoggerProvider
+{
+  const options =
+    new PinoLoggerProviderOptionsBuilder()
+      .withLevel('silent')
+      .fromEnvironmentVariables()
+      .build();
+
+  if (options.level === 'silent') {
+    return new NullLoggerProvider();
+  }
+
+  return new PinoLoggerProvider(options);
 }

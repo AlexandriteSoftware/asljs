@@ -8,13 +8,13 @@ import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import { createPinoLoggerProvider }
+import { NullLoggerProvider }
   from 'asljs-logging';
 import tsVariableDeclarationFormatterFactory
   from './variable-declaration.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 const tsVariableDeclarationFormatter =
   tsVariableDeclarationFormatterFactory(

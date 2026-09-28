@@ -6,7 +6,7 @@ import remarkParse
   from 'remark-parse';
 import { unified }
   from 'unified';
-import { createPinoLoggerProvider }
+import { NullLoggerProvider }
   from 'asljs-logging';
 import { getMarkup,
          getSections }
@@ -15,7 +15,7 @@ import { MarkdownDocument }
   from './model/markdown-document.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 const MARKDOWN_PARSER =
   unified().use(remarkParse);

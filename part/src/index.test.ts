@@ -13,8 +13,10 @@ test(
       Object.keys(part).sort(),
       [ 'ArtefactProvider',
         'MarkdownDocumentProvider',
+        'NullLoggerProvider',
+        'PinoLoggerProvider',
+        'PinoLoggerProviderOptionsBuilder',
         'TmpDir',
-        'createPinoLoggerProvider',
         'createRuleValidationContext',
         'runCli' ]);
   });

@@ -6,7 +6,7 @@ import test
   from 'node:test';
 import { createEnvironment }
   from '../environment.js';
-import { createPinoLoggerProvider }
+import { NullLoggerProvider }
   from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
@@ -14,7 +14,7 @@ import { execUpdate }
   from './update.js';
 
 const loggerProvider =
-  createPinoLoggerProvider();
+  new NullLoggerProvider();
 
 test.after(
   (): void =>

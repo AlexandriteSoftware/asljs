@@ -39,7 +39,9 @@ export {
 } from 'asljs-tmpdir';
 
 export {
-  createPinoLoggerProvider
+  NullLoggerProvider,
+  PinoLoggerProvider,
+  PinoLoggerProviderOptionsBuilder
 } from 'asljs-logging';
 
 export {

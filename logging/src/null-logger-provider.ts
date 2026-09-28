@@ -9,7 +9,9 @@ export class NullLoggerProvider implements LoggerProvider
 {
   readonly #logger: Logger = new NullLogger();
 
-  getLogger(): Logger
+  getLogger(
+    _context?: string
+  ): Logger
   {
     return this.#logger;
   }

@@ -19,7 +19,8 @@ export {
 } from './formatter.js';
 
 export {
-  createPinoLoggerProvider,
   NullLoggerProvider,
+  PinoLoggerProvider,
+  PinoLoggerProviderOptionsBuilder,
   type Logger
 } from 'asljs-logging';
