@@ -29,7 +29,10 @@ function isArrayIndexProperty(
     key: PropertyKey
   ): boolean
 {
-  if (typeof key === 'symbol') {
+  if (
+    typeof key
+    === 'symbol'
+  ) {
     return false;
   }
 
@@ -79,10 +82,10 @@ function isEventfulObject(
  */
 const observableImpl =
   (
-  value: any,
-  options: ObservableOptions = {}
-): any =>
-{
+      value: any,
+      options: ObservableOptions = {}
+    ): any =>
+  {
   const {
     eventful: eventfulFn = eventful,
     trace = null,
@@ -91,17 +94,16 @@ const observableImpl =
 
   functionTypeGuard(eventfulFn);
 
-  const globalOptions =
-    observable.options;
+  const globalOptions = observable.options;
 
   const conversionCache =
     new WeakMap<object, any>();
 
   const convertNestedValue =
     (
-    input: any
-  ): any =>
-  {
+        input: any
+      ): any =>
+    {
     if (shallow) {
       return input;
     }
@@ -120,11 +122,9 @@ const observableImpl =
     const converted =
       observableImpl(
         input,
-        {
-        eventful: eventfulFn,
-        trace,
-        shallow
-      });
+        { eventful: eventfulFn,
+          trace,
+          shallow });
 
     conversionCache.set(
       input,
@@ -135,17 +135,22 @@ const observableImpl =
 
   const convertNestedMembers =
     (
-    target: any
-  ): void =>
-  {
+        target: any
+      ): void =>
+    {
     if (shallow) {
       return;
     }
 
     if (Array.isArray(target)) {
-      for (let i = 0; i < target.length; i++) {
-        target[i] = convertNestedValue(
-          target[i]);
+      for (
+        let i = 0;
+        i < target.length;
+        i++
+      ) {
+        target[i] =
+          convertNestedValue(
+            target[i]);
       }
 
       return;
@@ -160,16 +165,17 @@ const observableImpl =
         continue;
       }
 
-      target[key] = convertNestedValue(
-        target[key]);
+      target[key] =
+        convertNestedValue(
+          target[key]);
     }
   };
 
   const makeProxy =
     (
-    target: any
-  ): any =>
-  {
+        target: any
+      ): any =>
+    {
     const isArrayTarget =
       Array.isArray(target);
 
@@ -183,9 +189,8 @@ const observableImpl =
 
     const proxiedTarget =
       new Proxy(
-      target,
-      {
-        set(
+        target,
+        { set(
           tgt,
           property,
           newValue,
@@ -226,8 +231,13 @@ const observableImpl =
             ) {
               const payload =
                 isArrayIndex
-                ? { index: Number(property), value: current, previous }
-                : { property, value: current, previous };
+                ? { index:
+                      Number(property),
+                    value: current,
+                    previous }
+                : { property,
+                    value: current,
+                    previous };
 
               const traceFn =
                 trace
@@ -252,8 +262,7 @@ const observableImpl =
 
           return ok;
         },
-
-        deleteProperty(
+          deleteProperty(
           tgt,
           property
         ): boolean
@@ -284,8 +293,11 @@ const observableImpl =
           ) {
             const payload =
               isArrayIndex
-              ? { index: Number(property), previous }
-              : { property, previous };
+              ? { index:
+                    Number(property),
+                  previous }
+              : { property,
+                  previous };
 
             const traceFn =
               trace
@@ -309,8 +321,7 @@ const observableImpl =
 
           return ok;
         },
-
-        defineProperty(
+          defineProperty(
           tgt,
           property,
           descriptor
@@ -328,11 +339,10 @@ const observableImpl =
               .call(
                 descriptor,
                 'value')
-            ? {
-              ...descriptor,
-              value: convertNestedValue(
-                descriptor.value)
-            }
+            ? { ...descriptor,
+                value:
+                  convertNestedValue(
+                    descriptor.value) }
             : descriptor;
 
           const ok =
@@ -352,11 +362,9 @@ const observableImpl =
             && ok
           ) {
             const payload =
-              {
-              property,
-              descriptor: descriptorToDefine,
-              previous
-            };
+              { property,
+                descriptor: descriptorToDefine,
+                previous };
 
             const traceFn =
               trace
@@ -379,12 +387,11 @@ const observableImpl =
           }
 
           return ok;
-        }
-      }
-    );
+        } });
 
-    proxy = isFunction(
-      target?.emit)
+    proxy =
+      isFunction(
+        target?.emit)
       ? proxiedTarget
       : eventfulFn(proxiedTarget);
 
@@ -413,7 +420,8 @@ const observableImpl =
   // Objects
   if (
     value !== null
-    && typeof value === 'object'
+    && typeof value
+       === 'object'
   ) {
     const proxy =
       makeProxy(
@@ -432,11 +440,10 @@ const observableImpl =
   // Primitives → boxed with a single 'value' slot
   const boxed =
     eventfulFn(
-      {
-      get value() {
+      { get value() {
         return value;
       },
-      set value(v) {
+        set value(v) {
         if (
           Object.is(
             v,
@@ -450,7 +457,9 @@ const observableImpl =
         value = v;
 
         const payload =
-          { property: 'value', value, previous };
+          { property: 'value',
+            value,
+            previous };
 
         (boxed as any).emit(
           'set:value',
@@ -466,8 +475,7 @@ const observableImpl =
         (boxed as any).emit(
           'set',
           payload);
-      }
-    });
+      } });
 
   if (isFunction(traceFn)) {
     traceFn(
@@ -482,6 +490,7 @@ const observableImpl =
 export const observable =
   observableImpl as ObservableFn;
 
-observable.options = { trace: null };
+observable.options =
+  { trace: null };
 
 observable.watch = watchImpl;

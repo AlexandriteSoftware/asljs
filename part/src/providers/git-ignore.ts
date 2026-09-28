@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import ignore
   from 'ignore';
 import { readFileSync,
@@ -7,8 +9,6 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
-import { Logger }
-  from 'asljs-logging';
 
 export class GitIgnore
 {

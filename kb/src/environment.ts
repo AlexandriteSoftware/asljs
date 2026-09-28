@@ -5,10 +5,10 @@ import { LinkGraph }
   from './graph.js';
 import { McpClient }
   from './mcp/client.js';
-import { createDefaultReaderRegistry }
-  from './readers/registry.js';
 import { ReaderRegistry }
   from './readers/reader.js';
+import { createDefaultReaderRegistry }
+  from './readers/registry.js';
 
 export interface WritableBuffer
 {
@@ -121,13 +121,13 @@ function createInMemoryWritableBuffer(
   const output: string[] = [ ];
 
   return { write(
-    value: string
-  ): void
-  {
-    output.push(value);
-  },
+      value: string
+    ): void
+    {
+      output.push(value);
+    },
            toString(): string
-  {
-    return output.join('');
-  } };
+    {
+      return output.join('');
+    } };
 }

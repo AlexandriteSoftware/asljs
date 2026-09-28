@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { cp,
          mkdir,
          readdir }
@@ -8,8 +10,6 @@ import { fileURLToPath }
   from 'node:url';
 import { Environment }
   from './../environment.js';
-import { Logger }
-  from 'asljs-logging';
 
 const MODULE_DIRECTORY =
   path.dirname(

@@ -87,8 +87,7 @@ test(
 
         const report =
           JSON.parse(
-            context.environment.stdout.toString()) as
-            { searchedFiles: number; matches: unknown[]; };
+            context.environment.stdout.toString()) as { searchedFiles: number; matches: unknown[]; };
 
         assert.equal(
           report.searchedFiles,

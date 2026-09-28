@@ -47,16 +47,17 @@ export function machine<TBase extends object = {}>(
   ): TBase & Machine
 {
   const initialMachine: MachineBacking<TBase> =
-    {
-    ...base,
-    state: null,
-    states: [],
-    createState: (): MachineState =>
-    {
-      throw new Error('Machine is not initialized yet.');
+    { ...base,
+      state: null,
+      states: [ ],
+      createState:
+        (): MachineState =>
+        {
+      throw new Error(
+        'Machine is not initialized yet.');
     },
-    getState: (): MachineState | null => null
-  };
+      getState:
+        (): MachineState | null => null };
 
   const currentMachine =
     observable(initialMachine) as
@@ -64,43 +65,55 @@ export function machine<TBase extends object = {}>(
     & MachineDuringSetup;
 
   const states: MachineState[] =
-    currentMachine.states = [];
+    currentMachine.states = [ ];
 
   let inTransition = false;
 
-  currentMachine.createState = (name?: string): MachineState =>
-  {
+  currentMachine.createState =
+    (
+        name?: string
+      ): MachineState =>
+    {
     if (
       name !== undefined
       && states.find(
-        state => state.name === name) !== undefined
+        state => state.name === name)
+         !== undefined
     ) {
-      throw new Error(`State "${name}" already exists`);
+      throw new Error(
+        `State "${name}" already exists`);
     }
 
-    const transitions: MachineTransition[] = [];
+    const transitions: MachineTransition[] = [ ];
 
     const state =
       eventful(
-        {
-        name,
-        machine: currentMachine as TBase & Machine,
-        transitions,
-        createTransition: (to: MachineState): MachineTransition =>
-        {
+        { name,
+          machine:
+            currentMachine as TBase & Machine,
+          transitions,
+          createTransition:
+            (
+                to: MachineState
+              ): MachineTransition =>
+            {
           if (!states.includes(to)) {
-            throw new Error('Target state is not part of this machine');
+            throw new Error(
+              'Target state is not part of this machine');
           }
 
           const transition =
             eventful(
+              { from: state,
+                to,
+                machine:
+                  currentMachine as TBase & Machine,
+                activate(): boolean
               {
-              from: state,
-              to,
-              machine: currentMachine as TBase & Machine,
-              activate(): boolean
-              {
-                if (currentMachine.state !== state) {
+                if (
+                  currentMachine.state
+                  !== state
+                ) {
                   return false;
                 }
 
@@ -113,12 +126,11 @@ export function machine<TBase extends object = {}>(
                 }
 
                 const payload =
-                  {
-                  from: state,
-                  to,
-                  machine: currentMachine as TBase & Machine,
-                  transition
-                };
+                  { from: state,
+                    to,
+                    machine:
+                      currentMachine as TBase & Machine,
+                    transition };
 
                 inTransition = true;
 
@@ -149,30 +161,31 @@ export function machine<TBase extends object = {}>(
                 } finally {
                   inTransition = false;
                 }
-              }
-            }) as MachineTransition;
+              } }) as MachineTransition;
 
           transitions.push(transition);
 
           return transition;
-        }
-      }) as MachineState;
+        } }) as MachineState;
 
     states.push(state);
 
     return state;
   };
 
-  currentMachine.getState = (name: string): MachineState | null =>
+  currentMachine.getState =
+    (name: string): MachineState | null =>
     states.find(
       state => state.name === name)
       ?? null;
 
   if (!initial) {
-    throw new Error('`initial` must be a string.');
+    throw new Error(
+      '`initial` must be a string.');
   }
 
-  currentMachine.state = currentMachine.createState(initial);
+  currentMachine.state =
+    currentMachine.createState(initial);
 
   return currentMachine as TBase & Machine;
 }

@@ -1,3 +1,5 @@
+import { NullLogger }
+  from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -11,8 +13,6 @@ import { createEnvironment }
 import { applyFormatters,
          format }
   from './format.js';
-import { NullLogger }
-  from 'asljs-logging';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
 
@@ -89,5 +89,5 @@ test(
       [ 'const value =',
         '  { outputError: () => { } };',
         '' ]
-      .join('\n'));
+        .join('\n'));
   });

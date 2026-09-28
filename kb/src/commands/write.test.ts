@@ -80,9 +80,9 @@ test(
       {
         await assert.rejects(
           () =>
-          execWrite(
-            createTestContext(library),
-            { path: 'one.md' }),
+            execWrite(
+              createTestContext(library),
+              { path: 'one.md' }),
           /No content provided/);
       });
   });

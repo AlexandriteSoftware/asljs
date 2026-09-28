@@ -6,6 +6,8 @@ import { type TSESLint }
   from '@typescript-eslint/utils';
 import { ReportDescriptor }
   from '@typescript-eslint/utils/ts-eslint';
+import { Logger }
+  from 'asljs-logging';
 import { JSSyntaxElement,
          Rule }
   from 'eslint';
@@ -24,8 +26,6 @@ import { ensureLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtCallExpression }
   from '../ts-fmt/fmt-call-expression.js';
 

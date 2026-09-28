@@ -40,7 +40,7 @@ export class ObservableObject<T extends object>
   {
     const propertiesList =
       typeof properties === 'string'
-      ? [properties]
+      ? [ properties ]
       : properties;
 
     return observable.watch(
@@ -85,7 +85,9 @@ export class ObservableObject<T extends object>
   ): boolean
   {
     const payload =
-      { property, value, previous };
+      { property,
+        value,
+        previous };
 
     (this as any).emit(
       `set:${property}`,

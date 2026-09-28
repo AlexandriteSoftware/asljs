@@ -7,12 +7,11 @@ import { toPosixPath }
  * Raised when a path cannot be used, because it is empty, or because it
  * resolves outside of the library root.
  */
-export class LibraryPathError
-  extends Error
+export class LibraryPathError extends Error
 {
   constructor(
-      message: string
-    )
+    message: string
+  )
   {
     super(message);
 
@@ -51,8 +50,10 @@ export function resolveLibraryPath(
       resolved)
   ) {
     throw new LibraryPathError(
-      `Path is outside of the library: ${toPosixPath(
-        value.trim())}`);
+      `Path is outside of the library: ${
+        toPosixPath(
+          value.trim())
+      }`);
   }
 
   return resolved;

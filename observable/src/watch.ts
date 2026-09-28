@@ -12,8 +12,7 @@ function splitPath(
 {
   if (path.trim() === '') {
     throw new TypeError(
-      'Expect watch path to be a non-empty string.'
-    );
+      'Expect watch path to be a non-empty string.');
   }
 
   const rawSegments =
@@ -22,8 +21,7 @@ function splitPath(
   for (const rawSegment of rawSegments) {
     if (rawSegment.trim() === '') {
       throw new TypeError(
-        'Expect watch path segments to be non-empty.'
-      );
+        'Expect watch path segments to be non-empty.');
     }
   }
 
@@ -57,7 +55,8 @@ function readPathValue(
       return undefined;
     }
 
-    current = (current as any)[segment];
+    current =
+      (current as any)[segment];
   }
 
   return current;
@@ -65,35 +64,35 @@ function readPathValue(
 
 export const watchImpl: ObservableWatchFn =
   (
-  target: any,
-  properties: readonly string[] | string,
-  callback: (...values: any[]) => void
-): () => boolean =>
-{
+      target: any,
+      properties: readonly string[] | string,
+      callback: (...values: any[]) => void
+    ): () => boolean =>
+  {
   if (Array.isArray(target)) {
     throw new TypeError(
-      'Watching arrays is not supported.'
-    );
+      'Watching arrays is not supported.');
   }
 
   functionTypeGuard(callback);
 
   const propertiesList =
     typeof properties === 'string'
-    ? [properties]
+    ? [ properties ]
     : properties;
 
   if (!Array.isArray(propertiesList)) {
     throw new TypeError(
-      'Expect properties to be a string or an array of strings.'
-    );
+      'Expect properties to be a string or an array of strings.');
   }
 
   for (const property of propertiesList) {
-    if (typeof property !== 'string') {
+    if (
+      typeof property
+      !== 'string'
+    ) {
       throw new TypeError(
-        'Expect properties to be a string or an array of strings.'
-      );
+        'Expect properties to be a string or an array of strings.');
     }
 
     splitPath(property);
@@ -107,7 +106,7 @@ export const watchImpl: ObservableWatchFn =
           target,
           property)) as any;
 
-  const unwatchers: Array<() => boolean> = [];
+  const unwatchers: Array<() => boolean> = [ ];
 
   for (const property of propertiesList) {
     const segments =
@@ -117,15 +116,15 @@ export const watchImpl: ObservableWatchFn =
 
     const bindPath =
       (): () => boolean =>
-    {
-      const localUnwatchers: Array<() => boolean> = [];
+      {
+      const localUnwatchers: Array<() => boolean> = [ ];
 
       const bindFrom =
         (
-        current: any,
-        index: number
-      ): void =>
-      {
+            current: any,
+            index: number
+          ): void =>
+        {
         if (
           !isObject(current)
           || index >= segments.length
@@ -133,8 +132,7 @@ export const watchImpl: ObservableWatchFn =
           return;
         }
 
-        const segment =
-          segments[index];
+        const segment = segments[index];
 
         const eventfulLike =
           asEventfulLike(current);
@@ -144,23 +142,29 @@ export const watchImpl: ObservableWatchFn =
             eventfulLike.on(
               `set:${segment}`,
               () =>
-            {
+              {
               callback(
                 ...getValues());
 
               if (
-                index < segments.length - 1
+                index
+                < segments.length - 1
                 && unwatchPath
               ) {
                 unwatchPath();
-                unwatchPath = bindPath();
+
+                unwatchPath =
+                  bindPath();
               }
             });
 
           localUnwatchers.push(unwatch);
         }
 
-        if (index < segments.length - 1) {
+        if (
+          index
+          < segments.length - 1
+        ) {
           bindFrom(
             (current as Record<string, unknown>)[segment],
             index + 1);
@@ -177,7 +181,8 @@ export const watchImpl: ObservableWatchFn =
           false);
     };
 
-    unwatchPath = bindPath();
+    unwatchPath =
+      bindPath();
 
     unwatchers.push(
       () =>
@@ -207,8 +212,7 @@ export function ensureWatchMethod(
   Object.defineProperty(
     target,
     'watch',
-    {
-      configurable: true,
+    { configurable: true,
       writable: true,
       enumerable: false,
       value(
@@ -216,7 +220,10 @@ export function ensureWatchMethod(
         callback: (...values: any[]) => void
       ): () => boolean
       {
-        if (typeof properties === 'string') {
+        if (
+          typeof properties
+          === 'string'
+        ) {
           return watchFn(
             this as any,
             properties,
@@ -227,6 +234,5 @@ export function ensureWatchMethod(
           this as any,
           properties,
           callback);
-      }
-    });
+      } });
 }

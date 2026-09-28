@@ -52,7 +52,7 @@ test(
             library,
             'notes/plan.md'),
           '# Plan\n\nSee [budget](../archive/budget.md) and '
-          + '[q1](../archive/budget.md#q1).\n');
+            + '[q1](../archive/budget.md#q1).\n');
 
         assert.equal(
           await read(
@@ -227,10 +227,10 @@ test(
       {
         await assert.rejects(
           () =>
-          renameEntry(
-            library.path,
-            'notes/budget.md',
-            'archive/budget.md'),
+            renameEntry(
+              library.path,
+              'notes/budget.md',
+              'archive/budget.md'),
           /cannot contain a path separator/);
       });
   });
@@ -272,7 +272,7 @@ test(
             library,
             'archive/notes/budget.md'),
           '# Budget\n\nSee [the plan](plan.md) and '
-          + '[a note](../../inbox/one.md).\n');
+            + '[a note](../../inbox/one.md).\n');
 
         assert.equal(
           await read(
@@ -308,9 +308,9 @@ test(
         assert.deepEqual(
           result.files.map(
             file =>
-            file.edits.map(
-              edit => [ edit.from,
-                        edit.to ])),
+              file.edits.map(
+                edit => [ edit.from,
+                          edit.to ])),
           [ [ [ 'budget.md',
                 '../archive/budget.md' ] ] ]);
 

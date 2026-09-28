@@ -15,8 +15,7 @@ test(
   {
     assert.equal(
       isFunction(
-        () =>
-        {}),
+        () => { }),
       true);
 
     assert.equal(
@@ -39,8 +38,7 @@ test(
 
     assert.equal(
       isObject(
-        () =>
-        {}),
+        () => { }),
       false);
   });
 
@@ -51,8 +49,7 @@ test(
     assert.doesNotThrow(
       () =>
         functionTypeGuard(
-          () =>
-          {}));
+          () => { }));
 
     assert.throws(
       () => functionTypeGuard(1),

@@ -28,8 +28,7 @@ export async function execFormat(
   const format =
     resolveOutputFormat(options.format);
 
-  const check =
-    options.check === true;
+  const check = options.check === true;
 
   const report =
     await context.client.call(

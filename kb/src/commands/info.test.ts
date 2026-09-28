@@ -67,8 +67,7 @@ test(
 
         const summary =
           JSON.parse(
-            context.environment.stdout.toString()) as
-            { headings: number; };
+            context.environment.stdout.toString()) as { headings: number; };
 
         assert.equal(
           summary.headings,

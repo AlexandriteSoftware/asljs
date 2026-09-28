@@ -18,8 +18,7 @@ export const TEXT_EXTENSIONS =
  * Reads UTF-8 text files verbatim. This is the reader used for markdown, the
  * base file type of a knowledge base.
  */
-export class TextReader
-  implements DocumentReader
+export class TextReader implements DocumentReader
 {
   readonly name = 'text';
 
@@ -28,8 +27,8 @@ export class TextReader
   readonly verbatim = true;
 
   async readText(
-      filePath: string
-    ): Promise<string>
+    filePath: string
+  ): Promise<string>
   {
     return await fs.readFile(
       filePath,

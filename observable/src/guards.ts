@@ -19,7 +19,6 @@ export function functionTypeGuard(
 {
   if (!isFunction(value)) {
     throw new TypeError(
-      'Expect a function.'
-    );
+      'Expect a function.');
   }
 }

@@ -4,6 +4,8 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { type TSESLint }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { Rule,
          SourceCode }
   from 'eslint';
@@ -11,8 +13,6 @@ import { FormatterDefinitionFactory,
          RuleListenerFactory,
          tsFormatterFactory }
   from '../formatter.js';
-import { Logger }
-  from 'asljs-logging';
 
 const messages: Record<string, string> =
   { 'add-blank-line-between-statements':

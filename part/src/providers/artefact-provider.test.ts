@@ -1,3 +1,5 @@
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import assert
   from 'node:assert/strict';
 import fs
@@ -6,8 +8,6 @@ import path
   from 'node:path';
 import test
   from 'node:test';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }
@@ -175,8 +175,10 @@ External file.
 
 ## Location
 
-- Pattern: ../../${path.basename(
-  outsideDirectoryPath)}/*.md
+- Pattern: ../../${
+          path.basename(
+            outsideDirectoryPath)
+        }/*.md
 `);
 
       const outsideFilePath =
@@ -253,8 +255,10 @@ External folder.
 
 ## Location
 
-- Pattern: ../../${path.basename(
-  outsideDirectoryPath)}/
+- Pattern: ../../${
+          path.basename(
+            outsideDirectoryPath)
+        }/
 `);
 
       const { artefactDefinitionProvider, artefactProvider } =

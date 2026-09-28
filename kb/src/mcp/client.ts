@@ -126,13 +126,13 @@ export async function connectToEndpoint(
       socket,
       (): Promise<void> =>
       {
-        // Ending alone leaves the connection half open when the peer does
-        // not answer with its own end, which keeps the process alive.
-        socket.end();
-        socket.destroy();
+      // Ending alone leaves the connection half open when the peer does
+      // not answer with its own end, which keeps the process alive.
+      socket.end();
+      socket.destroy();
 
-        return Promise.resolve();
-      });
+      return Promise.resolve();
+    });
 
   const served =
     await shakeHands(connection);
@@ -186,7 +186,8 @@ export async function startInternalServer(
             () => resolve());
 
           child.stdin.end();
-        }));
+        }
+      ));
 
   await shakeHands(connection);
 
@@ -212,18 +213,18 @@ export function createInProcessClient(
                  args
                ) =>
              {
-             const response =
-               await handleMessage(
-                 { jsonrpc: '2.0',
-                   id: 1,
-                   method: 'tools/call',
-                   params:
-                     { name: tool,
-                       arguments: args } },
-                 createTools(environment));
+      const response =
+        await handleMessage(
+          { jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params:
+              { name: tool,
+                arguments: args } },
+          createTools(environment));
 
-             return readToolResult(response?.result);
-           },
+      return readToolResult(response?.result);
+    },
            close:
              () => Promise.resolve() };
 }
@@ -255,7 +256,7 @@ async function shakeHands(
         clientInfo:
           { name: 'kb-cli',
             version: '1' } })
-      .catch(() => null);
+    .catch(() => null);
 
   const info =
     (result as { serverInfo?: { name?: string; }; })?.serverInfo;
@@ -287,7 +288,8 @@ function openSocket(
 
           resolve(null);
         });
-    });
+    }
+  );
 }
 
 function createConnection(
@@ -303,9 +305,9 @@ function createConnection(
   readLines(
     input,
     line =>
-    deliver(
-      line,
-      pending));
+      deliver(
+        line,
+        pending));
 
   input.on(
     'close',
@@ -317,28 +319,30 @@ function createConnection(
                  params
                ) =>
              {
-             const id = nextId;
+      const id = nextId;
 
-             nextId += 1;
+      nextId += 1;
 
-             const answer =
-               new Promise<unknown>(
-                 (resolve, reject) =>
-                 pending.set(
-                   id,
-                   { resolve,
-                     reject }));
+      const answer =
+        new Promise<unknown>(
+        (resolve, reject) =>
+          pending.set(
+            id,
+            { resolve,
+              reject })
+      );
 
-             output.write(
-               `${
-                 JSON.stringify(
-                   { jsonrpc: '2.0',
-                     id,
-                     method,
-                     params })}\n`);
+      output.write(
+        `${
+          JSON.stringify(
+            { jsonrpc: '2.0',
+              id,
+              method,
+              params })
+        }\n`);
 
-             return answer;
-           },
+      return answer;
+    },
            close };
 }
 
@@ -405,7 +409,7 @@ function parseMessage(
     return { id: message.id,
              error:
                message.error.message
-               ?? 'The knowledge base server reported an error.' };
+        ?? 'The knowledge base server reported an error.' };
   }
 
   return { id: message.id,
@@ -434,9 +438,10 @@ function readToolResult(
   ): unknown
 {
   const payload =
-    result as
-      { content?: { type: string; text: string; }[];
-        isError?: boolean; };
+    result as {
+    content?: { type: string; text: string; }[];
+    isError?: boolean;
+  };
 
   const text =
     payload?.content?.[0]?.text ?? '';

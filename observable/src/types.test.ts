@@ -17,14 +17,19 @@ test(
   () =>
   {
     const options: ObservableOptions =
-      { shallow: true, trace: null };
+      { shallow: true,
+        trace: null };
 
     const globalOptions: ObservableGlobalOptions =
       { trace: null };
 
     const traceFn: ObservableTraceFn =
-      (_object, _action, _payload) =>
-    {};
+      (
+          _object,
+          _action,
+          _payload
+        ) =>
+      {};
 
     const watchFn: ObservableWatchFn =
       (
@@ -43,7 +48,8 @@ test(
     const boxed: BoxedNumber | null = null;
 
     const picked: PickedValues =
-      ['Alice', 7];
+      [ 'Alice',
+        7 ];
 
     assert.ok(
       options.shallow);
@@ -66,5 +72,6 @@ test(
 
     assert.deepEqual(
       picked,
-      ['Alice', 7]);
+      [ 'Alice',
+        7 ]);
   });

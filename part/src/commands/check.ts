@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { glob }
   from 'glob/raw';
 import path
@@ -6,8 +8,6 @@ import { Environment }
   from '../environment.js';
 import { toPosixPath }
   from '../formatting.js';
-import { Logger }
-  from 'asljs-logging';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { ArtefactDefinitionRule }

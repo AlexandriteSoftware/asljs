@@ -14,22 +14,29 @@ export type Tracer = {
 export function createTracer(
   ): Tracer
 {
-  const traces: TraceRecord[] = [];
+  const traces: TraceRecord[] = [ ];
 
-  return {
-    trace: (action: any, payload: any): void =>
-    {
+  return { trace:
+             (
+                 action: any,
+                 payload: any
+               ): void =>
+             {
       traces.push(
-        { action, payload });
+        { action,
+          payload });
     },
-    clear: () =>
+           clear:
+             () =>
       traces.splice(
         0,
         traces.length),
-    getTraces: (): TraceRecord[] => traces,
-    getMinimalTraces: () =>
-    {
-      const result: any[] = [];
+           getTraces:
+             (): TraceRecord[] => traces,
+           getMinimalTraces:
+             () =>
+             {
+      const result: any[] = [ ];
 
       for (const { action, payload } of traces) {
         switch (action) {
@@ -49,19 +56,24 @@ export function createTracer(
             }
 
             result.push(
-              { action, payload: emitPayload });
+              { action,
+                payload: emitPayload });
             break;
           default:
             result.push(
-              { action, payload });
+              { action,
+                payload });
             break;
         }
       }
 
       return result;
     },
-    getFirstEventParameters: (event: string): any =>
-    {
+           getFirstEventParameters:
+             (
+                 event: string
+               ): any =>
+             {
       const found =
         traces.find(
           t =>
@@ -70,11 +82,9 @@ export function createTracer(
 
       if (!found) {
         throw new Error(
-          `No emit trace found for event ${String(event)}`
-        );
+          `No emit trace found for event ${String(event)}`);
       }
 
       return found.payload.args[0];
-    }
-  };
+    } };
 }

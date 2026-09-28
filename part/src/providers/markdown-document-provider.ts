@@ -1,11 +1,11 @@
+import { Logger }
+  from 'asljs-logging';
 import { readFile }
   from 'node:fs/promises';
 import remarkParse
   from 'remark-parse';
 import { unified }
   from 'unified';
-import { Logger }
-  from 'asljs-logging';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
 

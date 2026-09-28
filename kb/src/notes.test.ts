@@ -105,9 +105,9 @@ test(
       {
         await assert.rejects(
           () =>
-          createNote(
-            library.path,
-            'one.md'),
+            createNote(
+              library.path,
+              'one.md'),
           /already exists/);
       });
   });
@@ -207,10 +207,10 @@ test(
       {
         await assert.rejects(
           () =>
-          summarizeDocument(
-            library.path,
-            readers,
-            'notes'),
+            summarizeDocument(
+              library.path,
+              readers,
+              'notes'),
           /Not a file/);
       });
   });

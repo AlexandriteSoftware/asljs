@@ -37,9 +37,11 @@ function currencyTypeGuard(
 {
   if (
     value !== null
-    && typeof value !== 'string'
+    && typeof value
+       !== 'string'
   ) {
-    throw new TypeError('currency must be a string or null');
+    throw new TypeError(
+      'currency must be a string or null');
   }
 }
 
@@ -50,8 +52,7 @@ function currencyGuard(
 {
   if (a !== b) {
     throw new TypeError(
-      'currency mismatch'
-    );
+      'currency mismatch');
   }
 }
 
@@ -65,8 +66,7 @@ function toString(
       this.value / 100);
   }
 
-  const value =
-    this.value;
+  const value = this.value;
 
   const sign =
     value < 0
@@ -87,12 +87,12 @@ function toString(
       digits.length)
   }`;
 
-  let index =
-    digits.length - 2;
+  let index = digits.length - 2;
 
   while (true) {
     if (index - 3 > 0) {
-      text = `,${
+      text =
+        `,${
         digits.substring(
           index - 3,
           index)
@@ -100,7 +100,8 @@ function toString(
 
       index -= 3;
     } else {
-      text = `${
+      text =
+        `${
         digits.substring(
           0,
           index)
@@ -110,8 +111,7 @@ function toString(
     }
   }
 
-  const amountText =
-    `${sign}${text}`;
+  const amountText = `${sign}${text}`;
 
   return this.currency
     ? `${amountText} ${this.currency}`
@@ -190,11 +190,11 @@ function distribute(
       || recipients < 1
     ) {
       throw new TypeError(
-        'recipients should be either a non-empty array of numbers or a positive integer number'
-      );
+        'recipients should be either a non-empty array of numbers or a positive integer number');
     }
 
-    recipients = new Array(recipients)
+    recipients =
+      new Array(recipients)
       .fill(1);
   } else {
     if (
@@ -203,8 +203,7 @@ function distribute(
         x => !Number.isFinite(x) || x < 0)
     ) {
       throw new TypeError(
-        "recipient's share should be a positive finite number"
-      );
+        "recipient's share should be a positive finite number");
     }
   }
 
@@ -217,12 +216,11 @@ function distribute(
     && this.value % 100 !== 0
   ) {
     throw new Error(
-      'cannot distribute major units with non-zero minor part'
-    );
+      'cannot distribute major units with non-zero minor part');
   }
 
   if (recipients.length === 1) {
-    return [this];
+    return [ this ];
   }
 
   const shares =
@@ -230,16 +228,18 @@ function distribute(
       (acc, value) => acc + value,
       0);
 
-  const amounts: Array<{ i: number; value: number; diff: number; }> = [];
+  const amounts: Array<{ i: number; value: number; diff: number; }> = [ ];
 
-  const price =
-    this.value / shares;
+  const price = this.value / shares;
 
   let distributed = 0;
 
-  for (let i = 0; i < recipients.length; i++) {
-    const exact =
-      recipients[i] * price;
+  for (
+    let i = 0;
+    i < recipients.length;
+    i++
+  ) {
+    const exact = recipients[i] * price;
 
     const value =
       (Math.floor(
@@ -247,19 +247,24 @@ function distribute(
 
     distributed += value;
 
-    const diff =
-      exact - value;
+    const diff = exact - value;
 
-    amounts[i] = { i, value, diff };
+    amounts[i] =
+      { i,
+        value,
+        diff };
   }
 
-  let remainder =
-    this.value - distributed;
+  let remainder = this.value - distributed;
 
   amounts.sort(
     (a, b) => b.diff - a.diff);
 
-  for (let i = 0; i < amounts.length; i++) {
+  for (
+    let i = 0;
+    i < amounts.length;
+    i++
+  ) {
     if (remainder === 0) {
       break;
     }
@@ -305,8 +310,7 @@ function convert(
     || rate <= 0
   ) {
     throw new TypeError(
-      'rate must be a positive finite number'
-    );
+      'rate must be a positive finite number');
   }
 
   const minorValue =
@@ -321,17 +325,15 @@ function convert(
 }
 
 const MoneyProto =
-  {
-  add,
-  subtract,
-  distribute,
-  major,
-  minor,
-  inverse,
-  convert,
-  toString,
-  toNumber
-};
+  { add,
+    subtract,
+    distribute,
+    major,
+    minor,
+    inverse,
+    convert,
+    toString,
+    toNumber };
 
 function isMoney(
     value: unknown
@@ -346,7 +348,8 @@ function parse(
   ): Money | null
 {
   if (
-    typeof value !== 'string'
+    typeof value
+    !== 'string'
     || !value.length
   ) {
     return null;
@@ -375,8 +378,7 @@ function parse(
           main * 100 + fraction);
     }
 
-    const ch =
-      value[index];
+    const ch = value[index];
 
     index++;
 
@@ -384,7 +386,9 @@ function parse(
       ch >= '0'
       && ch <= '9'
     ) {
-      main = main * 10 + sign * (ch.charCodeAt(0) - '0'.charCodeAt(0));
+      main =
+        main * 10 + sign * (ch.charCodeAt(0) - '0'.charCodeAt(0));
+
       continue;
     }
 
@@ -397,8 +401,7 @@ function parse(
         return null;
       }
 
-      const ch1 =
-        value[index];
+      const ch1 = value[index];
 
       index++;
 
@@ -409,15 +412,15 @@ function parse(
         return null;
       }
 
-      fraction = sign * (ch1.charCodeAt(0) - '0'.charCodeAt(0)) * 10;
+      fraction =
+        sign * (ch1.charCodeAt(0) - '0'.charCodeAt(0)) * 10;
 
       if (index === value.length) {
         return money(
           main * 100 + fraction);
       }
 
-      const ch2 =
-        value[index];
+      const ch2 = value[index];
 
       index++;
 
@@ -440,24 +443,30 @@ function parse(
 }
 
 const moneyImpl =
-  (value: number | Money, currency: Currency = null): Money =>
-{
+  (
+      value: number | Money,
+      currency: Currency = null
+    ): Money =>
+  {
   if (isMoney(value)) {
     return moneyImpl(
       value.value,
       value.currency);
   }
 
-  if (typeof value !== 'number') {
-    throw new Error('value is not a number');
+  if (
+    typeof value
+    !== 'number'
+  ) {
+    throw new Error(
+      'value is not a number');
   }
 
   if (!Number.isSafeInteger(value)) {
     throw new Error(
       value < 0
         ? `number of minor units is less than ${Number.MIN_SAFE_INTEGER}`
-        : `number of minor units is greater than ${Number.MAX_SAFE_INTEGER}`
-    );
+        : `number of minor units is greater than ${Number.MAX_SAFE_INTEGER}`);
   }
 
   currencyTypeGuard(currency);
@@ -474,14 +483,22 @@ const moneyImpl =
 export const money =
   moneyImpl as MoneyFactory;
 
-money.zero = money(0);
-money.minor = money(1);
-money.major = money(100);
+money.zero =
+  money(0);
+
+money.minor =
+  money(1);
+
+money.major =
+  money(100);
 
 money.parse = parse;
 
-money.fromString = (value: string) =>
-{
+money.fromString =
+  (
+      value: string
+    ) =>
+  {
   const amount =
     parse(value);
 
@@ -492,10 +509,15 @@ money.fromString = (value: string) =>
   return amount;
 };
 
-money.fromMinor = (value: number, currency: Currency = null) =>
-{
+money.fromMinor =
+  (
+      value: number,
+      currency: Currency = null
+    ) =>
+  {
   if (!Number.isSafeInteger(value)) {
-    throw new Error('value is not an integer');
+    throw new Error(
+      'value is not an integer');
   }
 
   return money(
@@ -503,10 +525,15 @@ money.fromMinor = (value: number, currency: Currency = null) =>
     currency);
 };
 
-money.fromNumber = (value: number, currency: Currency = null) =>
-{
+money.fromNumber =
+  (
+      value: number,
+      currency: Currency = null
+    ) =>
+  {
   if (!Number.isFinite(value)) {
-    throw new Error('value is not a finite number');
+    throw new Error(
+      'value is not a finite number');
   }
 
   const minorValue =
@@ -520,10 +547,15 @@ money.fromNumber = (value: number, currency: Currency = null) =>
     currency);
 };
 
-money.fromMajor = (value: number, currency: Currency = null) =>
-{
+money.fromMajor =
+  (
+      value: number,
+      currency: Currency = null
+    ) =>
+  {
   if (!Number.isSafeInteger(value)) {
-    throw new Error('value is not an integer');
+    throw new Error(
+      'value is not an integer');
   }
 
   return money(
@@ -531,4 +563,5 @@ money.fromMajor = (value: number, currency: Currency = null) =>
     currency);
 };
 
-money.isMoney = (value: unknown): value is Money => isMoney(value);
+money.isMoney =
+  (value: unknown): value is Money => isMoney(value);

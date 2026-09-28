@@ -118,18 +118,18 @@ test(
       {
         await assert.rejects(
           () =>
-          execExtract(
-            createTestContext(library),
-            { path: 'one.md',
-              kind: 'outline' }),
+            execExtract(
+              createTestContext(library),
+              { path: 'one.md',
+                kind: 'outline' }),
           /Unknown extraction kind/);
 
         await assert.rejects(
           () =>
-          execExtract(
-            createTestContext(library),
-            { path: 'notes.txt',
-              kind: 'headings' }),
+            execExtract(
+              createTestContext(library),
+              { path: 'notes.txt',
+                kind: 'headings' }),
           /only supported for markdown/);
       });
   });

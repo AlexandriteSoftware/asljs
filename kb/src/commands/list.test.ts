@@ -54,8 +54,7 @@ test(
 
         const entries =
           JSON.parse(
-            context.environment.stdout.toString()) as
-            { path: string; }[];
+            context.environment.stdout.toString()) as { path: string; }[];
 
         assert.deepEqual(
           entries.map(entry => entry.path),
@@ -76,9 +75,9 @@ test(
       {
         await assert.rejects(
           () =>
-          execList(
-            createTestContext(library),
-            { kind: 'document' }),
+            execList(
+              createTestContext(library),
+              { kind: 'document' }),
           /must be file, folder or any/);
       });
   });

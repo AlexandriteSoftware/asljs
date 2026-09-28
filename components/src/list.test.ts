@@ -729,13 +729,13 @@ function nextTick(
         resolve
       ) =>
     {
-    setTimeout(
-      () =>
-      {
-        resolve();
-      },
-      0);
-  });
+      setTimeout(
+        () =>
+        {
+          resolve();
+        },
+        0);
+    });
 }
 
 function installDom(

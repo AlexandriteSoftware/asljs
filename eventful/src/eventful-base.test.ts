@@ -5,8 +5,7 @@ import test
 import { EventfulBase }
   from './eventful-base.js';
 
-const TEST_SUITE =
-  'eventful-base';
+const TEST_SUITE = 'eventful-base';
 
 test(
   `${TEST_SUITE}: EventfulBase wires eventful methods in constructor`,
@@ -48,12 +47,8 @@ test(
 
     const demo =
       new Demo(
-      {
-        strict: true,
-        error: () =>
-        {}
-      }
-    );
+        { strict: true,
+          error: () => { } });
 
     demo.on(
       'boom',

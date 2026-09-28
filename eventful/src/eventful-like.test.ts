@@ -9,8 +9,7 @@ import { asEventfulLike,
 import { eventful }
   from './eventful.js';
 
-const TEST_SUITE =
-  'eventful-like';
+const TEST_SUITE = 'eventful-like';
 
 test(
   `${TEST_SUITE}: isEventfulLike returns true for eventful instances`,

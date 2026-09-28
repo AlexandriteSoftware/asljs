@@ -1,14 +1,14 @@
 import { type TSESLint,
          TSESTree }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { AST }
   from 'eslint';
 import * as ESTree
   from 'estree';
 import { ensureLocation }
   from './functions/location.js';
-import { Logger }
-  from 'asljs-logging';
 
 export type ContextElement =
   | ESTree.Node

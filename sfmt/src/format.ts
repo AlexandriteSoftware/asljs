@@ -1,3 +1,8 @@
+import { LoggerProvider,
+         NullLoggerProvider,
+         PinoLoggerProvider,
+         PinoLoggerProviderOptionsBuilder }
+  from 'asljs-logging';
 import { ESLint,
          Linter }
   from 'eslint';
@@ -14,11 +19,6 @@ import baseConfig
 import { FormatterDefinition,
          SupportedFileType }
   from './formatter.js';
-import { LoggerProvider,
-         NullLoggerProvider,
-         PinoLoggerProvider,
-         PinoLoggerProviderOptionsBuilder }
-  from 'asljs-logging';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsArrayFunctionExpressionFormatterFactory
@@ -339,9 +339,9 @@ function createLoggerProvider(
 {
   const options =
     new PinoLoggerProviderOptionsBuilder()
-      .withLevel('silent')
-      .fromEnvironmentVariables()
-      .build();
+    .withLevel('silent')
+    .fromEnvironmentVariables()
+    .build();
 
   if (options.level === 'silent') {
     return new NullLoggerProvider();

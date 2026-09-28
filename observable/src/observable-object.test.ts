@@ -5,8 +5,7 @@ import test
 import { ObservableObject }
   from './observable-object.js';
 
-const TEST_SUITE =
-  'observable-object';
+const TEST_SUITE = 'observable-object';
 
 type PersonModel = { name: string; age: number; };
 
@@ -124,15 +123,20 @@ test(
     const person =
       new Person();
 
-    const values: Array<[string, number]> = [];
+    const values: Array<[string, number]> = [ ];
 
     const unwatch =
       person.watch(
-        ['name', 'age'],
-        (name: string, age: number) =>
-      {
+        [ 'name',
+          'age' ],
+        (
+            name: string,
+            age: number
+          ) =>
+        {
         values.push(
-          [name, age]);
+          [ name,
+            age ]);
       });
 
     person.name = 'Alice';
@@ -149,5 +153,10 @@ test(
 
     assert.deepEqual(
       values,
-      [['', 0], ['Alice', 0], ['Alice', 7]]);
+      [ [ '',
+          0 ],
+        [ 'Alice',
+          0 ],
+        [ 'Alice',
+          7 ] ]);
   });

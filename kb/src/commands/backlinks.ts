@@ -51,6 +51,5 @@ function describe(
     backlink: Backlink
   ): string
 {
-  return `${backlink.path}:${backlink.line}:${backlink.column}: ${
-    backlink.kind} ${backlink.target}`;
+  return `${backlink.path}:${backlink.line}:${backlink.column}: ${backlink.kind} ${backlink.target}`;
 }

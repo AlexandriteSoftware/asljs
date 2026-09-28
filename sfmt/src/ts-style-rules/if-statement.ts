@@ -2,6 +2,8 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { type TSESLint }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { FormatterDefinitionFactory,
          RuleListenerFactory,
          tsFormatterFactory }
@@ -10,8 +12,6 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtIfStatement,
          fmtIfTestExpression }
   from '../ts-fmt/fmt-if-statement.js';

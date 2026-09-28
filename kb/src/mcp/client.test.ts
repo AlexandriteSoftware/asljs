@@ -73,9 +73,9 @@ test(
 
         await assert.rejects(
           () =>
-          client.call(
-            'kb_read',
-            { path: 'missing.md' }),
+            client.call(
+              'kb_read',
+              { path: 'missing.md' }),
           /does not exist/);
       });
   });
@@ -165,18 +165,19 @@ test(
                 socket
               ) =>
             {
-              accepted.push(socket);
+            accepted.push(socket);
 
-              socket.write(
-                '{"jsonrpc":"2.0","id":1,"result":{"serverInfo":'
+            socket.write(
+              '{"jsonrpc":"2.0","id":1,"result":{"serverInfo":'
                 + '{"name":"something-else"}}}\n');
-            });
+          });
 
         await new Promise<void>(
           resolve =>
             stranger.listen(
               endpoint,
-              resolve));
+              resolve)
+        );
 
         try {
           assert.equal(
@@ -272,11 +273,11 @@ test(
       {
         await assert.rejects(
           () =>
-          openClient(
-            library.path,
-            { endpoint:
-                endpointIn(library.path),
-              connectOnly: true }),
+            openClient(
+              library.path,
+              { endpoint:
+                  endpointIn(library.path),
+                connectOnly: true }),
           /No knowledge base server is listening/);
       });
   });

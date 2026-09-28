@@ -80,7 +80,8 @@ export function extractHeadings(
 {
   return collect<Heading>(
     document.root,
-    'heading')
+    'heading'
+  )
     .map(
       (
           heading
@@ -257,10 +258,10 @@ export function extractTasks(
 {
   return collect<ListItem>(
     document.root,
-    'listItem')
+    'listItem'
+  )
     .filter(
-      item =>
-      typeof item.checked === 'boolean')
+      item => typeof item.checked === 'boolean')
     .map(
       item => ({ checked: item.checked === true,
                  text:
@@ -280,7 +281,8 @@ export function extractTables(
 {
   return collect<Table>(
     document.root,
-    'table')
+    'table'
+  )
     .map(
       (
           table
@@ -288,8 +290,7 @@ export function extractTables(
       {
         const rows =
           table.children.map(
-            row =>
-            row.children.map(toPlainText));
+            row => row.children.map(toPlainText));
 
         return { headers:
                    rows[0] ?? [ ],
@@ -311,7 +312,8 @@ export function extractCodeBlocks(
 {
   return collect<Code>(
     document.root,
-    'code')
+    'code'
+  )
     .map(
       code => ({ language: code.lang ?? '',
                  value: code.value,
@@ -561,7 +563,8 @@ export function extractData(
 
   throw new Error(
     `Unknown extraction kind: ${String(kind)}. Use ${
-      EXTRACTION_KINDS.join(', ')}.`);
+      EXTRACTION_KINDS.join(', ')
+    }.`);
 }
 
 /**
@@ -595,7 +598,8 @@ export function toExtractionKind(
   if (!known) {
     throw new Error(
       `Unknown extraction kind: ${String(value)}. Use ${
-        EXTRACTION_KINDS.join(', ')}.`);
+        EXTRACTION_KINDS.join(', ')
+      }.`);
   }
 
   return known;

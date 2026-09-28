@@ -45,10 +45,12 @@ export function writeJson(
   ): void
 {
   environment.stdout.write(
-    `${JSON.stringify(
-      value,
-      null,
-      2)}\n`);
+    `${
+      JSON.stringify(
+        value,
+        null,
+        2)
+    }\n`);
 }
 
 /**

@@ -2,14 +2,14 @@ import { RuleDefinition }
   from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import { ESLint }
   from 'eslint';
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
   from '../functions/build-style-rule-tests-from-markdown.js';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import tsArrayFunctionExpressionFormatterFactory
   from './array-function-expression.js';
 

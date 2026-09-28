@@ -108,9 +108,8 @@ export async function createNote(
 
   const content =
     `---\n${
-      stringifyYaml(frontMatter).trimEnd()
-    }\n---\n\n# ${title}\n${
-      bodyOf(options.body)}`;
+    stringifyYaml(frontMatter).trimEnd()
+  }\n---\n\n# ${title}\n${bodyOf(options.body)}`;
 
   return await writeTextFile(
     root,
@@ -341,8 +340,8 @@ function countWords(
 {
   const words =
     text
-      .split(/\s+/)
-      .filter(word => word !== '');
+    .split(/\s+/)
+    .filter(word => word !== '');
 
   return words.length;
 }

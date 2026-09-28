@@ -1,11 +1,11 @@
+import { glob }
+  from 'glob';
 import { Stats }
   from 'node:fs';
 import fs
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { glob }
-  from 'glob';
 import { toPosixPath }
   from './formatting.js';
 import { isInsideLibrary,
@@ -54,7 +54,6 @@ export interface ListOptions
    * Include dot files and dot folders. Defaults to `false`.
    */
   hidden?: boolean;
-
 }
 
 export interface OverwriteOptions
@@ -62,8 +61,7 @@ export interface OverwriteOptions
   overwrite?: boolean;
 }
 
-export interface WriteOptions
-  extends OverwriteOptions
+export interface WriteOptions extends OverwriteOptions
 {
   /**
    * Create missing parent folders. Defaults to `true`.
@@ -135,8 +133,7 @@ export async function listEntries(
         nodir: false,
         absolute: true });
 
-  const kind =
-    options.kind ?? 'any';
+  const kind = options.kind ?? 'any';
 
   const entries: LibraryEntry[] = [ ];
 
@@ -169,8 +166,7 @@ export async function listEntries(
   }
 
   return entries.sort(
-    (left, right) =>
-    left.path.localeCompare(right.path));
+    (left, right) => left.path.localeCompare(right.path));
 }
 
 /**
@@ -193,9 +189,11 @@ export async function statEntry(
 
   if (!entry) {
     throw new Error(
-      `Entry does not exist: ${toLibraryPath(
-        root,
-        absolute)}`);
+      `Entry does not exist: ${
+        toLibraryPath(
+          root,
+          absolute)
+      }`);
   }
 
   return entry;
@@ -242,9 +240,11 @@ export async function writeTextFile(
     && await exists(absolute)
   ) {
     throw new Error(
-      `File already exists: ${toLibraryPath(
-        root,
-        absolute)}`);
+      `File already exists: ${
+        toLibraryPath(
+          root,
+          absolute)
+      }`);
   }
 
   if (
@@ -301,8 +301,7 @@ export async function moveEntry(
     options: OverwriteOptions = {}
   ): Promise<TransferResult>
 {
-  const { absoluteSource,
-          absoluteTarget } =
+  const { absoluteSource, absoluteTarget } =
     await planTransfer(
       root,
       source,
@@ -340,8 +339,7 @@ export async function copyEntry(
     options: OverwriteOptions = {}
   ): Promise<TransferResult>
 {
-  const { absoluteSource,
-          absoluteTarget } =
+  const { absoluteSource, absoluteTarget } =
     await planTransfer(
       root,
       source,
@@ -404,9 +402,11 @@ export async function removeEntry(
 
     if (children.length > 0) {
       throw new Error(
-        `Folder is not empty: ${toLibraryPath(
-          root,
-          absolute)}`);
+        `Folder is not empty: ${
+          toLibraryPath(
+            root,
+            absolute)
+        }`);
     }
   }
 
@@ -469,9 +469,11 @@ async function planTransfer(
 
   if (!await exists(absoluteSource)) {
     throw new Error(
-      `Entry does not exist: ${toLibraryPath(
-        root,
-        absoluteSource)}`);
+      `Entry does not exist: ${
+        toLibraryPath(
+          root,
+          absoluteSource)
+      }`);
   }
 
   const absoluteTarget =
@@ -502,9 +504,11 @@ async function planTransfer(
     && await exists(absoluteTarget)
   ) {
     throw new Error(
-      `Target already exists: ${toLibraryPath(
-        root,
-        absoluteTarget)}`);
+      `Target already exists: ${
+        toLibraryPath(
+          root,
+          absoluteTarget)
+      }`);
   }
 
   if (

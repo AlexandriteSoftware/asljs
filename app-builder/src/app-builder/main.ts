@@ -842,10 +842,10 @@ const appRuntimeTools =
             resolve
           ) =>
         {
-        window.setTimeout(
-          resolve,
-          milliseconds);
-      }) });
+          window.setTimeout(
+            resolve,
+            milliseconds);
+        }) });
 
 function renderAppList(
   ): void

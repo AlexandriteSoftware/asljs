@@ -1,3 +1,5 @@
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import assert
   from 'node:assert/strict';
 import test
@@ -6,8 +8,6 @@ import remarkParse
   from 'remark-parse';
 import { unified }
   from 'unified';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import { getMarkup,
          getSections }
   from './markdown-document-queries.js';

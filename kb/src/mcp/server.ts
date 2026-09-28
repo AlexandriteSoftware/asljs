@@ -1,18 +1,18 @@
+import { Logger }
+  from 'asljs-logging';
 import fs
   from 'node:fs/promises';
-import { messageOf }
-  from '../formatting.js';
 import { createServer,
          Server }
   from 'node:net';
 import { Readable }
   from 'node:stream';
-import { Logger }
-  from 'asljs-logging';
-import { Environment }
-  from '../environment.js';
 import { packageVersion }
   from '../commands/version.js';
+import { Environment }
+  from '../environment.js';
+import { messageOf }
+  from '../formatting.js';
 import { endpointIsFile }
   from './endpoint.js';
 import { readLines }
@@ -140,7 +140,8 @@ export async function runMcpServer(
     resolve =>
       input.on(
         'end',
-        resolve));
+        resolve)
+  );
 
   await Promise.all(pending);
 }
@@ -170,11 +171,11 @@ export async function serveEndpoint(
           socket
         ) =>
       {
-        void runMcpServer(
-          environment,
-          socket,
-          line => socket.write(line));
-      });
+      void runMcpServer(
+        environment,
+        socket,
+        line => socket.write(line));
+    });
 
   await new Promise<void>(
     (
@@ -189,15 +190,16 @@ export async function serveEndpoint(
       server.listen(
         endpoint,
         resolve);
-    });
+    }
+  );
 
   return { close:
              async (): Promise<void> =>
              {
-             await stopListening(server);
+      await stopListening(server);
 
-             await removeStaleEndpoint(endpoint);
-           } };
+      await removeStaleEndpoint(endpoint);
+    } };
 }
 
 function stopListening(
@@ -210,7 +212,8 @@ function stopListening(
       ) =>
     {
       server.close(() => resolve());
-    });
+    }
+  );
 }
 
 /**

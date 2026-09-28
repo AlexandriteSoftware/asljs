@@ -1,3 +1,8 @@
+import { LoggerProvider,
+         NullLoggerProvider,
+         PinoLoggerProvider,
+         PinoLoggerProviderOptionsBuilder }
+  from 'asljs-logging';
 import { Command }
   from 'commander';
 import path
@@ -21,11 +26,6 @@ import { execVersion }
 import { createEnvironment,
          Environment }
   from './environment.js';
-import { LoggerProvider,
-         NullLoggerProvider,
-         PinoLoggerProvider,
-         PinoLoggerProviderOptionsBuilder }
-  from 'asljs-logging';
 
 export async function runCli(
     args: string[],
@@ -132,8 +132,8 @@ function createCli(
 
         const loggerOptionsBuilder =
           new PinoLoggerProviderOptionsBuilder()
-            .withLevel('silent')
-            .fromEnvironmentVariables('PART_LOG_');
+          .withLevel('silent')
+          .fromEnvironmentVariables('PART_LOG_');
 
         if (options.loglevel) {
           loggerOptionsBuilder.withLevel(

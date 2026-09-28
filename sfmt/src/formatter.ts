@@ -1,9 +1,9 @@
 import { type TSESLint }
   from '@typescript-eslint/utils';
-import path
-  from 'node:path';
 import { Logger }
   from 'asljs-logging';
+import path
+  from 'node:path';
 
 export type SupportedFileType =
   | 'javascript'

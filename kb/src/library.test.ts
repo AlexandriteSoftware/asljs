@@ -33,9 +33,10 @@ test(
   () =>
   {
     assert.throws(
-      () => resolveLibraryPath(
-        root,
-        '   '),
+      () =>
+        resolveLibraryPath(
+          root,
+          '   '),
       LibraryPathError);
   });
 
@@ -44,9 +45,10 @@ test(
   () =>
   {
     assert.throws(
-      () => resolveLibraryPath(
-        root,
-        '../secrets.md'),
+      () =>
+        resolveLibraryPath(
+          root,
+          '../secrets.md'),
       LibraryPathError);
   });
 
@@ -81,10 +83,10 @@ test(
   {
     assert.throws(
       () =>
-      toLibraryPath(
-        root,
-        path.resolve(
-          '/tmp/other/today.md')),
+        toLibraryPath(
+          root,
+          path.resolve(
+            '/tmp/other/today.md')),
       LibraryPathError);
   });
 

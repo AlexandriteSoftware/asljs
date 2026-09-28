@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import fs
   from 'node:fs/promises';
 import path
@@ -9,8 +11,6 @@ import { ArtefactDataProvidingContext,
   from '../artefact-data-providing-function.js';
 import { MarkdownDocumentProvider }
   from '../index.js';
-import { Logger }
-  from 'asljs-logging';
 import { Artefact }
   from '../model/artefact.js';
 

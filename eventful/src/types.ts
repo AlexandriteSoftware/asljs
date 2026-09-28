@@ -2,9 +2,11 @@ export type EventName = string | symbol;
 
 export type EventMap = Record<EventName, unknown[]>;
 
-export type Listener<Args extends unknown[] = unknown[]> = (
-  ...args: Args
-) => unknown;
+export type Listener<Args extends unknown[] = unknown[]> =
+  (
+    ...args: Args
+  ) =>
+    unknown;
 
 export interface ListenerErrorArgs
 {
@@ -79,12 +81,18 @@ type TracePayloadByAction = {
   };
 };
 
-export type TraceFn = <A extends TraceAction>(
-  action: A,
-  args: TracePayloadByAction[A]
-) => void;
+export type TraceFn =
+  <A extends TraceAction>(
+    action: A,
+    args: TracePayloadByAction[A]
+  ) =>
+    void;
 
-export type ErrorFn = (error: ListenerErrorArgs) => void;
+export type ErrorFn =
+  (
+    error: ListenerErrorArgs
+  ) =>
+    void;
 
 export type EventfulFn =
   & EventfulFactory

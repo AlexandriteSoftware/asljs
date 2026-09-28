@@ -1,12 +1,12 @@
 import { createEnvironment,
          Environment }
   from '../environment.js';
+import { messageOf }
+  from '../formatting.js';
 import { createLinkGraph }
   from '../graph.js';
 import { resolveLibraryRoot }
   from '../library.js';
-import { messageOf }
-  from '../formatting.js';
 import { createLoggerProvider }
   from '../logger.js';
 import { watchLibrary }
@@ -76,8 +76,7 @@ export async function main(
     await startIndex(environment);
   }
 
-  const listening =
-    options.listen !== null;
+  const listening = options.listen !== null;
 
   if (listening) {
     await startEndpoint(
@@ -138,7 +137,8 @@ function untilStopped(
       process.once(
         'SIGTERM',
         () => resolve());
-    });
+    }
+  );
 }
 
 export function readOptions(
@@ -320,4 +320,3 @@ function valueAt(
 
   return value;
 }
-

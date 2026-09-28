@@ -4,6 +4,8 @@ import { type TSESLint }
   from '@typescript-eslint/utils';
 import { ReportDescriptor }
   from '@typescript-eslint/utils/ts-eslint';
+import { Logger }
+  from 'asljs-logging';
 import { RuleListenerFactory,
          tsFormatterFactory }
   from '../formatter.js';
@@ -11,8 +13,6 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
   from '../functions/indentations.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
 

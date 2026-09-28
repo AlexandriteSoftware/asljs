@@ -12,8 +12,7 @@ test(
   'splitFrontMatter reads a YAML mapping',
   () =>
   {
-    const { frontMatter,
-            body } =
+    const { frontMatter, body } =
       splitFrontMatter(
         '---\ntitle: One\ntags:\n  - a\n---\n# One\n');
 
@@ -36,8 +35,7 @@ test(
   'splitFrontMatter treats an unterminated block as content',
   () =>
   {
-    const { frontMatter,
-            body } =
+    const { frontMatter, body } =
       splitFrontMatter(
         '---\ntitle: One\n# One\n');
 

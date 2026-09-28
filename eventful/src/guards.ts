@@ -6,12 +6,13 @@ export function eventNameTypeGuard(
   ): asserts value is EventName
 {
   if (
-    typeof value !== 'string'
-    && typeof value !== 'symbol'
+    typeof value
+    !== 'string'
+    && typeof value
+       !== 'symbol'
   ) {
     throw new TypeError(
-      'Expect event to be a string or symbol.'
-    );
+      'Expect event to be a string or symbol.');
   }
 }
 
@@ -47,7 +48,6 @@ export function functionTypeGuard(
 {
   if (!isFunction(value)) {
     throw new TypeError(
-      'Expect a function.'
-    );
+      'Expect a function.');
   }
 }

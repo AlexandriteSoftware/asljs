@@ -121,11 +121,11 @@ test(
       {
         await assert.rejects(
           () =>
-          searchLibrary(
-            library.path,
-            readers,
-            { query: '(',
-              regex: true }),
+            searchLibrary(
+              library.path,
+              readers,
+              { query: '(',
+                regex: true }),
           /Invalid regular expression/);
       });
   });
@@ -195,10 +195,10 @@ test(
       {
         await assert.rejects(
           () =>
-          searchLibrary(
-            library.path,
-            readers,
-            { query: '' }),
+            searchLibrary(
+              library.path,
+              readers,
+              { query: '' }),
           /non-empty string/);
       });
   });

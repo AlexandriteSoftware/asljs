@@ -47,9 +47,9 @@ async function waitFor(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        0));
+        setTimeout(
+          resolve,
+          0));
   }
 }
 
@@ -95,9 +95,9 @@ test(
     // Give the initial load time to settle; record should remain null.
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.equal(
       live.record,
@@ -202,9 +202,9 @@ test(
     // Give time for any spurious update to land
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.deepEqual(
       live.record,
@@ -574,9 +574,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.equal(
       fired.length,

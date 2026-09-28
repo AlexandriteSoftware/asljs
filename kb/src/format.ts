@@ -59,8 +59,7 @@ export async function formatLibrary(
     options: FormatOptions = {}
   ): Promise<FormatReport>
 {
-  const write =
-    options.write !== false;
+  const write = options.write !== false;
 
   const entries =
     await listEntries(
@@ -88,8 +87,7 @@ export async function formatLibrary(
     const formatted =
       formatMarkdown(text);
 
-    const changed =
-      formatted !== text;
+    const changed = formatted !== text;
 
     if (
       changed

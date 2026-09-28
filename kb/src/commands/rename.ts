@@ -57,14 +57,12 @@ export function renderRelocation(
   for (const file of result.files) {
     for (const edit of file.edits) {
       lines.push(
-        `${prefix}update ${file.path}:${edit.line}:${edit.column} ${
-          edit.from} -> ${edit.to}`);
+        `${prefix}update ${file.path}:${edit.line}:${edit.column} ${edit.from} -> ${edit.to}`);
     }
 
     for (const skipped of file.skipped) {
       lines.push(
-        `skipped ${file.path}:${skipped.line}:${skipped.column} ${
-          skipped.from}: ${skipped.reason}`);
+        `skipped ${file.path}:${skipped.line}:${skipped.column} ${skipped.from}: ${skipped.reason}`);
     }
   }
 

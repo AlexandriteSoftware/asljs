@@ -71,9 +71,7 @@ test(
 
         const result =
           JSON.parse(
-            context.environment.stdout.toString()) as
-            { target: string;
-              files: { path: string; }[]; };
+            context.environment.stdout.toString()) as { target: string; files: { path: string; }[]; };
 
         assert.equal(
           result.target,
@@ -98,11 +96,11 @@ test(
       {
         await assert.rejects(
           () =>
-          execRename(
-            createTestContext(library),
-            { path: 'notes/budget.md',
-              name:
-                'archive/finance.md' }),
+            execRename(
+              createTestContext(library),
+              { path: 'notes/budget.md',
+                name:
+                  'archive/finance.md' }),
           /cannot contain a path separator/);
       });
   });

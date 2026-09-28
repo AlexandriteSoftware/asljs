@@ -1,7 +1,7 @@
-import { TmpDir }
-  from 'asljs-tmpdir';
 import { LoggerProvider }
   from 'asljs-logging';
+import { TmpDir }
+  from 'asljs-tmpdir';
 
 export function tmpDirFactory(
     loggerProvider: LoggerProvider

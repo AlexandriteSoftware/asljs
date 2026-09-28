@@ -1,8 +1,8 @@
-import { watch,
-         FSWatcher }
-  from 'node:fs';
 import { Logger }
   from 'asljs-logging';
+import { FSWatcher,
+         watch }
+  from 'node:fs';
 import { messageOf,
          toPosixPath }
   from './formatting.js';
@@ -87,8 +87,7 @@ export function watchLibrary(
     options: WatchOptions = {}
   ): LibraryWatcher
 {
-  const debounceMs =
-    options.debounceMs ?? DEFAULT_DEBOUNCE_MS;
+  const debounceMs = options.debounceMs ?? DEFAULT_DEBOUNCE_MS;
 
   let watcher: FSWatcher | null = null;
 
@@ -103,54 +102,53 @@ export function watchLibrary(
   const apply =
     (): void =>
     {
-      const paths =
-        [ ...pending ];
+    const paths =
+      [ ...pending ];
 
-      const full = rebuild;
+    const full = rebuild;
 
-      pending = new Set<string>();
-      rebuild = false;
-      timer = null;
+    pending = new Set<string>();
+    rebuild = false;
+    timer = null;
 
-      void (async (): Promise<void> =>
-      {
-        try {
-          if (full) {
-            await graph.rebuild();
-          } else {
-            for (const path of paths) {
-              await graph.update(path);
-            }
+    void (async (): Promise<void> =>
+    {
+      try {
+        if (full) {
+          await graph.rebuild();
+        } else {
+          for (const path of paths) {
+            await graph.update(path);
           }
-        } catch (error) {
-          options.logger?.warning(
-            `Failed to apply library changes: ${
-              messageOf(error)}`);
         }
+      } catch (error) {
+        options.logger?.warning(
+          `Failed to apply library changes: ${messageOf(error)}`);
+      }
 
-        if (!closed) {
-          report(
-            options,
-            full,
-            paths);
-        }
-      })();
-    };
+      if (!closed) {
+        report(
+          options,
+          full,
+          paths);
+      }
+    })();
+  };
 
   const schedule =
     (): void =>
     {
-      if (timer) {
-        clearTimeout(timer);
-      }
+    if (timer) {
+      clearTimeout(timer);
+    }
 
-      timer =
-        setTimeout(
-          apply,
-          debounceMs);
+    timer =
+      setTimeout(
+        apply,
+        debounceMs);
 
-      timer.unref?.();
-    };
+    timer.unref?.();
+  };
 
   try {
     watcher =
@@ -162,28 +160,27 @@ export function watchLibrary(
             fileName
           ) =>
         {
-          if (closed) {
-            return;
-          }
+        if (closed) {
+          return;
+        }
 
-          const changed =
-            changedPath(fileName);
+        const changed =
+          changedPath(fileName);
 
-          if (
-            changed === ''
-            || !isMarkdown(changed)
-          ) {
-            rebuild = true;
-          } else {
-            pending.add(changed);
-          }
+        if (
+          changed === ''
+          || !isMarkdown(changed)
+        ) {
+          rebuild = true;
+        } else {
+          pending.add(changed);
+        }
 
-          schedule();
-        });
+        schedule();
+      });
   } catch (error) {
     options.logger?.warning(
-      `Cannot watch the library for changes: ${
-        messageOf(error)}`);
+      `Cannot watch the library for changes: ${messageOf(error)}`);
   }
 
   return { close:

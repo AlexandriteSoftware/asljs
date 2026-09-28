@@ -106,9 +106,9 @@ export async function runCli(
 async function through<TOptions>(
     environment: Environment,
     action: (
-      context: CommandContext,
-      options: TOptions
-    ) => Promise<void>,
+    context: CommandContext,
+    options: TOptions
+  ) => Promise<void>,
     options: TOptions
   ): Promise<void>
 {
@@ -282,14 +282,14 @@ function addList(
       'Include dot files and dot folders')
     .action(
       async (pattern, options, command) =>
-      await through(
-        environment,
-        execList,
-        { pattern,
-          kind: options.kind,
-          hidden: options.hidden === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execList,
+          { pattern,
+            kind: options.kind,
+            hidden: options.hidden === true,
+            format:
+              formatOption(command) }));
 }
 
 function addRead(
@@ -305,12 +305,12 @@ function addRead(
       'Library-relative path')
     .action(
       async (value, _, command) =>
-      await through(
-        environment,
-        execRead,
-        { path: value,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execRead,
+          { path: value,
+            format:
+              formatOption(command) }));
 }
 
 function addWrite(
@@ -332,14 +332,14 @@ function addWrite(
       'Replace the file when it already exists')
     .action(
       async (value, options, command) =>
-      await through(
-        environment,
-        execWrite,
-        { path: value,
-          content: options.content,
-          overwrite: options.overwrite === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execWrite,
+          { path: value,
+            content: options.content,
+            overwrite: options.overwrite === true,
+            format:
+              formatOption(command) }));
 }
 
 function addNew(
@@ -367,18 +367,18 @@ function addNew(
       'Replace the note when it already exists')
     .action(
       async (value, options, command) =>
-      await through(
-        environment,
-        execNew,
-        { path: value,
-          title:
-            filterStringOption(options.title),
-          tags:
-            splitCommaSeparatedOption(options.tags),
-          body: options.body,
-          overwrite: options.overwrite === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execNew,
+          { path: value,
+            title:
+              filterStringOption(options.title),
+            tags:
+              splitCommaSeparatedOption(options.tags),
+            body: options.body,
+            overwrite: options.overwrite === true,
+            format:
+              formatOption(command) }));
 }
 
 function addMkdir(
@@ -394,12 +394,12 @@ function addMkdir(
       'Library-relative path')
     .action(
       async (value, _, command) =>
-      await through(
-        environment,
-        execMkdir,
-        { path: value,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execMkdir,
+          { path: value,
+            format:
+              formatOption(command) }));
 }
 
 function addCopy(
@@ -417,14 +417,14 @@ function addCopy(
       'Replace the target when it already exists')
     .action(
       async (source, target, options, command) =>
-      await through(
-        environment,
-        execCopy,
-        { source,
-          target,
-          overwrite: options.overwrite === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execCopy,
+          { source,
+            target,
+            overwrite: options.overwrite === true,
+            format:
+              formatOption(command) }));
 }
 
 function addRemove(
@@ -443,13 +443,13 @@ function addRemove(
       'Remove a folder with its content')
     .action(
       async (value, options, command) =>
-      await through(
-        environment,
-        execRemove,
-        { path: value,
-          recursive: options.recursive === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execRemove,
+          { path: value,
+            recursive: options.recursive === true,
+            format:
+              formatOption(command) }));
 }
 
 function addLinkCommands(
@@ -495,16 +495,16 @@ function addMove(
       'Report the move and the edits without performing them')
     .action(
       async (source, target, options, command) =>
-      await through(
-        environment,
-        execMove,
-        { source,
-          target,
-          overwrite: options.overwrite === true,
-          updateLinks: options.updateLinks !== false,
-          dryRun: options.dryRun === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execMove,
+          { source,
+            target,
+            overwrite: options.overwrite === true,
+            updateLinks: options.updateLinks !== false,
+            dryRun: options.dryRun === true,
+            format:
+              formatOption(command) }));
 }
 
 function addRename(
@@ -532,16 +532,16 @@ function addRename(
       'Report the rename and the edits without performing them')
     .action(
       async (value, name, options, command) =>
-      await through(
-        environment,
-        execRename,
-        { path: value,
-          name,
-          overwrite: options.overwrite === true,
-          updateLinks: options.updateLinks !== false,
-          dryRun: options.dryRun === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execRename,
+          { path: value,
+            name,
+            overwrite: options.overwrite === true,
+            updateLinks: options.updateLinks !== false,
+            dryRun: options.dryRun === true,
+            format:
+              formatOption(command) }));
 }
 
 function addBacklinks(
@@ -566,15 +566,15 @@ function addBacklinks(
       'Include links the document makes to itself')
     .action(
       async (value, options, command) =>
-      await through(
-        environment,
-        execBacklinks,
-        { path: value,
-          pattern: options.pattern,
-          hidden: options.hidden === true,
-          includeSelf: options.includeSelf === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execBacklinks,
+          { path: value,
+            pattern: options.pattern,
+            hidden: options.hidden === true,
+            includeSelf: options.includeSelf === true,
+            format:
+              formatOption(command) }));
 }
 
 function addGraph(
@@ -590,12 +590,12 @@ function addGraph(
       'Library-relative path of an article to describe')
     .action(
       async (value, _, command) =>
-      await through(
-        environment,
-        execGraph,
-        { path: value,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execGraph,
+          { path: value,
+            format:
+              formatOption(command) }));
 }
 
 function addToolCommands(
@@ -656,21 +656,21 @@ function addSearch(
       'Maximum number of matches to report')
     .action(
       async (query, options, command) =>
-      await through(
-        environment,
-        execSearch,
-        { query,
-          pattern: options.pattern,
-          regex: options.regex === true,
-          caseSensitive:
-            options.caseSensitive === true,
-          hidden: options.hidden === true,
-          maxResults:
-            parseCountOption(
-              options.maxResults,
-              '--max-results'),
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execSearch,
+          { query,
+            pattern: options.pattern,
+            regex: options.regex === true,
+            caseSensitive:
+              options.caseSensitive === true,
+            hidden: options.hidden === true,
+            maxResults:
+              parseCountOption(
+                options.maxResults,
+                '--max-results'),
+            format:
+              formatOption(command) }));
 }
 
 function addFormat(
@@ -692,14 +692,14 @@ function addFormat(
       'Include dot files and dot folders')
     .action(
       async (pattern, options, command) =>
-      await through(
-        environment,
-        execFormat,
-        { pattern,
-          check: options.check === true,
-          hidden: options.hidden === true,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execFormat,
+          { pattern,
+            check: options.check === true,
+            hidden: options.hidden === true,
+            format:
+              formatOption(command) }));
 }
 
 function addExtract(
@@ -718,13 +718,13 @@ function addExtract(
       'Library-relative path')
     .action(
       async (kind, value, _, command) =>
-      await through(
-        environment,
-        execExtract,
-        { path: value,
-          kind,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execExtract,
+          { path: value,
+            kind,
+            format:
+              formatOption(command) }));
 }
 
 function addInfo(
@@ -740,12 +740,12 @@ function addInfo(
       'Library-relative path')
     .action(
       async (value, _, command) =>
-      await through(
-        environment,
-        execInfo,
-        { path: value,
-          format:
-            formatOption(command) }));
+        await through(
+          environment,
+          execInfo,
+          { path: value,
+            format:
+              formatOption(command) }));
 }
 
 function addConfig(
@@ -758,10 +758,10 @@ function addConfig(
       'Print the effective configuration')
     .action(
       async (_, command) =>
-      await environment.resolve(execConfig)(
-        environment,
-        { format:
-            formatOption(command) }));
+        await environment.resolve(execConfig)(
+          environment,
+          { format:
+              formatOption(command) }));
 }
 
 function addVersion(
@@ -774,8 +774,8 @@ function addVersion(
       'Print the current package version')
     .action(
       async () =>
-      await environment.resolve(execVersion)(
-        environment));
+        await environment.resolve(execVersion)(
+          environment));
 }
 
 function applyGlobalOptions(
@@ -876,9 +876,11 @@ function writeCommanderError(
     === 'commander.optionMissingArgument'
   ) {
     environment.stderr.write(
-      `${optionText(
-        error,
-        'requires a value')}\n`);
+      `${
+        optionText(
+          error,
+          'requires a value')
+      }\n`);
 
     return true;
   }
@@ -980,8 +982,7 @@ function optionName(
     /'(--[^ <']+)/.exec(
       messageOf(error));
 
-  const group =
-    match?.[1]?.trim();
+  const group = match?.[1]?.trim();
 
   if (
     group === undefined
@@ -992,4 +993,3 @@ function optionName(
 
   return group;
 }
-

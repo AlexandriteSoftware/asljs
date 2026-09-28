@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { spawn }
   from 'node:child_process';
 import { access }
@@ -6,8 +8,6 @@ import path
   from 'node:path';
 import { pathToFileURL }
   from 'node:url';
-import { Logger }
-  from 'asljs-logging';
 import { ArtefactDefinitionRule }
   from './model/artefact-definition-rule.js';
 import { ArtefactDefinition }

@@ -27,11 +27,13 @@ test(
       currentMachine.state.createTransition(
         currentMachine.createState('selected'));
 
-    const events: string[] = [];
+    const events: string[] = [ ];
 
     currentMachine.on(
       'set:state',
-      event =>
+      (
+          event
+        ) =>
       {
         const stateEvent =
           event as { value: { name: string | undefined; }; };
@@ -64,5 +66,7 @@ test(
 
     assert.deepStrictEqual(
       events,
-      ['select:activating', 'state:selected', 'select:completed']);
+      [ 'select:activating',
+        'state:selected',
+        'select:completed' ]);
   });

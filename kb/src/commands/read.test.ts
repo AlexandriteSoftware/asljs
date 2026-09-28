@@ -72,16 +72,16 @@ test(
       {
         await assert.rejects(
           () =>
-          execRead(
-            createTestContext(library),
-            { path: 'notes' }),
+            execRead(
+              createTestContext(library),
+              { path: 'notes' }),
           /Not a file/);
 
         await assert.rejects(
           () =>
-          execRead(
-            createTestContext(library),
-            { path: 'image.bin' }),
+            execRead(
+              createTestContext(library),
+              { path: 'image.bin' }),
           /Unsupported file type/);
       });
   });

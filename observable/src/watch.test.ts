@@ -19,7 +19,8 @@ test(
   {
     const obj =
       observable(
-        { a: 1, b: 2 });
+        { a: 1,
+          b: 2 });
 
     assert.equal(
       typeof (obj as any).watch,
@@ -29,21 +30,29 @@ test(
       Object.keys(obj).includes('watch'),
       false);
 
-    const calls: Array<[number, number]> = [];
+    const calls: Array<[number, number]> = [ ];
 
     (obj as any).watch(
-      ['a', 'b'],
-      (a: number, b: number) =>
+      [ 'a',
+        'b' ],
+      (
+          a: number,
+          b: number
+        ) =>
       {
         calls.push(
-          [a, b]);
+          [ a,
+            b ]);
       });
 
     obj.b = 4;
 
     assert.deepEqual(
       calls,
-      [[1, 2], [1, 4]]);
+      [ [ 1,
+          2 ],
+        [ 1,
+          4 ] ]);
   });
 
 /**
@@ -55,12 +64,12 @@ test(
   async () =>
   {
     const originalWatch =
-      (): any =>
-    {};
+      (): any => { };
 
     const obj =
       observable(
-        { a: 1, watch: originalWatch } as any);
+        { a: 1,
+          watch: originalWatch } as any);
 
     assert.equal(
       obj.watch,
@@ -77,23 +86,23 @@ test(
   {
     const arr =
       observable(
-        [1, 2, 3]);
+        [ 1,
+          2,
+          3 ]);
 
     assert.throws(
       () =>
         observable.watch(
           arr as any,
-          ['0'] as const,
-          () =>
-          {}),
+          [ '0' ] as const,
+          () => { }),
       /Watching arrays is not supported\./);
 
     assert.throws(
       () =>
         (arr as any).watch(
-          ['0'],
-          () =>
-          {}),
+          [ '0' ],
+          () => { }),
       /Watching arrays is not supported\./);
   });
 
@@ -107,17 +116,24 @@ test(
   {
     const obj =
       observable(
-        { a: 1, b: 2, c: 3 });
+        { a: 1,
+          b: 2,
+          c: 3 });
 
-    const calls: Array<[number, number]> = [];
+    const calls: Array<[number, number]> = [ ];
 
     observable.watch(
       obj,
-      ['a', 'b'] as const,
-      (a: number, b: number) =>
+      [ 'a',
+        'b' ] as const,
+      (
+          a: number,
+          b: number
+        ) =>
       {
         calls.push(
-          [a, b]);
+          [ a,
+            b ]);
       });
 
     obj.a = 10;
@@ -126,7 +142,12 @@ test(
 
     assert.deepEqual(
       calls,
-      [[1, 2], [10, 2], [10, 20]]);
+      [ [ 1,
+          2 ],
+        [ 10,
+          2 ],
+        [ 10,
+          20 ] ]);
   });
 
 /**
@@ -139,14 +160,17 @@ test(
   {
     const obj =
       observable(
-        { a: 1, b: 2 });
+        { a: 1,
+          b: 2 });
 
-    const calls: number[] = [];
+    const calls: number[] = [ ];
 
     observable.watch(
       obj,
       'a',
-      (a: number) =>
+      (
+          a: number
+        ) =>
       {
         calls.push(a);
       });
@@ -156,7 +180,8 @@ test(
 
     assert.deepEqual(
       calls,
-      [1, 10]);
+      [ 1,
+        10 ]);
   });
 
 /**
@@ -169,13 +194,16 @@ test(
   {
     const obj =
       observable(
-        { a: 1, b: 2 });
+        { a: 1,
+          b: 2 });
 
-    const calls: number[] = [];
+    const calls: number[] = [ ];
 
     obj.watch(
       'a',
-      (a: number) =>
+      (
+          a: number
+        ) =>
       {
         calls.push(a);
       });
@@ -185,7 +213,8 @@ test(
 
     assert.deepEqual(
       calls,
-      [1, 10]);
+      [ 1,
+        10 ]);
   });
 
 /**
@@ -198,17 +227,24 @@ test(
   {
     const state =
       observable(
-        { user: { name: 'Alice' }, active: false });
+        { user:
+            { name: 'Alice' },
+          active: false });
 
-    const calls: Array<[string | undefined, boolean]> = [];
+    const calls: Array<[string | undefined, boolean]> = [ ];
 
     observable.watch(
       state,
-      ['user.name', 'active'] as const,
-      (userName: string | undefined, active: boolean) =>
+      [ 'user.name',
+        'active' ] as const,
+      (
+          userName: string | undefined,
+          active: boolean
+        ) =>
       {
         calls.push(
-          [userName, active]);
+          [ userName,
+            active ]);
       });
 
     state.active = true;
@@ -216,7 +252,12 @@ test(
 
     assert.deepEqual(
       calls,
-      [['Alice', false], ['Alice', true], ['Bob', true]]);
+      [ [ 'Alice',
+          false ],
+        [ 'Alice',
+          true ],
+        [ 'Bob',
+          true ] ]);
   });
 
 /**
@@ -229,26 +270,39 @@ test(
   {
     const state =
       observable(
-        { user: { name: 'Alice' }, active: false });
+        { user:
+            { name: 'Alice' },
+          active: false });
 
-    const calls: Array<[string | undefined, boolean]> = [];
+    const calls: Array<[string | undefined, boolean]> = [ ];
 
     observable.watch(
       state,
-      ['user.name', 'active'] as const,
-      (userName: string | undefined, active: boolean) =>
+      [ 'user.name',
+        'active' ] as const,
+      (
+          userName: string | undefined,
+          active: boolean
+        ) =>
       {
         calls.push(
-          [userName, active]);
+          [ userName,
+            active ]);
       });
 
-    state.user = { name: 'Carol' } as any;
+    state.user =
+      { name: 'Carol' } as any;
 
     state.user.name = 'Dan';
 
     assert.deepEqual(
       calls,
-      [['Alice', false], ['Carol', false], ['Dan', false]]);
+      [ [ 'Alice',
+          false ],
+        [ 'Carol',
+          false ],
+        [ 'Dan',
+          false ] ]);
   });
 
 /**
@@ -261,18 +315,24 @@ test(
   {
     const obj =
       observable(
-        { a: 1, b: 2 });
+        { a: 1,
+          b: 2 });
 
-    const calls: Array<[number, number]> = [];
+    const calls: Array<[number, number]> = [ ];
 
     const unwatch =
       observable.watch(
         obj,
-        ['a', 'b'] as const,
-        (a: number, b: number) =>
-      {
+        [ 'a',
+          'b' ] as const,
+        (
+            a: number,
+            b: number
+          ) =>
+        {
         calls.push(
-          [a, b]);
+          [ a,
+            b ]);
       });
 
     obj.a = 10;
@@ -289,7 +349,10 @@ test(
 
     assert.deepEqual(
       calls,
-      [[1, 2], [10, 2]]);
+      [ [ 1,
+          2 ],
+        [ 10,
+          2 ] ]);
   });
 
 /**
@@ -302,28 +365,26 @@ test(
   {
     const state =
       observable(
-        { user: { name: 'Alice' } });
+        { user:
+            { name: 'Alice' } });
 
     const callback =
-      (): void =>
-    {};
+      (): void => { };
 
     const invalidPaths =
-      [
-      '',
-      '   ',
-      '.user.name',
-      'user.name.',
-      'user..name',
-      'user. .name'
-    ] as const;
+      [ '',
+        '   ',
+        '.user.name',
+        'user.name.',
+        'user..name',
+        'user. .name' ] as const;
 
     for (const path of invalidPaths) {
       assert.throws(
         () =>
           observable.watch(
             state,
-            [path],
+            [ path ],
             callback),
         TypeError);
     }
@@ -338,14 +399,17 @@ test(
   () =>
   {
     const plainState =
-      { user: { name: 'Alice' } };
+      { user:
+          { name: 'Alice' } };
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       plainState as any,
       'user.name',
-      (name: string | undefined) =>
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
@@ -354,7 +418,7 @@ test(
 
     assert.deepEqual(
       calls,
-      ['Alice']);
+      [ 'Alice' ]);
   });
 
 /**
@@ -373,27 +437,31 @@ test(
     const plainState =
       { user };
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       plainState as any,
-      ['user.name'],
-      (name: string | undefined) =>
+      [ 'user.name' ],
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
 
     user.name = 'Bob';
 
-    plainState.user = observable(
-      { name: 'Carol' },
-      { shallow: true });
+    plainState.user =
+      observable(
+        { name: 'Carol' },
+        { shallow: true });
 
     (plainState.user as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Bob']);
+      [ 'Alice',
+        'Bob' ]);
   });
 
 /**
@@ -413,8 +481,7 @@ test(
         observable.watch(
           state,
           123 as any,
-          () =>
-          {}),
+          () => { }),
       /Expect properties to be a string or an array of strings\./);
   });
 
@@ -434,9 +501,9 @@ test(
       () =>
         observable.watch(
           state,
-          ['a', 1 as any],
-          () =>
-          {}),
+          [ 'a',
+            1 as any ],
+          () => { }),
       /Expect properties to be a string or an array of strings\./);
   });
 
@@ -450,25 +517,31 @@ test(
   {
     const state =
       observable(
-        { user: undefined as undefined | { name: string; } });
+        { user:
+            undefined as undefined | { name: string; } });
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       state,
       'user.name',
-      (name: string | undefined) =>
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
 
-    state.user = { name: 'Alice' };
+    state.user =
+      { name: 'Alice' };
 
     state.user.name = 'Bob';
 
     assert.deepEqual(
       calls,
-      [undefined, 'Alice', 'Bob']);
+      [ undefined,
+        'Alice',
+        'Bob' ]);
   });
 
 /**
@@ -481,27 +554,32 @@ test(
   {
     const state =
       observable(
-        { user: {} as { info?: { name: string; }; } });
+        { user:
+            {} as { info?: { name: string; }; } });
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) =>
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
 
     assert.deepEqual(
       calls,
-      [undefined]);
+      [ undefined ]);
 
-    state.user.info = { name: 'Alice' };
+    state.user.info =
+      { name: 'Alice' };
 
     assert.deepEqual(
       calls,
-      [undefined, 'Alice']);
+      [ undefined,
+        'Alice' ]);
   });
 
 /**
@@ -515,15 +593,19 @@ test(
   {
     const state =
       observable(
-        { user: { info: { name: 'Alice' } } },
+        { user:
+            { info:
+                { name: 'Alice' } } },
         { shallow: true });
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) =>
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
@@ -532,11 +614,14 @@ test(
     state.user.info.name = 'Bob';
 
     // Replacing the observable ancestor segment emits with refreshed value.
-    state.user = { info: { name: 'Carol' } };
+    state.user =
+      { info:
+          { name: 'Carol' } };
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Carol']);
+      [ 'Alice',
+        'Carol' ]);
   });
 
 /**
@@ -550,7 +635,8 @@ test(
   {
     const user =
       observable(
-        { info: { name: 'Alice' } },
+        { info:
+            { name: 'Alice' } },
         { shallow: true });
 
     const state =
@@ -558,29 +644,36 @@ test(
         { user },
         { shallow: true });
 
-    const calls: Array<string | undefined> = [];
+    const calls: Array<string | undefined> = [ ];
 
     observable.watch(
       state,
       'user.info.name',
-      (name: string | undefined) =>
+      (
+          name: string | undefined
+        ) =>
       {
         calls.push(name);
       });
 
     // info is not observable yet, but user is; changing info should refresh.
-    user.info = { name: 'Bob' };
+    user.info =
+      { name: 'Bob' };
 
     // swap to observable info; path should rebind to set:name.
-    user.info = observable(
-      { name: 'Carol' },
-      { shallow: true }) as any;
+    user.info =
+      observable(
+        { name: 'Carol' },
+        { shallow: true }) as any;
 
     (user.info as any).name = 'Dan';
 
     assert.deepEqual(
       calls,
-      ['Alice', 'Bob', 'Carol', 'Dan']);
+      [ 'Alice',
+        'Bob',
+        'Carol',
+        'Dan' ]);
   });
 
 /**
@@ -594,11 +687,13 @@ test(
     const obj =
       new ObjWithName();
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     obj.watch(
-      ['name'],
-      (name: string) =>
+      [ 'name' ],
+      (
+          name: string
+        ) =>
       {
         calls.push(name);
       });
@@ -609,7 +704,9 @@ test(
 
     assert.deepEqual(
       calls,
-      ['', 'Alice', 'Bob']);
+      [ '',
+        'Alice',
+        'Bob' ]);
   });
 
 /**
@@ -623,13 +720,15 @@ test(
     const obj =
       new ObjWithName();
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     const unwatch =
       obj.watch(
-        ['name'],
-        (name: string) =>
-      {
+        [ 'name' ],
+        (
+            name: string
+          ) =>
+        {
         calls.push(name);
       });
 
@@ -643,7 +742,8 @@ test(
 
     assert.deepEqual(
       calls,
-      ['', 'Alice']);
+      [ '',
+        'Alice' ]);
   });
 
 /**
@@ -657,7 +757,7 @@ test(
     const obj =
       new ObjWithName();
 
-    const calls: string[] = [];
+    const calls: string[] = [ ];
 
     obj.watch(
       'name',
@@ -669,7 +769,9 @@ test(
 
     assert.deepEqual(
       calls,
-      ['', 'Alice', 'Bob']);
+      [ '',
+        'Alice',
+        'Bob' ]);
   });
 
 class ObjWithName extends ObservableObject<{ name: string; }>

@@ -16,7 +16,8 @@ test(
 
     tracer.trace(
       'new',
-      { object: { id: 1 } });
+      { object:
+          { id: 1 } });
 
     assert.equal(
       tracer.getTraces().length,
@@ -38,21 +39,19 @@ test(
 
     tracer.trace(
       'emit',
-      {
-        event: 'set:a',
-        listeners: [() =>
-        {}],
-        args: [{ value: 2 }]
-      });
+      { event: 'set:a',
+        listeners:
+          [ () => { } ],
+        args:
+          [ { value: 2 } ] });
 
     tracer.trace(
       'emit',
-      {
-        event: 'define:a',
-        listeners: [() =>
-        {}],
-        args: [{ value: 3 }]
-      });
+      { event: 'define:a',
+        listeners:
+          [ () => { } ],
+        args:
+          [ { value: 3 } ] });
 
     const minimal =
       tracer.getMinimalTraces();
@@ -91,7 +90,9 @@ test(
 
     tracer.trace(
       'emit',
-      { event: 'set:a', args: [{ value: 42 }] });
+      { event: 'set:a',
+        args:
+          [ { value: 42 } ] });
 
     assert.deepEqual(
       tracer.getFirstEventParameters('set:a'),

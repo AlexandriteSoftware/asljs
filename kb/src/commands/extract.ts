@@ -117,7 +117,7 @@ function describeFrontMatter(
 
   const lines: string[] = [ ];
 
-  for (const [ key, value ] of Object.entries(data)) {
+  for (const [key, value] of Object.entries(data)) {
     lines.push(
       `${key}: ${asText(value)}`);
   }
@@ -129,16 +129,14 @@ function describeHeading(
     heading: ExtractedHeading
   ): string
 {
-  return `${'#'.repeat(heading.level)} ${heading.text} (line ${
-    heading.line})`;
+  return `${'#'.repeat(heading.level)} ${heading.text} (line ${heading.line})`;
 }
 
 function describeLink(
     link: ExtractedLink
   ): string
 {
-  return `${link.kind} ${link.target}${suffix(link.text)} (line ${
-    link.line})`;
+  return `${link.kind} ${link.target}${suffix(link.text)} (line ${link.line})`;
 }
 
 function describeTask(
@@ -152,8 +150,7 @@ function describeTable(
     table: ExtractedTable
   ): string
 {
-  return `table ${table.headers.length} column(s), ${
-    table.rows.length} row(s) (line ${table.line})`;
+  return `table ${table.headers.length} column(s), ${table.rows.length} row(s) (line ${table.line})`;
 }
 
 function describeCode(
@@ -161,7 +158,8 @@ function describeCode(
   ): string
 {
   return `${language(code.language)} ${
-    code.value.split('\n').length} line(s) (line ${code.line})`;
+    code.value.split('\n').length
+  } line(s) (line ${code.line})`;
 }
 
 function asText(

@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { glob }
   from 'glob';
 import { List,
@@ -7,8 +9,6 @@ import { readFile }
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { Logger }
-  from 'asljs-logging';
 import { getListItemsAsText,
          getLists,
          getSections,

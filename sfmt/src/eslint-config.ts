@@ -5,12 +5,12 @@ import js
   from '@eslint/js';
 import tsParser
   from '@typescript-eslint/parser';
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import { type Linter }
   from 'eslint';
 import tseslint
   from 'typescript-eslint';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import tsArrayExpressionFormatterFactory
   from './ts-style-rules/array-expression.js';
 import tsArrayFunctionExpressionFormatterFactory

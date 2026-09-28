@@ -21,15 +21,15 @@ import { LibraryPathError,
          resolveLibraryPath,
          toLibraryPath }
   from './library.js';
-import { parseMarkdown }
-  from './markdown.js';
-import { isMarkdown }
-  from './notes.js';
 import { LinkEdit,
          PathMapping,
          rewriteLinks,
          SkippedLink }
   from './link-rewrite.js';
+import { parseMarkdown }
+  from './markdown.js';
+import { isMarkdown }
+  from './notes.js';
 
 export interface RelocateOptions
 {
@@ -127,8 +127,7 @@ export async function relocateEntry(
       sourcePath,
       targetPath);
 
-  const updateLinks =
-    options.updateLinks !== false;
+  const updateLinks = options.updateLinks !== false;
 
   const referencing =
     await documentsPointingAt(
@@ -147,9 +146,9 @@ export async function relocateEntry(
 
   const moved =
     [ ...mapping.entries() ]
-      .map(
-        ([ from, to ]) => ({ from,
-                             to }));
+    .map(
+      ([from, to]) => ({ from,
+                         to }));
 
   if (!updateLinks) {
     return { source: sourcePath,
@@ -167,9 +166,11 @@ export async function relocateEntry(
 
   const files: RelocatedFile[] = [ ];
 
-  for (const entry of documentsToRewrite(
-    mapping,
-    referencing)) {
+  for (
+    const entry of documentsToRewrite(
+      mapping,
+      referencing)
+  ) {
     const result =
       await rewriteDocument(
         root,
@@ -208,7 +209,7 @@ function documentsToRewrite(
 {
   const documents = new Map<string, string>();
 
-  for (const [ from, to ] of mapping) {
+  for (const [from, to] of mapping) {
     if (isMarkdown(to)) {
       documents.set(
         from,
@@ -238,8 +239,7 @@ async function rewriteDocument(
     dryRun: boolean
   ): Promise<RelocatedFile | null>
 {
-  const [ previousPath,
-          currentPath ] = entry;
+  const [previousPath, currentPath] = entry;
 
   const text =
     await readIfPresent(
@@ -388,9 +388,8 @@ async function buildMapping(
       root,
       { kind: 'file',
         hidden: true }))
-      .filter(
-        entry =>
-        entry.path.startsWith(`${sourcePath}/`));
+    .filter(
+      entry => entry.path.startsWith(`${sourcePath}/`));
 
   if (contained.length === 0) {
     mapping.set(
@@ -510,7 +509,7 @@ async function listFilePaths(
       entries.map(entry => entry.path));
 
   if (dryRun) {
-    for (const [ from, to ] of mapping) {
+    for (const [from, to] of mapping) {
       paths.delete(from);
       paths.add(to);
     }
@@ -533,7 +532,7 @@ async function refreshGraph(
     return;
   }
 
-  for (const [ from, to ] of mapping) {
+  for (const [from, to] of mapping) {
     graph.remove(from);
 
     await graph.update(to);

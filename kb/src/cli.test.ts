@@ -137,8 +137,7 @@ test(
 
         const report =
           JSON.parse(
-            environment.stdout.toString()) as
-            { matches: unknown[]; };
+            environment.stdout.toString()) as { matches: unknown[]; };
 
         assert.equal(
           report.matches.length,

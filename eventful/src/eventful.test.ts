@@ -33,8 +33,7 @@ test(
   () =>
   {
     const original =
-      (): void =>
-    {};
+      (): void => { };
 
     const enhanced =
       eventful(original);
@@ -222,14 +221,16 @@ test(
   `${TEST_SUITE}: eventful throws when an object has one of the event emitter methods`,
   () =>
   {
-    for (const method of ['on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
+    for (const method of [ 'on',
+                           'once',
+                           'off',
+                           'emit',
+                           'emitAsync',
+                           'has' ]) {
       assert.throws(
         () =>
           eventful(
-            {
-              [method]: () =>
-              {}
-            }));
+            { [method]: () => { } }));
     }
   });
 
@@ -328,11 +329,8 @@ test(
     const obj =
       eventful(
         {},
-        {
-        error: () =>
-        {},
-        strict: true
-      });
+        { error: () => { },
+          strict: true });
 
     obj.on(
       'test',
@@ -352,11 +350,8 @@ test(
     const obj =
       eventful(
         {},
-        {
-        error: () =>
-        {},
-        strict: true
-      });
+        { error: () => { },
+          strict: true });
 
     obj.on(
       'test',
@@ -377,10 +372,7 @@ test(
     const obj =
       eventful(
         {},
-        {
-        error: () =>
-        {}
-      });
+        { error: () => { } });
 
     let ran = 0;
 
@@ -422,8 +414,7 @@ test(
     const off =
       obj.on(
         'e',
-        () =>
-      {});
+        () => { });
 
     obj.emit(
       'e',
@@ -465,7 +456,8 @@ test(
 
     assert.deepEqual(
       emitTrace.payload.args,
-      [1, 2]);
+      [ 1,
+        2 ]);
 
     const emitAsyncTrace =
       recorder.records().find(
@@ -483,7 +475,8 @@ test(
 
     assert.deepEqual(
       emitAsyncTrace.payload.args,
-      [3, 4]);
+      [ 3,
+        4 ]);
   });
 
 test(
@@ -526,8 +519,7 @@ test(
     const off =
       obj.on(
         'x',
-        () =>
-      {});
+        () => { });
 
     assert.equal(
       obj.has('x'),
@@ -547,11 +539,8 @@ test(
     const obj =
       eventful(
         {},
-        {
-        error: () =>
-        {},
-        strict: true
-      });
+        { error: () => { },
+          strict: true });
 
     obj.on(
       'e',
@@ -592,11 +581,12 @@ test(
       eventful.on(
         'error',
         () =>
-      {
+        {
         globalErrorCalls += 1;
 
         if (globalErrorCalls > 1) {
-          throw new Error('global error listener loop');
+          throw new Error(
+            'global error listener loop');
         }
 
         throw new Error('boom');
@@ -636,8 +626,7 @@ test(
       () =>
         obj.on(
           123 as unknown as never,
-          () =>
-          {}),
+          () => { }),
       TypeError);
 
     assert.throws(
@@ -653,8 +642,7 @@ test(
       () =>
         obj.on(
           s,
-          () =>
-          {}));
+          () => { }));
 
     assert.doesNotThrow(
       () => obj.emit(s));
@@ -679,17 +667,18 @@ type Recorder = {
 export function createRecorder(
   ): Recorder
 {
-  const records: TraceRecord[] = [];
+  const records: TraceRecord[] = [ ];
 
-  return {
-    write: (
-      action: string,
-      payload: TraceRecord['payload']
-    ): void =>
-    {
+  return { write:
+             (
+                 action: string,
+                 payload: TraceRecord['payload']
+               ): void =>
+             {
       records.push(
-        { action, payload });
+        { action,
+          payload });
     },
-    records: (): TraceRecord[] => records
-  };
+           records:
+             (): TraceRecord[] => records };
 }

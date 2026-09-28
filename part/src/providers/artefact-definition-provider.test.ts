@@ -1,9 +1,9 @@
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import { ArtefactDefinitionProperty }
   from '../model/artefact-definition-property.js';
 import { ArtefactDefinitionRule }

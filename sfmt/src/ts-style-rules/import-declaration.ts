@@ -2,14 +2,14 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { type TSESLint }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { FormatterDefinitionFactory,
          RuleListenerFactory,
          tsFormatterFactory }
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtImportNode }
   from '../ts-fmt/fmt-import-node.js';
 

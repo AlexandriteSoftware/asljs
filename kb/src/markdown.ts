@@ -141,8 +141,7 @@ export function parseMarkdown(
     documentPath: string | null = null
   ): MarkdownDocument
 {
-  const { frontMatter,
-          body } =
+  const { frontMatter, body } =
     splitFrontMatter(text);
 
   const root =
@@ -191,8 +190,7 @@ export function formatMarkdown(
     text: string
   ): string
 {
-  const { frontMatter,
-          body } =
+  const { frontMatter, body } =
     splitFrontMatter(text);
 
   const formattedBody =
@@ -203,9 +201,11 @@ export function formatMarkdown(
     return formattedBody;
   }
 
-  return `---\n${frontMatter.text}\n---\n\n${formattedBody.replace(
-    /^\n+/,
-    '')}`;
+  return `---\n${frontMatter.text}\n---\n\n${
+    formattedBody.replace(
+      /^\n+/,
+      '')
+  }`;
 }
 
 function createProcessor(

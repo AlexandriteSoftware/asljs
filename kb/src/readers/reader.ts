@@ -32,8 +32,8 @@ export class ReaderRegistry
   private readonly readers = new Map<string, DocumentReader>();
 
   register(
-      reader: DocumentReader
-    ): void
+    reader: DocumentReader
+  ): void
   {
     for (const extension of reader.extensions) {
       this.readers.set(
@@ -47,8 +47,8 @@ export class ReaderRegistry
    * `undefined` when the file type is not supported.
    */
   find(
-      filePath: string
-    ): DocumentReader | undefined
+    filePath: string
+  ): DocumentReader | undefined
   {
     return this.readers.get(
       path.extname(filePath).toLowerCase());
@@ -58,8 +58,8 @@ export class ReaderRegistry
    * True when a reader is registered for the extension of the given path.
    */
   supports(
-      filePath: string
-    ): boolean
+    filePath: string
+  ): boolean
   {
     return this.find(filePath) !== undefined;
   }
@@ -76,8 +76,8 @@ export class ReaderRegistry
    * Extract the text of a file. Throws when the file type has no reader.
    */
   async readText(
-      filePath: string
-    ): Promise<string>
+    filePath: string
+  ): Promise<string>
   {
     const reader =
       this.find(filePath);

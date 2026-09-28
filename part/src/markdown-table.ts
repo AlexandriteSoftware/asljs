@@ -80,10 +80,9 @@ export function renderObjectsToMarkdownTable(
 
   const results =
     lines
-      .map(
-        item =>
-          item + '\n')
-      .join('');
+    .map(
+      item => item + '\n')
+    .join('');
 
   return results;
 }

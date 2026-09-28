@@ -25,20 +25,17 @@ type OperandSide =
 /**
  * Binds looser than every operator in getOperatorPriority.
  */
-const LOOSEST_PRIORITY =
-  0;
+const LOOSEST_PRIORITY = 0;
 
 /**
  * Priority of the relational operators, which `as` and `satisfies` share.
  */
-const RELATIONAL_PRIORITY =
-  8;
+const RELATIONAL_PRIORITY = 8;
 
 /**
  * Binds tighter than every operator in getOperatorPriority.
  */
-const ATOMIC_PRIORITY =
-  13;
+const ATOMIC_PRIORITY = 13;
 
 export function fmtCriteriaExpression(
     expression: TSESTree.Expression,

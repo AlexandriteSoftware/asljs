@@ -16,26 +16,32 @@ import { ErrorFn,
 
 const eventfulImpl =
   <T extends object | Function | undefined>(
-  object: T = Object.create(null),
-  options: EventfulOptions = {}
-):
+      object: T = Object.create(null),
+      options: EventfulOptions = {}
+    ):
   & (T extends undefined ? {} : T)
   & Eventful =>
-{
+  {
   if (
     !isObject(object)
     && !isFunction(object)
   ) {
     throw new TypeError(
-      'Expect an object or a function.'
-    );
+      'Expect an object or a function.');
   }
 
-  for (const method of ['on', 'once', 'off', 'emit', 'emitAsync', 'has']) {
-    if (method in (object as object)) {
+  for (const method of [ 'on',
+                         'once',
+                         'off',
+                         'emit',
+                         'emitAsync',
+                         'has' ]) {
+    if (
+      method
+      in (object as object)
+    ) {
       throw new Error(
-        `Method "${method}" already exists.`
-      );
+        `Method "${method}" already exists.`);
     }
   }
 
@@ -58,10 +64,10 @@ const eventfulImpl =
 
   const traceFn: TraceFn =
     (
-    action: Parameters<TraceFn>[0],
-    payload: Parameters<TraceFn>[1]
-  ): void =>
-  {
+        action: Parameters<TraceFn>[0],
+        payload: Parameters<TraceFn>[1]
+      ): void =>
+    {
     traceHook?.(
       action,
       payload
@@ -83,30 +89,36 @@ const eventfulImpl =
   const map = new Map<EventName, Set<Function>>();
 
   const properties =
-    { enumerable: false, configurable: true, writable: true };
+    { enumerable: false,
+      configurable: true,
+      writable: true };
 
   Object.defineProperties(
     object as object,
-    {
-      on: Object.assign(
-        { value: on },
-        properties),
-      once: Object.assign(
-        { value: once },
-        properties),
-      off: Object.assign(
-        { value: off },
-        properties),
-      emit: Object.assign(
-        { value: emit },
-        properties),
-      emitAsync: Object.assign(
-        { value: emitAsync },
-        properties),
-      has: Object.assign(
-        { value: has },
-        properties)
-    });
+    { on:
+        Object.assign(
+          { value: on },
+          properties),
+      once:
+        Object.assign(
+          { value: once },
+          properties),
+      off:
+        Object.assign(
+          { value: off },
+          properties),
+      emit:
+        Object.assign(
+          { value: emit },
+          properties),
+      emitAsync:
+        Object.assign(
+          { value: emitAsync },
+          properties),
+      has:
+        Object.assign(
+          { value: has },
+          properties) });
 
   return object as (T extends undefined ? {} : T) & Eventful;
 
@@ -156,17 +168,17 @@ const eventfulImpl =
     ): void
   {
     const errorArgs: ListenerErrorArgs =
-      {
-      error: err,
-      object: object as object | Function,
-      event,
-      listener
-    };
+      { error: err,
+        object:
+          object as object | Function,
+        event,
+        listener };
 
     errorHook?.(errorArgs);
 
     if (
-      (object as unknown) === eventful
+      object as unknown
+      === eventful
       && event === 'error'
     ) {
       throw new ListenerError(
@@ -174,8 +186,7 @@ const eventfulImpl =
         err,
         object as object | Function,
         event,
-        listener
-      );
+        listener);
     }
 
     eventful.emit(
@@ -193,7 +204,9 @@ const eventfulImpl =
 
     traceFn(
       'on',
-      { object, event, listener });
+      { object,
+        event,
+        listener });
 
     add(
       event,
@@ -221,8 +234,10 @@ const eventfulImpl =
     const off =
       on(
         event,
-        (...args: unknown[]) =>
-      {
+        (
+            ...args: unknown[]
+          ) =>
+        {
         off();
 
         listener(
@@ -242,7 +257,9 @@ const eventfulImpl =
 
     traceFn(
       'off',
-      { object, event, listener });
+      { object,
+        event,
+        listener });
 
     return remove(
       event,
@@ -271,7 +288,11 @@ const eventfulImpl =
 
     traceFn(
       'emit',
-      { object, listeners: [...listeners], event, args });
+      { object,
+        listeners:
+          [ ...listeners ],
+        event,
+        args });
 
     if (listeners.size === 0) {
       return;
@@ -307,16 +328,22 @@ const eventfulImpl =
 
     traceFn(
       'emitAsync',
-      { object, listeners: [...listeners], event, args });
+      { object,
+        listeners:
+          [ ...listeners ],
+        event,
+        args });
 
     if (listeners.size === 0) {
       return;
     }
 
     const calls =
-      [...listeners].map(
-        async listener =>
-      {
+      [ ...listeners ].map(
+        async (
+            listener
+          ) =>
+        {
         try {
           await listener(
             ...args);

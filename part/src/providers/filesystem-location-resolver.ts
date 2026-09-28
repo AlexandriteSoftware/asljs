@@ -1,11 +1,11 @@
+import { Logger }
+  from 'asljs-logging';
 import { glob }
   from 'glob';
 import { minimatch }
   from 'minimatch';
 import path
   from 'node:path';
-import { Logger }
-  from 'asljs-logging';
 import { Location }
   from '../model/location.js';
 import { GitIgnore }

@@ -47,9 +47,9 @@ async function waitFor(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        0));
+        setTimeout(
+          resolve,
+          0));
   }
 }
 
@@ -120,9 +120,9 @@ test(
     // Give the scan time to settle.
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.deepEqual(
       live.records,
@@ -147,9 +147,9 @@ test(
     // Wait for initial scan to settle (no records yet)
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.deepEqual(
       live.records,
@@ -185,9 +185,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     await table.add(
       { id: 'a',
@@ -195,9 +195,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.deepEqual(
       live.records,
@@ -294,9 +294,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.deepEqual(
       live.records,
@@ -405,9 +405,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     const added: TestRecord[] = [ ];
 
@@ -443,9 +443,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.equal(
       added.length,
@@ -735,9 +735,9 @@ test(
 
     await new Promise(
       resolve =>
-      setTimeout(
-        resolve,
-        20));
+        setTimeout(
+          resolve,
+          20));
 
     assert.equal(
       fired.length,

@@ -29,8 +29,7 @@ export interface LinkEdit
   to: string;
 }
 
-export interface SkippedLink
-  extends LinkEdit
+export interface SkippedLink extends LinkEdit
 {
   reason: string;
 }
@@ -212,7 +211,8 @@ export function retarget(
     return `${
       keepExtensionStyle(
         link.target,
-        `/${to}`)}${location}`;
+        `/${to}`)
+    }${location}`;
   }
 
   const relative =
@@ -226,7 +226,8 @@ export function retarget(
       link.target,
       relativeOr(
         relative,
-        to))}${location}`;
+        to))
+  }${location}`;
 }
 
 /**
@@ -417,12 +418,14 @@ function linkNodes(
     ): void
   {
     const candidate =
-      node as
-        { type?: string;
-          position?:
-            { start: { line: number; column: number; offset?: number; };
-              end: { offset?: number; }; };
-          children?: unknown[]; };
+      node as {
+      type?: string;
+      position?: {
+        start: { line: number; column: number; offset?: number; };
+        end: { offset?: number; };
+      };
+      children?: unknown[];
+    };
 
     if (
       (candidate.type === 'link'
@@ -464,9 +467,8 @@ function applyReplacements(
   let result = text;
 
   for (
-    const replacement of
-      [ ...replacements ].sort(
-        (left, right) => right.start - left.start)
+    const replacement of [ ...replacements ].sort(
+      (left, right) => right.start - left.start)
   ) {
     result =
       result.slice(

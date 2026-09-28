@@ -154,8 +154,7 @@ test(
 
         assert.equal(
           backlinks.some(
-            backlink =>
-            backlink.target.startsWith('https://')),
+            backlink => backlink.target.startsWith('https://')),
           false);
 
         assert.equal(
@@ -249,9 +248,9 @@ test(
       {
         await assert.rejects(
           () =>
-          findBacklinks(
-            library.path,
-            '../escaped.md'),
+            findBacklinks(
+              library.path,
+              '../escaped.md'),
           /outside of the library/);
       });
   });

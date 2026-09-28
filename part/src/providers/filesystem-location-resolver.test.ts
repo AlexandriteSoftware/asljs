@@ -1,3 +1,5 @@
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -6,8 +8,6 @@ import path
   from 'node:path';
 import test
   from 'node:test';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }

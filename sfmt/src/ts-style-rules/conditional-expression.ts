@@ -2,6 +2,8 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { type TSESLint }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { Rule }
   from 'eslint';
 import { FormatterDefinitionFactory,
@@ -10,8 +12,6 @@ import { FormatterDefinitionFactory,
   from '../formatter.js';
 import { FormattingContext }
   from '../formatting-context.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtConditionalExpression }
   from '../ts-fmt/fmt-conditional-expression.js';
 

@@ -20,7 +20,8 @@ test(
   async () =>
   {
     const object =
-      { a: { b: 1 } };
+      { a:
+          { b: 1 } };
 
     const proxy =
       observable(object);
@@ -29,7 +30,9 @@ test(
 
     (proxy.a as any).on(
       'set:b',
-      ({ value }: any) =>
+      (
+          { value }: any
+        ) =>
       {
         seenValue = value;
       });
@@ -56,13 +59,19 @@ test(
     Object.defineProperty(
       proxy,
       'x',
-      { value: { y: 1 }, writable: true, configurable: true, enumerable: true });
+      { value:
+          { y: 1 },
+        writable: true,
+        configurable: true,
+        enumerable: true });
 
     let seenValue = 0;
 
     (proxy.x as any).on(
       'set:y',
-      ({ value }: any) =>
+      (
+          { value }: any
+        ) =>
       {
         seenValue = value;
       });
@@ -83,7 +92,8 @@ test(
   async () =>
   {
     const object =
-      { a: { b: 1 } };
+      { a:
+          { b: 1 } };
 
     const proxy =
       observable(
@@ -104,7 +114,8 @@ test(
   async () =>
   {
     const object =
-      { items: [{ name: 'A' }] };
+      { items:
+          [ { name: 'A' } ] };
 
     const proxy =
       observable(object);
@@ -113,7 +124,9 @@ test(
 
     (proxy.items[0] as any).on(
       'set:name',
-      ({ value }: any) =>
+      (
+          { value }: any
+        ) =>
       {
         seenValue = value;
       });
@@ -134,7 +147,8 @@ test(
   async () =>
   {
     const object =
-      { items: [{ name: 'A' }] };
+      { items:
+          [ { name: 'A' } ] };
 
     const proxy =
       observable(
@@ -163,12 +177,11 @@ test(
     const proxy =
       observable(
         object,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     proxy.a = 2;
 
@@ -177,27 +190,33 @@ test(
 
     assert.deepEqual(
       traces,
-      [
-        { action: 'new', payload: { object } },
-        { action: 'emit', payload: { object, event: 'define:a' } },
-        { action: 'emit', payload: { object, event: 'define' } },
-        {
-          action: 'emit',
-          payload: {
-            object,
-            event: 'set:a',
-            args: [{ previous: 1, property: 'a', value: 2 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object,
-            event: 'set',
-            args: [{ previous: 1, property: 'a', value: 2 }]
-          }
-        }
-      ]);
+      [ { action: 'new',
+          payload:
+            { object } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'define:a' } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'define' } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'set:a',
+              args:
+                [ { previous: 1,
+                    property: 'a',
+                    value: 2 } ] } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'set',
+              args:
+                [ { previous: 1,
+                    property: 'a',
+                    value: 2 } ] } } ]);
   });
 
 /**
@@ -214,34 +233,32 @@ test(
     const obj =
       observable(
         { a: 1 },
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     Object.defineProperty(
       obj,
       'a',
-      { value: 3, writable: true, configurable: true, enumerable: true });
+      { value: 3,
+        writable: true,
+        configurable: true,
+        enumerable: true });
 
     const eventParameters =
-      {
-      property: 'a',
-      descriptor: {
-        value: 3,
-        writable: true,
-        enumerable: true,
-        configurable: true
-      },
-      previous: {
-        value: 1,
-        writable: true,
-        enumerable: true,
-        configurable: true
-      }
-    };
+      { property: 'a',
+        descriptor:
+          { value: 3,
+            writable: true,
+            enumerable: true,
+            configurable: true },
+        previous:
+          { value: 1,
+            writable: true,
+            enumerable: true,
+            configurable: true } };
 
     assert.deepEqual(
       tracer.getFirstEventParameters('define'),
@@ -269,12 +286,11 @@ test(
     const obj =
       observable(
         object,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     delete (obj as any).a;
 
@@ -283,21 +299,23 @@ test(
 
     assert.deepEqual(
       traces,
-      [{ action: 'new', payload: { object } }, {
-        action: 'emit',
-        payload: {
-          object,
-          event: 'delete:a',
-          args: [{ previous: 1, property: 'a' }]
-        }
-      }, {
-        action: 'emit',
-        payload: {
-          object,
-          event: 'delete',
-          args: [{ previous: 1, property: 'a' }]
-        }
-      }]);
+      [ { action: 'new',
+          payload:
+            { object } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'delete:a',
+              args:
+                [ { previous: 1,
+                    property: 'a' } ] } },
+        { action: 'emit',
+          payload:
+            { object,
+              event: 'delete',
+              args:
+                [ { previous: 1,
+                    property: 'a' } ] } } ]);
   });
 
 /**
@@ -312,17 +330,17 @@ test(
       createTracer();
 
     const array =
-      [1, 2];
+      [ 1,
+        2 ];
 
     const arr =
       observable(
         array,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     arr['0'] = 10;
     arr[1] = 20;
@@ -333,59 +351,65 @@ test(
 
     assert.deepEqual(
       traces,
-      [
-        { action: 'new', payload: { object: array } },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set:0',
-            args: [{ previous: 1, index: 0, value: 10 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set',
-            args: [{ previous: 1, index: 0, value: 10 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set:1',
-            args: [{ previous: 2, index: 1, value: 20 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set',
-            args: [{ previous: 2, index: 1, value: 20 }]
-          }
-        },
-        { action: 'emit', payload: { object: array, event: 'define:test1' } },
-        { action: 'emit', payload: { object: array, event: 'define' } },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set:test1',
-            args: [{ previous: undefined, property: 'test1', value: 30 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set',
-            args: [{ previous: undefined, property: 'test1', value: 30 }]
-          }
-        }
-      ]);
+      [ { action: 'new',
+          payload:
+            { object: array } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set:0',
+              args:
+                [ { previous: 1,
+                    index: 0,
+                    value: 10 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set',
+              args:
+                [ { previous: 1,
+                    index: 0,
+                    value: 10 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set:1',
+              args:
+                [ { previous: 2,
+                    index: 1,
+                    value: 20 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set',
+              args:
+                [ { previous: 2,
+                    index: 1,
+                    value: 20 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'define:test1' } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'define' } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set:test1',
+              args:
+                [ { previous: undefined,
+                    property: 'test1',
+                    value: 30 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set',
+              args:
+                [ { previous: undefined,
+                    property: 'test1',
+                    value: 30 } ] } } ]);
   });
 
 /**
@@ -400,17 +424,17 @@ test(
       createTracer();
 
     const array =
-      [1, 2];
+      [ 1,
+        2 ];
 
     const arr =
       observable(
         array,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     // setting length does not delete items
     arr.length = 1;
@@ -420,21 +444,25 @@ test(
 
     assert.deepEqual(
       traces,
-      [{ action: 'new', payload: { object: array } }, {
-        action: 'emit',
-        payload: {
-          object: array,
-          event: 'set:length',
-          args: [{ previous: 2, property: 'length', value: 1 }]
-        }
-      }, {
-        action: 'emit',
-        payload: {
-          object: array,
-          event: 'set',
-          args: [{ previous: 2, property: 'length', value: 1 }]
-        }
-      }]);
+      [ { action: 'new',
+          payload:
+            { object: array } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set:length',
+              args:
+                [ { previous: 2,
+                    property: 'length',
+                    value: 1 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set',
+              args:
+                [ { previous: 2,
+                    property: 'length',
+                    value: 1 } ] } } ]);
   });
 
 /**
@@ -449,17 +477,17 @@ test(
       createTracer();
 
     const array =
-      [10, 20];
+      [ 10,
+        20 ];
 
     const arr =
       observable(
         array,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     // deleting items does not change length
     delete arr[1];
@@ -473,21 +501,23 @@ test(
 
     assert.deepEqual(
       traces,
-      [{ action: 'new', payload: { object: array } }, {
-        action: 'emit',
-        payload: {
-          object: array,
-          event: 'delete:1',
-          args: [{ previous: 20, index: 1 }]
-        }
-      }, {
-        action: 'emit',
-        payload: {
-          object: array,
-          event: 'delete',
-          args: [{ previous: 20, index: 1 }]
-        }
-      }]);
+      [ { action: 'new',
+          payload:
+            { object: array } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'delete:1',
+              args:
+                [ { previous: 20,
+                    index: 1 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'delete',
+              args:
+                [ { previous: 20,
+                    index: 1 } ] } } ]);
   });
 
 /**
@@ -502,17 +532,17 @@ test(
       createTracer();
 
     const array =
-      [1, 2];
+      [ 1,
+        2 ];
 
     const arr =
       observable(
         array,
-        {
-        eventful: (value: any) =>
+        { eventful:
+            (value: any) =>
           eventful(
             value,
-            tracer)
-      });
+            tracer) });
 
     (arr as any)['01'] = 99;
 
@@ -521,27 +551,33 @@ test(
 
     assert.deepEqual(
       traces,
-      [
-        { action: 'new', payload: { object: array } },
-        { action: 'emit', payload: { object: array, event: 'define:01' } },
-        { action: 'emit', payload: { object: array, event: 'define' } },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set:01',
-            args: [{ previous: undefined, property: '01', value: 99 }]
-          }
-        },
-        {
-          action: 'emit',
-          payload: {
-            object: array,
-            event: 'set',
-            args: [{ previous: undefined, property: '01', value: 99 }]
-          }
-        }
-      ]);
+      [ { action: 'new',
+          payload:
+            { object: array } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'define:01' } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'define' } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set:01',
+              args:
+                [ { previous: undefined,
+                    property: '01',
+                    value: 99 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'set',
+              args:
+                [ { previous: undefined,
+                    property: '01',
+                    value: 99 } ] } } ]);
   });
 
 /**
@@ -580,7 +616,8 @@ test(
       () =>
         observable(
           { a: 1 },
-          { eventful: 123 as any }),
+          { eventful:
+              123 as any }),
       /Expect a function\./);
   });
 
@@ -599,18 +636,19 @@ test(
     const observed =
       observable(
         source,
-        {
-        eventful: () =>
-        {
+        { eventful:
+            () =>
+            {
           throw new Error('should not extend');
-        }
-      });
+        } });
 
     let seen: string | undefined;
 
     observed.on(
       'set:name',
-      ({ value }: any) =>
+      (
+          { value }: any
+        ) =>
       {
         seen = value;
       });
@@ -630,29 +668,36 @@ test(
   `${TEST_SUITE}: per-instance trace hook captures new and set actions`,
   async () =>
   {
-    const actions: string[] = [];
-    const payloads: any[] = [];
+    const actions: string[] = [ ];
+    const payloads: any[] = [ ];
 
     const obj =
       observable(
         { a: 1 },
-        {
-        trace: (_source: unknown, action: string, payload: unknown) =>
-        {
+        { trace:
+            (
+                _source: unknown,
+                action: string,
+                payload: unknown
+              ) =>
+            {
           actions.push(action);
           payloads.push(payload);
-        }
-      });
+        } });
 
     obj.a = 2;
 
     assert.deepEqual(
       actions,
-      ['new', 'define', 'set']);
+      [ 'new',
+        'define',
+        'set' ]);
 
     assert.deepEqual(
       payloads[payloads.length - 1],
-      { property: 'a', value: 2, previous: 1 });
+      { property: 'a',
+        value: 2,
+        previous: 1 });
   });
 
 /**
@@ -663,13 +708,17 @@ test(
   `${TEST_SUITE}: global trace option is used when local trace is absent`,
   async () =>
   {
-    const actions: string[] = [];
+    const actions: string[] = [ ];
 
     const previousTrace =
       observable.options.trace;
 
-    observable.options.trace = (_source: unknown, action: string) =>
-    {
+    observable.options.trace =
+      (
+          _source: unknown,
+          action: string
+        ) =>
+      {
       actions.push(action);
     };
 
@@ -685,7 +734,9 @@ test(
 
     assert.deepEqual(
       actions,
-      ['new', 'define', 'set']);
+      [ 'new',
+        'define',
+        'set' ]);
   });
 
 /**

@@ -29,9 +29,11 @@ test(
         assert.match(
           output,
           new RegExp(
-            `^library: ${library.path.replace(
-              /\\/g,
-              '\\\\')}$`,
+            `^library: ${
+              library.path.replace(
+                /\\/g,
+                '\\\\')
+            }$`,
             'm'));
 
         assert.match(
@@ -63,8 +65,7 @@ test(
 
         const config =
           JSON.parse(
-            environment.stdout.toString()) as
-            { library: string; readable: string[]; };
+            environment.stdout.toString()) as { library: string; readable: string[]; };
 
         assert.equal(
           config.library,

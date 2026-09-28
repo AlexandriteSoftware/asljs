@@ -289,8 +289,7 @@ function createHelpPreface(
   let preface =
     `${packageMetadata.name} ${packageMetadata.version}\n`;
 
-  preface
-    += `${packageMetadata.homepage}\n\n`;
+  preface += `${packageMetadata.homepage}\n\n`;
 
   return preface;
 }

@@ -1,3 +1,5 @@
+import { NullLoggerProvider }
+  from 'asljs-logging';
 import assert
   from 'node:assert/strict';
 import fs
@@ -6,8 +8,6 @@ import test
   from 'node:test';
 import { createEnvironment }
   from '../environment.js';
-import { NullLoggerProvider }
-  from 'asljs-logging';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { execInventory }

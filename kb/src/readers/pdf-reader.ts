@@ -24,8 +24,7 @@ function asPages(
   return [ text ];
 }
 
-export class PdfReader
-  implements DocumentReader
+export class PdfReader implements DocumentReader
 {
   readonly name = 'pdf';
 
@@ -34,11 +33,10 @@ export class PdfReader
   readonly verbatim = false;
 
   async readText(
-      filePath: string
-    ): Promise<string>
+    filePath: string
+  ): Promise<string>
   {
-    const { extractText,
-            getDocumentProxy } =
+    const { extractText, getDocumentProxy } =
       await import('unpdf');
 
     const data =

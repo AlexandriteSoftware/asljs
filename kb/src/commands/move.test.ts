@@ -128,10 +128,10 @@ test(
 
         await assert.rejects(
           () =>
-          execMove(
-            context,
-            { source: 'one.md',
-              target: 'two.md' }),
+            execMove(
+              context,
+              { source: 'one.md',
+                target: 'two.md' }),
           /Target already exists/);
 
         await execMove(

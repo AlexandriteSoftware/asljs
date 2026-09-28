@@ -29,13 +29,14 @@ function applyNotifier(
     },
            next:
              (): Promise<void> =>
-           new Promise<void>(
-             (
-                 value
-               ) =>
-             {
-        resolve = value;
-      }) };
+      new Promise<void>(
+        (
+            value
+          ) =>
+        {
+          resolve = value;
+        }
+      ) };
 }
 
 test(

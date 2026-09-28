@@ -155,11 +155,13 @@ export type ObservableEventsPrimitive<T> = {
   'set:value': [{ property: 'value'; value: T; previous: T; }];
 };
 
-export type ObservableTraceFn = (
-  object: object | Function,
-  action: 'new' | 'set' | 'delete' | 'define',
-  payload?: any
-) => void;
+export type ObservableTraceFn =
+  (
+    object: object | Function,
+    action: 'new' | 'set' | 'delete' | 'define',
+    payload?: any
+  ) =>
+    void;
 
 export interface ObservableGlobalOptions
 {

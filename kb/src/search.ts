@@ -60,7 +60,6 @@ export interface SearchOptions
    * Maximum number of matches to return. Defaults to 200.
    */
   maxResults?: number;
-
 }
 
 export interface SearchReport
@@ -104,8 +103,7 @@ export async function searchLibrary(
   const expression =
     createExpression(options);
 
-  const maxResults =
-    options.maxResults ?? DEFAULT_MAX_RESULTS;
+  const maxResults = options.maxResults ?? DEFAULT_MAX_RESULTS;
 
   const entries =
     await listEntries(
@@ -299,8 +297,7 @@ function createExpression(
       flags);
   } catch (error) {
     throw new Error(
-      `Invalid regular expression: ${
-        messageOf(error)}`);
+      `Invalid regular expression: ${messageOf(error)}`);
   }
 }
 

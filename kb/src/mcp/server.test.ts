@@ -100,8 +100,10 @@ test(
               createTestEnvironment(library)));
 
         const result =
-          response?.result as
-            { content: { text: string; }[]; isError?: boolean; };
+          response?.result as {
+          content: { text: string; }[];
+          isError?: boolean;
+        };
 
         assert.equal(
           result.isError,

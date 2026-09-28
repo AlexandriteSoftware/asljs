@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { spawn }
   from 'node:child_process';
 import { readFile }
@@ -8,8 +10,6 @@ import { Environment }
   from './../environment.js';
 import { toPosixPath }
   from '../formatting.js';
-import { Logger }
-  from 'asljs-logging';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinition }

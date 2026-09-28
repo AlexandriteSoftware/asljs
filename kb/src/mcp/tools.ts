@@ -2,8 +2,8 @@ import { findBacklinks }
   from '../backlinks.js';
 import { Environment }
   from '../environment.js';
-import { EXTRACTION_KINDS,
-         extractData,
+import { extractData,
+         EXTRACTION_KINDS,
          toExtractionKind }
   from '../extract.js';
 import { copyEntry,
@@ -103,7 +103,7 @@ function listTool(
                { pattern:
                    stringProperty(
                      'Glob pattern relative to the library root. '
-                     + 'Defaults to **/*.'),
+            + 'Defaults to **/*.'),
                  kind:
                    enumProperty(
                      [ 'file',
@@ -115,20 +115,20 @@ function listTool(
                      'Include dot files and dot folders.') }),
            invoke:
              async args =>
-             await listEntries(
-               environment.library,
-               { pattern:
-                   optionalString(
-                     args,
-                     'pattern'),
-                 kind:
-                   optionalKind(
-                     args,
-                     'kind'),
-                 hidden:
-                   optionalBoolean(
-                     args,
-                     'hidden') }) };
+      await listEntries(
+        environment.library,
+        { pattern:
+            optionalString(
+              args,
+              'pattern'),
+          kind:
+            optionalKind(
+              args,
+              'kind'),
+          hidden:
+            optionalBoolean(
+              args,
+              'hidden') }) };
 }
 
 function readTool(
@@ -138,7 +138,7 @@ function readTool(
   return { name: 'kb_read',
            description:
              'Read the text of a document. Markdown and other text files are '
-             + 'returned verbatim; PDF files are returned as extracted text.',
+      + 'returned verbatim; PDF files are returned as extracted text.',
            inputSchema:
              objectSchema(
                { path:
@@ -147,11 +147,11 @@ function readTool(
                [ 'path' ]),
            invoke:
              async args =>
-             await readDocument(
-               environment,
-               requireString(
-                 args,
-                 'path')) };
+      await readDocument(
+        environment,
+        requireString(
+          args,
+          'path')) };
 }
 
 async function readDocument(
@@ -211,18 +211,18 @@ function writeTool(
                  'content' ]),
            invoke:
              async args =>
-             await writeTextFile(
-               environment.library,
-               requireString(
-                 args,
-                 'path'),
-               requireString(
-                 args,
-                 'content'),
-               { overwrite:
-                   optionalBoolean(
-                     args,
-                     'overwrite') }) };
+      await writeTextFile(
+        environment.library,
+        requireString(
+          args,
+          'path'),
+        requireString(
+          args,
+          'content'),
+        { overwrite:
+            optionalBoolean(
+              args,
+              'overwrite') }) };
 }
 
 function newTool(
@@ -252,27 +252,27 @@ function newTool(
                [ 'path' ]),
            invoke:
              async args =>
-             await createNote(
-               environment.library,
-               requireString(
-                 args,
-                 'path'),
-               { title:
-                   optionalString(
-                     args,
-                     'title'),
-                 tags:
-                   optionalStringArray(
-                     args,
-                     'tags'),
-                 body:
-                   optionalString(
-                     args,
-                     'body'),
-                 overwrite:
-                   optionalBoolean(
-                     args,
-                     'overwrite') }) };
+      await createNote(
+        environment.library,
+        requireString(
+          args,
+          'path'),
+        { title:
+            optionalString(
+              args,
+              'title'),
+          tags:
+            optionalStringArray(
+              args,
+              'tags'),
+          body:
+            optionalString(
+              args,
+              'body'),
+          overwrite:
+            optionalBoolean(
+              args,
+              'overwrite') }) };
 }
 
 function mkdirTool(
@@ -290,11 +290,11 @@ function mkdirTool(
                [ 'path' ]),
            invoke:
              async args =>
-             await createFolder(
-               environment.library,
-               requireString(
-                 args,
-                 'path')) };
+      await createFolder(
+        environment.library,
+        requireString(
+          args,
+          'path')) };
 }
 
 function moveTool(
@@ -304,9 +304,9 @@ function moveTool(
   return { name: 'kb_move',
            description:
              'Move or rename a file or folder, rewriting the links the move '
-             + 'would otherwise break, in the documents that point at it and '
-             + 'inside the documents that moved. Set updateLinks to false to '
-             + 'move without touching any link.',
+      + 'would otherwise break, in the documents that point at it and '
+      + 'inside the documents that moved. Set updateLinks to false to '
+      + 'move without touching any link.',
            inputSchema:
              objectSchema(
                { source:
@@ -321,18 +321,18 @@ function moveTool(
                  updateLinks:
                    booleanProperty(
                      'Rewrite the links the move would break. Defaults to '
-                     + 'true.'),
+            + 'true.'),
                  dryRun:
                    booleanProperty(
                      'Report the move and the edits without performing '
-                     + 'them.') },
+            + 'them.') },
                [ 'source',
                  'target' ]),
            invoke:
              async args =>
-             await move(
-               environment,
-               args) };
+      await move(
+        environment,
+        args) };
 }
 
 async function move(
@@ -387,8 +387,8 @@ function renameTool(
   return { name: 'kb_rename',
            description:
              'Rename an entry inside the folder it already sits in, '
-             + 'rewriting the links the rename would otherwise break, wiki '
-             + 'links included.',
+      + 'rewriting the links the rename would otherwise break, wiki '
+      + 'links included.',
            inputSchema:
              objectSchema(
                { path:
@@ -403,36 +403,36 @@ function renameTool(
                  updateLinks:
                    booleanProperty(
                      'Rewrite the links the rename would break. Defaults to '
-                     + 'true.'),
+            + 'true.'),
                  dryRun:
                    booleanProperty(
                      'Report the rename and the edits without performing '
-                     + 'them.') },
+            + 'them.') },
                [ 'path',
                  'name' ]),
            invoke:
              async args =>
-             await renameEntry(
-               environment.library,
-               requireString(
-                 args,
-                 'path'),
-               requireString(
-                 args,
-                 'name'),
-               { overwrite:
-                   optionalBoolean(
-                     args,
-                     'overwrite'),
-                 updateLinks:
-                   optionalBoolean(
-                     args,
-                     'updateLinks'),
-                 dryRun:
-                   optionalBoolean(
-                     args,
-                     'dryRun'),
-                 graph: environment.graph }) };
+      await renameEntry(
+        environment.library,
+        requireString(
+          args,
+          'path'),
+        requireString(
+          args,
+          'name'),
+        { overwrite:
+            optionalBoolean(
+              args,
+              'overwrite'),
+          updateLinks:
+            optionalBoolean(
+              args,
+              'updateLinks'),
+          dryRun:
+            optionalBoolean(
+              args,
+              'dryRun'),
+          graph: environment.graph }) };
 }
 
 function copyTool(
@@ -442,23 +442,23 @@ function copyTool(
   return { name: 'kb_copy',
            description:
              'Copy a file or folder. When the target is an existing folder, '
-             + 'the source is copied into it.',
+      + 'the source is copied into it.',
            inputSchema:
              transferSchema(),
            invoke:
              async args =>
-             await copyEntry(
-               environment.library,
-               requireString(
-                 args,
-                 'source'),
-               requireString(
-                 args,
-                 'target'),
-               { overwrite:
-                   optionalBoolean(
-                     args,
-                     'overwrite') }) };
+      await copyEntry(
+        environment.library,
+        requireString(
+          args,
+          'source'),
+        requireString(
+          args,
+          'target'),
+        { overwrite:
+            optionalBoolean(
+              args,
+              'overwrite') }) };
 }
 
 function removeTool(
@@ -468,7 +468,7 @@ function removeTool(
   return { name: 'kb_remove',
            description:
              'Remove a file or folder. Non-empty folders require '
-             + '`recursive`.',
+      + '`recursive`.',
            inputSchema:
              objectSchema(
                { path:
@@ -479,17 +479,16 @@ function removeTool(
                      'Remove a folder with its content.') },
                [ 'path' ]),
            invoke:
-             async args =>
-             ({ path:
-                  await removeEntry(
-                    environment.library,
-                    requireString(
-                      args,
-                      'path'),
-                    { recursive:
-                        optionalBoolean(
-                          args,
-                          'recursive') }) }) };
+             async args => ({ path:
+                                await removeEntry(
+                                  environment.library,
+                                  requireString(
+                                    args,
+                                    'path'),
+                                  { recursive:
+                                      optionalBoolean(
+                                        args,
+                                        'recursive') }) }) };
 }
 
 function searchTool(
@@ -499,13 +498,13 @@ function searchTool(
   return { name: 'kb_search',
            description:
              'Search the text of every readable document, including PDF text '
-             + 'layers. Returns matches with file, line and column.',
+      + 'layers. Returns matches with file, line and column.',
            inputSchema:
              objectSchema(
                { query:
                    stringProperty(
                      'Text to find, or a regular expression when `regex` is '
-                     + 'set.'),
+            + 'set.'),
                  pattern:
                    stringProperty(
                      'Glob pattern limiting the files to search.'),
@@ -524,33 +523,33 @@ function searchTool(
                [ 'query' ]),
            invoke:
              async args =>
-             await searchLibrary(
-               environment.library,
-               environment.readers,
-               { query:
-                   requireString(
-                     args,
-                     'query'),
-                 pattern:
-                   optionalString(
-                     args,
-                     'pattern'),
-                 regex:
-                   optionalBoolean(
-                     args,
-                     'regex'),
-                 ignoreCase:
-                   optionalBoolean(
-                     args,
-                     'ignoreCase'),
-                 hidden:
-                   optionalBoolean(
-                     args,
-                     'hidden'),
-                 maxResults:
-                   optionalCount(
-                     args,
-                     'maxResults') }) };
+      await searchLibrary(
+        environment.library,
+        environment.readers,
+        { query:
+            requireString(
+              args,
+              'query'),
+          pattern:
+            optionalString(
+              args,
+              'pattern'),
+          regex:
+            optionalBoolean(
+              args,
+              'regex'),
+          ignoreCase:
+            optionalBoolean(
+              args,
+              'ignoreCase'),
+          hidden:
+            optionalBoolean(
+              args,
+              'hidden'),
+          maxResults:
+            optionalCount(
+              args,
+              'maxResults') }) };
 }
 
 function backlinksTool(
@@ -560,9 +559,9 @@ function backlinksTool(
   return { name: 'kb_backlinks',
            description:
              'List the markdown links that point at one entry, with the '
-             + 'file, line, column and the link target as written. The entry '
-             + 'does not have to exist, so this also answers what a rename '
-             + 'would break.',
+      + 'file, line, column and the link target as written. The entry '
+      + 'does not have to exist, so this also answers what a rename '
+      + 'would break.',
            inputSchema:
              objectSchema(
                { path:
@@ -580,9 +579,9 @@ function backlinksTool(
                [ 'path' ]),
            invoke:
              async args =>
-             await backlinks(
-               environment,
-               args) };
+      await backlinks(
+        environment,
+        args) };
 }
 
 async function backlinks(
@@ -634,8 +633,8 @@ function graphTool(
   return { name: 'kb_graph',
            description:
              'Inspect the in-memory index of articles and links. Without a '
-             + 'path it reports index statistics; with one it reports that '
-             + 'article, the links it writes and the links that point at it.',
+      + 'path it reports index statistics; with one it reports that '
+      + 'article, the links it writes and the links that point at it.',
            inputSchema:
              objectSchema(
                { path:
@@ -643,11 +642,11 @@ function graphTool(
                      'Library-relative path of an article to describe.') }),
            invoke:
              async args =>
-             await describeGraph(
-               environment,
-               optionalString(
-                 args,
-                 'path')) };
+      await describeGraph(
+        environment,
+        optionalString(
+          args,
+          'path')) };
 }
 
 async function describeGraph(
@@ -679,7 +678,7 @@ function formatTool(
   return { name: 'kb_format',
            description:
              'Format markdown files. Set `write` to false to report the '
-             + 'files that need formatting without changing them.',
+      + 'files that need formatting without changing them.',
            inputSchema:
              objectSchema(
                { pattern:
@@ -693,20 +692,20 @@ function formatTool(
                      'Include dot files and dot folders.') }),
            invoke:
              async args =>
-             await formatLibrary(
-               environment.library,
-               { pattern:
-                   optionalString(
-                     args,
-                     'pattern'),
-                 write:
-                   optionalBoolean(
-                     args,
-                     'write'),
-                 hidden:
-                   optionalBoolean(
-                     args,
-                     'hidden') }) };
+      await formatLibrary(
+        environment.library,
+        { pattern:
+            optionalString(
+              args,
+              'pattern'),
+          write:
+            optionalBoolean(
+              args,
+              'write'),
+          hidden:
+            optionalBoolean(
+              args,
+              'hidden') }) };
 }
 
 function extractTool(
@@ -716,7 +715,7 @@ function extractTool(
   return { name: 'kb_extract',
            description:
              'Extract structured data from a markdown document: headings, '
-             + 'links, tasks, tables, code blocks or front matter.',
+      + 'links, tasks, tables, code blocks or front matter.',
            inputSchema:
              objectSchema(
                { path:
@@ -730,14 +729,14 @@ function extractTool(
                  'kind' ]),
            invoke:
              async args =>
-             await extract(
-               environment,
-               requireString(
-                 args,
-                 'path'),
-               requireString(
-                 args,
-                 'kind')) };
+      await extract(
+        environment,
+        requireString(
+          args,
+          'path'),
+        requireString(
+          args,
+          'kind')) };
 }
 
 async function extract(
@@ -773,7 +772,7 @@ function infoTool(
   return { name: 'kb_info',
            description:
              'Summarise a document: size, word count, and, for markdown, '
-             + 'front matter and structure counts.',
+      + 'front matter and structure counts.',
            inputSchema:
              objectSchema(
                { path:
@@ -782,10 +781,10 @@ function infoTool(
                [ 'path' ]),
            invoke:
              async args =>
-             await summarizeDocument(
-               environment.library,
-               environment.readers,
-               requireString(
-                 args,
-                 'path')) };
+      await summarizeDocument(
+        environment.library,
+        environment.readers,
+        requireString(
+          args,
+          'path')) };
 }

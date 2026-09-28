@@ -15,7 +15,7 @@ const FILES =
       '---\ntitle: The budget\n---\n# Budget\n',
     'notes/plan.md':
       '# Plan\n\nSee [budget](budget.md) and a '
-      + '[site](https://example.com).\n' };
+    + '[site](https://example.com).\n' };
 
 test(
   'graph reports the collection sizes',
@@ -86,9 +86,10 @@ test(
 
         const report =
           JSON.parse(
-            context.environment.stdout.toString()) as
-            { article: { title: string; };
-              outgoing: { target: string; to: string[]; }[]; };
+            context.environment.stdout.toString()) as {
+          article: { title: string; };
+          outgoing: { target: string; to: string[]; }[];
+        };
 
         assert.equal(
           report.article.title,

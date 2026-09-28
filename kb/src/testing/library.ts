@@ -18,7 +18,7 @@ export async function writeFiles(
     files: Record<string, string>
   ): Promise<void>
 {
-  for (const [ filePath, content ] of Object.entries(files)) {
+  for (const [filePath, content] of Object.entries(files)) {
     await tmpDir.writeText(
       filePath,
       content);
@@ -37,7 +37,7 @@ export async function withLibrary<T>(
   const library =
     new TmpDir(
       new NullLoggerProvider()
-        .getLogger());
+      .getLogger());
 
   try {
     await writeFiles(

@@ -99,7 +99,8 @@ test(
           'A [reference][two] link.',
           '',
           '[two]: notes/two.md',
-          '' ].join('\n'));
+          '' ]
+        .join('\n'));
 
     assert.deepEqual(
       extractLinks(withDefinition)
@@ -126,7 +127,8 @@ test(
       parseMarkdown(
         [ 'A first line of text,',
           'then [[a target]] on the second line.',
-          '' ].join('\n'));
+          '' ]
+        .join('\n'));
 
     assert.deepEqual(
       extractLinks(paragraph)

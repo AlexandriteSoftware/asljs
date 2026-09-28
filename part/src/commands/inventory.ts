@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import { spawn }
   from 'node:child_process';
 import { readFileSync }
@@ -16,8 +18,6 @@ import { Environment }
   from './../environment.js';
 import { toPosixPath }
   from '../formatting.js';
-import { Logger }
-  from 'asljs-logging';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { ArtefactDefinition }

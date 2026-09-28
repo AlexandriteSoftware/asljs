@@ -109,9 +109,11 @@ test(
         const graph =
           await createLinkGraph(library.path);
 
-        for (const target of [ 'notes/budget.md',
-                               'notes/plan.md',
-                               'notes/missing.md' ]) {
+        for (
+          const target of [ 'notes/budget.md',
+                            'notes/plan.md',
+                            'notes/missing.md' ]
+        ) {
           assert.deepEqual(
             graph.backlinksTo(target),
             await findBacklinks(

@@ -95,8 +95,8 @@ test(
           await toolNamed(
             tools,
             'kb_list')
-            .invoke(
-              { pattern: '**/*.md' }) as LibraryEntry[];
+          .invoke(
+            { pattern: '**/*.md' }) as LibraryEntry[];
 
         assert.deepEqual(
           entries.map(entry => entry.path),
@@ -208,11 +208,12 @@ test(
           await toolNamed(
             tools,
             'kb_move')
-            .invoke(
-              { source: 'notes/budget.md',
-                target: 'archive/budget.md' }) as
-            { target: string;
-              files: { path: string; edits: unknown[]; }[]; };
+          .invoke(
+            { source: 'notes/budget.md',
+              target: 'archive/budget.md' }) as {
+            target: string;
+            files: { path: string; edits: unknown[]; }[];
+          };
 
         assert.equal(
           result.target,
@@ -292,9 +293,8 @@ test(
           await toolNamed(
             tools,
             'kb_search')
-            .invoke(
-              { query: 'budget' }) as
-            { matches: { path: string; }[]; };
+          .invoke(
+            { query: 'budget' }) as { matches: { path: string; }[]; };
 
         assert.deepEqual(
           report.matches.map(match => match.path),
@@ -328,8 +328,8 @@ test(
           await toolNamed(
             tools,
             'kb_backlinks')
-            .invoke(
-              { path: 'notes/budget.md' });
+          .invoke(
+            { path: 'notes/budget.md' });
 
         // A file written behind the index is invisible until the index is
         // told, which is what proves the answer came from memory.
@@ -432,11 +432,12 @@ test(
           await toolNamed(
             tools,
             'kb_graph')
-            .invoke(
-              { path: 'notes/budget.md' }) as
-            { article: { title: string; };
-              outgoing: unknown[];
-              incoming: { from: string; }[]; };
+          .invoke(
+            { path: 'notes/budget.md' }) as {
+            article: { title: string; };
+            outgoing: unknown[];
+            incoming: { from: string; }[];
+          };
 
         assert.equal(
           article.article.title,
@@ -506,9 +507,8 @@ test(
           await toolNamed(
             tools,
             'kb_info')
-            .invoke(
-              { path: 'one.md' }) as
-            { title: string; };
+          .invoke(
+            { path: 'one.md' }) as { title: string; };
 
         assert.equal(
           info.title,
@@ -532,12 +532,12 @@ test(
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_extract')
-            .invoke(
-              { path: 'one.txt',
-                kind: 'headings' }),
+            toolNamed(
+              tools,
+              'kb_extract')
+              .invoke(
+                { path: 'one.txt',
+                  kind: 'headings' }),
           /only supported for markdown/);
       });
   });
@@ -558,49 +558,49 @@ test(
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_read')
-            .invoke({}),
+            toolNamed(
+              tools,
+              'kb_read')
+              .invoke({}),
           /'path' is required/);
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_list')
-            .invoke(
-              { hidden: 'yes' }),
+            toolNamed(
+              tools,
+              'kb_list')
+              .invoke(
+                { hidden: 'yes' }),
           /'hidden' must be a boolean/);
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_list')
-            .invoke(
-              { kind: 'document' }),
+            toolNamed(
+              tools,
+              'kb_list')
+              .invoke(
+                { kind: 'document' }),
           /'kind' must be file, folder or any/);
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_search')
-            .invoke(
-              { query: 'one',
-                maxResults: 0 }),
+            toolNamed(
+              tools,
+              'kb_search')
+              .invoke(
+                { query: 'one',
+                  maxResults: 0 }),
           /'maxResults' must be a positive integer/);
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_new')
-            .invoke(
-              { path: 'one',
-                tags:
-                  [ 1 ] }),
+            toolNamed(
+              tools,
+              'kb_new')
+              .invoke(
+                { path: 'one',
+                  tags:
+                    [ 1 ] }),
           /'tags' must be an array of strings/);
       });
   });
@@ -621,12 +621,12 @@ test(
 
         await assert.rejects(
           () =>
-          toolNamed(
-            tools,
-            'kb_write')
-            .invoke(
-              { path: '../escaped.md',
-                content: 'text' }),
+            toolNamed(
+              tools,
+              'kb_write')
+              .invoke(
+                { path: '../escaped.md',
+                  content: 'text' }),
           /outside of the library/);
       });
   });

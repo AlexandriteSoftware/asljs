@@ -18,17 +18,15 @@ test(
       { id: 1 };
 
     const listener =
-      (): void =>
-    {};
+      (): void => { };
 
     const error =
       new ListenerError(
-      'failed',
-      inner,
-      object,
-      'test',
-      listener
-    );
+        'failed',
+        inner,
+        object,
+        'test',
+        listener);
 
     assert.ok(
       error instanceof Error);

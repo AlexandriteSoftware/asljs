@@ -46,9 +46,9 @@ test(
 
         await assert.rejects(
           () =>
-          execRemove(
-            context,
-            { path: 'notes' }),
+            execRemove(
+              context,
+              { path: 'notes' }),
           /not empty/);
 
         await execRemove(

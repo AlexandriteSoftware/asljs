@@ -1,3 +1,5 @@
+import { Logger }
+  from 'asljs-logging';
 import fs,
        { readdir }
   from 'node:fs/promises';
@@ -5,8 +7,6 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
-import { Logger }
-  from 'asljs-logging';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinitionProvider }

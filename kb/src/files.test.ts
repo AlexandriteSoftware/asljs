@@ -147,10 +147,10 @@ test(
 
         await assert.rejects(
           () =>
-          writeTextFile(
-            library.path,
-            'notes/deep/one.md',
-            '# Other\n'),
+            writeTextFile(
+              library.path,
+              'notes/deep/one.md',
+              '# Other\n'),
           /already exists/);
 
         await writeTextFile(
@@ -179,10 +179,10 @@ test(
       {
         await assert.rejects(
           () =>
-          writeTextFile(
-            library.path,
-            '../escaped.md',
-            'text'),
+            writeTextFile(
+              library.path,
+              '../escaped.md',
+              'text'),
           LibraryPathError);
       });
   });
@@ -277,10 +277,10 @@ test(
       {
         await assert.rejects(
           () =>
-          moveEntry(
-            library.path,
-            'one.md',
-            'two.md'),
+            moveEntry(
+              library.path,
+              'one.md',
+              'two.md'),
           /Target already exists/);
 
         await moveEntry(
@@ -309,10 +309,10 @@ test(
       {
         await assert.rejects(
           () =>
-          moveEntry(
-            library.path,
-            'notes',
-            'notes/inner'),
+            moveEntry(
+              library.path,
+              'notes',
+              'notes/inner'),
           LibraryPathError);
       });
   });
@@ -366,9 +366,10 @@ test(
           '# Two\n');
 
         await assert.rejects(
-          () => removeEntry(
-            library.path,
-            'notes'),
+          () =>
+            removeEntry(
+              library.path,
+              'notes'),
           /not empty/);
 
         assert.equal(
@@ -398,9 +399,10 @@ test(
         ) =>
       {
         await assert.rejects(
-          () => removeEntry(
-            library.path,
-            '.'),
+          () =>
+            removeEntry(
+              library.path,
+              '.'),
           LibraryPathError);
       });
   });
@@ -416,9 +418,10 @@ test(
         ) =>
       {
         await assert.rejects(
-          () => statEntry(
-            library.path,
-            'missing.md'),
+          () =>
+            statEntry(
+              library.path,
+              'missing.md'),
           /does not exist/);
       });
   });

@@ -134,9 +134,9 @@ export class LinkGraph
   #external = 0;
 
   constructor(
-      root: string,
-      options: LinkGraphOptions = {}
-    )
+    root: string,
+    options: LinkGraphOptions = {}
+  )
   {
     this.#root = root;
     this.#options = options;
@@ -149,13 +149,12 @@ export class LinkGraph
   {
     return [ ...this.#articles.values() ]
       .sort(
-        (left, right) =>
-        left.path.localeCompare(right.path));
+        (left, right) => left.path.localeCompare(right.path));
   }
 
   article(
-      documentPath: string
-    ): Article | undefined
+    documentPath: string
+  ): Article | undefined
   {
     return this.#articles.get(
       this.#toPath(documentPath));
@@ -165,8 +164,8 @@ export class LinkGraph
    * Links written in one document, in document order.
    */
   outgoing(
-      documentPath: string
-    ): GraphLink[]
+    documentPath: string
+  ): GraphLink[]
   {
     return [ ...this.#outgoing.get(
       this.#toPath(documentPath)) ?? [ ] ];
@@ -179,8 +178,8 @@ export class LinkGraph
    * document still reports the links left pointing at it.
    */
   incoming(
-      documentPath: string
-    ): GraphLink[]
+    documentPath: string
+  ): GraphLink[]
   {
     const target =
       this.#toPath(documentPath);
@@ -201,9 +200,9 @@ export class LinkGraph
    * sorted by document and position.
    */
   backlinksTo(
-      documentPath: string,
-      options: { includeSelf?: boolean; } = {}
-    ): Backlink[]
+    documentPath: string,
+    options: { includeSelf?: boolean; } = {}
+  ): Backlink[]
   {
     const target =
       this.#toPath(documentPath);
@@ -211,8 +210,8 @@ export class LinkGraph
     return this.incoming(target)
       .filter(
         link =>
-        options.includeSelf === true
-        || link.from !== target)
+          options.includeSelf === true
+          || link.from !== target)
       .map(
         link => ({ path: link.from,
                    line: link.line,
@@ -222,9 +221,9 @@ export class LinkGraph
                    text: link.text }))
       .sort(
         (left, right) =>
-        left.path.localeCompare(right.path)
-        || left.line - right.line
-        || left.column - right.column);
+          left.path.localeCompare(right.path)
+          || left.line - right.line
+          || left.column - right.column);
   }
 
   stats(): GraphStats
@@ -275,8 +274,8 @@ export class LinkGraph
    * gone, or that is not markdown, is removed from the graph instead.
    */
   async update(
-      documentPath: string
-    ): Promise<void>
+    documentPath: string
+  ): Promise<void>
   {
     const target =
       this.#toPath(documentPath);
@@ -320,9 +319,9 @@ export class LinkGraph
    * Record the links one document writes, in both directions.
    */
   #addLinks(
-      documentPath: string,
-      document: MarkdownDocument
-    ): void
+    documentPath: string,
+    document: MarkdownDocument
+  ): void
   {
     const links: GraphLink[] = [ ];
 
@@ -351,8 +350,8 @@ export class LinkGraph
   }
 
   #addIncoming(
-      link: GraphLink
-    ): void
+    link: GraphLink
+  ): void
   {
     if (link.to.length === 0) {
       this.#external += 1;
@@ -383,8 +382,8 @@ export class LinkGraph
    * Drop one document and every link it wrote.
    */
   remove(
-      documentPath: string
-    ): void
+    documentPath: string
+  ): void
   {
     const target =
       this.#toPath(documentPath);
@@ -413,8 +412,8 @@ export class LinkGraph
       for (const key of link.to) {
         const remaining =
           (index.get(key) ?? [ ])
-            .filter(
-              candidate => candidate !== link);
+          .filter(
+            candidate => candidate !== link);
 
         if (remaining.length === 0) {
           index.delete(key);
@@ -432,8 +431,8 @@ export class LinkGraph
    * other link is indexed by the paths it may address.
    */
   #indexFor(
-      link: GraphLink
-    ): Map<string, GraphLink[]>
+    link: GraphLink
+  ): Map<string, GraphLink[]>
   {
     if (isNameLink(link)) {
       return this.#incomingByName;
@@ -443,8 +442,8 @@ export class LinkGraph
   }
 
   async #statOrNull(
-      documentPath: string
-    ): Promise<{ size: number; modified: string; } | null>
+    documentPath: string
+  ): Promise<{ size: number; modified: string; } | null>
   {
     const absolute =
       resolveLibraryPath(
@@ -460,8 +459,8 @@ export class LinkGraph
   }
 
   #toPath(
-      documentPath: string
-    ): string
+    documentPath: string
+  ): string
   {
     return toLibraryPath(
       this.#root,

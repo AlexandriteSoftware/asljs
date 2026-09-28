@@ -2,6 +2,8 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { type TSESLint }
   from '@typescript-eslint/utils';
+import { Logger }
+  from 'asljs-logging';
 import { FormatterDefinitionFactory,
          RuleListenerFactory,
          tsFormatterFactory }
@@ -12,8 +14,6 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
-import { Logger }
-  from 'asljs-logging';
 import { fmtAssignmentExpression }
   from '../ts-fmt/fmt-assignment-expression.js';
 

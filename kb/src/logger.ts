@@ -22,7 +22,7 @@ export function createLoggerProvider(
 {
   const builder =
     new PinoLoggerProviderOptionsBuilder()
-      .fromEnvironmentVariables('KB_LOG_');
+    .fromEnvironmentVariables('KB_LOG_');
 
   if (options.file) {
     builder.withFile(options.file);
