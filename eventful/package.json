@@ -31,9 +31,6 @@
       "default": "./dist/index.js"
     }
   },
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
     "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
@@ -50,7 +47,7 @@
     "postpublish": "project-tools tag-release-revision",
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "test:watch": "node --watch --test build/**/*.test.js",
-    "coverage": "npm run build:test && NODE_V8_COVERAGE=.coverage node --test dist/*.test.js && node -e \"console.log('Coverage in .coverage (use c8/istanbul if you want reports)')\"",
+    "coverage": "npm run build && node --test --experimental-test-coverage --enable-source-maps --test-coverage-exclude=\"**/*.test.js\" build/**/*.test.js",
     "release:patch": "project-tools release-patch",
     "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },

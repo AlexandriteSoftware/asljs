@@ -23,7 +23,8 @@ The package-root export surface includes:
 - `asEventfulLike`
 - `ListenerError`
 - TypeScript types including `EventfulLike`, `EventName`, `EventMap`,
-  `Eventful`, `EventfulFactory`, `EventfulOptions`, `Listener`, and `TraceFn`
+  `Eventful`, `EventfulFactory`, `EventfulOptions`, `Listener`,
+  `ListenerErrorArgs`, `ErrorFn`, and `TraceFn`
 
 ## Usage
 
@@ -335,6 +336,8 @@ in progress.
 
 - `event` (String | Symbol): The event name.
 - `...args` (Any): Arguments to pass to the listeners.
+
+Returns `true` if the event had at least one listener, otherwise `false`.
 
 ### emitAsync(event, ...args)
 

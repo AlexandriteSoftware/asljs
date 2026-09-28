@@ -781,6 +781,33 @@ test(
   });
 
 test(
+  `${TEST_SUITE}: emit reports whether the event had listeners`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    assert.equal(
+      obj.emit('e'),
+      false);
+
+    const off =
+      obj.on(
+        'e',
+        () => { });
+
+    assert.equal(
+      obj.emit('e'),
+      true);
+
+    off();
+
+    assert.equal(
+      obj.emit('e'),
+      false);
+  });
+
+test(
   `${TEST_SUITE}: has reflects subscribe and unsubscribe`,
   () =>
   {

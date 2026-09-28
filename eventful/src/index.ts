@@ -14,11 +14,13 @@ export {
 
 export {
   ListenerError,
+  type ErrorFn,
   type Eventful,
   type EventfulFactory,
   type EventfulOptions,
   type EventMap,
   type EventName,
   type Listener,
+  type ListenerErrorArgs,
   type TraceFn
 } from './types.js';

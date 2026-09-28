@@ -233,7 +233,7 @@ const eventfulImpl =
       errorArgs);
 
     if (!consumed) {
-      queueMicrotask(
+      void Promise.resolve().then(
         () =>
         {
           throw err;
@@ -337,7 +337,7 @@ const eventfulImpl =
   function emit(
       event: EventName,
       ...args: unknown[]
-    ): void
+    ): boolean
   {
     eventNameTypeGuard(event);
 
@@ -362,7 +362,7 @@ const eventfulImpl =
     }
 
     if (snapshot.length === 0) {
-      return;
+      return false;
     }
 
     for (const listener of snapshot) {
@@ -380,6 +380,8 @@ const eventfulImpl =
         }
       }
     }
+
+    return true;
   }
 
   async function emitAsync(

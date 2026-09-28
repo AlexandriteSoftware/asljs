@@ -164,11 +164,12 @@ export interface Eventful<E extends EventMap = EventMap>
   /**
    * Emit an event synchronously. All listeners run in order.
    * Errors are isolated (ignored) unless `strict` is true.
+   * Returns true if the event had at least one listener.
    */
   emit<K extends keyof E & EventName>(
     event: K,
     ...args: E[K]
-  ): void;
+  ): boolean;
 
   /**
    * Emit an event and wait for all listeners (run in parallel).
