@@ -18,6 +18,28 @@ type OperationExpression =
   | TSESTree.BinaryExpression
   | TSESTree.LogicalExpression;
 
+type OperandSide =
+  | 'left'
+  | 'right';
+
+/**
+ * Binds looser than every operator in getOperatorPriority.
+ */
+const LOOSEST_PRIORITY =
+  0;
+
+/**
+ * Priority of the relational operators, which `as` and `satisfies` share.
+ */
+const RELATIONAL_PRIORITY =
+  8;
+
+/**
+ * Binds tighter than every operator in getOperatorPriority.
+ */
+const ATOMIC_PRIORITY =
+  13;
+
 export function fmtCriteriaExpression(
     expression: TSESTree.Expression,
     options: CriteriaExpressionFormattingOptions
@@ -56,6 +78,8 @@ function formatOperationExpression(
     formatOperand(
       expression.left,
       operatorPriority,
+      expression.operator,
+      'left',
       options);
 
   const indentation =
@@ -72,6 +96,8 @@ function formatOperationExpression(
     formatOperand(
       expression.right,
       operatorPriority,
+      expression.operator,
+      'right',
       options);
 
   return `${left}${separator}${right}`;
@@ -101,30 +127,78 @@ function shouldBreakBeforeBinaryOperator(
 function formatOperand(
     expression: TSESTree.Expression | TSESTree.PrivateIdentifier,
     parentPriority: number,
+    parentOperator: string,
+    side: OperandSide,
     options: CriteriaExpressionFormattingOptions
   ): string
 {
-  if (!isOperationExpression(expression)) {
-    return options.getText(expression);
-  }
-
-  const operatorPriority =
-    getOperationPriority(
+  const operandPriority =
+    getOperandPriority(
       expression);
 
   const formatted =
-    formatOperationExpression(
+    isOperationExpression(expression)
+    ? formatOperationExpression(
       expression,
-      options);
+      options)
+    : options.getText(expression);
 
-  if (
-    operatorPriority
-    < parentPriority
-  ) {
+  // Source parentheses are not part of the operand node, so an operand that
+  // binds looser than its parent has to be parenthesised again here. Equal
+  // priority needs them too, on the side the operator does not associate
+  // towards, as in `a - (b - c)`.
+  const needsParentheses =
+    operandPriority < parentPriority
+    || (operandPriority === parentPriority
+      && side === getNonAssociativeSide(parentOperator));
+
+  if (needsParentheses) {
     return `(${formatted})`;
   }
 
   return formatted;
+}
+
+function getNonAssociativeSide(
+    operator: string
+  ): OperandSide
+{
+  return operator === '**'
+    ? 'left'
+    : 'right';
+}
+
+/**
+ * Returns the priority of an operand, on the scale of getOperatorPriority.
+ *
+ * Operands that bind tighter than every operator on that scale, such as
+ * identifiers, member accesses, calls and unary expressions, never need
+ * parentheses and get ATOMIC_PRIORITY.
+ */
+function getOperandPriority(
+    expression: TSESTree.Expression | TSESTree.PrivateIdentifier
+  ): number
+{
+  if (isOperationExpression(expression)) {
+    return getOperationPriority(
+      expression);
+  }
+
+  switch (expression.type) {
+    case 'TSAsExpression':
+    case 'TSSatisfiesExpression':
+      return RELATIONAL_PRIORITY;
+
+    case 'ConditionalExpression':
+    case 'AssignmentExpression':
+    case 'ArrowFunctionExpression':
+    case 'YieldExpression':
+    case 'SequenceExpression':
+      return LOOSEST_PRIORITY;
+
+    default:
+      return ATOMIC_PRIORITY;
+  }
 }
 
 function isOperationExpression(

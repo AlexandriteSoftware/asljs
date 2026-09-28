@@ -96,3 +96,61 @@ a12345.b12345.c12345 === '\u005b'
 // ---
 a12345.b12345.c12345 === '\u005b'
 ```
+
+Parentheses are not part of an operand node, so operands that bind looser than
+their parent operator are parenthesised again. `as` and `satisfies` bind at the
+relational level:
+
+```ts
+a in (b as object)
+// ---
+a
+in (b as object)
+```
+
+```ts
+(a ? b : c) && d
+// ---
+(a ? b : c)
+ && d
+```
+
+```ts
+(a = b) && c
+// ---
+(a = b)
+ && c
+```
+
+```ts
+a + (b, c)
+// ---
+a
++ (b, c)
+```
+
+An operand of equal priority keeps its parentheses on the side the operator
+does not associate towards:
+
+```ts
+a - (b - c)
+// ---
+a
+- (b - c)
+```
+
+```ts
+(a ** b) ** c
+// ---
+(a ** b)
+ ** c
+```
+
+Parentheses that the priority does not require are not added back:
+
+```ts
+(a as unknown) === b
+// ---
+a as unknown
+ === b
+```
