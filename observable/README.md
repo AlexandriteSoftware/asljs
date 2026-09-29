@@ -6,7 +6,7 @@ performant JavaScript libraries for everyday use.
 ## Overview
 
 Lightweight observable for JS. Emits events on property changes via on/off/emit.
-Works with objects, arrays, and primitives.
+Works with plain objects, arrays, and primitives.
 
 ## Installation
 
@@ -160,12 +160,44 @@ Wraps an object, array, or primitive to make it observable.
 - `options.eventful` (optional): Custom `eventful` factory (defaults to `asljs-eventful`).
 - `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
 - `options.shallow` (optional): Nested conversion mode.
-  - `false` (default): recursively converts nested objects and arrays.
+  - `false` (default): recursively converts nested plain objects and arrays.
   - `true`: converts only the top-level value.
 
 Returns the original value wrapped with Eventful API and change notifications.
 When the target object does not already have a `watch` method, observable adds a
 non-enumerable `watch(properties, callback)` method to the wrapped object.
+
+### What is converted
+
+Observable converts plain objects (`{}` literals and null-prototype objects)
+and arrays. Everything else is treated as an opaque value.
+
+- Opaque values are stored as they are. Their identity is preserved and their
+  own mutations are not observed.
+- Replacing an opaque value emits `set` as usual, so
+  `model.created = new Date()` is observed while
+  `model.created.setFullYear(2020)` is not.
+- `Date`, `Map`, `Set`, `RegExp`, typed arrays, promises, functions, and
+  class instances are all opaque. A proxy cannot forward access to their
+  internal slots or private fields, so wrapping them would break them.
+- Frozen, sealed, and otherwise non-extensible values are opaque as well. The
+  Eventful API cannot be attached to them, and a frozen value has no changes
+  to report.
+- An opaque value passed as the top-level target is boxed into `{ value }`,
+  the same way a primitive is.
+- Values that already carry the Eventful API are left as they are and keep
+  their own wiring.
+- A class that needs to emit changes should extend `ObservableObject` instead
+  of relying on conversion.
+
+Within a converted object, only writable data properties are visited.
+Accessors are left as accessors: their getters are not run during conversion,
+and assigning through them still emits `set` as usual. Non-writable members
+and array holes are left alone.
+
+One target maps to one observable for the whole conversion. An object reached
+twice, from two properties or through a cycle, resolves to the same wrapper,
+so every handle on it sees the same events.
 
 ### `observable.watch(target, properties, callback)`
 
@@ -178,11 +210,17 @@ Watches one or more properties/paths and invokes callback with current values.
 - Re-runs callback each time one of the selected `set:<propertyOrPath>` events
   fires.
 - Nested paths are supported, e.g. `'user.name'`.
+- Paths are checked at compile time. `watch` accepts only paths that exist on
+  the model, misspellings and Eventful methods are rejected, and callback
+  values are typed per path and positional for the array form. Descent stops
+  at arrays and opaque values, and at five levels deep, which is what keeps a
+  self-referential model from expanding forever.
 - `target` may be a plain object; callback still runs immediately with a
   snapshot.
 - Updates are observed only where an eventful segment exists along the watched
   path.
-- Arrays are not supported by `watch` yet and will throw `TypeError`.
+- Arrays are not supported by `watch` yet. They carry no `watch` in their type,
+  and the injected method throws `TypeError` when called from JavaScript.
 - Returns an unsubscribe function. Calling it removes all listeners attached by
   this `watch` call.
 
@@ -209,6 +247,12 @@ Notes:
 - Array non-index properties, including `'length'`, use string `property`
   payloads.
 - `define` events are emitted only for non-index array properties.
+- Shortening an array reports every element it drops. Each dropped element
+  emits `delete:<index>` and `delete` with `{ index, previous }`, furthest
+  index first, and the `set:length` pair follows. Holes report nothing, and
+  `pop`, `shift` and `splice` remove the tail themselves before assigning
+  `length`, so nothing is reported twice. Growing an array emits only the
+  `set:length` pair.
 
 ## License
 

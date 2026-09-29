@@ -13,8 +13,13 @@ export type {
   ObservableEventsPrimitive,
   ObservableFn,
   ObservableGlobalOptions,
+  ObservableOpaque,
   ObservableOptions,
   ObservableTraceFn,
   ObservableWatchFn,
-  WatchedValues
+  WatchedValues,
+  WatchMethod,
+  WatchPath,
+  WatchPathValue,
+  WatchPathValues
 } from './types.js';

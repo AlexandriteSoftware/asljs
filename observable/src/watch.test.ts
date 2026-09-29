@@ -379,12 +379,15 @@ test(
         'user..name',
         'user. .name' ] as const;
 
+    // These paths no longer typecheck either, which is the point. The cast
+    // keeps the runtime guard covered for JavaScript callers and for paths
+    // built at runtime.
     for (const path of invalidPaths) {
       assert.throws(
         () =>
           observable.watch(
             state,
-            [ path ],
+            [ path ] as any,
             callback),
         TypeError);
     }

@@ -436,7 +436,7 @@ test(
             value,
             tracer) });
 
-    // setting length does not delete items
+    // setting length drops the tail, and each dropped item is reported
     arr.length = 1;
 
     const traces =
@@ -447,6 +447,20 @@ test(
       [ { action: 'new',
           payload:
             { object: array } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'delete:1',
+              args:
+                [ { index: 1,
+                    previous: 2 } ] } },
+        { action: 'emit',
+          payload:
+            { object: array,
+              event: 'delete',
+              args:
+                [ { index: 1,
+                    previous: 2 } ] } },
         { action: 'emit',
           payload:
             { object: array,
@@ -761,4 +775,617 @@ test(
     assert.strictEqual(
       newValue,
       43);
+  });
+
+/**
+ * Values that rely on internal slots or private fields cannot survive being
+ * proxied, so nested conversion must leave them untouched and keep their
+ * identity intact.
+ */
+test(
+  `${TEST_SUITE}: nested built-ins and class instances are kept as values`,
+  async () =>
+  {
+    class Instance
+    {
+      #secret = 7;
+
+      get secret(): number {
+        return this.#secret;
+      }
+    }
+
+    const date =
+      new Date(5);
+
+    const map =
+      new Map(
+        [ [ 'k',
+            1 ] ]);
+
+    const set =
+      new Set(
+        [ 1 ]);
+
+    const bytes =
+      new Uint8Array(2);
+
+    const instance =
+      new Instance();
+
+    const object =
+      observable(
+        { date,
+          map,
+          set,
+          pattern: /x/,
+          bytes,
+          instance });
+
+    assert.strictEqual(
+      object.date,
+      date);
+
+    assert.strictEqual(
+      object.date.getTime(),
+      5);
+
+    assert.strictEqual(
+      object.map.get('k'),
+      1);
+
+    assert.strictEqual(
+      object.set.has(1),
+      true);
+
+    assert.strictEqual(
+      object.pattern.test('x'),
+      true);
+
+    assert.strictEqual(
+      object.bytes.length,
+      2);
+
+    assert.strictEqual(
+      object.instance.secret,
+      7);
+  });
+
+/**
+ * Opaque values are still ordinary properties: replacing one has to emit the
+ * usual set events even though its contents are not observed.
+ */
+test(
+  `${TEST_SUITE}: replacing an opaque value emits set events`,
+  async () =>
+  {
+    const object =
+      observable(
+        { date:
+            new Date(1) });
+
+    const seen: string[] = [ ];
+
+    object.on(
+      'set:date',
+      () => seen.push('set:date'));
+
+    object.on(
+      'set',
+      () => seen.push('set'));
+
+    object.date =
+      new Date(2);
+
+    assert.deepEqual(
+      seen,
+      [ 'set:date',
+        'set' ]);
+  });
+
+/**
+ * A null-prototype object is still a plain object, so it has to be converted
+ * like an object literal.
+ */
+test(
+  `${TEST_SUITE}: null prototype objects are converted`,
+  async () =>
+  {
+    const bare: any =
+      Object.create(null);
+
+    bare.a = 1;
+
+    const object =
+      observable(bare);
+
+    let seen: number | undefined;
+
+    object.on(
+      'set:a',
+      (
+        { value }: any
+      ) => seen = value);
+
+    object.a = 2;
+
+    assert.strictEqual(
+      seen,
+      2);
+  });
+
+/**
+ * Passing an opaque value as the top-level target boxes it the same way a
+ * primitive is boxed, so the returned value always carries the eventful API.
+ */
+test(
+  `${TEST_SUITE}: top-level opaque value is boxed`,
+  async () =>
+  {
+    const date =
+      new Date(9);
+
+    const boxed =
+      observable(date);
+
+    assert.strictEqual(
+      boxed.value,
+      date);
+
+    let seen: unknown;
+
+    boxed.on(
+      'set',
+      (
+        { value }: any
+      ) => seen = value);
+
+    const next =
+      new Date(10);
+
+    boxed.value = next;
+
+    assert.strictEqual(
+      seen,
+      next);
+  });
+
+/**
+ * One target must map to one wrapper for the whole conversion, otherwise a
+ * model that holds the same object twice ends up with a proxied and an
+ * un-proxied handle, and writes through the second one emit nothing.
+ */
+test(
+  `${TEST_SUITE}: repeated references share one wrapper`,
+  async () =>
+  {
+    const shared =
+      { s: 1 };
+
+    const object =
+      observable(
+        { a: shared,
+          b: shared });
+
+    assert.strictEqual(
+      object.a,
+      object.b);
+
+    let viaA = 0;
+    let viaB = 0;
+
+    (object.a as any).on(
+      'set:s',
+      () => viaA++);
+
+    (object.b as any).on(
+      'set:s',
+      () => viaB++);
+
+    object.b.s = 3;
+
+    assert.strictEqual(
+      viaA,
+      1);
+
+    assert.strictEqual(
+      viaB,
+      1);
+
+    assert.strictEqual(
+      object.a.s,
+      3);
+  });
+
+/**
+ * Sharing has to hold across branches of the model, not only between
+ * siblings, so the identity map is threaded through the whole recursion.
+ */
+test(
+  `${TEST_SUITE}: repeated references are shared across branches`,
+  async () =>
+  {
+    const deep =
+      { z: 1 };
+
+    const object =
+      observable(
+        { x:
+            { deep },
+          y:
+            { deep } });
+
+    assert.strictEqual(
+      object.x.deep,
+      object.y.deep);
+  });
+
+/**
+ * A cyclic model must converge: the wrapper is registered before its members
+ * are converted, so a self reference resolves to the wrapper itself.
+ */
+test(
+  `${TEST_SUITE}: cyclic references converge`,
+  async () =>
+  {
+    const source: any =
+      { n: 1 };
+
+    source.self = source;
+
+    const object =
+      observable(source);
+
+    assert.strictEqual(
+      object.self,
+      object);
+
+    let seen = 0;
+
+    object.on(
+      'set:n',
+      () => seen++);
+
+    object.self.n = 5;
+
+    assert.strictEqual(
+      seen,
+      1);
+
+    assert.strictEqual(
+      object.n,
+      5);
+  });
+
+/**
+ * Watching through one handle has to observe writes made through any other
+ * handle on the same target.
+ */
+test(
+  `${TEST_SUITE}: watch observes writes through a shared reference`,
+  async () =>
+  {
+    const shared =
+      { n: 1 };
+
+    const object =
+      observable(
+        { a: shared,
+          b: shared });
+
+    let seen: unknown;
+
+    (object as any).watch(
+      'a.n',
+      (
+        value: unknown
+      ) => seen = value);
+
+    object.b.n = 9;
+
+    assert.strictEqual(
+      seen,
+      9);
+  });
+
+/**
+ * Accessors must survive conversion untouched: reading one to convert it
+ * would run the getter, and writing the result back would replace the
+ * accessor with a plain value.
+ */
+test(
+  `${TEST_SUITE}: accessor properties are left untouched`,
+  async () =>
+  {
+    let reads = 0;
+    let backing = 1;
+
+    const object =
+      observable(
+        { get computed(): object {
+          reads++;
+
+          return { deep: 1 };
+        },
+          get pair(): number {
+          return backing;
+        },
+          set pair(value: number) {
+          backing = value;
+        } });
+
+    assert.strictEqual(
+      reads,
+      0);
+
+    const descriptor =
+      Object.getOwnPropertyDescriptor(
+        object,
+        'computed');
+
+    assert.equal(
+      typeof descriptor?.get,
+      'function');
+
+    let seen = 0;
+
+    object.on(
+      'set:pair',
+      () => seen++);
+
+    object.pair = 7;
+
+    assert.strictEqual(
+      backing,
+      7);
+
+    assert.strictEqual(
+      object.pair,
+      7);
+
+    assert.strictEqual(
+      seen,
+      1);
+  });
+
+/**
+ * Non-writable members have no descriptor to rewrite, and array holes have no
+ * descriptor at all, so conversion has to step over both rather than assign
+ * through them.
+ */
+test(
+  `${TEST_SUITE}: non-writable members and array holes are skipped`,
+  async () =>
+  {
+    const source: any = {};
+
+    Object.defineProperty(
+      source,
+      'readonly',
+      { value:
+          { a: 1 },
+        writable: false,
+        enumerable: true,
+        configurable: true });
+
+    const object =
+      observable(source);
+
+    assert.strictEqual(
+      object.readonly.a,
+      1);
+
+    assert.equal(
+      (object.readonly as any).on,
+      undefined);
+
+    const sparse =
+      observable(
+        [, 1] as any);
+
+    assert.equal(
+      Object.prototype
+        .hasOwnProperty
+        .call(
+          sparse,
+          0),
+      false);
+
+    assert.strictEqual(
+      sparse.length,
+      2);
+  });
+
+/**
+ * The eventful API cannot be attached to a non-extensible value, and a frozen
+ * value has no changes to report, so such values stay opaque.
+ */
+test(
+  `${TEST_SUITE}: non-extensible values are opaque`,
+  async () =>
+  {
+    const frozen =
+      Object.freeze(
+        { a: 1 });
+
+    const object =
+      observable(
+        { frozen,
+          sealed:
+            Object.seal(
+              { b: 2 }) });
+
+    assert.strictEqual(
+      object.frozen,
+      frozen);
+
+    assert.strictEqual(
+      object.frozen.a,
+      1);
+
+    assert.strictEqual(
+      object.sealed.b,
+      2);
+
+    // Extensibility is a runtime property, so the static type still resolves
+    // to an observable object even though the value is boxed.
+    const boxed: any =
+      observable(frozen);
+
+    assert.strictEqual(
+      boxed.value,
+      frozen);
+  });
+
+/**
+ * Shortening an array drops elements without going through the delete trap,
+ * so the truncation has to report them itself, furthest index first and
+ * before the length change.
+ */
+test(
+  `${TEST_SUITE}: truncating an array emits delete events`,
+  async () =>
+  {
+    const array =
+      observable(
+        [ 'a',
+          'b',
+          'c' ]);
+
+    const events: string[] = [ ];
+
+    array.on(
+      'delete',
+      (
+        { index, previous }: any
+      ) =>
+        events.push(
+          `delete ${index} ${previous}`));
+
+    array.on(
+      'set',
+      (
+        payload: any
+      ) =>
+        events.push(
+          `set ${payload.property} ${payload.value}`));
+
+    let keyed: any;
+
+    array.on(
+      'delete:2',
+      (
+        payload: any
+      ) => keyed = payload);
+
+    array.length = 1;
+
+    assert.deepEqual(
+      events,
+      [ 'delete 2 c',
+        'delete 1 b',
+        'set length 1' ]);
+
+    assert.deepEqual(
+      keyed,
+      { index: 2,
+        previous: 'c' });
+
+    assert.deepEqual(
+      Array.from(array),
+      [ 'a' ]);
+  });
+
+/**
+ * Truncation reports only elements that are actually there: holes have
+ * nothing to report, and `pop`, `shift` and `splice` delete the tail
+ * themselves before assigning `length`, so nothing is reported twice.
+ */
+test(
+  `${TEST_SUITE}: truncation skips holes and does not double report`,
+  async () =>
+  {
+    const source: any[] =
+      [ 1,
+        2,
+        3 ];
+
+    delete source[1];
+
+    const sparse =
+      observable(source);
+
+    const dropped: number[] = [ ];
+
+    sparse.on(
+      'delete',
+      (
+        { index }: any
+      ) => dropped.push(index));
+
+    sparse.length = 0;
+
+    assert.deepEqual(
+      dropped,
+      [ 2,
+        0 ]);
+
+    const popped =
+      observable(
+        [ 1,
+          2,
+          3 ]);
+
+    const poppedIndices: number[] = [ ];
+
+    popped.on(
+      'delete',
+      (
+        { index }: any
+      ) => poppedIndices.push(index));
+
+    popped.pop();
+
+    assert.deepEqual(
+      poppedIndices,
+      [ 2 ]);
+  });
+
+/**
+ * A length assignment that removes nothing must stay silent, and growing an
+ * array only reports the length itself.
+ */
+test(
+  `${TEST_SUITE}: growing or keeping array length emits no deletes`,
+  async () =>
+  {
+    const array =
+      observable(
+        [ 1 ]);
+
+    const events: string[] = [ ];
+
+    array.on(
+      'delete',
+      () => events.push('delete'));
+
+    array.on(
+      'set',
+      (
+        payload: any
+      ) =>
+        events.push(
+          `set ${payload.property}`));
+
+    array.length = 1;
+
+    assert.deepEqual(
+      events,
+      [ ]);
+
+    array.length = 4;
+
+    assert.deepEqual(
+      events,
+      [ 'set length' ]);
   });

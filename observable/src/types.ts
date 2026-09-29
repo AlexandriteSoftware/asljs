@@ -178,58 +178,136 @@ export type WatchedValues<
 
 export type ObservableWatchFn = {
   <
-    T extends object
+    T extends object,
+    P extends WatchPath<T>
   >(
     target: T,
-    property: string,
-    callback: (value: any) => void
+    path: P,
+    callback: (value: WatchPathValue<T, P>) => void
   ): () => boolean;
 
   <
     T extends object,
-    K extends readonly string[]
+    P extends readonly WatchPath<T>[] | []
   >(
     target: T,
-    properties: K,
-    callback: (...values: any[]) => void
+    paths: P,
+    callback: (...values: WatchPathValues<T, P>) => void
   ): () => boolean;
 };
 
-export type WatchMethod<T extends Eventful> = {
+/**
+ * How deep `WatchPath` descends. The cap is what stops a self-referential
+ * model from expanding forever, so it cannot be removed, only tuned.
+ */
+type WatchPathDepthLimit = 5;
+
+/**
+ * Every dotted path that can be read out of `T`, as a union of string
+ * literals: `'user' | 'user.name' | 'active'` and so on.
+ *
+ * Descent stops where the runtime stops converting -- arrays, opaque values,
+ * and primitives are leaves -- so a path can only name something that
+ * actually emits.
+ */
+export type WatchPath<
+  T,
+  Depth extends readonly unknown[] = []
+> = Depth['length'] extends WatchPathDepthLimit ? never
+  : T extends readonly any[] ? never
+  : T extends ObservableOpaque ? never
+  : T extends object ? {
+      [K in Extract<keyof T, string>]:
+        | K
+        | (WatchPath<T[K], [...Depth, unknown]> extends
+          infer Rest extends string ? `${K}.${Rest}`
+          : never);
+    }[Extract<keyof T, string>]
+  : never;
+
+/** The type of the value a `WatchPath` resolves to. */
+export type WatchPathValue<T, P extends string> = P extends
+  `${infer Head}.${infer Rest}`
+  ? Head extends keyof T ? WatchPathValue<T[Head], Rest>
+  : never
+  : P extends keyof T ? T[P]
+  : never;
+
+/** Values a multi-path watch reports, one per requested path, in order. */
+export type WatchPathValues<T, P extends readonly string[]> = {
+  [I in keyof P]: WatchPathValue<T, P[I] & string>;
+};
+
+/**
+ * The `watch` method observable injects.
+ *
+ * Parameterised on the bare model rather than on `T & Eventful<...>`, so the
+ * eventful methods are not offered as watchable properties.
+ */
+export type WatchMethod<T> = {
   watch: {
-    <K extends Extract<keyof T, string>>(
-      property: K,
-      callback: (value: T[K]) => void
+    <P extends WatchPath<T>>(
+      path: P,
+      callback: (value: WatchPathValue<T, P>) => void
     ): () => boolean;
 
-    <K extends readonly (Extract<keyof T, string>)[]>(
-      properties: K,
-      callback: (...values: WatchedValues<T, K>) => void
+    // `| [ ]` is what makes TypeScript infer a tuple here rather than an
+    // array of unions, which is what keeps the callback values positional.
+    <P extends readonly WatchPath<T>[] | []>(
+      paths: P,
+      callback: (...values: WatchPathValues<T, P>) => void
     ): () => boolean;
   };
 };
 
+/**
+ * Arrays deliberately carry no `watch`: `watch(...)` throws for them at
+ * runtime, so offering it would only move the failure later.
+ */
 export type ObservableArray<T extends readonly any[]> =
   & T
-  & Eventful<ObservableEventsArray<T>>
-  & WatchMethod<T & Eventful<ObservableEventsArray<T>>>;
+  & Eventful<ObservableEventsArray<T>>;
 
 export type ObservableObject<T extends object> =
   & T
   & Eventful<ObservableEventsObject<T>>
-  & WatchMethod<T & Eventful<ObservableEventsObject<T>>>;
+  & WatchMethod<T>;
 
 export type ObservablePrimitive<T> =
   & { value: T; }
   & Eventful<ObservableEventsPrimitive<T>>;
 
 /**
+ * Values observable never converts, because a proxy cannot forward access to
+ * their internal slots. They are stored as-is when nested, and boxed into
+ * `{ value }` when passed as the top-level target.
+ *
+ * Class instances are opaque at runtime too, but TypeScript cannot tell an
+ * instance type from a structurally identical plain object, so they are not
+ * listed here.
+ */
+export type ObservableOpaque =
+  | Function
+  | Date
+  | RegExp
+  | Error
+  | Promise<unknown>
+  | Map<any, any>
+  | Set<any>
+  | WeakMap<object, any>
+  | WeakSet<object>
+  | ArrayBuffer
+  | ArrayBufferView;
+
+/**
  * Public observable composition type.
  *
- * - objects/arrays include Eventful API and a `watch()` helper.
- * - primitives are boxed into `{ value }` and include Eventful API.
+ * - plain objects/arrays include Eventful API and a `watch()` helper.
+ * - primitives and opaque values are boxed into `{ value }` and include
+ *   Eventful API.
  */
 export type Observable<T> = T extends readonly any[] ? ObservableArray<T>
+  : T extends ObservableOpaque ? ObservablePrimitive<T>
   : T extends object ? ObservableObject<T>
   : ObservablePrimitive<T>;
 
@@ -246,7 +324,13 @@ export type ObservableFn = {
     options?: ObservableOptions
   ): ObservableArray<T>;
 
-  /** Object overload */
+  /** Opaque value overload (boxed as { value }) */
+  <T extends ObservableOpaque>(
+    value: T,
+    options?: ObservableOptions
+  ): ObservablePrimitive<T>;
+
+  /** Plain object overload */
   <T extends object>(
     value: T,
     options?: ObservableOptions

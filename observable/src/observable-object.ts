@@ -3,34 +3,26 @@ import { EventfulBase }
 import { observable }
   from './observable.js';
 import { ObservableEventsObject,
-         WatchedValues }
+         WatchPath,
+         WatchPathValue,
+         WatchPathValues }
   from './types.js';
 
 export class ObservableObject<T extends object>
   extends EventfulBase<ObservableEventsObject<T>>
 {
   public watch<
-    K extends Extract<keyof T, string>
+    P extends WatchPath<T>
   >(
-    property: K,
-    callback: (value: T[K]) => void
+    path: P,
+    callback: (value: WatchPathValue<T, P>) => void
   ): () => boolean;
 
   public watch<
-    K extends readonly (Extract<keyof T, string>)[]
+    P extends readonly WatchPath<T>[] | []
   >(
-    properties: K,
-    callback: (...values: WatchedValues<T, K>) => void
-  ): () => boolean;
-
-  public watch(
-    properties: readonly string[],
-    callback: (...values: any[]) => void
-  ): () => boolean;
-
-  public watch(
-    property: string,
-    callback: (value: any) => void
+    paths: P,
+    callback: (...values: WatchPathValues<T, P>) => void
   ): () => boolean;
 
   public watch(

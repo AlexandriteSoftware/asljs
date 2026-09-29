@@ -1,7 +1,7 @@
 {
   "name": "asljs-observable",
   "version": "0.5.4",
-  "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with objects, arrays, and primitives.",
+  "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with plain objects, arrays, and primitives.",
   "files": [
     "dist/**",
     "README.md",

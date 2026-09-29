@@ -4,8 +4,8 @@
 
 Use this file as AI-facing guidance for `asljs-observable`.
 
-This package makes objects, arrays, and primitive boxes emit change events and
-supports path-based watching.
+This package makes plain objects, arrays, and primitive boxes emit change
+events and supports path-based watching.
 
 ## Package Scope
 
@@ -36,8 +36,32 @@ Exports from `src/index.ts`:
 - Nested path watching is supported where an observable/eventful segment exists
   along the path.
 - Arrays are not supported by `watch(...)` yet and that limitation is part of
-  current public guidance.
+  current public guidance. `ObservableArray` carries no `watch` in its type, so
+  the failure lands at compile time for TypeScript callers.
+- `watch(...)` paths are typed with `WatchPath`/`WatchPathValue`. Keep
+  `WatchMethod` parameterised on the bare model, never on `T & Eventful<...>`,
+  or the eventful methods become watchable properties again. The depth cap in
+  `WatchPath` is required: without it a self-referential model recurses
+  forever.
+- Shortening an array emits a `delete` pair per dropped element, furthest
+  index first, before the `set:length` pair. Holes are skipped, and elements
+  that `pop`, `shift` or `splice` already deleted must not be reported again.
 - `shallow: true` must remain top-level-only conversion.
+- Only plain objects (`{}` literals and null-prototype objects) and arrays are
+  converted. Every other value is opaque: stored as-is when nested, boxed into
+  `{ value }` when it is the top-level target. Do not widen this without also
+  giving the new kind its own payload shape.
+- Opaque values keep their identity; replacing one still emits `set`.
+- Non-extensible values (frozen, sealed, `preventExtensions`) are opaque: the
+  eventful API cannot be attached to them.
+- Conversion visits only writable data properties. Accessors stay accessors
+  and their getters must not run during conversion; non-writable members and
+  array holes are skipped.
+- One target maps to one wrapper for the whole conversion. Repeated and cyclic
+  references must resolve to the same observable, so the identity map is
+  threaded through the recursion and the wrapper is registered before its
+  members are converted.
+- Values that already carry the Eventful API are never re-wrapped.
 
 ## Validation
 

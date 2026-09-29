@@ -22,3 +22,18 @@ export function functionTypeGuard(
       'Expect a function.');
   }
 }
+
+export function isPlainObject(
+    value: any
+  ): value is Record<PropertyKey, unknown>
+{
+  if (!isObject(value)) {
+    return false;
+  }
+
+  const prototype =
+    Object.getPrototypeOf(value);
+
+  return prototype === Object.prototype
+    || prototype === null;
+}

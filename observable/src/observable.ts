@@ -4,7 +4,8 @@ import { asEventfulLike,
   from 'asljs-eventful';
 import { functionTypeGuard,
          isFunction,
-         isObject }
+         isObject,
+         isPlainObject }
   from './guards.js';
 import { ObservableFn,
          ObservableOptions }
@@ -53,6 +54,54 @@ function isArrayIndexProperty(
     || key === String(numeric);
 }
 
+/**
+ * Elements that a `length` assignment is about to drop, furthest index first.
+ *
+ * Holes have nothing to report. Indices that `pop`, `shift` and `splice`
+ * already deleted before assigning `length` are no longer own properties, so
+ * they are skipped and never reported twice.
+ */
+function collectTruncatedElements(
+    target: any,
+    nextLength: unknown
+  ): Array<{ index: number; previous: unknown; }>
+{
+  const previousLength = target.length;
+
+  const length =
+    Number(nextLength);
+
+  if (
+    !Number.isInteger(length)
+    || length < 0
+    || length >= previousLength
+  ) {
+    return [ ];
+  }
+
+  const removed: Array<{ index: number; previous: unknown; }> = [ ];
+
+  for (
+    let index = previousLength - 1;
+    index >= length;
+    index--
+  ) {
+    if (
+      !hasOwn(
+        target,
+        index)
+    ) {
+      continue;
+    }
+
+    removed.push(
+      { index,
+        previous: target[index] });
+  }
+
+  return removed;
+}
+
 function isEventfulObject(
     value: any
   ): boolean
@@ -69,6 +118,34 @@ function isEventfulObject(
 }
 
 /**
+ * Values that observable converts into proxies: plain objects (`{}` literals
+ * and null-prototype objects) and arrays. Everything else -- `Date`, `Map`,
+ * `Set`, `RegExp`, typed arrays, class instances -- is treated as an opaque
+ * value, because a proxy cannot forward access to internal slots or private
+ * fields. Already-eventful values are left alone so they keep their own wiring.
+ *
+ * Non-extensible values are opaque too: the eventful API cannot be attached to
+ * them, and a frozen value has no changes to report in the first place.
+ */
+function isConvertible(
+    value: any
+  ): boolean
+{
+  if (isEventfulObject(value)) {
+    return false;
+  }
+
+  if (
+    !isPlainObject(value)
+    && !Array.isArray(value)
+  ) {
+    return false;
+  }
+
+  return Object.isExtensible(value);
+}
+
+/**
  * Creates an observable object/array/primitive that emits events on changes.
  *
  * Events:
@@ -80,10 +157,19 @@ function isEventfulObject(
  * Emissions are synchronous and errors are isolated by the underlying
  * `eventful.emit`.
  */
+/**
+ * Conversion state carried through the recursion. `cache` keeps one wrapper
+ * per target for the whole conversion, so repeated and cyclic references
+ * resolve to the same observable instead of being wrapped twice.
+ */
+type InternalOptions =
+  & ObservableOptions
+  & { cache?: WeakMap<object, any>; };
+
 const observableImpl =
   (
       value: any,
-      options: ObservableOptions = {}
+      options: InternalOptions = {}
     ): any =>
   {
   const {
@@ -97,7 +183,8 @@ const observableImpl =
   const globalOptions = observable.options;
 
   const conversionCache =
-    new WeakMap<object, any>();
+    options.cache
+    ?? new WeakMap<object, any>();
 
   const convertNestedValue =
     (
@@ -109,14 +196,14 @@ const observableImpl =
     }
 
     if (
-      !isObject(input)
-      || isEventfulObject(input)
+      isObject(input)
+      && conversionCache.has(input)
     ) {
-      return input;
+      return conversionCache.get(input);
     }
 
-    if (conversionCache.has(input)) {
-      return conversionCache.get(input);
+    if (!isConvertible(input)) {
+      return input;
     }
 
     const converted =
@@ -124,13 +211,55 @@ const observableImpl =
         input,
         { eventful: eventfulFn,
           trace,
-          shallow });
+          shallow,
+          cache: conversionCache });
 
     conversionCache.set(
       input,
       converted);
 
     return converted;
+  };
+
+  /**
+   * Converts a single own member in place.
+   *
+   * Only writable data properties are touched. Accessors are left alone,
+   * because reading one to convert it would run the getter and writing the
+   * result back would replace the accessor with a plain value. Non-writable
+   * members, and array holes, have no descriptor to rewrite and are skipped.
+   */
+  const convertNestedMember =
+    (
+        target: any,
+        key: PropertyKey
+      ): void =>
+    {
+    const descriptor =
+      Object.getOwnPropertyDescriptor(
+        target,
+        key);
+
+    if (
+      !descriptor
+      || !descriptor.writable
+    ) {
+      return;
+    }
+
+    const converted =
+      convertNestedValue(
+        descriptor.value);
+
+    if (
+      Object.is(
+        converted,
+        descriptor.value)
+    ) {
+      return;
+    }
+
+    target[key] = converted;
   };
 
   const convertNestedMembers =
@@ -148,26 +277,18 @@ const observableImpl =
         i < target.length;
         i++
       ) {
-        target[i] =
-          convertNestedValue(
-            target[i]);
+        convertNestedMember(
+          target,
+          i);
       }
 
       return;
     }
 
     for (const key of Reflect.ownKeys(target)) {
-      if (
-        !hasOwn(
-          target,
-          key)
-      ) {
-        continue;
-      }
-
-      target[key] =
-        convertNestedValue(
-          target[key]);
+      convertNestedMember(
+        target,
+        key);
     }
   };
 
@@ -179,13 +300,33 @@ const observableImpl =
     const isArrayTarget =
       Array.isArray(target);
 
-    convertNestedMembers(target);
-
-    ensureWatchMethod(
-      target,
-      watchImpl);
-
     let proxy: any = null;
+
+    const emitDelete =
+      (
+          key: PropertyKey,
+          payload: object
+        ): void =>
+      {
+      const traceFn =
+        trace
+        || globalOptions.trace;
+
+      proxy.emit(
+        `delete:${String(key)}`,
+        payload);
+
+      if (isFunction(traceFn)) {
+        traceFn(
+          proxy,
+          'delete',
+          payload);
+      }
+
+      proxy.emit(
+        'delete',
+        payload);
+    };
 
     const proxiedTarget =
       new Proxy(
@@ -207,6 +348,17 @@ const observableImpl =
               property,
               receiver);
 
+          // Truncating an array drops elements without going through the
+          // delete trap, so the dropped values are collected before the
+          // write and reported afterwards.
+          const removed =
+            isArrayTarget
+              && property === 'length'
+            ? collectTruncatedElements(
+              tgt,
+              newValue)
+            : [ ];
+
           const ok =
             Reflect.set(
               tgt,
@@ -218,6 +370,13 @@ const observableImpl =
             proxy
             && ok
           ) {
+            for (const { index, previous: removedValue } of removed) {
+              emitDelete(
+                index,
+                { index,
+                  previous: removedValue });
+            }
+
             const current =
               Reflect.get(
                 tgt,
@@ -299,23 +458,8 @@ const observableImpl =
               : { property,
                   previous };
 
-            const traceFn =
-              trace
-              || globalOptions.trace;
-
-            proxy.emit(
-              `delete:${String(property)}`,
-              payload);
-
-            if (isFunction(traceFn)) {
-              traceFn(
-                proxy,
-                'delete',
-                payload);
-            }
-
-            proxy.emit(
-              'delete',
+            emitDelete(
+              property,
               payload);
           }
 
@@ -395,6 +539,18 @@ const observableImpl =
       ? proxiedTarget
       : eventfulFn(proxiedTarget);
 
+    // Register before descending so that cyclic and repeated references
+    // resolve to this wrapper instead of recursing into it again.
+    conversionCache.set(
+      target,
+      proxy);
+
+    convertNestedMembers(target);
+
+    ensureWatchMethod(
+      target,
+      watchImpl);
+
     return proxy;
   };
 
@@ -417,11 +573,10 @@ const observableImpl =
     return proxy;
   }
 
-  // Objects
+  // Plain objects, and any object that already carries the eventful API
   if (
-    value !== null
-    && typeof value
-       === 'object'
+    isConvertible(value)
+    || isEventfulObject(value)
   ) {
     const proxy =
       makeProxy(
@@ -437,7 +592,7 @@ const observableImpl =
     return proxy;
   }
 
-  // Primitives → boxed with a single 'value' slot
+  // Primitives and opaque objects → boxed with a single 'value' slot
   const boxed =
     eventfulFn(
       { get value() {
