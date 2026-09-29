@@ -166,10 +166,17 @@ Wraps an object, array, or primitive to make it observable.
   - `true`: converts only the top-level value.
 
 Returns the original value wrapped with Eventful API and change notifications.
-Passing a value observable treats as opaque throws a `TypeError`: there would
-be nothing to observe, and returning a wrapper whose properties all read as
-`undefined` would fail silently. Hold the value in a plain object, or take it
-over with `convert`.
+Passing a value observable treats as opaque throws a `TypeError`, the way
+`eventful` refuses a target it cannot augment. There would be nothing to
+observe, and returning a wrapper whose properties all read as `undefined`
+would fail silently. The message names the cause:
+
+- `Expect an extensible object or array, but the object is frozen.` (also
+  `sealed` and `not extensible`)
+- `Expect a plain object, an array, or a primitive, but the value is opaque.`
+
+Hold the value in a plain object, or take it over with `convert`. Unlike
+`eventful`, observable accepts a primitive: it is boxed into `{ value }`.
 When the target object does not already have a `watch` method, observable adds a
 non-enumerable `watch(properties, callback)` method to the wrapped object.
 

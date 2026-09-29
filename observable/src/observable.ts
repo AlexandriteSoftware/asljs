@@ -102,6 +102,21 @@ function collectTruncatedElements(
   return removed;
 }
 
+function describeInextensibility(
+    object: object
+  ): string
+{
+  if (Object.isFrozen(object)) {
+    return 'frozen';
+  }
+
+  if (Object.isSealed(object)) {
+    return 'sealed';
+  }
+
+  return 'not extensible';
+}
+
 function isEventfulObject(
     value: any
   ): boolean
@@ -593,6 +608,21 @@ const observableImpl =
     }
   }
 
+  // Checked before the dispatch so that a frozen array is refused here
+  // rather than deeper down by eventful.
+  if (
+    (isObject(value)
+     || isFunction(value))
+     && !Object.isExtensible(
+       value as object)
+  ) {
+    throw new TypeError(
+      `Expect an extensible object or array, but the object is ${
+        describeInextensibility(
+          value as object)
+      }.`);
+  }
+
   const traceFn =
     trace
     || globalOptions.trace;
@@ -632,16 +662,15 @@ const observableImpl =
   }
 
   // Opaque objects cannot be observed directly. Boxing them silently would
-  // hand back something whose properties all read as undefined, so refuse.
+  // hand back something whose properties all read as undefined, so refuse,
+  // the way eventful refuses a target it cannot augment.
   if (
     isObject(value)
     || isFunction(value)
   ) {
     throw new TypeError(
-      'Expect a plain object, an array, or a primitive. Values observable '
-        + 'treats as opaque, such as Date, Map, Set, functions, class '
-        + 'instances and non-extensible objects, cannot be observed '
-        + 'directly. Hold one in a plain object, or take it over with the '
+      'Expect a plain object, an array, or a primitive, but the value is '
+        + 'opaque. Hold it in a plain object, or take it over with the '
         + 'convert option.');
   }
 

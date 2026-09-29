@@ -54,9 +54,15 @@ Exports from `src/index.ts`:
 - Opaque values keep their identity; replacing one still emits `set`.
 - Non-extensible values (frozen, sealed, `preventExtensions`) are opaque: the
   eventful API cannot be attached to them.
-- An opaque value passed as the top-level target throws a `TypeError`. Do not
-  go back to boxing it: the box reads as undefined for every property the
+- An opaque value passed as the top-level target throws a `TypeError`, in the
+  shape `eventful` uses for a target it cannot augment: a specific message
+  naming the cause, with the inextensible case worded as `eventful` words it.
+  Do not go back to boxing: the box reads as undefined for every property the
   caller expects and fails silently.
+- The refusal messages are asserted in the tests. Keep them in step with
+  `eventful` when either package changes them.
+- Observable differs from `eventful` on primitives on purpose: `eventful`
+  refuses them, observable boxes them into `{ value }`.
 - Nested members are typed through `ObservableMembers`, and carry the full
   Eventful API and `watch`. A member of an observable holds an observable, so
   TypeScript rejects assigning a plain object and the value is wrapped first.

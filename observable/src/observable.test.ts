@@ -1694,3 +1694,61 @@ test(
       actions,
       [ ]);
   });
+
+/**
+ * Observable refuses a target it cannot observe the way eventful refuses one
+ * it cannot augment, naming the cause rather than failing later or handing
+ * back something inert.
+ */
+test(
+  `${TEST_SUITE}: refusal names why the target cannot be observed`,
+  async () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          Object.freeze(
+            { a: 1 }) as any),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or array, but the object is frozen.' });
+
+    assert.throws(
+      () =>
+        observable(
+          Object.seal(
+            { a: 1 }) as any),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or array, but the object is sealed.' });
+
+    assert.throws(
+      () =>
+        observable(
+          Object.preventExtensions(
+            { a: 1 }) as any),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or array, but the object is not '
+          + 'extensible.' });
+
+    // Arrays are refused here too, rather than deeper down by eventful.
+    assert.throws(
+      () =>
+        observable(
+          Object.freeze(
+            [ 1 ]) as any),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or array, but the object is frozen.' });
+
+    assert.throws(
+      () =>
+        observable(
+          new Date() as any),
+      { name: 'TypeError',
+        message:
+          'Expect a plain object, an array, or a primitive, but the value '
+          + 'is opaque. Hold it in a plain object, or take it over with the '
+          + 'convert option.' });
+  });
