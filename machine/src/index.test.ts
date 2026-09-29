@@ -15,58 +15,22 @@ test(
   });
 
 test(
-  'state transitions',
+  'index: the exported factory builds a working machine',
   () =>
   {
-    const currentMachine =
+    const flow =
       machine(
-        {},
-        'idle');
+        'idle',
+        { idle:
+            { start: 'busy' },
+          busy:
+            { stop: 'idle' } });
 
-    const select =
-      currentMachine.state.createTransition(
-        currentMachine.createState('selected'));
+    assert.equal(
+      flow.send('start'),
+      true);
 
-    const events: string[] = [ ];
-
-    currentMachine.on(
-      'set:state',
-      (
-          event
-        ) =>
-      {
-        const stateEvent =
-          event as { value: { name: string | undefined; }; };
-
-        events.push(
-          `state:${stateEvent.value.name}`);
-      });
-
-    select.on(
-      'activating',
-      () =>
-      {
-        events.push(
-          'select:activating');
-      });
-
-    select.on(
-      'completed',
-      () =>
-      {
-        events.push(
-          'select:completed');
-      });
-
-    select.activate();
-
-    assert.strictEqual(
-      currentMachine.state.name,
-      'selected');
-
-    assert.deepStrictEqual(
-      events,
-      [ 'select:activating',
-        'state:selected',
-        'select:completed' ]);
+    assert.equal(
+      flow.state.name,
+      'busy');
   });

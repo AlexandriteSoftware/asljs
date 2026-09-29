@@ -1,6 +1,6 @@
 {
   "name": "asljs-machine",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Compact and powerful library for structuring control flow with state machines.",
   "files": [
     "dist/**",
@@ -34,13 +34,14 @@
   "sideEffects": false,
   "scripts": {
     "format:json": "dprint fmt --config ../dprint.json \"*.json\"",
-    "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\"",
-    "format:sfmt": "sfmt format \"src/**/*.ts\"",
+    "format:ts": "dprint fmt --config ../dprint.json \"src/**/*.ts\" \"examples/**/*.ts\"",
+    "format:sfmt": "sfmt format \"src/**/*.ts\" && sfmt format \"examples/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
     "clean": "project-tools clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "example": "tsx examples/run-document-agent.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "guard:clean-git": "project-tools ensure-clean-working-directory",
