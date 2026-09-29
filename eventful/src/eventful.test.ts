@@ -129,6 +129,7 @@ test(
       declare emit: Eventful<MyClassEvents>['emit'];
       declare emitAsync: Eventful<MyClassEvents>['emitAsync'];
       declare has: Eventful<MyClassEvents>['has'];
+      declare removeAllListeners: Eventful<MyClassEvents>['removeAllListeners'];
 
       constructor(
         name: string
@@ -1234,4 +1235,205 @@ test(
     assert.equal(
       emits[1].causationId,
       null);
+  });
+
+test(
+  `${TEST_SUITE}: off with no listener removes every listener of that event`,
+  () =>
+  {
+    const calls: string[] = [ ];
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      'a',
+      () => calls.push('a1'));
+
+    obj.on(
+      'a',
+      () => calls.push('a2'));
+
+    obj.on(
+      'b',
+      () => calls.push('b1'));
+
+    assert.equal(
+      obj.off('a'),
+      true);
+
+    assert.equal(
+      obj.has('a'),
+      false);
+
+    obj.emit('a');
+    obj.emit('b');
+
+    assert.deepEqual(
+      calls,
+      [ 'b1' ]);
+  });
+
+test(
+  `${TEST_SUITE}: off with no listener is false when the event has none`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    assert.equal(
+      obj.off('missing'),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: off with no listener removes a once listener`,
+  () =>
+  {
+    let called = false;
+
+    const obj =
+      eventful({});
+
+    obj.once(
+      'a',
+      () =>
+      {
+        called = true;
+      });
+
+    assert.equal(
+      obj.off('a'),
+      true);
+
+    obj.emit('a');
+
+    assert.equal(
+      called,
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: removeAllListeners clears every event`,
+  () =>
+  {
+    const calls: string[] = [ ];
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      'a',
+      () => calls.push('a'));
+
+    obj.on(
+      'b',
+      () => calls.push('b'));
+
+    assert.equal(
+      obj.removeAllListeners(),
+      true);
+
+    assert.equal(
+      obj.has('a'),
+      false);
+
+    assert.equal(
+      obj.has('b'),
+      false);
+
+    obj.emit('a');
+    obj.emit('b');
+
+    assert.deepEqual(
+      calls,
+      [ ]);
+  });
+
+test(
+  `${TEST_SUITE}: removeAllListeners is false when there is nothing to remove`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    assert.equal(
+      obj.removeAllListeners(),
+      false);
+
+    obj.on(
+      'a',
+      () => { });
+
+    obj.removeAllListeners();
+
+    assert.equal(
+      obj.removeAllListeners(),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: an unsubscribe closure stays false after a bulk removal`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const unsubscribe =
+      obj.on(
+        'a',
+        () => { });
+
+    obj.removeAllListeners();
+
+    assert.equal(
+      unsubscribe(),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: a bulk removal traces every listener it removes`,
+  () =>
+  {
+    const offTraces: unknown[] = [ ];
+
+    const obj =
+      eventful(
+        {},
+        { trace:
+            (
+                action,
+                payload
+              ) =>
+            {
+          if (action === 'off') {
+            offTraces.push(payload);
+          }
+        } });
+
+    obj.on(
+      'a',
+      () => { });
+
+    obj.on(
+      'a',
+      () => { });
+
+    obj.removeAllListeners();
+
+    assert.equal(
+      offTraces.length,
+      2);
+  });
+
+test(
+  `${TEST_SUITE}: removeAllListeners cannot overwrite an existing method`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          { removeAllListeners:
+              (): boolean => false }),
+      /Method "removeAllListeners" already exists\./);
   });

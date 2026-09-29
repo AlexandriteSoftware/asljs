@@ -178,11 +178,25 @@ export interface Eventful<E extends EventMap = EventMap>
 
   /**
    * Unsubscribe a previously registered listener. Returns true if removed.
+   *
+   * Called without a listener, removes every listener of that event and
+   * returns true if any were removed. The bulk form removes other
+   * subscribers' listeners too, so use it only on an object you own.
    */
   off<K extends keyof E & EventName>(
     event: K,
-    listener: Listener<E[K]>
+    listener?: Listener<E[K]>
   ): boolean;
+
+  /**
+   * Remove every listener of every event. Returns true if any were removed.
+   *
+   * Intended for an object you own and are discarding, where dropping the
+   * listeners in one step releases what their closures hold and stops a late
+   * emit from reaching a torn down subscriber. On an object you were handed,
+   * unsubscribe your own listeners instead: this removes everyone's.
+   */
+  removeAllListeners(): boolean;
 
   /**
    * Emit an event synchronously. All listeners run in order.

@@ -13,6 +13,7 @@ export class EventfulBase<E extends EventMap = EventMap> implements Eventful<E>
   declare emit: Eventful<E>['emit'];
   declare emitAsync: Eventful<E>['emitAsync'];
   declare has: Eventful<E>['has'];
+  declare removeAllListeners: Eventful<E>['removeAllListeners'];
 
   constructor(
     options: EventfulOptions = {}

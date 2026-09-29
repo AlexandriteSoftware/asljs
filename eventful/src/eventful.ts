@@ -41,12 +41,15 @@ const eventfulImpl =
       'Expect an object or a function.');
   }
 
-  for (const method of [ 'on',
-                         'once',
-                         'off',
-                         'emit',
-                         'emitAsync',
-                         'has' ]) {
+  for (
+    const method of [ 'on',
+                      'once',
+                      'off',
+                      'emit',
+                      'emitAsync',
+                      'has',
+                      'removeAllListeners' ]
+  ) {
     if (
       method
       in (object as object)
@@ -141,6 +144,10 @@ const eventfulImpl =
       has:
         Object.assign(
           { value: has },
+          properties),
+      removeAllListeners:
+        Object.assign(
+          { value: removeAllListeners },
           properties) });
 
   return object as (T extends undefined ? {} : T) & Eventful;
@@ -314,10 +321,15 @@ const eventfulImpl =
 
   function off(
       event: EventName,
-      listener: Function
+      listener?: Function
     ): boolean
   {
     eventNameTypeGuard(event);
+
+    if (listener === undefined) {
+      return removeEvent(event);
+    }
+
     functionTypeGuard(listener);
 
     if (isTraced('off')) {
@@ -333,6 +345,64 @@ const eventfulImpl =
     return remove(
       event,
       listener);
+  }
+
+  /**
+   * Removes every listener of every event.
+   *
+   * Intended for an object you own and are discarding. Calling it on an object
+   * you were handed removes other subscribers' listeners as well as your own.
+   */
+  function removeAllListeners(
+    ): boolean
+  {
+    let removed = false;
+
+    for (const event of [ ...map.keys() ]) {
+      removed =
+        removeEvent(event)
+        || removed;
+    }
+
+    return removed;
+  }
+
+  /**
+   * Removes every listener of one event, reporting each removal so that a
+   * trace of subscriptions stays balanced.
+   */
+  function removeEvent(
+      event: EventName
+    ): boolean
+  {
+    const listeners =
+      map.get(event);
+
+    if (!listeners) {
+      return false;
+    }
+
+    let removed = false;
+
+    for (const listener of [ ...listeners ]) {
+      if (isTraced('off')) {
+        traceFn(
+          'off',
+          { object,
+            id:
+              instanceId(object),
+            event,
+            listener });
+      }
+
+      removed =
+        remove(
+          event,
+          listener)
+        || removed;
+    }
+
+    return removed;
   }
 
   function has(

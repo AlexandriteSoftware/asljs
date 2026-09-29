@@ -4,8 +4,8 @@
 
 Use this file as AI-facing guidance for `asljs-eventful`.
 
-This package adds lightweight event methods to plain objects and provides a
-base class for event-capable types.
+This package adds lightweight event methods to plain objects and provides a base
+class for event-capable types.
 
 ## Package Scope
 
@@ -35,8 +35,8 @@ Choose this API when:
 - class cannot change inheritance -> call `eventful(this)` in the constructor
 - code needs to accept unknown values safely -> use `isEventfulLike` or
   `asEventfulLike`
-- TypeScript event signatures matter -> define an event map and use the
-  exported eventful types
+- TypeScript event signatures matter -> define an event map and use the exported
+  eventful types
 
 Stable public behaviors:
 
@@ -49,8 +49,8 @@ Stable public behaviors:
 Special behavior:
 
 - `eventful` is both the object enhancer and the package-level global emitter
-- lifecycle, trace, and listener-error changes must preserve that global
-  emitter contract
+- lifecycle, trace, and listener-error changes must preserve that global emitter
+  contract
 
 Do not assume:
 
@@ -111,8 +111,8 @@ Treat these as public contract behaviors that should not drift silently:
   trace paths.
 - If changing lifecycle events, then preserve the package-level global emitter
   behavior.
-- If changing typing, then preserve listener signatures in the TypeScript
-  usage patterns.
+- If changing typing, then preserve listener signatures in the TypeScript usage
+  patterns.
 
 ## Validation
 
@@ -128,5 +128,5 @@ Treat these as public contract behaviors that should not drift silently:
   `asljs-data-binding`.
 
 Update this file when AI-facing constraints, exported surface expectations, or
-validation commands change. Update `README.md` separately only when
-user-facing behavior changes.
+validation commands change. Update `README.md` separately only when user-facing
+behavior changes.

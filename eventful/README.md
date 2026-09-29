@@ -353,15 +353,47 @@ obj.emit('tick', 1); // logs
 obj.emit('tick', 2); // no-op; already unsubscribed
 ```
 
-### off(event, listener)
+### off(event, [listener])
 
 Removes a listener for the specified event. A listener registered with `once` is
 removed by passing the same function that was given to `once`.
 
+Called without a listener, removes every listener of that event.
+
 - `event` (String | Symbol): The event name.
-- `listener` (Function): The callback function to be removed.
+- `listener` (Function, optional): The callback function to be removed. Omit to
+  remove all listeners of the event.
 
 Returns `true` if a listener was removed, otherwise `false`.
+
+The bulk form removes listeners other code registered, not only your own. Use it
+on an object you own. To detach from an object you were handed, call the
+unsubscribe function that `on` returned.
+
+### removeAllListeners()
+
+Removes every listener of every event. Returns `true` if any were removed.
+
+Intended for an object you own and are discarding: dropping the listeners in one
+step releases whatever their closures hold, and stops an emit that is still in
+flight from reaching a subscriber that has already been torn down.
+
+```js
+class Machine
+{
+  dispose()
+  {
+    for (const state of this.states) {
+      state.removeAllListeners();
+    }
+
+    this.removeAllListeners();
+  }
+}
+```
+
+On an object you did not create, unsubscribe your own listeners instead. This
+removes everyone's.
 
 ### emit(event, ...args)
 
