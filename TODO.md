@@ -17,13 +17,15 @@ belong to, roughly in the order worth doing them.
   `error`; the trace path has no equivalent. Gating traces on an observer
   narrowed this to objects someone is actually tracing, so it is no longer
   reachable by accident, but it is still reachable.
-- There is no listener-count warning of the kind that catches leaked
-  subscriptions. The condition is now observable, by `getListeners` for a
-  snapshot or by counting `on` against `off` on the global stream, and the two
-  agree. What is missing is the part that speaks without being asked: a
-  threshold, a `maxListeners` option, and a warning that names the instance and
-  the event, raised once. A shared emitter accumulating subscribers that never
-  detached is what nobody thinks to look for.
+- Leak detection lives in `docs/leak-detection.md` as two recipes a consumer
+  installs, not in the package. That is deliberate: a threshold is application
+  specific, and thirty `asljs-list` elements on one collection are thirty
+  legitimate listeners. What is still open is narrower. A recipe only speaks if
+  someone installed it, and the case it exists for is the application that never
+  considered leaks at all. A per-instance `maxListeners` option, reported
+  through the channel listener errors already use, would let an object that
+  knows its own expected fan-out say so without the package choosing a default
+  for everyone.
 - Tests do not cover symbol event names, re-enhancing an object that is already
   eventful, or the ordering guarantees of `emitAsync`.
 
