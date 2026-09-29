@@ -28,7 +28,7 @@ test(
 
     let seenValue = 0;
 
-    proxy.a.on!(
+    proxy.a.on(
       'set:b',
       (
           { value }: any
@@ -67,7 +67,7 @@ test(
 
     let seenValue = 0;
 
-    proxy.x!.on!(
+    proxy.x!.on(
       'set:y',
       (
           { value }: any
@@ -122,7 +122,7 @@ test(
 
     let seenValue = '';
 
-    proxy.items[0].on!(
+    proxy.items[0].on(
       'set:name',
       (
           { value }: any
@@ -976,11 +976,11 @@ test(
     let viaA = 0;
     let viaB = 0;
 
-    object.a.on!(
+    object.a.on(
       'set:s',
       () => viaA++);
 
-    object.b.on!(
+    object.b.on(
       'set:s',
       () => viaB++);
 

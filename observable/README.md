@@ -267,26 +267,28 @@ Points worth knowing:
 
 ### Nested members in TypeScript
 
-Conversion is deep, and the types say so: every nested plain object and array
-is described as carrying the Eventful API, and `watch` paths are checked
-against the model.
-
-The eventful members of a nested value are optional, so reading one needs `!`
-or `?.`:
+Conversion is deep, and the types say so. Every nested plain object and array
+carries the Eventful API and its own `watch`, reachable without a cast:
 
 ```ts
 const state = observable({ user: { name: 'Alice' } });
 
-state.user.on!('set:name', ({ value }) => console.log(value));  // value: string
-
-state.user = { name: 'Bob' };   // still takes a plain value
+state.user.on('set:name', ({ value }) => console.log(value));  // value: string
+state.user.watch('name', name => console.log(name));
 ```
 
-That is a deliberate trade. The same property is both read and written: reads
-see the observable that conversion produced, while writes take a plain value
-that conversion converts on the way in. TypeScript cannot give one property a
-read type and a different write type, so the eventful members are optional and
-assignment keeps working.
+The same holds for assignment: a member of an observable holds an observable,
+so a replacement is wrapped rather than assigned plain.
+
+```ts
+state.user = observable({ name: 'Bob' });
+```
+
+JavaScript callers are unaffected. Assigning a plain value still works at
+runtime and is converted on the way in, using the options the parent was
+created with. An explicitly wrapped value does not inherit those, so pass them
+again if the parent was created with `trace`, `convert`, or a custom
+`eventful`.
 
 One target maps to one observable for the whole conversion. An object reached
 twice, from two properties or through a cycle, resolves to the same wrapper,

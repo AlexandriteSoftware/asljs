@@ -57,10 +57,11 @@ Exports from `src/index.ts`:
 - An opaque value passed as the top-level target throws a `TypeError`. Do not
   go back to boxing it: the box reads as undefined for every property the
   caller expects and fails silently.
-- Nested members are typed through `ObservableMembers`, with the eventful part
-  `Partial`. That is what lets `state.user.on!(...)` be typed while
-  `state.user = { ... }` still takes a plain value. Making it required breaks
-  assignment.
+- Nested members are typed through `ObservableMembers`, and carry the full
+  Eventful API and `watch`. A member of an observable holds an observable, so
+  TypeScript rejects assigning a plain object and the value is wrapped first.
+  The runtime still converts a plain value assigned from JavaScript, with the
+  parent's options, which an explicitly wrapped value does not inherit.
 - The package ships no wrappers for `Date`, `Map`, `Set` or any other opaque
   kind, and must not start shipping them. Callers add their own through the
   `convert` hook, which is consulted for every object before the built-in rule

@@ -229,10 +229,9 @@ test(
           list:
             [ { n: 1 } ] });
 
-    // Conversion is deep, so nested members carry the eventful API. The
-    // members are optional, which is what keeps assignment taking plain
-    // values.
-    state.user.on!(
+    // Conversion is deep, so nested members carry the eventful API and no
+    // cast or non-null assertion is needed to reach it.
+    state.user.on(
       'set:name',
       (
           { value }
@@ -245,22 +244,38 @@ test(
           'string');
       });
 
-    state.user.address.on!(
+    state.user.address.on(
       'set:city',
       () => { });
 
-    state.list[0].on!(
+    state.list[0].on(
       'set:n',
       () => { });
 
-    // Writing still takes a plain value: conversion happens at runtime.
+    state.user.watch(
+      'name',
+      (
+          value
+        ) =>
+      {
+        const name: string = value;
+
+        assert.equal(
+          typeof name,
+          'string');
+      });
+
+    // A member of an observable holds an observable, so a replacement is
+    // wrapped rather than assigned plain.
     state.user =
-      { name: 'Bob',
-        address:
-          { city: 'Paris' } };
+      observable(
+        { name: 'Bob',
+          address:
+            { city: 'Paris' } });
 
     state.user.address =
-      { city: 'Rome' };
+      observable(
+        { city: 'Rome' });
 
     assert.strictEqual(
       state.user.address.city,

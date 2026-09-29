@@ -298,15 +298,21 @@ export type WatchMethod<T> = {
 type ObservableDepthLimit = 5;
 
 /**
- * A nested member as conversion leaves it.
+ * A nested member of an observable.
  *
- * The eventful part is `Partial` on purpose. Conversion is deep, so every
- * nested plain object and array really does carry the Eventful API at
- * runtime, and describing that is the whole point. But the same property is
- * also assignable, and assignment takes a plain value, which conversion turns
- * into an observable. TypeScript cannot give one property a read type and a
- * different write type, so the eventful members are optional: reading one
- * needs `!` or `?.`, and `state.user = { name: 'Bob' }` still compiles.
+ * Conversion is deep, so every nested plain object and array carries the
+ * Eventful API, and the type says so without hedging. That applies to
+ * assignment too: a property of an observable holds an observable, so
+ * assigning a plain object is rejected and the value has to be wrapped
+ * first.
+ *
+ * ```ts
+ * state.user = observable({ name: 'Bob' });
+ * ```
+ *
+ * The runtime still converts a plain value assigned from JavaScript, and it
+ * converts with the options the parent was created with, which an explicitly
+ * wrapped value does not inherit.
  */
 export type ObservableMember<
   T,
@@ -314,11 +320,11 @@ export type ObservableMember<
 > = T extends ObservableOpaque ? T
   : T extends readonly any[] ?
       & ObservableMembers<T, [...Depth, unknown]>
-      & Partial<Eventful<ObservableEventsArray<T>>>
+      & Eventful<ObservableEventsArray<T>>
   : T extends object ?
       & ObservableMembers<T, [...Depth, unknown]>
-      & Partial<Eventful<ObservableEventsObject<T>>>
-      & Partial<WatchMethod<T>>
+      & Eventful<ObservableEventsObject<T>>
+      & WatchMethod<T>
   : T;
 
 /** Members of `T`, each described as conversion leaves it. */

@@ -535,10 +535,13 @@ test(
         calls.push(name);
       });
 
+    // TypeScript requires a wrapped value here. These tests cover the
+    // runtime path a JavaScript caller takes, where a plain value assigned to
+    // a member is converted on the way in, so they cast past the type rule.
     state.user =
-      { name: 'Alice' };
+      { name: 'Alice' } as any;
 
-    state.user.name = 'Bob';
+    state.user!.name = 'Bob';
 
     assert.deepEqual(
       calls,
@@ -577,7 +580,7 @@ test(
       [ undefined ]);
 
     state.user.info =
-      { name: 'Alice' };
+      { name: 'Alice' } as any;
 
     assert.deepEqual(
       calls,
@@ -619,7 +622,7 @@ test(
     // Replacing the observable ancestor segment emits with refreshed value.
     state.user =
       { info:
-          { name: 'Carol' } };
+          { name: 'Carol' } } as any;
 
     assert.deepEqual(
       calls,
@@ -661,7 +664,7 @@ test(
 
     // info is not observable yet, but user is; changing info should refresh.
     user.info =
-      { name: 'Bob' };
+      { name: 'Bob' } as any;
 
     // swap to observable info; path should rebind to set:name.
     user.info =
