@@ -69,10 +69,17 @@ Exports from `src/index.ts`:
 - Conversion visits only writable data properties. Accessors stay accessors
   and their getters must not run during conversion; non-writable members and
   array holes are skipped.
-- One target maps to one wrapper for the whole conversion. Repeated and cyclic
-  references must resolve to the same observable, so the identity map is
-  threaded through the recursion and the wrapper is registered before its
-  members are converted.
+- One target maps to one wrapper, process-wide. The identity map is a
+  module-level `WeakMap`, not per call, so repeated references, cycles, and
+  separate `observable(...)` calls on the same target all resolve to the same
+  observable. The wrapper is registered before its members are converted,
+  which is what makes cycles converge.
+- A target already in the map is returned as it is. The options of a later
+  call are not applied to it, and that is the documented trade: conversion
+  grafts the Eventful API onto the target, so an object can only belong to one
+  observable.
+- Callers that want one `trace`, `convert` or `eventful` across a model pass
+  one options object to every call for it.
 - Values that already carry the Eventful API are never re-wrapped.
 
 ## Validation

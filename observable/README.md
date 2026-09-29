@@ -290,9 +290,31 @@ created with. An explicitly wrapped value does not inherit those, so pass them
 again if the parent was created with `trace`, `convert`, or a custom
 `eventful`.
 
-One target maps to one observable for the whole conversion. An object reached
-twice, from two properties or through a cycle, resolves to the same wrapper,
-so every handle on it sees the same events.
+One target maps to one observable, and that holds for the lifetime of the
+process rather than for one call. An object reached twice, from two
+properties, through a cycle, or from two separate `observable(...)` calls,
+resolves to the same wrapper, so every handle on it sees the same events.
+
+That is not a convenience: conversion grafts the Eventful API onto the target
+itself, so an object can only belong to one observable. Wrapping an already
+converted target again returns what it already has, which means the options of
+the later call have nothing to apply to:
+
+```js
+const state = observable(model, { trace });
+observable(model, { trace: other });   // returns the same observable; `other` is unused
+```
+
+Pass one options object to every call for a model if you want the same
+`trace`, `convert` or `eventful` applied throughout:
+
+```js
+const options = { trace, convert };
+
+const state = observable({ user: { name: 'Alice' } }, options);
+
+state.user = observable({ name: 'Bob' }, options);
+```
 
 ### `observable.watch(target, properties, callback)`
 

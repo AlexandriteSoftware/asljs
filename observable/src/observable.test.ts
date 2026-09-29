@@ -1596,3 +1596,101 @@ test(
       [ 1,
         2 ]);
   });
+
+/**
+ * Conversion grafts the Eventful API onto the target itself, so a target can
+ * only belong to one observable. That has to hold across separate calls, not
+ * only within one conversion, or a model assembled from several pieces ends
+ * up with a proxied and an un-proxied handle on the same object.
+ */
+test(
+  `${TEST_SUITE}: one target maps to one observable across calls`,
+  async () =>
+  {
+    const source =
+      { a: 1 };
+
+    assert.strictEqual(
+      observable(source),
+      observable(source));
+
+    const shared =
+      { n: 1 };
+
+    const left =
+      observable(
+        { shared });
+
+    const right =
+      observable(
+        { shared });
+
+    assert.strictEqual(
+      left.shared,
+      right.shared);
+
+    let seen = 0;
+
+    left.shared.on(
+      'set:n',
+      () => seen++);
+
+    right.shared.n = 7;
+
+    assert.strictEqual(
+      seen,
+      1);
+
+    assert.strictEqual(
+      left.shared.n,
+      7);
+
+    // A target reached first as a member resolves to the same observable when
+    // it is later passed as a top-level target, and the other way round.
+    const member =
+      { m: 1 };
+
+    const holder =
+      observable(
+        { member });
+
+    assert.strictEqual(
+      holder.member,
+      observable(member));
+  });
+
+/**
+ * A target already converted is returned as it is, so the options of a later
+ * call have nothing to apply to.
+ */
+test(
+  `${TEST_SUITE}: a later call does not reconfigure an existing observable`,
+  async () =>
+  {
+    const source =
+      { a: 1 };
+
+    const first =
+      observable(source);
+
+    const actions: string[] = [ ];
+
+    const second =
+      observable(
+        source,
+        { trace:
+            (
+          _object: unknown,
+          action: string
+        ) => actions.push(action) });
+
+    assert.strictEqual(
+      second,
+      first);
+
+    second.a = 2;
+
+    assert.deepEqual(
+      actions,
+      [ ]);
+  });

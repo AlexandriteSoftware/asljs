@@ -158,18 +158,25 @@ function isConvertible(
  * `eventful.emit`.
  */
 /**
- * Conversion state carried through the recursion. `cache` keeps one wrapper
- * per target for the whole conversion, so repeated and cyclic references
- * resolve to the same observable instead of being wrapped twice.
+ * One wrapper per target, for the lifetime of the process.
+ *
+ * Conversion grafts the Eventful API onto the target itself, so a given
+ * object can only belong to one observable. Keeping the map here rather than
+ * per call means a target reached twice resolves to the same observable even
+ * across separate `observable(...)` calls, which is what a model assembled
+ * from several pieces needs. It also carries repeated and cyclic references
+ * within a single conversion.
+ *
+ * A target already in the map is returned as it is, so the options of a later
+ * call are not applied to it.
  */
-type InternalOptions =
-  & ObservableOptions
-  & { cache?: WeakMap<object, any>; };
+const wrappers =
+  new WeakMap<object, any>();
 
 const observableImpl =
   (
       value: any,
-      options: InternalOptions = {}
+      options: ObservableOptions = {}
     ): any =>
   {
   const {
@@ -182,10 +189,6 @@ const observableImpl =
   functionTypeGuard(eventfulFn);
 
   const globalOptions = observable.options;
-
-  const conversionCache =
-    options.cache
-    ?? new WeakMap<object, any>();
 
   const convertNestedValue =
     (
@@ -200,8 +203,8 @@ const observableImpl =
       return input;
     }
 
-    if (conversionCache.has(input)) {
-      return conversionCache.get(input);
+    if (wrappers.has(input)) {
+      return wrappers.get(input);
     }
 
     // The hook sees every object, including the ones that would otherwise be
@@ -211,7 +214,7 @@ const observableImpl =
         convert(input);
 
       if (custom !== undefined) {
-        conversionCache.set(
+        wrappers.set(
           input,
           custom);
 
@@ -229,10 +232,9 @@ const observableImpl =
         { eventful: eventfulFn,
           trace,
           shallow,
-          convert,
-          cache: conversionCache });
+          convert });
 
-    conversionCache.set(
+    wrappers.set(
       input,
       converted);
 
@@ -559,7 +561,7 @@ const observableImpl =
 
     // Register before descending so that cyclic and repeated references
     // resolve to this wrapper instead of recursing into it again.
-    conversionCache.set(
+    wrappers.set(
       target,
       proxy);
 
@@ -571,6 +573,13 @@ const observableImpl =
 
     return proxy;
   };
+
+  if (
+    isObject(value)
+    && wrappers.has(value)
+  ) {
+    return wrappers.get(value);
+  }
 
   if (
     isFunction(convert)
