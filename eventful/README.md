@@ -228,8 +228,16 @@ infer it from. Naming it explicitly means naming the object type too, because
 TypeScript stops inferring type arguments as soon as any are written by hand:
 
 ```ts
+import {
+  eventful
+} from 'asljs-eventful';
+
+type CartEvents = { checkout: [total: number]; };
+
+const cart = { items: 2 };
+
 eventful<CartEvents>(cart);
-// error TS2345: Argument of type 'Cart' is not assignable
+// error TS2345: Argument of type '{ items: number; }' is not assignable
 //               to parameter of type 'CartEvents'.
 ```
 

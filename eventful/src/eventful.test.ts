@@ -1932,3 +1932,230 @@ test(
           { getListeners: (): null => null }),
       /Method "getListeners" already exists\./);
   });
+
+test(
+  `${TEST_SUITE}: a symbol event delivers to its listener with arguments`,
+  () =>
+  {
+    const event =
+      Symbol('tick');
+
+    const received: unknown[] = [ ];
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      event,
+      (
+          ...args: unknown[]
+        ) =>
+      {
+        received.push(args);
+      });
+
+    assert.equal(
+      obj.has(event),
+      true);
+
+    assert.equal(
+      obj.emit(
+        event,
+        1,
+        'two'),
+      true);
+
+    assert.deepEqual(
+      received,
+      [ [ 1,
+          'two' ] ]);
+  });
+
+test(
+  `${TEST_SUITE}: symbol events are separate from a string of the same text`,
+  () =>
+  {
+    const calls: string[] = [ ];
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      Symbol('tick'),
+      () => calls.push('symbol'));
+
+    obj.on(
+      'tick',
+      () => calls.push('string'));
+
+    obj.emit('tick');
+
+    assert.deepEqual(
+      calls,
+      [ 'string' ]);
+  });
+
+test(
+  `${TEST_SUITE}: a symbol listener is removed by every path`,
+  () =>
+  {
+    const event =
+      Symbol('tick');
+
+    const obj =
+      eventful({});
+
+    const listener =
+      (): void => { };
+
+    obj.on(
+      event,
+      listener);
+
+    assert.equal(
+      obj.off(
+        event,
+        listener),
+      true);
+
+    obj.on(
+      event,
+      listener);
+
+    assert.equal(
+      obj.off(event),
+      true);
+
+    obj.on(
+      event,
+      listener);
+
+    assert.equal(
+      obj.removeAllListeners(),
+      true);
+
+    assert.equal(
+      obj.has(event),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: enhancing an object twice is refused`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    assert.throws(
+      () => eventful(obj),
+      /Method "on" already exists\./);
+  });
+
+test(
+  `${TEST_SUITE}: a refused second enhancement leaves the first working`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const calls: string[] = [ ];
+
+    obj.on(
+      'a',
+      () => calls.push('a'));
+
+    assert.throws(
+      () => eventful(obj));
+
+    obj.emit('a');
+
+    assert.deepEqual(
+      calls,
+      [ 'a' ]);
+  });
+
+test(
+  `${TEST_SUITE}: emitAsync starts listeners in order and waits for all`,
+  async (): Promise<void> =>
+  {
+    const order: string[] = [ ];
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      'x',
+      async (): Promise<void> =>
+      {
+        order.push('slow start');
+
+        await new Promise(
+          resolve =>
+            setTimeout(
+              resolve,
+              20));
+
+        order.push('slow end');
+      });
+
+    obj.on(
+      'x',
+      async (): Promise<void> =>
+      {
+        order.push('fast start');
+        order.push('fast end');
+      });
+
+    await obj.emitAsync('x');
+
+    assert.deepEqual(
+      order,
+      [ 'slow start',
+        'fast start',
+        'fast end',
+        'slow end' ],
+      'listeners start in subscription order, run in parallel, and all finish before the promise settles');
+  });
+
+test(
+  `${TEST_SUITE}: emitAsync resolves false when the event has no listener`,
+  async (): Promise<void> =>
+  {
+    assert.equal(
+      await eventful({}).emitAsync('nothing'),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: emitAsync isolates a rejection and still runs the rest`,
+  async (): Promise<void> =>
+  {
+    const calls: string[] = [ ];
+
+    const obj =
+      eventful(
+        {},
+        { error: () => { } });
+
+    obj.on(
+      'x',
+      async (): Promise<void> =>
+      {
+        throw new Error('first failed');
+      });
+
+    obj.on(
+      'x',
+      async (): Promise<void> =>
+      {
+        calls.push('second ran');
+      });
+
+    assert.equal(
+      await obj.emitAsync('x'),
+      true);
+
+    assert.deepEqual(
+      calls,
+      [ 'second ran' ]);
+  });

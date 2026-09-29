@@ -3,11 +3,6 @@
 Known work that is not yet scheduled. Items are grouped by the package they
 belong to, roughly in the order worth doing them.
 
-## eventful
-
-- Tests do not cover symbol event names, re-enhancing an object that is already
-  eventful, or the ordering guarantees of `emitAsync`.
-
 ## Repository
 
 - The `coverage` script is broken in six packages: it runs a `build:test` script
