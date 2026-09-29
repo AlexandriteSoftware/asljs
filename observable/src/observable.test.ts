@@ -1527,6 +1527,50 @@ test(
   });
 
 /**
+ * The identity map does not care how a target was reached. A wrapper the hook
+ * returns for a top-level target is registered like a nested one, so the same
+ * target handed over twice resolves to the one wrapper, and a target taken
+ * over at the top is the same wrapper when it is later reached as a member.
+ */
+test(
+  `${TEST_SUITE}: convert hook results share one wrapper at the top level`,
+  async () =>
+  {
+    const shared =
+      new Set(
+        [ 'a' ]);
+
+    const first =
+      observable(
+        shared,
+        { convert: convertSets }) as any;
+
+    const second =
+      observable(
+        shared,
+        { convert: convertSets }) as any;
+
+    assert.strictEqual(
+      first,
+      second);
+
+    const holder =
+      observable(
+        { tags: shared },
+        { convert: convertSets });
+
+    assert.strictEqual(
+      holder.tags,
+      first);
+
+    first.add('b');
+
+    assert.strictEqual(
+      (holder.tags as any).size,
+      2);
+  });
+
+/**
  * Returning undefined leaves the decision to observable, and returning the
  * value itself keeps it as it is even where observable would convert it.
  */

@@ -604,6 +604,12 @@ const observableImpl =
       convert(value);
 
     if (custom !== undefined) {
+      // Registered like a nested wrapper, so that one target still resolves
+      // to one wrapper however it is reached.
+      wrappers.set(
+        value,
+        custom);
+
       return custom;
     }
   }
