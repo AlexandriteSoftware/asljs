@@ -622,7 +622,21 @@ const observableImpl =
     return proxy;
   }
 
-  // Primitives and opaque objects → boxed with a single 'value' slot
+  // Opaque objects cannot be observed directly. Boxing them silently would
+  // hand back something whose properties all read as undefined, so refuse.
+  if (
+    isObject(value)
+    || isFunction(value)
+  ) {
+    throw new TypeError(
+      'Expect a plain object, an array, or a primitive. Values observable '
+        + 'treats as opaque, such as Date, Map, Set, functions, class '
+        + 'instances and non-extensible objects, cannot be observed '
+        + 'directly. Hold one in a plain object, or take it over with the '
+        + 'convert option.');
+  }
+
+  // Primitives → boxed with a single 'value' slot
   const boxed =
     eventfulFn(
       { get value() {

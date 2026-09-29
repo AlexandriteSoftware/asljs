@@ -28,7 +28,7 @@ test(
 
     let seenValue = 0;
 
-    (proxy.a as any).on(
+    proxy.a.on!(
       'set:b',
       (
           { value }: any
@@ -67,7 +67,7 @@ test(
 
     let seenValue = 0;
 
-    (proxy.x as any).on(
+    proxy.x!.on!(
       'set:y',
       (
           { value }: any
@@ -101,7 +101,7 @@ test(
         { shallow: true });
 
     assert.equal(
-      typeof (proxy.a as any).on,
+      typeof proxy.a.on,
       'undefined');
   });
 
@@ -122,7 +122,7 @@ test(
 
     let seenValue = '';
 
-    (proxy.items[0] as any).on(
+    proxy.items[0].on!(
       'set:name',
       (
           { value }: any
@@ -156,7 +156,7 @@ test(
         { shallow: true });
 
     assert.equal(
-      typeof (proxy.items[0] as any).on,
+      typeof proxy.items[0].on,
       'undefined');
   });
 
@@ -891,8 +891,8 @@ test(
   `${TEST_SUITE}: null prototype objects are converted`,
   async () =>
   {
-    const bare: any =
-      Object.create(null);
+    const bare =
+      Object.create(null) as { a: number; };
 
     bare.a = 1;
 
@@ -915,39 +915,41 @@ test(
   });
 
 /**
- * Passing an opaque value as the top-level target boxes it the same way a
- * primitive is boxed, so the returned value always carries the eventful API.
+ * An opaque value cannot be observed as the top-level target. Boxing it would
+ * hand back something whose properties all read as undefined, with nothing to
+ * say why, so it is refused instead.
  */
 test(
-  `${TEST_SUITE}: top-level opaque value is boxed`,
+  `${TEST_SUITE}: top-level opaque value is refused`,
   async () =>
   {
-    const date =
-      new Date(9);
+    class Instance
+    {}
 
+    for (
+      const value of [ new Date(9),
+                       new Map(),
+                       new Set(),
+                       /x/,
+                       new Instance(),
+                       Object.freeze(
+                         { a: 1 }),
+                       () => { } ]
+    ) {
+      assert.throws(
+        () =>
+          observable(
+            value as any),
+        TypeError);
+    }
+
+    // Primitives are still boxed.
     const boxed =
-      observable(date);
+      observable(42);
 
     assert.strictEqual(
       boxed.value,
-      date);
-
-    let seen: unknown;
-
-    boxed.on(
-      'set',
-      (
-        { value }: any
-      ) => seen = value);
-
-    const next =
-      new Date(10);
-
-    boxed.value = next;
-
-    assert.strictEqual(
-      seen,
-      next);
+      42);
   });
 
 /**
@@ -974,11 +976,11 @@ test(
     let viaA = 0;
     let viaB = 0;
 
-    (object.a as any).on(
+    object.a.on!(
       'set:s',
       () => viaA++);
 
-    (object.b as any).on(
+    object.b.on!(
       'set:s',
       () => viaB++);
 
@@ -1028,7 +1030,9 @@ test(
   `${TEST_SUITE}: cyclic references converge`,
   async () =>
   {
-    const source: any =
+    type Cyclic = { n: number; self?: Cyclic; };
+
+    const source: Cyclic =
       { n: 1 };
 
     source.self = source;
@@ -1046,7 +1050,7 @@ test(
       'set:n',
       () => seen++);
 
-    object.self.n = 5;
+    object.self!.n = 5;
 
     assert.strictEqual(
       seen,
@@ -1227,14 +1231,13 @@ test(
       object.sealed.b,
       2);
 
-    // Extensibility is a runtime property, so the static type still resolves
-    // to an observable object even though the value is boxed.
-    const boxed: any =
-      observable(frozen);
-
-    assert.strictEqual(
-      boxed.value,
-      frozen);
+    // Nested, a frozen value is simply kept. As a top-level target it is
+    // refused, because there would be nothing to observe.
+    assert.throws(
+      () =>
+        observable(
+          frozen as any),
+      TypeError);
   });
 
 /**

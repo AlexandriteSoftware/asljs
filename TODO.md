@@ -5,19 +5,6 @@ belong to, roughly in the order worth doing them.
 
 ## observable
 
-### Some opaque values are opaque at runtime but not in the types
-
-`ObservableOpaque` lists the built-ins, but two runtime conditions are invisible
-to TypeScript:
-
-- a class instance cannot be told apart from a structurally identical plain
-  object;
-- extensibility is not a type-level property, so a frozen or sealed value still
-  types as a plain object.
-
-Both type as `ObservableObject<T>` while the runtime boxes them. Document the
-limitation, or ask callers to annotate.
-
 ### Cross-realm plain objects are treated as opaque
 
 `isPlainObject` compares against this realm's `Object.prototype`, so a literal

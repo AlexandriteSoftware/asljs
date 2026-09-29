@@ -166,6 +166,10 @@ Wraps an object, array, or primitive to make it observable.
   - `true`: converts only the top-level value.
 
 Returns the original value wrapped with Eventful API and change notifications.
+Passing a value observable treats as opaque throws a `TypeError`: there would
+be nothing to observe, and returning a wrapper whose properties all read as
+`undefined` would fail silently. Hold the value in a plain object, or take it
+over with `convert`.
 When the target object does not already have a `watch` method, observable adds a
 non-enumerable `watch(properties, callback)` method to the wrapped object.
 
@@ -260,6 +264,29 @@ Points worth knowing:
 - Paths are typed from the model, and the path type stops at the kinds
   observable considers opaque. Type the model with your wrapper rather than
   with `Set` if you want `watch('tags.size', ...)` checked statically.
+
+### Nested members in TypeScript
+
+Conversion is deep, and the types say so: every nested plain object and array
+is described as carrying the Eventful API, and `watch` paths are checked
+against the model.
+
+The eventful members of a nested value are optional, so reading one needs `!`
+or `?.`:
+
+```ts
+const state = observable({ user: { name: 'Alice' } });
+
+state.user.on!('set:name', ({ value }) => console.log(value));  // value: string
+
+state.user = { name: 'Bob' };   // still takes a plain value
+```
+
+That is a deliberate trade. The same property is both read and written: reads
+see the observable that conversion produced, while writes take a plain value
+that conversion converts on the way in. TypeScript cannot give one property a
+read type and a different write type, so the eventful members are optional and
+assignment keeps working.
 
 One target maps to one observable for the whole conversion. An object reached
 twice, from two properties or through a cycle, resolves to the same wrapper,

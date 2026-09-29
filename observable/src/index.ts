@@ -14,6 +14,8 @@ export type {
   ObservableEventsPrimitive,
   ObservableFn,
   ObservableGlobalOptions,
+  ObservableMember,
+  ObservableMembers,
   ObservableOpaque,
   ObservableOptions,
   ObservableTraceFn,

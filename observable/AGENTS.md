@@ -54,6 +54,13 @@ Exports from `src/index.ts`:
 - Opaque values keep their identity; replacing one still emits `set`.
 - Non-extensible values (frozen, sealed, `preventExtensions`) are opaque: the
   eventful API cannot be attached to them.
+- An opaque value passed as the top-level target throws a `TypeError`. Do not
+  go back to boxing it: the box reads as undefined for every property the
+  caller expects and fails silently.
+- Nested members are typed through `ObservableMembers`, with the eventful part
+  `Partial`. That is what lets `state.user.on!(...)` be typed while
+  `state.user = { ... }` still takes a plain value. Making it required breaks
+  assignment.
 - The package ships no wrappers for `Date`, `Map`, `Set` or any other opaque
   kind, and must not start shipping them. Callers add their own through the
   `convert` hook, which is consulted for every object before the built-in rule

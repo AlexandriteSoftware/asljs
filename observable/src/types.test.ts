@@ -215,3 +215,89 @@ test(
       typeof unwatch,
       'function');
   });
+
+test(
+  `${TEST_SUITE}: nested members are described as conversion leaves them`,
+  () =>
+  {
+    const state =
+      observable(
+        { user:
+            { name: 'Alice',
+              address:
+                { city: 'London' } },
+          list:
+            [ { n: 1 } ] });
+
+    // Conversion is deep, so nested members carry the eventful API. The
+    // members are optional, which is what keeps assignment taking plain
+    // values.
+    state.user.on!(
+      'set:name',
+      (
+          { value }
+        ) =>
+      {
+        const name: string = value;
+
+        assert.equal(
+          typeof name,
+          'string');
+      });
+
+    state.user.address.on!(
+      'set:city',
+      () => { });
+
+    state.list[0].on!(
+      'set:n',
+      () => { });
+
+    // Writing still takes a plain value: conversion happens at runtime.
+    state.user =
+      { name: 'Bob',
+        address:
+          { city: 'Paris' } };
+
+    state.user.address =
+      { city: 'Rome' };
+
+    assert.strictEqual(
+      state.user.address.city,
+      'Rome');
+  });
+
+test(
+  `${TEST_SUITE}: observing an opaque value has no result type`,
+  () =>
+  {
+    // Observing one of these throws, so the call resolves to never rather
+    // than describing a value that is never returned.
+    const opaqueIsNever: Equals<
+      Observable<Date>,
+      never
+    > = true;
+
+    const mapIsNever: Equals<
+      Observable<Map<string, number>>,
+      never
+    > = true;
+
+    // Primitives are still boxed.
+    const numberIsBoxed: Equals<
+      Observable<number>['value'],
+      number
+    > = true;
+
+    assert.ok(opaqueIsNever);
+
+    assert.ok(mapIsNever);
+
+    assert.ok(numberIsBoxed);
+
+    assert.throws(
+      () =>
+        observable(
+          new Date() as any),
+      TypeError);
+  });

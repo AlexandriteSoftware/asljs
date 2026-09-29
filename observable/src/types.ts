@@ -292,15 +292,52 @@ export type WatchMethod<T> = {
 };
 
 /**
+ * How deep `ObservableMembers` describes the conversion. Past the cap members
+ * are described as they are, which keeps a self-referential model finite.
+ */
+type ObservableDepthLimit = 5;
+
+/**
+ * A nested member as conversion leaves it.
+ *
+ * The eventful part is `Partial` on purpose. Conversion is deep, so every
+ * nested plain object and array really does carry the Eventful API at
+ * runtime, and describing that is the whole point. But the same property is
+ * also assignable, and assignment takes a plain value, which conversion turns
+ * into an observable. TypeScript cannot give one property a read type and a
+ * different write type, so the eventful members are optional: reading one
+ * needs `!` or `?.`, and `state.user = { name: 'Bob' }` still compiles.
+ */
+export type ObservableMember<
+  T,
+  Depth extends readonly unknown[] = []
+> = T extends ObservableOpaque ? T
+  : T extends readonly any[] ?
+      & ObservableMembers<T, [...Depth, unknown]>
+      & Partial<Eventful<ObservableEventsArray<T>>>
+  : T extends object ?
+      & ObservableMembers<T, [...Depth, unknown]>
+      & Partial<Eventful<ObservableEventsObject<T>>>
+      & Partial<WatchMethod<T>>
+  : T;
+
+/** Members of `T`, each described as conversion leaves it. */
+export type ObservableMembers<
+  T,
+  Depth extends readonly unknown[] = []
+> = Depth['length'] extends ObservableDepthLimit ? T
+  : { [K in keyof T]: ObservableMember<T[K], Depth>; };
+
+/**
  * Arrays deliberately carry no `watch`: `watch(...)` throws for them at
  * runtime, so offering it would only move the failure later.
  */
 export type ObservableArray<T extends readonly any[]> =
-  & T
+  & ObservableMembers<T>
   & Eventful<ObservableEventsArray<T>>;
 
 export type ObservableObject<T extends object> =
-  & T
+  & ObservableMembers<T>
   & Eventful<ObservableEventsObject<T>>
   & WatchMethod<T>;
 
@@ -334,11 +371,12 @@ export type ObservableOpaque =
  * Public observable composition type.
  *
  * - plain objects/arrays include Eventful API and a `watch()` helper.
- * - primitives and opaque values are boxed into `{ value }` and include
- *   Eventful API.
+ * - primitives are boxed into `{ value }` and include Eventful API.
+ * - opaque values resolve to `never`: observing one directly throws, so there
+ *   is no result to describe.
  */
 export type Observable<T> = T extends readonly any[] ? ObservableArray<T>
-  : T extends ObservableOpaque ? ObservablePrimitive<T>
+  : T extends ObservableOpaque ? never
   : T extends object ? ObservableObject<T>
   : ObservablePrimitive<T>;
 
@@ -355,11 +393,15 @@ export type ObservableFn = {
     options?: ObservableOptions
   ): ObservableArray<T>;
 
-  /** Opaque value overload (boxed as { value }) */
+  /**
+   * Opaque value overload. Observing one of these directly throws a
+   * `TypeError`, so the call resolves to `never`. Hold the value in a plain
+   * object, or take it over with the `convert` option.
+   */
   <T extends ObservableOpaque>(
     value: T,
     options?: ObservableOptions
-  ): ObservablePrimitive<T>;
+  ): never;
 
   /** Plain object overload */
   <T extends object>(
