@@ -11,12 +11,6 @@ belong to, roughly in the order worth doing them.
   reads `eventful<typeof obj, Events>(obj)`. The README advertises typed
   listener signatures as a headline feature, so this is the gap with real design
   in it. A curried overload (`eventful<Events>()(obj)`) is the likely shape.
-- A listener on the package-level `emit` event can still recurse. It emits on an
-  enhanced object, that emit traces back to the global emitter, and the cycle
-  repeats until the stack ends. `reportListenerError` guards the same cycle for
-  `error`; the trace path has no equivalent. Gating traces on an observer
-  narrowed this to objects someone is actually tracing, so it is no longer
-  reachable by accident, but it is still reachable.
 - Tests do not cover symbol event names, re-enhancing an object that is already
   eventful, or the ordering guarantees of `emitAsync`.
 

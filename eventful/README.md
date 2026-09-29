@@ -302,6 +302,15 @@ Note: if a **global** `eventful.on('error', ...)` listener throws, `eventful`
 throws a `ListenerError` (an `Error` subclass with fields
 `{ error, object, event, listener }`) to avoid an infinite error loop.
 
+Note: a global listener that performs the action it is listening for, on an
+enhanced object, recurses until the stack ends. A listener for `emit` that emits
+on an enhanced object is traced in turn, which calls the listener again. The
+same holds for a listener for `on` that subscribes. This is not guarded, for the
+same reason a function that calls itself is not: read from the payload rather
+than acting on it, and where a listener has to act, emit on `eventful` itself,
+which is not re-broadcast. The leak detection recipes take the first route, and
+only read.
+
 ## API
 
 ### eventful([target], [options])
