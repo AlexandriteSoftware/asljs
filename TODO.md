@@ -3,12 +3,4 @@
 Known work that is not yet scheduled. Items are grouped by the package they
 belong to, roughly in the order worth doing them.
 
-## Repository
-
-- The `coverage` script is broken in six packages: it runs a `build:test` script
-  that does not exist, over `dist/*.test.js` which the dist build does not emit,
-  behind a `NODE_V8_COVERAGE=...` prefix that PowerShell does not parse.
-  `eventful` carries the fixed version to copy.
-- `machine/package.json` declares `directories.doc` pointing at a `docs`
-  directory it does not have. The field steers nothing in npm, and the packages
-  that do ship docs declare no such field.
+Nothing is outstanding.
