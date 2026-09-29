@@ -320,6 +320,17 @@ new empty object is created.
   - `strict` (Boolean): If true, propagates listener errors; otherwise they are
     isolated. Defaults to false.
 
+Refuses, leaving the target untouched, when:
+
+- the target is neither an object nor a function
+  (`TypeError: Expect an object or a function.`)
+- the target cannot take new properties, because it is frozen, sealed or had
+  extensions prevented
+  (`TypeError: Expect an extensible object or function, but the object is
+  frozen.`)
+- the target already has one of the methods that would be added
+  (`Error: Method "on" already exists.`)
+
 ### on(event, listener)
 
 Registers a listener for the specified event.

@@ -1437,3 +1437,75 @@ test(
               (): boolean => false }),
       /Method "removeAllListeners" already exists\./);
   });
+
+test(
+  `${TEST_SUITE}: enhancing a frozen object reports that it is frozen`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          Object.freeze(
+            { name: 'x' })),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or function, but the object is frozen.' });
+  });
+
+test(
+  `${TEST_SUITE}: enhancing a sealed object reports that it is sealed`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          Object.seal(
+            { name: 'x' })),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or function, but the object is sealed.' });
+  });
+
+test(
+  `${TEST_SUITE}: enhancing a non-extensible object says so`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          Object.preventExtensions(
+            { name: 'x' })),
+      { name: 'TypeError',
+        message:
+          'Expect an extensible object or function, but the object is not extensible.' });
+  });
+
+test(
+  `${TEST_SUITE}: enhancing a frozen function reports that it is frozen`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          Object.freeze(
+            function handler (): void
+            {
+            })),
+      /but the object is frozen\./);
+  });
+
+test(
+  `${TEST_SUITE}: a refused object is left untouched`,
+  () =>
+  {
+    const frozen =
+      Object.freeze(
+        { name: 'x' });
+
+    assert.throws(
+      () => eventful(frozen));
+
+    assert.deepEqual(
+      Object.getOwnPropertyNames(frozen),
+      [ 'name' ]);
+  });

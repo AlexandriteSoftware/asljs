@@ -21,10 +21,6 @@ belong to, roughly in the order worth doing them.
   subscriptions. This is the half of the bulk unsubscribe item that bulk removal
   does not address: a shared emitter quietly accumulating subscribers that never
   detached needs a warning, not a way to remove them all.
-- Enhancing a frozen or sealed object fails with a raw
-  `TypeError: Cannot define property on, object is not extensible`, while the
-  same function deliberately reports its other refusals. `Object.isExtensible`
-  deserves the same treatment as the method-collision check.
 - Tests do not cover symbol event names, re-enhancing an object that is already
   eventful, or the ordering guarantees of `emitAsync`.
 

@@ -41,6 +41,17 @@ const eventfulImpl =
       'Expect an object or a function.');
   }
 
+  if (
+    !Object.isExtensible(
+      object as object)
+  ) {
+    throw new TypeError(
+      `Expect an extensible object or function, but the object is ${
+        describeInextensibility(
+          object as object)
+      }.`);
+  }
+
   for (
     const method of [ 'on',
                       'once',
@@ -541,6 +552,26 @@ const eventfulImpl =
     return true;
   }
 };
+
+/**
+ * Names the reason an object cannot take new properties. Freezing an object
+ * with no properties also seals it, so the most specific true description is
+ * reported first.
+ */
+function describeInextensibility(
+    object: object
+  ): string
+{
+  if (Object.isFrozen(object)) {
+    return 'frozen';
+  }
+
+  if (Object.isSealed(object)) {
+    return 'sealed';
+  }
+
+  return 'not extensible';
+}
 
 export const eventful =
   eventfulImpl as EventfulFn;
