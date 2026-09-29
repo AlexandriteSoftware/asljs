@@ -1509,3 +1509,217 @@ test(
       Object.getOwnPropertyNames(frozen),
       [ 'name' ]);
   });
+
+function countOffTraces(
+    run: (
+    obj: ReturnType<typeof eventful>
+  ) => void
+  ): number
+{
+  let offs = 0;
+
+  const obj =
+    eventful(
+      {},
+      { trace:
+          (
+              action
+            ) =>
+          {
+        if (action === 'off') {
+          offs += 1;
+        }
+      } });
+
+  run(obj);
+
+  return offs;
+}
+
+test(
+  `${TEST_SUITE}: the unsubscribe closure reports the removal`,
+  () =>
+  {
+    assert.equal(
+      countOffTraces(
+        (
+            obj
+          ) =>
+        {
+          const unsubscribe =
+            obj.on(
+              'x',
+              () => { });
+
+          unsubscribe();
+        }),
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: a once listener reports its automatic removal`,
+  () =>
+  {
+    assert.equal(
+      countOffTraces(
+        (
+            obj
+          ) =>
+        {
+          obj.once(
+            'x',
+            () => { });
+
+          obj.emit('x');
+        }),
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: a second unsubscribe reports nothing`,
+  () =>
+  {
+    assert.equal(
+      countOffTraces(
+        (
+            obj
+          ) =>
+        {
+          const unsubscribe =
+            obj.on(
+              'x',
+              () => { });
+
+          unsubscribe();
+          unsubscribe();
+        }),
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: removing a listener that was never added reports nothing`,
+  () =>
+  {
+    assert.equal(
+      countOffTraces(
+        (
+            obj
+          ) =>
+        {
+          obj.off(
+            'x',
+            () => { });
+        }),
+      0);
+  });
+
+test(
+  `${TEST_SUITE}: an unsubscribe after a bulk removal reports nothing extra`,
+  () =>
+  {
+    assert.equal(
+      countOffTraces(
+        (
+            obj
+          ) =>
+        {
+          const unsubscribe =
+            obj.on(
+              'x',
+              () => { });
+
+          obj.off('x');
+          unsubscribe();
+        }),
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: on and off balance across every removal path`,
+  () =>
+  {
+    for (
+      const [label, run] of [ [ 'method',
+                                (
+                                    obj: ReturnType<typeof eventful>
+                                  ): void =>
+                                {
+          const listener =
+            (): void => { };
+
+          obj.on(
+            'x',
+            listener);
+
+          obj.off(
+            'x',
+            listener);
+        } ],
+                              [ 'closure',
+                                (
+                                    obj: ReturnType<typeof eventful>
+                                  ): void =>
+                                {
+          obj.on(
+            'x',
+            () => { })();
+        } ],
+                              [ 'once',
+                                (
+                                    obj: ReturnType<typeof eventful>
+                                  ): void =>
+                                {
+          obj.once(
+            'x',
+            () => { });
+
+          obj.emit('x');
+        } ],
+                              [ 'bulk',
+                                (
+                                    obj: ReturnType<typeof eventful>
+                                  ): void =>
+                                {
+          obj.on(
+            'x',
+            () => { });
+
+          obj.off('x');
+        } ],
+                              [ 'all',
+                                (
+                                    obj: ReturnType<typeof eventful>
+                                  ): void =>
+                                {
+          obj.on(
+            'x',
+            () => { });
+
+          obj.removeAllListeners();
+        } ] ] as Array<[string, (obj: ReturnType<typeof eventful>) => void]>
+    ) {
+      let balance = 0;
+
+      const obj =
+        eventful(
+          {},
+          { trace:
+              (
+                  action
+                ) =>
+              {
+            if (action === 'on') {
+              balance += 1;
+            } else if (action === 'off') {
+              balance -= 1;
+            }
+          } });
+
+      run(obj);
+
+      assert.equal(
+        balance,
+        0,
+        `${label} leaves the subscription count unbalanced`);
+    }
+  });

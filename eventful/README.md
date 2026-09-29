@@ -316,7 +316,9 @@ new empty object is created.
   - `trace` (Function | null): Optional trace hook called with
     `(action, payload)`. Every payload carries `id`, the emitter identity;
     `emit` and `emitAsync` payloads also carry `messageId`, `correlationId` and
-    `causationId`.
+    `causationId`. Every subscription and every removal is reported, whichever
+    path it took, and only removals that actually removed something, so a count
+    of `on` against `off` stays balanced.
   - `strict` (Boolean): If true, propagates listener errors; otherwise they are
     isolated. Defaults to false.
 

@@ -216,6 +216,41 @@ const eventfulImpl =
     return deleted;
   }
 
+  /**
+   * Removes a listener and reports the removal, so that every path out of a
+   * subscription reaches the trace: the `off` methods, the unsubscribe closure
+   * `on` returns, and the automatic removal of a `once` listener.
+   *
+   * Only an actual removal is reported. A path that removes nothing, such as a
+   * second call to an unsubscribe closure, stays silent so that a count of
+   * `on` against `off` stays balanced.
+   */
+  function removeAndReport(
+      event: EventName,
+      listener: Function
+    ): boolean
+  {
+    const removed =
+      remove(
+        event,
+        listener);
+
+    if (
+      removed
+      && isTraced('off')
+    ) {
+      traceFn(
+        'off',
+        { object,
+          id:
+            instanceId(object),
+          event,
+          listener });
+    }
+
+    return removed;
+  }
+
   function reportListenerError(
       event: EventName,
       listener: Function,
@@ -292,7 +327,7 @@ const eventfulImpl =
     return () =>
       active
         ? ((active = false),
-          remove(
+          removeAndReport(
             event,
             listener))
         : false;
@@ -343,17 +378,7 @@ const eventfulImpl =
 
     functionTypeGuard(listener);
 
-    if (isTraced('off')) {
-      traceFn(
-        'off',
-        { object,
-          id:
-            instanceId(object),
-          event,
-          listener });
-    }
-
-    return remove(
+    return removeAndReport(
       event,
       listener);
   }
@@ -396,18 +421,8 @@ const eventfulImpl =
     let removed = false;
 
     for (const listener of [ ...listeners ]) {
-      if (isTraced('off')) {
-        traceFn(
-          'off',
-          { object,
-            id:
-              instanceId(object),
-            event,
-            listener });
-      }
-
       removed =
-        remove(
+        removeAndReport(
           event,
           listener)
         || removed;
