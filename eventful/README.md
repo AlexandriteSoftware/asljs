@@ -407,17 +407,6 @@ off();
 console.log(obj.has('e')); // false
 ```
 
-## License
-
-MIT License. See [LICENSE](LICENSE.md) for details.
-
-## Related Packages
-
-- If you need property change tracking, see `asljs-observable`.
-- If you need DOM binding built on observable state, see `asljs-data-binding`.
-
-[#1]: https://github.com/AlexandriteSoftware/asljs
-
 ## Instance identity and message context
 
 A trace is only readable if you can tell who sent what, and what caused it.
@@ -489,3 +478,14 @@ cart.on('checkout', async () =>
 
 For a worked example of forwarding these ids to OpenTelemetry, see
 [docs/opentelemetry.md](docs/opentelemetry.md).
+
+## License
+
+MIT License. See [LICENSE](LICENSE.md) for details.
+
+## Related Packages
+
+- If you need property change tracking, see `asljs-observable`.
+- If you need DOM binding built on observable state, see `asljs-data-binding`.
+
+[#1]: https://github.com/AlexandriteSoftware/asljs
