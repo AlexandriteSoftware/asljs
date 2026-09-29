@@ -18,15 +18,6 @@ to TypeScript:
 Both type as `ObservableObject<T>` while the runtime boxes them. Document the
 limitation, or ask callers to annotate.
 
-### Opinionated wrappers for `Date`, `Map` and `Set`
-
-Now that these are opaque, supporting them is additive: a branch per kind in the
-conversion dispatch, each with its own payload shape (`AGENTS.md` already
-requires distinct shapes rather than one vague payload). Pair it with a
-`convert` or `skip` hook in `ObservableOptions` so callers can override the
-built-in strategy; `shallow` is currently the only lever and it is
-all-or-nothing for the whole tree.
-
 ### Cross-realm plain objects are treated as opaque
 
 `isPlainObject` compares against this realm's `Object.prototype`, so a literal

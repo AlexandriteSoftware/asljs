@@ -1389,3 +1389,207 @@ test(
       events,
       [ 'set length' ]);
   });
+
+/**
+ * A wrapper for a kind observable does not support, built entirely outside
+ * the library. `has` is missing on purpose: eventful reserves that name,
+ * along with on, off, emit, emitAsync, removeAllListeners and getListeners.
+ */
+function makeObservableSet(
+    source: Set<unknown>
+  ): any
+{
+  const wrapper: any =
+    eventful(
+      { contains:
+          (
+        value: unknown
+      ): boolean => source.has(value),
+        get size(): number {
+        return source.size;
+      },
+        add(
+        value: unknown
+      ): void
+      {
+        if (source.has(value)) {
+          return;
+        }
+
+        const previous = source.size;
+
+        source.add(value);
+
+        const payload =
+          { property: 'size',
+            value: source.size,
+            previous };
+
+        wrapper.emit(
+          'add',
+          { value });
+
+        wrapper.emit(
+          'set:size',
+          payload);
+
+        wrapper.emit(
+          'set',
+          payload);
+      } });
+
+  return wrapper;
+}
+
+const convertSets =
+  (
+  value: object
+): unknown =>
+  value instanceof Set
+    ? makeObservableSet(value)
+    : undefined;
+
+/**
+ * The convert hook has to see the values observable treats as opaque, so a
+ * caller can support a kind the library deliberately does not.
+ */
+test(
+  `${TEST_SUITE}: convert hook takes over an otherwise opaque value`,
+  async () =>
+  {
+    const object =
+      observable(
+        { tags:
+            new Set(
+              [ 'a' ]) },
+        { convert: convertSets });
+
+    const tags =
+      object.tags as any;
+
+    assert.equal(
+      typeof tags.on,
+      'function');
+
+    assert.strictEqual(
+      tags.size,
+      1);
+
+    let added: unknown;
+
+    tags.on(
+      'add',
+      (
+        { value }: any
+      ) => added = value);
+
+    tags.add('b');
+
+    assert.strictEqual(
+      added,
+      'b');
+
+    assert.strictEqual(
+      tags.size,
+      2);
+  });
+
+/**
+ * Wrappers the hook returns take part in the identity map like anything else
+ * observable converts, so one target still maps to one wrapper.
+ */
+test(
+  `${TEST_SUITE}: convert hook results share one wrapper per target`,
+  async () =>
+  {
+    const shared =
+      new Set(
+        [ 'a' ]);
+
+    const object =
+      observable(
+        { left: shared,
+          right: shared },
+        { convert: convertSets });
+
+    assert.strictEqual(
+      object.left,
+      object.right);
+
+    (object.left as any).add('b');
+
+    assert.strictEqual(
+      (object.right as any).size,
+      2);
+  });
+
+/**
+ * Returning undefined leaves the decision to observable, and returning the
+ * value itself keeps it as it is even where observable would convert it.
+ */
+test(
+  `${TEST_SUITE}: convert hook can defer or opt a value out`,
+  async () =>
+  {
+    const object: any =
+      observable(
+        { converted:
+            { a: 1 },
+          untouched:
+            { keepAsIs: true,
+              b: 2 } },
+        { convert:
+            (
+          value: any
+        ): unknown =>
+          value.keepAsIs
+            ? value
+            : undefined });
+
+    // deferred to observable, so it was converted as usual
+    assert.equal(
+      typeof object.converted.on,
+      'function');
+
+    // opted out, so it stayed a plain object
+    assert.equal(
+      object.untouched.on,
+      undefined);
+
+    assert.strictEqual(
+      object.untouched.b,
+      2);
+  });
+
+/**
+ * A wrapper that emits `set:<property>` takes part in path watching, which is
+ * what makes a custom kind usable from the rest of the API.
+ */
+test(
+  `${TEST_SUITE}: watch binds through a wrapper the hook returned`,
+  async () =>
+  {
+    const object =
+      observable(
+        { tags:
+            new Set(
+              [ 'a' ]) },
+        { convert: convertSets });
+
+    const seen: number[] = [ ];
+
+    // The path type stops at Set, so the model would have to be typed with
+    // the wrapper for this to check statically.
+    (object as any).watch(
+      'tags.size',
+      (
+        size: number
+      ) => seen.push(size));
+
+    (object.tags as any).add('b');
+
+    assert.deepEqual(
+      seen,
+      [ 1,
+        2 ]);
+  });

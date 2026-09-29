@@ -175,7 +175,8 @@ const observableImpl =
   const {
     eventful: eventfulFn = eventful,
     trace = null,
-    shallow = false
+    shallow = false,
+    convert = null
   } = options;
 
   functionTypeGuard(eventfulFn);
@@ -195,11 +196,27 @@ const observableImpl =
       return input;
     }
 
-    if (
-      isObject(input)
-      && conversionCache.has(input)
-    ) {
+    if (!isObject(input)) {
+      return input;
+    }
+
+    if (conversionCache.has(input)) {
       return conversionCache.get(input);
+    }
+
+    // The hook sees every object, including the ones that would otherwise be
+    // opaque, and it decides before the built-in rule does.
+    if (isFunction(convert)) {
+      const custom =
+        convert(input);
+
+      if (custom !== undefined) {
+        conversionCache.set(
+          input,
+          custom);
+
+        return custom;
+      }
     }
 
     if (!isConvertible(input)) {
@@ -212,6 +229,7 @@ const observableImpl =
         { eventful: eventfulFn,
           trace,
           shallow,
+          convert,
           cache: conversionCache });
 
     conversionCache.set(
@@ -553,6 +571,18 @@ const observableImpl =
 
     return proxy;
   };
+
+  if (
+    isFunction(convert)
+    && isObject(value)
+  ) {
+    const custom =
+      convert(value);
+
+    if (custom !== undefined) {
+      return custom;
+    }
+  }
 
   const traceFn =
     trace

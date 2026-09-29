@@ -54,6 +54,10 @@ Exports from `src/index.ts`:
 - Opaque values keep their identity; replacing one still emits `set`.
 - Non-extensible values (frozen, sealed, `preventExtensions`) are opaque: the
   eventful API cannot be attached to them.
+- The package ships no wrappers for `Date`, `Map`, `Set` or any other opaque
+  kind, and must not start shipping them. Callers add their own through the
+  `convert` hook, which is consulted for every object before the built-in rule
+  and whose results join the identity map.
 - Conversion visits only writable data properties. Accessors stay accessors
   and their getters must not run during conversion; non-writable members and
   array holes are skipped.

@@ -159,6 +159,8 @@ Wraps an object, array, or primitive to make it observable.
 - `value`: Target object/array/primitive to observe.
 - `options.eventful` (optional): Custom `eventful` factory (defaults to `asljs-eventful`).
 - `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
+- `options.convert` (optional): Hook that takes over conversion for a single
+  value. See [Supporting other kinds of values](#supporting-other-kinds-of-values).
 - `options.shallow` (optional): Nested conversion mode.
   - `false` (default): recursively converts nested plain objects and arrays.
   - `true`: converts only the top-level value.
@@ -194,6 +196,70 @@ Within a converted object, only writable data properties are visited.
 Accessors are left as accessors: their getters are not run during conversion,
 and assigning through them still emits `set` as usual. Non-writable members
 and array holes are left alone.
+
+### Supporting other kinds of values
+
+Observable does not ship wrappers for `Date`, `Map`, `Set` or anything else it
+treats as opaque, and it is not going to guess how you want them observed. The
+`convert` hook is the seam for adding your own.
+
+It is called with every object observable reaches, including the ones it would
+otherwise leave opaque, and it decides before the built-in rule does.
+
+- Return a wrapper to take over that value.
+- Return the value itself to keep it as it is, even where observable would
+  normally convert it.
+- Return `undefined` to let observable decide.
+
+```js
+import { eventful } from 'asljs-eventful';
+import { observable } from 'asljs-observable';
+
+// A wrapper for Set. Note the absence of `has`: eventful reserves `on`,
+// `off`, `emit`, `emitAsync`, `has`, `removeAllListeners` and `getListeners`,
+// and throws if the wrapped object already defines one of them.
+const observableSet = source => {
+  const wrapper = eventful({
+    contains: value => source.has(value),
+    get size() { return source.size; },
+    add(value) {
+      if (source.has(value)) {
+        return;
+      }
+
+      const previous = source.size;
+
+      source.add(value);
+
+      wrapper.emit('add', { value });
+      wrapper.emit('set:size', { property: 'size', value: source.size, previous });
+      wrapper.emit('set', { property: 'size', value: source.size, previous });
+    }
+  });
+
+  return wrapper;
+};
+
+const state = observable(
+  { tags: new Set([ 'a' ]) },
+  { convert: value => value instanceof Set ? observableSet(value) : undefined });
+
+state.tags.on('add', ({ value }) => console.log('added', value));
+state.tags.add('b');
+```
+
+Points worth knowing:
+
+- Wrappers take part in the identity map, so one target still maps to one
+  wrapper however many times it is referenced.
+- A wrapper that emits `set:<property>` can be watched along a path, so
+  `state.watch('tags.size', ...)` works in the example above.
+- Primitives are never passed to the hook: there is nothing to observe.
+- Observable does not emit `new` for a wrapper it did not create, and does not
+  check that a wrapper carries the Eventful API.
+- Paths are typed from the model, and the path type stops at the kinds
+  observable considers opaque. Type the model with your wrapper rather than
+  with `Set` if you want `watch('tags.size', ...)` checked statically.
 
 One target maps to one observable for the whole conversion. An object reached
 twice, from two properties or through a cycle, resolves to the same wrapper,

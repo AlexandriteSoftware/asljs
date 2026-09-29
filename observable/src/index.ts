@@ -8,6 +8,7 @@ export {
 
 export type {
   Observable,
+  ObservableConvertFn,
   ObservableEventsArray,
   ObservableEventsObject,
   ObservableEventsPrimitive,

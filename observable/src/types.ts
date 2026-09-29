@@ -43,7 +43,38 @@ export interface ObservableOptions
    * - `true`: converts only the top-level value.
    */
   shallow?: boolean;
+
+  /**
+   * Optional hook consulted for every object reached during conversion,
+   * before observable applies its own rule. See `ObservableConvertFn`.
+   */
+  convert?: ObservableConvertFn | null;
 }
+
+/**
+ * Takes over conversion for a single value.
+ *
+ * Called with every object observable reaches, including the values it would
+ * otherwise treat as opaque, and before its own rule is applied.
+ *
+ * - Return a wrapper to take over that value. It is stored in place of the
+ *   original and, like anything else observable converts, one wrapper is
+ *   reused for every reference to the same target.
+ * - Return the value itself to keep it as it is, even if observable would
+ *   normally convert it.
+ * - Return `undefined` to let observable decide.
+ *
+ * A wrapper should carry the Eventful API and emit `set:<property>` so that
+ * `watch(...)` can bind to it along a path. Observable does not check this,
+ * and it does not emit `new` for a wrapper it did not create.
+ *
+ * Primitives are never passed to the hook: they have nothing to observe.
+ */
+export type ObservableConvertFn =
+  (
+    value: object
+  ) =>
+    unknown;
 
 /** Arrays: no 'define' events */
 export type ArrayIndex = number;
