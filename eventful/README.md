@@ -408,6 +408,31 @@ class Machine
 On an object you did not create, unsubscribe your own listeners instead. This
 removes everyone's.
 
+### getListeners()
+
+Returns a snapshot of what is currently subscribed: a `Map` from each event that
+has listeners to an array of those listeners, in the order they were added.
+
+The map and its arrays are copies, so changing them changes nothing. A listener
+registered with `once` appears as the function you passed to `once`, not as the
+wrapper that removes it.
+
+```js
+const counts = [...obj.getListeners()].map(
+  ([event, listeners]) => `${String(event)}: ${listeners.length}`
+);
+
+// [ 'set: 12', 'delete: 12', 'define: 12' ]
+```
+
+Twelve listeners on an event nobody expected twelve subscribers for is the
+signature of subscriptions that were never removed. The function identities name
+the culprit: the same handler appearing many times is one subscriber that
+re-subscribed without detaching.
+
+The snapshot holds every listener, and so everything those closures hold. Read
+it and drop it; keeping it alive keeps them alive.
+
 ### emit(event, ...args)
 
 Emits the specified event, invoking all registered listeners with the provided

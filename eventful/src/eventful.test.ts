@@ -130,6 +130,7 @@ test(
       declare emitAsync: Eventful<MyClassEvents>['emitAsync'];
       declare has: Eventful<MyClassEvents>['has'];
       declare removeAllListeners: Eventful<MyClassEvents>['removeAllListeners'];
+      declare getListeners: Eventful<MyClassEvents>['getListeners'];
 
       constructor(
         name: string
@@ -1644,59 +1645,59 @@ test(
                                     obj: ReturnType<typeof eventful>
                                   ): void =>
                                 {
-          const listener =
-            (): void => { };
+        const listener =
+          (): void => { };
 
-          obj.on(
-            'x',
-            listener);
+        obj.on(
+          'x',
+          listener);
 
-          obj.off(
-            'x',
-            listener);
-        } ],
+        obj.off(
+          'x',
+          listener);
+      } ],
                               [ 'closure',
                                 (
                                     obj: ReturnType<typeof eventful>
                                   ): void =>
                                 {
-          obj.on(
-            'x',
-            () => { })();
-        } ],
+        obj.on(
+          'x',
+          () => { })();
+      } ],
                               [ 'once',
                                 (
                                     obj: ReturnType<typeof eventful>
                                   ): void =>
                                 {
-          obj.once(
-            'x',
-            () => { });
+        obj.once(
+          'x',
+          () => { });
 
-          obj.emit('x');
-        } ],
+        obj.emit('x');
+      } ],
                               [ 'bulk',
                                 (
                                     obj: ReturnType<typeof eventful>
                                   ): void =>
                                 {
-          obj.on(
-            'x',
-            () => { });
+        obj.on(
+          'x',
+          () => { });
 
-          obj.off('x');
-        } ],
+        obj.off('x');
+      } ],
                               [ 'all',
                                 (
                                     obj: ReturnType<typeof eventful>
                                   ): void =>
                                 {
-          obj.on(
-            'x',
-            () => { });
+        obj.on(
+          'x',
+          () => { });
 
-          obj.removeAllListeners();
-        } ] ] as Array<[string, (obj: ReturnType<typeof eventful>) => void]>
+        obj.removeAllListeners();
+      } ] ] as Array<[string, (obj: ReturnType<typeof eventful>) => void]>
     ) {
       let balance = 0;
 
@@ -1722,4 +1723,212 @@ test(
         0,
         `${label} leaves the subscription count unbalanced`);
     }
+  });
+
+test(
+  `${TEST_SUITE}: getListeners reports each event with its listeners`,
+  () =>
+  {
+    const first =
+      (): void => { };
+
+    const second =
+      (): void => { };
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      'a',
+      first);
+
+    obj.on(
+      'a',
+      second);
+
+    obj.on(
+      'b',
+      first);
+
+    const snapshot =
+      obj.getListeners();
+
+    assert.deepEqual(
+      [ ...snapshot.keys() ],
+      [ 'a',
+        'b' ]);
+
+    assert.deepEqual(
+      snapshot.get('a'),
+      [ first,
+        second ]);
+
+    assert.equal(
+      snapshot.get('a')?.length,
+      2);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners is empty when nothing is subscribed`,
+  () =>
+  {
+    assert.equal(
+      eventful({}).getListeners().size,
+      0);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners drops an event once its last listener goes`,
+  () =>
+  {
+    const obj =
+      eventful({});
+
+    const unsubscribe =
+      obj.on(
+        'a',
+        () => { });
+
+    unsubscribe();
+
+    assert.equal(
+      obj.getListeners().has('a'),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners reports a once listener as the given function`,
+  () =>
+  {
+    const listener =
+      (): void => { };
+
+    const obj =
+      eventful({});
+
+    obj.once(
+      'a',
+      listener);
+
+    assert.deepEqual(
+      obj.getListeners().get('a'),
+      [ listener ]);
+  });
+
+test(
+  `${TEST_SUITE}: changing the snapshot does not change the subscriptions`,
+  () =>
+  {
+    const listener =
+      (): void => { };
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      'a',
+      listener);
+
+    const snapshot =
+      obj.getListeners();
+
+    snapshot.delete('a');
+
+    snapshot.set(
+      'b',
+      [ listener ]);
+
+    obj.getListeners().get('a')?.push(listener);
+
+    const fresh =
+      obj.getListeners();
+
+    assert.deepEqual(
+      [ ...fresh.keys() ],
+      [ 'a' ]);
+
+    assert.equal(
+      fresh.get('a')?.length,
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners supports symbol event names`,
+  () =>
+  {
+    const event =
+      Symbol('tick');
+
+    const listener =
+      (): void => { };
+
+    const obj =
+      eventful({});
+
+    obj.on(
+      event,
+      listener);
+
+    assert.deepEqual(
+      obj.getListeners().get(event),
+      [ listener ]);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners counts match what a subscription stream sees`,
+  () =>
+  {
+    let balance = 0;
+
+    const obj =
+      eventful(
+        {},
+        { trace:
+            (
+                action
+              ) =>
+            {
+          if (action === 'on') {
+            balance += 1;
+          } else if (action === 'off') {
+            balance -= 1;
+          }
+        } });
+
+    obj.on(
+      'a',
+      () => { });
+
+    obj.once(
+      'a',
+      () => { });
+
+    obj.on(
+      'b',
+      () => { });
+
+    obj.emit('a');
+
+    const live =
+      [ ...obj.getListeners().values() ].reduce(
+        (
+        total,
+        listeners
+      ) => total + listeners.length,
+        0);
+
+    assert.equal(
+      live,
+      balance);
+  });
+
+test(
+  `${TEST_SUITE}: getListeners cannot overwrite an existing method`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        eventful(
+          { getListeners: (): null => null }),
+      /Method "getListeners" already exists\./);
   });

@@ -18,9 +18,12 @@ belong to, roughly in the order worth doing them.
   narrowed this to objects someone is actually tracing, so it is no longer
   reachable by accident, but it is still reachable.
 - There is no listener-count warning of the kind that catches leaked
-  subscriptions. This is the half of the bulk unsubscribe item that bulk removal
-  does not address: a shared emitter quietly accumulating subscribers that never
-  detached needs a warning, not a way to remove them all.
+  subscriptions. The condition is now observable, by `getListeners` for a
+  snapshot or by counting `on` against `off` on the global stream, and the two
+  agree. What is missing is the part that speaks without being asked: a
+  threshold, a `maxListeners` option, and a warning that names the instance and
+  the event, raised once. A shared emitter accumulating subscribers that never
+  detached is what nobody thinks to look for.
 - Tests do not cover symbol event names, re-enhancing an object that is already
   eventful, or the ordering guarantees of `emitAsync`.
 

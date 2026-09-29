@@ -189,6 +189,18 @@ export interface Eventful<E extends EventMap = EventMap>
   ): boolean;
 
   /**
+   * Returns what is currently subscribed: a snapshot mapping each event with
+   * listeners to its listeners, in the order they were added.
+   *
+   * The map and its arrays are copies, and a `once` listener appears as the
+   * function given to `once`. Intended for debugging, such as finding
+   * subscriptions that were never removed; `getListeners().get(event)?.length`
+   * is the count. The snapshot holds every listener closure, so read it and
+   * drop it rather than keeping it.
+   */
+  getListeners(): Map<EventName, Function[]>;
+
+  /**
    * Remove every listener of every event. Returns true if any were removed.
    *
    * Intended for an object you own and are discarding, where dropping the

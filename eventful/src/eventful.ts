@@ -59,7 +59,8 @@ const eventfulImpl =
                       'emit',
                       'emitAsync',
                       'has',
-                      'removeAllListeners' ]
+                      'removeAllListeners',
+                      'getListeners' ]
   ) {
     if (
       method
@@ -159,6 +160,10 @@ const eventfulImpl =
       removeAllListeners:
         Object.assign(
           { value: removeAllListeners },
+          properties),
+      getListeners:
+        Object.assign(
+          { value: getListeners },
           properties) });
 
   return object as (T extends undefined ? {} : T) & Eventful;
@@ -381,6 +386,33 @@ const eventfulImpl =
     return removeAndReport(
       event,
       listener);
+  }
+
+  /**
+   * Returns what is currently subscribed, as a snapshot.
+   *
+   * The map and its arrays are copies, so changing them does not change the
+   * subscriptions. A `once` listener is reported as the function that was
+   * passed to `once`, not as the wrapper that removes it.
+   *
+   * The snapshot holds every listener, and therefore everything the listener
+   * closures hold. Read it and let it go; keeping it alive keeps them alive.
+   */
+  function getListeners(
+    ): Map<EventName, Function[]>
+  {
+    const snapshot = new Map<EventName, Function[]>();
+
+    for (const [event, listeners] of map) {
+      snapshot.set(
+        event,
+        [ ...listeners ].map(
+          listener =>
+            (listener as { [ONCE_LISTENER]?: Function; })[ONCE_LISTENER]
+              ?? listener));
+    }
+
+    return snapshot;
   }
 
   /**
