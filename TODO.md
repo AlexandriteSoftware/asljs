@@ -5,12 +5,6 @@ belong to, roughly in the order worth doing them.
 
 ## eventful
 
-- The `E` event map cannot be named without also naming `T`. The factory is
-  `<T extends object | Function | undefined, E extends EventMap = EventMap>`,
-  and TypeScript takes explicit type arguments all or nothing, so a typed map
-  reads `eventful<typeof obj, Events>(obj)`. The README advertises typed
-  listener signatures as a headline feature, so this is the gap with real design
-  in it. A curried overload (`eventful<Events>()(obj)`) is the likely shape.
 - Tests do not cover symbol event names, re-enhancing an object that is already
   eventful, or the ordering guarantees of `emitAsync`.
 

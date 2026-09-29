@@ -200,6 +200,8 @@ export class MyClass implements Eventful<MyClassEvents>
   declare emit: Eventful<MyClassEvents>['emit'];
   declare emitAsync: Eventful<MyClassEvents>['emitAsync'];
   declare has: Eventful<MyClassEvents>['has'];
+  declare removeAllListeners: Eventful<MyClassEvents>['removeAllListeners'];
+  declare getListeners: Eventful<MyClassEvents>['getListeners'];
 
   constructor(name: string)
   {
@@ -217,6 +219,49 @@ export class MyClass implements Eventful<MyClassEvents>
   }
 }
 ```
+
+### Typed events on a plain object
+
+`eventful` infers the type of the object it enhances, but it cannot infer your
+event map: the map appears only in the return type, so there is no argument to
+infer it from. Naming it explicitly means naming the object type too, because
+TypeScript stops inferring type arguments as soon as any are written by hand:
+
+```ts
+eventful<CartEvents>(cart);
+// error TS2345: Argument of type 'Cart' is not assignable
+//               to parameter of type 'CartEvents'.
+```
+
+Annotate the variable instead. `typeof` names the object without restating its
+shape, and the annotation says exactly what `eventful` added:
+
+```ts
+import {
+  type Eventful,
+  eventful
+} from 'asljs-eventful';
+
+type CartEvents = { checkout: [total: number]; };
+
+const raw = { items: 2 };
+
+const cart: typeof raw & Eventful<CartEvents> = eventful(raw);
+
+cart.on(
+  'checkout',
+  total => total.toFixed(2)
+); // total is a number
+
+cart.items; // still a number
+```
+
+Both halves are checked. An unknown event name, a listener whose arguments do
+not match the map, and a property the object does not have are all errors.
+
+Note that the type query takes a name, so it is `typeof raw` rather than
+`typeof (raw)`, and the object has to be a variable. For an object written
+inline there is nothing to point `typeof` at, so name it first.
 
 ### Advanced Options
 
