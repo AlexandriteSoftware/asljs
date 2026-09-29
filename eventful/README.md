@@ -433,6 +433,10 @@ re-subscribed without detaching.
 The snapshot holds every listener, and so everything those closures hold. Read
 it and drop it; keeping it alive keeps them alive.
 
+For two worked recipes built on this and on the global event stream, an
+in-flight guard and a snapshot inspector, see
+[docs/leak-detection.md](docs/leak-detection.md).
+
 ### emit(event, ...args)
 
 Emits the specified event, invoking all registered listeners with the provided
