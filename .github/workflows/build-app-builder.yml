@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'app-builder/**'
+      - 'apps/app-builder/**'
 
 concurrency:
   group: build-app-builder
@@ -32,12 +32,12 @@ jobs:
         run: npm ci
 
       - name: Build app builder
-        run: cd app-builder && npm run build
+        run: cd apps/app-builder && npm run build
 
       - name: Publish pages branch
         run: |
           publish_dir="$(mktemp -d)"
-          cp -R app-builder/dist/. "$publish_dir"
+          cp -R apps/app-builder/dist/. "$publish_dir"
           cd "$publish_dir"
           touch .nojekyll
           git init

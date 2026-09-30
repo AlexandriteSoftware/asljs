@@ -1,0 +1,27 @@
+{
+  "name": "asljs-dash",
+  "version": "0.1.0",
+  "description": "Personal, agent-fed performance dashboard — Node server, SQLite store, static page.",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
+    "format:js": "dprint fmt --config ../../dprint.json \"*.js\" \"renderers/*.js\"",
+    "format:md": "dprint fmt --config ../../dprint.md.json \"*.md\" \"docs/*.md\"",
+    "format": "npm run format:json && npm run format:js && npm run format:md",
+    "clean": "project-tools clean",
+    "start": "node server.js --config dash.config.json --config ../../dash.config.json",
+    "runner": "node runner.js --config dash.config.json --config ../../dash.config.json",
+    "once": "node runner.js --once --config dash.config.json --config ../../dash.config.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "all": "npm run clean && npm run format && npm run lint"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "asljs-project-tools": "^0.1.0"
+  }
+}

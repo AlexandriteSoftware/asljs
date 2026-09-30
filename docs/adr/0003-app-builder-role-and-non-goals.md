@@ -37,7 +37,7 @@ together in practice.
 
 ## Consequences
 
-- Internal modules under `app-builder/src/app-builder/*` remain app internals.
+- Internal modules under `apps/app-builder/src/app-builder/*` remain app internals.
 - Changes in `app-builder` do not automatically imply public API changes in the
   publishable libraries.
 - Demo-specific shortcuts or AI flows should stay in `app-builder`, not leak

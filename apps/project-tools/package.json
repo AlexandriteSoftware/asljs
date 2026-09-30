@@ -1,0 +1,31 @@
+{
+  "name": "asljs-project-tools",
+  "version": "0.1.0",
+  "description": "Repository maintenance commands for ASLJS projects.",
+  "private": true,
+  "bin": {
+    "project-tools": "bin/project-tools.js"
+  },
+  "type": "module",
+  "scripts": {
+    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
+    "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "sfmt format \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "clean": "project-tools clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
+    "prepare": "npm run build:dist",
+    "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run build && npm run test"
+  },
+  "dependencies": {
+    "pkg-types": "^2.3.1"
+  },
+  "devDependencies": {
+    "globals": "^17.7.0"
+  }
+}

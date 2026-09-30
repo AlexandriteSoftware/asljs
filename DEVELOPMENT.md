@@ -16,6 +16,21 @@ npm i
 The repo is an npm workspace monorepo. Published libraries are validated and
 released independently.
 
+## Layout
+
+Every workspace package sits under one of two folders:
+
+- `libs/` — the libraries a consumer installs: `components`, `dali`,
+  `data-binding`, `eventful`, `logging`, `machine`, `money`, `observable` and
+  `tmpdir`. None of them has a `bin`.
+- `apps/` — the tools and applications: `app-builder`, `cog`, `dash`, `kb`,
+  `part`, `project-tools` and `sfmt`. Each is a command or an application, and
+  `dash` and `app-builder` are private to the repository.
+
+The folder is a grouping, not a boundary: a package is still addressed by its
+workspace name, so every `npm -w asljs-<name>` command is the same wherever the
+package lives.
+
 ## Workspaces
 
 Use the workspace map from `README.md`.
@@ -103,8 +118,8 @@ npm -w asljs-dash run format
 second process and runs the agents in `cronfile` on schedule. `once` runs every
 agent immediately, which is how a newly added card gets its first sample.
 
-The SQLite store, `dash/dash.sqlite`, is created on first start and ignored by
-git.
+The SQLite store, `apps/dash/dash.sqlite`, is created on first start and ignored
+by git.
 
 ## Documentation Update Rules
 
@@ -160,7 +175,7 @@ Important generated or published folders:
 - workspace `build/` folders are build output, for testing and validation
 - workspace `dist/` folders are distributable output
 
-`app-builder` builds into `app-builder/dist/`. The deployment workflow then
+`app-builder` builds into `apps/app-builder/dist/`. The deployment workflow then
 force-pushes the contents of that folder to the `pages` branch root.
 
 Useful commands:

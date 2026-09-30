@@ -6,7 +6,7 @@
   "counters": {
     "asljs.git": {
       "schedule": "*/2 * * * *",
-      "command": "pwsh -NoProfile -File dash/agents/git.ps1",
+      "command": "pwsh -NoProfile -File apps/dash/agents/git.ps1",
       "samples": "database, 30*24h, 5k, 5Mb"
     }
   },

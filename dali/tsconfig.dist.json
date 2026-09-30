@@ -1,6 +1,0 @@
-{
-  "extends": "../tsconfig.dist.json",
-  "compilerOptions": {
-    "lib": ["ES2025", "DOM"]
-  }
-}

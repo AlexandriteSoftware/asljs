@@ -290,5 +290,8 @@ When suggesting or writing tests:
 ## Constraints
 
 - Do NOT reference removed or irrelevant components.
-- Always use **real repository paths and links** when possible.
+- Always use **real repository paths and links** when possible. Libraries live
+  under `libs/`, tools and applications under `apps/`.
+- Resolve a path from inside a package relative to that package, or by walking
+  up to the workspace root. Do not count directories from the repository root.
 - Do NOT imagine missing parts of the system.

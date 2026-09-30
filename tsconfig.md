@@ -111,7 +111,7 @@ Neither folder is hand-edited.
   `tsconfig.json` that extends nothing, sets `noEmit: true`, `target: ES2025`,
   `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
   `types: ["vite/client", "node"]`. It is a browser app: `tsc` only typechecks
-  it, and `vite build` produces `app-builder/dist/`.
+  it, and `vite build` produces `apps/app-builder/dist/`.
 
 ### Compiler options
 
@@ -147,8 +147,8 @@ problem, because they declare `lib` explicitly.
   redirects module resolution, so a cross-package import resolves exactly as
   node would resolve it under `NodeNext`.
 - A workspace imports a sibling by its published package name, not by relative
-  path. `data-binding/src/bind-data-model.ts` imports `asljs-observable`; npm
-  links `node_modules/asljs-observable` to the `observable` folder; and that
+  path. `libs/data-binding/src/bind-data-model.ts` imports `asljs-observable`;
+  npm links `node_modules/asljs-observable` to the `observable` folder; and that
   package points `exports["."].types` at `./dist/index.d.ts`. The dependent
   therefore typechecks against the sibling built `dist/*.d.ts`, never against
   its `src`.
