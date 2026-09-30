@@ -1,4 +1,6 @@
-# The `get` trap on arrays has not been measured
+# observable-array-get-trap-unmeasured
+
+The `get` trap on arrays has not been measured.
 
 Package: `observable`. Moved from the root `TODO.md`.
 

@@ -1,4 +1,6 @@
-# Support for entity stereotypes
+# part-entity-stereotypes
+
+Support for entity stereotypes.
 
 Package: `part`. Moved from `part/TODO.md`, where it read "support for entity
 stereotypes: links, nodes, containers?".

@@ -1,4 +1,6 @@
-# Redesign the README as a list of components
+# components-readme-as-component-list
+
+Redesign the README as a list of components.
 
 Package: `components`. Moved from `components/TODO.md`, where it read "redesign
 readme - list of components".

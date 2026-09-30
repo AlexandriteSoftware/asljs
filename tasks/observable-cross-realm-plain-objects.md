@@ -1,4 +1,6 @@
-# Cross-realm plain objects are refused
+# observable-cross-realm-plain-objects
+
+Cross-realm plain objects are refused.
 
 Package: `observable`. Moved from the root `TODO.md`.
 

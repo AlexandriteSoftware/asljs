@@ -1,4 +1,6 @@
-# `tracer.ts` ships in `dist/`
+# observable-tracer-ships-in-dist
+
+`tracer.ts` ships in `dist/`.
 
 Package: `observable`. Moved from the root `TODO.md`.
 

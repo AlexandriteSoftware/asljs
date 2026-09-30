@@ -1,4 +1,6 @@
-# Getters run more than once per change
+# observable-getters-run-twice
+
+Getters run more than once per change.
 
 Package: `observable`. Moved from the root `TODO.md`.
 

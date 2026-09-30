@@ -1,4 +1,6 @@
-# No automated tests
+# dash-no-automated-tests
+
+No automated tests.
 
 Package: `dash`. Moved from the root `TODO.md`, and rewritten for the code as it
 now stands.

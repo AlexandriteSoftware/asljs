@@ -1,4 +1,6 @@
-# Better support for diagrams
+# part-better-diagram-support
+
+Better support for diagrams.
 
 Package: `part`. Moved from `part/TODO.md`.
 

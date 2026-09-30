@@ -1,4 +1,6 @@
-# A refused member's type is `never`
+# observable-refused-member-type
+
+A refused member's type is `never`.
 
 Package: `observable`. Moved from the root `TODO.md`.
 

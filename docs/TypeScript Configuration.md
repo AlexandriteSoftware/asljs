@@ -1,4 +1,4 @@
-# tsconfig
+# TypeScript Configuration
 
 Overview of how TypeScript is configured across ASLJS.
 
@@ -12,9 +12,12 @@ three thin configs that extend them and declare only their deviations.
 
 The root has two base configs:
 
-- `tsconfig.dist.json` - the base for publishable output.
-- `tsconfig.build.json` - extends `tsconfig.dist.json` and retargets it for
+- [tsconfig.dist.json][TSD] - the base for publishable output.
+- [tsconfig.build.json][TSB] - extends `tsconfig.dist.json` and retargets it for
   local build and test output.
+
+[TSD]: ../tsconfig.dist.json
+[TSB]: ../tsconfig.build.json
 
 ### Paths come from the bases
 

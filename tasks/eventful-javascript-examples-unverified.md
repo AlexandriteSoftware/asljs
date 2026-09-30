@@ -1,4 +1,6 @@
-# JavaScript examples in `docs` are not verified
+# eventful-javascript-examples-unverified
+
+JavaScript examples in `docs` are not verified.
 
 Package: `eventful`. Moved from the root `TODO.md`.
 

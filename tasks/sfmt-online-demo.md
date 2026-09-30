@@ -1,4 +1,6 @@
-# Add an online demo
+# sfmt-online-demo
+
+Add an online demo.
 
 Package: `sfmt`. Moved from `sfmt/TODO.md`, where it read "Add online demo".
 

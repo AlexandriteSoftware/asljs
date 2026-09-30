@@ -1,15 +1,15 @@
 # AI Chat Integration Guide
 
-This guide explains how to add an `asljs-ai-chat` component to a page,
-configure it with an OpenAI transport, and optionally prompt the user for
-their API key using `asljs-ai-chat-key`.
+This guide explains how to add an `asljs-ai-chat` component to a page, configure
+it with an OpenAI transport, and optionally prompt the user for their API key
+using `asljs-ai-chat-key`.
 
 ## Overview
 
 - `asljs-ai-chat` — the chat UI component
 - `OpenAiTransport` — sends requests to the OpenAI Responses API
-- `asljs-ai-chat-key` — a small form component that collects an API key from
-  the user
+- `asljs-ai-chat-key` — a small form component that collects an API key from the
+  user
 
 All of these are exported from `asljs-components`.
 
@@ -31,7 +31,9 @@ Importing `asljs-components` registers all custom elements, including
 Create an `OpenAiTransport` with the API key and set it through `options`:
 
 ```ts
-import { OpenAiTransport } from 'asljs-components';
+import {
+  OpenAiTransport
+} from 'asljs-components';
 
 const chat = document.getElementById('chat');
 
@@ -39,25 +41,25 @@ chat.options = {
   transport: new OpenAiTransport('sk-…'),
   provider: {
     getOpenAiApiKey: async () => '',
-    getChatModel: async () => 'gpt-4o',
+    getChatModel: async () => 'gpt-4o'
   },
   buildRequestInput: ({ messages }) => [
     { role: 'system', content: 'You are a helpful assistant.' },
-    ...messages.read().map(m => ({ role: m.role, content: m.content })),
+    ...messages.read().map(m => ({ role: m.role, content: m.content }))
   ],
-  getRequestContext: () => ({}),
+  getRequestContext: () => ({})
 };
 ```
 
-When `options.transport` is provided, the component uses it for all requests
-and does not call `provider.getOpenAiApiKey`. The `provider` is still used
-for `getChatModel` and optionally `getInitialToolStepLimit`.
+When `options.transport` is provided, the component uses it for all requests and
+does not call `provider.getOpenAiApiKey`. The `provider` is still used for
+`getChatModel` and optionally `getInitialToolStepLimit`.
 
 ## Step 3 (optional): Ask the user for their API key
 
 Use `asljs-ai-chat-key` to collect the API key from the user. Show it on the
-page when no key is available, then replace it with the configured chat once
-the user submits their key.
+page when no key is available, then replace it with the configured chat once the
+user submits their key.
 
 ### HTML
 
@@ -75,12 +77,15 @@ the user submits their key.
 
 ```ts
 import 'asljs-components';
-import { OpenAiTransport } from 'asljs-components';
+import {
+  OpenAiTransport
+} from 'asljs-components';
 
 const chatArea = document.getElementById('chat-area');
 const keyPrompt = document.getElementById('key-prompt');
 
-keyPrompt.addEventListener('key-submit', (event) => {
+keyPrompt.addEventListener('key-submit', event =>
+{
   const { key } = event.detail;
 
   // Remove the key prompt
@@ -92,13 +97,13 @@ keyPrompt.addEventListener('key-submit', (event) => {
     transport: new OpenAiTransport(key),
     provider: {
       getOpenAiApiKey: async () => '',
-      getChatModel: async () => 'gpt-4o',
+      getChatModel: async () => 'gpt-4o'
     },
     buildRequestInput: ({ messages }) => [
       { role: 'system', content: 'You are a helpful assistant.' },
-      ...messages.read().map(m => ({ role: m.role, content: m.content })),
+      ...messages.read().map(m => ({ role: m.role, content: m.content }))
     ],
-    getRequestContext: () => ({}),
+    getRequestContext: () => ({})
   };
 
   chatArea.appendChild(chat);
@@ -107,29 +112,33 @@ keyPrompt.addEventListener('key-submit', (event) => {
 
 ## Full example: stored key with fallback to user prompt
 
-This pattern loads a persisted key and shows the key prompt only when no key
-is available.
+This pattern loads a persisted key and shows the key prompt only when no key is
+available.
 
 ```ts
 import 'asljs-components';
-import { OpenAiTransport } from 'asljs-components';
+import {
+  OpenAiTransport
+} from 'asljs-components';
 
-function buildChatOptions(apiKey) {
+function buildChatOptions(apiKey)
+{
   return {
     transport: new OpenAiTransport(apiKey),
     provider: {
       getOpenAiApiKey: async () => '',
-      getChatModel: async () => 'gpt-4o',
+      getChatModel: async () => 'gpt-4o'
     },
     buildRequestInput: ({ messages }) => [
       { role: 'system', content: 'You are a helpful assistant.' },
-      ...messages.read().map(m => ({ role: m.role, content: m.content })),
+      ...messages.read().map(m => ({ role: m.role, content: m.content }))
     ],
-    getRequestContext: () => ({}),
+    getRequestContext: () => ({})
   };
 }
 
-async function mountChat(container) {
+async function mountChat(container)
+{
   const storedKey = localStorage.getItem('openai-api-key') ?? '';
 
   if (storedKey !== '') {
@@ -144,7 +153,8 @@ async function mountChat(container) {
   const keyPrompt = document.createElement('asljs-ai-chat-key');
   keyPrompt.label = 'Enter your OpenAI API key to start chatting';
 
-  keyPrompt.addEventListener('key-submit', (event) => {
+  keyPrompt.addEventListener('key-submit', event =>
+  {
     const { key } = event.detail;
     localStorage.setItem('openai-api-key', key);
 
@@ -161,18 +171,18 @@ mountChat(document.getElementById('chat-container'));
 
 ## `asljs-ai-chat-key` properties
 
-| Property      | Type    | Default                         | Description                             |
-| ------------- | ------- | ------------------------------- | --------------------------------------- |
-| `label`       | string  | `'OpenAI API Key'`              | Label shown above the input             |
-| `placeholder` | string  | `'sk-…'`                       | Placeholder text for the input          |
-| `submitLabel` | string  | `'Save key'`                    | Text on the submit button               |
-| `disabled`    | boolean | `false`                         | Disables the input and button           |
+| Property      | Type    | Default            | Description                    |
+| ------------- | ------- | ------------------ | ------------------------------ |
+| `label`       | string  | `'OpenAI API Key'` | Label shown above the input    |
+| `placeholder` | string  | `'sk-…'`           | Placeholder text for the input |
+| `submitLabel` | string  | `'Save key'`       | Text on the submit button      |
+| `disabled`    | boolean | `false`            | Disables the input and button  |
 
 ## `asljs-ai-chat-key` events
 
-| Event        | Detail type                | Description                                   |
-| ------------ | -------------------------- | --------------------------------------------- |
-| `key-submit` | `{ key: string }`          | Fired when user submits a non-empty API key   |
+| Event        | Detail type       | Description                                 |
+| ------------ | ----------------- | ------------------------------------------- |
+| `key-submit` | `{ key: string }` | Fired when user submits a non-empty API key |
 
 ## `OpenAiTransport`
 
@@ -180,7 +190,9 @@ mountChat(document.getElementById('chat-container'));
 (`https://api.openai.com/v1/responses`).
 
 ```ts
-import { OpenAiTransport } from 'asljs-components';
+import {
+  OpenAiTransport
+} from 'asljs-components';
 
 const transport = new OpenAiTransport('sk-…');
 ```

@@ -1,4 +1,6 @@
-# Different diagram types
+# part-diagram-types
+
+Different diagram types.
 
 Package: `part`. Moved from `part/TODO.md`.
 

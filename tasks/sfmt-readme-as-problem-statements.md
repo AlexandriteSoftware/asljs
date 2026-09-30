@@ -1,4 +1,6 @@
-# Redesign the README as problem statements and solutions
+# sfmt-readme-as-problem-statements
+
+Redesign the README as problem statements and solutions.
 
 Package: `sfmt`. Moved from `sfmt/TODO.md`, where it read "Redesign as problem
 statements and solutions, rather than as a list of features".

@@ -1,4 +1,6 @@
-# Online analytics tool
+# part-online-analytics-tool
+
+Online analytics tool.
 
 Package: `part`. Moved from `part/TODO.md`.
 

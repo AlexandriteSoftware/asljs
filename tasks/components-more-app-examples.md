@@ -1,4 +1,6 @@
-# More app examples
+# components-more-app-examples
+
+More app examples.
 
 Package: `components`. Moved from `components/TODO.md`, where it read "more app
 examples".
