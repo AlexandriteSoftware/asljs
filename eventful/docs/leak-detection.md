@@ -1,5 +1,7 @@
 # Detecting leaked subscriptions
 
+## Purpose
+
 A leaked subscription is invisible from both ends. The subscriber is gone, but
 the emitter still holds its listener, so the subscriber's state stays reachable
 through the emitter's listener map. Nothing fails. Memory grows, every emit does

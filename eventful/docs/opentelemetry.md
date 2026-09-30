@@ -1,5 +1,7 @@
 # Forwarding eventful traces to OpenTelemetry
 
+## Purpose
+
 `eventful` records who sent a message and what caused it. That is enough to
 render a sequence diagram locally, and enough to hand the same information to
 OpenTelemetry when something outside the process needs to consume it.

@@ -23,10 +23,14 @@ const PACKAGE_DIR =
       fileURLToPath(
         import.meta.url)));
 
-const README_FILE_PATH =
-  path.join(
+const DOCUMENT_FILE_PATHS =
+  [ path.join(
     PACKAGE_DIR,
-    'README.md');
+    'README.md'),
+    path.join(
+      PACKAGE_DIR,
+      'docs',
+      'typescript.md') ];
 
 /**
  * The examples import the package by name, which does not resolve from a
@@ -53,9 +57,13 @@ async function readExamples(
   ): Promise<Example[]>
 {
   const markdown =
-    await fs.readFile(
-      README_FILE_PATH,
-      'utf8');
+    (await Promise.all(
+      DOCUMENT_FILE_PATHS.map(
+        filePath =>
+          fs.readFile(
+            filePath,
+            'utf8'))))
+      .join('\n');
 
   return [ ...markdown.matchAll(
     /```ts\r?\n([\s\S]*?)```/g) ]
@@ -112,7 +120,7 @@ function typecheck(
 }
 
 test(
-  `${TEST_SUITE}: every TypeScript example in the README compiles`,
+  `${TEST_SUITE}: every TypeScript example in the README and docs compiles`,
   async (): Promise<void> =>
   {
     const examples =
@@ -120,7 +128,7 @@ test(
 
     assert.ok(
       examples.length >= 5,
-      'the README should carry TypeScript examples');
+      'the README and docs should carry TypeScript examples');
 
     const directory =
       await fs.mkdtemp(
@@ -162,7 +170,7 @@ test(
       assert.equal(
         output.trim(),
         '',
-        'README examples should compile against the built package');
+        'README and docs examples should compile against the built package');
 
       for (const item of written) {
         if (
