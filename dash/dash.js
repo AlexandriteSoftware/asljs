@@ -15,6 +15,7 @@ const state = {
   tab: location.hash.slice(1) || null,
   cards: [], // live cards on the active tab: { card, node, body, render, value }
   values: {},
+  waits: {}, // key -> { state, ms } from /api/next, for the card countdowns
   wakeLock: null
 };
 
@@ -68,14 +69,25 @@ const buildCard = placed =>
 
   const label = document.createElement('span');
   label.className = 'card-label';
-  label.textContent = card.label || card.key || '';
+
+  const title = document.createElement('span');
+  title.className = 'card-title';
+  title.textContent = card.label || card.key || '';
+  label.append(title);
+
+  // The card's own countdown, in the right corner of its label row.
+  const wait = document.createElement('span');
+  wait.className = 'card-next';
+  wait.title = 'time to the next update';
+  label.append(wait);
+
   node.append(label);
 
   const body = document.createElement('div');
   body.className = 'card-body';
   node.append(body);
 
-  return { card, node, body };
+  return { card, node, body, wait };
 };
 
 const fail = (body, message) =>
@@ -144,6 +156,7 @@ const buildTab = () =>
 
   paintTabs();
   refresh(true);
+  refreshWaits();
 };
 
 const paintTabs = () =>
@@ -160,13 +173,79 @@ const paintTabs = () =>
   }
 };
 
+// --- the countdowns --------------------------------------------------------
+
+/** Largest unit that fits: "3h", "12m", "45s". */
+const formatWait = ms =>
+{
+  const seconds = Math.max(0, Math.round(ms / 1000));
+  if (seconds >= 3600) {
+    return `${Math.floor(seconds / 3600)}h`;
+  }
+  if (seconds >= 60) {
+    return `${Math.floor(seconds / 60)}m`;
+  }
+  return `${seconds}s`;
+};
+
+/**
+ * One word for one card, from the key it reads. A key nothing has written since
+ * its scheduled minute reads `due`, and `stale` once it has stayed unwritten;
+ * otherwise it is the time to its counter's next run.
+ */
+const cardWait = wait =>
+{
+  if (!wait) {
+    return { text: '', className: 'card-next' };
+  }
+  if (wait.state === 'stale') {
+    return { text: 'stale', className: 'card-next status-error' };
+  }
+  if (wait.state === 'due') {
+    return { text: 'due', className: 'card-next status-warn' };
+  }
+  return { text: formatWait(wait.ms), className: 'card-next' };
+};
+
+const paintWaits = () =>
+{
+  for (const entry of state.cards) {
+    const wait = cardWait(state.waits[entry.card.key]);
+    entry.wait.textContent = wait.text;
+    entry.wait.className = wait.className;
+  }
+};
+
 // --- polling ---------------------------------------------------------------
+
+/** The keys the active tab's cards read, each once. */
+const tabKeys =
+  () => [...new Set(state.cards.map(entry => entry.card.key).filter(Boolean))];
+
+const refreshWaits = async () =>
+{
+  const keys = tabKeys();
+  if (keys.length === 0) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/next/${keys.map(encodeURIComponent).join(',')}`
+    );
+    if (!response.ok) {
+      throw new Error(`next ${response.status}`);
+    }
+    state.waits = await response.json();
+    paintWaits();
+  } catch (error) {
+    console.error('countdown failed:', error);
+  }
+};
 
 const refresh = async (force = false) =>
 {
-  const keys = [
-    ...new Set(state.cards.map(entry => entry.card.key).filter(Boolean))
-  ];
+  const keys = tabKeys();
   if (keys.length === 0) {
     return;
   }
@@ -261,6 +340,7 @@ const boot = async () =>
   buildTab();
 
   setInterval(refresh, POLL_MS);
+  setInterval(refreshWaits, POLL_MS);
   setInterval(refreshCharts, CHART_POLL_MS);
   requestWakeLock();
 

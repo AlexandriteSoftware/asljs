@@ -1,0 +1,38 @@
+{
+  "project": "asljs",
+  "label": "ASLJS",
+  "db": "dash.sqlite",
+
+  "counters": {
+    "asljs.git": {
+      "schedule": "*/2 * * * *",
+      "command": "pwsh -NoProfile -File dash/agents/git.ps1",
+      "samples": "database, 30*24h, 5k, 5Mb"
+    }
+  },
+
+  "tabs": [
+    {
+      "tab": "asljs",
+      "label": "ASLJS git",
+      "cards": [
+        {
+          "key": "asljs.git",
+          "label": "Working folder",
+          "render": "git",
+          "left": 0,
+          "top": 0,
+          "width": 7,
+          "height": 5
+        },
+        {
+          "key": "asljs.git",
+          "label": "Repository",
+          "render": "status",
+          "width": 7,
+          "height": 5
+        }
+      ]
+    }
+  ]
+}

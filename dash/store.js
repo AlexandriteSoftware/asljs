@@ -1,20 +1,25 @@
+// The sticky put, get and history. Every key belongs to a project, and a project's
+// samples live in that project's database. See docs/concept.md section 5.
+
 import fs from 'node:fs';
 import path from 'node:path';
 import {
   DatabaseSync
 } from 'node:sqlite';
-import * as samples from './samples.js';
+import * as config from './config.js';
 
-const KEY_PATTERN = /^[a-zA-Z0-9_.-]+$/;
+const schema = fs.readFileSync(
+  path.join(import.meta.dirname, 'schema.sql'),
+  'utf8'
+);
 
-const dbPath = process.env.DASH_DB
-  || path.join(import.meta.dirname, 'dash.sqlite');
-const db = new DatabaseSync(dbPath);
+// Size is measured on the data only, as UTF-8 bytes. Keys, timestamps and index
+// overhead are not the user's budget to spend.
+const sizeOf = value => Buffer.byteLength(value, 'utf8');
 
-db.exec('PRAGMA journal_mode = WAL');
-db.exec(fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8'));
+// --- connections -----------------------------------------------------------
 
-const statements = {
+const prepare = db => ({
   newest: db.prepare(
     'SELECT id, ts, seen, value FROM samples WHERE key = ? ORDER BY ts DESC LIMIT 1'
   ),
@@ -35,17 +40,55 @@ const statements = {
   ),
   deleteById: db.prepare('DELETE FROM samples WHERE id = ?'),
   keys: db.prepare('SELECT DISTINCT key FROM samples ORDER BY key')
+});
+
+// One connection per database file, opened on first use. Two projects naming the
+// same file share one connection, so the store is per file, not per project.
+const connections = new Map();
+
+const open = dbPath =>
+{
+  const current = connections.get(dbPath);
+  if (current) {
+    return current;
+  }
+
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  const db = new DatabaseSync(dbPath);
+  db.exec('PRAGMA journal_mode = WAL');
+  db.exec(schema);
+
+  const connection = { db, statements: prepare(db) };
+  connections.set(dbPath, connection);
+  return connection;
 };
 
-const isKey = key => typeof key === 'string' && KEY_PATTERN.test(key);
+/** The statements of the database the key is stored in. */
+const statementsFor = key =>
+{
+  const project = config.projectOf(key);
+  if (!project) {
+    throw new Error(`no project is configured, so ${key} has nowhere to go`);
+  }
+  return open(project.db).statements;
+};
 
-// Size is measured on the data only, as UTF-8 bytes. Keys, timestamps and index
-// overhead are not the user's budget to spend.
-const sizeOf = value => Buffer.byteLength(value, 'utf8');
+/** Every configured database, each opened once. */
+const openAll = () =>
+{
+  const opened = new Map();
+  for (const project of config.projects()) {
+    if (!opened.has(project.db)) {
+      opened.set(project.db, open(project.db).statements);
+    }
+  }
+  return [...opened.values()];
+};
 
 // --- memory store ----------------------------------------------------------
 
-// key -> array of { ts, seen, value, bytes }, newest last.
+// Memory is process-local and the key namespace is global, so one map serves every
+// project: key -> array of { ts, seen, value, bytes }, newest last.
 const memory = new Map();
 
 const memoryRows = key =>
@@ -97,7 +140,7 @@ const trimMemory = (key, policy, now) =>
 // --- database store --------------------------------------------------------
 
 /** Apply retention, count and quota to one database key. Oldest goes first. */
-const trimDatabase = (key, policy, now) =>
+const trimDatabase = (statements, key, policy, now) =>
 {
   statements.expire.run(key, now - policy.retentionMs);
   statements.trimCount.run(key, key, policy.count);
@@ -121,12 +164,12 @@ const trimDatabase = (key, policy, now) =>
 
 /**
  * Store a value. Sticky: an unchanged value bumps `seen` instead of adding a row.
- * Where it lands and how long it survives is the key's samples.json policy.
+ * Where it lands and how long it survives is the key's counter policy.
  * Returns { changed, ts, seen }.
  */
 const put = (key, value, now = Date.now()) =>
 {
-  const policy = samples.policyFor(key);
+  const policy = config.policyFor(key);
 
   if (policy.store === 'memory') {
     const rows = memoryRows(key);
@@ -143,23 +186,24 @@ const put = (key, value, now = Date.now()) =>
     return { changed: true, ts: now, seen: now };
   }
 
+  const statements = statementsFor(key);
   const current = statements.newest.get(key);
 
   if (current && current.value === value) {
     statements.touch.run(now, current.id);
-    trimDatabase(key, policy, now);
+    trimDatabase(statements, key, policy, now);
     return { changed: false, ts: current.ts, seen: now };
   }
 
   statements.insert.run(key, now, now, value);
-  trimDatabase(key, policy, now);
+  trimDatabase(statements, key, policy, now);
 
   return { changed: true, ts: now, seen: now };
 };
 
 const get = (key, now = Date.now()) =>
 {
-  const policy = samples.policyFor(key);
+  const policy = config.policyFor(key);
 
   if (policy.store === 'memory') {
     trimMemory(key, policy, now);
@@ -170,13 +214,14 @@ const get = (key, now = Date.now()) =>
       : null;
   }
 
-  trimDatabase(key, policy, now);
+  const statements = statementsFor(key);
+  trimDatabase(statements, key, policy, now);
   return statements.newest.get(key) ?? null;
 };
 
 const history = (key, { limit = 500, since = 0, now = Date.now() } = {}) =>
 {
-  const policy = samples.policyFor(key);
+  const policy = config.policyFor(key);
 
   if (policy.store === 'memory') {
     trimMemory(key, policy, now);
@@ -187,15 +232,19 @@ const history = (key, { limit = 500, since = 0, now = Date.now() } = {}) =>
       .map(({ ts, seen, value }) => ({ ts, seen, value }));
   }
 
-  trimDatabase(key, policy, now);
+  const statements = statementsFor(key);
+  trimDatabase(statements, key, policy, now);
   return statements.history.all(key, since, limit);
 };
 
+/** Every key any configured database holds, plus the in-memory ones. */
 const keys = () =>
 {
-  const all = new Set(statements.keys.all().map(row => row.key));
-  for (const key of memory.keys()) {
-    all.add(key);
+  const all = new Set(memory.keys());
+  for (const statements of openAll()) {
+    for (const row of statements.keys.all()) {
+      all.add(row.key);
+    }
   }
   return [...all].sort();
 };
@@ -207,25 +256,26 @@ const keys = () =>
 const sweep = (now = Date.now()) =>
 {
   for (const key of [...memory.keys()]) {
-    trimMemory(key, samples.policyFor(key), now);
+    trimMemory(key, config.policyFor(key), now);
   }
-  for (const row of statements.keys.all()) {
-    const policy = samples.policyFor(row.key);
-    if (policy.store === 'database') {
-      trimDatabase(row.key, policy, now);
-    } else {
-      // The key moved to memory since it was last written; its rows are orphans.
-      statements.expire.run(row.key, Number.MAX_SAFE_INTEGER);
+  for (const statements of openAll()) {
+    for (const row of statements.keys.all()) {
+      const policy = config.policyFor(row.key);
+      if (policy.store === 'database') {
+        trimDatabase(statements, row.key, policy, now);
+      } else {
+        // The key moved to memory since it was last written; its rows are orphans.
+        statements.expire.run(row.key, Number.MAX_SAFE_INTEGER);
+      }
     }
   }
 };
 
 export {
-  db,
   get,
   history,
-  isKey,
   keys,
+  openAll,
   put,
   sweep
 };

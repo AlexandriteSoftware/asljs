@@ -1,18 +1,13 @@
-// Per-key sample persistence policy. See docs/concept.md section 5.
+// Sample persistence policy syntax. See docs/concept.md section 5.
 //
-// samples.json holds one line per key:
+// A policy is one line, carried by a counter in its project config:
 //
-//     "ping.gw": "memory, 24h, 1000, 10Mb"
-//                 where,  retention, count, quota
+//     "ping.gw": { "samples": "memory, 24h, 1000, 10Mb" }
+//                             store,  retention, count, quota
 //
 // All four fields are required and must be positive. There is no unlimited option:
-// every key is bounded in time, in record count and in bytes.
-
-import fs from 'node:fs';
-import path from 'node:path';
-
-const configPath = process.env.DASH_SAMPLES
-  || path.join(import.meta.dirname, 'samples.json');
+// every key is bounded in time, in record count and in bytes. Which policy applies to
+// which key is config.js's business; this module only reads the syntax.
 
 const DEFAULT_POLICY = 'database, 90*24h, 100k, 100Mb';
 
@@ -82,97 +77,8 @@ const parsePolicy = text =>
   };
 };
 
-// --- config ----------------------------------------------------------------
-
-const readFile = () =>
-{
-  try {
-    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return {};
-    }
-    console.error(`samples.json: ${error.message}`);
-    return {};
-  }
-};
-
-const compile = raw =>
-{
-  const defaults = raw.default ?? DEFAULT_POLICY;
-  let fallback;
-
-  try {
-    fallback = parsePolicy(defaults);
-  } catch (error) {
-    console.error(`samples.json default: ${error.message}`);
-    fallback = parsePolicy(DEFAULT_POLICY);
-  }
-
-  const keys = new Map();
-  for (const [key, text] of Object.entries(raw.keys ?? {})) {
-    try {
-      keys.set(key, parsePolicy(text));
-    } catch (error) {
-      console.error(`samples.json ${key}: ${error.message}`);
-    }
-  }
-
-  return { fallback, keys };
-};
-
-// Loaded once at startup, then reloaded when samples.json changes on disk.
-let current = compile(readFile());
-
-const load = () =>
-{
-  current = compile(readFile());
-  return current;
-};
-
-// Editors replace the file rather than write into it, so watch the directory and
-// filter by name; a rename still fires here where a file watch would go deaf.
-let watcher = null;
-let pending = null;
-
-const watch = () =>
-{
-  if (watcher) {
-    return watcher;
-  }
-
-  try {
-    watcher = fs.watch(path.dirname(configPath), (event, filename) =>
-    {
-      if (filename && filename !== path.basename(configPath)) {
-        return;
-      }
-      // Saves arrive as a burst of events; settle before re-reading.
-      clearTimeout(pending);
-      pending = setTimeout(() =>
-      {
-        load();
-        console.log(`samples.json reloaded (${current.keys.size} keys)`);
-      }, 100);
-      pending.unref?.();
-    });
-    watcher.unref?.();
-  } catch (error) {
-    console.error(`samples.json watch failed: ${error.message}`);
-  }
-
-  return watcher;
-};
-
-/** The policy in force for a key: its own entry, or the configured default. */
-const policyFor = key => current.keys.get(key) ?? current.fallback;
-
 export {
-  configPath,
   DEFAULT_POLICY,
-  load,
   parseAmount,
-  parsePolicy,
-  policyFor,
-  watch
+  parsePolicy
 };

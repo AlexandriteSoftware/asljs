@@ -11,9 +11,9 @@
     "format:md": "dprint fmt --config ../dprint.md.json \"*.md\" \"docs/*.md\"",
     "format": "npm run format:json && npm run format:js && npm run format:md",
     "clean": "project-tools clean",
-    "start": "node server.js",
-    "runner": "node runner.js",
-    "once": "node runner.js --once",
+    "start": "node server.js --config dash.config.json --config ../dash.config.json",
+    "runner": "node runner.js --config dash.config.json --config ../dash.config.json",
+    "once": "node runner.js --once --config dash.config.json --config ../dash.config.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "all": "npm run clean && npm run format && npm run lint"

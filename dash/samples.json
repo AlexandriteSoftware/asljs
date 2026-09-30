@@ -1,9 +1,0 @@
-{
-  "default": "database, 90*24h, 100k, 100Mb",
-
-  "keys": {
-    "ping.gw": "database, 30*24h, 50k, 20Mb",
-    "top.cpu": "memory, 1h, 200, 2Mb",
-    "notes": "database, 365*24h, 1k, 1Mb"
-  }
-}

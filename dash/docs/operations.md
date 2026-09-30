@@ -3,23 +3,34 @@
 ## Purpose
 
 How to start, feed, read and back up a running `asljs-dash` instance: the two
-processes, the environment variables that move its files, and the complete HTTP
-surface.
+processes, the configs they load, the environment variables that move their
+files, and the complete HTTP surface.
 
 ## The two processes
 
 `dash` runs as two independent Node processes. Either can be restarted alone.
 
-- The **server** (`server.js`) owns the store and serves the page.
-- The **runner** (`runner.js`) owns the schedule: it reads `cronfile`, runs
-  agents, and puts their stdout to the server over HTTP.
+- The **server** (`server.js`) owns the stores and serves the page.
+- The **runner** (`runner.js`) owns the schedule: it runs each counter's command
+  and puts its stdout to the server over HTTP.
+
+Both read the same project configs, so give both the same `--config` list.
 
 From the repository root:
 
 ```powershell
 npm -w asljs-dash run start     # server, http://localhost:3000
 npm -w asljs-dash run runner    # runner, in a second terminal
-npm -w asljs-dash run once      # run every agent now, then exit
+npm -w asljs-dash run once      # run every counter now, then exit
+```
+
+Those scripts pass this repository's two configs — `dash/dash.config.json` for
+the machine and `dash.config.json` at the repository root for the ASLJS project.
+Run either process by hand to load a different set:
+
+```powershell
+node server.js --config dash.config.json --config ../../work/dash.config.json
+node runner.js --config dash.config.json --config ../../work/dash.config.json
 ```
 
 `once` is the quick way to fill a card you have just added, without waiting for
@@ -28,19 +39,31 @@ its schedule.
 The server has no dependency on the runner. Values can arrive from anything that
 can issue a `PUT`, and the runner is only the scheduled case of that.
 
+## Which configs are loaded
+
+Both processes resolve them the same way, first match winning:
+
+- every `--config <path>` (or `-c <path>`) on the command line, in order;
+- `DASH_CONFIG`, a list of paths separated by `;` on Windows and `:` elsewhere;
+- `dash.config.json` in the package folder.
+
+The first config loaded is the default project: it owns the first tab the page
+shows, and any key no config declares. A config that does not parse is reported
+on stderr and skipped, and the others still load.
+
 ## Environment
 
 - `PORT` — server port. Default `3000`.
-- `DASH_DB` — path to the SQLite file. Default `dash.sqlite` in the package
-  folder.
-- `DASH_SAMPLES` — path to `samples.json`. Default the package folder.
-- `DASH_CRONFILE` — path to `cronfile`, read by the runner. Default the package
-  folder.
+- `DASH_CONFIG` — path list of project configs, used when no `--config` is
+  given.
+- `DASH_DB` — the database a project without a `db` of its own uses. Default
+  `dash.sqlite` beside the config.
 - `DASH_URL` — base URL the runner puts to. Default `http://localhost:$PORT`.
 - `DASH_TIMEOUT` — per-agent timeout in milliseconds. Default `60000`.
 
-Agents are spawned with the package folder as their working directory, so a
-`cronfile` command may name `agents/disk.c.ps1` relatively.
+A counter's command is spawned with its own config file's directory as the
+working directory, so `agents/disk.c.ps1` in `dash/dash.config.json` is
+`dash/agents/disk.c.ps1`.
 
 ## HTTP API
 
@@ -63,8 +86,13 @@ Reading:
   5000.
 - `GET /api/meta/:keys` — the same keys with their `ts` and `seen`, for
   freshness and change detection.
-- `GET /api/keys` — every key the store holds.
-- `GET /api/dashboards` — the parsed `dashboards.json`, re-read per request.
+- `GET /api/next/:keys` — per key, `{ state, ms }`: `wait` with the milliseconds
+  until its counter next runs, or `due` / `stale` with the milliseconds it is
+  overdue by. `null` for a key nothing is scheduled to write. The card
+  countdowns poll this every five seconds.
+- `GET /api/keys` — every key the stores hold.
+- `GET /api/dashboards` — `{ projects, tabs, errors }` merged from every loaded
+  config. Database paths and counter commands are not included.
 
 A key must match `[a-zA-Z0-9_.-]+`. Anything else is rejected with `400`, and
 that is the only validation the server does: malformed JSON in a value is a
@@ -75,8 +103,8 @@ Assets:
 - `GET /` — the page.
 - `GET /dash.js`, `GET /layout.js`, `GET /renderers/*.js` — the page's modules.
 
-Nothing else is on the wire. The store, `agents/`, `cronfile`, `samples.json`
-and `dashboards.json` are not served as static files.
+Nothing else is on the wire. The stores, `agents/` and the configs are not
+served as static files.
 
 ## Feeding it from the shell
 
@@ -103,11 +131,12 @@ still current.
 
 ## Backup and restart
 
-- Values live in `dash.sqlite` and survive a restart. Keys whose policy says
-  `memory` do not.
-- Back up by copying `dash.sqlite`. The `-wal` and `-shm` sidecars are SQLite's
-  own; copy them too if the server is running.
-- The file is ignored by git, as is every `dash.sqlite-*` sidecar.
+- Values live in their project's `dash.sqlite` and survive a restart. Keys whose
+  policy says `memory` do not.
+- Back up by copying each project's database; `node server.js --config ...`
+  prints the path of every one it opened. The `-wal` and `-shm` sidecars are
+  SQLite's own; copy them too if the server is running.
+- Those files are ignored by git, as is every `dash.sqlite-*` sidecar.
 - Logs go to stdout. The runner logs each run's key, exit code, duration, and
   whether the value changed.
 
@@ -118,9 +147,17 @@ still current.
 - An agent writing to stderr but exiting zero still records its stdout; stderr
   is logged and never enters the value.
 - An agent that outruns `DASH_TIMEOUT` is killed and treated as a failure.
-- `samples.json` is reloaded when it changes on disk. A malformed entry is
-  reported on stderr and the previous policy for that key stays in force.
-- A malformed `dashboards.json` fails the `/api/dashboards` request with `500`
-  and the message; the server keeps running.
+- Configs are reloaded when they change on disk, so the server picks up a new
+  card or policy without a restart. The runner reads them once, so restart it
+  after changing a schedule or a command.
+- A malformed entry is reported on stderr and skipped; the rest of the file
+  still loads, and `/api/dashboards` reports the messages in `errors`.
+- A key declared as a counter in two configs is a config error: the first config
+  keeps it, the second is ignored. The same holds for project and tab names.
+- Moving a counter to another project points it at that project's database; the
+  samples it already has stay in the old one.
+- A card reads `stale` when the runner is not running, when its agent keeps
+  failing, or when the server has just started and its counter has not reported
+  yet. It clears on the first successful put.
 - Retention is swept once a minute as well as on write, so a key nobody writes
   to still ages out.

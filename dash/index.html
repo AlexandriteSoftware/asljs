@@ -160,15 +160,33 @@
         }
 
         .card-label {
+            display: flex;
             flex: none;
+            align-items: baseline;
+            gap: 0.5rem;
             margin-bottom: 0.45rem;
             color: var(--muted);
             font-size: 0.625rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
+        }
+
+        .card-title {
+            flex: 1;
+            min-width: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* Time to this card's next update, in the card's right corner. The status
+           classes below colour it when a counter is due or has stopped reporting. */
+        .card-next {
+            flex: none;
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         .card-body {
@@ -285,6 +303,32 @@
             font-weight: 400;
             text-transform: uppercase;
             letter-spacing: 0.06em;
+        }
+
+        /* --- git working folder --- */
+
+        .git-head {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            margin: 0;
+        }
+
+        .git-ref {
+            min-width: 0;
+            color: var(--accent);
+            font-size: 1rem;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .git-sha {
+            flex: none;
+            color: var(--muted);
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: 0.72rem;
         }
 
         /* --- chart --- */

@@ -5,9 +5,10 @@
 
 ## Overview
 
-A personal performance dashboard for one machine. Scheduled agents collect
-values, a small Express server stores them in SQLite, and a static page renders
-them as cards.
+A personal performance dashboard for one machine and the projects on it.
+Scheduled agents collect values, a small Express server stores them in SQLite,
+and a static page renders them as cards. Each project is one config file, and
+dash shows the tabs of every project it is given.
 
 ```powershell
 npm -w asljs-dash run start     # the web server, http://localhost:3000
@@ -27,6 +28,8 @@ curl.exe -X PUT http://localhost:3000/api/put/status `
 One wall-display page answering "how are my things doing right now, and is it
 getting better or worse", for a single user on a trusted network.
 
+- **One file per project.** A config names the project's database, its counters
+  and its tabs. `--config` is repeatable, so several projects share one page.
 - **Anything that prints.** An agent is any script or executable that writes a
   value to stdout and exits zero. PowerShell, Node, Python, a bare `.exe`.
 - **Text over the wire.** Every endpoint is curl-friendly, so a shell one-liner
@@ -49,37 +52,58 @@ Private to this repository, not published to npm. From the repository root:
 npm i
 ```
 
-Requires Node with `node:sqlite` (Node 22 or later). The store is created on
-first start from `schema.sql`.
+Requires Node with `node:sqlite` (Node 22 or later). Each project's store is
+created on first start from `schema.sql`.
 
 ## Usage
 
-Adding a monitor is three files and a reload:
+A project is one JSON file: where its samples go, what feeds them, and what the
+page shows.
 
-1. An agent in `agents/`, named after its key, printing the value to stdout:
+```json
+{
+  "project": "asljs",
+  "db": "dash.sqlite",
 
-   ```powershell
-   # agents/disk.c.ps1
-   $drive = Get-PSDrive -Name C
-   [pscustomobject]@{ freePercent = [math]::Round($drive.Free / ($drive.Used + $drive.Free) * 100, 1) } |
-       ConvertTo-Json -Compress
-   ```
+  "counters": {
+    "asljs.git": {
+      "schedule": "*/2 * * * *",
+      "command": "pwsh -NoProfile -File dash/agents/git.ps1"
+    }
+  },
 
-2. A line in `cronfile` giving the schedule, the key and the command:
+  "tabs": [
+    {
+      "tab": "asljs",
+      "label": "ASLJS git",
+      "cards": [
+        { "key": "asljs.git", "label": "Working folder", "render": "git",
+          "width": 7, "height": 5 }
+      ]
+    }
+  ]
+}
+```
 
-   ```
-   */5 * * * *   disk.c   pwsh -NoProfile -File agents/disk.c.ps1
-   ```
+A counter's command is anything that prints a value and exits zero:
 
-3. A card in the right tab of `dashboards.json`:
+```powershell
+# agents/disk.c.ps1
+$drive = Get-PSDrive -Name C
+[pscustomobject]@{ freePercent = [math]::Round($drive.Free / ($drive.Used + $drive.Free) * 100, 1) } |
+    ConvertTo-Json -Compress
+```
 
-   ```json
-   { "key": "disk.c", "label": "Disk C: free", "render": "value",
-     "params": { "field": "freePercent", "unit": "%" } }
-   ```
+Point both processes at as many configs as you like:
 
-Then restart the runner and reload the page. `npm -w asljs-dash run once` runs
-every agent immediately, which is the quick way to fill a new card.
+```powershell
+node server.js --config dash.config.json --config ../dash.config.json
+node runner.js --config dash.config.json --config ../dash.config.json
+```
+
+Adding a card is an edit and a page reload. Adding a monitor is an agent, a
+counter and a card, then a runner restart; `npm -w asljs-dash run once` runs
+every counter immediately, which is the quick way to fill a new card.
 
 Read values back the same way they went in:
 
@@ -93,8 +117,8 @@ curl.exe "http://localhost:3000/api/history/disk.c?limit=50"
 
 - [Running it](docs/operations.md) — the two processes, environment variables,
   the HTTP API, and backup.
-- [Adding a monitor](docs/monitors.md) — agents, schedules, cards, renderers,
-  and how long samples are kept.
+- [Adding a monitor](docs/monitors.md) — agents, counters, cards, renderers, how
+  long samples are kept, and adding a project.
 - [Concept](docs/concept.md) — the design: layers, storage model, value
   conventions, and the decisions worth not revisiting.
 

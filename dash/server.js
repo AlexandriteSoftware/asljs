@@ -1,28 +1,17 @@
 import express from 'express';
-import fs from 'node:fs';
 import path from 'node:path';
-import * as samples from './samples.js';
+import * as config from './config.js';
 import * as store from './store.js';
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
-const configPath = path.join(import.meta.dirname, 'dashboards.json');
 
 app.use(express.text({ type: '*/*', limit: '4mb' }));
-
-const readConfig = () =>
-{
-  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  config.tabs = Array.isArray(config.tabs)
-    ? config.tabs
-    : [];
-  return config;
-};
 
 const handlePut = (req, res) =>
 {
   const key = req.params.key;
-  if (!store.isKey(key)) {
+  if (!config.isKey(key)) {
     return res.status(400).type('text/plain').send('invalid key');
   }
 
@@ -42,7 +31,7 @@ app.put('/api/set/:key', handlePut);
 
 app.get('/api/get/:keys', (req, res) =>
 {
-  const keys = req.params.keys.split(',').filter(Boolean).filter(store.isKey);
+  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
 
   if (keys.length === 1) {
     const sample = store.get(keys[0]);
@@ -70,14 +59,14 @@ app.get('/api/get/:keys', (req, res) =>
 // Companion of /api/get: the same keys with their ts/seen, for freshness and change detection.
 app.get('/api/meta/:keys', (req, res) =>
 {
-  const keys = req.params.keys.split(',').filter(Boolean).filter(store.isKey);
+  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
   res.json(Object.fromEntries(keys.map(key => [key, store.get(key)])));
 });
 
 app.get('/api/history/:key', (req, res) =>
 {
   const key = req.params.key;
-  if (!store.isKey(key)) {
+  if (!config.isKey(key)) {
     return res.status(400).json({ error: 'invalid key' });
   }
 
@@ -87,18 +76,66 @@ app.get('/api/history/:key', (req, res) =>
   }));
 });
 
-app.get('/api/keys', (req, res) => res.json(store.keys()));
+// A scheduled minute that has passed without the key being written is first "due",
+// and "stale" once it has stayed unwritten for longer than this.
+const DUE_MS = 5000;
 
-app.get('/api/dashboards', (req, res) =>
+/**
+ * How the key stands against its schedule: `wait` with the milliseconds left until
+ * its counter next runs, or `due` / `stale` with the milliseconds it is overdue by.
+ * Null for a key nothing is scheduled to write.
+ */
+const waitFor = (key, now) =>
 {
-  try {
-    res.json(readConfig());
-  } catch (error) {
-    res.status(500).json({ error: `dashboards.json: ${error.message}` });
+  const next = config.nextRun(key, now);
+  if (next === null) {
+    return null;
   }
+
+  // Sticky puts bump `seen` whether or not the value changed, so `seen` is when the
+  // counter last reported, which is what "no update" asks about.
+  const last = config.lastRun(key, now);
+  const seen = store.get(key)?.seen ?? 0;
+  const at = now.getTime();
+
+  if (last !== null && seen < last) {
+    const overdue = at - last;
+    return {
+      state: overdue > DUE_MS
+        ? 'stale'
+        : 'due',
+      ms: overdue
+    };
+  }
+
+  return { state: 'wait', ms: Math.max(0, next - at) };
+};
+
+// The countdown in the bar: per key, how long until its counter next writes it.
+app.get('/api/next/:keys', (req, res) =>
+{
+  const now = new Date();
+  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
+  res.json(Object.fromEntries(keys.map(key => [key, waitFor(key, now)])));
 });
 
-// Only the page assets are served. The store, the agents and the configs stay off the wire.
+app.get('/api/keys', (req, res) => res.json(store.keys()));
+
+// Projects and their tabs, so the page does not embed its own config. Database
+// paths and counter commands stay on the server.
+app.get('/api/dashboards', (req, res) =>
+{
+  res.json({
+    projects: config.projects().map(({ project, label }) => ({
+      project,
+      label
+    })),
+    tabs: config.tabs(),
+    errors: config.errors()
+  });
+});
+
+// Only the page assets are served. The stores, the agents and the configs stay off the wire.
 const sendAsset = file => (req, res) =>
   res.sendFile(path.join(import.meta.dirname, file));
 
@@ -112,9 +149,13 @@ app.use(
   })
 );
 
-// Sample policies are read once here and then reloaded whenever samples.json changes.
-samples.load();
-samples.watch();
+// Configs are read once here and then reloaded whenever one of them changes.
+config.load();
+config.watch(() => store.openAll());
+
+// Open every configured database at startup, so a bad path fails now and not on
+// the first put.
+store.openAll();
 
 // Retention is a clock rule, not a write rule: sweep keys nobody is writing to.
 const sweep = setInterval(() => store.sweep(), 60000);
@@ -123,5 +164,10 @@ sweep.unref();
 app.listen(port, () =>
 {
   console.log(`dash server on http://localhost:${port}`);
-  console.log(`sample policies from ${samples.configPath}`);
+  for (const project of config.projects()) {
+    console.log(`  ${project.project} -> ${project.db}`);
+  }
+  for (const file of config.files()) {
+    console.log(`  config ${file}`);
+  }
 });

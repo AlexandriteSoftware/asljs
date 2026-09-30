@@ -6,7 +6,7 @@ import config from '../eslint.config.js';
 export default [
   ...config,
   {
-    files: ['server.js', 'runner.js', 'store.js', 'samples.js'],
+    files: ['server.js', 'runner.js', 'store.js', 'samples.js', 'config.js'],
     languageOptions: { globals: globals.node }
   },
   {

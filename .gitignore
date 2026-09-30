@@ -7,3 +7,5 @@ build
 .cog
 *.tgz
 *.tmp
+dash.sqlite
+dash.sqlite-*

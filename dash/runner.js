@@ -1,117 +1,27 @@
-// Reads cronfile, runs agents on schedule, puts their stdout to the named key.
-// One line per agent:  <min> <hour> <dom> <month> <dow>  <key>  <command...>
+// Reads the project configs, runs each counter's command on its schedule, and puts
+// the command's stdout to the counter's key. See docs/monitors.md.
 
 import {
   spawn
 } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
+import * as config from './config.js';
+import * as cron from './cron.js';
 
-const cronPath = process.env.DASH_CRONFILE
-  || path.join(import.meta.dirname, 'cronfile');
 const baseUrl = process.env.DASH_URL
   || `http://localhost:${Number(process.env.PORT) || 3000}`;
 const timeoutMs = Number(process.env.DASH_TIMEOUT) || 60000;
 
-// --- cron ------------------------------------------------------------------
+// --- counters -------------------------------------------------------------
 
-const RANGES = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 7]];
-
-/** Expand one cron field into a Set of matching numbers. Supports * , - and /n. */
-const expand = (spec, [lo, hi]) =>
-{
-  const values = new Set();
-
-  for (const part of spec.split(',')) {
-    const [range, stepText] = part.split('/');
-    const step = stepText
-      ? Number(stepText)
-      : 1;
-    if (!Number.isInteger(step) || step < 1) {
-      throw new Error(`bad step in "${part}"`);
-    }
-
-    let start = lo;
-    let end = hi;
-    if (range !== '*') {
-      const [from, to] = range.split('-');
-      start = Number(from);
-      end = to === undefined
-        ? (stepText
-          ? hi
-          : start)
-        : Number(to);
-    }
-    if (
-      !Number.isInteger(start)
-      || !Number.isInteger(end)
-      || start < lo
-      || end > hi
-    ) {
-      throw new Error(`bad range in "${part}"`);
-    }
-
-    for (let value = start; value <= end; value += step) {
-      values.add(value);
-    }
-  }
-
-  return values;
-};
-
-const parseCron = expression =>
-{
-  const fields = expression.trim().split(/\s+/);
-  if (fields.length !== 5) {
-    throw new Error(`expected 5 cron fields, got ${fields.length}`);
-  }
-  return fields.map((field, index) => expand(field, RANGES[index]));
-};
-
-const matches = (cron, date) =>
-{
-  const dow = date.getDay();
-  return cron[0].has(date.getMinutes())
-    && cron[1].has(date.getHours())
-    && cron[2].has(date.getDate())
-    && cron[3].has(date.getMonth() + 1)
-    && (cron[4].has(dow) || (dow === 0 && cron[4].has(7)));
-};
-
-// --- cronfile --------------------------------------------------------------
-
+/** Scheduled counters as runnable jobs. Their schedules are parsed by config.js. */
 const readJobs = () =>
-{
-  const jobs = [];
-  const lines = fs.readFileSync(cronPath, 'utf8').split(/\r?\n/);
-
-  lines.forEach((line, index) =>
-  {
-    const text = line.trim();
-    if (text === '' || text.startsWith('#')) {
-      return;
-    }
-
-    const parts = text.split(/\s+/);
-    if (parts.length < 7) {
-      console.error(`cronfile:${index + 1}: need <cron x5> <key> <command>`);
-      return;
-    }
-
-    try {
-      jobs.push({
-        line: index + 1,
-        cron: parseCron(parts.slice(0, 5).join(' ')),
-        key: parts[5],
-        command: parts.slice(6)
-      });
-    } catch (error) {
-      console.error(`cronfile:${index + 1}: ${error.message}`);
-    }
-  });
-
-  return jobs;
-};
+  config.scheduled().map(counter => ({
+    key: counter.key,
+    project: counter.project,
+    cron: counter.cron,
+    command: counter.command,
+    cwd: counter.cwd
+  }));
 
 // --- running ---------------------------------------------------------------
 
@@ -135,10 +45,11 @@ const run = job =>
   new Promise(resolve =>
   {
     const started = Date.now();
-    // A cronfile line is a command line, so hand it to the shell as one string.
-    // Quoting is the line author's business, as in any crontab.
-    const child = spawn(job.command.join(' '), {
-      cwd: import.meta.dirname,
+    // A counter's command is a command line, so hand it to the shell as one string.
+    // Quoting is the config author's business, as in any crontab. It runs in the
+    // directory of the config that declares it, so a relative path is project-local.
+    const child = spawn(job.command, {
+      cwd: job.cwd,
       shell: true
     });
 
@@ -175,7 +86,7 @@ const run = job =>
 
 const tick = async (jobs, date) =>
 {
-  const due = jobs.filter(job => matches(job.cron, date));
+  const due = jobs.filter(job => cron.matches(job.cron, date));
 
   await Promise.all(due.map(async job =>
   {
@@ -209,12 +120,13 @@ const tick = async (jobs, date) =>
 
 const main = async () =>
 {
+  config.load();
   const jobs = readJobs();
   console.log(
-    `dash runner: ${jobs.length} jobs from ${cronPath} -> ${baseUrl}`
+    `dash runner: ${jobs.length} counters from ${config.files().length} configs -> ${baseUrl}`
   );
   for (const job of jobs) {
-    console.log(`  ${job.key} <- ${job.command.join(' ')}`);
+    console.log(`  ${job.project}/${job.key} <- ${job.command}`);
   }
 
   if (process.argv.includes('--once')) {
