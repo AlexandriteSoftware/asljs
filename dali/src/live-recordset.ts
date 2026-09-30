@@ -1,6 +1,6 @@
 import { EventfulBase }
   from 'asljs-eventful';
-import { observable }
+import { Change }
   from 'asljs-observable';
 import { keyGet,
          KeyPath }
@@ -15,18 +15,6 @@ type PendingEvent<T> =
   | { type: 'clear'; };
 
 /**
- * Payload emitted on `set:records` and `set` events.
- * These events follow the ASLJS observable property-change convention and
- * are consumed by `observable.watch()` to support path watching
- * (e.g. `rs.watch('records.length', cb)`).
- */
-export type LiveRecordSetSetPayload<T extends Record<string, any>> = {
-  property: 'records';
-  value: readonly T[];
-  previous: readonly T[];
-};
-
-/**
  * Event map for `LiveRecordSet`.
  *
  * Domain events (via ASLJS eventful):
@@ -36,8 +24,8 @@ export type LiveRecordSetSetPayload<T extends Record<string, any>> = {
  * - `cleared` — the set was emptied due to a table clear.
  * - `changed` — catch-all emitted after any mutation of `records`.
  *
- * Observable property events (via ASLJS observable, used by `watch()`):
- * - `set:records` / `set` — emitted whenever `records` changes.
+ * Observable contract event (ASLJS observable):
+ * - `change` — one `set` entry for `records` whenever it changes.
  */
 export type LiveRecordSetEvents<T extends Record<string, any>> = {
   added: [record: T];
@@ -45,8 +33,7 @@ export type LiveRecordSetEvents<T extends Record<string, any>> = {
   updated: [record: T, previous: T];
   cleared: [];
   changed: [records: readonly T[]];
-  'set:records': [LiveRecordSetSetPayload<T>];
-  set: [LiveRecordSetSetPayload<T>];
+  change: [changes: readonly Change[]];
 };
 
 /**
@@ -56,8 +43,8 @@ export type LiveRecordSetEvents<T extends Record<string, any>> = {
  * - Subscribe to domain events via `on('added', cb)`, `on('removed', cb)`,
  *   `on('updated', cb)`, `on('cleared', cb)`, `on('changed', cb)`
  *   (ASLJS eventful).
- * - Watch property paths via `watch('records.length', cb)`
- *   (ASLJS observable — uses the real `observable.watch` implementation).
+ * - Query property paths via `observe(live).at('records.length')`
+ *   (ASLJS observable) — the container conforms to the observable contract.
  * - Call `dispose()` to stop receiving updates and release resources.
  *
  * Obtain via `Table.recordset(predicate)` — this API is **live by default**.
@@ -217,34 +204,14 @@ export class LiveRecordSet<T extends Record<string, any>>
   /**
    * The current set of matching records as a readonly array snapshot.
    *
-   * Changes to this property are signalled via `set:records` / `set` events,
-   * enabling `watch('records.length', cb)` through ASLJS observable.
+   * Changes to this property are reported as a `change` event, so
+   * `observe(live).at('records.length')` from ASLJS observable follows it.
+   *
+   * Each read returns a new array, so a query on `records` itself reports
+   * every change; `records.length` reports only a change of size.
    */
   get records(): readonly T[] {
     return [ ...this.#current.values() ];
-  }
-
-  /**
-   * Watch a property path on this live container using ASLJS observable.
-   *
-   * Example:
-   * ```ts
-   * const rs = table.recordset(r => r.active);
-   * rs.watch('records.length', count => console.log(count));
-   * ```
-   *
-   * The callback is invoked immediately with the current value and again
-   * whenever the path's value changes.  Returns an unwatch function.
-   */
-  watch(
-    property: string,
-    callback: (value: any) => void
-  ): () => boolean
-  {
-    return observable.watch(
-      this as any,
-      property,
-      callback);
   }
 
   /**
@@ -269,7 +236,7 @@ export class LiveRecordSet<T extends Record<string, any>>
 
   /**
    * Applies a single event, then emits the appropriate domain events and
-   * the `set:records` / `changed` notifications if the set changed.
+   * the `change` / `changed` notifications if the set changed.
    */
   #applyAndNotify(
     event: PendingEvent<T>
@@ -439,24 +406,12 @@ export class LiveRecordSet<T extends Record<string, any>>
 
     this.#lastSnapshot = snapshot;
 
-    // Emit ASLJS observable-style property-change event so that
-    // observable.watch() path subscriptions work correctly.
-    // `as any` is required because EventfulBase<LiveRecordSetEvents<T>> does
-    // not expose `set:*` in its typed event map; these events are consumed by
-    // the observable watch system internally and are not part of the public
-    // domain event surface.
-    const payload: LiveRecordSetSetPayload<T> =
-      { property: 'records',
-        value: snapshot,
-        previous };
-
-    (this as any).emit(
-      'set:records',
-      payload);
-
-    (this as any).emit(
-      'set',
-      payload);
+    this.emit(
+      'change',
+      [ { kind: 'set',
+          property: 'records',
+          value: snapshot,
+          previous } ]);
 
     // Emit the catch-all domain event.
     this.emit(

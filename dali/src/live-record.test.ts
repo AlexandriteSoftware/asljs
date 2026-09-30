@@ -1,3 +1,6 @@
+import { isObservable,
+         observe }
+  from 'asljs-observable';
 import assert
   from 'node:assert/strict';
 import { test }
@@ -416,7 +419,51 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: watch on "record" path fires when record changes`,
+  `${TEST_SUITE}: conforms to the observable contract and reports record as a set entry`,
+  async () =>
+  {
+    const db = await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    const live =
+      table.record('a');
+
+    assert.equal(
+      isObservable(live),
+      true);
+
+    await waitFor(
+      () => live.record === null);
+
+    const entries: unknown[] = [ ];
+
+    live.on(
+      'change',
+      changes => entries.push(...changes));
+
+    await table.add(
+      { id: 'a',
+        value: '10' });
+
+    await waitFor(
+      () => entries.length >= 1);
+
+    assert.deepEqual(
+      entries,
+      [ { kind: 'set',
+          property: 'record',
+          value:
+            { id: 'a',
+              value: '10' },
+          previous: null } ]);
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: query on "record.value" path fires when record changes`,
   async () =>
   {
     const db = await openTestDb();
@@ -431,21 +478,21 @@ test(
     const live =
       table.record('a');
 
-    // record.value starts undefined; collect values after watcher is set
+    // record.value starts undefined; collect values after subscribing
     const seen: Array<string | undefined> = [ ];
 
-    // watch is called immediately with current value, then on each change
-    live.watch(
-      'record.value',
-      (
-          v
-        ) =>
-      {
-        seen.push(
-          v as string | undefined);
-      });
+    // subscribe calls back immediately with current value, then on each change
+    observe(live)
+      .at('record.value')
+      .subscribe(
+        (
+            v
+          ) =>
+        {
+          seen.push(v);
+        });
 
-    // Initial call (record is null at watch-time; value is undefined)
+    // Initial call (record is null at subscribe time; value is undefined)
     assert.equal(
       seen.length,
       1);
@@ -481,7 +528,7 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: watch on "record" path fires when whole record changes`,
+  `${TEST_SUITE}: query on "record" path fires when whole record changes`,
   async () =>
   {
     const db = await openTestDb();
@@ -501,15 +548,15 @@ test(
 
     const seen: Array<TestRecord | null> = [ ];
 
-    live.watch(
-      'record',
-      (
-          r
-        ) =>
-      {
-        seen.push(
-          r as TestRecord | null);
-      });
+    observe(live)
+      .at('record')
+      .subscribe(
+        (
+            r
+          ) =>
+        {
+          seen.push(r);
+        });
 
     // Immediately called with current value
     assert.equal(

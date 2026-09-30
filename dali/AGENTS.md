@@ -98,12 +98,15 @@ What not to assume:
   echo suppression.
 - If touching version strategies, then re-check documented conflict behavior.
 - If touching live containers, then re-check their eventful and observable
-  surfaces.
+  surfaces: `LiveRecord` and `LiveRecordSet` conform to the `asljs-observable`
+  contract by emitting `change` with one `set` entry, and have no `watch`
+  method; path queries use `observe(live).at(path)` from `asljs-observable`,
+  which is unrelated to `Table.observe()`.
 
 ## Related Packages
 
 - If the task is really about event primitives, move to `asljs-eventful`.
-- If the task is really about path watching and reactive property access, move
+- If the task is really about path queries and the observable contract, move
   to `asljs-observable`.
 - If the task is really about DOM binding on observable models, move to
   `asljs-data-binding`.

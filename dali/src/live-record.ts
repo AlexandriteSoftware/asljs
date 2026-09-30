@@ -1,6 +1,6 @@
 import { EventfulBase }
   from 'asljs-eventful';
-import { observable }
+import { Change }
   from 'asljs-observable';
 import { keyAssert,
          keyEqual,
@@ -11,32 +11,19 @@ import { TableEventsReceiver }
   from './table.js';
 
 /**
- * Payload emitted on `set:record` and `set` events.
- * These events follow the ASLJS observable property-change convention and
- * are consumed by `observable.watch()` to support deep-path watching
- * (e.g. `r.watch('record.title', cb)`).
- */
-export type LiveRecordSetPayload<T extends Record<string, any>> = {
-  property: 'record';
-  value: T | null;
-  previous: T | null;
-};
-
-/**
  * Event map for `LiveRecord`.
  *
  * Domain events (via ASLJS eventful):
  * - `changed` — the tracked record changed (including appearing from null).
  * - `deleted` — the tracked record was deleted or the table was cleared.
  *
- * Observable property events (via ASLJS observable, used by `watch()`):
- * - `set:record` / `set` — emitted whenever `record` is reassigned.
+ * Observable contract event (ASLJS observable):
+ * - `change` — one `set` entry for `record` whenever it is reassigned.
  */
 export type LiveRecordEvents<T extends Record<string, any>> = {
   changed: [record: T, previous: T | null];
   deleted: [previous: T];
-  'set:record': [LiveRecordSetPayload<T>];
-  set: [LiveRecordSetPayload<T>];
+  change: [changes: readonly Change[]];
 };
 
 /**
@@ -45,8 +32,8 @@ export type LiveRecordEvents<T extends Record<string, any>> = {
  * - `record` — the current matching record, or `null` when none exists.
  * - Subscribe to domain events via `on('changed', cb)` / `on('deleted', cb)`
  *   (ASLJS eventful).
- * - Watch property paths via `watch('record.title', cb)`
- *   (ASLJS observable — uses the real `observable.watch` implementation).
+ * - Query property paths via `observe(live).at('record.title')`
+ *   (ASLJS observable) — the container conforms to the observable contract.
  * - Call `dispose()` to stop receiving updates and release resources.
  *
  * Obtain via `Table.record(key)` — this API is **live by default**.
@@ -168,37 +155,11 @@ export class LiveRecord<T extends Record<string, any>>
   /**
    * The current record for the tracked key, or `null` when none exists.
    *
-   * Changes to this property are signalled via `set:record` / `set` events,
-   * enabling `watch('record.someField', cb)` through ASLJS observable.
+   * Changes to this property are reported as a `change` event, so
+   * `observe(live).at('record.someField')` from ASLJS observable follows it.
    */
   get record(): T | null {
     return this.#current;
-  }
-
-  /**
-   * Watch a property path on this live container using ASLJS observable.
-   *
-   * Example:
-   * ```ts
-   * const r = table.record(key);
-   * r.watch('record.title', title => console.log(title));
-   * ```
-   *
-   * The callback is invoked immediately with the current value and again
-   * whenever the path's value changes.  Returns an unwatch function.
-   *
-   * Watchers are anchored to the stable live container, so replacing the
-   * underlying record object does not break existing subscriptions.
-   */
-  watch(
-    property: string,
-    callback: (value: any) => void
-  ): () => boolean
-  {
-    return observable.watch(
-      this as any,
-      property,
-      callback);
   }
 
   /**
@@ -242,24 +203,12 @@ export class LiveRecord<T extends Record<string, any>>
 
     this.#current = value;
 
-    // Emit ASLJS observable-style property-change events so that
-    // observable.watch() path subscriptions work correctly.
-    // `as any` is required because EventfulBase<LiveRecordEvents<T>> does not
-    // expose `set:*` in its typed event map; these events are consumed by the
-    // observable watch system internally and are not part of the public domain
-    // event surface.
-    const payload: LiveRecordSetPayload<T> =
-      { property: 'record',
-        value,
-        previous };
-
-    (this as any).emit(
-      'set:record',
-      payload);
-
-    (this as any).emit(
-      'set',
-      payload);
+    this.emit(
+      'change',
+      [ { kind: 'set',
+          property: 'record',
+          value,
+          previous } ]);
 
     // Emit ASLJS eventful domain events.
     if (value === null) {

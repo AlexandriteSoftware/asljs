@@ -57,13 +57,11 @@ export {
 } from './table.js';
 
 export {
-  type LiveRecordEvents,
-  type LiveRecordSetPayload
+  type LiveRecordEvents
 } from './live-record.js';
 
 export {
-  type LiveRecordSetEvents,
-  type LiveRecordSetSetPayload
+  type LiveRecordSetEvents
 } from './live-recordset.js';
 
 export {

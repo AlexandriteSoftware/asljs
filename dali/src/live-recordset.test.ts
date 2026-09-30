@@ -1,3 +1,6 @@
+import { isObservable,
+         observe }
+  from 'asljs-observable';
 import assert
   from 'node:assert/strict';
 import { test }
@@ -649,7 +652,52 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: watch on "records.length" path fires when set changes`,
+  `${TEST_SUITE}: conforms to the observable contract and reports records as a set entry`,
+  async () =>
+  {
+    const db = await openTestDb();
+
+    const table =
+      new Table<TestRecord>('items', db);
+
+    const live =
+      table.recordset(
+        record => record.value.startsWith('v'));
+
+    assert.equal(
+      isObservable(live),
+      true);
+
+    await waitFor(
+      () => live.records.length === 0);
+
+    const entries: unknown[] = [ ];
+
+    live.on(
+      'change',
+      changes => entries.push(...changes));
+
+    await table.add(
+      { id: 'a',
+        value: 'v1' });
+
+    await waitFor(
+      () => entries.length >= 1);
+
+    assert.deepEqual(
+      entries.at(-1),
+      { kind: 'set',
+        property: 'records',
+        value:
+          [ { id: 'a',
+              value: 'v1' } ],
+        previous: [ ] });
+
+    live.dispose();
+  });
+
+test(
+  `${TEST_SUITE}: query on "records.length" path fires when set changes`,
   async () =>
   {
     const db = await openTestDb();
@@ -664,15 +712,15 @@ test(
     const lengths: number[] = [ ];
 
     // Immediately called with current value (0 before scan settles)
-    live.watch(
-      'records',
-      (
-          r
-        ) =>
-      {
-        lengths.push(
-          (r as readonly TestRecord[] ?? [ ]).length);
-      });
+    observe(live)
+      .at('records.length')
+      .subscribe(
+        (
+            length
+          ) =>
+        {
+          lengths.push(length);
+        });
 
     assert.equal(
       lengths.length,

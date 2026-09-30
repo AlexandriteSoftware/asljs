@@ -312,7 +312,7 @@ export class Table<
    *   `null` when no record exists for that key.
    * - Subscribe to changes via `on('changed', cb)` / `on('deleted', cb)`
    *   (ASLJS eventful).
-   * - Watch property paths via `watch('record.someField', cb)`
+   * - Query property paths via `observe(live).at('record.someField')`
    *   (ASLJS observable).
    * - The view reacts to committed `add`, `update`, `delete`, and `clear`
    *   events on this table.
@@ -344,7 +344,7 @@ export class Table<
    * - Subscribe to changes via `on('added', cb)`, `on('removed', cb)`,
    *   `on('updated', cb)`, `on('cleared', cb)`, `on('changed', cb)`
    *   (ASLJS eventful).
-   * - Watch property paths via `watch('records.length', cb)`
+   * - Query property paths via `observe(live).at('records.length')`
    *   (ASLJS observable).
    * - Membership is re-evaluated on every committed `add`, `update`,
    *   `delete`, and `clear` event.
