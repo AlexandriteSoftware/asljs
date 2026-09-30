@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DASH</title>
+    <!-- Pico CSS: reset, typography and both colour schemes. Dash adds the bar, grid and cards. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
+    <style>
+        :root {
+            --grid-step: 36px;
+            --paper: #f3f1ea;
+            --panel: #fbfaf6;
+            --ink: #26302b;
+            --muted: #77817a;
+            --line: #dcd9cf;
+            --accent: #2d7d68;
+            --signal: #b8573a;
+            --warn: #9a7326;
+            --rule: rgb(38 48 43 / 11%);
+
+            --pico-font-family: Bahnschrift, "Aptos Display", system-ui, sans-serif;
+            --pico-font-size: 87.5%;
+            --pico-background-color: var(--paper);
+            --pico-color: var(--ink);
+            --pico-muted-color: var(--muted);
+            --pico-primary: var(--accent);
+            --pico-border-radius: 6px;
+            --pico-spacing: 0.75rem;
+            color-scheme: light;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --paper: #191c1b;
+                --panel: #212624;
+                --ink: #d8ded9;
+                --muted: #8b968f;
+                --line: #303734;
+                --accent: #6fbfa5;
+                --signal: #d8886a;
+                --warn: #c9a75c;
+                --rule: rgb(216 222 217 / 9%);
+                color-scheme: dark;
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: var(--paper);
+            color: var(--ink);
+        }
+
+        /* --- top bar --- */
+
+        .bar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            height: var(--grid-step);
+            /* Pico gives `header` and `nav` a centered container and space-between;
+               the bar wants the full width, packed from column 0. */
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            border-bottom: 1px solid var(--line);
+            background: color-mix(in srgb, var(--paper) 88%, transparent);
+            backdrop-filter: blur(6px);
+        }
+
+        /* Flush with column 0, like the cards below it. */
+        .logo {
+            flex: none;
+            padding-left: 5px;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+        }
+
+        #tabs {
+            display: flex;
+            flex: 1;
+            justify-content: flex-start;
+            gap: 0.25rem;
+            min-width: 0;
+            padding: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tab {
+            flex: none;
+            padding: 0.15rem 0.7rem;
+            border-radius: 99px;
+            color: var(--muted);
+            font-size: 0.75rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .tab:hover { color: var(--ink); }
+
+        /* Pico paints a focus background on links and buttons; the pill supplies its own. */
+        .tab:focus,
+        .tab:focus-visible {
+            background: var(--panel);
+            box-shadow: none;
+            outline: 1px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .tab.tab-active {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            color: var(--accent);
+        }
+
+        /* --- grid --- */
+
+        /* Pico's classless rules give `main` a centered max-width; the grid needs the
+           whole viewport so column 0 really is x=0 and the lines meet the cards. */
+        #grid {
+            position: relative;
+            width: 100%;
+            max-width: none;
+            min-height: calc(var(--rows, 12) * var(--grid-step));
+            margin: 0;
+            padding: 0;
+            background-image:
+                linear-gradient(var(--rule) 1px, transparent 1px),
+                linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+            background-size: var(--grid-step) var(--grid-step);
+            background-position: 0 0;
+            background-repeat: repeat; /* Pico's reset sets no-repeat */
+        }
+
+        .card {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            left: calc(var(--left) * var(--grid-step));
+            top: calc(var(--top) * var(--grid-step));
+            width: calc(var(--width) * var(--grid-step) - 10px);
+            height: calc(var(--height) * var(--grid-step) - 10px);
+            min-width: 0;
+            min-height: 0;
+            margin: 5px;
+            padding: 0.7rem 0.8rem;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+        }
+
+        .card-label {
+            flex: none;
+            margin-bottom: 0.45rem;
+            color: var(--muted);
+            font-size: 0.625rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-body {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            /* so a hero number can size itself against its own card, not the viewport */
+            container-type: size;
+        }
+
+        .card-body > :last-child { margin-bottom: 0; }
+
+        /* --- renderer output --- */
+
+        .hero {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            margin: 0;
+            color: var(--accent);
+            line-height: 1.1;
+        }
+
+        .hero-number {
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: clamp(1.25rem, min(40cqh, 22cqw), 3rem);
+            font-weight: 700;
+        }
+
+        .affix {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .mono {
+            margin: 0;
+            padding: 0;
+            background: none;
+            color: var(--ink);
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: 0.72rem;
+            line-height: 1.45;
+        }
+
+        .status {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-transform: lowercase;
+        }
+
+        .status-ok { color: var(--accent); }
+        .status-warn { color: var(--warn); }
+        .status-error { color: var(--signal); }
+        .status-unknown { color: var(--muted); }
+
+        .note, .empty {
+            margin: 0.35rem 0 0;
+            color: var(--muted);
+            font-size: 0.72rem;
+        }
+
+        .card-error {
+            margin: 0;
+            color: var(--signal);
+            font-size: 0.72rem;
+        }
+
+        .rows {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .rows li {
+            display: flex;
+            gap: 0.5rem;
+            align-items: baseline;
+            padding: 0.22rem 0;
+            border-bottom: 1px solid var(--line);
+            font-size: 0.78rem;
+        }
+
+        .rows li:last-child { border-bottom: 0; }
+
+        .row-label {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .row-meta {
+            flex: none;
+            color: var(--muted);
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: 0.7rem;
+        }
+
+        .card-body table {
+            margin: 0;
+            font-size: 0.72rem;
+        }
+
+        .card-body th, .card-body td {
+            padding: 0.2rem 0.4rem;
+            border-color: var(--line);
+        }
+
+        .card-body th {
+            color: var(--muted);
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* --- chart --- */
+
+        .chart { display: block; overflow: visible; }
+        .chart-grid { stroke: var(--line); stroke-width: 1; }
+        .chart-crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+        .chart-tick { fill: var(--muted); font-size: 9px; text-anchor: end; }
+        .chart-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+        .chart-area { fill: var(--accent); opacity: 0.1; stroke: none; }
+        .chart-bar { fill: var(--accent); opacity: 0.75; }
+        .chart-dot { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
+
+        .chart-tip {
+            position: absolute;
+            bottom: 0;
+            padding: 0.15rem 0.4rem;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: var(--panel);
+            color: var(--ink);
+            font-family: "Cascadia Mono", Consolas, monospace;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="bar">
+        <span class="logo">DASH</span>
+        <nav id="tabs" aria-label="Dashboards"></nav>
+    </header>
+    <main id="grid" aria-label="Cards"></main>
+    <script type="module" src="/dash.js"></script>
+</body>
+</html>

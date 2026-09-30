@@ -1,0 +1,81 @@
+{
+  "tabs": [
+    {
+      "tab": "system",
+      "label": "System",
+      "cards": [
+        {
+          "key": "disk.c",
+          "label": "Disk C: free",
+          "render": "value",
+          "left": 0,
+          "top": 0,
+          "width": 7,
+          "height": 4,
+          "params": { "field": "freePercent", "unit": "%", "precision": 1 }
+        },
+        {
+          "key": "disk.c",
+          "label": "Disk C: free trend",
+          "render": "chart",
+          "width": 13,
+          "height": 4,
+          "params": { "field": "freePercent", "limit": 300, "kind": "line", "unit": "%", "precision": 1 }
+        },
+        {
+          "key": "ping.gw",
+          "label": "Gateway",
+          "render": "status",
+          "width": 5,
+          "height": 4
+        },
+        {
+          "key": "ping.gw",
+          "label": "Gateway latency",
+          "render": "chart",
+          "width": 13,
+          "height": 4,
+          "params": { "field": "ms", "limit": 300, "unit": " ms" }
+        },
+        {
+          "key": "top.cpu",
+          "label": "Top CPU",
+          "render": "list",
+          "width": 7,
+          "height": 8,
+          "params": { "fields": ["label", "cpu"], "limit": 8 }
+        },
+        {
+          "key": "uptime",
+          "label": "Uptime",
+          "render": "value",
+          "width": 5,
+          "height": 4,
+          "params": { "field": "days", "unit": "d", "precision": 1 }
+        }
+      ]
+    },
+    {
+      "tab": "day",
+      "label": "Day",
+      "cards": [
+        {
+          "key": "calendar.due",
+          "label": "Due in 5 days",
+          "render": "list",
+          "width": 11,
+          "height": 8,
+          "params": { "fields": ["label", "due"], "limit": 10, "empty": "nothing due" }
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "render": "text",
+          "width": 11,
+          "height": 8,
+          "params": { "wrap": true }
+        }
+      ]
+    }
+  ]
+}

@@ -80,3 +80,14 @@ documents the exact payload of `new`, `on`, `off`, `emit`, `emitAsync` and
   JavaScript examples and compares their output; the blocks here would need the
   same `// Output:` convention first, and the OpenTelemetry ones need an SDK
   this workspace does not install.
+
+## dash
+
+### No automated tests
+
+The package moved into the repository without any, and `CONVENTIONS.md` expects
+a test file next to every file with runtime behaviour. The cheapest first slice
+is the pure logic: `parsePolicy` and `parseAmount` in `samples.js`, the cron
+`expand` and `matches` in `runner.js`, which is not exported yet, and the
+trimming rules in `store.js` against a temporary `DASH_DB`. `asljs-tmpdir` is
+already a repository dev dependency and fits the store tests.

@@ -1,0 +1,8 @@
+# Dash agents.  <min> <hour> <dom> <month> <dow>  <key>  <command...>
+# The runner puts each command's stdout to its key. Non-zero exit means "no sample".
+# Fields accept * , - and /n.  Lines starting with # are ignored.
+
+*/5 * * * *   disk.c        pwsh -NoProfile -File agents/disk.c.ps1
+* * * * *     ping.gw       pwsh -NoProfile -File agents/ping.gw.ps1
+*/2 * * * *   top.cpu       pwsh -NoProfile -File agents/top.cpu.ps1
+*/10 * * * *  uptime        pwsh -NoProfile -File agents/uptime.ps1

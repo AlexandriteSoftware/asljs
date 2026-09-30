@@ -7,6 +7,7 @@ Applications:
 
 - [app-builder][APPS] - a demo application that uses the libraries to build a
   simple app with AI-assisted features.
+- [dash][DASH] - a personal performance dashboard fed by scheduled agents.
 
 Tools:
 
@@ -44,3 +45,4 @@ Libraries:
 [PRT]: <./part/README.md>
 [SFMT]: <./sfmt/README.md>
 [APPS]: <./app-builder/README.md>
+[DASH]: <./dash/README.md>

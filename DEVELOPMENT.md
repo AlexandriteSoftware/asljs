@@ -84,6 +84,28 @@ npm -w asljs-app-builder run build
 Use `dev` while iterating on UI behavior. Use `build` when validating emitted
 demo output or deployment behavior.
 
+### Dash Commands
+
+`dash` is a private Node application, not a publishable library. It has no build
+step and no test suite yet.
+
+Common commands:
+
+```pwsh
+npm -w asljs-dash run start
+npm -w asljs-dash run runner
+npm -w asljs-dash run once
+npm -w asljs-dash run lint
+npm -w asljs-dash run format
+```
+
+`start` serves the page and the API on `PORT`, default 3000. `runner` is the
+second process and runs the agents in `cronfile` on schedule. `once` runs every
+agent immediately, which is how a newly added card gets its first sample.
+
+The SQLite store, `dash/dash.sqlite`, is created on first start and ignored by
+git.
+
 ## Documentation Update Rules
 
 Keep human-facing docs and AI-facing docs separate.
