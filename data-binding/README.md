@@ -16,8 +16,10 @@ There are three binding families:
 - Event bindings: wire DOM events to model actions.
 - Context bindings: switch the model context for a descendant subtree.
 
-Both families support lightweight reactivity through `observable.watch(...)`
-on the configured model path.
+Bindings are reactive when the model conforms to the `asljs-observable`
+contract: each binding observes its path with `observe(model).at(path)` and
+re-renders when the value there changes. A plain object is bound once, with no
+reactivity.
 
 ## Installation
 

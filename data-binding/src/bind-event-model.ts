@@ -1,10 +1,10 @@
-import { observable }
-  from 'asljs-observable';
 import { readModelPath }
   from './read-model-path.js';
 import { DataModel,
          EventBindingSpec }
   from './types.js';
+import { watchModelPath }
+  from './watch-model-path.js';
 
 type ActionFn =
   (
@@ -26,10 +26,7 @@ export function bindEventModel(
   ) => void
   ): () => void
 {
-  let currentAction: unknown =
-    readModelPath(
-      model,
-      spec.actionPath);
+  let currentAction: unknown = null;
 
   const refreshAction =
     (): void =>
@@ -74,22 +71,13 @@ export function bindEventModel(
     spec.eventName,
     listener);
 
-  let unsubscribe: (() => boolean) | null = null;
-
-  if (spec.actionPath !== '') {
-    const maybeUnsubscribe =
-      observable.watch(
-        model as any,
-        spec.actionPath,
-        () => refreshAction());
-
-    if (
-      typeof maybeUnsubscribe
-      === 'function'
-    ) {
-      unsubscribe = maybeUnsubscribe;
-    }
-  }
+  const unsubscribe =
+    spec.actionPath === ''
+    ? null
+    : watchModelPath(
+      model,
+      spec.actionPath,
+      refreshAction);
 
   return (): void =>
   {

@@ -1,5 +1,3 @@
-import { observable }
-  from 'asljs-observable';
 import { mergePipes }
   from './pipes.js';
 import { readModelPath }
@@ -10,6 +8,8 @@ import { BindDataModelOptions,
          PipeSpec,
          ValueBindingSpec }
   from './types.js';
+import { watchModelPath }
+  from './watch-model-path.js';
 import { writeBindingValue }
   from './write-binding-value.js';
 
@@ -49,26 +49,16 @@ export function bindValueModel(
       formattedValue);
   };
 
-  update();
-
   if (spec.path === '') {
+    update();
+
     return () => { };
   }
 
-  const maybeUnsubscribe =
-    observable.watch(
-      model as any,
-      spec.path,
-      () => update());
-
-  if (
-    typeof maybeUnsubscribe
-    !== 'function'
-  ) {
-    return () => { };
-  }
-
-  return () => maybeUnsubscribe();
+  return watchModelPath(
+    model,
+    spec.path,
+    update);
 }
 
 function compilePipes(

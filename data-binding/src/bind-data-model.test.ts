@@ -63,7 +63,13 @@ test(
       'unknown');
 
     model.name = 'Bob';
-    model.emit('set:name');
+
+    model.emit(
+      'change',
+      [ { kind: 'set',
+          property: 'name',
+          value: model.name,
+          previous: undefined } ]);
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -105,7 +111,8 @@ test(
       'Bob');
 
     model.user =
-      { name: 'Carol' };
+      observable(
+        { name: 'Carol' });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -352,7 +359,12 @@ test(
       calls.push('second');
     };
 
-    model.emit('set:activate');
+    model.emit(
+      'change',
+      [ { kind: 'set',
+          property: 'activate',
+          value: model.activate,
+          previous: undefined } ]);
 
     button.dispatchEvent(
       new dom.window.Event('click'));
@@ -409,11 +421,12 @@ test(
       new dom.window.Event('click'));
 
     model.user =
-      { activate:
-          () =>
-          {
-        calls.push('third');
-      } };
+      observable(
+        { activate:
+            () =>
+            {
+          calls.push('third');
+        } });
 
     button.dispatchEvent(
       new dom.window.Event('click'));
@@ -733,7 +746,8 @@ test(
       'Alice');
 
     model.user =
-      { name: 'Carol' };
+      observable(
+        { name: 'Carol' });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -860,7 +874,8 @@ test(
     const oldUser = model.user;
 
     model.user =
-      { name: 'Carol' };
+      observable(
+        { name: 'Carol' });
 
     // mutating the old user object should no longer update the span
     oldUser.name = 'Stale';
@@ -900,7 +915,8 @@ test(
     dispose();
 
     model.user =
-      { name: 'Carol' };
+      observable(
+        { name: 'Carol' });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -938,7 +954,8 @@ test(
       '');
 
     model.user =
-      { name: 'Dave' };
+      observable(
+        { name: 'Dave' });
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -988,6 +1005,10 @@ type ReactiveModel =
       event: string,
       listener: (...args: unknown[]) => void
     ) => () => boolean;
+    off: (
+      event: string,
+      listener: (...args: unknown[]) => void
+    ) => void;
     emit: (
       event: string,
       ...args: unknown[]
@@ -1018,6 +1039,14 @@ function createReactiveModel(
 
       return () => listeners.get(event)?.delete(listener) ?? false;
     },
+      off:
+        (
+            event,
+            listener
+          ) =>
+        {
+      listeners.get(event)?.delete(listener);
+    },
       emit:
         (
             event,
@@ -1031,7 +1060,7 @@ function createReactiveModel(
         return;
       }
 
-      for (const listener of registered) {
+      for (const listener of [ ...registered ]) {
         listener(
           ...args);
       }

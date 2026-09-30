@@ -81,6 +81,10 @@ Unsupported syntax:
 - Nullish behavior is part of the contract:
   text/html render empty string, nullish attributes are removed.
 - Missing or non-function event handlers warn and keep bindings alive.
+- Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
+  which uses `observe(model).at(path)` for a model that conforms to the
+  observable contract and binds a plain model once, statically. `observe()`
+  throws for a non-conforming root, so the guard must stay.
 
 ## Safe Authoring Rules
 

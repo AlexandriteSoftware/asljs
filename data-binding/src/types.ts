@@ -98,12 +98,3 @@ export type DataModelWithOn =
       listener: (...args: unknown[]) => void
     ) => (() => boolean) | void;
   };
-
-export type DataModelWithWatch =
-  & DataModel
-  & {
-    watch: (
-      property: string | readonly string[],
-      callback: (...values: unknown[]) => void
-    ) => (() => boolean) | void;
-  };

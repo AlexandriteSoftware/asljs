@@ -1,5 +1,3 @@
-import { observable }
-  from 'asljs-observable';
 import { bindEventModel }
   from './bind-event-model.js';
 import { bindValueModel }
@@ -14,6 +12,8 @@ import { BindDataModelOptions,
          BindingTarget,
          DataModel }
   from './types.js';
+import { watchModelPath }
+  from './watch-model-path.js';
 
 const CONTEXT_ATTR = 'data-bind-context';
 
@@ -29,7 +29,7 @@ type WarnOnce =
 
 /**
  * Applies `data-bind-*` bindings under a root element and wires optional
- * model reactivity via `observable.watch(model, '<path>', ...)`.
+ * model reactivity via `observe(model).at('<path>')` from `asljs-observable`.
  *
  * Supported syntax:
  * - `data-bind-text="path | pipe[:arg]"` => textContent
@@ -214,23 +214,16 @@ function bindContextElement(
         nextPrefix);
   };
 
-  bindChildren();
+  let unsubscribe: (() => void) | null = null;
 
-  let unsubscribe: (() => boolean) | null = null;
-
-  if (contextPath !== '') {
-    const maybeUnsubscribe =
-      observable.watch(
-        model as any,
+  if (contextPath === '') {
+    bindChildren();
+  } else {
+    unsubscribe =
+      watchModelPath(
+        model,
         contextPath,
-        () => bindChildren());
-
-    if (
-      typeof maybeUnsubscribe
-      === 'function'
-    ) {
-      unsubscribe = maybeUnsubscribe;
-    }
+        bindChildren);
   }
 
   return (): void =>

@@ -217,7 +217,8 @@ test(
       'Bob');
 
     model.user =
-      { name: 'Carol' };
+      observable(
+        { name: 'Carol' });
 
     assert.equal(
       element.textContent,
