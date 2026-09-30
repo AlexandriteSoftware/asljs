@@ -35,6 +35,11 @@ offNew();
 offError();
 ```
 
+In TypeScript the payloads are checked: the exported `GlobalEvents` map
+declares the arguments of `new`, `on`, `off`, `emit`, `emitAsync` and `error`,
+and `EventfulFn` is the type of `eventful` itself. See
+[typescript.md](typescript.md#the-package-level-emitter).
+
 Reporting is gated: an object without a `trace` hook reports an action only
 while a global listener for that action exists, so an unused stream costs
 nothing.
@@ -49,7 +54,8 @@ enhanced object is traced in turn, which calls the listener again. The same
 holds for a listener for `on` that subscribes. This is not guarded, for the same
 reason a function that calls itself is not: read from the payload rather than
 acting on it, and where a listener has to act, emit on `eventful` itself, which
-is not re-broadcast. The [leak detection](leak-detection.md) recipes take the
+is not re-broadcast. `GlobalEvents` leaves room for such an event: a name it
+does not declare is accepted, with `unknown[]` arguments. The [leak detection](leak-detection.md) recipes take the
 first route, and only read.
 
 ## The trace hook

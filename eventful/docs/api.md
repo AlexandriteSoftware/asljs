@@ -15,8 +15,8 @@ The package root exports:
 - `ListenerError`
 - `instanceId`, `getCurrentMessageContext`, `runInMessageContext`
 - TypeScript types: `EventfulLike`, `EventName`, `EventMap`, `Eventful`,
-  `EventfulFactory`, `EventfulOptions`, `Listener`, `ListenerErrorArgs`,
-  `MessageContext`, `ErrorFn` and `TraceFn`
+  `EventfulFactory`, `EventfulFn`, `EventfulOptions`, `GlobalEvents`,
+  `Listener`, `ListenerErrorArgs`, `MessageContext`, `ErrorFn` and `TraceFn`
 
 `instanceId`, the message context functions and the package-level global emitter
 are covered in [global-events.md](global-events.md). Typing patterns are covered

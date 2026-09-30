@@ -115,6 +115,48 @@ export class MyClass implements Eventful<MyClassEvents>
 }
 ```
 
+## The package-level emitter
+
+`eventful` is also an emitter, and its own events are declared by the exported
+`GlobalEvents` map, so a listener for one of them receives a typed payload. Its
+full type, factory and emitter together, is exported as `EventfulFn`.
+
+```ts
+import {
+  eventful,
+  type EventfulFn
+} from 'asljs-eventful';
+
+const emitter: EventfulFn = eventful;
+
+const off = emitter.on(
+  'new',
+  payload => console.log('created', payload.id)
+); // payload.id is a string
+
+off();
+```
+
+The declared events are `new`, `on`, `off`, `emit`, `emitAsync` and `error`,
+with the payloads listed in [global-events.md](global-events.md).
+
+The map stays open, because emits on `eventful` itself are not re-broadcast and
+that makes it a place to put an application's own events. Such an event is
+accepted under any name, and its arguments are `unknown[]`:
+
+```ts
+import {
+  eventful
+} from 'asljs-eventful';
+
+eventful.on(
+  'leak:suspected',
+  (...args: unknown[]) => console.log(args)
+);
+
+eventful.emit('leak:suspected', { id: 'Cart#1' });
+```
+
 ## Why the event map cannot be a type argument
 
 `eventful` infers the type of the object it enhances, but it cannot infer your

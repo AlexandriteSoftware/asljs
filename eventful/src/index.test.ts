@@ -5,6 +5,8 @@ import test
 import { asEventfulLike,
          eventful,
          EventfulBase,
+         type EventfulFn,
+         type GlobalEvents,
          isEventfulLike,
          ListenerError }
   from './index.js';
@@ -34,4 +36,37 @@ test(
     assert.equal(
       typeof ListenerError,
       'function');
+  });
+
+test(
+  `${TEST_SUITE}: exports the type of the package-level emitter`,
+  () =>
+  {
+    const emitter: EventfulFn = eventful;
+
+    const seen: GlobalEvents['new'][0][] = [ ];
+
+    const off =
+      emitter.on(
+        'new',
+        (
+            payload
+          ) =>
+        {
+        seen.push(payload);
+      });
+
+    try {
+      emitter({});
+    } finally {
+      off();
+    }
+
+    assert.equal(
+      seen.length,
+      1);
+
+    assert.equal(
+      typeof seen[0]?.id,
+      'string');
   });

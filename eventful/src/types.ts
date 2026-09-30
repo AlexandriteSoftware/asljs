@@ -117,9 +117,35 @@ export type ErrorFn =
   ) =>
     void;
 
+/**
+ * Events the package-level `eventful` emitter reports.
+ *
+ * Every enhanced object reports its lifecycle and actions here, with the same
+ * payload the per-object `trace` hook receives, and every listener error is
+ * offered as `error`. See `docs/global-events.md`.
+ *
+ * The map stays open: emits on `eventful` itself are not re-broadcast, so it
+ * doubles as a place to put an application's own events, and those carry no
+ * declared arguments.
+ */
+export type GlobalEvents = {
+  [event: EventName]: unknown[];
+
+  new: [payload: TracePayloadByAction['new']];
+  on: [payload: TracePayloadByAction['on']];
+  off: [payload: TracePayloadByAction['off']];
+  emit: [payload: TracePayloadByAction['emit']];
+  emitAsync: [payload: TracePayloadByAction['emitAsync']];
+  error: [error: ListenerErrorArgs];
+};
+
+/**
+ * The type of the package-level `eventful`: a factory that enhances objects,
+ * and an emitter of the global events in its own right.
+ */
 export type EventfulFn =
   & EventfulFactory
-  & Eventful;
+  & Eventful<GlobalEvents>;
 
 export interface EventfulFactory
 {
