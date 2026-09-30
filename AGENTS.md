@@ -197,6 +197,66 @@ Write documentation that is:
 - Examples
 - Edge cases
 
+### `README.md` is a landing page, not a manual
+
+Write `README.md` for someone meeting the repository for the first time, with no
+prior knowledge, who is deciding whether it is for them. That reader is the
+test: every sentence has to be useful to them, at that moment.
+
+They are looking for answers to roughly these questions, in this order:
+
+1. Is it for me? Does what it does fit my needs?
+2. How do I install it?
+3. What does using it look like?
+4. Where do I find more information or help?
+
+Answer more than that where it genuinely helps the decision -- what it
+deliberately does not do, what it costs, what it depends on, how mature it is,
+the licence. Do not pad the file with anything that only matters once the
+decision is already made.
+
+Prefer positive statements. Say what the package is and does, and state limits
+as scope rather than as negations: "Wildcard event names are out of scope", not
+"Wildcard event names are not supported" or a "Not supported:" list. Do not
+suggest looking elsewhere: no "Look elsewhere if", "Use something else when", or
+recommendations of other libraries. The reader draws that conclusion; the README
+only has to make it possible. `Related packages`, which links other packages of
+this repository, is not affected.
+
+Keep each section to what a junior developer can digest in three minutes. A few
+small examples, not a catalogue.
+
+Everything else belongs in the module's `docs` directory: the full API surface,
+edge cases, payload and event reference, migration notes, rationale for design
+decisions, trade-offs, and performance characteristics. Link to it.
+
+Leave process and meta information out of `README.md` entirely. How the examples
+are verified, how the package is built, which test covers which claim, and what
+the roadmap is are all irrelevant to that reader. They belong in `docs`,
+`AGENTS.md`, `DEVELOPMENT.md`, or `TODO.md`.
+
+#### Heading style
+
+The questions above are what a section answers, not what it is called. Name
+sections with the conventional, understated noun a reader already expects, and
+let the prose do the work.
+
+- Use `Overview`, `Scope`, `Installation`, `Usage`, `Further reading`,
+  `Related packages` and `License`. A package with nothing to say about scope
+  simply leaves that section out.
+- Avoid headings phrased as a question the reader is being asked, and avoid
+  headings that narrate the file: `Is it for you?`, `What it does`,
+  `Where it fits`, `Examples`, `Documentation`.
+- Pick the heading that covers the whole section. A section carrying both what
+  the package suits and what it does not is `Scope`, not `Purpose` or
+  `Motivation`, which describe only the first half.
+- Keep the same names across packages. A reader moving between two of them
+  should find the same five or six headings in the same order.
+
+Inside `docs`, each page opens with `## Purpose` and continues with the sections
+under **Include** above. That is the one place the direct name is right, because
+the reader is already past the decision and looking for a specific answer.
+
 Documentation presentation rule:
 
 - Prefer lists and short prose over tables in repository documentation.
