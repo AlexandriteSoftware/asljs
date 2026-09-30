@@ -1,13 +1,18 @@
 {
   "name": "asljs-observable",
   "version": "0.5.4",
-  "description": "Lightweight observable for JS. Emits events on property changes via on/off/emit. Works with plain objects, arrays, and primitives.",
+  "description": "A contract for observable objects, a path query over it, and a converter for plain JavaScript data. One change event carrying a list of what changed.",
   "files": [
     "dist/**",
+    "docs/**",
     "README.md",
     "LICENSE.md"
   ],
   "keywords": [
+    "observable",
+    "reactive",
+    "proxy",
+    "state",
     "events",
     "javascript",
     "js"

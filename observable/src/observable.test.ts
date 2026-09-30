@@ -4,12 +4,38 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import { batch,
+         Change }
+  from './contract.js';
 import { observable }
   from './observable.js';
 import { createTracer }
   from './tracer.js';
 
 const TEST_SUITE = 'observable';
+
+function record(
+    source: any
+  ): Array<readonly Change[]>
+{
+  const deliveries: Array<readonly Change[]> = [ ];
+
+  source.on(
+    'change',
+    (
+      changes: readonly Change[]
+    ) => deliveries.push(changes));
+
+  return deliveries;
+}
+
+function flat(
+    deliveries: Array<readonly Change[]>
+  ): Change[]
+{
+  return deliveries.flatMap(
+    changes => [ ...changes ]);
+}
 
 /**
  * Nested object fields should be observable by default so deep listeners can
@@ -26,22 +52,17 @@ test(
     const proxy =
       observable(object);
 
-    let seenValue = 0;
-
-    proxy.a.on(
-      'set:b',
-      (
-          { value }: any
-        ) =>
-      {
-        seenValue = value;
-      });
+    const deliveries =
+      record(proxy.a);
 
     proxy.a.b = 2;
 
-    assert.equal(
-      seenValue,
-      2);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'b',
+          value: 2,
+          previous: 1 } ]);
   });
 
 /**
@@ -65,22 +86,17 @@ test(
         configurable: true,
         enumerable: true });
 
-    let seenValue = 0;
-
-    proxy.x!.on(
-      'set:y',
-      (
-          { value }: any
-        ) =>
-      {
-        seenValue = value;
-      });
+    const deliveries =
+      record(proxy.x);
 
     (proxy.x as any).y = 2;
 
-    assert.equal(
-      seenValue,
-      2);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'y',
+          value: 2,
+          previous: 1 } ]);
   });
 
 /**
@@ -120,22 +136,17 @@ test(
     const proxy =
       observable(object);
 
-    let seenValue = '';
-
-    proxy.items[0].on(
-      'set:name',
-      (
-          { value }: any
-        ) =>
-      {
-        seenValue = value;
-      });
+    const deliveries =
+      record(proxy.items[0]);
 
     proxy.items[0].name = 'B';
 
-    assert.equal(
-      seenValue,
-      'B');
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'name',
+          value: 'B',
+          previous: 'A' } ]);
   });
 
 /**
@@ -161,11 +172,12 @@ test(
   });
 
 /**
- * Object field updates should emit both keyed and generic set events so
- * specific and aggregate subscribers stay in sync.
+ * One event, one payload shape. A plain assignment trips both the `set` and the
+ * `defineProperty` trap, and the re-entrancy guard is what stops it being
+ * reported twice.
  */
 test(
-  `${TEST_SUITE}: observable object set and keyed set events`,
+  `${TEST_SUITE}: an object assignment is one change`,
   async () =>
   {
     const tracer =
@@ -185,437 +197,649 @@ test(
 
     proxy.a = 2;
 
-    const traces =
-      tracer.getMinimalTraces();
-
     assert.deepEqual(
-      traces,
+      tracer.getMinimalTraces(),
       [ { action: 'new',
           payload:
             { object } },
         { action: 'emit',
           payload:
             { object,
-              event: 'define:a' } },
-        { action: 'emit',
-          payload:
-            { object,
-              event: 'define' } },
-        { action: 'emit',
-          payload:
-            { object,
-              event: 'set:a',
+              event: 'change',
               args:
-                [ { previous: 1,
-                    property: 'a',
-                    value: 2 } ] } },
-        { action: 'emit',
-          payload:
-            { object,
-              event: 'set',
-              args:
-                [ { previous: 1,
-                    property: 'a',
-                    value: 2 } ] } } ]);
+                [ [ { kind: 'set',
+                      property: 'a',
+                      value: 2,
+                      previous: 1 } ] ] } } ]);
   });
 
 /**
- * Defining fields at runtime should emit define events for both targeted and
- * broad observers.
+ * Removal is a set to `undefined`. There is no delete event, so a consumer
+ * cannot tell a removed key from one present and undefined.
  */
 test(
-  `${TEST_SUITE}: observable object define and keyed define events`,
+  `${TEST_SUITE}: removing a property is a set to undefined`,
   async () =>
   {
-    const tracer =
-      createTracer();
-
-    const obj =
+    const proxy =
       observable(
-        { a: 1 },
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
+        { a: 1 } as { a?: number; });
+
+    const deliveries =
+      record(proxy);
+
+    delete proxy.a;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'a',
+          value: undefined,
+          previous: 1 } ]);
+
+    // Removing a key that was already undefined is not a change.
+    (proxy as any).b = undefined;
+
+    delete (proxy as any).b;
+
+    assert.equal(
+      flat(deliveries).length,
+      1);
+  });
+
+/**
+ * A definition is reported by whether the observed value changed, not by what
+ * the descriptor says. Descriptor observation is not part of the contract.
+ */
+test(
+  `${TEST_SUITE}: a definition is reported as a value change or not at all`,
+  async () =>
+  {
+    const proxy: any =
+      observable(
+        { a: 1,
+          b: 2,
+          c: 3 });
+
+    const deliveries =
+      record(proxy);
+
+    // The value changes.
+    Object.defineProperty(
+      proxy,
+      'a',
+      { value: 9,
+        writable: true,
+        enumerable: true,
+        configurable: true });
+
+    // Installing a getter changes the observed value from 2 to what it yields,
+    // so it is reported -- and the getter runs to report it.
+    let reads = 0;
 
     Object.defineProperty(
-      obj,
-      'a',
+      proxy,
+      'b',
+      { get()
+        {
+          reads++;
+
+          return 20;
+        },
+        configurable: true });
+
+    // Redefining with the same value changes nothing.
+    Object.defineProperty(
+      proxy,
+      'c',
       { value: 3,
         writable: true,
-        configurable: true,
-        enumerable: true });
+        enumerable: true,
+        configurable: true });
 
-    const eventParameters =
-      { property: 'a',
-        descriptor:
-          { value: 3,
-            writable: true,
-            enumerable: true,
-            configurable: true },
-        previous:
-          { value: 1,
-            writable: true,
-            enumerable: true,
-            configurable: true } };
+    // A flag on its own changes nothing observable.
+    Object.defineProperty(
+      proxy,
+      'c',
+      { enumerable: false });
+
+    // A setter with no getter leaves the read at undefined, so it is silent
+    // only where the property was already undefined.
+    Object.defineProperty(
+      proxy,
+      'd',
+      { set(
+          _value: unknown
+        )
+        {},
+        configurable: true });
+
+    // Converting the accessor back to a data property changes the observed
+    // value again.
+    Object.defineProperty(
+      proxy,
+      'b',
+      { value: 21,
+        writable: true,
+        enumerable: true,
+        configurable: true });
 
     assert.deepEqual(
-      tracer.getFirstEventParameters('define'),
-      eventParameters);
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'a',
+          value: 9,
+          previous: 1 },
+        { kind: 'set',
+          property: 'b',
+          value: 20,
+          previous: 2 },
+        { kind: 'set',
+          property: 'b',
+          value: 21,
+          previous: 20 } ]);
 
-    assert.deepEqual(
-      tracer.getFirstEventParameters('define:a'),
-      eventParameters);
+    assert.ok(reads > 0);
   });
 
 /**
- * Removing a field must emit delete signals so dependent consumers can drop
- * stale state immediately.
+ * An array index is an ordinary string property, so there is no numeric `index`
+ * field on a `set` and no separate array change type.
  */
 test(
-  `${TEST_SUITE}: observable object delete and keyed delete events`,
+  `${TEST_SUITE}: array index and property writes are set entries`,
   async () =>
   {
-    const tracer =
-      createTracer();
-
-    const object =
-      { a: 1 };
-
-    const obj =
+    const arr: any =
       observable(
-        object,
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
+        [ 1,
+          2 ]);
 
-    delete (obj as any).a;
-
-    const traces =
-      tracer.getMinimalTraces();
-
-    assert.deepEqual(
-      traces,
-      [ { action: 'new',
-          payload:
-            { object } },
-        { action: 'emit',
-          payload:
-            { object,
-              event: 'delete:a',
-              args:
-                [ { previous: 1,
-                    property: 'a' } ] } },
-        { action: 'emit',
-          payload:
-            { object,
-              event: 'delete',
-              args:
-                [ { previous: 1,
-                    property: 'a' } ] } } ]);
-  });
-
-/**
- * Changing an item index should emit index-aware payloads so consumers can
- * update only the affected entry.
- */
-test(
-  `${TEST_SUITE}: observable array index set, property set`,
-  async () =>
-  {
-    const tracer =
-      createTracer();
-
-    const array =
-      [ 1,
-        2 ];
-
-    const arr =
-      observable(
-        array,
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
+    const deliveries =
+      record(arr);
 
     arr['0'] = 10;
     arr[1] = 20;
-    (arr as any).test1 = 30;
-
-    const traces =
-      tracer.getMinimalTraces();
+    arr.test1 = 30;
+    arr['01'] = 99;
 
     assert.deepEqual(
-      traces,
-      [ { action: 'new',
-          payload:
-            { object: array } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set:0',
-              args:
-                [ { previous: 1,
-                    index: 0,
-                    value: 10 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set',
-              args:
-                [ { previous: 1,
-                    index: 0,
-                    value: 10 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set:1',
-              args:
-                [ { previous: 2,
-                    index: 1,
-                    value: 20 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set',
-              args:
-                [ { previous: 2,
-                    index: 1,
-                    value: 20 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'define:test1' } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'define' } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set:test1',
-              args:
-                [ { previous: undefined,
-                    property: 'test1',
-                    value: 30 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set',
-              args:
-                [ { previous: undefined,
-                    property: 'test1',
-                    value: 30 } ] } } ]);
+      flat(deliveries),
+      [ { kind: 'set',
+          property: '0',
+          value: 10,
+          previous: 1 },
+        { kind: 'set',
+          property: '1',
+          value: 20,
+          previous: 2 },
+        { kind: 'set',
+          property: 'test1',
+          value: 30,
+          previous: undefined },
+        { kind: 'set',
+          property: '01',
+          value: 99,
+          previous: undefined } ]);
   });
 
 /**
- * Trimming a collection through length should emit a property payload for
- * aggregate consumers such as counters.
+ * Deleting an index is a set to undefined, and it does not change length.
  */
 test(
-  `${TEST_SUITE}: observable array length set event`,
+  `${TEST_SUITE}: deleting an array index is a set to undefined`,
   async () =>
   {
-    const tracer =
-      createTracer();
-
-    const array =
-      [ 1,
-        2 ];
-
     const arr =
       observable(
-        array,
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
+        [ 10,
+          20 ]);
 
-    // setting length drops the tail, and each dropped item is reported
-    arr.length = 1;
+    const deliveries =
+      record(arr);
 
-    const traces =
-      tracer.getMinimalTraces();
-
-    assert.deepEqual(
-      traces,
-      [ { action: 'new',
-          payload:
-            { object: array } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'delete:1',
-              args:
-                [ { index: 1,
-                    previous: 2 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'delete',
-              args:
-                [ { index: 1,
-                    previous: 2 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set:length',
-              args:
-                [ { previous: 2,
-                    property: 'length',
-                    value: 1 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set',
-              args:
-                [ { previous: 2,
-                    property: 'length',
-                    value: 1 } ] } } ]);
-  });
-
-/**
- * Deleting an item index must emit delete metadata while preserving native
- * sparse-array length behavior.
- */
-test(
-  `${TEST_SUITE}: observable array keyed delete event`,
-  async () =>
-  {
-    const tracer =
-      createTracer();
-
-    const array =
-      [ 10,
-        20 ];
-
-    const arr =
-      observable(
-        array,
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
-
-    // deleting items does not change length
     delete arr[1];
-
-    const traces =
-      tracer.getMinimalTraces();
 
     assert.equal(
       arr.length,
       2);
 
     assert.deepEqual(
-      traces,
-      [ { action: 'new',
-          payload:
-            { object: array } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'delete:1',
-              args:
-                [ { previous: 20,
-                    index: 1 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'delete',
-              args:
-                [ { previous: 20,
-                    index: 1 } ] } } ]);
+      flat(deliveries),
+      [ { kind: 'set',
+          property: '1',
+          value: undefined,
+          previous: 20 } ]);
   });
 
 /**
- * Keys like '01' are metadata keys, not canonical numeric indexes, and should
- * therefore use property-style payloads.
+ * Clearing an array is the common idiom and a raw assignment, so it reports one
+ * splice rather than the fan-out the list exists to remove.
  */
 test(
-  `${TEST_SUITE}: observable array non-canonical numeric-like key uses property payload`,
+  `${TEST_SUITE}: truncating an array through length is a splice`,
   async () =>
   {
-    const tracer =
-      createTracer();
-
-    const array =
-      [ 1,
-        2 ];
-
     const arr =
       observable(
-        array,
-        { eventful:
-            (value: any) =>
-          eventful(
-            value,
-            tracer) });
+        [ 'a',
+          'b',
+          'c' ]);
 
-    (arr as any)['01'] = 99;
+    const deliveries =
+      record(arr);
 
-    const traces =
-      tracer.getMinimalTraces();
+    arr.length = 1;
 
     assert.deepEqual(
-      traces,
-      [ { action: 'new',
-          payload:
-            { object: array } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'define:01' } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'define' } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set:01',
-              args:
-                [ { previous: undefined,
-                    property: '01',
-                    value: 99 } ] } },
-        { action: 'emit',
-          payload:
-            { object: array,
-              event: 'set',
-              args:
-                [ { previous: undefined,
-                    property: '01',
-                    value: 99 } ] } } ]);
+      flat(deliveries),
+      [ { kind: 'splice',
+          index: 1,
+          removed:
+            [ 'b',
+              'c' ],
+          added: [ ] } ]);
+
+    assert.deepEqual(
+      [ ...arr ],
+      [ 'a' ]);
+  });
+
+/**
+ * A length assignment that removes nothing stays silent, and growing an array
+ * reports the length itself.
+ */
+test(
+  `${TEST_SUITE}: growing or keeping array length reports no splice`,
+  async () =>
+  {
+    const arr =
+      observable(
+        [ 1 ]);
+
+    const deliveries =
+      record(arr);
+
+    arr.length = 1;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ ]);
+
+    arr.length = 4;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'length',
+          value: 4,
+          previous: 1 } ]);
+  });
+
+/**
+ * Five methods produce a splice, because for those the arguments are the
+ * description. Each runs in one batch, so `shift()` is one notification
+ * carrying one entry rather than four notifications.
+ */
+test(
+  `${TEST_SUITE}: the splicing array methods report one splice each`,
+  async () =>
+  {
+    const cases: Array<[string, (arr: any) => void, Change]> =
+      [ [ 'push',
+          arr => arr.push('d'),
+          { kind: 'splice',
+            index: 3,
+            removed: [ ],
+            added:
+              [ 'd' ] } ],
+        [ 'pop',
+          arr => arr.pop(),
+          { kind: 'splice',
+            index: 2,
+            removed:
+              [ 'c' ],
+            added: [ ] } ],
+        [ 'shift',
+          arr => arr.shift(),
+          { kind: 'splice',
+            index: 0,
+            removed:
+              [ 'a' ],
+            added: [ ] } ],
+        [ 'unshift',
+          arr => arr.unshift('z'),
+          { kind: 'splice',
+            index: 0,
+            removed: [ ],
+            added:
+              [ 'z' ] } ],
+        [ 'splice remove',
+          arr =>
+      arr.splice(
+        1,
+        1),
+          { kind: 'splice',
+            index: 1,
+            removed:
+              [ 'b' ],
+            added: [ ] } ],
+        [ 'splice insert',
+          arr =>
+        arr.splice(
+          1,
+          0,
+          'z'),
+          { kind: 'splice',
+            index: 1,
+            removed: [ ],
+            added:
+              [ 'z' ] } ],
+        [ 'splice replace',
+          arr =>
+      arr.splice(
+        1,
+        1,
+        'y',
+        'z'),
+          { kind: 'splice',
+            index: 1,
+            removed:
+              [ 'b' ],
+            added:
+              [ 'y',
+                'z' ] } ],
+        [ 'splice from the end',
+          arr =>
+        arr.splice(
+          -1,
+          5),
+          { kind: 'splice',
+            index: 2,
+            removed:
+              [ 'c' ],
+            added: [ ] } ],
+        [ 'splice past the end',
+          arr =>
+      arr.splice(
+        9,
+        1,
+        'z'),
+          { kind: 'splice',
+            index: 3,
+            removed: [ ],
+            added:
+              [ 'z' ] } ] ];
+
+    for (const [name, mutate, expected] of cases) {
+      const arr: any =
+        observable(
+          [ 'a',
+            'b',
+            'c' ]);
+
+      const deliveries =
+        record(arr);
+
+      mutate(arr);
+
+      assert.equal(
+        deliveries.length,
+        1,
+        `${name} should be one notification`);
+
+      assert.deepEqual(
+        flat(deliveries),
+        [ expected ],
+        name);
+    }
+  });
+
+/** An operation that changes nothing reports nothing. */
+test(
+  `${TEST_SUITE}: a splicing method that changes nothing is silent`,
+  async () =>
+  {
+    const arr: any =
+      observable(
+        [ ] as string[]);
+
+    const deliveries =
+      record(arr);
+
+    arr.pop();
+    arr.shift();
+    arr.push();
+    arr.unshift();
+
+    arr.splice(
+      0,
+      0);
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ ]);
+  });
+
+/** Pushed values are converted, because the call goes through the proxy. */
+test(
+  `${TEST_SUITE}: a pushed object is converted and reported as added`,
+  async () =>
+  {
+    const arr: any =
+      observable(
+        [ ] as Array<{ n: number; }>);
+
+    const deliveries =
+      record(arr);
+
+    arr.push(
+      { n: 1 });
+
+    assert.equal(
+      typeof arr[0].on,
+      'function');
+
+    const entry =
+      flat(deliveries)[0] as Extract<Change, { kind: 'splice'; }>;
+
+    // `added` holds what a read returns, meaning the converted values.
+    assert.strictEqual(
+      entry.added[0],
+      arr[0]);
+  });
+
+/**
+ * `sort` and `reverse` are permutations and `fill` is a range overwrite: the
+ * producer does not have a splice for them, so it reports the `set` entries it
+ * does have, batched into one notification.
+ */
+test(
+  `${TEST_SUITE}: permutations and range writes report batched set entries`,
+  async () =>
+  {
+    const arr =
+      observable(
+        [ 'a',
+          'b',
+          'c',
+          'd',
+          'e' ]);
+
+    const deliveries =
+      record(arr);
+
+    arr.reverse();
+
+    assert.equal(
+      deliveries.length,
+      1);
+
+    // The middle element did not move, so it is absent: the entry list is what
+    // changed, never the affected range.
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: '0',
+          value: 'e',
+          previous: 'a' },
+        { kind: 'set',
+          property: '4',
+          value: 'a',
+          previous: 'e' },
+        { kind: 'set',
+          property: '1',
+          value: 'd',
+          previous: 'b' },
+        { kind: 'set',
+          property: '3',
+          value: 'b',
+          previous: 'd' } ]);
+
+    const filled =
+      observable(
+        [ 1,
+          2,
+          3 ]);
+
+    const fills =
+      record(filled);
+
+    filled.fill(
+      0,
+      1);
+
+    assert.equal(
+      fills.length,
+      1);
+
+    assert.deepEqual(
+      flat(fills),
+      [ { kind: 'set',
+          property: '1',
+          value: 0,
+          previous: 2 },
+        { kind: 'set',
+          property: '2',
+          value: 0,
+          previous: 3 } ]);
+  });
+
+/**
+ * A method invoked so that it bypasses the `get` trap produces `set` entries.
+ * That is consistent with the contract, since `splice` is optional.
+ */
+test(
+  `${TEST_SUITE}: a borrowed array method reports set entries`,
+  async () =>
+  {
+    const arr =
+      observable(
+        [ 'a' ]);
+
+    const deliveries =
+      record(arr);
+
+    Array.prototype
+      .push
+      .call(
+        arr,
+        'b');
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: '1',
+          value: 'b',
+          previous: undefined } ]);
+  });
+
+/** An own override of a mutating method is left alone. */
+test(
+  `${TEST_SUITE}: an own array method override is not wrapped`,
+  async () =>
+  {
+    const source: any =
+      [ 'a' ];
+
+    const calls: unknown[] = [ ];
+
+    source.push =
+      (
+          ...items: unknown[]
+        ): number =>
+      {
+      calls.push(items);
+
+      return 0;
+    };
+
+    const arr: any =
+      observable(source);
+
+    const deliveries =
+      record(arr);
+
+    arr.push('b');
+
+    assert.deepEqual(
+      calls,
+      [ [ 'b' ] ]);
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ ]);
   });
 
 /**
  * Starting without an initial value should still allow later assignment and
- * emit the same boxed set contract.
+ * emit the same boxed contract.
  */
 test(
   `${TEST_SUITE}: observable <empty>`,
   async () =>
   {
-    const obj =
+    const boxed =
       observable<number | undefined>(undefined);
 
-    let newValue: any;
+    const deliveries =
+      record(boxed);
 
-    obj.on(
-      'set',
-      (v: any) => newValue = v.value);
+    boxed.value = 43;
 
-    obj.value = 43;
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'value',
+          value: 43,
+          previous: undefined } ]);
+  });
 
-    assert.strictEqual(
-      newValue,
-      43);
+/**
+ * Telemetry gauge S5.1: a primitive reading wrapped as observable should emit
+ * value transitions through the same event pipeline as object state.
+ */
+test(
+  `${TEST_SUITE}: observable number`,
+  async () =>
+  {
+    const boxed =
+      observable(42);
+
+    const deliveries =
+      record(boxed);
+
+    boxed.value = 43;
+
+    // An equal write is not a change.
+    boxed.value = 43;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'value',
+          value: 43,
+          previous: 42 } ]);
   });
 
 /**
@@ -633,6 +857,40 @@ test(
           { eventful:
               123 as any }),
       /Expect a function\./);
+  });
+
+/**
+ * `strict` and the `error` hook are reachable through the same seam, because
+ * `ObservableOptions.eventful` takes the factory itself.
+ */
+test(
+  `${TEST_SUITE}: the eventful factory carries eventful's own options`,
+  async () =>
+  {
+    const model =
+      observable(
+        { a: 1 },
+        { eventful:
+            (value: any) =>
+          eventful(
+            value,
+            { strict: true }) });
+
+    model.on(
+      'change',
+      () =>
+      {
+        throw new Error('from a listener');
+      });
+
+    // With strict, a throwing listener propagates out of an ordinary
+    // assignment.
+    assert.throws(
+      () =>
+      {
+        model.a = 2;
+      },
+      /from a listener/);
   });
 
 /**
@@ -656,38 +914,34 @@ test(
           throw new Error('should not extend');
         } });
 
-    let seen: string | undefined;
-
-    observed.on(
-      'set:name',
-      (
-          { value }: any
-        ) =>
-      {
-        seen = value;
-      });
+    const deliveries =
+      record(observed);
 
     observed.name = 'Bob';
 
-    assert.equal(
-      seen,
-      'Bob');
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'name',
+          value: 'Bob',
+          previous: 'Alice' } ]);
   });
 
 /**
- * Passing a per-instance trace hook should capture object lifecycle actions
- * for local diagnostics.
+ * The trace hook reports `new` and one `change` per delivery, with the entry
+ * list of that delivery.
  */
 test(
-  `${TEST_SUITE}: per-instance trace hook captures new and set actions`,
+  `${TEST_SUITE}: per-instance trace hook captures new and change actions`,
   async () =>
   {
     const actions: string[] = [ ];
     const payloads: any[] = [ ];
 
-    const obj =
+    const model =
       observable(
-        { a: 1 },
+        { a: 1,
+          b: 2 },
         { trace:
             (
                 _source: unknown,
@@ -699,19 +953,28 @@ test(
           payloads.push(payload);
         } });
 
-    obj.a = 2;
+    batch(
+      () =>
+      {
+        model.a = 2;
+        model.b = 3;
+      });
 
     assert.deepEqual(
       actions,
       [ 'new',
-        'define',
-        'set' ]);
+        'change' ]);
 
     assert.deepEqual(
       payloads[payloads.length - 1],
-      { property: 'a',
-        value: 2,
-        previous: 1 });
+      [ { kind: 'set',
+          property: 'a',
+          value: 2,
+          previous: 1 },
+        { kind: 'set',
+          property: 'b',
+          value: 3,
+          previous: 2 } ]);
   });
 
 /**
@@ -737,11 +1000,11 @@ test(
     };
 
     try {
-      const obj =
+      const model =
         observable(
           { a: 1 });
 
-      obj.a = 2;
+      model.a = 2;
     } finally {
       observable.options.trace = previousTrace;
     }
@@ -749,138 +1012,173 @@ test(
     assert.deepEqual(
       actions,
       [ 'new',
-        'define',
-        'set' ]);
+        'change' ]);
   });
 
 /**
- * Telemetry gauge S5.1: a primitive reading wrapped as observable should emit
- * value transitions through the same event pipeline as object state.
+ * Primitives, `null`, `undefined` and functions are explicit leaves, or
+ * ordinary JSON data and models with methods would be refused.
  */
 test(
-  `${TEST_SUITE}: observable number`,
+  `${TEST_SUITE}: leaf kinds are stored as they are`,
   async () =>
   {
-    const obj =
-      observable(42);
+    const method = (): number => 1;
 
-    let newValue: number | undefined;
-
-    obj.on(
-      'set',
-      (v: any) => newValue = v.value);
-
-    obj.value = 43;
+    const model: any =
+      observable(
+        { text: 'a',
+          count: 1,
+          flag: true,
+          nothing: null,
+          missing: undefined,
+          method,
+          big: 1n,
+          tag:
+            Symbol('tag') });
 
     assert.strictEqual(
-      newValue,
-      43);
+      model.method,
+      method);
+
+    assert.strictEqual(
+      model.nothing,
+      null);
+
+    assert.strictEqual(
+      model.missing,
+      undefined);
+
+    const deliveries =
+      record(model);
+
+    model.count = 2;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'count',
+          value: 2,
+          previous: 1 } ]);
   });
 
 /**
- * Values that rely on internal slots or private fields cannot survive being
- * proxied, so nested conversion must leave them untouched and keep their
- * identity intact.
+ * A nested value observable cannot make observable is refused, with the path at
+ * which it was found. Storing it silently would leave the model half observable
+ * with no indication.
  */
 test(
-  `${TEST_SUITE}: nested built-ins and class instances are kept as values`,
+  `${TEST_SUITE}: an unsupported nested value is refused with its path`,
   async () =>
   {
     class Instance
-    {
-      #secret = 7;
+    {}
 
-      get secret(): number {
-        return this.#secret;
-      }
-    }
+    assert.throws(
+      () =>
+        observable(
+          { orders:
+              [ { meta: new Map() } ] }),
+      { name: 'TypeError',
+        message:
+          'at value.orders[0].meta: Map is not supported. Hold it in a plain '
+          + 'object, or take it over with the convert option.' });
 
-    const date =
-      new Date(5);
+    assert.throws(
+      () =>
+        observable(
+          { created:
+              new Date(1) }),
+      { name: 'TypeError',
+        message:
+          /^at value\.created: Date is not supported\./ });
 
-    const map =
-      new Map(
-        [ [ 'k',
-            1 ] ]);
+    assert.throws(
+      () =>
+        observable(
+          { pattern: /x/ }),
+      { name: 'TypeError',
+        message:
+          /^at value\.pattern: RegExp is not supported\./ });
 
-    const set =
-      new Set(
-        [ 1 ]);
+    assert.throws(
+      () =>
+        observable(
+          { instance:
+              new Instance() }),
+      { name: 'TypeError',
+        message:
+          /^at value\.instance: Instance is not supported\./ });
 
-    const bytes =
-      new Uint8Array(2);
+    assert.throws(
+      () =>
+        observable(
+          { config:
+              Object.freeze(
+                { a: 1 }) }),
+      { name: 'TypeError',
+        message:
+          /^at value\.config: a frozen object is not supported\./ });
 
-    const instance =
-      new Instance();
-
-    const object =
+    // The same rule applies to a value assigned later.
+    const model: any =
       observable(
-        { date,
-          map,
-          set,
-          pattern: /x/,
-          bytes,
-          instance });
+        { created:
+            null as unknown });
 
-    assert.strictEqual(
-      object.date,
-      date);
-
-    assert.strictEqual(
-      object.date.getTime(),
-      5);
-
-    assert.strictEqual(
-      object.map.get('k'),
-      1);
-
-    assert.strictEqual(
-      object.set.has(1),
-      true);
-
-    assert.strictEqual(
-      object.pattern.test('x'),
-      true);
-
-    assert.strictEqual(
-      object.bytes.length,
-      2);
-
-    assert.strictEqual(
-      object.instance.secret,
-      7);
+    assert.throws(
+      () =>
+      {
+        model.created =
+          new Date(1);
+      },
+      /at value\.created: Date is not supported\./);
   });
 
 /**
- * Opaque values are still ordinary properties: replacing one has to emit the
- * usual set events even though its contents are not observed.
+ * `Date` is the case most likely to be hit, and the `convert` hook is the
+ * answer -- the same answer the package already gives for `Map` and `Set`.
  */
 test(
-  `${TEST_SUITE}: replacing an opaque value emits set events`,
+  `${TEST_SUITE}: the convert hook is the escape from an unsupported value`,
   async () =>
   {
-    const object =
+    const model =
       observable(
-        { date:
-            new Date(1) });
+        { created:
+            new Date(1) },
+        { convert:
+            value =>
+          value instanceof Date
+            ? value
+            : undefined });
 
-    const seen: string[] = [ ];
+    // The member type is `never`: a model that holds a `Date` has to be typed
+    // with the wrapper the hook returns, the same way it does for a `Set`.
+    assert.strictEqual(
+      (model.created as unknown as Date).getTime(),
+      1);
+  });
 
-    object.on(
-      'set:date',
-      () => seen.push('set:date'));
+/**
+ * A value that already conforms is stitched in as it is. Testing for `on` alone
+ * would admit a value that then fails at teardown.
+ */
+test(
+  `${TEST_SUITE}: a conforming nested value is passed through`,
+  async () =>
+  {
+    const child =
+      eventful(
+        { n: 1 });
 
-    object.on(
-      'set',
-      () => seen.push('set'));
+    const model =
+      observable(
+        { child });
 
-    object.date =
-      new Date(2);
-
-    assert.deepEqual(
-      seen,
-      [ 'set:date',
-        'set' ]);
+    assert.strictEqual(
+      model.child,
+      child);
   });
 
 /**
@@ -896,31 +1194,29 @@ test(
 
     bare.a = 1;
 
-    const object =
+    const model =
       observable(bare);
 
-    let seen: number | undefined;
+    const deliveries =
+      record(model);
 
-    object.on(
-      'set:a',
-      (
-        { value }: any
-      ) => seen = value);
+    model.a = 2;
 
-    object.a = 2;
-
-    assert.strictEqual(
-      seen,
-      2);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'a',
+          value: 2,
+          previous: 1 } ]);
   });
 
 /**
- * An opaque value cannot be observed as the top-level target. Boxing it would
- * hand back something whose properties all read as undefined, with nothing to
- * say why, so it is refused instead.
+ * A value observable cannot observe cannot be the top-level target either.
+ * Boxing it would hand back something whose properties all read as undefined,
+ * with nothing to say why.
  */
 test(
-  `${TEST_SUITE}: top-level opaque value is refused`,
+  `${TEST_SUITE}: top-level unsupported value is refused`,
   async () =>
   {
     class Instance
@@ -944,11 +1240,8 @@ test(
     }
 
     // Primitives are still boxed.
-    const boxed =
-      observable(42);
-
     assert.strictEqual(
-      boxed.value,
+      observable(42).value,
       42);
   });
 
@@ -964,38 +1257,33 @@ test(
     const shared =
       { s: 1 };
 
-    const object =
+    const model =
       observable(
         { a: shared,
           b: shared });
 
     assert.strictEqual(
-      object.a,
-      object.b);
+      model.a,
+      model.b);
 
-    let viaA = 0;
-    let viaB = 0;
+    const viaA =
+      record(model.a);
 
-    object.a.on(
-      'set:s',
-      () => viaA++);
+    const viaB =
+      record(model.b);
 
-    object.b.on(
-      'set:s',
-      () => viaB++);
+    model.b.s = 3;
 
-    object.b.s = 3;
+    assert.equal(
+      flat(viaA).length,
+      1);
 
-    assert.strictEqual(
-      viaA,
+    assert.equal(
+      flat(viaB).length,
       1);
 
     assert.strictEqual(
-      viaB,
-      1);
-
-    assert.strictEqual(
-      object.a.s,
+      model.a.s,
       3);
   });
 
@@ -1010,7 +1298,7 @@ test(
     const deep =
       { z: 1 };
 
-    const object =
+    const model =
       observable(
         { x:
             { deep },
@@ -1018,8 +1306,8 @@ test(
             { deep } });
 
     assert.strictEqual(
-      object.x.deep,
-      object.y.deep);
+      model.x.deep,
+      model.y.deep);
   });
 
 /**
@@ -1037,59 +1325,25 @@ test(
 
     source.self = source;
 
-    const object =
+    const model =
       observable(source);
 
     assert.strictEqual(
-      object.self,
-      object);
+      model.self,
+      model);
 
-    let seen = 0;
+    const deliveries =
+      record(model);
 
-    object.on(
-      'set:n',
-      () => seen++);
+    model.self!.n = 5;
 
-    object.self!.n = 5;
-
-    assert.strictEqual(
-      seen,
+    assert.equal(
+      flat(deliveries).length,
       1);
 
     assert.strictEqual(
-      object.n,
+      model.n,
       5);
-  });
-
-/**
- * Watching through one handle has to observe writes made through any other
- * handle on the same target.
- */
-test(
-  `${TEST_SUITE}: watch observes writes through a shared reference`,
-  async () =>
-  {
-    const shared =
-      { n: 1 };
-
-    const object =
-      observable(
-        { a: shared,
-          b: shared });
-
-    let seen: unknown;
-
-    (object as any).watch(
-      'a.n',
-      (
-        value: unknown
-      ) => seen = value);
-
-    object.b.n = 9;
-
-    assert.strictEqual(
-      seen,
-      9);
   });
 
 /**
@@ -1104,7 +1358,7 @@ test(
     let reads = 0;
     let backing = 1;
 
-    const object =
+    const model =
       observable(
         { get computed(): object {
           reads++;
@@ -1122,34 +1376,27 @@ test(
       reads,
       0);
 
-    const descriptor =
-      Object.getOwnPropertyDescriptor(
-        object,
-        'computed');
-
     assert.equal(
-      typeof descriptor?.get,
+      typeof Object.getOwnPropertyDescriptor(
+        model,
+        'computed')?.get,
       'function');
 
-    let seen = 0;
+    const deliveries =
+      record(model);
 
-    object.on(
-      'set:pair',
-      () => seen++);
-
-    object.pair = 7;
+    model.pair = 7;
 
     assert.strictEqual(
       backing,
       7);
 
-    assert.strictEqual(
-      object.pair,
-      7);
-
-    assert.strictEqual(
-      seen,
-      1);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'pair',
+          value: 7,
+          previous: 1 } ]);
   });
 
 /**
@@ -1172,15 +1419,15 @@ test(
         enumerable: true,
         configurable: true });
 
-    const object =
+    const model =
       observable(source);
 
     assert.strictEqual(
-      object.readonly.a,
+      model.readonly.a,
       1);
 
     assert.equal(
-      (object.readonly as any).on,
+      model.readonly.on,
       undefined);
 
     const sparse =
@@ -1201,202 +1448,37 @@ test(
   });
 
 /**
- * The eventful API cannot be attached to a non-extensible value, and a frozen
- * value has no changes to report, so such values stay opaque.
+ * Symbol keys have no place in a contract whose `property` is a string, so they
+ * are stored and not reported.
  */
 test(
-  `${TEST_SUITE}: non-extensible values are opaque`,
+  `${TEST_SUITE}: symbol keys are not reported`,
   async () =>
   {
-    const frozen =
-      Object.freeze(
+    const key =
+      Symbol('key');
+
+    const model: any =
+      observable(
         { a: 1 });
 
-    const object =
-      observable(
-        { frozen,
-          sealed:
-            Object.seal(
-              { b: 2 }) });
+    const deliveries =
+      record(model);
+
+    model[key] = 2;
 
     assert.strictEqual(
-      object.frozen,
-      frozen);
-
-    assert.strictEqual(
-      object.frozen.a,
-      1);
-
-    assert.strictEqual(
-      object.sealed.b,
+      model[key],
       2);
 
-    // Nested, a frozen value is simply kept. As a top-level target it is
-    // refused, because there would be nothing to observe.
-    assert.throws(
-      () =>
-        observable(
-          frozen as any),
-      TypeError);
-  });
-
-/**
- * Shortening an array drops elements without going through the delete trap,
- * so the truncation has to report them itself, furthest index first and
- * before the length change.
- */
-test(
-  `${TEST_SUITE}: truncating an array emits delete events`,
-  async () =>
-  {
-    const array =
-      observable(
-        [ 'a',
-          'b',
-          'c' ]);
-
-    const events: string[] = [ ];
-
-    array.on(
-      'delete',
-      (
-        { index, previous }: any
-      ) =>
-        events.push(
-          `delete ${index} ${previous}`));
-
-    array.on(
-      'set',
-      (
-        payload: any
-      ) =>
-        events.push(
-          `set ${payload.property} ${payload.value}`));
-
-    let keyed: any;
-
-    array.on(
-      'delete:2',
-      (
-        payload: any
-      ) => keyed = payload);
-
-    array.length = 1;
-
     assert.deepEqual(
-      events,
-      [ 'delete 2 c',
-        'delete 1 b',
-        'set length 1' ]);
-
-    assert.deepEqual(
-      keyed,
-      { index: 2,
-        previous: 'c' });
-
-    assert.deepEqual(
-      Array.from(array),
-      [ 'a' ]);
-  });
-
-/**
- * Truncation reports only elements that are actually there: holes have
- * nothing to report, and `pop`, `shift` and `splice` delete the tail
- * themselves before assigning `length`, so nothing is reported twice.
- */
-test(
-  `${TEST_SUITE}: truncation skips holes and does not double report`,
-  async () =>
-  {
-    const source: any[] =
-      [ 1,
-        2,
-        3 ];
-
-    delete source[1];
-
-    const sparse =
-      observable(source);
-
-    const dropped: number[] = [ ];
-
-    sparse.on(
-      'delete',
-      (
-        { index }: any
-      ) => dropped.push(index));
-
-    sparse.length = 0;
-
-    assert.deepEqual(
-      dropped,
-      [ 2,
-        0 ]);
-
-    const popped =
-      observable(
-        [ 1,
-          2,
-          3 ]);
-
-    const poppedIndices: number[] = [ ];
-
-    popped.on(
-      'delete',
-      (
-        { index }: any
-      ) => poppedIndices.push(index));
-
-    popped.pop();
-
-    assert.deepEqual(
-      poppedIndices,
-      [ 2 ]);
-  });
-
-/**
- * A length assignment that removes nothing must stay silent, and growing an
- * array only reports the length itself.
- */
-test(
-  `${TEST_SUITE}: growing or keeping array length emits no deletes`,
-  async () =>
-  {
-    const array =
-      observable(
-        [ 1 ]);
-
-    const events: string[] = [ ];
-
-    array.on(
-      'delete',
-      () => events.push('delete'));
-
-    array.on(
-      'set',
-      (
-        payload: any
-      ) =>
-        events.push(
-          `set ${payload.property}`));
-
-    array.length = 1;
-
-    assert.deepEqual(
-      events,
+      flat(deliveries),
       [ ]);
-
-    array.length = 4;
-
-    assert.deepEqual(
-      events,
-      [ 'set length' ]);
   });
 
 /**
- * A wrapper for a kind observable does not support, built entirely outside
- * the library. `has` is missing on purpose: eventful reserves that name,
- * along with on, off, emit, emitAsync, removeAllListeners and getListeners.
+ * A wrapper for a kind observable does not support, built entirely outside the
+ * library.
  */
 function makeObservableSet(
     source: Set<unknown>
@@ -1423,22 +1505,12 @@ function makeObservableSet(
 
         source.add(value);
 
-        const payload =
-          { property: 'size',
-            value: source.size,
-            previous };
-
         wrapper.emit(
-          'add',
-          { value });
-
-        wrapper.emit(
-          'set:size',
-          payload);
-
-        wrapper.emit(
-          'set',
-          payload);
+          'change',
+          [ { kind: 'set',
+              property: 'size',
+              value: source.size,
+              previous } ]);
       } });
 
   return wrapper;
@@ -1453,14 +1525,14 @@ const convertSets =
     : undefined;
 
 /**
- * The convert hook has to see the values observable treats as opaque, so a
- * caller can support a kind the library deliberately does not.
+ * The convert hook has to see the values observable refuses, so a caller can
+ * support a kind the library deliberately does not.
  */
 test(
-  `${TEST_SUITE}: convert hook takes over an otherwise opaque value`,
+  `${TEST_SUITE}: convert hook takes over an otherwise unsupported value`,
   async () =>
   {
-    const object =
+    const model =
       observable(
         { tags:
             new Set(
@@ -1468,7 +1540,7 @@ test(
         { convert: convertSets });
 
     const tags =
-      object.tags as any;
+      model.tags as any;
 
     assert.equal(
       typeof tags.on,
@@ -1478,23 +1550,17 @@ test(
       tags.size,
       1);
 
-    let added: unknown;
-
-    tags.on(
-      'add',
-      (
-        { value }: any
-      ) => added = value);
+    const deliveries =
+      record(tags);
 
     tags.add('b');
 
-    assert.strictEqual(
-      added,
-      'b');
-
-    assert.strictEqual(
-      tags.size,
-      2);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'size',
+          value: 2,
+          previous: 1 } ]);
   });
 
 /**
@@ -1509,20 +1575,20 @@ test(
       new Set(
         [ 'a' ]);
 
-    const object =
+    const model =
       observable(
         { left: shared,
           right: shared },
         { convert: convertSets });
 
     assert.strictEqual(
-      object.left,
-      object.right);
+      model.left,
+      model.right);
 
-    (object.left as any).add('b');
+    (model.left as any).add('b');
 
     assert.strictEqual(
-      (object.right as any).size,
+      (model.right as any).size,
       2);
   });
 
@@ -1578,7 +1644,7 @@ test(
   `${TEST_SUITE}: convert hook can defer or opt a value out`,
   async () =>
   {
-    const object: any =
+    const model: any =
       observable(
         { converted:
             { a: 1 },
@@ -1595,57 +1661,23 @@ test(
 
     // deferred to observable, so it was converted as usual
     assert.equal(
-      typeof object.converted.on,
+      typeof model.converted.on,
       'function');
 
     // opted out, so it stayed a plain object
     assert.equal(
-      object.untouched.on,
+      model.untouched.on,
       undefined);
 
     assert.strictEqual(
-      object.untouched.b,
+      model.untouched.b,
       2);
-  });
-
-/**
- * A wrapper that emits `set:<property>` takes part in path watching, which is
- * what makes a custom kind usable from the rest of the API.
- */
-test(
-  `${TEST_SUITE}: watch binds through a wrapper the hook returned`,
-  async () =>
-  {
-    const object =
-      observable(
-        { tags:
-            new Set(
-              [ 'a' ]) },
-        { convert: convertSets });
-
-    const seen: number[] = [ ];
-
-    // The path type stops at Set, so the model would have to be typed with
-    // the wrapper for this to check statically.
-    (object as any).watch(
-      'tags.size',
-      (
-        size: number
-      ) => seen.push(size));
-
-    (object.tags as any).add('b');
-
-    assert.deepEqual(
-      seen,
-      [ 1,
-        2 ]);
   });
 
 /**
  * Conversion grafts the Eventful API onto the target itself, so a target can
  * only belong to one observable. That has to hold across separate calls, not
- * only within one conversion, or a model assembled from several pieces ends
- * up with a proxied and an un-proxied handle on the same object.
+ * only within one conversion.
  */
 test(
   `${TEST_SUITE}: one target maps to one observable across calls`,
@@ -1673,16 +1705,13 @@ test(
       left.shared,
       right.shared);
 
-    let seen = 0;
-
-    left.shared.on(
-      'set:n',
-      () => seen++);
+    const deliveries =
+      record(left.shared);
 
     right.shared.n = 7;
 
-    assert.strictEqual(
-      seen,
+    assert.equal(
+      flat(deliveries).length,
       1);
 
     assert.strictEqual(

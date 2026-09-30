@@ -1,17 +1,35 @@
 import { Eventful,
-         EventfulFactory as DefaultEventfulFactory,
-         EventMap }
+         EventfulFactory }
   from 'asljs-eventful';
+import { Change }
+  from './contract.js';
 
-export interface EventfulFactory
-{
-  <
-    T extends object | Function | undefined,
-    E extends EventMap = Record<string | symbol, any[]>
-  >(
-    object?: T
-  ): (T extends undefined ? {} : T) & Eventful<E>;
-}
+/**
+ * The event map every producer in this package carries.
+ *
+ * One event, one payload shape, whatever the target is. The payload describes
+ * what changed rather than encoding it in the event name, so a subscriber
+ * writes one listener instead of constructing N event names.
+ */
+export type ObservableEvents = {
+  change: [readonly Change[]];
+};
+
+/**
+ * Names `eventful` occupies on every converted target.
+ *
+ * Excluded from path descent, so the methods conversion adds are not offered
+ * as properties to observe.
+ */
+export type EventfulMethodName =
+  | 'on'
+  | 'once'
+  | 'off'
+  | 'emit'
+  | 'emitAsync'
+  | 'has'
+  | 'removeAllListeners'
+  | 'getListeners';
 
 /**
  * Options for observable().
@@ -21,20 +39,21 @@ export interface ObservableOptions
   /**
    * Custom factory to augment the target with eventful API (defaults to
    * imported `asljs-eventful`).
+   *
+   * The factory itself is the seam for every `eventful` option, present and
+   * future: pass a closure that supplies them.
+   *
+   * ```js
+   * observable(model, { eventful: v => eventful(v, { strict: true }) });
+   * ```
    */
-  eventful?: EventfulFactory | DefaultEventfulFactory;
+  eventful?: EventfulFactory;
 
   /**
-   * Optional trace hook: `(object, action, payload)` invoked on 'new', 'set',
-   * 'delete', 'define'.
+   * Optional trace hook: `(object, action, payload)` invoked on `'new'` with
+   * `{ object }`, and on `'change'` with the entry list of one delivery.
    */
-  trace?:
-    | ((
-      object: object | Function,
-      action: 'new' | 'set' | 'delete' | 'define',
-      payload?: any
-    ) => void)
-    | null;
+  trace?: ObservableTraceFn | null;
 
   /**
    * Controls nested conversion for object/array inputs.
@@ -55,18 +74,19 @@ export interface ObservableOptions
  * Takes over conversion for a single value.
  *
  * Called with every object observable reaches, including the values it would
- * otherwise treat as opaque, and before its own rule is applied.
+ * otherwise refuse, and before its own rule is applied. With
+ * throw-by-default it is the only escape from an unsupported value.
  *
  * - Return a wrapper to take over that value. It is stored in place of the
  *   original and, like anything else observable converts, one wrapper is
  *   reused for every reference to the same target.
  * - Return the value itself to keep it as it is, even if observable would
- *   normally convert it.
+ *   normally convert or refuse it.
  * - Return `undefined` to let observable decide.
  *
- * A wrapper should carry the Eventful API and emit `set:<property>` so that
- * `watch(...)` can bind to it along a path. Observable does not check this,
- * and it does not emit `new` for a wrapper it did not create.
+ * A wrapper should conform to the contract -- `on`, `off`, and a `change`
+ * event -- so that a query can bind to it along a path. Observable does not
+ * check this, and it does not emit `new` for a wrapper it did not create.
  *
  * Primitives are never passed to the hook: they have nothing to observe.
  */
@@ -76,120 +96,10 @@ export type ObservableConvertFn =
   ) =>
     unknown;
 
-/** Arrays: no 'define' events */
-export type ArrayIndex = number;
-
-export type ArraySetPayload<T extends readonly any[]> =
-  | {
-    index: ArrayIndex;
-    value: ArrayElement<T>;
-    previous: ArrayElement<T> | undefined;
-  }
-  | { property: 'length'; value: number; previous: number; }
-  | { property: string; value: unknown; previous: unknown; };
-
-export type ArrayDeletePayload<T extends readonly any[]> =
-  | { index: ArrayIndex; previous: ArrayElement<T> | undefined; }
-  | { property: string; previous: unknown; };
-
-export type KeyedArraySetEvents<T extends readonly any[]> =
-  & {
-    [K in ArrayIndex as `set:${PropString<K>}`]: [
-      {
-        index: K;
-        value: ArrayElement<T>;
-        previous: ArrayElement<T> | undefined;
-      }
-    ];
-  }
-  & {
-    'set:length': [{ property: 'length'; value: number; previous: number; }];
-  };
-
-export type KeyedArrayDeleteEvents<T extends readonly any[]> = {
-  [K in ArrayIndex as `delete:${PropString<K>}`]: [
-    { index: K; previous: ArrayElement<T> | undefined; }
-  ];
-};
-
-export type PropString<K> = K extends string ? K
-  : K extends number ? `${K}`
-  : never;
-
-export type KeyableObject<T> = Extract<keyof T, string | number>;
-
-export type ArrayElement<T extends readonly any[]> = T[number];
-
-// Payloads for objects
-
-export type SetPayloadFor<T, K extends keyof T> = {
-  property: K;
-  value: T[K];
-  previous: T[K] | undefined;
-};
-
-export type DeletePayloadFor<T, K extends keyof T> = {
-  property: K;
-  previous: T[K] | undefined;
-};
-
-export type DefinePayloadFor<T, K extends keyof T> = {
-  property: K;
-  descriptor: PropertyDescriptor;
-  previous: PropertyDescriptor | null;
-};
-
-// Unkeyed payload unions (objects)
-
-export type SetPayload<T> = { [K in keyof T]: SetPayloadFor<T, K>; }[keyof T];
-
-export type DeletePayload<T> = {
-  [K in keyof T]: DeletePayloadFor<T, K>;
-}[keyof T];
-
-export type DefinePayload<T> = {
-  [K in keyof T]: DefinePayloadFor<T, K>;
-}[keyof T];
-
-// Keyed events for objects
-
-export type KeyedSetEvents<T> = {
-  [K in KeyableObject<T> as `set:${PropString<K>}`]: [
-    SetPayloadFor<T, Extract<K, keyof T>>
-  ];
-};
-
-export type KeyedDeleteEvents<T> = {
-  [K in KeyableObject<T> as `delete:${PropString<K>}`]: [
-    DeletePayloadFor<T, Extract<K, keyof T>>
-  ];
-};
-
-export type KeyedDefineEvents<T> = {
-  [K in KeyableObject<T> as `define:${PropString<K>}`]: [
-    DefinePayloadFor<T, Extract<K, keyof T>>
-  ];
-};
-
-/** Event map for plain objects (include 'define') */
-export type ObservableEventsObject<T extends object> =
-  & { set: [SetPayload<T>]; }
-  & { delete: [DeletePayload<T>]; }
-  & { define: [DefinePayload<T>]; }
-  & KeyedSetEvents<T>
-  & KeyedDeleteEvents<T>
-  & KeyedDefineEvents<T>;
-
-/** Primitives: boxed as { value } and only 'set' events exist */
-export type ObservableEventsPrimitive<T> = {
-  set: [{ property: 'value'; value: T; previous: T; }];
-  'set:value': [{ property: 'value'; value: T; previous: T; }];
-};
-
 export type ObservableTraceFn =
   (
     object: object | Function,
-    action: 'new' | 'set' | 'delete' | 'define',
+    action: 'new' | 'change',
     payload?: any
   ) =>
     void;
@@ -199,112 +109,79 @@ export interface ObservableGlobalOptions
   trace: ObservableTraceFn | null;
 }
 
-export type WatchedValues<
-  T,
-  K extends readonly (keyof T)[]
-> = {
-  [I in keyof K]: K[I] extends keyof T ? T[K[I]]
-    : never;
-};
-
-export type ObservableWatchFn = {
-  <
-    T extends object,
-    P extends WatchPath<T>
-  >(
-    target: T,
-    path: P,
-    callback: (value: WatchPathValue<T, P>) => void
-  ): () => boolean;
-
-  <
-    T extends object,
-    P extends readonly WatchPath<T>[] | []
-  >(
-    target: T,
-    paths: P,
-    callback: (...values: WatchPathValues<T, P>) => void
-  ): () => boolean;
-};
-
 /**
- * How deep `WatchPath` descends. The cap is what stops a self-referential
+ * How deep `ObservablePath` descends. The cap is what stops a self-referential
  * model from expanding forever, so it cannot be removed, only tuned.
  */
-type WatchPathDepthLimit = 5;
+type ObservablePathDepthLimit = 5;
+
+/** Keys of `T` a path may name. */
+type ModelKey<T> = Exclude<
+  Extract<keyof T, string>,
+  EventfulMethodName
+>;
 
 /**
  * Every dotted path that can be read out of `T`, as a union of string
  * literals: `'user' | 'user.name' | 'active'` and so on.
  *
- * Descent stops where the runtime stops converting -- arrays, opaque values,
- * and primitives are leaves -- so a path can only name something that
- * actually emits.
+ * Array indices are ordinary string keys, so an array is descended through
+ * `${number}` rather than treated as a leaf. Descent stops at values the
+ * converter refuses and at leaf kinds, so a path can only name something that
+ * is actually there.
  */
-export type WatchPath<
+export type ObservablePath<
   T,
   Depth extends readonly unknown[] = []
-> = Depth['length'] extends WatchPathDepthLimit ? never
-  : T extends readonly any[] ? never
-  : T extends ObservableOpaque ? never
+> = Depth['length'] extends ObservablePathDepthLimit ? never
+  : T extends UnsupportedValue ? never
+  : T extends Function ? never
+  : T extends readonly (infer Element)[] ?
+      | `${number}`
+      | 'length'
+      | (ObservablePath<Element, [...Depth, unknown]> extends
+        infer Rest extends string ? `${number}.${Rest}`
+        : never)
   : T extends object ? {
-      [K in Extract<keyof T, string>]:
+      [K in ModelKey<T>]:
         | K
-        | (WatchPath<T[K], [...Depth, unknown]> extends
+        | (ObservablePath<T[K], [...Depth, unknown]> extends
           infer Rest extends string ? `${K}.${Rest}`
           : never);
-    }[Extract<keyof T, string>]
+    }[ModelKey<T>]
   : never;
 
-/** The type of the value a `WatchPath` resolves to. */
-export type WatchPathValue<T, P extends string> = P extends
+/** The value one path segment resolves to. */
+type SegmentValue<T, K extends string> = T extends readonly (infer Element)[]
+  ? K extends 'length' ? number
+  : Element
+  : K extends keyof T ? T[K]
+  : never;
+
+/** The type of the value an `ObservablePath` resolves to. */
+export type ObservablePathValue<T, P extends string> = P extends
   `${infer Head}.${infer Rest}`
-  ? Head extends keyof T ? WatchPathValue<T[Head], Rest>
-  : never
-  : P extends keyof T ? T[P]
-  : never;
+  ? ObservablePathValue<SegmentValue<T, Head>, Rest>
+  : SegmentValue<T, P>;
 
-/** Values a multi-path watch reports, one per requested path, in order. */
-export type WatchPathValues<T, P extends readonly string[]> = {
-  [I in keyof P]: WatchPathValue<T, P[I] & string>;
+/** Values a combined query reports, one per path, in order. */
+export type ObservablePathValues<T, P extends readonly string[]> = {
+  [I in keyof P]: ObservablePathValue<T, P[I] & string>;
 };
 
 /**
- * The `watch` method observable injects.
- *
- * Parameterised on the bare model rather than on `T & Eventful<...>`, so the
- * eventful methods are not offered as watchable properties.
- */
-export type WatchMethod<T> = {
-  watch: {
-    <P extends WatchPath<T>>(
-      path: P,
-      callback: (value: WatchPathValue<T, P>) => void
-    ): () => boolean;
-
-    // `| [ ]` is what makes TypeScript infer a tuple here rather than an
-    // array of unions, which is what keeps the callback values positional.
-    <P extends readonly WatchPath<T>[] | []>(
-      paths: P,
-      callback: (...values: WatchPathValues<T, P>) => void
-    ): () => boolean;
-  };
-};
-
-/**
- * How deep `ObservableMembers` describes the conversion. Past the cap members
+ * How deep `ConvertedMembers` describes the conversion. Past the cap members
  * are described as they are, which keeps a self-referential model finite.
  */
-type ObservableDepthLimit = 5;
+type ConvertedDepthLimit = 5;
 
 /**
- * A nested member of an observable.
+ * A nested member of a converted value.
  *
  * Conversion is deep, so every nested plain object and array carries the
  * Eventful API, and the type says so without hedging. That applies to
- * assignment too: a property of an observable holds an observable, so
- * assigning a plain object is rejected and the value has to be wrapped
- * first.
+ * assignment too: a property of a converted object holds a converted value, so
+ * assigning a plain object is rejected and the value has to be wrapped first.
  *
  * ```ts
  * state.user = observable({ name: 'Bob' });
@@ -314,54 +191,53 @@ type ObservableDepthLimit = 5;
  * converts with the options the parent was created with, which an explicitly
  * wrapped value does not inherit.
  */
-export type ObservableMember<
+export type ConvertedMember<
   T,
   Depth extends readonly unknown[] = []
-> = T extends ObservableOpaque ? T
+> = T extends UnsupportedValue ? never
+  : T extends Function ? T
   : T extends readonly any[] ?
-      & ObservableMembers<T, [...Depth, unknown]>
-      & Eventful<ObservableEventsArray<T>>
+      & ConvertedMembers<T, [...Depth, unknown]>
+      & Eventful<ObservableEvents>
   : T extends object ?
-      & ObservableMembers<T, [...Depth, unknown]>
-      & Eventful<ObservableEventsObject<T>>
-      & WatchMethod<T>
+      & ConvertedMembers<T, [...Depth, unknown]>
+      & Eventful<ObservableEvents>
   : T;
 
 /** Members of `T`, each described as conversion leaves it. */
-export type ObservableMembers<
+export type ConvertedMembers<
   T,
   Depth extends readonly unknown[] = []
-> = Depth['length'] extends ObservableDepthLimit ? T
-  : { [K in keyof T]: ObservableMember<T[K], Depth>; };
+> = Depth['length'] extends ConvertedDepthLimit ? T
+  : { [K in keyof T]: ConvertedMember<T[K], Depth>; };
 
-/**
- * Arrays deliberately carry no `watch`: `watch(...)` throws for them at
- * runtime, so offering it would only move the failure later.
- */
-export type ObservableArray<T extends readonly any[]> =
-  & ObservableMembers<T>
-  & Eventful<ObservableEventsArray<T>>;
+export type ConvertedArray<T extends readonly any[]> =
+  & ConvertedMembers<T>
+  & Eventful<ObservableEvents>;
 
-export type ObservableObject<T extends object> =
-  & ObservableMembers<T>
-  & Eventful<ObservableEventsObject<T>>
-  & WatchMethod<T>;
+export type ConvertedObject<T extends object> =
+  & ConvertedMembers<T>
+  & Eventful<ObservableEvents>;
 
-export type ObservablePrimitive<T> =
+export type ConvertedPrimitive<T> =
   & { value: T; }
-  & Eventful<ObservableEventsPrimitive<T>>;
+  & Eventful<ObservableEvents>;
 
 /**
- * Values observable never converts, because a proxy cannot forward access to
- * their internal slots. They are stored as-is when nested, and boxed into
- * `{ value }` when passed as the top-level target.
+ * Values the converter refuses, because a proxy cannot forward access to their
+ * internal slots and storing them silently would leave the model half
+ * observable with no indication.
  *
- * Class instances are opaque at runtime too, but TypeScript cannot tell an
+ * `Date` is refused like the rest: there is no immutable `Date` in JavaScript,
+ * so admitting it would carve out the one leaf that is both mutable and
+ * value-like. The `convert` hook is the answer for a model that genuinely
+ * holds one.
+ *
+ * Class instances are refused at runtime too, but TypeScript cannot tell an
  * instance type from a structurally identical plain object, so they are not
  * listed here.
  */
-export type ObservableOpaque =
-  | Function
+export type UnsupportedValue =
   | Date
   | RegExp
   | Error
@@ -374,37 +250,32 @@ export type ObservableOpaque =
   | ArrayBufferView;
 
 /**
- * Public observable composition type.
+ * What `observable()` returns.
  *
- * - plain objects/arrays include Eventful API and a `watch()` helper.
- * - primitives are boxed into `{ value }` and include Eventful API.
- * - opaque values resolve to `never`: observing one directly throws, so there
- *   is no result to describe.
+ * - plain objects and arrays carry the Eventful API and emit `change`.
+ * - primitives are boxed into `{ value }`.
+ * - unsupported values resolve to `never`: converting one throws, so there is
+ *   no result to describe.
  */
-export type Observable<T> = T extends readonly any[] ? ObservableArray<T>
-  : T extends ObservableOpaque ? never
-  : T extends object ? ObservableObject<T>
-  : ObservablePrimitive<T>;
-
-export type ObservableEventsArray<T extends readonly any[]> =
-  & { set: [ArraySetPayload<T>]; }
-  & { delete: [ArrayDeletePayload<T>]; }
-  & KeyedArraySetEvents<T>
-  & KeyedArrayDeleteEvents<T>;
+export type Converted<T> = T extends readonly any[] ? ConvertedArray<T>
+  : T extends UnsupportedValue ? never
+  : T extends Function ? never
+  : T extends object ? ConvertedObject<T>
+  : ConvertedPrimitive<T>;
 
 export type ObservableFn = {
   /** Array overload */
   <T extends readonly any[]>(
     value: T,
     options?: ObservableOptions
-  ): ObservableArray<T>;
+  ): ConvertedArray<T>;
 
   /**
-   * Opaque value overload. Observing one of these directly throws a
-   * `TypeError`, so the call resolves to `never`. Hold the value in a plain
-   * object, or take it over with the `convert` option.
+   * Unsupported value overload. Converting one of these throws a `TypeError`,
+   * so the call resolves to `never`. Hold the value in a plain object, or take
+   * it over with the `convert` option.
    */
-  <T extends ObservableOpaque>(
+  <T extends UnsupportedValue | Function>(
     value: T,
     options?: ObservableOptions
   ): never;
@@ -413,18 +284,16 @@ export type ObservableFn = {
   <T extends object>(
     value: T,
     options?: ObservableOptions
-  ): ObservableObject<T>;
+  ): ConvertedObject<T>;
 
   /** Primitive overload (boxed as { value }) */
   <T>(
     value: T,
     options?: ObservableOptions
-  ): ObservablePrimitive<T>;
+  ): ConvertedPrimitive<T>;
 
   /** Primitive overload without initial value */
-  (): ObservablePrimitive<undefined>;
-
-  watch: ObservableWatchFn;
+  (): ConvertedPrimitive<undefined>;
 
   options: ObservableGlobalOptions;
 };

@@ -5,8 +5,46 @@ performant JavaScript libraries for everyday use.
 
 ## Overview
 
-Lightweight observable for JS. Emits events on property changes via on/off/emit.
-Works with plain objects, arrays, and primitives.
+`asljs-observable` makes plain JavaScript objects and arrays report their own
+changes, and gives you a small query for reading values out of them as they
+change.
+
+```js
+import { observable, observe } from 'asljs-observable';
+
+const state = observable({ user: { name: 'Alice' } });
+
+observe(state).at('user.name').subscribe(name => console.log(name));
+
+state.user.name = 'Bob';
+
+// Output:
+// Alice
+// Bob
+```
+
+## Scope
+
+Three things:
+
+- **A contract** for observing an object: `on`, `off`, and a `change` event
+  carrying a list of what changed.
+- **A basic query** over anything that satisfies the contract.
+  `observe(source).at('user.name').subscribe(...)` reads a path and re-reads it
+  when it changes, with `map`, `filter` and `combine` for the rest.
+- **A converter** that makes JSON-like structures -- plain old JavaScript
+  objects and arrays -- satisfy the contract, so a model carries no subscription
+  code of its own. That fits a model of the size a form, a view, or a small
+  application.
+
+Conversion happens at runtime: no build step, no annotations, and
+`asljs-eventful` as the only dependency.
+
+Building an advanced application model is out of scope, and the contract is the
+extension point instead. A model class of your own implements `on`, `off` and
+`change`, and the query then works against it exactly as it works against a
+converted object. That is how a class with computed properties, a wrapper over
+storage, or a Node `EventEmitter` joins the same query as the rest of a model.
 
 ## Installation
 
@@ -18,365 +56,89 @@ NPM Package: [asljs-observable](https://www.npmjs.com/package/asljs-observable)
 
 ## Usage
 
-### Observing an object (JavaScript)
+Listen to a model directly:
 
 ```js
 import { observable } from 'asljs-observable';
 
-const obj = observable({ a: 1, b: 2 });
+const model = observable({ a: 1, b: 2 });
 
-obj.on('set:a', ({ value, previous }) => {
-  console.log(`obj.a ←`, value, '(was', previous, ')');
-});
-
-obj.on('set', ({ property, value, previous }) => {
-  console.log(`obj.${property} ←`, value, '(was', previous, ')');
-});
-
-obj.a = 3;
-```
-
-### Observing an array (JavaScript)
-
-```js
-import { observable } from 'asljs-observable';
-
-const arr = observable([1, 2, 3]);
-
-arr.on('set:1', ({ value, previous }) => {
-  console.log('arr[1] ←', value, '(was', previous, ')');
-});
-
-arr.on('set', (payload) => {
-  if ('index' in payload) {
-    console.log(`arr[${payload.index}] ←`, payload.value, '(was', payload.previous, ')');
-    return;
+model.on('change', changes => {
+  for (const change of changes) {
+    console.log(`${change.property}: ${change.previous} -> ${change.value}`);
   }
-
-  console.log(`arr.${payload.property} ←`, payload.value, '(was', payload.previous, ')');
 });
 
-arr[1] = 42;
+model.a = 3;
+
+// Output:
+// a: 1 -> 3
 ```
 
-### Observing a number (JavaScript)
+Watch several paths, and group writes into one notification:
 
 ```js
-import { observable } from 'asljs-observable';
+import { batch, combine, observable, observe } from 'asljs-observable';
 
-const box = observable(10);
+const state = observable({ name: 'Alice', active: false });
 
-box.on('set', ({ value, previous }) => {
-  console.log('value:', previous, '→', value);
+combine([
+  observe(state).at('name'),
+  observe(state).at('active')
+]).subscribe(([ name, active ]) => console.log(name, active));
+
+batch(() => {
+  state.name = 'Bob';
+  state.active = true;
 });
 
-box.value = 11;
+// Output:
+// Alice false
+// Bob true
 ```
 
-### Watch selected properties (JavaScript)
+An array operation reports one notification rather than one per element, and the
+mutating methods describe themselves:
 
 ```js
 import { observable } from 'asljs-observable';
 
-const state = observable({ user: 'Alice', active: false });
+const items = observable([ 'a', 'b', 'c' ]);
 
-// logs "User: Alice Active: false"
-state.watch(
-  [ 'user', 'active' ],
-  (user, active) =>
-    console.log('User:', user, 'Active:', active));
+items.on('change', ([ change ]) =>
+  console.log(change.kind, 'at', change.index, 'removed', change.removed));
 
-// logs "User: Alice Active: true"
-state.active = true;
+items.shift();
+
+// Output:
+// splice at 0 removed [ 'a' ]
 ```
 
-### Watch nested paths (JavaScript)
+`subscribe` returns a function that tears the subscription down, and `.value`
+reads a path once without subscribing.
 
-```js
-import { observable } from 'asljs-observable';
+## Further reading
 
-const state = observable({ user: { name: 'Alice' }, active: false });
+- [The contract](docs/contract.md) — what an object must provide to be observed,
+  and how to implement it yourself.
+- [The query](docs/query.md) — `observe`, the operators, and how values are
+  deduplicated.
+- [Batching and delivery](docs/batching.md) — `batch(fn)`, and when a
+  notification arrives.
+- [The converter](docs/converter.md) — what `observable()` converts, what it
+  reports, and the `convert` hook.
+- [Using it with RxJS](docs/rxjs.md).
+- [Migrating from 0.5](docs/migrating-from-0.5.md) — 0.6 changes every event and
+  removes `watch`.
 
-state.watch(
-  [ 'user.name', 'active' ],
-  (userName, active) =>
-    console.log('User:', userName, 'Active:', active));
+Questions and bugs:
+[asljs/issues](https://github.com/AlexandriteSoftware/asljs/issues).
 
-state.user.name = 'Bob';
-```
+## Related packages
 
-### Watching an object's property (TypeScript)
-
-```ts
-import { observable, type Observable } from 'asljs-observable';
-
-const obj: Observable<{ name: string }> =
-  observable({ name: 'Alice' });
-
-obj.watch(
-  'name',
-  name => console.log(name));
-```
-
-### Observable class (TypeScript)
-
-```ts
-import { ObservableObject } from 'asljs-observable';
-
-class User
-  extends ObservableObject<{ name: string }>
-{
-  #name: string;
-
-  constructor(name: string) {
-    super();
-
-    this.#name = name;
-  }
-
-  get name() {
-    return this.#name;
-  }
-
-  set name(value: string) {
-    this.setAndEmit(
-      'name',
-      this.#name,
-      value,
-      next => {
-        this.#name = next;
-      });
-  }
-}
-```
-
-## API Reference
-
-### `observable(value, [options])`
-
-Wraps an object, array, or primitive to make it observable.
-
-- `value`: Target object/array/primitive to observe.
-- `options.eventful` (optional): Custom `eventful` factory (defaults to `asljs-eventful`).
-- `options.trace` (optional): Trace hook `(object, action, payload)` invoked on `'new'`, `'set'`, `'delete'`, `'define'`.
-- `options.convert` (optional): Hook that takes over conversion for a single
-  value. See [Supporting other kinds of values](#supporting-other-kinds-of-values).
-- `options.shallow` (optional): Nested conversion mode.
-  - `false` (default): recursively converts nested plain objects and arrays.
-  - `true`: converts only the top-level value.
-
-Returns the original value wrapped with Eventful API and change notifications.
-Passing a value observable treats as opaque throws a `TypeError`, the way
-`eventful` refuses a target it cannot augment. There would be nothing to
-observe, and returning a wrapper whose properties all read as `undefined`
-would fail silently. The message names the cause:
-
-- `Expect an extensible object or array, but the object is frozen.` (also
-  `sealed` and `not extensible`)
-- `Expect a plain object, an array, or a primitive, but the value is opaque.`
-
-Hold the value in a plain object, or take it over with `convert`. Unlike
-`eventful`, observable accepts a primitive: it is boxed into `{ value }`.
-When the target object does not already have a `watch` method, observable adds a
-non-enumerable `watch(properties, callback)` method to the wrapped object.
-
-### What is converted
-
-Observable converts plain objects (`{}` literals and null-prototype objects)
-and arrays. Everything else is treated as an opaque value.
-
-- Opaque values are stored as they are. Their identity is preserved and their
-  own mutations are not observed.
-- Replacing an opaque value emits `set` as usual, so
-  `model.created = new Date()` is observed while
-  `model.created.setFullYear(2020)` is not.
-- `Date`, `Map`, `Set`, `RegExp`, typed arrays, promises, functions, and
-  class instances are all opaque. A proxy cannot forward access to their
-  internal slots or private fields, so wrapping them would break them.
-- Frozen, sealed, and otherwise non-extensible values are opaque as well. The
-  Eventful API cannot be attached to them, and a frozen value has no changes
-  to report.
-- An opaque value passed as the top-level target is boxed into `{ value }`,
-  the same way a primitive is.
-- Values that already carry the Eventful API are left as they are and keep
-  their own wiring.
-- A class that needs to emit changes should extend `ObservableObject` instead
-  of relying on conversion.
-
-Within a converted object, only writable data properties are visited.
-Accessors are left as accessors: their getters are not run during conversion,
-and assigning through them still emits `set` as usual. Non-writable members
-and array holes are left alone.
-
-### Supporting other kinds of values
-
-Observable does not ship wrappers for `Date`, `Map`, `Set` or anything else it
-treats as opaque, and it is not going to guess how you want them observed. The
-`convert` hook is the seam for adding your own.
-
-It is called with every object observable reaches, including the ones it would
-otherwise leave opaque, and it decides before the built-in rule does.
-
-- Return a wrapper to take over that value.
-- Return the value itself to keep it as it is, even where observable would
-  normally convert it.
-- Return `undefined` to let observable decide.
-
-```js
-import { eventful } from 'asljs-eventful';
-import { observable } from 'asljs-observable';
-
-// A wrapper for Set. Note the absence of `has`: eventful reserves `on`,
-// `off`, `emit`, `emitAsync`, `has`, `removeAllListeners` and `getListeners`,
-// and throws if the wrapped object already defines one of them.
-const observableSet = source => {
-  const wrapper = eventful({
-    contains: value => source.has(value),
-    get size() { return source.size; },
-    add(value) {
-      if (source.has(value)) {
-        return;
-      }
-
-      const previous = source.size;
-
-      source.add(value);
-
-      wrapper.emit('add', { value });
-      wrapper.emit('set:size', { property: 'size', value: source.size, previous });
-      wrapper.emit('set', { property: 'size', value: source.size, previous });
-    }
-  });
-
-  return wrapper;
-};
-
-const state = observable(
-  { tags: new Set([ 'a' ]) },
-  { convert: value => value instanceof Set ? observableSet(value) : undefined });
-
-state.tags.on('add', ({ value }) => console.log('added', value));
-state.tags.add('b');
-```
-
-Points worth knowing:
-
-- Wrappers take part in the identity map, so one target still maps to one
-  wrapper however many times it is referenced.
-- A wrapper that emits `set:<property>` can be watched along a path, so
-  `state.watch('tags.size', ...)` works in the example above.
-- Primitives are never passed to the hook: there is nothing to observe.
-- Observable does not emit `new` for a wrapper it did not create, and does not
-  check that a wrapper carries the Eventful API.
-- Paths are typed from the model, and the path type stops at the kinds
-  observable considers opaque. Type the model with your wrapper rather than
-  with `Set` if you want `watch('tags.size', ...)` checked statically.
-
-### Nested members in TypeScript
-
-Conversion is deep, and the types say so. Every nested plain object and array
-carries the Eventful API and its own `watch`, reachable without a cast:
-
-```ts
-const state = observable({ user: { name: 'Alice' } });
-
-state.user.on('set:name', ({ value }) => console.log(value));  // value: string
-state.user.watch('name', name => console.log(name));
-```
-
-The same holds for assignment: a member of an observable holds an observable,
-so a replacement is wrapped rather than assigned plain.
-
-```ts
-state.user = observable({ name: 'Bob' });
-```
-
-JavaScript callers are unaffected. Assigning a plain value still works at
-runtime and is converted on the way in, using the options the parent was
-created with. An explicitly wrapped value does not inherit those, so pass them
-again if the parent was created with `trace`, `convert`, or a custom
-`eventful`.
-
-One target maps to one observable, and that holds for the lifetime of the
-process rather than for one call. An object reached twice, from two
-properties, through a cycle, or from two separate `observable(...)` calls,
-resolves to the same wrapper, so every handle on it sees the same events.
-
-That is not a convenience: conversion grafts the Eventful API onto the target
-itself, so an object can only belong to one observable. Wrapping an already
-converted target again returns what it already has, which means the options of
-the later call have nothing to apply to:
-
-```js
-const state = observable(model, { trace });
-observable(model, { trace: other });   // returns the same observable; `other` is unused
-```
-
-Pass one options object to every call for a model if you want the same
-`trace`, `convert` or `eventful` applied throughout:
-
-```js
-const options = { trace, convert };
-
-const state = observable({ user: { name: 'Alice' } }, options);
-
-state.user = observable({ name: 'Bob' }, options);
-```
-
-### `observable.watch(target, properties, callback)`
-
-Watches one or more properties/paths and invokes callback with current values.
-
-- `properties` can be a single path string (e.g. `'user.name'`) or an array
-  of path strings.
-
-- Runs the callback immediately with current values.
-- Re-runs callback each time one of the selected `set:<propertyOrPath>` events
-  fires.
-- Nested paths are supported, e.g. `'user.name'`.
-- Paths are checked at compile time. `watch` accepts only paths that exist on
-  the model, misspellings and Eventful methods are rejected, and callback
-  values are typed per path and positional for the array form. Descent stops
-  at arrays and opaque values, and at five levels deep, which is what keeps a
-  self-referential model from expanding forever.
-- `target` may be a plain object; callback still runs immediately with a
-  snapshot.
-- Updates are observed only where an eventful segment exists along the watched
-  path.
-- Arrays are not supported by `watch` yet. They carry no `watch` in their type,
-  and the injected method throws `TypeError` when called from JavaScript.
-- Returns an unsubscribe function. Calling it removes all listeners attached by
-  this `watch` call.
-
-### Events and payloads
-
-More concrete events are emitted first, followed by more generic ones.
-E.g., setting `obj.a` emits `set:a` first, then `set`.
-
-| Target kind | Event form | Payload |
-| --- | --- | --- |
-| object | `set` / `set:<property>` | `{ property, value, previous }` |
-| object | `delete` / `delete:<property>` | `{ property, previous }` |
-| object | `define` / `define:<property>` | `{ property, descriptor, previous }` |
-| array index change | `set` / `set:<index>` | `{ index, value, previous }` |
-| array index delete | `delete` / `delete:<index>` | `{ index, previous }` |
-| array property change | `set` / `set:<property>` | `{ property, value, previous }` |
-| array property delete | `delete` / `delete:<property>` | `{ property, previous }` |
-| array property define | `define` / `define:<property>` | `{ property, descriptor, previous }` |
-| primitive box | `set` / `set:value` | `{ property: 'value', value, previous }` |
-
-Notes:
-
-- Array index changes use numeric `index` payloads.
-- Array non-index properties, including `'length'`, use string `property`
-  payloads.
-- `define` events are emitted only for non-index array properties.
-- Shortening an array reports every element it drops. Each dropped element
-  emits `delete:<index>` and `delete` with `{ index, previous }`, furthest
-  index first, and the `set:length` pair follows. Holes report nothing, and
-  `pop`, `shift` and `splice` remove the tail themselves before assigning
-  `length`, so nothing is reported twice. Growing an array emits only the
-  `set:length` pair.
+- `asljs-eventful` is the event layer underneath: `on`, `off` and `emit` on any
+  object. Conversion uses it, and it is this package's only dependency.
+- `asljs-data-binding` builds DOM bindings on top of an observable model.
 
 ## License
 

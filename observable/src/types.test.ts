@@ -2,20 +2,32 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import { Change,
+         Observable }
+  from './contract.js';
 import { observable }
   from './observable.js';
-import { Observable,
+import { observe }
+  from './observe.js';
+import { Converted,
          ObservableGlobalOptions,
          ObservableOptions,
-         ObservableTraceFn,
-         ObservableWatchFn,
-         WatchedValues,
-         WatchPath,
-         WatchPathValue,
-         WatchPathValues }
+         ObservablePath,
+         ObservablePathValue,
+         ObservablePathValues,
+         ObservableTraceFn }
   from './types.js';
 
 const TEST_SUITE = 'types';
+
+type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false)
+  : false;
+
+type Model = {
+  user: { name: string; address: { city: string; }; };
+  active: boolean;
+  tags: string[];
+};
 
 test(
   `${TEST_SUITE}: compile-time shapes can be referenced`,
@@ -36,25 +48,9 @@ test(
         ) =>
       {};
 
-    const watchFn: ObservableWatchFn =
-      (
-      _target: object,
-      _properties: string | readonly string[],
-      _callback: (...values: unknown[]) => void
-    ) =>
-    () => false;
-
-    type BoxedNumber = Observable<number>;
-
-    type Person = { name: string; age: number; };
-
-    type PickedValues = WatchedValues<Person, ['name', 'age']>;
+    type BoxedNumber = Converted<number>;
 
     const boxed: BoxedNumber | null = null;
-
-    const picked: PickedValues =
-      [ 'Alice',
-        7 ];
 
     assert.ok(
       options.shallow);
@@ -68,105 +64,167 @@ test(
       'function');
 
     assert.equal(
-      typeof watchFn,
+      boxed,
+      null);
+  });
+
+/**
+ * The contract is an artifact of this package, with `on`/`off` returning
+ * `unknown` so that the type admits what the runtime admits.
+ */
+test(
+  `${TEST_SUITE}: the contract admits an emitter that returns anything`,
+  () =>
+  {
+    const returnsThis: Observable =
+      { on(): unknown
+      {
+        return this;
+      },
+        off(): unknown
+      {
+        return this;
+      } };
+
+    const returnsDisposer: Observable =
+      { on:
+          () => (): boolean => true,
+        off: () => true };
+
+    assert.equal(
+      typeof returnsThis.on,
       'function');
 
     assert.equal(
-      boxed,
-      null);
+      typeof returnsDisposer.on,
+      'function');
 
-    assert.deepEqual(
-      picked,
-      [ 'Alice',
-        7 ]);
+    const setEntry: Change =
+      { kind: 'set',
+        property: 'a',
+        value: 1,
+        previous: 0 };
+
+    const spliceEntry: Change =
+      { kind: 'splice',
+        index: 0,
+        removed:
+          [ 'a' ],
+        added: [ ] };
+
+    assert.equal(
+      setEntry.kind,
+      'set');
+
+    assert.equal(
+      spliceEntry.kind,
+      'splice');
   });
 
-type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false)
-  : false;
-
-type Model = {
-  user: { name: string; address: { city: string; }; };
-  active: boolean;
-  tags: string[];
-  created: Date;
-};
-
+/**
+ * `README.md` restates this shape under "The contract". Pinned here so that a
+ * change to it is deliberate, and so that the restatement is updated with it.
+ */
 test(
-  `${TEST_SUITE}: WatchPath enumerates dotted paths and stops at leaves`,
+  `${TEST_SUITE}: the Change shape is pinned`,
   () =>
   {
-    // Arrays and opaque values are leaves: descent stops there, matching what
-    // the runtime converts.
-    const exact: Equals<
-      WatchPath<Model>,
+    type Restated =
+      | { kind: 'set'; property: string; value: unknown; previous: unknown; }
+      | {
+        kind: 'splice';
+        index: number;
+        removed: readonly unknown[];
+        added: readonly unknown[];
+      };
+
+    const pinned: Equals<Change, Restated> = true;
+
+    assert.ok(pinned);
+  });
+
+test(
+  `${TEST_SUITE}: ObservablePath enumerates dotted paths`,
+  () =>
+  {
+    // Object paths, with arrays descended through their indices rather than
+    // treated as leaves.
+    const objectPaths: Equals<
+      Extract<ObservablePath<Model>, `user${string}` | 'active'>,
       | 'user'
       | 'user.name'
       | 'user.address'
       | 'user.address.city'
       | 'active'
-      | 'tags'
-      | 'created'
     > = true;
 
-    // Optional segments are followed through, `undefined` is not a path.
+    const arrayPaths: Equals<
+      Extract<ObservablePath<Model>, 'tags' | 'tags.length'>,
+      'tags' | 'tags.length'
+    > = true;
+
+    // Optional segments are followed through; `undefined` is not a path.
     const optional: Equals<
-      WatchPath<{ user?: { name: string; }; }>,
+      ObservablePath<{ user?: { name: string; }; }>,
       'user' | 'user.name'
     > = true;
 
-    // Misspellings and eventful methods are simply not in the union, so a
-    // call naming one cannot compile.
+    // Misspellings and the methods conversion adds are simply not in the
+    // union, so a call naming one cannot compile.
     const rejectsTypo: Equals<
-      Extract<WatchPath<Model>, 'user.nmae'>,
+      Extract<ObservablePath<Model>, 'user.nmae'>,
       never
     > = true;
 
     const rejectsEventful: Equals<
-      Extract<WatchPath<Model>, 'emit' | 'on' | 'off'>,
+      Extract<
+        ObservablePath<Converted<Model>>,
+        'emit' | 'on' | 'off' | 'getListeners'
+      >,
       never
     > = true;
 
-    // Multi-path values stay positional.
-    // Arrays carry no watch at all: watch(...) throws for them at runtime.
-    const arraysHaveNoWatch: Equals<
-      'watch' extends keyof Observable<number[]> ? true : false,
-      false
-    > = true;
-
     const positional: Equals<
-      WatchPathValues<Model, ['user.name', 'active']>,
+      ObservablePathValues<Model, ['user.name', 'active']>,
       [string, boolean]
     > = true;
 
     const city: Equals<
-      WatchPathValue<Model, 'user.address.city'>,
+      ObservablePathValue<Model, 'user.address.city'>,
       string
     > = true;
 
-    const active: Equals<
-      WatchPathValue<Model, 'active'>,
-      boolean
+    const element: Equals<
+      ObservablePathValue<Model, 'tags.0'>,
+      string
     > = true;
 
-    assert.ok(exact);
+    const length: Equals<
+      ObservablePathValue<Model, 'tags.length'>,
+      number
+    > = true;
+
+    assert.ok(objectPaths);
+
+    assert.ok(arrayPaths);
+
+    assert.ok(optional);
 
     assert.ok(rejectsTypo);
 
     assert.ok(rejectsEventful);
 
-    assert.ok(arraysHaveNoWatch);
-
     assert.ok(positional);
-
-    assert.ok(optional);
 
     assert.ok(city);
 
-    assert.ok(active);
+    assert.ok(element);
+
+    assert.ok(length);
   });
 
 test(
-  `${TEST_SUITE}: watch accepts documented paths and rejects bad ones`,
+  `${TEST_SUITE}: observe accepts documented paths and rejects bad ones`,
   () =>
   {
     const state =
@@ -175,45 +233,46 @@ test(
             { name: 'Alice' },
           active: false });
 
-    // The nested-path form from README.md, with positional value types.
-    const unwatch =
-      state.watch(
-        [ 'user.name',
-          'active' ],
+    const unsubscribe =
+      observe(state)
+      .at('user.name')
+      .subscribe(
         (
-            userName,
-            active
+            value
           ) =>
         {
-        const name: string = userName;
+          const name: string = value;
 
-        const flag: boolean = active;
+          assert.equal(
+            typeof name,
+            'string');
+        });
 
-        assert.equal(
-          typeof name,
-          'string');
+    // @ts-expect-error a path that is not on the model
+    observe(state).at('user.nmae');
 
-        assert.equal(
-          typeof flag,
-          'boolean');
-      });
-
-    state.watch(
-      'user.name',
-      (
-          value
-        ) =>
-      {
-        const name: string = value;
-
-        assert.equal(
-          typeof name,
-          'string');
-      });
+    // @ts-expect-error the methods conversion adds are not watchable
+    observe(state).at('emit');
 
     assert.equal(
-      typeof unwatch,
+      typeof unsubscribe,
       'function');
+
+    unsubscribe();
+  });
+
+test(
+  `${TEST_SUITE}: observe refuses a source that does not declare the contract`,
+  () =>
+  {
+    const plain =
+      { a: 1 };
+
+    assert.throws(
+      () =>
+        // @ts-expect-error a plain object is rejected before the runtime sees it
+        observe(plain),
+      TypeError);
   });
 
 test(
@@ -232,38 +291,25 @@ test(
     // Conversion is deep, so nested members carry the eventful API and no
     // cast or non-null assertion is needed to reach it.
     state.user.on(
-      'set:name',
+      'change',
       (
-          { value }
+          changes
         ) =>
       {
-        const name: string = value;
+        const first: Change = changes[0];
 
         assert.equal(
-          typeof name,
+          typeof first.kind,
           'string');
       });
 
     state.user.address.on(
-      'set:city',
+      'change',
       () => { });
 
     state.list[0].on(
-      'set:n',
+      'change',
       () => { });
-
-    state.user.watch(
-      'name',
-      (
-          value
-        ) =>
-      {
-        const name: string = value;
-
-        assert.equal(
-          typeof name,
-          'string');
-      });
 
     // A member of an observable holds an observable, so a replacement is
     // wrapped rather than assigned plain.
@@ -283,28 +329,28 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: observing an opaque value has no result type`,
+  `${TEST_SUITE}: converting an unsupported value has no result type`,
   () =>
   {
-    // Observing one of these throws, so the call resolves to never rather
+    // Converting one of these throws, so the call resolves to never rather
     // than describing a value that is never returned.
-    const opaqueIsNever: Equals<
-      Observable<Date>,
+    const dateIsNever: Equals<
+      Converted<Date>,
       never
     > = true;
 
     const mapIsNever: Equals<
-      Observable<Map<string, number>>,
+      Converted<Map<string, number>>,
       never
     > = true;
 
     // Primitives are still boxed.
     const numberIsBoxed: Equals<
-      Observable<number>['value'],
+      Converted<number>['value'],
       number
     > = true;
 
-    assert.ok(opaqueIsNever);
+    assert.ok(dateIsNever);
 
     assert.ok(mapIsNever);
 

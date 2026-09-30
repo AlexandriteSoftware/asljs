@@ -2,6 +2,9 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import { batch,
+         Change }
+  from './contract.js';
 import { ObservableObject }
   from './observable-object.js';
 
@@ -60,6 +63,35 @@ class Person extends ObservableObject<PersonModel>
       previous as number,
       value as number);
   }
+
+  /** Reports two properties as one notification. */
+  public rename(
+    name: string,
+    age: number
+  ): void
+  {
+    batch(
+      () =>
+      {
+        this.name = name;
+        this.age = age;
+      });
+  }
+}
+
+function record(
+    source: any
+  ): Array<readonly Change[]>
+{
+  const deliveries: Array<readonly Change[]> = [ ];
+
+  source.on(
+    'change',
+    (
+      changes: readonly Change[]
+    ) => deliveries.push(changes));
+
+  return deliveries;
 }
 
 test(
@@ -69,94 +101,80 @@ test(
     const person =
       new Person();
 
-    let count = 0;
-
-    (person as any).on(
-      'set:name',
-      () => count += 1);
+    const deliveries =
+      record(person);
 
     person.name = 'Alice';
     person.name = 'Alice';
     person.name = 'Bob';
 
-    assert.equal(
-      count,
-      2);
+    assert.deepEqual(
+      deliveries.flatMap(
+        changes => [ ...changes ]),
+      [ { kind: 'set',
+          property: 'name',
+          value: 'Alice',
+          previous: '' },
+        { kind: 'set',
+          property: 'name',
+          value: 'Bob',
+          previous: 'Alice' } ]);
   });
 
 test(
-  `${TEST_SUITE}: emitSet emits keyed and aggregate events`,
+  `${TEST_SUITE}: emitSet reports one change entry`,
   () =>
   {
     const person =
       new Person();
 
-    let keyedCount = 0;
-    let aggregateCount = 0;
-
-    (person as any).on(
-      'set:age',
-      () => keyedCount += 1);
-
-    (person as any).on(
-      'set',
-      () => aggregateCount += 1);
+    const deliveries =
+      record(person);
 
     person.forceEmit(
       'age',
       1,
       2);
 
-    assert.equal(
-      keyedCount,
-      1);
-
-    assert.equal(
-      aggregateCount,
-      1);
+    assert.deepEqual(
+      deliveries,
+      [ [ { kind: 'set',
+            property: 'age',
+            value: 2,
+            previous: 1 } ] ]);
   });
 
+/**
+ * A hand-written participant joins a batch, because it reports through the same
+ * path the converter does. `README.md` recommends the class as the way to write
+ * one, so it cannot be left out of the batching rule.
+ */
 test(
-  `${TEST_SUITE}: watch observes selected properties`,
+  `${TEST_SUITE}: a batched setter reports one notification`,
   () =>
   {
     const person =
       new Person();
 
-    const values: Array<[string, number]> = [ ];
+    const deliveries =
+      record(person);
 
-    const unwatch =
-      person.watch(
-        [ 'name',
-          'age' ],
-        (
-            name: string,
-            age: number
-          ) =>
-        {
-        values.push(
-          [ name,
-            age ]);
-      });
-
-    person.name = 'Alice';
-    person.age = 7;
-
-    const disposed =
-      unwatch();
-
-    person.age = 8;
+    person.rename(
+      'Alice',
+      7);
 
     assert.equal(
-      disposed,
-      true);
+      deliveries.length,
+      1);
 
     assert.deepEqual(
-      values,
-      [ [ '',
-          0 ],
-        [ 'Alice',
-          0 ],
-        [ 'Alice',
-          7 ] ]);
+      deliveries[0],
+      [ { kind: 'set',
+          property: 'name',
+          value: 'Alice',
+          previous: '' },
+        { kind: 'set',
+          property: 'age',
+          value: 7,
+          previous: 0 } ]);
   });

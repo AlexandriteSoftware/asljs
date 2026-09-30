@@ -31,7 +31,7 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: getMinimalTraces strips listeners and define args`,
+  `${TEST_SUITE}: getMinimalTraces strips listeners and per-run identity`,
   () =>
   {
     const tracer =
@@ -39,19 +39,16 @@ test(
 
     tracer.trace(
       'emit',
-      { event: 'set:a',
+      { event: 'change',
+        id: 'x1',
+        messageId: 'm1',
         listeners:
           [ () => { } ],
         args:
-          [ { value: 2 } ] });
-
-    tracer.trace(
-      'emit',
-      { event: 'define:a',
-        listeners:
-          [ () => { } ],
-        args:
-          [ { value: 3 } ] });
+          [ [ { kind: 'set',
+                property: 'a',
+                value: 2,
+                previous: 1 } ] ] });
 
     const minimal =
       tracer.getMinimalTraces();
@@ -68,17 +65,16 @@ test(
       Object.prototype
         .hasOwnProperty
         .call(
-          minimal[1].payload,
-          'listeners'),
+          minimal[0].payload,
+          'id'),
       false);
 
-    assert.equal(
-      Object.prototype
-        .hasOwnProperty
-        .call(
-          minimal[1].payload,
-          'args'),
-      false);
+    assert.deepEqual(
+      minimal[0].payload.args,
+      [ [ { kind: 'set',
+            property: 'a',
+            value: 2,
+            previous: 1 } ] ]);
   });
 
 test(

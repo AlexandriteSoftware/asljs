@@ -1,18 +1,21 @@
-import { asEventfulLike,
-         eventful,
-         EventfulLike }
+import { eventful }
   from 'asljs-eventful';
+import { batch,
+         Change,
+         isObservable,
+         reportChange,
+         setChangeTrace,
+         withSplice }
+  from './contract.js';
 import { functionTypeGuard,
          isFunction,
          isObject,
          isPlainObject }
   from './guards.js';
 import { ObservableFn,
-         ObservableOptions }
+         ObservableOptions,
+         ObservableTraceFn }
   from './types.js';
-import { ensureWatchMethod,
-         watchImpl }
-  from './watch.js';
 
 function hasOwn(
     object: object,
@@ -26,80 +29,32 @@ function hasOwn(
       key);
 }
 
-function isArrayIndexProperty(
-    key: PropertyKey
+function isIndexLike(
+    key: string
   ): boolean
+{
+  return /^\d+$/.test(key);
+}
+
+/** Where a value sits in the model, for the message of a refusal. */
+function memberPath(
+    base: string,
+    key: PropertyKey
+  ): string
 {
   if (
     typeof key
     === 'symbol'
   ) {
-    return false;
+    return `${base}[${String(key)}]`;
   }
 
-  const numeric =
-    typeof key === 'number'
-    ? key
-    : Number(key);
+  const text =
+    String(key);
 
-  if (
-    !Number.isInteger(numeric)
-    || numeric < 0
-    || numeric >= 4294967295
-  ) {
-    return false;
-  }
-
-  return typeof key === 'number'
-    || key === String(numeric);
-}
-
-/**
- * Elements that a `length` assignment is about to drop, furthest index first.
- *
- * Holes have nothing to report. Indices that `pop`, `shift` and `splice`
- * already deleted before assigning `length` are no longer own properties, so
- * they are skipped and never reported twice.
- */
-function collectTruncatedElements(
-    target: any,
-    nextLength: unknown
-  ): Array<{ index: number; previous: unknown; }>
-{
-  const previousLength = target.length;
-
-  const length =
-    Number(nextLength);
-
-  if (
-    !Number.isInteger(length)
-    || length < 0
-    || length >= previousLength
-  ) {
-    return [ ];
-  }
-
-  const removed: Array<{ index: number; previous: unknown; }> = [ ];
-
-  for (
-    let index = previousLength - 1;
-    index >= length;
-    index--
-  ) {
-    if (
-      !hasOwn(
-        target,
-        index)
-    ) {
-      continue;
-    }
-
-    removed.push(
-      { index,
-        previous: target[index] });
-  }
-
-  return removed;
+  return isIndexLike(text)
+    ? `${base}[${text}]`
+    : `${base}.${text}`;
 }
 
 function describeInextensibility(
@@ -117,39 +72,70 @@ function describeInextensibility(
   return 'not extensible';
 }
 
-function isEventfulObject(
-    value: any
-  ): boolean
+function describeUnsupportedValue(
+    value: object
+  ): string
 {
-  const eventfulLike =
-    asEventfulLike(value);
-
-  if (!eventfulLike) {
-    return false;
+  if (!Object.isExtensible(value)) {
+    return `a ${describeInextensibility(value)} object`;
   }
 
-  return isFunction(
-    (value as EventfulLike & { emit?: unknown; }).emit);
+  const prototype =
+    Object.getPrototypeOf(value);
+
+  const name =
+    prototype === null
+    ? undefined
+    : (value as { constructor?: { name?: string; }; }).constructor?.name;
+
+  return name
+    ? name
+    : 'the value';
 }
 
 /**
- * Values that observable converts into proxies: plain objects (`{}` literals
- * and null-prototype objects) and arrays. Everything else -- `Date`, `Map`,
- * `Set`, `RegExp`, typed arrays, class instances -- is treated as an opaque
- * value, because a proxy cannot forward access to internal slots or private
- * fields. Already-eventful values are left alone so they keep their own wiring.
+ * A nested value observable cannot make observable, named with the path at
+ * which it was found.
  *
- * Non-extensible values are opaque too: the eventful API cannot be attached to
- * them, and a frozen value has no changes to report in the first place.
+ * `observable(model)` failing with "unsupported value" on a large model is not
+ * debuggable; naming the path is.
+ */
+function unsupportedValueError(
+    path: string,
+    value: object
+  ): TypeError
+{
+  return new TypeError(
+    `at ${path}: ${
+      describeUnsupportedValue(value)
+    } is not supported. Hold it in a plain object, or take it over with the `
+      + 'convert option.');
+}
+
+/**
+ * Whether a value already carries the whole Eventful API.
+ *
+ * Both the conversion rule and the wiring step ask this one question, so an
+ * object with `emit` and no `on` cannot take the already-wired branch and then
+ * lose every trap emit into its own `emit`.
+ */
+function hasEventfulApi(
+    value: any
+  ): boolean
+{
+  return isObservable(value)
+    && isFunction(
+      (value as { emit?: unknown; }).emit);
+}
+
+/**
+ * Values observable converts into proxies: plain objects (`{}` literals and
+ * null-prototype objects) and arrays.
  */
 function isConvertible(
     value: any
   ): boolean
 {
-  if (isEventfulObject(value)) {
-    return false;
-  }
-
   if (
     !isPlainObject(value)
     && !Array.isArray(value)
@@ -160,18 +146,100 @@ function isConvertible(
   return Object.isExtensible(value);
 }
 
+/** The five array methods whose arguments are the description of a splice. */
+const SPLICING_METHODS: readonly string[] =
+  [ 'push',
+    'pop',
+    'shift',
+    'unshift',
+    'splice' ];
+
 /**
- * Creates an observable object/array/primitive that emits events on changes.
+ * Mutating array methods that report `set` entries rather than a splice.
  *
- * Events:
- *   - objects: 'set' / `set:<prop>`, payload: `{ property, value, previous }`
- *   - objects: 'delete' / `delete:<prop>`, payload: `{ property, previous }`
- *   - arrays index: 'set' / `set:<index>`, payload `{ index, value, previous }`
- *   - 'define' / `define:<prop>` payload: { property, descriptor, previous }
- *
- * Emissions are synchronous and errors are isolated by the underlying
- * `eventful.emit`.
+ * `sort` and `reverse` are permutations: nothing is inserted or removed, and
+ * the wrapper cannot know what moved without snapshotting the array beforehand
+ * and matching it afterwards. `fill` and `copyWithin` are range overwrites, and
+ * the per-index entries are already exact. A producer emits the most specific
+ * description it has, and for these it does not have a splice.
  */
+const BATCHING_METHODS: readonly string[] =
+  [ 'sort',
+    'reverse',
+    'fill',
+    'copyWithin' ];
+
+function toInteger(
+    value: unknown
+  ): number
+{
+  const numeric =
+    Number(value);
+
+  if (Number.isNaN(numeric)) {
+    return 0;
+  }
+
+  return Math.trunc(numeric);
+}
+
+/** `splice`'s resolved start index, which is not what the caller passed. */
+function resolveStart(
+    start: unknown,
+    length: number
+  ): number
+{
+  const relative =
+    toInteger(start);
+
+  return relative < 0
+    ? Math.max(
+      length + relative,
+      0)
+    : Math.min(
+      relative,
+      length);
+}
+
+/**
+ * Elements a `length` assignment is about to drop, in index order.
+ *
+ * Reported as one splice rather than N sets: clearing an array is the common
+ * idiom and a raw assignment, so it would otherwise stay the fan-out the list
+ * exists to remove, for the operation most likely to be large.
+ */
+function truncation(
+    target: any,
+    nextLength: unknown
+  ): { index: number; removed: unknown[]; } | null
+{
+  const previousLength = target.length;
+
+  const length =
+    Number(nextLength);
+
+  if (
+    !Number.isInteger(length)
+    || length < 0
+    || length >= previousLength
+  ) {
+    return null;
+  }
+
+  const removed: unknown[] = [ ];
+
+  for (
+    let index = length;
+    index < previousLength;
+    index++
+  ) {
+    removed.push(target[index]);
+  }
+
+  return { index: length,
+           removed };
+}
+
 /**
  * One wrapper per target, for the lifetime of the process.
  *
@@ -188,10 +256,18 @@ function isConvertible(
 const wrappers =
   new WeakMap<object, any>();
 
+/**
+ * Creates an observable object, array, or primitive box.
+ *
+ * What it produces emits `change` like any other participant; it has no
+ * private event vocabulary of its own. Emission is synchronous, and `batch(fn)`
+ * groups everything that changes during `fn` into one notification per emitter.
+ */
 const observableImpl =
   (
       value: any,
-      options: ObservableOptions = {}
+      options: ObservableOptions = {},
+      path: string = 'value'
     ): any =>
   {
   const {
@@ -205,15 +281,29 @@ const observableImpl =
 
   const globalOptions = observable.options;
 
+  const traceOf =
+    (): ObservableTraceFn | null =>
+    {
+    const traceFn =
+      trace
+      || globalOptions.trace;
+
+    return isFunction(traceFn)
+      ? traceFn
+      : null;
+  };
+
   const convertNestedValue =
     (
-        input: any
+        input: any,
+        valuePath: string
       ): any =>
     {
     if (shallow) {
       return input;
     }
 
+    // Primitives and functions are leaves: stored as they are.
     if (!isObject(input)) {
       return input;
     }
@@ -223,7 +313,7 @@ const observableImpl =
     }
 
     // The hook sees every object, including the ones that would otherwise be
-    // opaque, and it decides before the built-in rule does.
+    // refused, and it decides before the built-in rule does.
     if (isFunction(convert)) {
       const custom =
         convert(input);
@@ -237,8 +327,16 @@ const observableImpl =
       }
     }
 
-    if (!isConvertible(input)) {
+    // A value that already conforms is stitched in as it is. This is how a
+    // hand-written or EventEmitter-based object joins a converted model.
+    if (isObservable(input)) {
       return input;
+    }
+
+    if (!isConvertible(input)) {
+      throw unsupportedValueError(
+        valuePath,
+        input);
     }
 
     const converted =
@@ -247,7 +345,8 @@ const observableImpl =
         { eventful: eventfulFn,
           trace,
           shallow,
-          convert });
+          convert },
+        valuePath);
 
     wrappers.set(
       input,
@@ -284,7 +383,10 @@ const observableImpl =
 
     const converted =
       convertNestedValue(
-        descriptor.value);
+        descriptor.value,
+        memberPath(
+          path,
+          key));
 
     if (
       Object.is(
@@ -337,242 +439,452 @@ const observableImpl =
 
     let proxy: any = null;
 
-    const emitDelete =
+    /**
+     * Raised while the `set` trap performs its `Reflect.set`.
+     *
+     * `[[Set]]` performs `[[DefineOwnProperty]]`, so a plain assignment trips
+     * both traps. The guard is what stops one write being reported twice.
+     * Synchronous and single-threaded, so it is reliable.
+     */
+    let settingThrough = 0;
+
+    const report =
       (
-          key: PropertyKey,
-          payload: object
+          change: Change
         ): void =>
       {
-      const traceFn =
-        trace
-        || globalOptions.trace;
-
-      proxy.emit(
-        `delete:${String(key)}`,
-        payload);
-
-      if (isFunction(traceFn)) {
-        traceFn(
-          proxy,
-          'delete',
-          payload);
+      if (!proxy) {
+        return;
       }
 
-      proxy.emit(
-        'delete',
-        payload);
+      reportChange(
+        proxy,
+        change);
     };
+
+    /** Symbol keys have no place in a contract whose property is a string. */
+    const reportable =
+      (
+      property: PropertyKey
+    ): property is string => typeof property === 'string';
+
+    const handler: ProxyHandler<any> =
+      { set(
+        tgt,
+        property,
+        newValue,
+        receiver
+      ): boolean
+      {
+        const previous =
+          Reflect.get(
+            tgt,
+            property,
+            receiver);
+
+        // Truncating an array drops elements without going through the delete
+        // trap, so the dropped values are collected before the write.
+        const removed =
+          isArrayTarget
+            && property === 'length'
+          ? truncation(
+            tgt,
+            newValue)
+          : null;
+
+        const converted =
+          convertNestedValue(
+            newValue,
+            memberPath(
+              path,
+              property));
+
+        settingThrough++;
+
+        let ok: boolean;
+
+        try {
+          ok =
+            Reflect.set(
+              tgt,
+              property,
+              converted,
+              receiver);
+        } finally {
+          settingThrough--;
+        }
+
+        if (
+          !ok
+          || !reportable(property)
+        ) {
+          return ok;
+        }
+
+        // The splice covers every dropped index and `length`, so the length
+        // set is not reported alongside it.
+        if (removed) {
+          report(
+            { kind: 'splice',
+              index: removed.index,
+              removed: removed.removed,
+              added: [ ] });
+
+          return ok;
+        }
+
+        const current =
+          Reflect.get(
+            tgt,
+            property,
+            receiver);
+
+        report(
+          { kind: 'set',
+            property,
+            value: current,
+            previous });
+
+        return ok;
+      },
+        deleteProperty(
+        tgt,
+        property
+      ): boolean
+      {
+        const had =
+          hasOwn(
+            tgt,
+            property);
+
+        const previous =
+          had
+          ? tgt[property]
+          : undefined;
+
+        const ok =
+          Reflect.deleteProperty(
+            tgt,
+            property);
+
+        if (
+          ok
+          && had
+          && reportable(property)
+        ) {
+          // Removal is a set to `undefined`. There is no delete event, so a
+          // consumer cannot tell a removed key from one present and undefined.
+          report(
+            { kind: 'set',
+              property,
+              value: undefined,
+              previous });
+        }
+
+        return ok;
+      },
+        defineProperty(
+        tgt,
+        property,
+        descriptor
+      ): boolean
+      {
+        const descriptorToDefine =
+          hasOwn(
+            descriptor,
+            'value')
+          ? { ...descriptor,
+              value:
+                convertNestedValue(
+                  descriptor.value,
+                  memberPath(
+                    path,
+                    property)) }
+          : descriptor;
+
+        const reporting =
+          settingThrough === 0
+          && reportable(property);
+
+        // A definition is reported by whether the observed value changed, not
+        // by what the descriptor says, so the value is read on both sides.
+        // Installing a getter therefore runs it.
+        const previous =
+          reporting
+          ? Reflect.get(
+            tgt,
+            property)
+          : undefined;
+
+        const ok =
+          Reflect.defineProperty(
+            tgt,
+            property,
+            descriptorToDefine);
+
+        if (
+          ok
+          && reporting
+        ) {
+          report(
+            { kind: 'set',
+              property:
+                property as string,
+              value:
+                Reflect.get(
+                  tgt,
+                  property),
+              previous });
+        }
+
+        return ok;
+      } };
+
+    if (isArrayTarget) {
+      const wrapped = new Map<string, Function>();
+
+      const readRange =
+        (
+        index: number,
+        count: number
+      ): unknown[] =>
+        Array.prototype
+          .slice
+          .call(
+            target,
+            index,
+            index + count);
+
+      const splicing: Record<string, Function> =
+        { push(
+          ...items: unknown[]
+        ): number
+        {
+          const index = target.length;
+
+          return withSplice(
+            proxy,
+            () =>
+              Array.prototype
+                .push
+                .apply(
+                  proxy,
+                  items),
+            () =>
+              items.length === 0
+                ? null
+                : { kind: 'splice',
+                    index,
+                    removed: [ ],
+                    added:
+                      readRange(
+                        index,
+                        items.length) });
+        },
+          pop(): unknown
+        {
+          const length = target.length;
+
+          if (length === 0) {
+            return Array.prototype
+              .pop
+              .call(proxy);
+          }
+
+          return withSplice(
+            proxy,
+            () =>
+              Array.prototype
+                .pop
+                .call(proxy),
+            removedValue => ({ kind: 'splice',
+                               index: length - 1,
+                               removed:
+                                 [ removedValue ],
+                               added: [ ] }));
+        },
+          shift(): unknown
+        {
+          if (target.length === 0) {
+            return Array.prototype
+              .shift
+              .call(proxy);
+          }
+
+          return withSplice(
+            proxy,
+            () =>
+              Array.prototype
+                .shift
+                .call(proxy),
+            removedValue => ({ kind: 'splice',
+                               index: 0,
+                               removed:
+                                 [ removedValue ],
+                               added: [ ] }));
+        },
+          unshift(
+          ...items: unknown[]
+        ): number
+        {
+          if (items.length === 0) {
+            return Array.prototype
+              .unshift
+              .apply(
+                proxy,
+                items);
+          }
+
+          return withSplice(
+            proxy,
+            () =>
+              Array.prototype
+                .unshift
+                .apply(
+                  proxy,
+                  items),
+            () => ({ kind: 'splice',
+                     index: 0,
+                     removed: [ ],
+                     added:
+                       readRange(
+                         0,
+                         items.length) }));
+        },
+          splice(
+          ...args: unknown[]
+        ): unknown[]
+        {
+          const length = target.length;
+
+          const start =
+            resolveStart(
+              args.length === 0
+              ? 0
+              : args[0],
+              length);
+
+          const deleteCount =
+            args.length === 0
+            ? 0
+            : args.length === 1
+            ? length - start
+            : Math.min(
+              Math.max(
+                toInteger(args[1]),
+                0),
+              length - start);
+
+          const items =
+            args.slice(2);
+
+          if (
+            deleteCount === 0
+            && items.length === 0
+          ) {
+            return Array.prototype
+              .splice
+              .apply(
+                proxy,
+                args as any);
+          }
+
+          return withSplice(
+            proxy,
+            () =>
+              Array.prototype
+                .splice
+                .apply(
+                  proxy,
+                  args as any),
+            removedValues => ({ kind: 'splice',
+                                index: start,
+                                removed: removedValues,
+                                added:
+                                  readRange(
+                                    start,
+                                    items.length) }));
+        } };
+
+      const batching =
+        (
+        method: string
+      ): Function =>
+      (
+        ...args: unknown[]
+      ): unknown =>
+        batch(
+          () =>
+            (Array.prototype as any)[method].apply(
+              proxy,
+              args));
+
+      for (const method of SPLICING_METHODS) {
+        wrapped.set(
+          method,
+          splicing[method]);
+      }
+
+      for (const method of BATCHING_METHODS) {
+        wrapped.set(
+          method,
+          batching(method));
+      }
+
+      // The trap runs on every read, so it does nothing but a `Map` lookup for
+      // anything but the wrapped methods, and it steps aside for an own
+      // override rather than replacing it.
+      handler.get =
+        (
+            tgt,
+            property,
+            receiver
+          ): unknown =>
+        {
+        if (
+          typeof property
+          === 'string'
+        ) {
+          const wrapper =
+            wrapped.get(property);
+
+          if (
+            wrapper
+            && Reflect.get(
+              tgt,
+              property,
+              receiver)
+               === (Array.prototype as any)[property]
+          ) {
+            return wrapper;
+          }
+        }
+
+        return Reflect.get(
+          tgt,
+          property,
+          receiver);
+      };
+    }
 
     const proxiedTarget =
       new Proxy(
         target,
-        { set(
-          tgt,
-          property,
-          newValue,
-          receiver
-        ): boolean
-        {
-          const isArrayIndex =
-            isArrayTarget
-            && isArrayIndexProperty(property);
-
-          const previous =
-            Reflect.get(
-              tgt,
-              property,
-              receiver);
-
-          // Truncating an array drops elements without going through the
-          // delete trap, so the dropped values are collected before the
-          // write and reported afterwards.
-          const removed =
-            isArrayTarget
-              && property === 'length'
-            ? collectTruncatedElements(
-              tgt,
-              newValue)
-            : [ ];
-
-          const ok =
-            Reflect.set(
-              tgt,
-              property,
-              convertNestedValue(newValue),
-              receiver);
-
-          if (
-            proxy
-            && ok
-          ) {
-            for (const { index, previous: removedValue } of removed) {
-              emitDelete(
-                index,
-                { index,
-                  previous: removedValue });
-            }
-
-            const current =
-              Reflect.get(
-                tgt,
-                property,
-                receiver);
-
-            if (
-              !Object.is(
-                previous,
-                current)
-            ) {
-              const payload =
-                isArrayIndex
-                ? { index:
-                      Number(property),
-                    value: current,
-                    previous }
-                : { property,
-                    value: current,
-                    previous };
-
-              const traceFn =
-                trace
-                || globalOptions.trace;
-
-              proxy.emit(
-                `set:${String(property)}`,
-                payload);
-
-              if (isFunction(traceFn)) {
-                traceFn(
-                  proxy,
-                  'set',
-                  payload);
-              }
-
-              proxy.emit(
-                'set',
-                payload);
-            }
-          }
-
-          return ok;
-        },
-          deleteProperty(
-          tgt,
-          property
-        ): boolean
-        {
-          const isArrayIndex =
-            isArrayTarget
-            && isArrayIndexProperty(property);
-
-          const had =
-            hasOwn(
-              tgt,
-              property);
-
-          const previous =
-            had
-            ? tgt[property]
-            : undefined;
-
-          const ok =
-            Reflect.deleteProperty(
-              tgt,
-              property);
-
-          if (
-            proxy
-            && ok
-            && had
-          ) {
-            const payload =
-              isArrayIndex
-              ? { index:
-                    Number(property),
-                  previous }
-              : { property,
-                  previous };
-
-            emitDelete(
-              property,
-              payload);
-          }
-
-          return ok;
-        },
-          defineProperty(
-          tgt,
-          property,
-          descriptor
-        ): boolean
-        {
-          const previous =
-            Object.getOwnPropertyDescriptor(
-              tgt,
-              property)
-            ?? null;
-
-          const descriptorToDefine =
-            Object.prototype
-              .hasOwnProperty
-              .call(
-                descriptor,
-                'value')
-            ? { ...descriptor,
-                value:
-                  convertNestedValue(
-                    descriptor.value) }
-            : descriptor;
-
-          const ok =
-            Reflect.defineProperty(
-              tgt,
-              property,
-              descriptorToDefine);
-
-          const skipArrayDefine =
-            isArrayTarget
-            && (property === 'length'
-              || isArrayIndexProperty(property));
-
-          if (
-            proxy
-            && !skipArrayDefine
-            && ok
-          ) {
-            const payload =
-              { property,
-                descriptor: descriptorToDefine,
-                previous };
-
-            const traceFn =
-              trace
-              || globalOptions.trace;
-
-            proxy.emit(
-              `define:${String(property)}`,
-              payload);
-
-            if (isFunction(traceFn)) {
-              traceFn(
-                proxy,
-                'define',
-                payload);
-            }
-
-            proxy.emit(
-              'define',
-              payload);
-          }
-
-          return ok;
-        } });
+        handler);
 
     proxy =
-      isFunction(
-        target?.emit)
+      hasEventfulApi(target)
       ? proxiedTarget
       : eventfulFn(proxiedTarget);
+
+    setChangeTrace(
+      proxy,
+      changes =>
+        traceOf()?.(
+          proxy,
+          'change',
+          changes
+        ));
 
     // Register before descending so that cyclic and repeated references
     // resolve to this wrapper instead of recursing into it again.
@@ -581,10 +893,6 @@ const observableImpl =
       proxy);
 
     convertNestedMembers(target);
-
-    ensureWatchMethod(
-      target,
-      watchImpl);
 
     return proxy;
   };
@@ -629,47 +937,27 @@ const observableImpl =
       }.`);
   }
 
-  const traceFn =
-    trace
-    || globalOptions.trace;
-
-  // Arrays
-  if (Array.isArray(value)) {
-    const proxy =
-      makeProxy(
-        value);
-
-    if (isFunction(traceFn)) {
-      traceFn(
-        proxy,
-        'new');
-    }
-
-    return proxy;
-  }
-
-  // Plain objects, and any object that already carries the eventful API
+  // Plain objects, arrays, and any object that already carries the eventful
+  // API
   if (
     isConvertible(value)
-    || isEventfulObject(value)
+    || hasEventfulApi(value)
   ) {
     const proxy =
-      makeProxy(
-        value);
+      makeProxy(value);
 
-    if (isFunction(traceFn)) {
-      traceFn(
-        proxy,
-        'new',
-        { object: proxy });
-    }
+    traceOf()?.(
+      proxy,
+      'new',
+      { object: proxy }
+    );
 
     return proxy;
   }
 
-  // Opaque objects cannot be observed directly. Boxing them silently would
-  // hand back something whose properties all read as undefined, so refuse,
-  // the way eventful refuses a target it cannot augment.
+  // Everything else cannot be observed directly. Boxing it silently would hand
+  // back something whose properties all read as undefined, so refuse, the way
+  // eventful refuses a target it cannot augment.
   if (
     isObject(value)
     || isFunction(value)
@@ -687,45 +975,32 @@ const observableImpl =
         return value;
       },
         set value(v) {
-        if (
-          Object.is(
-            v,
-            value)
-        ) {
-          return;
-        }
-
         const previous = value;
 
         value = v;
 
-        const payload =
-          { property: 'value',
+        reportChange(
+          boxed as any,
+          { kind: 'set',
+            property: 'value',
             value,
-            previous };
-
-        (boxed as any).emit(
-          'set:value',
-          payload);
-
-        if (isFunction(traceFn)) {
-          traceFn(
-            boxed,
-            'set',
-            payload);
-        }
-
-        (boxed as any).emit(
-          'set',
-          payload);
+            previous });
       } });
 
-  if (isFunction(traceFn)) {
-    traceFn(
-      boxed,
-      'new',
-      { object: boxed });
-  }
+  setChangeTrace(
+    boxed as any,
+    changes =>
+      traceOf()?.(
+        boxed,
+        'change',
+        changes
+      ));
+
+  traceOf()?.(
+    boxed,
+    'new',
+    { object: boxed }
+  );
 
   return boxed;
 };
@@ -735,5 +1010,3 @@ export const observable =
 
 observable.options =
   { trace: null };
-
-observable.watch = watchImpl;

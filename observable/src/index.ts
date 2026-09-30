@@ -1,4 +1,27 @@
 export {
+  asObservable,
+  batch,
+  isObservable
+} from './contract.js';
+
+export type {
+  Change,
+  ChangeListener,
+  Observable
+} from './contract.js';
+
+export {
+  combine,
+  observe
+} from './observe.js';
+
+export type {
+  Chain,
+  ChainValue,
+  ChainValues
+} from './observe.js';
+
+export {
   observable
 } from './observable.js';
 
@@ -7,22 +30,21 @@ export {
 } from './observable-object.js';
 
 export type {
-  Observable,
+  Converted,
+  ConvertedArray,
+  ConvertedMember,
+  ConvertedMembers,
+  ConvertedObject,
+  ConvertedPrimitive,
+  EventfulMethodName,
   ObservableConvertFn,
-  ObservableEventsArray,
-  ObservableEventsObject,
-  ObservableEventsPrimitive,
+  ObservableEvents,
   ObservableFn,
   ObservableGlobalOptions,
-  ObservableMember,
-  ObservableMembers,
-  ObservableOpaque,
   ObservableOptions,
+  ObservablePath,
+  ObservablePathValue,
+  ObservablePathValues,
   ObservableTraceFn,
-  ObservableWatchFn,
-  WatchedValues,
-  WatchMethod,
-  WatchPath,
-  WatchPathValue,
-  WatchPathValues
+  UnsupportedValue
 } from './types.js';

@@ -55,13 +55,6 @@ export function createTracer(
             delete emitPayload.correlationId;
             delete emitPayload.causationId;
 
-            if (
-              payload.event === 'define'
-              || payload.event.match(/^define:/)
-            ) {
-              delete emitPayload.args;
-            }
-
             result.push(
               { action,
                 payload: emitPayload });
