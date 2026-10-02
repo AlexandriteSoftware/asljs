@@ -36,6 +36,7 @@ Read the skill before starting that kind of work. Each file opens with a
 - [architecture and design][SKA] - module boundaries and design choices.
 - [documentation][SKC] - writing or changing documentation.
 - [testing][SKT] - what a change needs to be covered by.
+- [release][SKE] - releasing a package to npm.
 
 ## Artefacts
 
@@ -57,9 +58,9 @@ them.
 
 - [CONVENTIONS.md][DCC] - naming, encapsulation, testing and documentation style
   that tooling does not enforce.
-- [DEVELOPMENT.md][DCD] - the repository layout, per-package commands, and
-  validation workflow.
-- [RELEASE.md][DCR] - how a package is released.
+- [HOWTO.md][DCH] - commands for recurring repository tasks.
+- [Repository Layout][DCL] - how packages are grouped, their script shape, and
+  where generated output goes.
 - [TypeScript Configuration][DCT] - how the TypeScript configurations relate.
 - [tasks][DCK] - open work that is known but not scheduled.
 - A package's own `AGENTS.md` and `docs/` own its behavior; read them before
@@ -115,6 +116,7 @@ them.
 [SKA]: <skills/architecture-design.md>
 [SKC]: <skills/documentation.md>
 [SKT]: <skills/testing.md>
+[SKE]: <skills/release.md>
 [AFP]: <aftefacts/ASLJS Package.md>
 [AFR]: <aftefacts/Package README.md>
 [AFA]: <aftefacts/Article.md>
@@ -123,7 +125,7 @@ them.
 [AFD]: <aftefacts/Artefact Definition.md>
 [AFF]: <aftefacts/Rule File.md>
 [DCC]: <CONVENTIONS.md>
-[DCD]: <DEVELOPMENT.md>
-[DCR]: <RELEASE.md>
+[DCH]: <HOWTO.md>
+[DCL]: <docs/Repository Layout.md>
 [DCT]: <docs/TypeScript Configuration.md>
 [DCK]: <tasks/>

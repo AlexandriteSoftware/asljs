@@ -35,7 +35,7 @@ decisions, trade-offs, and performance characteristics. Link to it.
 Leave process and meta information out entirely. How the examples are verified,
 how the package is built, which test covers which claim, and what the roadmap is
 are all irrelevant to that reader. They belong in `docs`, `AGENTS.md`,
-`DEVELOPMENT.md`, or `tasks/`.
+`HOWTO.md`, or `tasks/`.
 
 ## Heading style
 

@@ -97,7 +97,7 @@ The scripts that use these configs are identical across workspaces:
 
 ## What `build` and `dist` mean
 
-Per `DEVELOPMENT.md`:
+Per [Repository Layout][RLY]:
 
 - `build/` is build output for testing and validation. It contains compiled
   tests, carries source maps, and has no declarations.
@@ -158,3 +158,5 @@ problem, because they declare `lib` explicitly.
 - The practical consequence: a change in one workspace `src` is invisible to its
   dependents until that workspace runs `build:dist`.
 - ESLint does not point at any `tsconfig`; it does not run type-aware rules.
+
+[RLY]: <Repository Layout.md>

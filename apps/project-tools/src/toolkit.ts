@@ -4,8 +4,8 @@
  * It resolves workspace packages from the repo root, reads package metadata,
  * and dispatches named actions that run git, npm, and filesystem operations.
  *
- * For broader project and release workflow details, see README.md,
- * DEVELOPMENT.md, and RELEASE.md in the repository root.
+ * For broader project and release workflow details, see README.md and
+ * HOWTO.md in the repository root, and skills/release.md.
  */
 
 import console

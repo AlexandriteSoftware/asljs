@@ -1,4 +1,6 @@
-# Release
+# release
+
+Use when: releasing a package to npm.
 
 Each package is released independently, from the repository root.
 
@@ -13,7 +15,7 @@ Where `<package>` is the name of the package to release, e.g. `eventful` or
 
 ## What `release:patch` does
 
-See [apps/project-tools/src/commands/release-patch.ts][11] for the
-implementation of the `release:patch` command.
+See [release-patch.ts][11] for the implementation of the `release:patch`
+command.
 
-[11]: apps/project-tools/src/commands/release-patch.ts
+[11]: <../apps/project-tools/src/commands/release-patch.ts>

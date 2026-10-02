@@ -31,3 +31,34 @@ Write documentation that is:
   specific answer.
 - Presentation rules for all repository documentation are in `CONVENTIONS.md`
   under **Documentation style**.
+
+## Which file changes
+
+Human-facing docs and AI-facing docs stay separate.
+
+- `README.md` is for human usage, examples, and public behavior.
+- `AGENTS.md` is for AI-facing constraints, package boundaries, and validation
+  guidance.
+- `HOWTO.md` is for recurring repository commands.
+- `skills/release.md` is about publishing packages.
+- `docs/` is for everything factual about the repository and its packages.
+
+Decide what must change together:
+
+- If public behavior or a package-root API changed, then update tests.
+- If public behavior changed in a way users need to understand, then update
+  `README.md`.
+- If public behavior changed in a way AI needs to preserve, validate, or avoid
+  breaking, then update `AGENTS.md`.
+- If the change is an internal refactor only, then update tests when behavior
+  risk exists, and usually leave `README.md` and `AGENTS.md` alone.
+- If build, release, or deployment behavior changed and executable behavior was
+  affected, then update tests where that behavior is checked.
+- If build, release, or deployment behavior changed for human workflow, then
+  update the relevant workflow docs.
+- If build, release, or deployment behavior changed in a way AI needs to know
+  for validation or execution, then update `AGENTS.md`.
+- If only generated output changed, then do not update source docs or tests just
+  for the generated diff. When a generated file changes because source behavior
+  changed, update the source tests and source docs from the underlying behavior
+  change, not from the generated diff.
