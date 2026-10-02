@@ -5,7 +5,7 @@ import test
 import { readLoggerOptions }
   from './logger-options.js';
 import { argv }
-  from './test-helpers.js';
+  from '../testing/test-helpers.js';
 
 test(
   'reads logging options from separate and inline arguments',

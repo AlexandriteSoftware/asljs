@@ -26,7 +26,7 @@ import { DefaultTaskRunner,
 import { configureTaskCommands }
   from './tasks.js';
 import { argv }
-  from './test-helpers.js';
+  from '../testing/test-helpers.js';
 import { ExecutionContext }
   from './types.js';
 

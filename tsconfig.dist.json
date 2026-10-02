@@ -1,6 +1,6 @@
 {
   "include": ["${configDir}/src/**/*.ts"],
-  "exclude": ["${configDir}/src/**/*.test.ts"],
+  "exclude": ["${configDir}/src/**/*.test.ts", "${configDir}/src/**/testing/**"],
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": false,

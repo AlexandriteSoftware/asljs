@@ -11,7 +11,7 @@ import { Envelope }
 import { main }
   from './main.js';
 import { argv }
-  from './test-helpers.js';
+  from '../testing/test-helpers.js';
 
 const loggerProvider =
   createLoggerProvider();

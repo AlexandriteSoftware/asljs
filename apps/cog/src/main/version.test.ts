@@ -5,7 +5,7 @@ import test
 import { main }
   from './main.js';
 import { argv }
-  from './test-helpers.js';
+  from '../testing/test-helpers.js';
 
 test(
   'version command prints current package version',

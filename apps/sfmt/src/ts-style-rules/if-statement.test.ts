@@ -9,7 +9,7 @@ import { ESLint }
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }
-  from '../functions/build-style-rule-tests-from-markdown.js';
+  from '../testing/build-style-rule-tests-from-markdown.js';
 import tsIfStatementFormatterFactory
   from './if-statement.js';
 

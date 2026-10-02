@@ -15,7 +15,7 @@ import { readTaskDirectories,
          registerTaskDirectories }
   from './task-directories.js';
 import { argv }
-  from './test-helpers.js';
+  from '../testing/test-helpers.js';
 
 test(
   'reads multiple task directories from command arguments',

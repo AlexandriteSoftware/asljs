@@ -10,7 +10,7 @@ import { batch,
 import { observable }
   from './observable.js';
 import { createTracer }
-  from './tracer.js';
+  from './testing/tracer.js';
 
 const TEST_SUITE = 'observable';
 

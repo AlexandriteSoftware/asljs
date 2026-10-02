@@ -11,7 +11,7 @@ import test
 import { fileURLToPath }
   from 'node:url';
 import { readMarkdownTestsFromFile }
-  from '../functions/markdown-tests/read-markdown-tests-from-file.js';
+  from '../testing/markdown-tests/read-markdown-tests-from-file.js';
 import { fmtCriteriaExpression }
   from './fmt-criteria-expression.js';
 

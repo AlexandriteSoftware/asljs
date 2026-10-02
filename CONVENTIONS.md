@@ -55,3 +55,10 @@ by tooling.
   export something solely to make it testable.
 - Test files are named with `.test.ts` suffix and live in the same directory as
   the code they test.
+- A helper that only tests use lives under a `testing` directory inside `src`,
+  with its own test beside it. `tsconfig.dist.json` excludes
+  `src/**/testing/**`, so such a helper is not published and does not add a
+  `.d.ts` that implies a public API. Anything a published file imports is
+  emitted whatever the exclusion says, so a helper that moves into production
+  use starts shipping again silently; keep `src/testing` for files that only
+  `*.test.ts` imports.
