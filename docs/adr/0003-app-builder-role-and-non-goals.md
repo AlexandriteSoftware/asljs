@@ -3,8 +3,8 @@
 ## Decision
 
 `app-builder` is a private browser application and demo surface for the
-repository. It is not a publishable library API and should not define the
-public contract of the reusable packages.
+repository. It is not a publishable library API and should not define the public
+contract of the reusable packages.
 
 Its role is to demonstrate packages working together in a local-first browser
 application.
@@ -37,7 +37,8 @@ together in practice.
 
 ## Consequences
 
-- Internal modules under `apps/app-builder/src/app-builder/*` remain app internals.
+- Internal modules under [apps/app-builder/src/app-builder][ABS] remain app
+  internals.
 - Changes in `app-builder` do not automatically imply public API changes in the
   publishable libraries.
 - Demo-specific shortcuts or AI flows should stay in `app-builder`, not leak
@@ -60,3 +61,5 @@ together in practice.
   implementation details.
 - Demo integration remains valuable, but it does not override the library-first
   package boundaries of the repository.
+
+[ABS]: <../../apps/app-builder/src/app-builder>

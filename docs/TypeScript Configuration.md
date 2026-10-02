@@ -13,11 +13,8 @@ three thin configs that extend them and declare only their deviations.
 The root has two base configs:
 
 - [tsconfig.dist.json][TSD] - the base for publishable output.
-- [tsconfig.build.json][TSB] - extends `tsconfig.dist.json` and retargets it for
-  local build and test output.
-
-[TSD]: ../tsconfig.dist.json
-[TSB]: ../tsconfig.build.json
+- [tsconfig.build.json][TSB] - extends [tsconfig.dist.json][TSD] and retargets
+  it for local build and test output.
 
 ### Paths come from the bases
 
@@ -111,8 +108,8 @@ Neither folder is hand-edited.
 ### Structural
 
 - `app-builder` does not follow the pattern at all. It has a single
-  `tsconfig.json` that extends nothing, sets `noEmit: true`, `target: ES2025`,
-  `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
+  [tsconfig.json][ABT] that extends nothing, sets `noEmit: true`,
+  `target: ES2025`, `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
   `types: ["vite/client", "node"]`. It is a browser app: `tsc` only typechecks
   it, and `vite build` produces `apps/app-builder/dist/`.
 
@@ -150,13 +147,17 @@ problem, because they declare `lib` explicitly.
   redirects module resolution, so a cross-package import resolves exactly as
   node would resolve it under `NodeNext`.
 - A workspace imports a sibling by its published package name, not by relative
-  path. `libs/data-binding/src/bind-data-model.ts` imports `asljs-observable`;
-  npm links `node_modules/asljs-observable` to the `observable` folder; and that
-  package points `exports["."].types` at `./dist/index.d.ts`. The dependent
-  therefore typechecks against the sibling built `dist/*.d.ts`, never against
-  its `src`.
+  path. [libs/data-binding/src/bind-data-model.ts][BDM] imports
+  `asljs-observable`; npm links `node_modules/asljs-observable` to the
+  `observable` folder; and that package points `exports["."].types` at
+  `./dist/index.d.ts`. The dependent therefore typechecks against the sibling
+  built `dist/*.d.ts`, never against its `src`.
 - The practical consequence: a change in one workspace `src` is invisible to its
   dependents until that workspace runs `build:dist`.
 - ESLint does not point at any `tsconfig`; it does not run type-aware rules.
 
+[ABT]: <../apps/app-builder/tsconfig.json>
+[BDM]: <../libs/data-binding/src/bind-data-model.ts>
 [RLY]: <Repository Layout.md>
+[TSB]: <../tsconfig.build.json>
+[TSD]: <../tsconfig.dist.json>
