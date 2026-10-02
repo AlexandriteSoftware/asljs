@@ -18,7 +18,7 @@ by tooling.
   less clear as prose or lists, for example dense payload reference data.
 - When a table is necessary, keep it compact and use it for reference rather
   than for primary decision-making guidance.
-- Table width should be limited to 80 characters. No linebreaks in cells.
+- No linebreaks in table cells.
 
 ## Naming
 
