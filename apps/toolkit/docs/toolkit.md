@@ -80,3 +80,16 @@ is split into several runs to stay within the command line limit; its log
 records the count rather than the paths.
 
 Fails when remark reports a warning, because it runs with `--frail`.
+
+## remove-local-modules
+
+> Remove the node_modules directory of every workspace package.
+
+Reads the workspaces listed in the root `package.json` and removes the
+`node_modules` directory inside each one, reporting how many of them existed.
+A package without one is not an error.
+
+The root `node_modules` is left alone, because it holds the hoisted install
+every package resolves through; removing that is a reinstall rather than this
+command. Discovering the packages rather than listing them is what keeps the
+set complete when a package is added.

@@ -1,9 +1,7 @@
 import { type Logger }
   from 'asljs-logging';
-import fs
-  from 'node:fs/promises';
-import path
-  from 'node:path';
+import { removeDirectory }
+  from '../lib/filesystem.js';
 
 export async function clean(
     logger: Logger,
@@ -20,47 +18,10 @@ export async function clean(
     process.cwd();
 
   for (const pathToClean of pathsToClean) {
-    const fullPathToClean =
-      path.normalize(
-        path.resolve(
-          cwd,
-          pathToClean));
-
-    const isPathToCleanInsideCwd =
-      fullPathToClean.startsWith(
-        cwd + path.sep);
-
-    if (!isPathToCleanInsideCwd) {
-      throw new Error(
-        `Refusing to clean outside of the current working directory: ${fullPathToClean}`);
-    }
-
-    try {
-      await fs.stat(
-        fullPathToClean);
-    } catch (err) {
-      if (
-        (err as NodeJS.ErrnoException).code
-        !== 'ENOENT'
-      ) {
-        throw err;
-      }
-
-      continue;
-    }
-
-    await fs.rm(
-      fullPathToClean,
-      { recursive: true,
-        force: true });
-
-    const relativePathToClean =
-      path.relative(
-        cwd,
-        fullPathToClean);
-
-    logger.information(
-      'clean: removed %s',
-      relativePathToClean);
+    await removeDirectory(
+      logger,
+      cwd,
+      pathToClean,
+      'clean');
   }
 }

@@ -7,7 +7,7 @@
   "scripts": {
     "fint": "toolkit fint --exclude apps --exclude libs",
     "check-packages": "npm outdated || toolkit print-file check-packages.md",
-    "remove-local-modules": "toolkit clean apps/cog/node_modules apps/toolkit/node_modules libs/components/node_modules libs/dali/node_modules apps/dash/node_modules libs/data-binding/node_modules libs/eventful/node_modules apps/kb/node_modules libs/logging/node_modules libs/machine/node_modules libs/money/node_modules libs/observable/node_modules apps/part/node_modules libs/tmpdir/node_modules libs/locator/node_modules",
+    "remove-local-modules": "toolkit remove-local-modules",
     "all": "toolkit run-all"
   },
   "workspaces": [

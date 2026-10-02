@@ -29,6 +29,8 @@ import { printFile }
   from './commands/print-file.js';
 import { releasePatch }
   from './commands/release-patch.js';
+import { removeLocalModules }
+  from './commands/remove-local-modules.js';
 import { runAll }
   from './commands/run-all.js';
 import { tagReleaseRevision }
@@ -69,7 +71,9 @@ const ACTIONS: ReadonlyArray<[string, Action]> =
     [ 'run-all',
       runAll ],
     [ 'fint',
-      fint ] ];
+      fint ],
+    [ 'remove-local-modules',
+      removeLocalModules ] ];
 
 /** The section of `docs/toolkit.md` for an action, by its first word. */
 export function findCommandDoc(
