@@ -97,7 +97,7 @@ export class FormatChangedFilesTask implements Task<string[]>
       .format(
         workingDirectory,
         this.parameters.markdownConfigPath
-          ?? 'dprint.md.json',
+          ?? 'dprint.json',
         markdownFiles);
 
     if (csharpFiles.length > 0) {

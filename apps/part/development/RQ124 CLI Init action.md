@@ -8,5 +8,5 @@ directory. It copies the following files and directories:
 - `Rule File.md` - defines the format of the rule files.
 - `parts` - a directory for rule files.
 
-[1]: <../artefacts>
+[1]: ../artefacts
 [2]: <RQ111 CLI Definitions parameter.md>

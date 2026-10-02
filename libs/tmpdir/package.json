@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
-    "format:md": "dprint fmt --config ../../dprint.md.json \"*.md\"",
+    "format:md": "dprint fmt --config ../../dprint.json \"*.md\"",
     "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
     "format:sfmt": "sfmt format \"src/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:md && npm run format:sfmt",

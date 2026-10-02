@@ -63,6 +63,6 @@ Decide what must change together:
   change, not from the generated diff.
 
 [AFR]: <../aftefacts/Package README.md>
-[CNV]: <../CONVENTIONS.md>
-[HTO]: <../HOWTO.md>
-[SKE]: <release.md>
+[CNV]: ../CONVENTIONS.md
+[HTO]: ../HOWTO.md
+[SKE]: release.md

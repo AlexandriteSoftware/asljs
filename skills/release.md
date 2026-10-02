@@ -18,4 +18,4 @@ Where `<package>` is the name of the package to release, e.g. `eventful` or
 See [release-patch.ts][11] for the implementation of the `release:patch`
 command.
 
-[11]: <../apps/project-tools/src/commands/release-patch.ts>
+[11]: ../apps/project-tools/src/commands/release-patch.ts

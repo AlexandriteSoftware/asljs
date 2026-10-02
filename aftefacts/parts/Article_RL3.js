@@ -8,7 +8,7 @@ Article must be formatted with dprint with the following configuration:
   "markdown": {
     "lineWidth": 80,
     "newLineKind": "auto",
-    "textWrap": "always",
+    "textWrap": "maintainAndWrap",
     "emphasisKind": "underscores",
     "strongKind": "asterisks",
     "unorderedListKind": "dashes",
@@ -16,7 +16,7 @@ Article must be formatted with dprint with the following configuration:
     "listIndentKind": "commonMark"
   },
   "plugins": [
-    "https://plugins.dprint.dev/markdown-0.22.1.wasm"
+    "https://plugins.dprint.dev/markdown-0.25.0.wasm"
   ]
 }
 ```
@@ -27,7 +27,7 @@ Uses the `dprint` npm package, which is a dependency of this package
 (see `package.json`). No additional installation should be necessary
 once `npm install` has been run for the workspace; the first run may
 take a moment because dprint downloads and caches the markdown plugin
-from `https://plugins.dprint.dev/markdown-0.22.1.wasm`.
+from `https://plugins.dprint.dev/markdown-0.25.0.wasm`.
 */
 
 import { mkdtemp,
@@ -50,7 +50,7 @@ const DPRINT_CONFIG =
       {
         lineWidth: 80,
         newLineKind: 'auto',
-        textWrap: 'always',
+        textWrap: 'maintainAndWrap',
         emphasisKind: 'underscores',
         strongKind: 'asterisks',
         unorderedListKind: 'dashes',
@@ -59,7 +59,7 @@ const DPRINT_CONFIG =
       },
     plugins:
       [
-        'https://plugins.dprint.dev/markdown-0.22.1.wasm'
+        'https://plugins.dprint.dev/markdown-0.25.0.wasm'
       ]
   };
 

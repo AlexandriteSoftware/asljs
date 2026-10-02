@@ -156,8 +156,8 @@ problem, because they declare `lib` explicitly.
   dependents until that workspace runs `build:dist`.
 - ESLint does not point at any `tsconfig`; it does not run type-aware rules.
 
-[ABT]: <../apps/app-builder/tsconfig.json>
-[BDM]: <../libs/data-binding/src/bind-data-model.ts>
+[ABT]: ../apps/app-builder/tsconfig.json
+[BDM]: ../libs/data-binding/src/bind-data-model.ts
 [RLY]: <Repository Layout.md>
-[TSB]: <../tsconfig.build.json>
-[TSD]: <../tsconfig.dist.json>
+[TSB]: ../tsconfig.build.json
+[TSD]: ../tsconfig.dist.json

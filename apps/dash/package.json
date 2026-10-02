@@ -8,7 +8,7 @@
   "scripts": {
     "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
     "format:js": "dprint fmt --config ../../dprint.json \"*.js\" \"renderers/*.js\"",
-    "format:md": "dprint fmt --config ../../dprint.md.json \"*.md\" \"docs/*.md\"",
+    "format:md": "dprint fmt --config ../../dprint.json \"*.md\" \"docs/*.md\"",
     "format": "npm run format:json && npm run format:js && npm run format:md",
     "clean": "project-tools clean",
     "start": "node server.js --config dash.config.json --config ../../dash.config.json",

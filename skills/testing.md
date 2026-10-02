@@ -12,4 +12,4 @@ Use when: writing tests, or deciding what a change needs to be covered by.
 every file with runtime behaviour, `.test.ts` naming, and how unexported helpers
 and type-only files are covered.
 
-[CNV]: <../CONVENTIONS.md>
+[CNV]: ../CONVENTIONS.md

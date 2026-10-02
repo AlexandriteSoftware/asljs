@@ -35,7 +35,7 @@ Article must be formatted with dprint with the following configuration:
   "markdown": {
     "lineWidth": 80,
     "newLineKind": "auto",
-    "textWrap": "always",
+    "textWrap": "maintainAndWrap",
     "emphasisKind": "underscores",
     "strongKind": "asterisks",
     "unorderedListKind": "dashes",
@@ -43,7 +43,7 @@ Article must be formatted with dprint with the following configuration:
     "listIndentKind": "commonMark"
   },
   "plugins": [
-    "https://plugins.dprint.dev/markdown-0.22.1.wasm"
+    "https://plugins.dprint.dev/markdown-0.25.0.wasm"
   ]
 }
 ```

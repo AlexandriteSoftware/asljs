@@ -11,7 +11,7 @@ matches its extension.
 - `asljsConfigPath` (optional) - dprint config for TypeScript, default
   `dprint.json`.
 - `markdownConfigPath` (optional) - dprint config for Markdown, default
-  `dprint.md.json`.
+  `dprint.json`.
 - `dotnetTarget` (optional) - solution/project file used for C# formatting.
 - `dotnetProfile` (optional) - `jb cleanupcode` profile name.
 

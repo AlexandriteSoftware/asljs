@@ -66,5 +66,5 @@ force-pushes the contents of that folder to the `pages` branch root.
 
 Neither folder is hand-edited.
 
-[RMD]: <../README.md>
+[RMD]: ../README.md
 [TSC]: <TypeScript Configuration.md>

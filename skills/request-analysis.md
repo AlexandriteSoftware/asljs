@@ -48,5 +48,5 @@ orders will make the lookup faster"_. Three separate checks:
 If any check fails, report it with the real state instead of implementing the
 request as stated.
 
-[AMD]: <../AGENTS.md>
-[CNV]: <../CONVENTIONS.md>
+[AMD]: ../AGENTS.md
+[CNV]: ../CONVENTIONS.md

@@ -149,9 +149,9 @@ unsupported file types, then routes existing files as follows:
 - `.md` files use `dprint-formatter`;
 - `.cs` files use `jb-dotnet-formatter`.
 
-The default TypeScript dprint configuration is `dprint.json`. The default
-Markdown configuration is `dprint.md.json`. Both paths are relative to the
-working directory and can be overridden.
+The default dprint configuration for both TypeScript and Markdown is
+`dprint.json`. Each path is relative to the working directory and can be
+overridden separately.
 
 C# formatting requires a solution or project target. The task uses its
 `dotnetTarget` parameter when provided. Otherwise, it searches the working

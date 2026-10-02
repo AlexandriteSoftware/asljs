@@ -107,25 +107,25 @@ them.
   up to the workspace root. Do not count directories from the repository root.
 - Do NOT imagine missing parts of the system.
 
-[SKD]: <skills/dictated-requests.md>
-[SKR]: <skills/request-analysis.md>
-[SKU]: <skills/code-understanding.md>
-[SKG]: <skills/code-generation.md>
-[SKB]: <skills/debugging.md>
-[SKV]: <skills/code-review.md>
-[SKA]: <skills/architecture-design.md>
-[SKC]: <skills/documentation.md>
-[SKT]: <skills/testing.md>
-[SKE]: <skills/release.md>
+[SKD]: skills/dictated-requests.md
+[SKR]: skills/request-analysis.md
+[SKU]: skills/code-understanding.md
+[SKG]: skills/code-generation.md
+[SKB]: skills/debugging.md
+[SKV]: skills/code-review.md
+[SKA]: skills/architecture-design.md
+[SKC]: skills/documentation.md
+[SKT]: skills/testing.md
+[SKE]: skills/release.md
 [AFP]: <aftefacts/ASLJS Package.md>
 [AFR]: <aftefacts/Package README.md>
-[AFA]: <aftefacts/Article.md>
-[AFQ]: <aftefacts/Requirement.md>
+[AFA]: aftefacts/Article.md
+[AFQ]: aftefacts/Requirement.md
 [AFU]: <aftefacts/Unit Test File.md>
 [AFD]: <aftefacts/Artefact Definition.md>
 [AFF]: <aftefacts/Rule File.md>
-[DCC]: <CONVENTIONS.md>
-[DCH]: <HOWTO.md>
+[DCC]: CONVENTIONS.md
+[DCH]: HOWTO.md
 [DCL]: <docs/Repository Layout.md>
 [DCT]: <docs/TypeScript Configuration.md>
-[DCK]: <tasks/>
+[DCK]: tasks/

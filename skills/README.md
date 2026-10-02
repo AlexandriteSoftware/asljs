@@ -10,4 +10,4 @@ do, in what order, and what to report.
 [AGENTS.md][AMD] indexes these and applies always. A skill applies only to the
 kind of work it names.
 
-[AMD]: <../AGENTS.md>
+[AMD]: ../AGENTS.md

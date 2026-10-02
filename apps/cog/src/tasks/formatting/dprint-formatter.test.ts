@@ -32,7 +32,7 @@ test(
       runner)
       .format(
         'repo',
-        'dprint.md.json',
+        'dprint.json',
         [ 'README.md' ]);
 
     assert.deepEqual(
@@ -40,6 +40,6 @@ test(
       [ 'dprint',
         'fmt',
         '--config',
-        'dprint.md.json',
+        'dprint.json',
         'README.md' ]);
   });

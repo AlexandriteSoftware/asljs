@@ -31,18 +31,18 @@ Libraries:
 - [tmpdir][TDR] - provides temporary directory utilities for testing and
   development.
 
-[CMP]: <./libs/components/README.md>
-[DBND]: <./libs/data-binding/README.md>
-[DALI]: <./libs/dali/README.md>
-[EVT]: <./libs/eventful/README.md>
-[LOG]: <./libs/logging/README.md>
-[MCH]: <./libs/machine/README.md>
-[MNY]: <./libs/money/README.md>
-[OBS]: <./libs/observable/README.md>
-[TDR]: <./libs/tmpdir/README.md>
-[COG]: <./apps/cog/README.md>
-[KB]: <./apps/kb/README.md>
-[PRT]: <./apps/part/README.md>
-[SFMT]: <./apps/sfmt/README.md>
-[APPS]: <./apps/app-builder/README.md>
-[DASH]: <./apps/dash/README.md>
+[CMP]: ./libs/components/README.md
+[DBND]: ./libs/data-binding/README.md
+[DALI]: ./libs/dali/README.md
+[EVT]: ./libs/eventful/README.md
+[LOG]: ./libs/logging/README.md
+[MCH]: ./libs/machine/README.md
+[MNY]: ./libs/money/README.md
+[OBS]: ./libs/observable/README.md
+[TDR]: ./libs/tmpdir/README.md
+[COG]: ./apps/cog/README.md
+[KB]: ./apps/kb/README.md
+[PRT]: ./apps/part/README.md
+[SFMT]: ./apps/sfmt/README.md
+[APPS]: ./apps/app-builder/README.md
+[DASH]: ./apps/dash/README.md

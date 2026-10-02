@@ -27,5 +27,5 @@ The script shape and the per-app exceptions are in [Repository Layout][RPL].
 - Only add comments for **non-obvious logic**
 - Keep them concise and technical
 
-[CNV]: <../CONVENTIONS.md>
+[CNV]: ../CONVENTIONS.md
 [RPL]: <../docs/Repository Layout.md>

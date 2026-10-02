@@ -62,4 +62,4 @@ together in practice.
 - Demo integration remains valuable, but it does not override the library-first
   package boundaries of the repository.
 
-[ABS]: <../../apps/app-builder/src/app-builder>
+[ABS]: ../../apps/app-builder/src/app-builder

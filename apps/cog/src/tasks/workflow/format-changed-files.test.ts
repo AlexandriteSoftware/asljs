@@ -123,6 +123,14 @@ test(
       4);
 
     assert.deepEqual(
+      calls[2],
+      [ 'dprint',
+        'fmt',
+        '--config',
+        'dprint.json',
+        'README.md' ]);
+
+    assert.deepEqual(
       calls[3],
       [ 'cleanupcode',
         '--include=src/Code.cs',

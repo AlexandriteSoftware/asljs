@@ -29,4 +29,4 @@ When dictation is suspected:
 - If a term cannot be resolved with confidence, ask instead of silently choosing
   one reading.
 
-[SKR]: <request-analysis.md>
+[SKR]: request-analysis.md
