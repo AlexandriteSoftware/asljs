@@ -16,7 +16,7 @@ Verify each part against the repository before implementing:
 
 - Verify every stated fact against actual code, documentation, and type
   definitions. A fact is not true because the request states it.
-- Verify the proposed change is permitted by `CONVENTIONS.md`, the module
+- Verify the proposed change is permitted by [CONVENTIONS.md][CNV], the module
   `docs`, and the existing architecture.
 - Verify the proposed change actually produces the intended effect, and that the
   effect is significant rather than negligible.
@@ -32,7 +32,7 @@ Report the result of the verification, and act on it:
 - If the reasoning is wrong but the goal is valid, implement what reaches the
   goal and explain why the proposed approach would not.
 - If the change conflicts with documentation or conventions, follow
-  **Documentation governance** in `AGENTS.md`: do not proceed silently.
+  **Documentation governance** in [AGENTS.md][AMD]: do not proceed silently.
 - If the predicted effect cannot be confirmed without measurement, say so
   explicitly rather than claiming an improvement.
 
@@ -47,3 +47,6 @@ orders will make the lookup faster"_. Three separate checks:
 
 If any check fails, report it with the real state instead of implementing the
 request as stated.
+
+[AMD]: <../AGENTS.md>
+[CNV]: <../CONVENTIONS.md>

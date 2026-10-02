@@ -20,8 +20,7 @@ Write documentation that is:
 ## Where it goes
 
 - A package `README.md` is a landing page, not a manual. Its rules live in the
-  `Package README` artefact definition, `aftefacts/Package README.md`, and are
-  checked by `part check`.
+  [Package README][AFR] artefact definition and are checked by `part check`.
 - Everything else belongs in the package's `docs` directory: the full API
   surface, edge cases, payload and event reference, migration notes, rationale
   for design decisions, trade-offs, and performance characteristics.
@@ -29,8 +28,8 @@ Write documentation that is:
   sections under **Include** above. That is the one place the direct name is
   right, because the reader is already past the decision and looking for a
   specific answer.
-- Presentation rules for all repository documentation are in `CONVENTIONS.md`
-  under **Documentation style**.
+- Presentation rules for all repository documentation are in
+  [CONVENTIONS.md][CNV] under **Documentation style**.
 
 ## Which file changes
 
@@ -39,8 +38,8 @@ Human-facing docs and AI-facing docs stay separate.
 - `README.md` is for human usage, examples, and public behavior.
 - `AGENTS.md` is for AI-facing constraints, package boundaries, and validation
   guidance.
-- `HOWTO.md` is for recurring repository commands.
-- `skills/release.md` is about publishing packages.
+- [HOWTO.md][HTO] is for recurring repository commands.
+- [release][SKE] is about publishing packages.
 - `docs/` is for everything factual about the repository and its packages.
 
 Decide what must change together:
@@ -62,3 +61,8 @@ Decide what must change together:
   for the generated diff. When a generated file changes because source behavior
   changed, update the source tests and source docs from the underlying behavior
   change, not from the generated diff.
+
+[AFR]: <../aftefacts/Package README.md>
+[CNV]: <../CONVENTIONS.md>
+[HTO]: <../HOWTO.md>
+[SKE]: <release.md>

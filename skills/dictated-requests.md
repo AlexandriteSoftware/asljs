@@ -1,8 +1,8 @@
 # dictated-requests
 
 Use when: a request shows signs of voice input. Apply this before
-`request-analysis`, which then runs on the corrected request rather than on the
-raw transcript.
+[request-analysis][SKR], which then runs on the corrected request rather than on
+the raw transcript.
 
 Some requests arrive through voice input. Treat them as lower-fidelity input
 rather than as literal text.
@@ -28,3 +28,5 @@ When dictation is suspected:
 - Restate the corrected request and obtain approval before acting on it.
 - If a term cannot be resolved with confidence, ask instead of silently choosing
   one reading.
+
+[SKR]: <request-analysis.md>
