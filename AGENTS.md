@@ -106,6 +106,8 @@ them.
 - Resolve a path from inside a package relative to that package, or by walking
   up to the workspace root. Do not count directories from the repository root.
 - Do NOT imagine missing parts of the system.
+- Work on the branch that is already checked out. Do NOT create a branch or
+  switch to another one unless the request explicitly asks for work in a branch.
 
 [SKD]: skills/dictated-requests.md
 [SKR]: skills/request-analysis.md
