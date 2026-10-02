@@ -40,7 +40,7 @@ is used below.
 The trace hook receives everything needed. Keep a map from `messageId` to the
 span so a caused message can find its parent.
 
-```js
+```
 import {
   context,
   SpanKind,
@@ -98,7 +98,7 @@ const cart = eventful(new Cart(), { trace: traceToOtel });
 result, with no collector and no service to send anything to. It is the fastest
 way to check that the causation chain really does become a span tree.
 
-```js
+```
 import {
   BasicTracerProvider,
   ConsoleSpanExporter,
@@ -175,7 +175,7 @@ spans from the rest of a system. Then the cost buys real interoperability.
 
 The same payloads produce a sequence diagram directly:
 
-```js
+```
 const lines = ['sequenceDiagram'];
 
 function traceToMermaid(action, payload)

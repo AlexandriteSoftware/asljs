@@ -165,7 +165,7 @@ so a page with thirty of them has thirty legitimate listeners per event.
 Growth between sweeps is the better signal, because a leak is not many
 listeners, it is listeners that keep arriving:
 
-```js
+```
 const before = new Map(
   registry.sweep().report.map(r => [`${r.id} ${r.event}`, r.count])
 );

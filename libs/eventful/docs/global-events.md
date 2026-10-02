@@ -14,6 +14,10 @@ is also an emitter. When you create an enhanced object via
 per-instance `trace` hook and also emitted as global events on `eventful`.
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
 const offNew = eventful.on(
   'new',
   ({ object }) =>
@@ -63,6 +67,10 @@ first route, and only read.
 Trace event invocations for one object:
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
 const obj = eventful(
   {},
   {
@@ -114,7 +122,10 @@ class Cart
 
 const cart = eventful(new Cart());
 
-instanceId(cart); // 'Cart#1'
+console.log(instanceId(cart));
+
+// Output:
+// Cart#1
 ```
 
 ### Message context
@@ -132,7 +143,7 @@ values or on a message being the first one.
 A message emitted by a listener is caused by the message being dispatched, and
 joins its correlation, so a chain of events is recoverable from the trace alone:
 
-```js
+```
 cart.on('checkout', () => basket.emit('stocked'));
 
 cart.emit('checkout');
@@ -150,7 +161,7 @@ synchronously. A listener that emits _after awaiting_ has already left that
 stack, and its message starts a new correlation. To keep the chain across an
 await, capture the context and restore it:
 
-```js
+```
 cart.on('checkout', async () =>
 {
   const context = getCurrentMessageContext();

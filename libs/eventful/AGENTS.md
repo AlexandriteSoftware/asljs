@@ -114,6 +114,26 @@ Treat these as public contract behaviors that should not drift silently:
 - If changing typing, then preserve listener signatures in the TypeScript usage
   patterns.
 
+## Documentation Layout
+
+- `README.md` is a landing page for a first-time reader: what it does, whether
+  it is for them, how to install, a few small examples, and links onward.
+- `docs/api.md`, `docs/typescript.md`, `docs/global-events.md`,
+  `docs/leak-detection.md` and `docs/opentelemetry.md` carry the detail.
+- Every `js` and `ts` fenced block in `README.md` and `docs` is executed or
+  compiled by `src/docs-examples.test.ts`. A JavaScript block must be a complete
+  program and, where it ends with an `// Output:` comment block, must print
+  exactly those lines; a TypeScript block must compile standalone against
+  `dist`, or carry an `// error TSxxxx` comment and produce that error. Use a
+  plain fence for a listing that is not meant to run: a skeleton, a fragment of
+  a larger program, or anything that needs a dependency this workspace does not
+  install.
+- The two recipes in `docs/leak-detection.md` are also loaded and exercised by
+  `src/leak-detection-recipes.test.ts`, which finds them by their
+  `export function` declaration. Keep them in `js` blocks declared that way.
+- `dist` has to be built before the tests for that harness to resolve the
+  package, which `npm run all` does.
+
 ## Validation
 
 - `npm -w asljs-eventful run test`

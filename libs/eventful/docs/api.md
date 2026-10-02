@@ -94,6 +94,12 @@ after its first invocation.
 Returns a function to remove the listener.
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
+const obj = eventful();
+
 obj.once(
   'tick',
   n => console.log('first only', n)
@@ -101,6 +107,9 @@ obj.once(
 
 obj.emit('tick', 1); // logs
 obj.emit('tick', 2); // no-op; already unsubscribed
+
+// Output:
+// first only 1
 ```
 
 ### off(event, [listener])
@@ -154,12 +163,22 @@ Checks if there are any listeners registered for the specified event.
 Returns `true` if there are listeners, otherwise `false`.
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
+const obj = eventful();
+
 const off = obj.on('e', () =>
 {});
 
-console.log(obj.has('e')); // true
+console.log(obj.has('e'));
 off();
-console.log(obj.has('e')); // false
+console.log(obj.has('e'));
+
+// Output:
+// true
+// false
 ```
 
 ### removeAllListeners()
@@ -170,7 +189,7 @@ Intended for an object you own and are discarding: dropping the listeners in one
 step releases whatever their closures hold, and stops an emit that is still in
 flight from reaching a subscriber that has already been torn down.
 
-```js
+```
 class Machine
 {
   dispose()
@@ -196,7 +215,7 @@ The map and its arrays are copies, so changing them changes nothing. A listener
 registered with `once` appears as the function you passed to `once`, not as the
 wrapper that removes it.
 
-```js
+```
 const counts = [...obj.getListeners()].map(
   ([event, listeners]) => `${String(event)}: ${listeners.length}`
 );
@@ -224,6 +243,10 @@ listeners still run, and the failure is reported.
 Custom error handler for listener errors:
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
 const obj = eventful(
   {},
   {
@@ -251,6 +274,10 @@ rejection. The `error` hook and the package-level `error` event still receive
 the failure before it propagates:
 
 ```js
+import {
+  eventful
+} from 'asljs-eventful';
+
 const obj = eventful(
   {},
   { strict: true }

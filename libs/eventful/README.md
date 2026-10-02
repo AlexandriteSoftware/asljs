@@ -17,7 +17,10 @@ const obj = eventful({ name: 'Alice' });
 
 obj.on('greet', msg => console.log(`${msg}, ${obj.name}!`));
 
-obj.emit('greet', 'Hello'); // writes "Hello, Alice!"
+obj.emit('greet', 'Hello');
+
+// Output:
+// Hello, Alice!
 ```
 
 ## Scope
