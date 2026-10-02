@@ -9,6 +9,7 @@ graph TD
   dali[asljs-dali]
   machine[asljs-machine]
   money[asljs-money]
+  locator[asljs-locator]
   part[asljs-part]
   appbuilder[asljs-app-builder]
 
@@ -20,6 +21,7 @@ graph TD
   observable --> dali
   eventful --> machine
   observable --> machine
+  locator --> part
   components --> appbuilder
   dali --> appbuilder
   databinding --> appbuilder

@@ -1,3 +1,6 @@
+import { GitIgnore,
+         LocationResolver }
+  from 'asljs-locator';
 import { LoggerProvider }
   from 'asljs-logging';
 import { ArtefactDataProvider }
@@ -9,10 +12,6 @@ import { ArtefactDefinitionRuleProvider }
   from './artefact-definition-rule-provider.js';
 import { ArtefactProvider }
   from './artefact-provider.js';
-import { FilesystemLocationResolver }
-  from './filesystem-location-resolver.js';
-import { GitIgnore }
-  from './git-ignore.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
 
@@ -25,7 +24,7 @@ export interface Providers
   readonly artefactDefinitionRuleProvider: ArtefactDefinitionRuleProvider;
   readonly artefactDataProvider: ArtefactDataProvider;
   readonly artefactProvider: ArtefactProvider;
-  readonly filesystemLocationResolver: FilesystemLocationResolver;
+  readonly locationResolver: LocationResolver;
   readonly gitIgnore: GitIgnore;
   readonly markdownDocumentProvider: MarkdownDocumentProvider;
 }
@@ -36,10 +35,10 @@ export function providersFactory(
     definitionsPath: string
   ): Providers
 {
-  const filesystemLocationResolver =
-    new FilesystemLocationResolver(
+  const locationResolver =
+    new LocationResolver(
       loggerProvider.getLogger(
-        'FilesystemLocationResolver'),
+        'LocationResolver'),
       projectPath);
 
   const artefactDefinitionProviderLogger =
@@ -90,7 +89,7 @@ export function providersFactory(
            artefactDefinitionRuleProvider,
            artefactDataProvider,
            artefactProvider,
-           filesystemLocationResolver,
+           locationResolver,
            gitIgnore,
            markdownDocumentProvider };
 }

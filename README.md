@@ -23,6 +23,7 @@ Libraries:
 - [data-binding][DBND] - declarative DOM bindings via `data-model`.
 - [dali][DALI] - IndexedDB data layer with typed table abstractions.
 - [eventful][EVT] - adds on/off/emit to any object.
+- [locator][LOC] - locates files by glob patterns, exclusions and filters.
 - [logging][LOG] - provides logging utilities.
 - [machine][MCH] - provides a state-machine framework for organizing control
   flow.
@@ -35,6 +36,7 @@ Libraries:
 [DBND]: ./libs/data-binding/README.md
 [DALI]: ./libs/dali/README.md
 [EVT]: ./libs/eventful/README.md
+[LOC]: ./libs/locator/README.md
 [LOG]: ./libs/logging/README.md
 [MCH]: ./libs/machine/README.md
 [MNY]: ./libs/money/README.md

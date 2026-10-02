@@ -5,7 +5,7 @@ ASLJS Package, published to npm.
 ## Location
 
 - Pattern: `../{libs,apps}/*/`
-- Exclude: `../apps/project-tools/`
+- Exclude: `../apps/toolkit/`
 - GitIgnore
 
 ## Properties

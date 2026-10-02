@@ -5,7 +5,7 @@ import fs
 import path
   from 'node:path';
 import { LocationResolver }
-  from '../../location.js';
+  from 'asljs-locator';
 import { type Tool }
   from '../../tool.js';
 

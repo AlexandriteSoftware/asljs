@@ -1,3 +1,5 @@
+import { LocationResolver }
+  from 'asljs-locator';
 import { Logger }
   from 'asljs-logging';
 import path
@@ -10,8 +12,6 @@ import { Artefact }
   from '../model/artefact.js';
 import { ArtefactDefinitionProvider }
   from './artefact-definition-provider.js';
-import { FilesystemLocationResolver }
-  from './filesystem-location-resolver.js';
 
 /**
  * Provides artefacts based on definitions. Caches artefacts in memory to avoid
@@ -19,7 +19,7 @@ import { FilesystemLocationResolver }
  */
 export class ArtefactProvider
 {
-  private locationResolver: FilesystemLocationResolver;
+  private locationResolver: LocationResolver;
   private readonly projectRootPath: string;
 
   constructor(
@@ -39,7 +39,7 @@ export class ArtefactProvider
           projectPath));
 
     this.locationResolver =
-      new FilesystemLocationResolver(
+      new LocationResolver(
         this.logger,
         this.projectRootPath);
   }

@@ -10,7 +10,7 @@
     "format:js": "dprint fmt --config ../../dprint.json \"*.js\" \"renderers/*.js\"",
     "format:md": "dprint fmt --config ../../dprint.json \"*.md\" \"docs/*.md\"",
     "format": "npm run format:json && npm run format:js && npm run format:md",
-    "clean": "project-tools clean",
+    "clean": "toolkit clean",
     "start": "node server.js --config dash.config.json --config ../../dash.config.json",
     "runner": "node runner.js --config dash.config.json --config ../../dash.config.json",
     "once": "node runner.js --once --config dash.config.json --config ../../dash.config.json",
@@ -23,6 +23,6 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
-    "asljs-project-tools": "^0.1.0"
+    "asljs-toolkit": "^0.1.0"
   }
 }

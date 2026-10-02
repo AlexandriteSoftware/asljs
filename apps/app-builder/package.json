@@ -9,7 +9,7 @@
     "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
     "format:sfmt": "sfmt format \"src/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
-    "clean": "project-tools clean",
+    "clean": "toolkit clean",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -31,6 +31,6 @@
     "esbuild-wasm": "^0.28.1"
   },
   "devDependencies": {
-    "asljs-project-tools": "^0.1.0"
+    "asljs-toolkit": "^0.1.0"
   }
 }

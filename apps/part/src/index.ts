@@ -15,8 +15,8 @@ export {
 } from './model/artefact-definition-rule.js';
 
 export {
-  Location
-} from './model/location.js';
+  type Location
+} from 'asljs-locator';
 
 export {
   ArtefactProvider

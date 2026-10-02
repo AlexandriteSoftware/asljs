@@ -124,9 +124,9 @@ Neither folder is hand-edited.
 - `dali` declares `lib: ["ES2025", "DOM"]` in both configs, which it needs for
   IndexedDB. It is the only workspace that asks for DOM in build compilation.
 - `types: ["node"]` appears in the build configs of `cog`, `kb`, `logging`,
-  `part`, `project-tools` and `sfmt`. It is redundant there, because the build
+  `part`, `toolkit` and `sfmt`. It is redundant there, because the build
   base already sets it. In dist configs it is the opt-in out of `types: []`, and
-  it is declared by `cog`, `kb`, `logging`, `part`, `project-tools`, `sfmt` and
+  it is declared by `cog`, `kb`, `logging`, `part`, `toolkit`, `sfmt` and
   `tmpdir`.
 
 ### DOM reaching build compilation indirectly

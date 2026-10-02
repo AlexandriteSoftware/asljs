@@ -1,0 +1,67 @@
+{
+  "name": "asljs-locator",
+  "version": "0.1.0",
+  "description": "Locates files by glob patterns, exclusions and filters such as .gitignore.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
+    "format:md": "dprint fmt --config ../../dprint.json \"*.md\"",
+    "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "sfmt format \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:md && npm run format:sfmt",
+    "clean": "toolkit clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:md": "remark --frail --quiet --no-stdout .",
+    "guard:clean-git": "toolkit ensure-clean-working-directory",
+    "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
+    "postpublish": "toolkit tag-release-revision",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
+    "test:watch": "node --watch --test build/**/*.test.js",
+    "release:patch": "toolkit release-patch",
+    "all": "npm i && npm run clean && npm run format && npm run typecheck && npm run lint && npm run lint:md && npm run build:dist && npm run build && npm run test"
+  },
+  "keywords": [
+    "glob",
+    "gitignore",
+    "files",
+    "nodejs",
+    "locator"
+  ],
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "asljs-logging": "^0.1.1",
+    "glob": "^13.0.6",
+    "ignore": "^7.0.6",
+    "minimatch": "^10.2.6"
+  },
+  "devDependencies": {
+    "asljs-tmpdir": "^0.1.13",
+    "asljs-toolkit": "^0.1.0"
+  }
+}

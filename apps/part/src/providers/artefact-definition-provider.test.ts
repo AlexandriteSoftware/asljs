@@ -8,8 +8,8 @@ import { ArtefactDefinitionProperty }
   from '../model/artefact-definition-property.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
-import { Location }
-  from '../model/location.js';
+import { type Location }
+  from 'asljs-locator';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }

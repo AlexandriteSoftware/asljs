@@ -1,0 +1,115 @@
+import { type Logger }
+  from 'asljs-logging';
+import { PackageJson }
+  from 'pkg-types';
+import { ROOT_DIR }
+  from '../api.js';
+import { getPackageJson,
+         getPackageJsonPath }
+  from '../lib/packages.js';
+import { start,
+         startSequence }
+  from '../lib/process.js';
+import { tagRepository }
+  from '../lib/repository.js';
+import { ensureCleanWorkingDirectory }
+  from './ensure-clean-working-directory.js';
+
+export async function releasePatch(
+    logger: Logger
+  ): Promise<void>
+{
+  logger.information(
+    'patch-release of the package `%s`...',
+    process.cwd());
+
+  await ensureCleanWorkingDirectory(logger);
+
+  const packageJsonPath =
+    getPackageJsonPath(
+      process.cwd());
+
+  const packageJson =
+    await getPackageJson(
+      packageJsonPath);
+
+  verifyReleaseTarget(
+    packageJson);
+
+  startSequence(
+    [ 'npm run clean',
+      'npm run build:dist',
+      'npm run typecheck',
+      'npm run lint',
+      'npm run build',
+      'npm run test',
+      'npm version patch --no-git-tag-version' ]);
+
+  start(
+    'npm install --package-lock-only',
+    { cwd: ROOT_DIR });
+
+  start(
+    'npm publish --ignore-scripts');
+
+  const releaseId =
+    await getReleaseTagId(
+      packageJsonPath);
+
+  startSequence(
+    [ `git add .`,
+      `git commit -m "releasing ${releaseId}"` ],
+    ROOT_DIR);
+
+  tagRepository(
+    logger,
+    releaseId);
+
+  startSequence(
+    [ 'git push',
+      `git push origin "${releaseId}"` ],
+    ROOT_DIR);
+}
+
+function verifyReleaseTarget(
+    packageJson: PackageJson
+  ): void
+{
+  const name = packageJson.name;
+
+  if (
+    !name
+    || name.trim() === ''
+  ) {
+    throw new Error(
+      'package.json must define a non-empty string "name".');
+  }
+
+  if (packageJson.private) {
+    throw new Error(
+      `Refusing release: ${packageJson.name} is private.`);
+  }
+
+  const version = packageJson.version;
+
+  if (
+    !version
+    || version.trim() === ''
+  ) {
+    throw new Error(
+      'package.json must define a non-empty string "version".');
+  }
+}
+
+export async function getReleaseTagId(
+    packageDir?: string
+  ): Promise<string>
+{
+  packageDir ??= process.cwd();
+
+  const packageInfo =
+    await getPackageJson(
+      packageDir);
+
+  return `${packageInfo.name}@${packageInfo.version}`;
+}

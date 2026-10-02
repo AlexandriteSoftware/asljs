@@ -5,7 +5,7 @@ import path
 import { type ContextFile }
   from '../../context.js';
 import { LocationResolver }
-  from '../../location.js';
+  from 'asljs-locator';
 import { createLoggerProvider }
   from '../../logger.js';
 import { ExecutionContext }

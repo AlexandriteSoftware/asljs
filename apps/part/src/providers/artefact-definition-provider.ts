@@ -17,16 +17,15 @@ import { getListItemsAsText,
   from '../markdown-document-queries.js';
 import { ArtefactDefinitionProperty }
   from '../model/artefact-definition-property.js';
+import { GitIgnore,
+         type Location }
+  from 'asljs-locator';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinition }
   from '../model/artefact-definition.js';
-import { Location }
-  from '../model/location.js';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
-import { GitIgnore }
-  from './git-ignore.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
 

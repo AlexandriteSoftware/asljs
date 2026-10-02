@@ -1,0 +1,36 @@
+{
+  "name": "asljs-toolkit",
+  "version": "0.1.0",
+  "description": "Repository maintenance commands for ASLJS projects.",
+  "private": true,
+  "bin": {
+    "toolkit": "bin/toolkit.js"
+  },
+  "type": "module",
+  "scripts": {
+    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
+    "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
+    "format:sfmt": "sfmt format \"src/**/*.ts\"",
+    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "clean": "toolkit clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:md": "remark --frail --quiet --no-stdout .",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
+    "prepare": "npm run build:dist",
+    "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run lint:md && npm run build && npm run test"
+  },
+  "dependencies": {
+    "asljs-locator": "^0.1.0",
+    "asljs-logging": "^0.1.1",
+    "commander": "^15.0.0",
+    "pkg-types": "^2.3.1"
+  },
+  "devDependencies": {
+    "asljs-tmpdir": "^0.1.13",
+    "globals": "^17.7.0"
+  }
+}

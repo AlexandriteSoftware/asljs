@@ -21,20 +21,20 @@
     "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
     "format:sfmt": "sfmt format \"src/**/*.ts\"",
     "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
-    "clean": "project-tools clean",
+    "clean": "toolkit clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:md": "remark --frail --quiet --no-stdout .",
-    "guard:clean-git": "project-tools ensure-clean-working-directory",
+    "guard:clean-git": "toolkit ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
-    "postpublish": "project-tools tag-release-revision",
+    "postpublish": "toolkit tag-release-revision",
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "test:watch": "node --watch --test build/**/*.test.js",
     "coverage": "npm run build && node --test --experimental-test-coverage --enable-source-maps --test-coverage-exclude=\"**/*.test.js\" build/**/*.test.js",
-    "release:patch": "project-tools release-patch",
+    "release:patch": "toolkit release-patch",
     "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run lint:md && npm run build:dist && npm run build && npm run test"
   },
   "keywords": [
@@ -60,6 +60,6 @@
     "lit": "^3.3.1"
   },
   "devDependencies": {
-    "asljs-project-tools": "^0.1.0"
+    "asljs-toolkit": "^0.1.0"
   }
 }
