@@ -8,6 +8,7 @@
     "format:json": "dprint fmt --config ./dprint.json \"*.json\"",
     "format:md": "dprint fmt --config ./dprint.json \"*.md\" \"tasks/*.md\" \"skills/*.md\" \"aftefacts/*.md\" \"docs/*.md\"",
     "format": "npm run format:json && npm run format:md",
+    "lint:md": "remark --frail --quiet --no-stdout \"*.md\" docs skills tasks aftefacts",
     "check-packages": "npm outdated || project-tools print-file check-packages.md",
     "remove-local-modules": "project-tools clean apps/cog/node_modules apps/project-tools/node_modules libs/components/node_modules libs/dali/node_modules apps/dash/node_modules libs/data-binding/node_modules libs/eventful/node_modules apps/kb/node_modules libs/logging/node_modules libs/machine/node_modules libs/money/node_modules libs/observable/node_modules apps/part/node_modules libs/tmpdir/node_modules",
     "all": "project-tools run-all"
@@ -47,6 +48,8 @@
     "jsdom": "^30.1.1",
     "marked": "^18.0.6",
     "pkg-types": "^2.3.1",
+    "remark-cli": "^12.0.1",
+    "remark-validate-links": "^13.1.0",
     "tsx": "^4.23.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.64.0",

@@ -10,7 +10,7 @@ rules, see [the source code of this project][3].
 
 [1]: https://github.com/AlexandriteSoftware/asljs
 [2]: FORMATTING.md
-[3]: https://github.com/AlexandriteSoftware/asljs/blob/main/sfmt/src
+[3]: https://github.com/AlexandriteSoftware/asljs/blob/main/apps/sfmt/src
 
 ## Highlights
 

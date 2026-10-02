@@ -18,9 +18,10 @@
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:md": "remark --frail --quiet --no-stdout .",
     "test": "node --test --enable-source-maps build/**/*.test.js",
     "prepare": "npm run build:dist",
-    "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run build && npm run test"
+    "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run lint:md && npm run build && npm run test"
   },
   "dependencies": {
     "pkg-types": "^2.3.1"

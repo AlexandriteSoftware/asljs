@@ -19,8 +19,24 @@ $env:FOLDER = 'eventful'
 npm -w $env:FOLDER run test
 npm -w $env:FOLDER run typecheck
 npm -w $env:FOLDER run lint
+npm -w $env:FOLDER run lint:md
 npm -w $env:FOLDER run build
 ```
+
+## Check markdown links
+
+[remark-validate-links][RVL] reports links to missing files and headings. Each
+package checks its own markdown files with `lint:md`; the root `lint:md` checks
+the repository-level files: the root markdown files and `docs`, `skills`,
+`tasks` and `aftefacts`.
+
+```pwsh
+npm run lint:md
+npm -w asljs-eventful run lint:md
+```
+
+The plugin list is in `.remarkrc.json` and the ignored folders in
+`.remarkignore`, both at the repository root, and apply to every package.
 
 ## Squash and commit changes
 
@@ -69,3 +85,4 @@ git diff <tag>...HEAD -- path/to/subfolder
 ```
 
 [RLY]: <docs/Repository Layout.md>
+[RVL]: https://github.com/remarkjs/remark-validate-links

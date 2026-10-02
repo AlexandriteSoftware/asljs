@@ -8,7 +8,7 @@ for each file's stored update command.
 
 ## Parameters
 
-`ReadParameters` (see [`../tools/read.ts`](../tools/read.ts)):
+`ReadParameters` (see [`read.ts`](read.ts)):
 
 - `pattern` (`string`, required) - a file, folder, or glob pattern.
 - `exclude` (`string[]`, optional).

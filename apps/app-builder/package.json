@@ -14,10 +14,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:md": "remark --frail --quiet --no-stdout .",
     "preview": "vite preview",
     "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "all": "npm run clean && npm run format",
+    "all": "npm run clean && npm run format && npm run lint:md",
     "all:todo": "npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {

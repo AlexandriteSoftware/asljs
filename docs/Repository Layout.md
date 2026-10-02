@@ -41,20 +41,21 @@ Publishable library packages expose a common script shape:
 - `typecheck`
 - `lint`
 - `lint:fix`
+- `lint:md` - checks the links in the package's markdown files
 - `coverage`
 
 What `build`, `typecheck` and `test` run is in [TypeScript Configuration][TSC].
 
 `app-builder` is a private browser app, not a publishable library. It exposes
-`dev`, `test`, `typecheck` and `build`. `dev` is for iterating on UI behavior;
-`build` emits the demo output.
+`dev`, `test`, `typecheck`, `build` and `lint:md`. `dev` is for iterating on UI
+behavior; `build` emits the demo output.
 
 `dash` is a private Node application with no build step and no test suite yet.
-It exposes `start`, `runner`, `once`, `lint` and `format`. `start` serves the
-page and the API on `PORT`, default 3000. `runner` is the second process and
-runs the agents in `cronfile` on schedule. `once` runs every agent immediately,
-which is how a newly added card gets its first sample. The SQLite store,
-`apps/dash/dash.sqlite`, is created on first start and ignored by git.
+It exposes `start`, `runner`, `once`, `lint`, `lint:md` and `format`. `start`
+serves the page and the API on `PORT`, default 3000. `runner` is the second
+process and runs the agents in `cronfile` on schedule. `once` runs every agent
+immediately, which is how a newly added card gets its first sample. The SQLite
+store, `apps/dash/dash.sqlite`, is created on first start and ignored by git.
 
 ## Generated output
 

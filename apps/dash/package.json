@@ -16,7 +16,8 @@
     "once": "node runner.js --once --config dash.config.json --config ../../dash.config.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "all": "npm run clean && npm run format && npm run lint"
+    "lint:md": "remark --frail --quiet --no-stdout .",
+    "all": "npm run clean && npm run format && npm run lint && npm run lint:md"
   },
   "dependencies": {
     "express": "^5.1.0"

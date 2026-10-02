@@ -6,7 +6,8 @@ Removes a project file and its corresponding envelope entry.
 
 ## Parameters
 
-`Remove` (see [`../tools/envelope.ts`](../tools/envelope.ts)):
+`ContextRemoveFileTaskParameters` (see
+[`context-remove-file.ts`][SRC]):
 
 - `path` (`string`, required).
 
@@ -17,3 +18,5 @@ Deletes the file from disk and drops its entry from `context.files`.
 ## Requires
 
 - Operates on the current `Context`.
+
+[SRC]: context-remove-file.ts
