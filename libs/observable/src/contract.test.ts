@@ -276,28 +276,29 @@ test(
   `${TEST_SUITE}: batch groups per emitter, not globally`,
   () =>
   {
-    const model =
+    const user =
       observable(
-        { user:
-            { name: 'Alice' },
-          items:
-            { count: 0 } });
+        { name: 'Alice' });
+
+    const items =
+      observable(
+        { count: 0 });
 
     const seen: string[] = [ ];
 
-    model.items.on(
+    items.on(
       'change',
       () => seen.push('items'));
 
-    model.user.on(
+    user.on(
       'change',
       () => seen.push('user'));
 
     batch(
       () =>
       {
-        model.user.name = 'Bob';
-        model.items.count = 1;
+        user.name = 'Bob';
+        items.count = 1;
       });
 
     assert.deepEqual(

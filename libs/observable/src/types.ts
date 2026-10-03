@@ -58,10 +58,13 @@ export interface ObservableOptions
   /**
    * Controls nested conversion for object/array inputs.
    *
-   * - `false` (default): recursively converts nested objects and arrays.
-   * - `true`: converts only the top-level value.
+   * - `false` (default): converts only the top-level value.
+   * - `true`: recursively converts nested objects and arrays.
+   *
+   * The return type is the same either way: only the top-level value is
+   * guaranteed to be converted, and members keep their declared type.
    */
-  shallow?: boolean;
+  deep?: boolean;
 
   /**
    * Optional hook consulted for every object reached during conversion,
@@ -170,53 +173,27 @@ export type ObservablePathValues<T, P extends readonly string[]> = {
 };
 
 /**
- * How deep `ConvertedMembers` describes the conversion. Past the cap members
- * are described as they are, which keeps a self-referential model finite.
+ * A converted array: the array itself carries the Eventful API.
+ *
+ * Only the top-level value is guaranteed to be converted, so elements keep
+ * their declared type, with or without `deep`. Under `deep: true` the runtime
+ * converts nested plain objects and arrays too, but an element may still hold
+ * either the plain value or its observable, and the type does not claim more.
  */
-type ConvertedDepthLimit = 5;
-
-/**
- * A nested member of a converted value.
- *
- * Conversion is deep, so every nested plain object and array carries the
- * Eventful API, and the type says so without hedging. That applies to
- * assignment too: a property of a converted object holds a converted value, so
- * assigning a plain object is rejected and the value has to be wrapped first.
- *
- * ```ts
- * state.user = observable({ name: 'Bob' });
- * ```
- *
- * The runtime still converts a plain value assigned from JavaScript, and it
- * converts with the options the parent was created with, which an explicitly
- * wrapped value does not inherit.
- */
-export type ConvertedMember<
-  T,
-  Depth extends readonly unknown[] = []
-> = T extends UnsupportedValue ? never
-  : T extends Function ? T
-  : T extends readonly any[] ?
-      & ConvertedMembers<T, [...Depth, unknown]>
-      & Eventful<ObservableEvents>
-  : T extends object ?
-      & ConvertedMembers<T, [...Depth, unknown]>
-      & Eventful<ObservableEvents>
-  : T;
-
-/** Members of `T`, each described as conversion leaves it. */
-export type ConvertedMembers<
-  T,
-  Depth extends readonly unknown[] = []
-> = Depth['length'] extends ConvertedDepthLimit ? T
-  : { [K in keyof T]: ConvertedMember<T[K], Depth>; };
-
 export type ConvertedArray<T extends readonly any[]> =
-  & ConvertedMembers<T>
+  & T
   & Eventful<ObservableEvents>;
 
+/**
+ * A converted plain object: the object itself carries the Eventful API.
+ *
+ * Only the top-level value is guaranteed to be converted, so members keep their
+ * declared type, with or without `deep`. Under `deep: true` the runtime
+ * converts nested plain objects and arrays too, but a member may still hold
+ * either the plain value or its observable, and the type does not claim more.
+ */
 export type ConvertedObject<T extends object> =
-  & ConvertedMembers<T>
+  & T
   & Eventful<ObservableEvents>;
 
 export type ConvertedPrimitive<T> =
@@ -252,7 +229,8 @@ export type UnsupportedValue =
 /**
  * What `observable()` returns.
  *
- * - plain objects and arrays carry the Eventful API and emit `change`.
+ * - plain objects and arrays carry the Eventful API and emit `change`. Their
+ *   members keep their declared type, whatever the `deep` option.
  * - primitives are boxed into `{ value }`.
  * - unsupported values resolve to `never`: converting one throws, so there is
  *   no result to describe.

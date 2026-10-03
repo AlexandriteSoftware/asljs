@@ -27,4 +27,5 @@ export const state =
       generating: false,
       generationBusy: false,
       generationStatus: '',
-      error: null });
+      error: null },
+    { deep: true });

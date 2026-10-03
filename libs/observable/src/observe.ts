@@ -708,7 +708,8 @@ function makeChain<T>(
  * mistake -- forgetting `observable()` -- into nothing at all.
  *
  * Intermediate segments stay permissive: the last segment of a path is always
- * non-conforming, and `shallow: true` produces partial observation on purpose.
+ * non-conforming, and conversion without `deep: true` produces partial
+ * observation on purpose.
  */
 export function observe<T extends Observable>(
     source: T

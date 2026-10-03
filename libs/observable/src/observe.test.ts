@@ -131,7 +131,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     const seen: unknown[] = [ ];
 
@@ -197,7 +198,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     const seen: unknown[] = [ ];
 
@@ -620,7 +622,8 @@ test(
     const model =
       observable(
         { items:
-            [ { name: 'a' } ] });
+            [ { name: 'a' } ] },
+        { deep: true });
 
     const seen: unknown[] = [ ];
 
@@ -821,7 +824,8 @@ test(
         { tags:
             new Set(
               [ 'a' ]) },
-        { convert:
+        { deep: true,
+          convert:
             value =>
           value instanceof Set
             ? observableSet(value)
@@ -846,19 +850,18 @@ test(
   });
 
 /**
- * Intermediates stay permissive rather than checked, because `shallow: true`
- * produces partial observation on purpose: the root is heard, and what it holds
- * is not.
+ * Intermediates stay permissive rather than checked, because single-level
+ * conversion, the default, produces partial observation on purpose: the root is
+ * heard, and what it holds is not.
  */
 test(
-  `${TEST_SUITE}: a shallow model is observed only where it conforms`,
+  `${TEST_SUITE}: a single-level model is observed only where it conforms`,
   () =>
   {
     const model =
       observable(
         { user:
-            { name: 'Alice' } },
-        { shallow: true });
+            { name: 'Alice' } });
 
     const seen: unknown[] = [ ];
 
@@ -873,7 +876,7 @@ test(
 
     // Replacing the segment the root owns is.
     model.user =
-      { name: 'Carol' } as any;
+      { name: 'Carol' };
 
     assert.deepEqual(
       seen,
@@ -892,7 +895,8 @@ test(
     const model =
       observable(
         { a: shared,
-          b: shared });
+          b: shared },
+        { deep: true });
 
     const seen: unknown[] = [ ];
 

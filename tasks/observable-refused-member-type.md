@@ -12,6 +12,18 @@ Recorded as an accepted limitation rather than scheduled work: it needs a
 decision about whether the `convert` hook should be reflected in the type at
 all, not an implementation.
 
+## Status
+
+`ConvertedMember` and `ConvertedMembers` are gone. Since conversion became
+single-level by default, with `deep: true` to convert nested values, the return
+type promises only the top-level conversion and members keep their declared
+type. A refused member is no longer typed `never`: `tags: Set<string>` stays
+`Set<string>`. What remains is `never` from `ObservablePath` descent and from
+the unsupported-value overload for a top-level value.
+
+The example, **Every case, checked**, and the second option below were written
+against the earlier member types, and need re-checking before a decision.
+
 ## Context
 
 `never` appears for an unsupported value in three places, each describing the
@@ -32,8 +44,9 @@ export type UnsupportedValue =
 ```
 
 In `ObservablePath` at `:137` it stops descent, so a refused value contributes
-no paths. In `ConvertedMember` at `:197` it describes the member itself. And
-the call signature says the same thing for a top-level value:
+no paths. `ConvertedMember` described the member itself the same way, until it
+was removed (see **Status**). And the call signature says the same thing for a
+top-level value:
 
 ```ts
 /**
@@ -193,7 +206,7 @@ converter's type, and `ConvertedMember` would consult it:
 ```ts
 export type ObservableOptions<Convert = never> = {
   convert?: (value: object) => Convert | undefined;
-  shallow?: boolean;
+  deep?: boolean;
   // ...
 };
 
@@ -244,7 +257,6 @@ rather than cast.
 
 - `observable/src/types.ts:137` — the `never` branch for unsupported values in
   `ObservablePath`.
-- `observable/src/types.ts:197` — the same branch in `ConvertedMember`.
 - `observable/src/types.ts:261` and `:278` — `Converted` and the unsupported
   value overload.
 - `observable/src/types.ts:240` — `UnsupportedValue`, the list all three test

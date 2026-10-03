@@ -3,6 +3,7 @@ import assert
 import test
   from 'node:test';
 import { Change,
+         isObservable,
          Observable }
   from './contract.js';
 import { observable }
@@ -34,7 +35,7 @@ test(
   () =>
   {
     const options: ObservableOptions =
-      { shallow: true,
+      { deep: true,
         trace: null };
 
     const globalOptions: ObservableGlobalOptions =
@@ -53,7 +54,7 @@ test(
     const boxed: BoxedNumber | null = null;
 
     assert.ok(
-      options.shallow);
+      options.deep);
 
     assert.equal(
       globalOptions.trace,
@@ -276,21 +277,56 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: nested members are described as conversion leaves them`,
+  `${TEST_SUITE}: members keep their declared type, with or without deep`,
   () =>
   {
-    const state =
-      observable(
-        { user:
-            { name: 'Alice',
-              address:
-                { city: 'London' } },
-          list:
-            [ { n: 1 } ] });
+    type State = {
+      user: { name: string; };
+      list: Array<{ n: number; }>;
+    };
 
-    // Conversion is deep, so nested members carry the eventful API and no
-    // cast or non-null assertion is needed to reach it.
-    state.user.on(
+    const create =
+      (): State =>
+        ({ user:
+             { name: 'Alice' },
+           list:
+             [ { n: 1 } ] });
+
+    // Separate data for each call: conversion grafts onto the target, so a
+    // shared member would be converted for both.
+    const flat =
+      observable(
+        create());
+
+    const deep =
+      observable(
+        create(),
+        { deep: true });
+
+    // Only the top-level value is guaranteed to be converted, so both calls
+    // describe the same thing: the model with the eventful API on it.
+    const sameType: Equals<
+      typeof flat,
+      typeof deep
+    > = true;
+
+    const userIsDeclared: Equals<
+      typeof deep.user,
+      { name: string; }
+    > = true;
+
+    const itemIsDeclared: Equals<
+      typeof deep.list[0],
+      { n: number; }
+    > = true;
+
+    assert.ok(sameType);
+
+    assert.ok(userIsDeclared);
+
+    assert.ok(itemIsDeclared);
+
+    deep.on(
       'change',
       (
           changes
@@ -303,29 +339,33 @@ test(
           'string');
       });
 
-    state.user.address.on(
-      'change',
-      () => { });
+    assert.equal(
+      // @ts-expect-error a member is typed as declared, not as converted
+      typeof deep.user.on,
+      'function');
 
-    state.list[0].on(
-      'change',
-      () => { });
+    // Deep conversion made the member observable at runtime, and the guard is
+    // how a caller reaches it.
+    assert.ok(
+      isObservable(deep.user));
 
-    // A member of an observable holds an observable, so a replacement is
-    // wrapped rather than assigned plain.
-    state.user =
+    assert.ok(
+      isObservable(deep.list[0]));
+
+    assert.ok(
+      !isObservable(flat.user));
+
+    // A member holds the plain value or its observable, so either is accepted.
+    deep.user =
+      { name: 'Bob' };
+
+    deep.user =
       observable(
-        { name: 'Bob',
-          address:
-            { city: 'Paris' } });
-
-    state.user.address =
-      observable(
-        { city: 'Rome' });
+        { name: 'Carol' });
 
     assert.strictEqual(
-      state.user.address.city,
-      'Rome');
+      deep.user.name,
+      'Carol');
   });
 
 test(

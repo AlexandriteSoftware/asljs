@@ -62,17 +62,19 @@ box.value = 11;
   none.
 - `convert`: hook that takes over conversion for a single value. See
   [The convert hook](#the-convert-hook).
-- `shallow`: `false` by default, which converts nested plain objects and arrays
-  recursively. `true` converts only the top-level value, which produces partial
-  observation on purpose.
+- `deep`: `false` by default, which converts only the top-level value and
+  produces partial observation on purpose: nested plain objects and arrays are
+  stored as they are, and the `convert` hook is not consulted for them. `true`
+  converts nested plain objects and arrays recursively, and applies the rules
+  below at every level.
 
 ## What is converted
 
 The rule is explicit and narrow:
 
-- Plain object (`{}` literal or null-prototype) or array: convert, and recurse
-  into its members. A literal created in another realm, such as an iframe or a
-  `vm` context, is a plain object too.
+- Plain object (`{}` literal or null-prototype) or array: convert, and with
+  `deep: true` recurse into its members. A literal created in another realm,
+  such as an iframe or a `vm` context, is a plain object too.
 - `string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`,
   function: leaf, stored as it is. Ordinary JSON data and models with methods
   depend on this.
@@ -81,13 +83,14 @@ The rule is explicit and narrow:
   converted model. Testing for `on` alone would admit a value that then fails at
   teardown.
 - Anything else, `Date` included: throws, naming the path at which the
-  unsupported value was found.
+  unsupported value was found. Without `deep: true` only the top-level value is
+  checked, so a nested one is stored as it is.
 
 ```js
 import { observable } from 'asljs-observable';
 
 try {
-  observable({ orders: [ { meta: new Map() } ] });
+  observable({ orders: [ { meta: new Map() } ] }, { deep: true });
 } catch (error) {
   console.log(error.message.split('. ')[0] + '.');
 }
@@ -281,8 +284,8 @@ import { observable } from 'asljs-observable';
 
 const shared = { n: 1 };
 
-const left = observable({ shared });
-const right = observable({ shared });
+const left = observable({ shared }, { deep: true });
+const right = observable({ shared }, { deep: true });
 
 console.log('one wrapper:', left.shared === right.shared);
 
@@ -307,43 +310,58 @@ a cyclic model converge.
 
 ## Nested members in TypeScript
 
-Conversion is deep, and the types say so. Every nested plain object and array
-carries the Eventful API, reachable without a cast. The same holds for
-assignment: a member of a converted object holds a converted value, so a
-replacement is wrapped rather than assigned plain.
+The type promises what every call guarantees: the top-level value carries the
+Eventful API. Members keep their declared type, with or without `deep`, so both
+calls below return the same type:
 
 ```ts
 import { observable } from 'asljs-observable';
 
-const state = observable({ user: { name: 'Alice' } });
+const flat = observable({ user: { name: 'Alice' } });
+const deep = observable({ user: { name: 'Alice' } }, { deep: true });
+
+flat.on('change', changes => console.log(changes.length));
+deep.on('change', changes => console.log(changes.length));
+
+// error TS2339
+deep.user.on('change', changes => console.log(changes.length));
+```
+
+`deep: true` converts nested objects at runtime, but a member can still hold
+either the plain value or its observable: a value assigned later, or one
+converted by the `convert` hook, is whatever it is. Test a member with
+`isObservable` to reach its Eventful API:
+
+```ts
+import { isObservable, observable } from 'asljs-observable';
+
+const state = observable({ user: { name: 'Alice' } }, { deep: true });
+
+if (isObservable(state.user)) {
+  state.user.on('change', changes => console.log(changes.length));
+}
+```
+
+Or wrap the member yourself, and its type says so:
+
+```ts
+import { observable } from 'asljs-observable';
+
+const user = observable({ name: 'Alice' });
+const state = observable({ user });
 
 state.user.on('change', changes => console.log(changes.length));
-
-state.user = observable({ name: 'Bob' });
 ```
 
-A plain object is rejected there:
-
-```ts
-import { observable } from 'asljs-observable';
-
-const state = observable({ user: { name: 'Alice' } });
-
-// error TS2322
-state.user = { name: 'Bob' };
-```
-
-JavaScript callers are unaffected. Assigning a plain value still works at
-runtime and is converted on the way in, using the options the parent was created
-with. An explicitly wrapped value does not inherit those, so pass them again if
-the parent was created with `trace`, `convert`, or a custom `eventful`.
+A plain value assigned to a member is converted on the way in under
+`deep: true`, using the options the parent was created with. An explicitly
+wrapped value does not inherit those, so pass them again if the parent was
+created with `trace`, `convert`, or a custom `eventful`.
 
 `Converted<T>` is the type of what `observable()` returns, with
-`ConvertedObject<T>`, `ConvertedArray<T>`, `ConvertedPrimitive<T>`,
-`ConvertedMember<T>` and `ConvertedMembers<T>` behind it. A value the converter
-refuses types as `never`, because converting it throws and there is no result to
-describe. Depth is capped at five levels, which keeps a self-referential model
-finite.
+`ConvertedObject<T>`, `ConvertedArray<T>` and `ConvertedPrimitive<T>` behind
+it. A top-level value the converter refuses types as `never`, because
+converting it throws and there is no result to describe.
 
 ## The convert hook
 
@@ -392,6 +410,7 @@ const observableSet = source => {
 const state = observable(
   { tags: new Set([ 'a' ]) },
   {
+    deep: true,
     convert: value =>
       value instanceof Set ? observableSet(value) : undefined
   });
@@ -413,9 +432,9 @@ Points worth knowing:
 - Primitives are never passed to the hook: there is nothing to observe.
 - Observable does not emit `new` for a wrapper it did not create, and does not
   check that a wrapper conforms.
-- The path and member types stop at the kinds observable refuses, and a refused
-  member's type is `never`. Type the model with your wrapper rather than with
-  `Set` if you want `at('tags.size')` checked statically.
+- The path types stop at the kinds observable refuses. Type the model with
+  your wrapper rather than with `Set` if you want `at('tags.size')` checked
+  statically.
 
 ## `ObservableObject`
 

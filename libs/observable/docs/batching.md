@@ -98,7 +98,9 @@ is its own emitter, and their relative order is the order the writes happened.
 ```js
 import { batch, observable } from 'asljs-observable';
 
-const model = observable({ user: { name: 'Ada' }, items: { count: 0 } });
+const model = observable(
+  { user: { name: 'Ada' }, items: { count: 0 } },
+  { deep: true });
 
 model.items.on('change', () => console.log('items notified'));
 model.user.on('change', () => console.log('user notified'));

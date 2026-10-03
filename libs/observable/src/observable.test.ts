@@ -40,11 +40,11 @@ function flat(
 }
 
 /**
- * Nested object fields should be observable by default so deep listeners can
+ * With `deep: true`, nested object fields are observable so listeners can
  * subscribe without manual wrapping.
  */
 test(
-  `${TEST_SUITE}: observes nested objects by default`,
+  `${TEST_SUITE}: deep:true observes nested objects`,
   async () =>
   {
     const object =
@@ -52,7 +52,9 @@ test(
           { b: 1 } };
 
     const proxy =
-      observable(object);
+      observable(
+        object,
+        { deep: true });
 
     const deliveries =
       record(proxy.a);
@@ -77,7 +79,8 @@ test(
   {
     const proxy =
       observable(
-        {} as { x?: { y: number; }; });
+        {} as { x?: { y: number; }; },
+        { deep: true });
 
     Object.defineProperty(
       proxy,
@@ -102,11 +105,11 @@ test(
   });
 
 /**
- * Shallow mode keeps child objects raw when callers need explicit control over
- * nested observability boundaries.
+ * Conversion is single-level by default, so child objects stay raw unless the
+ * caller asks for recursion.
  */
 test(
-  `${TEST_SUITE}: shallow:true keeps nested objects non-observable`,
+  `${TEST_SUITE}: keeps nested objects non-observable by default`,
   async () =>
   {
     const object =
@@ -114,21 +117,19 @@ test(
           { b: 1 } };
 
     const proxy =
-      observable(
-        object,
-        { shallow: true });
+      observable(object);
 
     assert.equal(
-      typeof proxy.a.on,
+      typeof (proxy.a as any).on,
       'undefined');
   });
 
 /**
- * Nested entries inside arrays remain observable by default so item-level
- * edits still notify listeners.
+ * With `deep: true`, nested entries inside arrays are observable so
+ * item-level edits notify listeners.
  */
 test(
-  `${TEST_SUITE}: observes nested objects inside arrays by default`,
+  `${TEST_SUITE}: deep:true observes nested objects inside arrays`,
   async () =>
   {
     const object =
@@ -136,7 +137,9 @@ test(
           [ { name: 'A' } ] };
 
     const proxy =
-      observable(object);
+      observable(
+        object,
+        { deep: true });
 
     const deliveries =
       record(proxy.items[0]);
@@ -152,11 +155,11 @@ test(
   });
 
 /**
- * In shallow mode, array items stay plain objects so nested wrapping is not
- * applied automatically.
+ * By default, array items stay plain objects so nested wrapping is not applied
+ * automatically.
  */
 test(
-  `${TEST_SUITE}: shallow:true keeps nested objects inside arrays non-observable`,
+  `${TEST_SUITE}: keeps nested objects inside arrays non-observable by default`,
   async () =>
   {
     const object =
@@ -164,12 +167,10 @@ test(
           [ { name: 'A' } ] };
 
     const proxy =
-      observable(
-        object,
-        { shallow: true });
+      observable(object);
 
     assert.equal(
-      typeof proxy.items[0].on,
+      typeof (proxy.items[0] as any).on,
       'undefined');
   });
 
@@ -630,7 +631,8 @@ test(
   {
     const arr: any =
       observable(
-        [ ] as Array<{ n: number; }>);
+        [ ] as Array<{ n: number; }>,
+        { deep: true });
 
     const deliveries =
       record(arr);
@@ -1080,7 +1082,8 @@ test(
       () =>
         observable(
           { orders:
-              [ { meta: new Map() } ] }),
+              [ { meta: new Map() } ] },
+          { deep: true }),
       { name: 'TypeError',
         message:
           'at value.orders[0].meta: Map is not supported. Hold it in a plain '
@@ -1090,7 +1093,8 @@ test(
       () =>
         observable(
           { created:
-              new Date(1) }),
+              new Date(1) },
+          { deep: true }),
       { name: 'TypeError',
         message:
           /^at value\.created: Date is not supported\./ });
@@ -1098,7 +1102,8 @@ test(
     assert.throws(
       () =>
         observable(
-          { pattern: /x/ }),
+          { pattern: /x/ },
+          { deep: true }),
       { name: 'TypeError',
         message:
           /^at value\.pattern: RegExp is not supported\./ });
@@ -1107,7 +1112,8 @@ test(
       () =>
         observable(
           { instance:
-              new Instance() }),
+              new Instance() },
+          { deep: true }),
       { name: 'TypeError',
         message:
           /^at value\.instance: Instance is not supported\./ });
@@ -1117,7 +1123,8 @@ test(
         observable(
           { config:
               Object.freeze(
-                { a: 1 }) }),
+                { a: 1 }) },
+          { deep: true }),
       { name: 'TypeError',
         message:
           /^at value\.config: a frozen object is not supported\./ });
@@ -1126,7 +1133,8 @@ test(
     const model: any =
       observable(
         { created:
-            null as unknown });
+            null as unknown },
+        { deep: true });
 
     assert.throws(
       () =>
@@ -1223,7 +1231,8 @@ test(
     const model =
       observable(
         vm.runInNewContext(
-          '({ a: { b: 1 }, list: [ 1 ] })'));
+          '({ a: { b: 1 }, list: [ 1 ] })'),
+        { deep: true });
 
     const deliveries =
       record(model.a);
@@ -1292,7 +1301,8 @@ test(
     const model =
       observable(
         { a: shared,
-          b: shared });
+          b: shared },
+        { deep: true });
 
     assert.strictEqual(
       model.a,
@@ -1358,7 +1368,9 @@ test(
     source.self = source;
 
     const model =
-      observable(source);
+      observable(
+        source,
+        { deep: true });
 
     assert.strictEqual(
       model.self,
@@ -1569,7 +1581,8 @@ test(
         { tags:
             new Set(
               [ 'a' ]) },
-        { convert: convertSets });
+        { deep: true,
+          convert: convertSets });
 
     const tags =
       model.tags as any;
@@ -1655,7 +1668,8 @@ test(
     const holder =
       observable(
         { tags: shared },
-        { convert: convertSets });
+        { deep: true,
+          convert: convertSets });
 
     assert.strictEqual(
       holder.tags,
@@ -1683,7 +1697,8 @@ test(
           untouched:
             { keepAsIs: true,
               b: 2 } },
-        { convert:
+        { deep: true,
+          convert:
             (
           value: any
         ): unknown =>
@@ -1727,11 +1742,13 @@ test(
 
     const left =
       observable(
-        { shared });
+        { shared },
+        { deep: true });
 
     const right =
       observable(
-        { shared });
+        { shared },
+        { deep: true });
 
     assert.strictEqual(
       left.shared,
@@ -1757,7 +1774,8 @@ test(
 
     const holder =
       observable(
-        { member });
+        { member },
+        { deep: true });
 
     assert.strictEqual(
       holder.member,

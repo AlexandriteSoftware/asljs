@@ -12,7 +12,7 @@ change.
 ```js
 import { observable, observe } from 'asljs-observable';
 
-const state = observable({ user: { name: 'Alice' } });
+const state = observable({ user: { name: 'Alice' } }, { deep: true });
 
 observe(state).at('user.name').subscribe(name => console.log(name));
 

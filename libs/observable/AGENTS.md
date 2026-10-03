@@ -90,8 +90,8 @@ Exports from `src/index.ts`:
 - `observe(source)` throws for a source that does not conform, and declares
   `Observable` so TypeScript rejects a plain object first.
 - Intermediate path segments stay permissive. The last segment of a path is
-  always non-conforming, and `shallow: true` produces partial observation on
-  purpose.
+  always non-conforming, and conversion without `deep: true` produces partial
+  observation on purpose.
 - Every operator deduplicates with `Object.is` against the last value it
   emitted. `combine` therefore never deduplicates, because it builds a fresh
   tuple; that is a consequence of the rule, not an exception to it.
@@ -143,7 +143,9 @@ Exports from `src/index.ts`:
   Do not optimise it for speed: the converter trades speed for convenience,
   and `docs/performance.md` says so and points to hand-written participants.
 - Symbol keys are stored and not reported: the contract's `property` is a string.
-- `shallow: true` must remain top-level-only conversion.
+- Conversion is top-level-only by default. `deep: true` converts nested plain
+  objects and arrays, and is the only mode in which nested values are checked,
+  refused, or passed to the `convert` hook.
 - Conversion visits only writable data properties. Accessors stay accessors and
   their getters must not run during conversion; non-writable members and array
   holes are skipped.
@@ -166,11 +168,12 @@ Exports from `src/index.ts`:
   `eventful` when either package changes them.
 - Observable differs from `eventful` on primitives on purpose: `eventful` refuses
   them, observable boxes them into `{ value }`.
-- Nested members are typed through `ConvertedMembers`, and carry the full
-  Eventful API. A member of a converted object holds a converted value, so
-  TypeScript rejects assigning a plain object and the value is wrapped first. The
-  runtime still converts a plain value assigned from JavaScript, with the
-  parent's options, which an explicitly wrapped value does not inherit.
+- The return type promises only the top-level conversion: `T` plus the Eventful
+  API. Members keep their declared type, with or without `deep`, because a
+  member may hold either the plain value or its observable. Do not make the
+  type follow `deep`. Under `deep: true` the runtime converts a plain value
+  assigned to a member, with the parent's options, which an explicitly wrapped
+  value does not inherit.
 - `ObservablePath` caps its depth. Without the cap a self-referential model
   recurses forever. It excludes the names `eventful` occupies, or the methods
   conversion adds become watchable properties.

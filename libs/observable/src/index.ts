@@ -32,8 +32,6 @@ export {
 export type {
   Converted,
   ConvertedArray,
-  ConvertedMember,
-  ConvertedMembers,
   ConvertedObject,
   ConvertedPrimitive,
   EventfulMethodName,

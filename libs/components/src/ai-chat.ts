@@ -389,7 +389,8 @@ export function createAiChatModel(
               initialProgress.message,
             visible:
               initialProgress.visible },
-        sending: initial.sending === true }) as unknown as AiChatModel;
+        sending: initial.sending === true },
+      { deep: true }) as unknown as AiChatModel;
 
   internalChoiceStateByModel.set(
     model,
@@ -501,7 +502,8 @@ function createAiChatMessages(
       (initialMessages ?? [ ])
       .map(
         message => ({ role: message.role,
-                      content: message.content }))) as unknown as ObservableArray<AiChatMessage>;
+                      content: message.content })),
+      { deep: true }) as unknown as ObservableArray<AiChatMessage>;
 
   return { list,
            read: () => list,

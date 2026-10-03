@@ -86,7 +86,9 @@ After:
 ```js
 import { combine, observable, observe } from 'asljs-observable';
 
-const state = observable({ user: { name: 'Alice' }, active: false });
+const state = observable(
+  { user: { name: 'Alice' }, active: false },
+  { deep: true });
 
 observe(state).at('user.name').subscribe(name => console.log('name', name));
 
@@ -114,10 +116,35 @@ Two behaviour changes come with it:
 
 See [the query](query.md) for the operators and the deduplication rules.
 
+## Conversion is single-level by default
+
+0.5 converted nested plain objects and arrays by default, and took
+`shallow: true` to convert only the top-level value. `shallow` is gone:
+conversion is single-level by default, and `deep: true` restores the old
+default.
+
+Before:
+
+```
+observable(model);
+observable(model, { shallow: true });
+```
+
+After:
+
+```
+observable(model, { deep: true });
+observable(model);
+```
+
+A model whose nested members are observed, queried along a path below the
+root, or relied on to be refused when unsupported needs `deep: true`. The
+`convert` hook is consulted for nested values only under `deep: true`.
+
 ## Models the converter used to accept
 
-An unsupported nested value now throws, with the path in the message, instead of
-being stored silently. The two cases most likely to be hit:
+Under `deep: true`, an unsupported nested value now throws, with the path in the
+message, instead of being stored silently. The two cases most likely to be hit:
 
 - **`Date`.** A nested date was stored as it was; it is refused now. See
   [why](converter.md#why-date-is-not-a-leaf), and use the
@@ -137,7 +164,10 @@ import { observable } from 'asljs-observable';
 
 const model = observable(
   { created: new Date(1) },
-  { convert: value => value instanceof Date ? value : undefined });
+  {
+    deep: true,
+    convert: value => value instanceof Date ? value : undefined
+  });
 
 console.log('kept:', model.created.getTime());
 
@@ -148,9 +178,10 @@ console.log('kept:', model.created.getTime());
 ## Type names
 
 - `Observable` is now the contract interface. The converter's return type is
-  `Converted<T>`, with `ConvertedObject<T>`, `ConvertedArray<T>`,
-  `ConvertedPrimitive<T>`, `ConvertedMember<T>` and `ConvertedMembers<T>` behind
-  it.
+  `Converted<T>`, with `ConvertedObject<T>`, `ConvertedArray<T>` and
+  `ConvertedPrimitive<T>` behind it. It describes the top-level value only:
+  members keep their declared type, with or without `deep: true`. Reach a
+  converted member through `isObservable`, or wrap it yourself.
 - `ObservableOpaque` is `UnsupportedValue`.
 - `WatchPath`, `WatchPathValue` and `WatchPathValues` are `ObservablePath`,
   `ObservablePathValue` and `ObservablePathValues`.

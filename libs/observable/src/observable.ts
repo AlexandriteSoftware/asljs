@@ -273,7 +273,7 @@ const observableImpl =
   const {
     eventful: eventfulFn = eventful,
     trace = null,
-    shallow = false,
+    deep = false,
     convert = null
   } = options;
 
@@ -299,7 +299,7 @@ const observableImpl =
         valuePath: string
       ): any =>
     {
-    if (shallow) {
+    if (!deep) {
       return input;
     }
 
@@ -344,7 +344,7 @@ const observableImpl =
         input,
         { eventful: eventfulFn,
           trace,
-          shallow,
+          deep,
           convert },
         valuePath);
 
@@ -404,7 +404,7 @@ const observableImpl =
         target: any
       ): void =>
     {
-    if (shallow) {
+    if (!deep) {
       return;
     }
 

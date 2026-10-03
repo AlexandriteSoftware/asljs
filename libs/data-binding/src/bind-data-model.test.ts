@@ -94,7 +94,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     bindDataModel(
       root,
@@ -399,7 +400,8 @@ test(
                 () =>
                 {
             calls.push('first');
-          } } });
+          } } },
+        { deep: true });
 
     bindDataModel(
       root,
@@ -735,7 +737,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     bindDataModel(
       root,
@@ -774,7 +777,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     bindDataModel(
       root,
@@ -865,7 +869,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     bindDataModel(
       root,
@@ -905,7 +910,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     const dispose =
       bindDataModel(

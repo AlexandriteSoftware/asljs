@@ -190,7 +190,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     const spec: ValueBindingSpec =
       { kind: 'value',

@@ -14,7 +14,9 @@ rather than a method on it, which is why there is no `watch` method and no
 ```js
 import { observable, observe } from 'asljs-observable';
 
-const state = observable({ user: { name: 'Alice' }, active: false });
+const state = observable(
+  { user: { name: 'Alice' }, active: false },
+  { deep: true });
 
 observe(state)
   .at('user.name')
@@ -52,7 +54,7 @@ it, so holding a chain, passing it around and branching off it are all free.
 ```js
 import { observable, observe } from 'asljs-observable';
 
-const state = observable({ user: { name: 'ada' } });
+const state = observable({ user: { name: 'ada' } }, { deep: true });
 
 const shouted = observe(state)
   .at('user.name')
@@ -201,8 +203,8 @@ expands forever, so it can be tuned but not removed.
   returning a disposer that disposed nothing.
 - **Intermediate segments are not checked.** The last segment of a path is
   always non-conforming — `at('user.name')` ends at a string — so "every segment
-  must conform" cannot be the rule. `shallow: true` produces partial observation
-  on purpose: the root is heard, and what it holds is not.
+  must conform" cannot be the rule. Conversion without `deep: true` produces
+  partial observation on purpose: the root is heard, and what it holds is not.
 - **A chain is not a source.** It has `subscribe` and `.value`, and no
   `on`/`off` at all. That is what makes disposal answer itself: one `subscribe`
   builds one subscription tree and returns the one disposer that owns it, with

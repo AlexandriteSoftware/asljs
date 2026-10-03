@@ -105,7 +105,8 @@ export function machine(
     observable(
       { ...base,
         state: null,
-        previous: null }) as unknown as MachineBacking & Machine;
+        previous: null },
+      { deep: true }) as unknown as MachineBacking & Machine;
 
   let inTransition = false;
 

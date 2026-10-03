@@ -98,7 +98,8 @@ const model =
         { name: 'Alex' },
       save: () => {
         console.log('saved');
-      } });
+      } },
+    { deep: true });
 
 const dispose =
   bindDataModel(

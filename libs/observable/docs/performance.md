@@ -21,8 +21,8 @@ is accepted by design, not a target to tune.
   and `value`.
 - Every reported change allocates an entry, and outside a
   [`batch(fn)`][BAT] every write is its own notification.
-- Conversion is eager and deep. `observable(value)` visits the whole graph it
-  is given, unless `shallow: true` is passed.
+- Conversion is eager. `observable(value)` converts only the top-level value;
+  with `deep: true` it visits the whole graph it is given.
 
 A loop over a converted array pays all of this per element:
 
@@ -176,8 +176,8 @@ console.log(total);
 
 ### Convert less
 
-Pass `shallow: true` where nested values are never observed. Only the
-top-level value is converted, and nested plain objects and arrays stay plain.
+Leave `deep` off where nested values are never observed. Only the top-level
+value is converted, and nested plain objects and arrays stay plain.
 
 ## Constraints
 
@@ -193,11 +193,12 @@ top-level value is converted, and nested plain objects and arrays stay plain.
 
 - A conforming object nested in a converted model is not wrapped, so it costs
   what its own implementation costs.
-- A plain value assigned to a member of a converted object is converted on the
-  way in, so assigning a large plain structure pays for converting all of it.
-- A `slice()` copy is a snapshot. It does not follow later changes, and its
-  elements are still the converted values, so a write to a nested object
-  through the copy is reported.
+- With `deep: true`, a plain value assigned to a member of a converted object is
+  converted on the way in, so assigning a large plain structure pays for
+  converting all of it.
+- A `slice()` copy is a snapshot. It does not follow later changes. With
+  `deep: true` its elements are still the converted values, so a write to a
+  nested object through the copy is reported.
 
 ## See also
 

@@ -149,7 +149,8 @@ test(
                 () =>
                 {
             calls.push('first');
-          } } });
+          } } },
+        { deep: true });
 
     const spec: EventBindingSpec =
       { kind: 'event',

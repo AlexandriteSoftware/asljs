@@ -40,7 +40,8 @@ test(
     const model =
       observable(
         { user:
-            { name: 'Alice' } });
+            { name: 'Alice' } },
+        { deep: true });
 
     let calls = 0;
 
