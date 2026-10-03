@@ -5,8 +5,10 @@ data structure, not to extend the existing data with observability.
 
 D2. `observable` is a function that returns an observable version of the given
 object, array or value, which reports its changes through
-`on('change', listener)`. The observable adds `on` and `off` as own properties,
-and no other own properties.
+`on('change', listener)`. The observable has at least `on` and `off`. Its
+methods are added by the `eventful` factory (D18), which defines the full set;
+the default, `eventful` from `asljs-eventful`, adds `on`, `once`, `off`, `emit`,
+`emitAsync`, `has`, `removeAllListeners` and `getListeners`.
 
 The listener receives one argument: the list of modifications that make up the
 change, in the order they were carried out. Applying them in that order turns
@@ -188,9 +190,10 @@ and the first that matches applies:
    would make the observable version the original itself, contrary to D3 and
    D6. That covers an `EventEmitter` and an observable produced by
    `observable`.
-4. An object or array that has an own property named `on` or `off` throws,
-   because the observable it would be converted to has methods with those
-   names.
+4. An object or array that has a property named like a method the `eventful`
+   factory adds throws, because the observable it would be converted to has
+   methods with those names. With the default factory those are the eight
+   names listed in D2.
 5. A plain object or a plain array (D12) holding plain data (D16) is converted
    to an observable, applying D11 to its own values.
 6. Anything else throws.
@@ -220,8 +223,8 @@ checked against these rules in order, and the first that matches applies:
    is used (D9).
 5. An object that already implements `on` and `off` (e.g., `EventEmitter`) is
    kept by reference.
-6. An object or array that has an own property named `on` or `off` throws, as
-   in D10.
+6. An object or array that has a property named like a method the `eventful`
+   factory adds throws, as in D10.
 7. A plain object or a plain array (D12) holding plain data (D16) is converted
    to an observable, applying these rules to its own values.
 8. Anything else throws.
@@ -231,7 +234,7 @@ throws for nested values when `deep` is `false`. Because rule 5 comes before
 rule 8, an `EventEmitter` is kept although it is a class instance, unlike at the
 top level (D10). Because rule 5 comes before rule 6, an object whose `on` and
 `off` are both functions is kept rather than refused, while one where either is
-anything else is refused.
+anything else, or one with only a reserved name such as `emit`, is refused.
 
 ```js
 const emitter = new EventEmitter();
@@ -315,8 +318,8 @@ observable later is stored as it is: it is not converted, copied or checked, and
 D7, D8, D9, D10, D11, D12 and D16 do not apply to it. The write itself is
 reported, as D15 describes. How the data is managed after that is up to the
 caller, who converts a value before assigning it if its own changes should be
-reported. Writing `on` or `off` is not specified: what happens is whatever the
-observable's implementation does with a write to those names.
+reported. Writing a method the `eventful` factory added is not specified: what
+happens is whatever the factory's methods do with a write to their names.
 
 ```js
 const model = observable({ user: { name: 'Ann' } }, { deep: true });
@@ -340,20 +343,18 @@ model.user.name;                    // 'Bob'
 ```
 
 D14. An observable looks as much as possible like the data it was converted
-from. `on` and `off` are own, non-enumerable properties, defined the way
-`eventful` (the `asljs-eventful` package) defines its methods, so `Object.keys`,
-`for...in`, spreading and `JSON.stringify` see the data and not the methods,
-while `'on' in result` is `true`. Only the way the methods are defined follows
-`eventful`: unlike `eventful(obj)`, which adds `once`, `emit` and others, an
-observable adds `on` and `off` and nothing else (D2). The prototype of an
-observable object is not specified: it is whatever the implementation finds
-simplest, and D2 limits own properties only.
+from. The default `eventful` factory adds its methods as own, non-enumerable
+properties, so `Object.keys`, `for...in`, spreading and `JSON.stringify` see the
+data and not the methods, while `'on' in result` is `true`. A custom factory
+decides for itself how its methods are defined. The prototype of an observable
+object is not specified: it is whatever the implementation finds simplest.
 
 An observable array is an array: `Array.isArray` returns `true` for it, it has
 `length`, index access and the array methods, it can be iterated and spread, and
-`JSON.stringify` writes it as an array. `on` and `off` are non-enumerable on it
-too, so none of these see them. Methods that return a new array, such as `map`,
-`filter`, `slice`, `concat` and `flat`, return a plain array, not an observable.
+`JSON.stringify` writes it as an array. With the default factory its methods are
+non-enumerable too, so none of these see them. Methods that return a new array,
+such as `map`, `filter`, `slice`, `concat` and `flat`, return a plain array, not
+an observable.
 
 ```js
 const result = observable({ a: 1 });
@@ -383,6 +384,11 @@ D15. A modification is one of these kinds:
   It carries no other properties.
 
 An object reports `set` only. `splice` and `reset` are reported by arrays.
+
+A `splice` at `index` also changes every index from `index` onwards and, when
+the counts differ, `length`; no separate `set` is reported for them. A
+subscriber that tracks indices or `length` either interprets `splice` that way
+or, like for any kind it does not handle, reads the array again.
 
 A modification is reported only when the property reads differently afterwards,
 compared with `Object.is`. Assigning the value a property already has, or
@@ -439,7 +445,7 @@ list.on('change', changes => {
   }
 });
 
-list.push('c', 'd');            // one change: sets for '2', '3' and 'length'
+list.push('c', 'd');            // one change
 ```
 
 D16. A plain object or plain array is converted only when it holds plain data,
@@ -488,3 +494,52 @@ observable({ a }, { deep: true });
 observable({ list: [ 1, , 3 ] }, { deep: true });
 // throws: at value.list: an array with holes is not supported
 ```
+
+D18. `observable` takes these options:
+
+- `deep` (D5).
+- `convert` (D9).
+- `eventful`: the factory that adds the methods to each observable, the
+  top-level one and every nested one created in the same call. It is given the
+  new object, array or box and must give it at least `on` and `off`, and a way
+  for `observable` to deliver `change`; anything more is the factory's choice.
+  The default is `eventful` from `asljs-eventful`. Whatever the emitter does
+  beyond that, such as what happens when a listener throws, is the factory's
+  behaviour, and the factory is also how its settings are passed:
+  `observable(model, { eventful: value => eventful(value, { strict: true }) })`.
+- `trace`: a hook `(object, action, payload)` called with `'new'` and
+  `{ object }` when an observable is created, and with `'change'` and the list
+  of modifications each time a change is delivered. Every observable created in
+  the same call shares it. When a call passes none, the process-wide
+  `observable.options.trace` is used, if set.
+
+D19. `batch(fn)` groups the changes made while `fn` runs:
+
+- Every observable written to during `fn` delivers one `change` when the batch
+  ends, carrying all its modifications in the order they were made. Nothing is
+  merged or dropped: two writes to one property are two `set` entries, so the
+  list can always be applied in order (D2).
+- The observables deliver in the order they were first written to.
+- Batches nest: an inner `batch` joins the outer one, and only the outermost
+  delivers.
+- When `fn` throws, the changes already made are still delivered, because the
+  writes have happened, and the exception is rethrown afterwards.
+- A write made by a listener while a change is being delivered takes effect at
+  once, but its own `change` is delivered after the current delivery finishes,
+  so every listener of one change receives the same list. Listeners that keep
+  causing writes are stopped after a fixed number of rounds with an error.
+
+```js
+const model = observable({ n: 1 });
+
+model.on('change', changes => console.log(changes.length));
+
+batch(() => {
+  model.n = 2;
+  model.n = 3;
+});
+// 2: set n 1 → 2, then set n 2 → 3
+```
+
+Merging repeated writes is left for later: it is easy to get wrong for arrays,
+where an index means a different element after a `splice`.
