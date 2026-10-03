@@ -71,7 +71,8 @@ box.value = 11;
 The rule is explicit and narrow:
 
 - Plain object (`{}` literal or null-prototype) or array: convert, and recurse
-  into its members.
+  into its members. A literal created in another realm, such as an iframe or a
+  `vm` context, is a plain object too.
 - `string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`,
   function: leaf, stored as it is. Ordinary JSON data and models with methods
   depend on this.
