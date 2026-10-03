@@ -245,3 +245,4 @@ equivalent for, and everything else RxJS already does better. See
 
 - [The contract](contract.md) — what a source has to provide.
 - [Batching and delivery](batching.md) — when a notification arrives.
+- [Performance](performance.md) — what reading through the converter costs.

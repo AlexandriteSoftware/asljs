@@ -254,3 +254,5 @@ recompute once per delivery with a counter rather than a scheduler. See
 
 - [The contract](contract.md) — what the list carries.
 - [The converter](converter.md#arrays) — which array methods batch.
+- [Performance](performance.md) — grouping writes in a model that has to be
+  fast.

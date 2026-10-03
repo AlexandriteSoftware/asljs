@@ -251,3 +251,4 @@ alongside it.
 - [Batching and delivery](batching.md) — what fills the list, and when it
   arrives.
 - [The converter](converter.md) — what `observable()` produces.
+- [Performance](performance.md) — when to implement the contract by hand.

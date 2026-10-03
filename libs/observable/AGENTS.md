@@ -140,6 +140,8 @@ Exports from `src/index.ts`:
   everything for a reorder.
 - The `get` trap exists only on array targets, does nothing but a `Map` lookup
   for anything but the wrapped methods, and steps aside for an own override.
+  Do not optimise it for speed: the converter trades speed for convenience,
+  and `docs/performance.md` says so and points to hand-written participants.
 - Symbol keys are stored and not reported: the contract's `property` is a string.
 - `shallow: true` must remain top-level-only conversion.
 - Conversion visits only writable data properties. Accessors stay accessors and
@@ -190,7 +192,8 @@ Do not build these speculatively; they need evidence first.
   is for them, how to install, a few small examples, and links onward. Keep
   detail, reference and rationale out of it; the root `AGENTS.md` has the rule.
 - `docs/contract.md`, `docs/query.md`, `docs/batching.md`, `docs/converter.md`,
-  `docs/rxjs.md` and `docs/migrating-from-0.5.md` carry the detail. Each records
+  `docs/performance.md`, `docs/rxjs.md` and `docs/migrating-from-0.5.md` carry
+  the detail. Each records
   the reasoning behind its decisions, not only the behaviour, because the
   reasoning is what stops a later change undoing a deliberate one.
 - Every ```js and ```ts block in `README.md` and `docs` is executed or compiled

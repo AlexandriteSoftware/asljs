@@ -499,3 +499,5 @@ package.
 - [The contract](contract.md) — what the converter's output satisfies.
 - [Batching and delivery](batching.md) — when a notification arrives.
 - [The query](query.md) — reading values out of a converted model.
+- [Performance](performance.md) — what conversion costs, and what to write by
+  hand instead.

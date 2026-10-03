@@ -127,6 +127,8 @@ reads a path once without subscribing.
   notification arrives.
 - [The converter](docs/converter.md) — what `observable()` converts, what it
   reports, and the `convert` hook.
+- [Performance](docs/performance.md) — what the converter costs, and how to
+  write the parts of a model that have to be fast.
 - [Using it with RxJS](docs/rxjs.md).
 - [Migrating from 0.5](docs/migrating-from-0.5.md) — 0.6 changes every event and
   removes `watch`.
