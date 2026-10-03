@@ -2,6 +2,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import vm
+  from 'node:vm';
 import { functionTypeGuard,
          isFunction,
          isObject,
@@ -96,4 +98,59 @@ test(
         false,
         `expected ${String(value)} to be rejected`);
     }
+  });
+
+test(
+  `${TEST_SUITE}: isPlainObject accepts literals from another realm`,
+  () =>
+  {
+    assert.equal(
+      isPlainObject(
+        vm.runInNewContext('({ a: 1 })')),
+      true);
+
+    assert.equal(
+      isPlainObject(
+        vm.runInNewContext(
+          'Object.create(null)')),
+      true);
+  });
+
+test(
+  `${TEST_SUITE}: isPlainObject rejects built-ins and instances from another realm`,
+  () =>
+  {
+    for (
+      const source of [ 'new Date()',
+                        'new Map()',
+                        '/x/',
+                        'new (class Instance {})()',
+                        'Object.create(Object.create(null))' ]
+    ) {
+      assert.equal(
+        isPlainObject(
+          vm.runInNewContext(source)),
+        false,
+        `expected ${source} to be rejected`);
+    }
+  });
+
+test(
+  `${TEST_SUITE}: isPlainObject rejects a chain topped by a look-alike prototype`,
+  () =>
+  {
+    const prototype =
+      Object.create(null);
+
+    function Object_(
+      ): void
+    {}
+
+    Object_.prototype = prototype;
+    prototype.constructor = Object_;
+
+    assert.equal(
+      isPlainObject(
+        Object.create(prototype)),
+      false);
   });

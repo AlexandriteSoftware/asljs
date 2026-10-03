@@ -4,6 +4,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import vm
+  from 'node:vm';
 import { batch,
          Change }
   from './contract.js';
@@ -1208,6 +1210,36 @@ test(
           property: 'a',
           value: 2,
           previous: 1 } ]);
+  });
+
+/**
+ * A literal from another realm (an iframe, a `vm` context) has that realm's
+ * `Object.prototype`, and is still a plain object.
+ */
+test(
+  `${TEST_SUITE}: plain objects from another realm are converted`,
+  async () =>
+  {
+    const model =
+      observable(
+        vm.runInNewContext(
+          '({ a: { b: 1 }, list: [ 1 ] })'));
+
+    const deliveries =
+      record(model.a);
+
+    model.a.b = 2;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'b',
+          value: 2,
+          previous: 1 } ]);
+
+    assert.equal(
+      typeof model.list.on,
+      'function');
   });
 
 /**
