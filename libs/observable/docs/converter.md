@@ -173,6 +173,13 @@ to accept: flipping `enumerable` changes what `JSON.stringify` produces and
 notifies nobody, and installing a getter runs it, because reporting the value
 means reading the property.
 
+Reporting a value always means reading it, so an accessor's getter runs twice
+per reported change: once before the write for `previous` and once after it for
+`value`. This holds for an assignment through an accessor as much as for a
+definition. Neither read can be skipped: a setter may store something other
+than what was assigned, and an entry whose two values are equal is not reported.
+Reading a data property runs no code.
+
 This is reversible. The unrecognised-kind rule means a `define` entry kind can
 be added later without breaking any consumer, which is the main reason to take
 the narrower contract now.
@@ -232,7 +239,9 @@ Four details decide whether that is correct:
 - **`added` holds what a read returns**, meaning the converted values.
 - **`arr.length = 0` reports a splice too.** It is the common clear idiom and a
   raw assignment, so it would otherwise stay N `set` entries — the fan-out the
-  list exists to remove, for the operation most likely to be large.
+  list exists to remove, for the operation most likely to be large. The splice
+  carries the dropped elements, so they are read before the write, and any
+  getters among them run.
 
 `sort`, `reverse`, `fill` and `copyWithin` report `set` entries, batched into
 one notification. They are permutations and range overwrites: the producer does
