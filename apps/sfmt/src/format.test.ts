@@ -47,6 +47,42 @@ test(
   });
 
 test(
+  'format formats the files of every pattern it is given',
+  async () =>
+  {
+    await using workspace =
+      new TmpDir();
+
+    const firstPath =
+      await workspace.writeText(
+        'first.ts',
+        "import type { writeFile } from'import-type';");
+
+    const secondPath =
+      await workspace.writeText(
+        'second.ts',
+        "import type { writeFile } from'import-type';");
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path });
+
+    await format(
+      environment,
+      'first.ts',
+      'second.ts');
+
+    for (const sourcePath of [ firstPath,
+                               secondPath ]) {
+      assert.strictEqual(
+        await fs.readFile(
+          sourcePath,
+          'utf8'),
+        'import { type writeFile }\n' + "  from 'import-type';\n");
+    }
+  });
+
+test(
   'applyFormatters applies a single TypeScript formatter independently',
   async () =>
   {

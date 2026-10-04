@@ -5,21 +5,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
-    "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
-    "format:sfmt": "sfmt format \"src/**/*.ts\"",
-    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "flint": "toolkit flint",
     "clean": "toolkit clean",
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:md": "remark --frail --quiet --no-stdout .",
     "preview": "vite preview",
     "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "all": "npm run clean && npm run format && npm run lint:md",
-    "all:todo": "npm run typecheck && npm run lint && npm run build:dist && npm run build && npm run test"
+    "all": "npm run clean && npm run flint",
+    "all:todo": "npm run typecheck && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {
     "asljs-components": "^0.1.3",

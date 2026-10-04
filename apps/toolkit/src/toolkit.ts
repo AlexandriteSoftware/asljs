@@ -23,8 +23,8 @@ import { clean }
   from './commands/clean.js';
 import { ensureCleanWorkingDirectory }
   from './commands/ensure-clean-working-directory.js';
-import { fint }
-  from './commands/fint.js';
+import { flint }
+  from './commands/flint.js';
 import { printFile }
   from './commands/print-file.js';
 import { releasePatch }
@@ -70,8 +70,8 @@ const ACTIONS: ReadonlyArray<[string, Action]> =
       releasePatch ],
     [ 'run-all',
       runAll ],
-    [ 'fint',
-      fint ],
+    [ 'flint',
+      flint ],
     [ 'remove-local-modules',
       removeLocalModules ] ];
 

@@ -14,7 +14,7 @@ test(
   {
     assert.deepEqual(
       readLoggerOptions(
-        [ 'fint',
+        [ 'flint',
           '--exclude',
           'apps',
           '--loglevel',

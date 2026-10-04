@@ -11,7 +11,7 @@ import {
  *
  * `Article.md` states the first two as artefact rules and `part check` reports
  * them per file; these are the same limits at authoring time, reported per
- * line, so `npm run lint:md` catches them before a check does.
+ * line, so `npm run flint` catches them before a check does.
  */
 
 const LINE_LENGTH = 80;

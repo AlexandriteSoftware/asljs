@@ -118,22 +118,18 @@ function createCli(
       });
 
   cli
-    .command('format [pattern]')
+    .command(
+      'format [patterns...]')
     .description(
-      'Format files that match the glob pattern')
+      'Format files that match any of the glob patterns')
     .action(
       async (
-          pattern?: string
+          patterns: string[]
         ): Promise<void> =>
       {
-        const fnArgs =
-          pattern === undefined
-          ? [ ]
-          : [ pattern ];
-
         await format(
           environment,
-          ...fnArgs);
+          ...patterns);
       });
 
   cli

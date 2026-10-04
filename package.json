@@ -5,7 +5,7 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "scripts": {
-    "fint": "toolkit fint --exclude apps --exclude libs",
+    "flint": "toolkit flint --exclude apps --exclude libs",
     "check-packages": "npm outdated || toolkit print-file check-packages.md",
     "remove-local-modules": "toolkit remove-local-modules",
     "all": "toolkit run-all"

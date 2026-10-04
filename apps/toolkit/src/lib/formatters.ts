@@ -168,14 +168,74 @@ export async function formatWithDprint(
 }
 
 /**
+ * Formats the files with sfmt, after dprint.
+ *
+ * sfmt takes its files as glob patterns, so each path is passed as a pattern
+ * that matches only itself.
+ */
+export function formatWithSfmt(
+    filePaths: readonly string[],
+    cwd: string,
+    onBatch: (count: number) => void
+  ): void
+{
+  runInBatches(
+    'sfmt format',
+    filePaths,
+    cwd,
+    onBatch);
+}
+
+/**
+ * Lints the files with eslint, fixing what it can when `fix` is set.
+ *
+ * eslint finds its own nearest `eslint.config.*` by searching upwards. A file
+ * that configuration ignores is passed over without a warning, because the file
+ * list comes from git rather than from eslint.
+ */
+export function lintWithEslint(
+    filePaths: readonly string[],
+    cwd: string,
+    fix: boolean,
+    onBatch: (count: number) => void
+  ): void
+{
+  runInBatches(
+    fix
+      ? 'eslint --no-warn-ignored --fix'
+      : 'eslint --no-warn-ignored',
+    filePaths,
+    cwd,
+    onBatch);
+}
+
+/**
  * Lints the files with remark.
  *
- * remark takes its files as arguments and has no configuration key for them,
- * so this is the one command that carries the list and has to be split to stay
- * within the command line limit. It finds its own `.remarkrc*` by searching
- * upwards, so the nearest one wins.
+ * It finds its own `.remarkrc*` by searching upwards, so the nearest one wins.
  */
 export function lintWithRemark(
+    filePaths: readonly string[],
+    cwd: string,
+    onBatch: (count: number) => void
+  ): void
+{
+  runInBatches(
+    'remark --frail --quiet --no-stdout',
+    filePaths,
+    cwd,
+    onBatch);
+}
+
+/**
+ * Runs the command with the files as arguments.
+ *
+ * sfmt, eslint and remark have no configuration key for their files, so the
+ * list is carried on the command line and split to stay within its limit. The
+ * command is left out of the log, which records the count instead.
+ */
+function runInBatches(
+    command: string,
     filePaths: readonly string[],
     cwd: string,
     onBatch: (count: number) => void
@@ -191,7 +251,7 @@ export function lintWithRemark(
     onBatch(batch.length);
 
     start(
-      `remark --frail --quiet --no-stdout ${quotedPaths}`,
+      `${command} ${quotedPaths}`,
       { cwd,
         quiet: true });
   }
