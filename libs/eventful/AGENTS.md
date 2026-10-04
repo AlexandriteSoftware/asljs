@@ -129,8 +129,8 @@ Treat these as public contract behaviors that should not drift silently:
   a larger program, or anything that needs a dependency this workspace does not
   install.
 - The two recipes in `docs/leak-detection.md` are also loaded and exercised by
-  `src/leak-detection-recipes.test.ts`, which finds them by their
-  `export function` declaration. Keep them in `js` blocks declared that way.
+  `src/leak-detection-recipes.test.ts`, which finds them by their `export
+  function` declaration. Keep them in `js` blocks declared that way.
 - `dist` has to be built before the tests for that harness to resolve the
   package, which `npm run all` does.
 

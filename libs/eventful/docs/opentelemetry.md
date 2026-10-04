@@ -161,8 +161,8 @@ It is short enough to read, which means it is not production code.
 
 ## When to do this at all
 
-Not by default. The ids are useful on their own: a structured log of
-`{ id, event, messageId, correlationId, causationId }` is already a graph, and
+Not by default. The ids are useful on their own: a structured log of `{ id,
+event, messageId, correlationId, causationId }` is already a graph, and
 rendering it as a mermaid sequence diagram takes a few lines. That costs no
 dependency and no per-event allocation, which matters for a library that runs in
 a browser.

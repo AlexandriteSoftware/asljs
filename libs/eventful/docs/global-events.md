@@ -9,9 +9,9 @@ a trace readable.
 ## The package-level emitter
 
 `eventful` is not only an object enhancer. The package-level `eventful` function
-is also an emitter. When you create an enhanced object via
-`eventful(target, options)`, its lifecycle and actions are reported to the
-per-instance `trace` hook and also emitted as global events on `eventful`.
+is also an emitter. When you create an enhanced object via `eventful(target,
+options)`, its lifecycle and actions are reported to the per-instance `trace`
+hook and also emitted as global events on `eventful`.
 
 ```js
 import {
@@ -39,18 +39,17 @@ offNew();
 offError();
 ```
 
-In TypeScript the payloads are checked: the exported `GlobalEvents` map
-declares the arguments of `new`, `on`, `off`, `emit`, `emitAsync` and `error`,
-and `EventfulFn` is the type of `eventful` itself. See
-[typescript.md][TPE].
+In TypeScript the payloads are checked: the exported `GlobalEvents` map declares
+the arguments of `new`, `on`, `off`, `emit`, `emitAsync` and `error`, and
+`EventfulFn` is the type of `eventful` itself. See [typescript.md][TPE].
 
 Reporting is gated: an object without a `trace` hook reports an action only
 while a global listener for that action exists, so an unused stream costs
 nothing.
 
 If a **global** `eventful.on('error', ...)` listener throws, `eventful` throws a
-`ListenerError` (an `Error` subclass with fields
-`{ error, object, event, listener }`) to avoid an infinite error loop.
+`ListenerError` (an `Error` subclass with fields `{ error, object, event,
+listener }`) to avoid an infinite error loop.
 
 A global listener that performs the action it is listening for, on an enhanced
 object, recurses until the stack ends. A listener for `emit` that emits on an

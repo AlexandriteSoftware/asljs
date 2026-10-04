@@ -21,8 +21,8 @@ Which pattern to use:
 - If you control the class hierarchy, then extend `EventfulBase<Events>`.
 - If the class already extends something else, then call `eventful(this)` in the
   constructor and declare the methods.
-- If you are enhancing a plain object, then annotate the variable with
-  `typeof raw & Eventful<Events>`.
+- If you are enhancing a plain object, then annotate the variable with `typeof
+  raw & Eventful<Events>`.
 
 ## Plain object
 
@@ -204,6 +204,6 @@ cart.items; // still a number
 Both halves are checked. An unknown event name, a listener whose arguments do
 not match the map, and a property the object does not have are all errors.
 
-Note that the type query takes a name, so it is `typeof raw` rather than
-`typeof (raw)`, and the object has to be a variable. For an object written
-inline there is nothing to point `typeof` at, so name it first.
+Note that the type query takes a name, so it is `typeof raw` rather than `typeof
+(raw)`, and the object has to be a variable. For an object written inline there
+is nothing to point `typeof` at, so name it first.

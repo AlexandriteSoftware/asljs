@@ -95,12 +95,11 @@ Which form to pick:
 
 ## Further reading
 
-- [API reference][API] — every function, method and option, and what
-  happens when a listener throws.
-- [TypeScript][TYP] — event maps, and typing classes and plain
-  objects.
-- [Global events and tracing][GLB] — watching every emitter,
-  instance identity, and message correlation ids.
+- [API reference][API] — every function, method and option, and what happens
+  when a listener throws.
+- [TypeScript][TYP] — event maps, and typing classes and plain objects.
+- [Global events and tracing][GLB] — watching every emitter, instance identity,
+  and message correlation ids.
 - [Detecting leaked subscriptions][LKD].
 - [Forwarding traces to OpenTelemetry][OTL].
 
