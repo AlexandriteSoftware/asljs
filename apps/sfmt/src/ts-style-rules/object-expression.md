@@ -60,6 +60,42 @@
 ```
 
 ```ts
+({
+   async test(
+     )
+   {
+
+   },
+   *test2(
+     )
+   {
+
+   },
+   async [key](
+     )
+   {
+
+   }
+ });
+// ---
+({ async test(
+     )
+   {
+
+   },
+   *test2(
+     )
+   {
+
+   },
+   async [key](
+     )
+   {
+
+   } });
+```
+
+```ts
 ({ ...items, [this.key]: value });
 // ---
 ({ ...items,

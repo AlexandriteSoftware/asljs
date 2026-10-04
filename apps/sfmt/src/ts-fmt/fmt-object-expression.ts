@@ -85,9 +85,12 @@ export function fmtObjectExpression(
       continue;
     }
 
+    // a method's value starts at its parameters, so its key and modifiers
+    // (`async`, `*`) come only from the property text
     if (
       property.kind
       !== 'init'
+      || property.method
     ) {
       code.push(
         context.sourceCode
@@ -111,15 +114,6 @@ export function fmtObjectExpression(
     }
 
     if (property.shorthand) {
-      continue;
-    }
-
-    if (property.method) {
-      code.push(
-        context.sourceCode
-          .getText(
-            property.value));
-
       continue;
     }
 
