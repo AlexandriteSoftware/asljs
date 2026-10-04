@@ -7,6 +7,10 @@ The package is a workspace, so npm links its `toolkit` binary into
 `node_modules/.bin`, and its `prepare` script builds `dist` on install. Every
 workspace script reaches it by name rather than by path.
 
+`asljs-logging` and `asljs-locator` are workspaces too, and they resolve only
+from their own `dist`, which a fresh clone does not have. So `prepare` builds
+their `dist` first, `asljs-logging` before `asljs-locator`, which imports it.
+
 ## Notes
 
 The `all` [npm script][21] has `build:dist` twice because the first `build:dist`

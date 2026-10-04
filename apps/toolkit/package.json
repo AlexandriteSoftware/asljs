@@ -20,7 +20,7 @@
     "lint:fix": "eslint . --fix",
     "lint:md": "remark --frail --quiet --no-stdout .",
     "test": "node --test --enable-source-maps build/**/*.test.js",
-    "prepare": "npm run build:dist",
+    "prepare": "npm run build:dist --prefix ../../libs/logging && npm run build:dist --prefix ../../libs/locator && npm run build:dist",
     "all": "npm run clean && npm run format && npm run build:dist && npm run typecheck && npm run lint && npm run lint:md && npm run build && npm run test"
   },
   "dependencies": {
