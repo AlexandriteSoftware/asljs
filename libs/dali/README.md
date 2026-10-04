@@ -117,4 +117,4 @@ MIT License. See [LICENSE][LIC] for details.
 [LIV]: <docs/Live Views.md>
 [NOT]: docs/Notifications.md
 [NPM]: https://www.npmjs.com/package/asljs-dali
-[TAB]: docs/table.md
+[TAB]: <docs/Table Guide.md>

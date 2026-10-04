@@ -91,5 +91,5 @@ Broadcast / cross-tab:
 - Dispose live views when they are no longer needed.
 - Treat `recordset(predicate)` as client-side filtering, not as a query engine.
 
-[EVE]: event-source.md
-[SAG]: saga.md
+[EVE]: <Event Source Guide.md>
+[SAG]: <Saga Guide.md>

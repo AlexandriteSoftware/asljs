@@ -21,11 +21,11 @@ The application guide is conceptual and links to feature guides for detailed
 implementation rules and APIs.
 
 [API]: API.md
-[DEL]: ./delete-strategy-soft-deletes.md
-[EVE]: ./event-source.md
+[DEL]: <Delete Strategy and Soft Deletes.md>
+[EVE]: <Event Source Guide.md>
 [LIV]: <Live Views.md>
 [NOT]: Notifications.md
-[SAG]: ./saga.md
-[TAB]: ./table.md
-[TOD]: ./todo-ticketing-data-layer.md
-[VER]: ./versioning-strategy.md
+[SAG]: <Saga Guide.md>
+[TAB]: <Table Guide.md>
+[TOD]: <Todo Ticketing Data Layer Guide.md>
+[VER]: <Versioning Strategy.md>

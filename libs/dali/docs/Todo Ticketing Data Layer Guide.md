@@ -104,8 +104,8 @@ When remote is ahead:
    - remote ahead synchronization
    - projection checkpoint replay
 
-[DEL]: ./delete-strategy-soft-deletes.md
-[EVE]: ./event-source.md
-[SAG]: ./saga.md
-[TAB]: ./table.md
-[VER]: ./versioning-strategy.md
+[DEL]: <Delete Strategy and Soft Deletes.md>
+[EVE]: <Event Source Guide.md>
+[SAG]: <Saga Guide.md>
+[TAB]: <Table Guide.md>
+[VER]: <Versioning Strategy.md>
