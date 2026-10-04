@@ -12,6 +12,7 @@
     "format": "npm run format:json && npm run format:js && npm run format:md",
     "clean": "toolkit clean",
     "start": "node server.js --config dash.config.json --config ../../dash.config.json",
+    "start:with-runner": "node server.js --with-runner --config dash.config.json --config ../../dash.config.json",
     "runner": "node runner.js --config dash.config.json --config ../../dash.config.json",
     "once": "node runner.js --once --config dash.config.json --config ../../dash.config.json",
     "lint": "eslint .",

@@ -202,7 +202,9 @@ Rules:
     directory, so a relative path is project-local.
 - `runner.js` reads the same configs as the server, runs commands on schedule,
   and puts stdout to the counter's key.
-  - Separate process from the web server, restartable independently.
+  - Separate process from the web server, restartable independently. For the
+    simple setup, `server.js --with-runner` runs it inside the server instead;
+    it still puts over HTTP, so the server still knows nothing about agents.
   - Configs are read at startup, so restart the runner after editing a schedule.
   - Timeout per run; stderr goes to the runner's log, never into the value.
 - Adding a monitor never touches `server.js`.
@@ -466,7 +468,8 @@ dash/
 - Two processes: `node server.js` and `node runner.js`, both given the same
   `--config` list. Either restarts alone. From the repository root:
   `npm -w asljs-dash run start` and `run runner`, which pass the repository's
-  own configs.
+  own configs. `node server.js --with-runner` folds both into one process
+  (`run start:with-runner`).
 - ES modules throughout, server and page alike, as the rest of the repository.
 - Port from `PORT`, default 3000. Configs from `--config` or `DASH_CONFIG`; see
   docs/operations.md.

@@ -36,6 +36,18 @@ node runner.js --config dash.config.json --config ../../work/dash.config.json
 `once` is the quick way to fill a card you have just added, without waiting for
 its schedule.
 
+For the simple setup, `--with-runner` starts the runner inside the server
+process, so one process does both:
+
+```powershell
+npm -w asljs-dash run start:with-runner
+node server.js --with-runner --config dash.config.json
+```
+
+The embedded runner is the same code: it puts each value through
+`PUT /api/put/:key` on the server's own port, ignoring `DASH_URL`, and its log
+lines go to the server's stdout. Restarting the server restarts the runner too.
+
 The server has no dependency on the runner. Values can arrive from anything that
 can issue a `PUT`, and the runner is only the scheduled case of that.
 
@@ -59,6 +71,7 @@ on stderr and skipped, and the others still load.
 - `DASH_DB` — the database a project without a `db` of its own uses. Default
   `dash.sqlite` beside the config.
 - `DASH_URL` — base URL the runner puts to. Default `http://localhost:$PORT`.
+  Not used by `--with-runner`, which always puts to its own server.
 - `DASH_TIMEOUT` — per-agent timeout in milliseconds. Default `60000`.
 
 A counter's command is spawned with its own config file's directory as the
@@ -149,7 +162,8 @@ still current.
 - An agent that outruns `DASH_TIMEOUT` is killed and treated as a failure.
 - Configs are reloaded when they change on disk, so the server picks up a new
   card or policy without a restart. The runner reads them once, so restart it
-  after changing a schedule or a command.
+  after changing a schedule or a command — with `--with-runner`, that means
+  restarting the server.
 - A malformed entry is reported on stderr and skipped; the rest of the file
   still loads, and `/api/dashboards` reports the messages in `errors`.
 - A key declared as a counter in two configs is a config error: the first config

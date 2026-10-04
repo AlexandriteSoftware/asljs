@@ -1,5 +1,8 @@
 // Reads the project configs, runs each counter's command on its schedule, and puts
 // the command's stdout to the counter's key. See docs/monitors.md.
+//
+// Run alone as `node runner.js`, or inside the server with `server.js --with-runner`,
+// which calls start() after its own config.load(). Either way it puts over HTTP.
 
 import {
   spawn
@@ -7,7 +10,7 @@ import {
 import * as config from './config.js';
 import * as cron from './cron.js';
 
-const baseUrl = process.env.DASH_URL
+let baseUrl = process.env.DASH_URL
   || `http://localhost:${Number(process.env.PORT) || 3000}`;
 const timeoutMs = Number(process.env.DASH_TIMEOUT) || 60000;
 
@@ -118,9 +121,13 @@ const tick = async (jobs, date) =>
   }));
 };
 
-const main = async () =>
+/**
+ * Runs the counters of the configs already loaded: every one once and return when
+ * `once` is set, otherwise on their schedules. `url` overrides DASH_URL.
+ */
+const start = async ({ url, once = false } = {}) =>
 {
-  config.load();
+  baseUrl = url ?? baseUrl;
   const jobs = readJobs();
   console.log(
     `dash runner: ${jobs.length} counters from ${config.files().length} configs -> ${baseUrl}`
@@ -129,7 +136,7 @@ const main = async () =>
     console.log(`  ${job.project}/${job.key} <- ${job.command}`);
   }
 
-  if (process.argv.includes('--once')) {
+  if (once) {
     await Promise.all(jobs.map(async job =>
     {
       const result = await run(job);
@@ -163,4 +170,11 @@ const main = async () =>
   schedule();
 };
 
-main();
+if (import.meta.main) {
+  config.load();
+  start({ once: process.argv.includes('--once') });
+}
+
+export {
+  start
+};
