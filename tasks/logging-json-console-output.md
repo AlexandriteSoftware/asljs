@@ -1,33 +1,25 @@
 # logging-json-console-output
 
-Choose the log output and format so that a service writes JSON lines without
-configuration, and a tool whose stdout is its output never logs to the console.
+Choose the console format so that a service writes JSON lines without
+configuration, and a person at a terminal gets readable output.
 
 Package: `logging`.
 
-`PinoLoggerProvider` has two outputs today: a file (JSON lines) when `file` is
-set, and colourised `pino-pretty` on stdout otherwise. A process in a container
-or on a hosting platform (Azure App Service, Kubernetes, systemd) has no one
-reading its console; the platform collects stdout and indexes it, and pretty
-output is unreadable there. EdGames' API keeps a hand-written `logging.ts` for
-this reason alone.
+The rules this implements are in `docs/Logging.md`: logging is silent by
+default, `--loglevel` (or `<APP>_LOG_LEVEL`) enables it on the console, and
+`--logfile` (or `<APP>_LOG_FILE`) sends it to a file instead. This task is about
+what the console output looks like once it is enabled.
 
-## Model
+`PinoLoggerProvider` writes colourised `pino-pretty` to stdout whenever no file
+is set, with colour codes even when stdout is a pipe or a file. A process in a
+container or on a hosting platform (Azure App Service, Kubernetes, systemd) has
+no one reading its console; the platform collects stdout and indexes it, and
+pretty output is unreadable there. EdGames' API keeps a hand-written
+`logging.ts` for this reason alone.
 
 Logs are one channel. An `error` entry is a log entry, not an application
-failure, and goes where every other entry goes.
-
-The application, not the user, decides whether it has console logging at all,
-when it builds its provider:
-
-- `console` - a service, or any application with no other use for stdout. Logs
-  go to stdout, or to the file when `<prefix>FILE` is set.
-- `file` - a tool whose stdout is its output: printed results, generated text,
-  or a protocol such as an MCP server over stdio. Logs go to the file when
-  `<prefix>FILE` is set, and nowhere otherwise. Log lines never mix into the
-  output.
-
-A file always receives JSON lines.
+failure, and goes where every other entry goes. A file always receives JSON
+lines.
 
 ## Format on the console
 
@@ -53,9 +45,8 @@ Cases to keep in mind:
   `<prefix>FORMAT=pretty`; that is what the variable is for.
 - `docker run -t` allocates a terminal and gets pretty output, which is right:
   someone is watching. Kubernetes and App Service do not allocate one.
-- `node --test` pipes the test processes, so test logging on the console is
-  JSON. Test logging is off by default and usually goes to a file, see
-  `logging-test-logger-provider`.
+- `node --test` pipes the test processes, so the automatic choice would give
+  JSON. Tests default to pretty instead, see `logging-test-logger-provider`.
 - CI logs are JSON unless the job sets the variable.
 
 ## Failures nobody handled
@@ -81,7 +72,7 @@ is enough when called from those handlers.
 - Update `docs/Logging.md` and `RQ002 logging public API`, and test the format
   choice with a fake stdout that is and is not a TTY.
 
-Bringing the existing applications in line is
+Bringing the existing applications in line with `docs/Logging.md` is
 [logging-apps-console-output-rule][APP].
 
 ## Where

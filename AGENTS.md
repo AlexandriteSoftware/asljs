@@ -62,6 +62,8 @@ them.
 - [Repository Layout][DCL] - how packages are grouped, their script shape, and
   where generated output goes.
 - [TypeScript Configuration][DCT] - how the TypeScript configurations relate.
+- [Logging][DCG] - when and how applications, libraries and tests log, and the
+  arguments and environment variables that control it.
 - [tasks][DCK] - open work that is known but not scheduled.
 - A package's own `AGENTS.md` and `docs/` own its behavior; read them before
   changing it.
@@ -130,4 +132,5 @@ them.
 [DCH]: HOWTO.md
 [DCL]: <docs/Repository Layout.md>
 [DCT]: <docs/TypeScript Configuration.md>
+[DCG]: docs/Logging.md
 [DCK]: tasks/

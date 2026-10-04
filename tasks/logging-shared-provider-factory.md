@@ -14,8 +14,9 @@ win, and construct a `PinoLoggerProvider`. `part` does the same inline in
 Proposed, in `asljs-logging`:
 
 - `createLoggerProvider(prefix, overrides?)` - explicit options, then
-  environment variables, then defaults; returns a `NullLoggerProvider` when the
-  resolved level is `silent`.
+  environment variables, then the defaults in `docs/Logging.md`: `silent`, or
+  `information` when only a file is given. Returns a `NullLoggerProvider` when
+  the resolved level is `silent`.
 - `readLoggerOptions(argv)` - the `--loglevel` / `--logfile` reader from cog.
 
 Then replace the copies in the applications. EdGames (API server and build
