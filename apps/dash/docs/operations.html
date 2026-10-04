@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Running it · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="running-it">Running it</h1>
+<h2 id="purpose">Purpose</h2>
+<p>How to start, feed, read and back up a running <code>asljs-dash</code> instance: the two
+processes, the configs they load, the environment variables that move their
+files, and the complete HTTP surface.</p>
+<h2 id="the-two-processes">The two processes</h2>
+<p><code>dash</code> runs as two independent Node processes. Either can be restarted alone.</p>
+<ul>
+<li>The <strong>server</strong> (<code>server.js</code>) owns the stores and serves the page.</li>
+<li>The <strong>runner</strong> (<code>runner.js</code>) owns the schedule: it runs each counter&#39;s command
+and puts its stdout to the server over HTTP.</li>
+</ul>
+<p>Both read the same project configs, so give both the same <code>--config</code> list.</p>
+<p>From the repository root:</p>
+<pre><code class="language-powershell">npm -w asljs-dash run start     # server, http://localhost:3000
+npm -w asljs-dash run runner    # runner, in a second terminal
+npm -w asljs-dash run once      # run every counter now, then exit
+</code></pre>
+<p>Those scripts pass this repository&#39;s two configs — <code>dash/dash.config.json</code> for
+the machine and <code>dash.config.json</code> at the repository root for the ASLJS project.
+Run either process by hand to load a different set:</p>
+<pre><code class="language-powershell">node server.js --config dash.config.json --config ../../work/dash.config.json
+node runner.js --config dash.config.json --config ../../work/dash.config.json
+</code></pre>
+<p><code>once</code> is the quick way to fill a card you have just added, without waiting for
+its schedule.</p>
+<p>For the simple setup, <code>--with-runner</code> starts the runner inside the server
+process, so one process does both:</p>
+<pre><code class="language-powershell">npm -w asljs-dash run start:with-runner
+node server.js --with-runner --config dash.config.json
+</code></pre>
+<p>The embedded runner is the same code: it puts each value through <code>PUT /api/put/:key</code> on the server&#39;s own port, ignoring <code>DASH_URL</code>, and its log lines
+go to the server&#39;s stdout. Restarting the server restarts the runner too.</p>
+<p>The server has no dependency on the runner. Values can arrive from anything that
+can issue a <code>PUT</code>, and the runner is only the scheduled case of that.</p>
+<h2 id="which-configs-are-loaded">Which configs are loaded</h2>
+<p>Both processes resolve them the same way, first match winning:</p>
+<ul>
+<li>every <code>--config &lt;path&gt;</code> (or <code>-c &lt;path&gt;</code>) on the command line, in order;</li>
+<li><code>DASH_CONFIG</code>, a list of paths separated by <code>;</code> on Windows and <code>:</code> elsewhere;</li>
+<li><code>dash.config.json</code> in the package folder.</li>
+</ul>
+<p>The first config loaded is the default project: it owns the first tab the page
+shows, and any key no config declares. A config that does not parse is reported
+on stderr and skipped, and the others still load.</p>
+<h2 id="environment">Environment</h2>
+<ul>
+<li><code>PORT</code> — server port. Default <code>3000</code>.</li>
+<li><code>DASH_CONFIG</code> — path list of project configs, used when no <code>--config</code> is
+given.</li>
+<li><code>DASH_DB</code> — the database a project without a <code>db</code> of its own uses. Default
+<code>dash.sqlite</code> beside the config.</li>
+<li><code>DASH_URL</code> — base URL the runner puts to. Default <code>http://localhost:$PORT</code>.
+Not used by <code>--with-runner</code>, which always puts to its own server.</li>
+<li><code>DASH_TIMEOUT</code> — per-agent timeout in milliseconds. Default <code>60000</code>.</li>
+</ul>
+<p>A counter&#39;s command is spawned with its own config file&#39;s directory as the
+working directory, so <code>agents/disk.c.ps1</code> in <code>dash/dash.config.json</code> is
+<code>dash/agents/disk.c.ps1</code>.</p>
+<h2 id="http-api">HTTP API</h2>
+<p>Writing:</p>
+<ul>
+<li><code>PUT /api/put/:key</code> — the body is the value, read as text whatever the
+content-type. The body is echoed back. <code>POST</code> on the same path is an alias.
+<code>/api/set/:key</code> is a deprecated alias of both.<ul>
+<li>The response carries <code>X-Dash-Changed: true|false</code>, which is how the runner
+reports whether a sample was appended or an existing one was confirmed.</li>
+</ul>
+</li>
+</ul>
+<p>Reading:</p>
+<ul>
+<li><code>GET /api/get/:key</code> — the newest value as <code>text/plain</code>, or an empty string for
+a key that was never written.</li>
+<li><code>GET /api/get/:k1,:k2,...</code> — a JSON object of newest values, <code>null</code> for
+unknown keys.</li>
+<li><code>GET /api/history/:key?limit=N&amp;since=&lt;ms&gt;</code> — a JSON array of <code>{ts, seen, value}</code>, newest first. <code>limit</code> defaults to 500 and is capped at 5000.</li>
+<li><code>GET /api/meta/:keys</code> — the same keys with their <code>ts</code> and <code>seen</code>, for
+freshness and change detection.</li>
+<li><code>GET /api/next/:keys</code> — per key, <code>{ state, ms }</code>: <code>wait</code> with the milliseconds
+until its counter next runs, or <code>due</code> / <code>stale</code> with the milliseconds it is
+overdue by. <code>null</code> for a key nothing is scheduled to write. The card
+countdowns poll this every five seconds.</li>
+<li><code>GET /api/keys</code> — every key the stores hold.</li>
+<li><code>GET /api/dashboards</code> — <code>{ projects, tabs, errors }</code> merged from every loaded
+config. Database paths and counter commands are not included.</li>
+</ul>
+<p>A key must match <code>[a-zA-Z0-9_.-]+</code>. Anything else is rejected with <code>400</code>, and
+that is the only validation the server does: malformed JSON in a value is a
+rendering problem, not a server problem.</p>
+<p>Assets:</p>
+<ul>
+<li><code>GET /</code> — the page.</li>
+<li><code>GET /dash.js</code>, <code>GET /layout.js</code>, <code>GET /renderers/*.js</code> — the page&#39;s modules.</li>
+</ul>
+<p>Nothing else is on the wire. The stores, <code>agents/</code> and the configs are not
+served as static files.</p>
+<h2 id="feeding-it-from-the-shell">Feeding it from the shell</h2>
+<p>Store a value:</p>
+<pre><code class="language-powershell">curl.exe -X PUT http://localhost:3000/api/put/status `
+    -H &quot;Content-Type: text/plain&quot; `
+    --data-binary &quot;online&quot;
+</code></pre>
+<p>Pipe a command&#39;s output straight in:</p>
+<pre><code class="language-powershell">$output = Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 | Out-String
+
+Invoke-RestMethod -Uri &quot;http://localhost:3000/api/put/message&quot; `
+    -Method Put -ContentType &quot;text/plain&quot; -Body $output
+</code></pre>
+<p>The body is stored and echoed exactly as sent. Values are <strong>sticky</strong>: putting
+the same value again records no new sample, it only marks the existing one as
+still current.</p>
+<h2 id="backup-and-restart">Backup and restart</h2>
+<ul>
+<li>Values live in their project&#39;s <code>dash.sqlite</code> and survive a restart. Keys whose
+policy says <code>memory</code> do not.</li>
+<li>Back up by copying each project&#39;s database; <code>node server.js --config ...</code>
+prints the path of every one it opened. The <code>-wal</code> and <code>-shm</code> sidecars are
+SQLite&#39;s own; copy them too if the server is running.</li>
+<li>Those files are ignored by git, as is every <code>dash.sqlite-*</code> sidecar.</li>
+<li>Logs go to stdout. The runner logs each run&#39;s key, exit code, duration, and
+whether the value changed.</li>
+</ul>
+<h2 id="edge-cases">Edge cases</h2>
+<ul>
+<li>An agent exiting non-zero records nothing; the runner logs the exit code. This
+is the intended way for an agent to say &quot;no reading this time&quot;.</li>
+<li>An agent writing to stderr but exiting zero still records its stdout; stderr
+is logged and never enters the value.</li>
+<li>An agent that outruns <code>DASH_TIMEOUT</code> is killed and treated as a failure.</li>
+<li>Configs are reloaded when they change on disk, so the server picks up a new
+card or policy without a restart. The runner reads them once, so restart it
+after changing a schedule or a command — with <code>--with-runner</code>, that means
+restarting the server.</li>
+<li>A malformed entry is reported on stderr and skipped; the rest of the file
+still loads, and <code>/api/dashboards</code> reports the messages in <code>errors</code>.</li>
+<li>A key declared as a counter in two configs is a config error: the first config
+keeps it, the second is ignored. The same holds for project and tab names.</li>
+<li>Moving a counter to another project points it at that project&#39;s database; the
+samples it already has stay in the old one.</li>
+<li>A card reads <code>stale</code> when the runner is not running, when its agent keeps
+failing, or when the server has just started and its counter has not reported
+yet. It clears on the first successful put.</li>
+<li>Retention is swept once a minute as well as on write, so a key nobody writes
+to still ages out.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/dash/docs/operations.md">View source</a>
+  </footer>
+</body>
+</html>

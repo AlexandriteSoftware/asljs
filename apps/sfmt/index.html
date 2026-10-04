@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sfmt · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="sfmt">sfmt</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> - a set of high-quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>Below are some examples of how the code is formatted with this tool. For more
+details, see the <a href="FORMATTING.html">FORMATTING.md</a> file. The source code of this project is
+formatted with the tool itself, therefore for complete example of the formatting
+rules, see <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/sfmt/src">the source code of this project</a>.</p>
+<h2 id="highlights">Highlights</h2>
+<h3 id="import">Import</h3>
+<ul>
+<li>one declaration per line</li>
+<li>aligned with first declaration</li>
+<li>from is on a new line, indented</li>
+</ul>
+<pre><code class="language-ts">import { format,
+         rules }
+  from &#39;sfmt&#39;;
+</code></pre>
+<h3 id="assignments">Assignments</h3>
+<ul>
+<li>newline after <code>=</code> if the value is complex</li>
+<li>applied to assignment, new varaible declaration</li>
+</ul>
+<pre><code class="language-ts">let code =
+  getCode(
+    declaration);
+</code></pre>
+<h3 id="function">Function</h3>
+<ul>
+<li>parameters - double-indented</li>
+<li>closing parenthesis - on a new line, indented</li>
+<li>return type - after the closing parenthesis</li>
+<li>body opening brace - on a new line, aligned with <code>function</code></li>
+</ul>
+<pre><code class="language-ts">function getIndentation(
+    sourceCode: SourceCode,
+    node: AST.Token
+  ): string
+{
+  ...
+}
+</code></pre>
+<h3 id="if">If</h3>
+<ul>
+<li>criteria - indented (if complex)</li>
+</ul>
+<pre><code class="language-ts">if (
+  nodeLocation === undefined
+  || nodeLocation === null
+) {
+  return &#39;&#39;;
+}
+</code></pre>
+<h3 id="for">For</h3>
+<ul>
+<li>each part of the for statement is on a new line, indented</li>
+</ul>
+<pre><code class="language-ts">for (
+  let index = 0;
+  index &lt; node.arguments.length;
+  index++
+) {
+  ...
+}
+</code></pre>
+<h3 id="objects-and-arrays">Objects and Arrays</h3>
+<ul>
+<li>first property/array item - on the same line as opening brace</li>
+<li>subsequent properties/array items - on a new line, aligned with the first</li>
+</ul>
+<pre><code class="language-ts">{ first: &#39;a&#39;,
+  second:
+    { a: 1,
+      b: 2 },
+  third:
+    [ &#39;one&#39;,
+      &#39;two&#39; ] };
+</code></pre>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/sfmt/README.md">View source</a>
+  </footer>
+</body>
+</html>

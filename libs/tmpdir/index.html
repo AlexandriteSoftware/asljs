@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tmpdir · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="tmpdir">tmpdir</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> – a set of high‑quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>Disposable temporary directory helper for Node.js.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Create a temporary directory with a unique name</li>
+<li>Provides helpers for creating files and subdirectories</li>
+<li>Automatically cleans up the temporary directory when done</li>
+<li>Prevents escaping the temporary directory path</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install asljs-tmpdir
+</code></pre>
+<p>NPM Package: <a href="https://www.npmjs.com/package/asljs-tmpdir">asljs-tmpdir</a></p>
+<h2 id="usage">Usage</h2>
+<h3 id="basic">Basic</h3>
+<pre><code class="language-ts">import { TmpDir }
+  from &#39;asljs-tmpdir&#39;;
+
+using tmpDir =
+  new TmpDir();
+
+await tmpDir.writeText(
+  &#39;example/file.txt&#39;,
+  &#39;Hello, world!&#39;);
+
+console.log(
+  await tmpDir.readText(
+    &#39;example/file.txt&#39;));
+
+// the temporary directory and its contents
+// will be automatically deleted at the end of
+// the using block
+</code></pre>
+<h3 id="with-logging">With logging</h3>
+<pre><code class="language-ts">import { PinoLoggerProvider }
+  from &#39;asljs-logging&#39;;
+import { TmpDir }
+  from &#39;asljs-tmpdir&#39;;
+
+await using loggerProvider =
+  new PinoLoggerProvider(
+    { level: &#39;trace&#39; });
+
+const logger =
+  loggerProvider
+    .getLogger(&#39;TmpDir&#39;);
+
+using tmpDir =
+  new TmpDir(logger);
+
+await tmpDir.writeText(
+  &#39;example/file.txt&#39;,
+  &#39;Hello, world!&#39;);
+</code></pre>
+<h2 id="license">License</h2>
+<p>MIT License. See <a href="LICENSE.html">LICENSE</a> for details.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/tmpdir/README.md">View source</a>
+  </footer>
+</body>
+</html>

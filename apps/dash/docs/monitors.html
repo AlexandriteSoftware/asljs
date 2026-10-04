@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adding a monitor · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="adding-a-monitor">Adding a monitor</h1>
+<h2 id="purpose">Purpose</h2>
+<p>What a monitor is made of — an agent, a counter in a project config, and a card
+in the same file — and what each one accepts.</p>
+<h2 id="the-agent">The agent</h2>
+<p>One file per monitor. The agents dash ships live in <code>agents/</code>, named after their
+key; a project&#39;s own agents may live anywhere its counter&#39;s command can name.</p>
+<ul>
+<li>Write the value to stdout and exit <code>0</code>. A non-zero exit means &quot;no sample&quot; and
+is logged instead of stored.</li>
+<li>Any executable, or a script run through one: <code>pwsh</code>, <code>node</code>, <code>python</code>, <code>cmd</code>.</li>
+<li>Agents are stateless and idempotent. Running one twice is harmless, and
+running one by hand is how you check its output shape.</li>
+<li>Prefer printing over putting directly, so the agent can be inspected alone.</li>
+</ul>
+<pre><code class="language-powershell"># agents/disk.c.ps1
+$drive = Get-PSDrive -Name C
+[pscustomobject]@{ freePercent = [math]::Round($drive.Free / ($drive.Used + $drive.Free) * 100, 1) } |
+    ConvertTo-Json -Compress
+</code></pre>
+<p>Use <code>[ordered]@{}</code> for PowerShell hashtables. Unordered ones shuffle their JSON
+keys between runs, which makes every run look like a change and defeats
+stickiness.</p>
+<h2 id="the-counter">The counter</h2>
+<p>One entry in the project config&#39;s <code>counters</code>, under the key it feeds:</p>
+<pre><code class="language-json">&quot;counters&quot;: {
+  &quot;disk.c&quot;: {
+    &quot;schedule&quot;: &quot;*/5 * * * *&quot;,
+    &quot;command&quot;: &quot;pwsh -NoProfile -File agents/disk.c.ps1&quot;,
+    &quot;samples&quot;: &quot;database, 30*24h, 50k, 20Mb&quot;
+  }
+}
+</code></pre>
+<ul>
+<li><code>schedule</code> is a five-field cron expression supporting <code>*</code>, lists (<code>1,15</code>),
+ranges (<code>1-5</code>) and steps (<code>*/5</code>). Day-of-week accepts both <code>0</code> and <code>7</code> for
+Sunday.</li>
+<li><code>command</code> is a command line, handed to the shell as one string. Quoting is the
+config author&#39;s business, as in any crontab. It runs with the config file&#39;s
+own directory as its working directory, so a relative path is project-local.</li>
+<li><code>samples</code> is optional; without it the key gets the project&#39;s default policy.</li>
+<li><code>schedule</code> and <code>command</code> go together. A counter with neither is a key nothing
+runs for, which is how a value you push in by hand gets a policy of its own.</li>
+<li>A counter that does not parse is reported with its config and key and skipped;
+the rest of the file still runs.</li>
+<li>The runner reads the configs at startup, so restart it after an edit.</li>
+<li>The schedule also drives the card countdown: every card on the key shows the
+time to its next run, then <code>due</code> and <code>stale</code> if that run does not report. A
+key with no schedule shows nothing.</li>
+</ul>
+<h2 id="the-card">The card</h2>
+<p>One entry in the right tab of the same config:</p>
+<pre><code class="language-json">{ &quot;key&quot;: &quot;disk.c&quot;, &quot;label&quot;: &quot;Disk C: free&quot;, &quot;render&quot;: &quot;value&quot;,
+  &quot;params&quot;: { &quot;field&quot;: &quot;freePercent&quot;, &quot;unit&quot;: &quot;%&quot; } }
+</code></pre>
+<ul>
+<li><code>width</code> and <code>height</code> default to 6 grid steps.</li>
+<li><code>left</code> and <code>top</code> are optional. Cards without them flow into the first gap that
+fits, in list order, so reordering the list rearranges the tab.</li>
+<li>Several cards may read the same key; keys and cards are independent, and a
+card may read a key another project declares.</li>
+<li>The server reloads a config when it changes, so a card edit needs a page
+reload, not a server restart.</li>
+<li>A config error shows on the card rather than being thrown, and a missing
+renderer draws a visible placeholder.</li>
+</ul>
+<h2 id="renderers">Renderers</h2>
+<p>One file each in <code>renderers/</code>, picked by a card&#39;s <code>render</code>:</p>
+<ul>
+<li><code>value</code> — one big number or word. <code>params</code>: <code>field</code>, <code>unit</code>, <code>precision</code>,
+<code>prefix</code>.</li>
+<li><code>text</code> — preformatted text, scrollable, for command output. <code>params</code>: <code>wrap</code>.</li>
+<li><code>chart</code> — a line or bar over history. <code>params</code>: <code>field</code>, <code>limit</code>, <code>kind</code>,
+<code>min</code>, <code>max</code>.</li>
+<li><code>list</code> — rows from a JSON array. <code>params</code>: <code>fields</code>, <code>limit</code>, <code>empty</code>.</li>
+<li><code>status</code> — a status word plus message, coloured <code>ok</code>, <code>warn</code> or <code>error</code> from a
+<code>status</code> field or a bare string. <code>params</code>: <code>labels</code>.</li>
+<li><code>table</code> — a JSON array as columns. <code>params</code>: <code>columns</code>.</li>
+<li><code>git</code> — a git working folder: branch and commit, its position against the
+remote, and what is uncommitted. <code>params</code>: <code>empty</code>.</li>
+</ul>
+<p><code>params.field</code> selects a field out of an object value, and accepts a dotted path
+for nested ones. Adding a renderer is adding a file; see
+<a href="concept.html">concept.md</a> for the contract it implements.</p>
+<h2 id="watching-a-git-working-folder">Watching a git working folder</h2>
+<p><code>agents/git.ps1</code> reports one repository. It takes <code>-Path</code>, and without it reads
+the directory it is run in — which is the directory of the config that declares
+the counter, so a project config sitting in its own repository needs no path at
+all:</p>
+<pre><code class="language-json">&quot;counters&quot;: {
+  &quot;asljs.git&quot;: {
+    &quot;schedule&quot;: &quot;*/2 * * * *&quot;,
+    &quot;command&quot;: &quot;pwsh -NoProfile -File dash/agents/git.ps1&quot;
+  }
+}
+</code></pre>
+<p>It prints one object: <code>status</code>, <code>branch</code>, <code>commit</code> (short), <code>upstream</code>, <code>ahead</code>,
+<code>behind</code>, <code>pushed</code>, <code>dirty</code>, <code>staged</code>, <code>changed</code>, <code>untracked</code>, <code>conflicted</code> and
+a one-line <code>message</code>.</p>
+<ul>
+<li><code>staged</code> counts entries with an index change, <code>changed</code> those with a worktree
+change; a file that is both counts in both.</li>
+<li><code>pushed</code> is true when the branch has an upstream and is not ahead of it.</li>
+<li><code>status</code> is <code>error</code> on a conflict, <code>warn</code> when the folder is dirty, behind, or
+has nothing to push to, and <code>ok</code> otherwise.</li>
+<li>The path not being a repository is a non-zero exit, so the runner records no
+sample and logs <code>git</code>&#39;s own message.</li>
+</ul>
+<p>Two renderers read it. <code>git</code> draws the full card — branch, commit with a
+trailing <code>+</code> when dirty, the remote position, and a row per kind of pending
+change. <code>status</code> draws the same value as a word and its <code>message</code>, which is the
+compact version for a narrow card.</p>
+<h2 id="how-long-samples-are-kept">How long samples are kept</h2>
+<p>A <code>samples</code> policy decides, per key, where samples live and how many survive.
+The project&#39;s own line is the default, and a counter may override it:</p>
+<pre><code class="language-json">{
+  &quot;samples&quot;: &quot;database, 90*24h, 100k, 100Mb&quot;,
+
+  &quot;counters&quot;: {
+    &quot;ping.gw&quot;: { &quot;samples&quot;: &quot;database, 30*24h, 50k, 20Mb&quot; },
+    &quot;top.cpu&quot;: { &quot;samples&quot;: &quot;memory, 1h, 200, 2Mb&quot; }
+  }
+}
+</code></pre>
+<p>Four fields, in order:</p>
+<ul>
+<li><code>store</code> — <code>memory</code>, which is process-local and lost on restart and never
+touches SQLite, or <code>database</code>.</li>
+<li><code>retention</code> — how long a sample is kept, counted from when it was last
+confirmed current. Suffixes <code>s</code> (the default), <code>m</code>, <code>h</code>.</li>
+<li><code>count</code> — how many samples the key may hold. Suffixes <code>k</code>, <code>M</code>, <code>G</code>, decimal.</li>
+<li><code>quota</code> — total size of the key&#39;s values as UTF-8 bytes. Suffixes <code>Kb</code>, <code>Mb</code>,
+<code>Gb</code>, 1024-based.</li>
+</ul>
+<p>Rules:</p>
+<ul>
+<li>Suffixes are case-insensitive, and any field may be written as a product, so
+<code>90*24h</code> is 90 days.</li>
+<li>There is no unlimited option. Every field must be greater than zero, which
+makes <code>memory, 0, 0, 0</code> an error.</li>
+<li>Whichever limit bites first wins, and the oldest sample goes first. The quota
+never evicts the newest sample, because that sample is the key&#39;s current
+value.</li>
+<li>A counter with no <code>samples</code> line gets the project&#39;s, and a key no config
+declares gets the first project&#39;s.</li>
+<li>Configs are read at startup and reloaded when you save one, with no restart.</li>
+</ul>
+<h2 id="retiring-a-monitor">Retiring a monitor</h2>
+<p>Remove the counter and the card. Samples stay until the policy that was in force
+trims them, and <code>/api/keys</code> keeps reporting the key until the last one is gone.</p>
+<h2 id="adding-a-project">Adding a project</h2>
+<p>A project is one more config file and one more <code>--config</code>:</p>
+<ol>
+<li>Write <code>dash.config.json</code> in the project&#39;s own folder: a unique <code>project</code>
+name, its <code>db</code>, its counters and its tabs.</li>
+<li>Pass it to both processes, after the configs already loaded.</li>
+<li>Reload the page. Its tabs appear in the bar, after the ones already there.</li>
+</ol>
+<p>Project names, keys and tab names are global across every loaded config, so pick
+names no other project uses — <code>asljs.git</code> rather than <code>git</code>. A duplicate is
+reported on stderr and ignored, and the config that claimed it first keeps it.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/dash/docs/monitors.md">View source</a>
+  </footer>
+</body>
+</html>

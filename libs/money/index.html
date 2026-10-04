@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>money · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="money">money</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexantrite Software Library</a> - a set of high-quality and
+performant JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>Provides a lightweight fixed-point type and helpers for financial calculations
+in JavaScript, now with optional currency tracking.</p>
+<h2 id="public-api-at-a-glance">Public API At A Glance</h2>
+<ul>
+<li>The package-root export you use at runtime is <code>money</code>.</li>
+<li><code>money</code> is a factory that creates <code>Money</code> instances.</li>
+<li>Factory constants live on <code>money</code>: <code>money.zero</code>, <code>money.minor</code>, and
+<code>money.major</code>.</li>
+<li>Factory helpers also live on <code>money</code>: <code>parse</code>, <code>fromString</code>, <code>fromMinor</code>,
+<code>fromMajor</code>, <code>fromNumber</code>, and <code>isMoney</code>.</li>
+<li>Arithmetic and formatting methods live on <code>Money</code> instances, not as separate
+named exports.</li>
+</ul>
+<h2 id="safe-usage-rules">Safe Usage Rules</h2>
+<ul>
+<li>Construct <code>Money</code> values first.</li>
+<li>Do arithmetic on <code>Money</code> instances.</li>
+<li>Convert to numbers or strings only at presentation or interop boundaries.</li>
+<li>Do not use raw JavaScript numbers for money arithmetic and wrap later.</li>
+</ul>
+<h2 id="choosing-a-creation-method">Choosing A Creation Method</h2>
+<ul>
+<li>If you already have minor units such as cents or pence, then use
+<code>money.fromMinor(...)</code>.</li>
+<li>If you already have major units as a whole-unit integer amount, then use
+<code>money.fromMajor(...)</code>.</li>
+<li>If you have a human-readable amount string, then use <code>money.parse(...)</code> or
+<code>money.fromString(...)</code>.</li>
+<li>If you have a JavaScript number input, then use <code>money.fromNumber(...)</code>.</li>
+<li>If you already have a <code>Money</code> instance or minor-unit integer and want the main
+factory entrypoint, then use <code>money(value, currency?)</code>.</li>
+</ul>
+<h2 id="conversion-and-truncation-contract">Conversion And Truncation Contract</h2>
+<ul>
+<li><code>convert(rate, currency)</code> requires a positive finite exchange rate.</li>
+<li>Conversion is explicit; other operations do not convert currencies for you.</li>
+<li>Conversion truncates beyond 1/100 instead of using a general rounding rule.</li>
+<li>Do not describe undocumented round-half-up or banker’s rounding behavior.</li>
+</ul>
+<h2 id="currency-compatibility-rules">Currency Compatibility Rules</h2>
+<ul>
+<li><code>add(...)</code> requires compatible currencies.</li>
+<li><code>subtract(...)</code> requires compatible currencies.</li>
+<li>Different currencies are not silently reconciled.</li>
+<li>Convert explicitly before combining values from different currencies.</li>
+</ul>
+<h2 id="common-wrong-assumptions">Common Wrong Assumptions</h2>
+<ul>
+<li>Do not use raw JS numbers for money arithmetic.</li>
+<li>Do not assume different currencies can be combined directly.</li>
+<li>Do not assume conversion uses a rounding policy other than the documented
+truncation rule.</li>
+<li>Do not assume many standalone helper exports exist.</li>
+<li>Do not treat <code>toNumber()</code> as the preferred arithmetic path.</li>
+</ul>
+<p><code>Money</code>, a type that the library provides, represents a fixed-point decimal
+number. This type is designed to be used in financial calculations, where
+rounding errors are not acceptable.</p>
+<p>The <code>asljs-money</code> named export <code>money</code> creates a new instance of <code>Money</code> from a
+number of minor units (e.g. cents) or another <code>Money</code> instance. It also provides
+functions to create a <code>Money</code> instance from a variety of sources:</p>
+<ul>
+<li>from a string formatted as <code>-1,234.56</code>, use <code>money.parse(value)</code> or
+<code>money.fromString(value)</code>.</li>
+<li>from a number of cents (or pence), use <code>money.fromMinor(value)</code>.</li>
+<li>from a floating-point number, truncating beyond 1/100, use
+<code>money.fromNumber(value)</code>.</li>
+<li>from a number of major units (dollars), use <code>money.fromMajor(value)</code>.</li>
+</ul>
+<p>It holds values from -90071992547409.91 to 90071992547409.91.</p>
+<p>A <code>Money</code> instance provides these operations:</p>
+<ul>
+<li><code>value</code> - returns an integer representation of this <code>Money</code> instance.</li>
+<li><code>add(money1, money2, ...)</code> - returns a new instance of <code>Money</code> with added
+amounts. Requires the same currency.</li>
+<li><code>distribute(recipients, unit)</code> - divides the amount among <code>recipients</code>,
+proportionally to their shares. Operate in <code>unit</code> (default is <code>minor</code>).</li>
+<li><code>major()</code> - returns a number of major units (dollars) as an integer JavaScript
+number, e.g. <code>1</code> for <code>1.23</code>.</li>
+<li><code>minor()</code> - returns a number of minor units (dollars) as an integer JavaScript
+number, e.g. <code>23</code> for <code>1.23</code>.</li>
+<li><code>subtract(money1, money2, ...)</code> - returns a new instance of <code>Money</code> with
+subtracted amounts. Requires the same currency.</li>
+<li><code>toNumber()</code> - returns a floating-point number representation of the <code>Money</code>
+instance.</li>
+<li><code>toString()</code> - returns string representation of the <code>Money</code> instance, e.g.
+<code>-1,234.56</code>.</li>
+<li><code>convert(rate, currency)</code> - converts the amount to another currency using a
+positive finite exchange rate. Rounds by truncation to the nearest cent.</li>
+</ul>
+<p>Constants, defined in the module:</p>
+<ul>
+<li><code>minor</code> - indicates that computations are done in minor units (cents).</li>
+<li><code>major</code> - indicates that computations are done in major units (dollars).</li>
+<li><code>zero</code> - zero value.</li>
+</ul>
+<p>In addition, <code>money</code> provides these utility functions:</p>
+<ul>
+<li><code>isMoney(value)</code> - returns <code>true</code> if <code>value</code> is an instance of <code>Money</code>.</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<p>Import <code>money</code> (ESM):</p>
+<pre><code class="language-js">import { money } from &#39;asljs-money&#39;;
+</code></pre>
+<p>Create a <code>Money</code> instance, distribute it among shareholders, and sum up the
+result:</p>
+<pre><code class="language-js">const amount =
+  money.fromString(&#39;1,204.20&#39;);
+
+const dividends =
+  amount.distribute([0.6, 0.2, 0.2]);
+
+const total =
+  dividends.reduce(
+    (sum, item) =&gt;
+      sum.add(item),
+    money.zero);
+
+console.log(total.toString());
+</code></pre>
+<p>Currency-aware operations:</p>
+<pre><code class="language-js">const usd = money.fromMinor(10000, &#39;USD&#39;);
+const eur = usd.convert(0.9, &#39;EUR&#39;);
+console.log(usd.toString()); // &quot;100.00 USD&quot;
+console.log(eur.toString()); // &quot;90.00 EUR&quot;
+</code></pre>
+<p>If you need generic number utilities or presentation-layer formatting beyond the
+package string output, keep those concerns outside <code>asljs-money</code> and keep domain
+arithmetic on <code>Money</code> values.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/money/README.md">View source</a>
+  </footer>
+</body>
+</html>

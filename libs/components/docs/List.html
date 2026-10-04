@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>List · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="list">List</h1>
+<p><code>asljs-list</code> renders a collection from templates, binding each row to its own
+context.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>items</code> — a plain array, or an eventful-like collection the list re-renders
+from when it changes</li>
+<li><code>context</code> — shared row actions and state</li>
+<li><code>theme</code></li>
+<li>local slot templates</li>
+</ul>
+<h2 id="templates">Templates</h2>
+<ul>
+<li><code>template[data-slot=&quot;item&quot;]</code> — required; renders each row</li>
+<li><code>template[data-slot=&quot;empty&quot;]</code> — optional; the empty state</li>
+<li><code>template[data-slot=&quot;container&quot;]</code> — optional; must contain a
+<code>[data-role=&quot;items&quot;]</code> insertion point</li>
+</ul>
+<p>If <code>items</code> is non-empty and no item template is provided, the component warns
+and renders nothing. Themes can supply fallback templates; local templates
+always win. See <a href="Theming.html">Theming</a>.</p>
+<h2 id="row-binding-context">Row binding context</h2>
+<p>Each row is bound with <code>asljs-data-binding</code> to a row context with these fields:</p>
+<ul>
+<li><code>item</code>: the current row record</li>
+<li><code>index</code>: the zero-based row index</li>
+<li><code>first</code>: <code>true</code> for the first row</li>
+<li><code>last</code>: <code>true</code> for the last row</li>
+<li><code>odd</code>: <code>true</code> for odd row positions</li>
+<li><code>even</code>: <code>true</code> for even row positions</li>
+<li><code>count</code>: the total item count</li>
+<li><code>context</code>: the shared base context, adapted to the current row</li>
+</ul>
+<h2 id="row-actions">Row actions</h2>
+<ul>
+<li>Reference shared actions through the row context, for example
+<code>data-bind-onclick=&quot;context.select&quot;</code>.</li>
+<li>Row-specific values arrive through the derived row-local <code>this</code>, which
+includes row fields such as <code>item</code> and <code>index</code>.</li>
+<li>Arguments are not written in attributes: <code>select(item.id)</code> is not a binding.</li>
+</ul>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const list =
+  document.createElement(&#39;asljs-list&#39;);
+
+list.context = {
+  select(this: { item: { id: string; title: string } }, event: Event) {
+    event.preventDefault();
+    console.log(&#39;selected&#39;, this.item.id, this.item.title);
+  }
+};
+
+list.innerHTML = `
+  &lt;template data-slot=&quot;container&quot;&gt;
+    &lt;section class=&quot;rows&quot; data-role=&quot;items&quot;&gt;&lt;/section&gt;
+  &lt;/template&gt;
+
+  &lt;template data-slot=&quot;empty&quot;&gt;
+    &lt;div&gt;No items&lt;/div&gt;
+  &lt;/template&gt;
+
+  &lt;template data-slot=&quot;item&quot;&gt;
+    &lt;div&gt;
+      &lt;a data-bind-href=&quot;item.url&quot;
+         data-bind-text=&quot;item.title&quot;
+         data-bind-onclick=&quot;context.select&quot;&gt;&lt;/a&gt;
+      &lt;small data-bind-text=&quot;index&quot;&gt;&lt;/small&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+`;
+
+list.items =
+  [ { title: &#39;First&#39;, url: &#39;/first&#39; },
+    { title: &#39;Second&#39;, url: &#39;/second&#39; } ];
+</code></pre>
+<h2 id="authoring-rules">Authoring rules</h2>
+<p>Rendering is template-driven. That shapes how a list is written:</p>
+<ul>
+<li>Rows come from templates, not from React-style render callbacks or prop-driven
+row renderers.</li>
+<li>Bindings are <code>asljs-data-binding</code> paths, not template expressions with inline
+function calls, and event handlers follow its path-based rules.</li>
+<li>Only the documented slots are used, and a container template must keep its
+<code>[data-role=&quot;items&quot;]</code> insertion point.</li>
+<li>Keep row templates declarative, and use <code>context</code> methods for shared row
+actions rather than custom attribute protocols.</li>
+<li>Do not mutate slot templates at runtime. Update <code>list.items</code>, or the source
+collection, instead of rewriting row DOM.</li>
+</ul>
+<h2 id="exports">Exports</h2>
+<ul>
+<li><code>List</code></li>
+<li><code>ListItem</code>, <code>ListItemsSource</code> and <code>ListRowContext</code> types</li>
+<li><code>ListThemeDefinition</code> type, with the theming exports listed in <a href="Theming.html">Theming</a></li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/List.md">View source</a>
+  </footer>
+</body>
+</html>

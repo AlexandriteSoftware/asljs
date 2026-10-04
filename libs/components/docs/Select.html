@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Select · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="select">Select</h1>
+<p><code>asljs-select</code> is a labelled drop-down with validation.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>items</code> — explicit <code>{ value, label, disabled? }</code> entries</li>
+<li><code>value</code> — the external set/reset selection</li>
+<li><code>label</code></li>
+<li><code>description</code></li>
+<li><code>placeholder</code> — when set, an empty prompt option is shown first</li>
+<li><code>validator</code> — returns an error message or <code>null</code></li>
+<li><code>disabled</code></li>
+<li><code>controlClassName</code> — a class for the inner native <code>select</code>, for host CSS</li>
+<li><code>theme</code></li>
+<li>local <code>template[data-slot=&quot;template&quot;]</code> and <code>template[data-slot=&quot;select&quot;]</code></li>
+</ul>
+<p>As with <a href="Text%20Input.html">text input</a>, <code>value</code> is a set/reset input. The user&#39;s selection is
+kept in <code>draftValue</code>, reflected in the observable <code>status</code> object, and emitted
+through <code>input</code> and <code>change</code> events. Their detail is:</p>
+<pre><code class="language-ts">{
+  value: string;
+  isEmpty: boolean;
+  isValid: boolean;
+  errorMessage: string | null;
+  dirty: boolean;
+}
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const select =
+  document.createElement(&#39;asljs-select&#39;) as HTMLElement &amp; {
+    label: string | null;
+    items: Array&lt;{ value: string; label: string; disabled?: boolean }&gt;;
+    value: string | null;
+    placeholder: string | null;
+  };
+
+select.label = &#39;Size&#39;;
+select.placeholder = &#39;Choose a size&#39;;
+select.items =
+  [ { value: &#39;s&#39;, label: &#39;Small&#39; },
+    { value: &#39;m&#39;, label: &#39;Medium&#39; },
+    { value: &#39;l&#39;, label: &#39;Large&#39;, disabled: true } ];
+select.value = &#39;m&#39;;
+
+select.addEventListener(
+  &#39;change&#39;,
+  event =&gt; {
+    const detail =
+      (event as CustomEvent&lt;{ value: string; isValid: boolean }&gt;).detail;
+
+    console.log(detail.value, detail.isValid);
+  });
+</code></pre>
+<p>Layout and control markup can be overridden with local slot templates or a
+theme, as for text input; see <a href="Theming.html">Theming</a>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Select.md">View source</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The query · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="the-query">The query</h1>
+<h2 id="purpose">Purpose</h2>
+<p>Read a value out of a source and re-read it when it changes. <code>observe(source)</code>
+starts a chain, operators refine it, and a terminal executes it.</p>
+<p>Nothing is injected into the source. A query is a description over a source
+rather than a method on it, which is why there is no <code>watch</code> method and no
+<code>observable.watch</code>.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable(
+  { user: { name: &#39;Alice&#39; }, active: false },
+  { deep: true });
+
+observe(state)
+  .at(&#39;user.name&#39;)
+  .subscribe(name =&gt; console.log(&#39;name&#39;, name));
+
+state.user.name = &#39;Bob&#39;;
+
+state.user = observable({ name: &#39;Carol&#39; });
+
+state.user.name = &#39;Dan&#39;;
+
+// Output:
+// name Alice
+// name Bob
+// name Carol
+// name Dan
+</code></pre>
+<p><code>at</code> descends a dotted path and resubscribes at each segment, so replacing an
+intermediate value rebinds the rest of the path. That is the one thing a <code>map</code>
+cannot do, and the reason RxJS deprecated <code>pluck</code> does not apply here.</p>
+<h2 id="operators">Operators</h2>
+<p>Each returns a <strong>new</strong> chain. Nothing is subscribed until a terminal executes
+it, so holding a chain, passing it around and branching off it are all free.</p>
+<ul>
+<li><code>at(path)</code> descends a dotted path. Array indices are ordinary segments, so
+<code>at(&#39;items.0.name&#39;)</code> works.</li>
+<li><code>map(fn)</code> projects.</li>
+<li><code>filter(fn)</code> keeps the values the predicate accepts.</li>
+<li><code>distinct(compare)</code> replaces the default comparison for one step.</li>
+<li><code>combine([ chainA, chainB ])</code> reports several chains together, as a tuple.</li>
+</ul>
+<pre><code class="language-js">import { observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ user: { name: &#39;ada&#39; } }, { deep: true });
+
+const shouted = observe(state)
+  .at(&#39;user.name&#39;)
+  .map(name =&gt; name.toUpperCase());
+
+shouted.subscribe(name =&gt; console.log(&#39;shouted&#39;, name));
+
+observe(state)
+  .at(&#39;user.name&#39;)
+  .filter(name =&gt; name.length &gt; 3)
+  .subscribe(name =&gt; console.log(&#39;long&#39;, name));
+
+state.user.name = &#39;grace&#39;;
+
+console.log(&#39;read once:&#39;, shouted.value);
+
+// Output:
+// shouted ADA
+// shouted GRACE
+// long grace
+// read once: GRACE
+</code></pre>
+<h2 id="terminals">Terminals</h2>
+<ul>
+<li><code>subscribe(fn)</code> builds the subscriptions, calls back with the current value,
+and returns one disposer that tears them down. The disposer is idempotent: the
+first call returns <code>true</code>, later calls <code>false</code>.</li>
+<li><code>.value</code> evaluates the chain on demand, without subscribing.</li>
+</ul>
+<h2 id="combining-paths">Combining paths</h2>
+<pre><code class="language-js">import { batch, combine, observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ name: &#39;Alice&#39;, active: false });
+
+const unsubscribe = combine([
+  observe(state).at(&#39;name&#39;),
+  observe(state).at(&#39;active&#39;)
+]).subscribe(([ name, active ]) =&gt; console.log(name, active));
+
+batch(() =&gt; {
+  state.name = &#39;Bob&#39;;
+  state.active = true;
+});
+
+unsubscribe();
+
+// Output:
+// Alice false
+// Bob true
+</code></pre>
+<p><code>combine</code> recomputes once per notification it receives, not once per input that
+reaches it. Two of its inputs reading from the same source are both notified by
+one <code>change</code>, and without that rule a subscriber would see the intermediate
+tuple before the settled one. The mechanism is a module-level counter
+incremented once per delivery; it works because delivery is synchronous, so
+nothing else can be running.</p>
+<p>Grouping is per emitter, so a batch touching two objects still produces one
+notification each and <code>combine</code> recomputes twice. See <a href="batching.html#grouping-is-per-emitter">batching</a>.</p>
+<h2 id="equality-and-deduplication">Equality and deduplication</h2>
+<p>Every operator compares its result with the last value it emitted, using
+<code>Object.is</code>, and stays silent when they match. That is the same comparison the
+converter&#39;s <code>set</code> trap makes, so one rule holds from the source to the terminal.</p>
+<p>The case it exists for: given <code>observe(model).at(&#39;user&#39;).map(u =&gt; u.role)</code>,
+replacing <code>model.user</code> with a different object of the same role is a real change
+at <code>at</code> and no change at <code>map</code>. Without deduplication the subscriber would run
+for a change it cannot see, and the more a chain projects away the more often
+that happens — backwards, since projecting away detail is what <code>map</code> is for.</p>
+<p>It also makes the unrecognised-kind rule affordable: a re-read provoked by a
+change the chain does not care about produces the same value and goes no
+further.</p>
+<p>Consequences:</p>
+<ul>
+<li>The first callback always happens, except where <code>filter</code> rejects the current
+value. A chain that starts rejected is silent, and its <code>.value</code> is
+<code>undefined</code>.</li>
+<li>A projection that rebuilds a value is never deduplicated. <code>map(u =&gt; ({ name: u.name }))</code> returns a new object every time, <code>Object.is</code> says different, and
+it fires on every upstream notification. <code>distinct</code> is the way out, and
+keeping it separate is why <code>map</code> needs no comparison argument.</li>
+<li><code>combine</code> is never deduplicated, because it builds a fresh tuple. That is a
+consequence of the rule rather than an exception to it.</li>
+<li>Executing a chain is stateful even though the chain is not. Each operator in
+an execution holds its last emitted value; the recipe stays an immutable
+description.</li>
+</ul>
+<pre><code class="language-js">import { observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ user: { name: &#39;Alice&#39; } });
+
+const projected = observe(state)
+  .at(&#39;user&#39;)
+  .map(user =&gt; ({ name: user.name }));
+
+projected.subscribe(() =&gt; console.log(&#39;plain fired&#39;));
+
+projected
+  .distinct((a, b) =&gt; a.name === b.name)
+  .subscribe(() =&gt; console.log(&#39;distinct fired&#39;));
+
+state.user = observable({ name: &#39;Alice&#39; });
+
+// Output:
+// plain fired
+// distinct fired
+// plain fired
+</code></pre>
+<h2 id="typed-paths">Typed paths</h2>
+<p>Paths are checked at compile time against the model. The names <code>eventful</code>
+occupies are excluded, so the methods conversion adds are not offered as
+properties to observe.</p>
+<pre><code class="language-ts">import { observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ user: { name: &#39;Alice&#39; }, active: false });
+
+observe(state).at(&#39;user.name&#39;).subscribe(name =&gt; console.log(name.length));
+
+// error TS2345
+observe(state).at(&#39;user.nmae&#39;);
+</code></pre>
+<p>Descent is capped at five levels. Without the cap a self-referential model
+expands forever, so it can be tuned but not removed.</p>
+<h2 id="constraints">Constraints</h2>
+<ul>
+<li><strong>The root must conform.</strong> <code>observe(source)</code> throws when it does not, and
+declares <code>Observable</code>, so TypeScript rejects a plain object before the runtime
+does. The message names the fix: wrap it with <code>observable()</code>. Before 0.6 the
+query degraded silently instead, calling back once with a snapshot and
+returning a disposer that disposed nothing.</li>
+<li><strong>Intermediate segments are not checked.</strong> The last segment of a path is
+always non-conforming — <code>at(&#39;user.name&#39;)</code> ends at a string — so &quot;every segment
+must conform&quot; cannot be the rule. Conversion without <code>deep: true</code> produces
+partial observation on purpose: the root is heard, and what it holds is not.</li>
+<li><strong>A chain is not a source.</strong> It has <code>subscribe</code> and <code>.value</code>, and no
+<code>on</code>/<code>off</code> at all. That is what makes disposal answer itself: one <code>subscribe</code>
+builds one subscription tree and returns the one disposer that owns it, with
+no node lifetime to manage and nothing attached by a chain that is built and
+never subscribed.</li>
+<li><strong>Fan-out duplicates work.</strong> Two subscriptions off one chain put two listeners
+on the source and walk the path twice per change. RxJS calls this cold, and it
+is why <code>share()</code> exists there. At the scale this package targets it is noise.</li>
+</ul>
+<h2 id="edge-cases">Edge cases</h2>
+<ul>
+<li>A path segment that is missing reads as <code>undefined</code> rather than throwing, and
+the chain binds as soon as the segment appears.</li>
+<li>A path is validated when the chain is built, not when it runs. An empty path,
+a leading or trailing dot, and an empty segment all throw a <code>TypeError</code>.</li>
+<li>Teardown prefers a disposer the source returns from <code>on</code>, and falls back to
+<code>off</code>. A source whose <code>on</code> returns <code>this</code>, such as a Node <code>EventEmitter</code>, uses
+<code>off</code>.</li>
+<li>A model that holds one object in two places can bind two segments to it, which
+notifies twice; deduplication absorbs the second.</li>
+</ul>
+<h2 id="vocabulary">Vocabulary</h2>
+<p>These are Array and RxJS words, not LINQ ones, and that is deliberate. RxJS 5
+deprecated <code>select</code> in favour of <code>map</code> and <code>where</code> in favour of <code>filter</code>, on the
+grounds that <code>map</code> works the same way as the Array method of the same name.
+Rx.NET kept the LINQ names; the JavaScript port moved away from them.</p>
+<p><code>subscribe</code> is the terminal in RxJS, Svelte stores, valtio and nanostores. An
+<code>exec</code> would read as run-once, when what it establishes has a lifetime.</p>
+<p><code>at</code> is the one name with no consensus behind it. It is short, echoes
+<code>Array.prototype.at</code>, and leaves <code>pluck</code> free if it turns out to read better.</p>
+<p>The operator set stays small on purpose: <code>at</code> is the operator RxJS has no
+equivalent for, and everything else RxJS already does better. See
+<a href="rxjs.html">RxJS interop</a>.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="contract.html">The contract</a> — what a source has to provide.</li>
+<li><a href="batching.html">Batching and delivery</a> — when a notification arrives.</li>
+<li><a href="performance.html">Performance</a> — what reading through the converter costs.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/query.md">View source</a>
+  </footer>
+</body>
+</html>

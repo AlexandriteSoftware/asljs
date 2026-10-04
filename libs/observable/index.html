@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>observable · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="observable">observable</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> – a set of high‑quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<p><code>asljs-observable</code> makes plain JavaScript objects and arrays report their own
+changes, and gives you a small query for reading values out of them as they
+change.</p>
+<pre><code class="language-js">import { observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ user: { name: &#39;Alice&#39; } }, { deep: true });
+
+observe(state).at(&#39;user.name&#39;).subscribe(name =&gt; console.log(name));
+
+state.user.name = &#39;Bob&#39;;
+
+// Output:
+// Alice
+// Bob
+</code></pre>
+<h2 id="scope">Scope</h2>
+<p>Three things:</p>
+<ul>
+<li><strong>A contract</strong> for observing an object: <code>on</code>, <code>off</code>, and a <code>change</code> event
+carrying a list of what changed.</li>
+<li><strong>A basic query</strong> over anything that satisfies the contract.
+<code>observe(source).at(&#39;user.name&#39;).subscribe(...)</code> reads a path and re-reads it
+when it changes, with <code>map</code>, <code>filter</code> and <code>combine</code> for the rest.</li>
+<li><strong>A converter</strong> that makes JSON-like structures -- plain old JavaScript
+objects and arrays -- satisfy the contract, so a model carries no subscription
+code of its own. That fits a model of the size a form, a view, or a small
+application.</li>
+</ul>
+<p>Conversion happens at runtime: no build step, no annotations, and
+<code>asljs-eventful</code> as the only dependency.</p>
+<p>Building an advanced application model is out of scope, and the contract is the
+extension point instead. A model class of your own implements <code>on</code>, <code>off</code> and
+<code>change</code>, and the query then works against it exactly as it works against a
+converted object. That is how a class with computed properties, a wrapper over
+storage, or a Node <code>EventEmitter</code> joins the same query as the rest of a model.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install asljs-observable
+</code></pre>
+<p>NPM Package: <a href="https://www.npmjs.com/package/asljs-observable">asljs-observable</a></p>
+<h2 id="usage">Usage</h2>
+<p>Listen to a model directly:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ a: 1, b: 2 });
+
+model.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    console.log(`${change.property}: ${change.previous} -&gt; ${change.value}`);
+  }
+});
+
+model.a = 3;
+
+// Output:
+// a: 1 -&gt; 3
+</code></pre>
+<p>Watch several paths, and group writes into one notification:</p>
+<pre><code class="language-js">import { batch, combine, observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable({ name: &#39;Alice&#39;, active: false });
+
+combine([
+  observe(state).at(&#39;name&#39;),
+  observe(state).at(&#39;active&#39;)
+]).subscribe(([ name, active ]) =&gt; console.log(name, active));
+
+batch(() =&gt; {
+  state.name = &#39;Bob&#39;;
+  state.active = true;
+});
+
+// Output:
+// Alice false
+// Bob true
+</code></pre>
+<p>An array operation reports one notification rather than one per element, and the
+mutating methods describe themselves:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const items = observable([ &#39;a&#39;, &#39;b&#39;, &#39;c&#39; ]);
+
+items.on(&#39;change&#39;, ([ change ]) =&gt;
+  console.log(change.kind, &#39;at&#39;, change.index, &#39;removed&#39;, change.removed));
+
+items.shift();
+
+// Output:
+// splice at 0 removed [ &#39;a&#39; ]
+</code></pre>
+<p><code>subscribe</code> returns a function that tears the subscription down, and <code>.value</code>
+reads a path once without subscribing.</p>
+<h2 id="further-reading">Further reading</h2>
+<ul>
+<li><a href="docs/contract.html">The contract</a> — what an object must provide to be observed, and how to
+implement it yourself.</li>
+<li><a href="docs/query.html">The query</a> — <code>observe</code>, the operators, and how values are deduplicated.</li>
+<li><a href="docs/batching.html">Batching and delivery</a> — <code>batch(fn)</code>, and when a notification arrives.</li>
+<li><a href="docs/converter.html">The converter</a> — what <code>observable()</code> converts, what it reports, and the
+<code>convert</code> hook.</li>
+<li><a href="docs/performance.html">Performance</a> — what the converter costs, and how to write the parts of a
+model that have to be fast.</li>
+<li><a href="docs/rxjs.html">Using it with RxJS</a>.</li>
+<li><a href="docs/migrating-from-0.5.html">Migrating from 0.5</a> — 0.6 changes every event and removes <code>watch</code>.</li>
+</ul>
+<p>Questions and bugs: <a href="https://github.com/AlexandriteSoftware/asljs/issues">asljs/issues</a>.</p>
+<h2 id="related-packages">Related packages</h2>
+<ul>
+<li><code>asljs-eventful</code> is the event layer underneath: <code>on</code>, <code>off</code> and <code>emit</code> on any
+object. Conversion uses it, and it is this package&#39;s only dependency.</li>
+<li><code>asljs-data-binding</code> builds DOM bindings on top of an observable model.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT License. See <a href="LICENSE.html">LICENSE</a> for details.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/README.md">View source</a>
+  </footer>
+</body>
+</html>

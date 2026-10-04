@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Using it with RxJS · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="using-it-with-rxjs">Using it with RxJS</h1>
+<h2 id="purpose">Purpose</h2>
+<p>The <a href="contract.html">contract</a> was chosen for hand-implementation and for Node
+<code>EventEmitter</code> interop. It happens to also make a source directly consumable by
+RxJS, which is worth not spoiling by accident.</p>
+<p><code>rxjs</code> is not a dependency of this package. The claims here come from its
+documentation and issue tracker rather than from a test in this repository, so
+verify them against your own version before relying on them.</p>
+<h2 id="a-source-is-an-rxjs-event-target-already">A source is an RxJS event target already</h2>
+<p><code>fromEvent</code> supports three kinds of target: DOM <code>addEventListener</code> /
+<code>removeEventListener</code>, Node <code>addListener</code> / <code>removeListener</code>, and jQuery-style
+<code>on</code> / <code>off</code>. The contract is the third, so a conforming object works with no
+adapter and no dependency on either side:</p>
+<pre><code>fromEvent(model, &#39;change&#39;)
+  .pipe(mergeMap(changes =&gt; changes))
+  .subscribe(change =&gt; ...);
+</code></pre>
+<p>Each emission is a <code>Change[]</code>, so an RxJS consumer flattens it if it wants
+individual entries. The batch is visible rather than hidden, which is the right
+default.</p>
+<p>This is another payoff of using <code>off</code> rather than a disposer returned by <code>on</code>.
+With the disposer form, <code>fromEvent</code> would still recognise the target and would
+have no correct way to unsubscribe.</p>
+<h2 id="two-routes-for-two-kinds-of-thing">Two routes for two kinds of thing</h2>
+<ul>
+<li><code>fromEvent(source, &#39;change&#39;)</code> for a source.</li>
+<li><code>from(chain)</code> for a query — not implemented; see below.</li>
+</ul>
+<p>Do not confuse them. A source conforms to the contract; a query is an immutable
+chain with <code>subscribe</code> and <code>.value</code> and no <code>on</code>/<code>off</code> at all.</p>
+<h2 id="semantic-mismatches">Semantic mismatches</h2>
+<ul>
+<li>A chain is cold like an RxJS <code>Observable</code>, but it replays: executing it calls
+back with the current value before any change arrives. The closest analogue is
+a <code>defer</code> producing a replaying stream, and an adapter that does not emit the
+current value synchronously on subscribe changes the semantics silently.</li>
+<li>A chain never completes. <code>lastValueFrom</code>, <code>toArray</code>, <code>reduce</code> and <code>last()</code>
+hang; <code>firstValueFrom</code> and <code>take(n)</code> are fine.</li>
+<li>The contract has no error channel, so <code>catchError</code> on a stream built from a
+source catches nothing the source raises. That is not because errors vanish.
+<code>asljs-eventful</code> has an error path, but it is out of band rather than a
+per-stream channel: a throwing listener reaches the per-instance <code>error</code> hook
+and the package-level <code>eventful.on(&#39;error&#39;)</code>, and an error neither consumes is
+rethrown from a microtask into the platform&#39;s unhandled-error channel.
+Bridging that into an RxJS stream means subscribing to <code>eventful.on(&#39;error&#39;)</code>
+separately and filtering on the <code>object</code> its payload carries.</li>
+<li>With <code>strict: true</code>, listener errors are not isolated at all: <code>emit</code> rethrows,
+so the error propagates out of the mutation that caused it. RxJS normally
+contains an error raised inside its own pipeline and routes it to the
+subscriber, so this mostly affects listeners attached directly rather than
+through <code>fromEvent</code>. Both are reachable through
+<a href="converter.html#the-eventful-factory">the <code>eventful</code> factory seam</a>.</li>
+<li>Unsubscribe returns <code>boolean</code> where RxJS expects <code>void</code>. An adapter ignores
+it.</li>
+</ul>
+<p>Synchronous emission is the one thing that lines up without comment: RxJS
+dispatches synchronously unless given a scheduler, and so does this.</p>
+<h2 id="rxjs-as-a-source-is-a-non-goal">RxJS as a source is a non-goal</h2>
+<p>An RxJS <code>Observable</code> cannot be passed to <code>observe()</code>. It has <code>subscribe</code>, not
+<code>on</code>/<code>off</code>, and no current value. A <code>BehaviorSubject</code> is adaptable because it
+has <code>getValue()</code>, but that is a shim a caller writes.</p>
+<p>Recorded as a non-goal deliberately: &quot;integrates with RxJS&quot; otherwise invites
+the assumption that it goes both ways.</p>
+<h2 id="what-this-means-for-scope">What this means for scope</h2>
+<p><code>at(path)</code> is the operator with no RxJS equivalent — descent that resubscribes
+at each segment, which is why <code>pluck</code> was deprecated in favour of a <code>map</code> that
+cannot. Everything else this package might add, RxJS already has and does
+better.</p>
+<p>So the operator set stays small: <code>observe</code>, <code>at</code>, <code>subscribe</code>, and a minimal
+<code>map</code>, <code>filter</code>, <code>distinct</code> and <code>combine</code> for callers who do not have RxJS. A
+reader moving between the two libraries meets the same words meaning the same
+things.</p>
+<h2 id="not-implemented">Not implemented</h2>
+<p><code>[Symbol.observable]</code> on a chain, so that <code>from(chain)</code> works, is not built.</p>
+<p>When it is, it should implement exactly one protocol. RxJS&#39;s <code>innerFrom</code>
+dispatches in the order interop observable, array-like, promise, async iterable,
+iterable, readable stream. A chain carrying both <code>[Symbol.observable]</code> and
+<code>[Symbol.asyncIterator]</code> takes the interop branch only if its
+<code>Symbol.observable</code> is the one RxJS resolves; where it is not — the known case
+being a polyfill imported after RxJS, so it never reaches the prototype — RxJS
+silently takes the async-iterable branch instead, where error handling is
+terminal rather than per-notification. Same code, different semantics, no
+warning.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="contract.html">The contract</a> — what makes a source an event target.</li>
+<li><a href="query.html">The query</a> — what a chain is, and is not.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/rxjs.md">View source</a>
+  </footer>
+</body>
+</html>

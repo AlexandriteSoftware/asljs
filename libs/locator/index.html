@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>locator · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="locator">locator</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> – a set of high‑quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>Locates files by glob patterns, exclusions and filters such as <code>.gitignore</code>.</p>
+<h2 id="overview">Overview</h2>
+<p>A location says where a set of files lives: the patterns that match them, the
+patterns that take them away again, and the filters that drop whatever should
+never have been listed. <code>.gitignore</code> is one of those filters, so a tool can
+honour it without reimplementing it.</p>
+<p>A pattern beginning with <code>/</code> resolves against the root the resolver was built
+with. Any other pattern resolves against the base path given to the call. That
+pair is what lets one vocabulary describe both a repository-wide location and a
+location relative to the file that declared it.</p>
+<h2 id="scope">Scope</h2>
+<p>Finding paths, and answering whether a path belongs to a location. Reading the
+files it finds is the caller&#39;s business.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-pwsh">npm install asljs-locator
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import {
+  LocationResolver
+} from &#39;asljs-locator&#39;;
+import {
+  NullLogger
+} from &#39;asljs-logging&#39;;
+
+const resolver = new LocationResolver(new NullLogger(), process.cwd());
+
+const files = await resolver.resolve(process.cwd(), {
+  patterns: [&#39;docs/**/*.md&#39;],
+  exclude: [&#39;docs/drafts/**&#39;],
+  filters: [{ name: &#39;GitIgnore&#39; }]
+});
+</code></pre>
+<p><code>resolve</code> returns absolute paths, deduplicated and sorted. Give it one location
+or several; several are merged.</p>
+<p><code>check</code> answers the same question for a single path without walking the tree,
+which is what makes it usable per file:</p>
+<pre><code class="language-js">const belongs = await resolver.check(
+  &#39;/repo/docs/guide.md&#39;,
+  &#39;/repo&#39;,
+  { pattern: &#39;docs/**/*.md&#39; }
+);
+</code></pre>
+<p>Patterns must be all files or all directories; a directory pattern ends with
+<code>/</code>. Mixing them throws, because the two cannot be globbed in one pass.</p>
+<h2 id="further-reading">Further reading</h2>
+<ul>
+<li><a href="../../docs/Architecture.html">Architecture</a> for where this sits among the packages.</li>
+</ul>
+<h2 id="related-packages">Related packages</h2>
+<ul>
+<li><a href="../logging/index.html">asljs-logging</a> provides the logger the resolver traces through.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/locator/README.md">View source</a>
+  </footer>
+</body>
+</html>

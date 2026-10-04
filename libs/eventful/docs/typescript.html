@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeScript · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="typescript">TypeScript</h1>
+<h2 id="purpose">Purpose</h2>
+<p>How to get checked event names and listener arguments, for each way of adding
+events to an object.</p>
+<h2 id="usage">Usage</h2>
+<p>Declare an event map: an object type from each event name to the tuple of
+arguments its listeners receive. The exported <code>Eventful&lt;Events&gt;</code> type then
+checks event names and listener arguments on <code>on</code>, <code>once</code>, <code>off</code>, <code>emit</code> and
+<code>emitAsync</code>.</p>
+<pre><code class="language-ts">type Events = { greet: [msg: string]; };
+</code></pre>
+<p>Which pattern to use:</p>
+<ul>
+<li>If you control the class hierarchy, then extend <code>EventfulBase&lt;Events&gt;</code>.</li>
+<li>If the class already extends something else, then call <code>eventful(this)</code> in the
+constructor and declare the methods.</li>
+<li>If you are enhancing a plain object, then annotate the variable with <code>typeof raw &amp; Eventful&lt;Events&gt;</code>.</li>
+</ul>
+<h2 id="plain-object">Plain object</h2>
+<pre><code class="language-ts">import {
+  type Eventful,
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+type Events = { greet: [msg: string]; };
+
+const obj: { name: string; } &amp; Eventful&lt;Events&gt; = eventful({ name: &#39;Alice&#39; });
+
+obj.on(&#39;greet&#39;, msg =&gt; console.log(`${msg}, ${obj.name}!`));
+
+// writes &quot;Hello, Alice!&quot; to console
+obj.emit(&#39;greet&#39;, &#39;Hello&#39;);
+</code></pre>
+<h2 id="inheritance">Inheritance</h2>
+<pre><code class="language-ts">import {
+  EventfulBase
+} from &#39;asljs-eventful&#39;;
+
+type MyClassEvents = { greet: [message: string]; };
+
+class MyClass extends EventfulBase&lt;MyClassEvents&gt;
+{
+  name: string;
+
+  constructor(name: string)
+  {
+    super();
+
+    this.name = name;
+  }
+
+  greet()
+  {
+    this.emit(
+      &#39;greet&#39;,
+      `Hello, ${this.name}`
+    );
+  }
+}
+</code></pre>
+<h2 id="construction">Construction</h2>
+<p>When the class cannot extend <code>EventfulBase</code>, call <code>eventful(this)</code> in the
+constructor. TypeScript does not see methods added at runtime, so declare them:</p>
+<pre><code class="language-ts">import {
+  type Eventful,
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+type MyClassEvents = { greet: [message: string]; };
+
+export class MyClass implements Eventful&lt;MyClassEvents&gt;
+{
+  name: string;
+
+  declare on: Eventful&lt;MyClassEvents&gt;[&#39;on&#39;];
+  declare once: Eventful&lt;MyClassEvents&gt;[&#39;once&#39;];
+  declare off: Eventful&lt;MyClassEvents&gt;[&#39;off&#39;];
+  declare emit: Eventful&lt;MyClassEvents&gt;[&#39;emit&#39;];
+  declare emitAsync: Eventful&lt;MyClassEvents&gt;[&#39;emitAsync&#39;];
+  declare has: Eventful&lt;MyClassEvents&gt;[&#39;has&#39;];
+  declare removeAllListeners: Eventful&lt;MyClassEvents&gt;[&#39;removeAllListeners&#39;];
+  declare getListeners: Eventful&lt;MyClassEvents&gt;[&#39;getListeners&#39;];
+
+  constructor(name: string)
+  {
+    eventful(this);
+
+    this.name = name;
+  }
+
+  greet()
+  {
+    this.emit(
+      &#39;greet&#39;,
+      `Hello, ${this.name}`
+    );
+  }
+}
+</code></pre>
+<h2 id="the-package-level-emitter">The package-level emitter</h2>
+<p><code>eventful</code> is also an emitter, and its own events are declared by the exported
+<code>GlobalEvents</code> map, so a listener for one of them receives a typed payload. Its
+full type, factory and emitter together, is exported as <code>EventfulFn</code>.</p>
+<pre><code class="language-ts">import {
+  eventful,
+  type EventfulFn
+} from &#39;asljs-eventful&#39;;
+
+const emitter: EventfulFn = eventful;
+
+const off = emitter.on(
+  &#39;new&#39;,
+  payload =&gt; console.log(&#39;created&#39;, payload.id)
+); // payload.id is a string
+
+off();
+</code></pre>
+<p>The declared events are <code>new</code>, <code>on</code>, <code>off</code>, <code>emit</code>, <code>emitAsync</code> and <code>error</code>,
+with the payloads listed in <a href="global-events.html">global-events.md</a>.</p>
+<p>The map stays open, because emits on <code>eventful</code> itself are not re-broadcast and
+that makes it a place to put an application&#39;s own events. Such an event is
+accepted under any name, and its arguments are <code>unknown[]</code>:</p>
+<pre><code class="language-ts">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+eventful.on(
+  &#39;leak:suspected&#39;,
+  (...args: unknown[]) =&gt; console.log(args)
+);
+
+eventful.emit(&#39;leak:suspected&#39;, { id: &#39;Cart#1&#39; });
+</code></pre>
+<h2 id="why-the-event-map-cannot-be-a-type-argument">Why the event map cannot be a type argument</h2>
+<p><code>eventful</code> infers the type of the object it enhances, but it cannot infer your
+event map: the map appears only in the return type, so there is no argument to
+infer it from. Naming it explicitly means naming the object type too, because
+TypeScript stops inferring type arguments as soon as any are written by hand:</p>
+<pre><code class="language-ts">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+type CartEvents = { checkout: [total: number]; };
+
+const cart = { items: 2 };
+
+eventful&lt;CartEvents&gt;(cart);
+// error TS2345: Argument of type &#39;{ items: number; }&#39; is not assignable
+//               to parameter of type &#39;CartEvents&#39;.
+</code></pre>
+<p>Annotate the variable instead. <code>typeof</code> names the object without restating its
+shape, and the annotation says exactly what <code>eventful</code> added:</p>
+<pre><code class="language-ts">import {
+  type Eventful,
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+type CartEvents = { checkout: [total: number]; };
+
+const raw = { items: 2 };
+
+const cart: typeof raw &amp; Eventful&lt;CartEvents&gt; = eventful(raw);
+
+cart.on(
+  &#39;checkout&#39;,
+  total =&gt; total.toFixed(2)
+); // total is a number
+
+cart.items; // still a number
+</code></pre>
+<p>Both halves are checked. An unknown event name, a listener whose arguments do
+not match the map, and a property the object does not have are all errors.</p>
+<p>Note that the type query takes a name, so it is <code>typeof raw</code> rather than <code>typeof (raw)</code>, and the object has to be a variable. For an object written inline there
+is nothing to point <code>typeof</code> at, so name it first.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/eventful/docs/typescript.md">View source</a>
+  </footer>
+</body>
+</html>

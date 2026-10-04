@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cog · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="cog">cog</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> - a set of high-quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>Framework for developing and running automations from composable tasks.</p>
+<p>COG provides a shared execution context, a task factory and runner, and reusable
+services.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install asljs-cog
+</code></pre>
+<p>For CLI usage in a project or automation:</p>
+<pre><code class="language-bash">npx cog read README.md
+</code></pre>
+<h2 id="framework">Framework</h2>
+<p>Tasks are COG&#39;s building blocks. Categories such as <code>git</code> group related tasks.</p>
+<p>While executing, tasks receive a shared <code>Context</code> instance that provides access
+to data, variables, services, the task factory, and the task runner.</p>
+<h3 id="task">Task</h3>
+<p>A task unit is one bounded job, the smallest reusable block.</p>
+<p>Examples:</p>
+<ul>
+<li>summarize inbox</li>
+<li>extract action items from meeting notes</li>
+<li>draft weekly status update</li>
+<li>reconcile two versions of a document</li>
+<li>generate implementation plan from issue</li>
+<li>review pull request against checklist</li>
+</ul>
+<p>Each task unit has:</p>
+<ul>
+<li>parameters - list of input parameters required by the task. When a task is
+called from the command line, they are mapped to named arguments.</li>
+<li>result - the output returned by the task.</li>
+</ul>
+<p>When a task executes other tasks, they form a workflow.</p>
+<p>Example:</p>
+<ol>
+<li>collect today’s inputs</li>
+<li>summarize</li>
+<li>classify by urgency</li>
+<li>draft outputs</li>
+<li>ask for approval</li>
+<li>publish/send/save</li>
+</ol>
+<h2 id="writing-tasks">Writing Tasks</h2>
+<p>A task implements <code>Task&lt;TResult&gt;</code> and has an asynchronous <code>run(context)</code> method.
+Register it with a stable command name, a description, and its parameters. Mark
+command-line positional parameters with <code>position: true</code>; they are required by
+the CLI.</p>
+<p>Tasks may create and run another task with <code>context.createTask()</code> and
+<code>context.run()</code>. Use <code>context.setData(name, value)</code> to update a named shared
+context bucket, and <code>context.getData(name)</code> or <code>context.requireData(name)</code> to
+read one.</p>
+<p>External task modules export <code>registerTasks(registry)</code>. COG recursively loads
+<code>.js</code> and <code>.mjs</code> modules from every <code>--tasks-dir</code> directory before it creates
+commands:</p>
+<pre><code class="language-js">export function registerTasks(registry) {
+  registry.register(
+    &#39;run-sql&#39;,
+    parameters =&gt; new RunSqlTask(parameters),
+    {
+      description: &#39;run a SQL query&#39;,
+      parameters: [
+        { name: &#39;connection&#39;, type: &#39;string&#39;, position: true },
+        { name: &#39;query&#39;, type: &#39;string&#39;, position: true }
+      ]
+    });
+}
+</code></pre>
+<p>Initialize context data with <code>--init-context &lt;path&gt;</code>. The file is a JSON array
+of objects with <code>type</code>, <code>data</code>, and an optional <code>name</code>. Named data is available
+by name; unnamed data is available by type. For example:</p>
+<pre><code class="language-json">[
+  {
+    &quot;name&quot;: &quot;SQLSERVER1&quot;,
+    &quot;type&quot;: &quot;db-connection&quot;,
+    &quot;data&quot;: { &quot;connectionString&quot;: &quot;...&quot; }
+  }
+]
+</code></pre>
+<p>This invokes an externally loaded task with two required positional arguments:</p>
+<pre><code class="language-bash">cog --tasks-dir=. --init-context context.json run-sql SQLSERVER1 &quot;select ...&quot;
+</code></pre>
+<h2 id="cli">CLI</h2>
+<pre><code class="language-bash">cog &lt;command&gt; [args...]
+</code></pre>
+<p>For a list of available commands, run:</p>
+<pre><code class="language-bash">cog --help
+</code></pre>
+<p>List is dynamically generated from the registered tasks.</p>
+<p>There are some global options that can be used with any command:</p>
+<ul>
+<li><code>--loglevel &lt;level&gt;</code> sets the logging level (e.g., trace, debug, info, ...).</li>
+<li><code>--logfile &lt;path&gt;</code> sets the path to the log file.</li>
+<li><code>--tasks-dir &lt;path&gt;</code> loads task modules from a directory. Repeat it to load
+multiple task collections.</li>
+<li><code>--init-context &lt;path&gt;</code> loads initial context data for the invoked task.</li>
+<li><code>--context &lt;path&gt;</code> loads persisted context data when the file exists and
+writes it after every task execution.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/cog/README.md">View source</a>
+  </footer>
+</body>
+</html>

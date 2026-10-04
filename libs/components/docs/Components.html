@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Components · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="components">Components</h1>
+<p>Components in ASLJS are reusable UI building blocks with a clear DOM-facing
+state/update contract.</p>
+<p>Components currently appear in two DOM-facing forms plus shared base classes:</p>
+<ul>
+<li>custom elements built around Lit, for example <code>asljs-list</code></li>
+<li>lightweight provider elements built directly on <code>HTMLElement</code>, for example
+<code>asljs-theme-provider</code></li>
+</ul>
+<p>The component form should follow the runtime need, not a fixed framework rule.</p>
+<p>Some components also share a base class when they truly share the same runtime
+contract. In <code>asljs-components</code>, <code>AssistedInput</code> is the shared Lit base for the
+on-screen keyboard-style controls.</p>
+<h2 id="shared-structure">Shared structure</h2>
+<p>Most ASLJS UI components share the same state and interaction principles.</p>
+<p>Examples in the current package:</p>
+<ul>
+<li><code>asljs-button</code> expose simple explicit inputs for icon/text button content.</li>
+<li><code>AssistedInput</code> owns the shared <code>characters</code> filter plus <code>key</code> and <code>submit</code>
+event contract for the package&#39;s assisted input controls.</li>
+<li><code>asljs-keyboard</code> exposes a fixed QWERTY keyboard surface with a <code>characters</code>
+filter and emitted <code>key</code>/<code>submit</code> events.</li>
+<li><code>asljs-letterpad</code> exposes a fixed alphabetic keypad surface with a
+<code>characters</code> filter, a <code>collapsed</code> state, and emitted <code>key</code>/<code>submit</code> events.</li>
+<li><code>asljs-numpad</code> exposes a fixed keypad surface with a <code>characters</code> filter and
+emitted <code>key</code> events.</li>
+<li><code>asljs-ai-chat</code> exposes chat state directly as custom-element properties plus
+<code>options</code> configuration.</li>
+<li><code>asljs-file</code> accepts <code>provider</code>, <code>handlers</code>, and <code>fileName</code> as explicit
+inputs.</li>
+<li><code>asljs-list</code> accepts <code>items</code>, <code>context</code>, and <code>theme</code> as explicit inputs.</li>
+<li><code>asljs-text-input</code> accepts <code>value</code>, validation, editing mode, and theming as
+explicit inputs while keeping live draft state in an observable status object.</li>
+</ul>
+<p>Binding/composition connects explicit component state to rendered DOM.</p>
+<ul>
+<li>Prefer declarative binding with <code>asljs-data-binding</code> when rendering repeated
+or model-driven DOM.</li>
+<li>Keep interaction flow explicit: DOM event -&gt; property update or emitted event.</li>
+<li>Keep template-driven rendering template-driven. Do not add ad hoc callback
+protocols when a binding context already expresses the relationship.</li>
+</ul>
+<h2 id="choosing-a-component-form">Choosing a component form</h2>
+<p>Use this decision rule.</p>
+<ul>
+<li>If the component needs an HTML tag, property-based configuration, and DOM
+lifecycle hooks, use a custom element.</li>
+<li>If the component mainly provides scoped configuration to descendants, use a
+lightweight provider element.</li>
+</ul>
+<h2 id="general-patterns-to-preserve">General patterns to preserve</h2>
+<p>These patterns already show up across <code>asljs-components</code> and should remain the
+default approach for new work.</p>
+<h3 id="keep-state-explicit-on-the-component">Keep state explicit on the component</h3>
+<ul>
+<li>The component should expose the mutable state needed for initialization.</li>
+<li>Rendering should consume explicit component properties instead of hidden DOM
+state.</li>
+<li>Serialization and persistence should continue to be explicit and testable.</li>
+</ul>
+<h3 id="keep-component-inputs-explicit">Keep component inputs explicit</h3>
+<ul>
+<li>Prefer explicit properties or constructor/factory arguments.</li>
+<li>Avoid hidden global state except where the component is specifically a
+provider or theme boundary.</li>
+<li>If the component depends on ambient context, document the fallback order.</li>
+</ul>
+<h3 id="prefer-declarative-rowtemplate-rendering">Prefer declarative row/template rendering</h3>
+<p>For collection rendering, prefer slot or template-based rendering plus a bound
+row context.</p>
+<ul>
+<li>Keep row rendering template-driven.</li>
+<li>Keep shared row actions on <code>context</code>.</li>
+<li>Pass row-local values through the bound <code>this</code> context or row fields rather
+than inventing inline call syntax.</li>
+</ul>
+<p><code>asljs-list</code> follows this pattern through <code>template[data-slot]</code> and row bindings
+that expose <code>item</code>, <code>index</code>, <code>first</code>, <code>last</code>, <code>odd</code>, <code>even</code>, <code>count</code>, and
+<code>context</code>.</p>
+<p><code>asljs-text-input</code> follows the same declarative approach for layout override:
+its optional <code>template[data-slot=&quot;template&quot;]</code> can use <code>asljs-data-binding</code>
+expressions, but must preserve <code>[data-role=&quot;control-host&quot;]</code> as the insertion
+point for the actual control element.</p>
+<h3 id="keep-theme-resolution-explicit">Keep theme resolution explicit</h3>
+<p>If a component supports theming, keep the precedence deterministic and local
+overrides authoritative.</p>
+<p><code>asljs-list</code> currently resolves templates in this order:</p>
+<ul>
+<li>local slot template</li>
+<li>per-component theme</li>
+<li>nearest theme provider</li>
+<li>package default theme</li>
+</ul>
+<p><code>asljs-text-input</code> now follows the same precedence for its single template slot.
+The default packaged template uses Bootstrap-style form markup, but the
+component contract is still template-driven rather than CSS-framework-specific.</p>
+<h3 id="clean-up-subscriptions-and-listeners">Clean up subscriptions and listeners</h3>
+<p>Components that subscribe to observable state or DOM events must clean up those
+links when detached or replaced.</p>
+<ul>
+<li>Lit custom elements should dispose subscriptions in <code>disconnectedCallback()</code>.</li>
+<li>Rebinding logic should tear down previous subscriptions before attaching new
+ones.</li>
+</ul>
+<h2 id="current-asljs-components-alignment">Current <code>asljs-components</code> alignment</h2>
+<p>The current package is aligned with this broader guide.</p>
+<h3 id="asljs-list"><code>asljs-list</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>items</code>, <code>context</code>, <code>theme</code></li>
+<li>Rendering model: slot-template and theme-template driven</li>
+<li>Binding: <code>asljs-data-binding</code></li>
+</ul>
+<h3 id="asljs-file"><code>asljs-file</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>provider</code>, <code>handlers</code>, <code>fileName</code></li>
+<li>Rendering model: first-matching handler selected from ordered file handlers</li>
+<li>Binding/composition: provider abstraction plus handler-specific rendering</li>
+</ul>
+<h3 id="asljs-text-input"><code>asljs-text-input</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>value</code>, <code>label</code>, <code>description</code>, <code>validator</code>, <code>multiline</code>,
+<code>enterKeyBehavior</code>, <code>autoExtend</code>, <code>autoExtendMaxRows</code>, <code>theme</code></li>
+<li>Rendering model: one control host plus an overridable bound template</li>
+<li>Binding/composition: observable status object plus explicit <code>input</code> and
+<code>change</code> events carrying draft-state details</li>
+</ul>
+<h3 id="asljs-button-asljs-button-add-and-asljs-button-delete"><code>asljs-button</code>, <code>asljs-button-add</code>, and <code>asljs-button-delete</code></h3>
+<ul>
+<li>Form: Lit custom elements</li>
+<li>State surface: <code>icon</code>, <code>text</code>, <code>disabled</code>, <code>type</code></li>
+<li>Rendering model: simple icon-plus-text button content</li>
+<li>Composition rule: specialized variants inherit the base API and set default
+text values plus themed icon fallbacks</li>
+</ul>
+<h3 id="assistedinput"><code>AssistedInput</code></h3>
+<ul>
+<li>Form: shared Lit base class, not a standalone custom element</li>
+<li>State surface: <code>characters</code></li>
+<li>Rendering model: concrete subclasses provide layout-specific button grids</li>
+<li>Interaction contract: centralizes <code>key</code> and <code>submit</code> dispatch plus shared
+button filtering behavior</li>
+</ul>
+<h3 id="asljs-numpad"><code>asljs-numpad</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>characters</code></li>
+<li>Rendering model: fixed numeric/operator keypad layout</li>
+<li>Interaction contract: extends <code>AssistedInput</code> and emits bubbling <code>key</code> events
+with the selected logical key value</li>
+</ul>
+<h3 id="asljs-keyboard"><code>asljs-keyboard</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>characters</code></li>
+<li>Rendering model: fixed QWERTY keyboard layout</li>
+<li>Interaction contract: extends <code>AssistedInput</code> and emits bubbling <code>key</code> events
+plus a bubbling <code>submit</code> event for Enter</li>
+</ul>
+<h3 id="asljs-letterpad"><code>asljs-letterpad</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: <code>characters</code>, <code>collapsed</code></li>
+<li>Rendering model: fixed alphabetic keypad layout with a collapse toggle</li>
+<li>Interaction contract: extends <code>AssistedInput</code> and emits bubbling <code>key</code> events
+plus a bubbling <code>submit</code> event for Enter</li>
+</ul>
+<p>If an application wants Bootstrap icon markup for the add/delete variants,
+prefer the shared preset helper instead of repeating theme literals at each call
+site.</p>
+<h3 id="asljs-theme-provider"><code>asljs-theme-provider</code></h3>
+<ul>
+<li>Form: lightweight <code>HTMLElement</code> provider</li>
+<li>State surface: <code>theme</code></li>
+<li>Responsibility: provide themed defaults to descendant components</li>
+</ul>
+<h3 id="asljs-ai-chat"><code>asljs-ai-chat</code></h3>
+<ul>
+<li>Form: Lit custom element</li>
+<li>State surface: explicit chat properties on the element (<code>messages</code>,
+<code>promptDraft</code>, and related state fields) plus <code>options</code></li>
+<li>Rendering model: custom-element rendering driven directly by those properties</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Components.md">View source</a>
+  </footer>
+</body>
+</html>

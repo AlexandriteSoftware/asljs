@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Button · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="button">Button</h1>
+<p><code>asljs-button</code> is a reusable icon-plus-text button.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>icon</code> — the icon markup, as an HTML string</li>
+<li><code>text</code> — the visible label</li>
+<li><code>variant</code> — selects theme-provided defaults, such as <code>add</code>, <code>delete</code> or
+<code>settings</code>; also settable as the <code>variant</code> attribute</li>
+<li><code>buttonClassName</code> — a class for the inner native button, for host CSS</li>
+<li><code>type</code> — <code>button</code>, <code>submit</code> or <code>reset</code></li>
+<li><code>disabled</code></li>
+</ul>
+<p><code>asljs-button</code> is the only button element: variants are configured through
+<code>variant</code> and theme data rather than separate custom elements.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const button =
+  document.createElement(&#39;asljs-button&#39;) as HTMLElement &amp; {
+    variant: string;
+    icon: string;
+    text: string;
+    disabled: boolean;
+    type: &#39;button&#39; | &#39;submit&#39; | &#39;reset&#39;;
+  };
+
+button.variant = &#39;add&#39;;
+button.type = &#39;button&#39;;
+button.disabled = false;
+</code></pre>
+<h2 id="variants">Variants</h2>
+<p>The package default theme provides built-in variants:</p>
+<ul>
+<li><code>variant=&quot;add&quot;</code> -&gt; <code>U+F26E</code> and <code>Add</code></li>
+<li><code>variant=&quot;delete&quot;</code> -&gt; <code>U+F5DE</code> and <code>Delete</code></li>
+<li><code>variant=&quot;settings&quot;</code> -&gt; <code>U+F3E5</code> and <code>Settings</code></li>
+</ul>
+<p>Display defaults are resolved in this order: explicit <code>icon</code>, <code>text</code> and
+<code>buttonClassName</code>, then the selected <code>button.variants.&lt;name&gt;</code> theme entry, then
+the base <code>button</code> theme, then the package default theme. Explicit values always
+win.</p>
+<h2 id="bootstrap-icons">Bootstrap icons</h2>
+<p>Bootstrap-style icon markup comes from theme configuration rather than being
+hard-coded into the component:</p>
+<pre><code class="language-ts">import {
+    createBootstrapTheme,
+    setDefaultTheme,
+  } from &#39;asljs-components&#39;;
+
+setDefaultTheme(
+  createBootstrapTheme());
+</code></pre>
+<p><code>createBootstrapTheme()</code> supplies Bootstrap icon markup and labels for the
+<code>add</code>, <code>delete</code> and <code>settings</code> variants. See <a href="Theming.html">Theming</a>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Button.md">View source</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API reference · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="api-reference">API reference</h1>
+<h2 id="purpose">Purpose</h2>
+<p>The complete public surface of <code>asljs-eventful</code>: what each export does, what it
+returns, when it refuses, and what happens when a listener throws.</p>
+<h2 id="package-exports">Package exports</h2>
+<p>The package root exports:</p>
+<ul>
+<li><code>eventful</code></li>
+<li><code>EventfulBase</code></li>
+<li><code>isEventfulLike</code>, <code>asEventfulLike</code></li>
+<li><code>ListenerError</code></li>
+<li><code>instanceId</code>, <code>getCurrentMessageContext</code>, <code>runInMessageContext</code></li>
+<li>TypeScript types: <code>EventfulLike</code>, <code>EventName</code>, <code>EventMap</code>, <code>Eventful</code>,
+<code>EventfulFactory</code>, <code>EventfulFn</code>, <code>EventfulOptions</code>, <code>GlobalEvents</code>,
+<code>Listener</code>, <code>ListenerErrorArgs</code>, <code>MessageContext</code>, <code>ErrorFn</code> and <code>TraceFn</code></li>
+</ul>
+<p><code>instanceId</code>, the message context functions and the package-level global emitter
+are covered in <a href="global-events.html">global-events.md</a>. Typing patterns are covered
+in <a href="typescript.html">typescript.md</a>.</p>
+<h2 id="stable-behavior">Stable behavior</h2>
+<p>These behaviors are part of the supported contract, not just current examples:</p>
+<ul>
+<li><code>eventful</code> adds <code>on</code>, <code>once</code>, <code>off</code>, <code>emit</code>, <code>emitAsync</code>, <code>has</code>,
+<code>removeAllListeners</code> and <code>getListeners</code></li>
+<li><code>eventful</code> also acts as a package-level global emitter</li>
+<li>strict mode propagates listener errors</li>
+<li>non-strict mode isolates listener failures through the configured error path;
+a failure that no <code>error</code> hook and no package-level <code>error</code> listener consumed
+is rethrown from a microtask, so it surfaces as an unhandled error instead of
+disappearing</li>
+<li>a listener subscribed or removed during <code>emit</code> takes effect on the next emit,
+not the one in progress</li>
+<li><code>ListenerError</code> protects against recursive failures in global error handling</li>
+</ul>
+<h2 id="eventfultarget-options">eventful([target], [options])</h2>
+<p>Adds event methods to <code>target</code> and returns it. If no target is provided, a new
+empty object is created.</p>
+<ul>
+<li><code>target</code> (Object | Function): The object to be enhanced.</li>
+<li><code>options</code> (Object): Configuration options.<ul>
+<li><code>error</code> (Function | null): Optional error hook called with <code>{ error, object, event, listener }</code>.</li>
+<li><code>trace</code> (Function | null): Optional trace hook called with <code>(action, payload)</code>. See <a href="global-events.html">global-events.md</a> for the actions and
+payloads.</li>
+<li><code>strict</code> (Boolean): If true, propagates listener errors; otherwise they are
+isolated. Defaults to false.</li>
+</ul>
+</li>
+</ul>
+<p>Refuses, leaving the target untouched, when:</p>
+<ul>
+<li>the target is neither an object nor a function (<code>TypeError: Expect an object or a function.</code>)</li>
+<li>the target cannot take new properties, because it is frozen, sealed or had
+extensions prevented (<code>TypeError: Expect an extensible object or function, but the object is frozen.</code>)</li>
+<li>the target already has one of the methods that would be added (<code>Error: Method &quot;on&quot; already exists.</code>)</li>
+</ul>
+<h2 id="eventfulbaseoptions">EventfulBase([options])</h2>
+<p>A base class whose constructor calls <code>eventful(this, options)</code>. Takes the same
+options as <code>eventful</code>. In TypeScript, pass the event map as the type argument:
+<code>class Counter extends EventfulBase&lt;CounterEvents&gt;</code>.</p>
+<h2 id="methods">Methods</h2>
+<h3 id="onevent-listener">on(event, listener)</h3>
+<p>Registers a listener for the specified event.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+<li><code>listener</code> (Function): The callback function to be invoked when the event is
+emitted.</li>
+</ul>
+<p>Returns a function to remove the listener.</p>
+<h3 id="onceevent-listener">once(event, listener)</h3>
+<p>Registers a one-time listener for the specified event. The listener is removed
+after its first invocation.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+<li><code>listener</code> (Function): The callback function to be invoked when the event is
+emitted.</li>
+</ul>
+<p>Returns a function to remove the listener.</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const obj = eventful();
+
+obj.once(
+  &#39;tick&#39;,
+  n =&gt; console.log(&#39;first only&#39;, n)
+);
+
+obj.emit(&#39;tick&#39;, 1); // logs
+obj.emit(&#39;tick&#39;, 2); // no-op; already unsubscribed
+
+// Output:
+// first only 1
+</code></pre>
+<h3 id="offevent-listener">off(event, [listener])</h3>
+<p>Removes a listener for the specified event. A listener registered with <code>once</code> is
+removed by passing the same function that was given to <code>once</code>.</p>
+<p>Called without a listener, removes every listener of that event.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+<li><code>listener</code> (Function, optional): The callback function to be removed. Omit to
+remove all listeners of the event.</li>
+</ul>
+<p>Returns <code>true</code> if a listener was removed, otherwise <code>false</code>.</p>
+<p>The bulk form removes listeners other code registered, not only your own. Use it
+on an object you own. To detach from an object you were handed, call the
+unsubscribe function that <code>on</code> returned.</p>
+<h3 id="emitevent-args">emit(event, ...args)</h3>
+<p>Emits the specified event, invoking all registered listeners with the provided
+arguments. The listener set is captured before dispatch, so subscribing or
+unsubscribing from inside a listener affects the next emit rather than the one
+in progress.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+<li><code>...args</code> (Any): Arguments to pass to the listeners.</li>
+</ul>
+<p>Returns <code>true</code> if the event had at least one listener, otherwise <code>false</code>.</p>
+<h3 id="emitasyncevent-args">emitAsync(event, ...args)</h3>
+<p>Emits the specified event asynchronously, running listeners in parallel. In
+non-strict mode, all listeners run and rejections are isolated; in strict mode,
+the first rejection causes the returned promise to reject.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+<li><code>...args</code> (Any): Arguments to pass to the listeners.</li>
+</ul>
+<p>Returns a Promise that resolves when all listeners have been invoked. The
+resolved value is <code>true</code> if the event had at least one listener, otherwise
+<code>false</code>.</p>
+<h3 id="hasevent">has(event)</h3>
+<p>Checks if there are any listeners registered for the specified event.</p>
+<ul>
+<li><code>event</code> (String | Symbol): The event name.</li>
+</ul>
+<p>Returns <code>true</code> if there are listeners, otherwise <code>false</code>.</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const obj = eventful();
+
+const off = obj.on(&#39;e&#39;, () =&gt;
+{});
+
+console.log(obj.has(&#39;e&#39;));
+off();
+console.log(obj.has(&#39;e&#39;));
+
+// Output:
+// true
+// false
+</code></pre>
+<h3 id="removealllisteners">removeAllListeners()</h3>
+<p>Removes every listener of every event. Returns <code>true</code> if any were removed.</p>
+<p>Intended for an object you own and are discarding: dropping the listeners in one
+step releases whatever their closures hold, and stops an emit that is still in
+flight from reaching a subscriber that has already been torn down.</p>
+<pre><code>class Machine
+{
+  dispose()
+  {
+    for (const state of this.states) {
+      state.removeAllListeners();
+    }
+
+    this.removeAllListeners();
+  }
+}
+</code></pre>
+<p>On an object you did not create, unsubscribe your own listeners instead. This
+removes everyone&#39;s.</p>
+<h3 id="getlisteners">getListeners()</h3>
+<p>Returns a snapshot of what is currently subscribed: a <code>Map</code> from each event that
+has listeners to an array of those listeners, in the order they were added.</p>
+<p>The map and its arrays are copies, so changing them changes nothing. A listener
+registered with <code>once</code> appears as the function you passed to <code>once</code>, not as the
+wrapper that removes it.</p>
+<pre><code>const counts = [...obj.getListeners()].map(
+  ([event, listeners]) =&gt; `${String(event)}: ${listeners.length}`
+);
+
+// [ &#39;set: 12&#39;, &#39;delete: 12&#39;, &#39;define: 12&#39; ]
+</code></pre>
+<p>Twelve listeners on an event nobody expected twelve subscribers for is the
+signature of subscriptions that were never removed. The function identities name
+the culprit: the same handler appearing many times is one subscriber that
+re-subscribed without detaching.</p>
+<p>The snapshot holds every listener, and so everything those closures hold. Read
+it and drop it; keeping it alive keeps them alive.</p>
+<p>For two worked recipes built on this and on the global event stream, an
+in-flight guard and a snapshot inspector, see
+<a href="leak-detection.html">leak-detection.md</a>.</p>
+<h2 id="listener-errors">Listener errors</h2>
+<p>By default a listener that throws does not stop the emit: the remaining
+listeners still run, and the failure is reported.</p>
+<p>Custom error handler for listener errors:</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const obj = eventful(
+  {},
+  {
+    error: ({ error, object, event, listener }) =&gt;
+    {
+      console.error(
+        `Error in listener for event &quot;${event}&quot;`,
+        error
+      );
+    }
+  }
+);
+</code></pre>
+<p>Every listener failure is also emitted as a package-level <code>error</code> event, see
+<a href="global-events.html">global-events.md</a>.</p>
+<p>A failure that neither an <code>error</code> hook nor a package-level <code>error</code> listener
+consumed is rethrown from a microtask, so it surfaces as an unhandled error
+instead of disappearing.</p>
+<p>Strict mode propagates listener errors. <code>emit</code> rethrows the first listener
+error, and the listeners after it do not run. <code>emitAsync</code> rejects with the first
+rejection. The <code>error</code> hook and the package-level <code>error</code> event still receive
+the failure before it propagates:</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const obj = eventful(
+  {},
+  { strict: true }
+);
+</code></pre>
+<h2 id="compatibility-checks">Compatibility checks</h2>
+<ul>
+<li><code>isEventfulLike(value)</code> returns <code>true</code> when <code>value</code> is an object or function
+with an <code>on</code> method. It checks shape only, so any emitter with a compatible
+<code>on</code> passes.</li>
+<li><code>asEventfulLike(value)</code> returns <code>value</code> typed as <code>EventfulLike</code> when it passes
+that check, otherwise <code>undefined</code>.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/eventful/docs/api.md">View source</a>
+  </footer>
+</body>
+</html>

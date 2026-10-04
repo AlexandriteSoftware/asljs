@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text Input · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="text-input">Text Input</h1>
+<p><code>asljs-text-input</code> is a labelled text field or textarea with validation.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>value</code> — the external set/reset value</li>
+<li><code>label</code></li>
+<li><code>description</code></li>
+<li><code>placeholder</code></li>
+<li><code>validator</code> — returns an error message or <code>null</code></li>
+<li><code>multiline</code> — renders a textarea instead of an input</li>
+<li><code>enterKeyBehavior</code> — <code>finish</code> or <code>newline</code></li>
+<li><code>autoExtend</code> and <code>autoExtendMaxRows</code> — textarea growth</li>
+<li><code>theme</code></li>
+<li>local <code>template[data-slot=&quot;template&quot;]</code>, <code>template[data-slot=&quot;input&quot;]</code> and
+<code>template[data-slot=&quot;textarea&quot;]</code></li>
+</ul>
+<p><code>value</code> is a set/reset input, not the live draft. User edits are kept in
+<code>draftValue</code>, reflected in the observable <code>status</code> object, and emitted through
+<code>input</code> and <code>change</code> events whose detail reports the draft value, validity and
+dirty state. Listen for those events and decide whether to persist or reset.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const textInput =
+  document.createElement(&#39;asljs-text-input&#39;) as HTMLElement &amp; {
+    label: string | null;
+    description: string | null;
+    value: string | null;
+    placeholder: string | null;
+    validator: ((value: string) =&gt; string | null) | null;
+    multiline: boolean;
+    enterKeyBehavior: &#39;finish&#39; | &#39;newline&#39;;
+    autoExtend: boolean;
+    autoExtendMaxRows: number | null;
+  };
+
+textInput.label = &#39;Summary&#39;;
+textInput.description = &#39;Ctrl+Enter always finishes editing.&#39;;
+textInput.placeholder = &#39;Write a short summary&#39;;
+textInput.multiline = true;
+textInput.enterKeyBehavior = &#39;newline&#39;;
+textInput.autoExtend = true;
+textInput.autoExtendMaxRows = 8;
+textInput.validator =
+  value =&gt; value.trim() === &#39;&#39;
+    ? &#39;Summary is required.&#39;
+    : null;
+textInput.value = &#39;Initial text&#39;;
+
+textInput.addEventListener(
+  &#39;change&#39;,
+  event =&gt; {
+    const detail =
+      (event as CustomEvent&lt;{
+        value: string;
+        isValid: boolean;
+      }&gt;).detail;
+
+    console.log(detail.value, detail.isValid);
+  });
+</code></pre>
+<h2 id="template-overrides">Template overrides</h2>
+<p>Provide a local <code>template[data-slot=&quot;template&quot;]</code> when the layout must differ
+from the Bootstrap-oriented default. The template can use any supported
+<code>asljs-data-binding</code> attributes, but it must include
+<code>[data-role=&quot;control-host&quot;]</code> so the component can mount the actual <code>input</code> or
+<code>textarea</code>.</p>
+<pre><code class="language-html">&lt;asljs-text-input&gt;
+  &lt;template data-slot=&quot;template&quot;&gt;
+    &lt;div class=&quot;editor-field&quot;&gt;
+      &lt;div data-role=&quot;control-host&quot;&gt;&lt;/div&gt;
+      &lt;small data-bind-text=&quot;description&quot;
+             data-bind-prop-hidden=&quot;hideDescription&quot;&gt;&lt;/small&gt;
+      &lt;div class=&quot;error&quot;
+           data-bind-text=&quot;errorMessage&quot;
+           data-bind-prop-hidden=&quot;hideError&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/asljs-text-input&gt;
+</code></pre>
+<p>Provide <code>template[data-slot=&quot;input&quot;]</code> or <code>template[data-slot=&quot;textarea&quot;]</code> when
+the native control markup itself must come from the local component or theme.
+The slot must include the matching native control element, but wrapper markup
+around it is allowed. Control templates can also use <code>asljs-data-binding</code>
+attributes, for example to place validation feedback next to the real control.</p>
+<pre><code class="language-html">&lt;asljs-text-input&gt;
+  &lt;template data-slot=&quot;input&quot;&gt;
+    &lt;div class=&quot;field-shell&quot;&gt;
+      &lt;input class=&quot;field-control&quot;
+             data-control-invalid-class=&quot;field-control-invalid&quot;&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/asljs-text-input&gt;
+</code></pre>
+<p>Themes can supply the same templates; see <a href="Theming.html">Theming</a>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Text%20Input.md">View source</a>
+  </footer>
+</body>
+</html>

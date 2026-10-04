@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Properties · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="properties">Properties</h1>
+<p><code>asljs-properties</code> renders an editor form for the editable properties of a
+component, from its model definition.</p>
+<h2 id="model-definitions">Model definitions</h2>
+<p>The package exports a runtime model definition for each public component, such
+as <code>TextInputModelDefinition</code> and <code>ButtonModelDefinition</code>. Each definition&#39;s
+<code>properties</code> array describes the component&#39;s runtime-visible properties, and
+each entry has:</p>
+<ul>
+<li><code>name</code></li>
+<li><code>type</code></li>
+<li>optional <code>title</code></li>
+<li>optional <code>description</code></li>
+<li>optional <code>editable</code></li>
+</ul>
+<p>The definitions can be used directly or passed to <code>asljs-properties</code>.</p>
+<pre><code class="language-ts">import {
+    TextInputModelDefinition,
+  } from &#39;asljs-components&#39;;
+
+console.log(
+  TextInputModelDefinition.properties);
+</code></pre>
+<h2 id="the-editor">The editor</h2>
+<ul>
+<li>String and number properties use <a href="Text%20Input.html"><code>asljs-text-input</code></a>.</li>
+<li>Boolean properties use <a href="Select.html"><code>asljs-select</code></a> with <code>Yes</code> and <code>No</code>.</li>
+<li>Object, array, function and read-only values are shown as read-only fields,
+and the editor does not change them.</li>
+</ul>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+import {
+    ButtonModelDefinition,
+  } from &#39;asljs-components&#39;;
+
+const button =
+  document.createElement(&#39;asljs-button&#39;);
+const properties =
+  document.createElement(&#39;asljs-properties&#39;) as HTMLElement &amp; {
+    definition: unknown;
+    target: object | null;
+  };
+
+properties.definition = ButtonModelDefinition;
+properties.target = button;
+</code></pre>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Properties.md">View source</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="file">File</h1>
+<p><code>asljs-file</code> (<code>FileView</code>) renders one file through an ordered list of display
+handlers.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>provider</code> — <code>provider.loadFile(fileName)</code> returns normalized file data;
+<code>provider.saveText(...)</code> persists edits when text editing is used</li>
+<li><code>handlers</code> — ordered from most specific to most general</li>
+<li><code>fileName</code> — the file to show</li>
+</ul>
+<p>The component asks the handlers in order whether they can display the file, and
+the first match renders it. The component itself does not hard-code file types:
+those decisions belong to the handlers, and providers abstract file lookup and
+optional text persistence.</p>
+<h2 id="handlers">Handlers</h2>
+<p>The package provides these handler factories:</p>
+<ul>
+<li><code>createPdfFileHandler()</code></li>
+<li><code>createImageFileHandler()</code></li>
+<li><code>createTextFileHandler()</code></li>
+<li><code>createTextEditorFileHandler()</code></li>
+</ul>
+<p>If no handler matches, the component shows fallback &quot;Preview unavailable&quot;
+content, and an Open link when blob or data-url content is available.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+import {
+    createImageFileHandler,
+    createPdfFileHandler,
+    createTextFileHandler,
+  } from &#39;asljs-components&#39;;
+
+const fileView =
+  document.createElement(&#39;asljs-file&#39;) as HTMLElement &amp; {
+    provider: {
+      loadFile: (fileName: string) =&gt; Promise&lt;unknown&gt;;
+    } | null;
+    handlers: unknown[];
+    fileName: string | null;
+  };
+
+fileView.provider =
+  { loadFile: async (fileName: string) =&gt; {
+      if (fileName === &#39;invoice.pdf&#39;) {
+        return {
+          name: &#39;invoice.pdf&#39;,
+          blob: new Blob([ &#39;pdf&#39; ], { type: &#39;application/pdf&#39; }),
+        };
+      }
+
+      return {
+        name: fileName,
+        text: &#39;No content&#39;,
+      };
+    } };
+
+fileView.handlers =
+  [ createPdfFileHandler(),
+    createImageFileHandler(),
+    createTextFileHandler() ];
+
+fileView.fileName = &#39;invoice.pdf&#39;;
+</code></pre>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/File.md">View source</a>
+  </footer>
+</body>
+</html>

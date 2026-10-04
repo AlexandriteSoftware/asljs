@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>performance · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="performance">performance</h1>
+<h2 id="purpose">Purpose</h2>
+<p>The converter trades speed for convenience. <code>observable(value)</code> makes existing
+data report its changes with one call, which suits prototypes, UI state, and
+small to medium models. It is not a substitute for a data structure designed for
+its task, and it does not try to be fast.</p>
+<p>This page states what the converter costs and how to build the part of a model
+that has to perform. No figures are given, because none are measured: the cost
+is accepted by design, not a target to tune.</p>
+<h2 id="what-the-converter-costs">What the converter costs</h2>
+<ul>
+<li>Every read and write of a converted object or array goes through a <code>Proxy</code>.</li>
+<li>On an array, every string-keyed read also pays a <code>Map</code> lookup, indices and
+<code>length</code> included, because the <code>get</code> trap has to recognise the nine methods it
+wraps. A symbol key, <code>Symbol.iterator</code> included, skips the lookup.</li>
+<li>A reported write reads the property before and after it, to report <code>previous</code>
+and <code>value</code>.</li>
+<li>Every reported change allocates an entry, and outside a <a href="batching.html"><code>batch(fn)</code></a>
+every write is its own notification.</li>
+<li>Conversion is eager and copies. <code>observable(value)</code> copies only the top-level
+value; with <code>deep: true</code> it visits and copies the whole graph it is given,
+checking that every object in it holds plain data.</li>
+<li>Values written later are stored as they are, so a write costs no conversion.</li>
+</ul>
+<p>A loop over a converted array pays all of this per element:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const list = observable([ 1, 2, 3 ]);
+
+let total = 0;
+
+// Two trap calls per iteration: one for `length`, one for the index.
+for (let i = 0; i &lt; list.length; i++) {
+  total += list[i];
+}
+
+console.log(total);
+
+// Output:
+// 6
+</code></pre>
+<h2 id="usage">Usage</h2>
+<p>Keep the converter for the parts of a model where convenience matters, and write
+the hot parts by hand. The contract is small, so a hand-written participant is
+short, and the converter passes one through unchanged.</p>
+<h3 id="write-a-class-with-observableobject">Write a class with <code>ObservableObject</code></h3>
+<p>A class that extends <a href="converter.html#observableobject"><code>ObservableObject</code></a> keeps its state in its own
+fields. Nothing is proxied, and a change is reported only where the class calls
+<code>setAndEmit</code>, <code>emitSet</code> or <code>emitChange</code>.</p>
+<h3 id="write-a-collection-that-reports-splices">Write a collection that reports splices</h3>
+<p>A collection keeps its storage private and reports one <code>splice</code> entry per
+structural edit, rather than a <code>set</code> entry per index. A <code>splice</code> counts as a
+change to every index from <code>index</code> onwards and to <code>length</code>, so a query on
+<code>length</code> follows it without the collection reporting <code>length</code> itself. The
+<a href="contract.html">contract</a> lists what a producer must emit.</p>
+<pre><code class="language-js">import { ObservableObject, observable, observe } from &#39;asljs-observable&#39;;
+
+class NumberList extends ObservableObject {
+  #items = [];
+
+  get length() {
+    return this.#items.length;
+  }
+
+  at(index) {
+    return this.#items[index];
+  }
+
+  sum() {
+    let total = 0;
+
+    for (const item of this.#items) {
+      total += item;
+    }
+
+    return total;
+  }
+
+  push(...values) {
+    const index = this.#items.length;
+
+    this.#items.push(...values);
+
+    this.emitChange([
+      { kind: &#39;splice&#39;, index, removed: [], added: values }
+    ]);
+  }
+}
+
+const numbers = new NumberList();
+
+// A conforming object is passed through, so it can sit inside a converted
+// model and be reached along a path.
+const state = observable({ title: &#39;Readings&#39;, numbers });
+
+console.log(&#39;passed through:&#39;, state.numbers === numbers);
+
+observe(state).at(&#39;numbers.length&#39;).subscribe(length =&gt;
+  console.log(&#39;length&#39;, length));
+
+state.numbers.push(1, 2, 3);
+
+console.log(&#39;sum&#39;, state.numbers.sum());
+
+// Output:
+// passed through: true
+// length 0
+// length 3
+// sum 6
+</code></pre>
+<p>The loop in <code>sum</code> runs over a plain array, so it pays nothing for being
+observable. The <a href="converter.html#the-convert-hook"><code>convert</code> hook</a> is the way to supply such a wrapper for a
+value the converter would otherwise convert or refuse.</p>
+<h3 id="group-writes">Group writes</h3>
+<p>Inside <code>batch(fn)</code> each emitter delivers once, with every write as its own
+entry. On an array, one call that adds many elements is one <code>splice</code> entry,
+while a loop of single-element calls is one entry each:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const list = observable([]);
+
+list.on(&#39;change&#39;, changes =&gt;
+  console.log(&#39;notification, entries:&#39;, changes.length));
+
+list.push(1, 2, 3);
+
+// Output:
+// notification, entries: 1
+</code></pre>
+<h3 id="read-outside-the-proxy">Read outside the proxy</h3>
+<p>Read a converted array into a plain copy with <code>slice()</code> before a tight loop, and
+keep <code>length</code> in a local variable. The copy is a plain array, so the loop pays
+the trap once per element for the copy and nothing afterwards:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const list = observable([ 1, 2, 3 ]);
+
+const items = list.slice();
+
+console.log(&#39;plain copy:&#39;, typeof items.on);
+
+let total = 0;
+
+for (let i = 0, length = items.length; i &lt; length; i++) {
+  total += items[i];
+}
+
+console.log(total);
+
+// Output:
+// plain copy: undefined
+// 6
+</code></pre>
+<h3 id="convert-less">Convert less</h3>
+<p>Leave <code>deep</code> off where nested values are never observed. Only the top-level
+value is copied, and nested objects and arrays are kept by reference.</p>
+<h2 id="constraints">Constraints</h2>
+<ul>
+<li>The <code>get</code> trap is not optimised for speed. A cache keyed on the property, or
+hoisting the wrapped methods onto a prototype, would make the converter more
+complex to remove a cost it accepts. The trap changes only for a correctness
+reason.</li>
+<li>A hand-written participant is responsible for its own reports. The converter
+does not check that a passed-through object conforms beyond <code>on</code> and <code>off</code>,
+and does not report on its behalf.</li>
+</ul>
+<h2 id="edge-cases">Edge cases</h2>
+<ul>
+<li>A conforming object nested in a converted model is not wrapped, so it costs
+what its own implementation costs.</li>
+<li>A value assigned to a member after conversion is stored as it is, so assigning
+a large plain structure costs nothing, and its own changes are not reported
+until it is converted with <code>observable</code> first.</li>
+<li>A <code>slice()</code> copy is a snapshot. It does not follow later changes. With <code>deep: true</code> its elements are still the converted values, so a write to a nested
+object through the copy is reported.</li>
+</ul>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="converter.html">The converter</a> — what <code>observable()</code> converts and reports.</li>
+<li><a href="contract.html">The contract</a> — what a hand-written participant must emit.</li>
+<li><a href="batching.html">Batching and delivery</a> — what groups writes into one notification.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/performance.md">View source</a>
+  </footer>
+</body>
+</html>

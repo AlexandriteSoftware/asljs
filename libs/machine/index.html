@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>machine · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="machine">machine</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> - a set of high-quality and
+performant JavaScript libraries for everyday use.</p>
+</blockquote>
+<p>State machine library for JavaScript.</p>
+<h2 id="public-contract-at-a-glance">Public Contract At A Glance</h2>
+<ul>
+<li>Root export: <code>machine(initial, definition?)</code> or <code>machine(base, initial, definition?)</code></li>
+<li>Public types: <code>Machine</code>, <code>MachineState</code>, <code>MachineTransition</code>, and the
+definition, option, payload, and event types in <code>src/types.ts</code></li>
+<li>A machine is both eventful and observable, with typed events.</li>
+<li>One state is active at a time through <code>machine.state</code>.</li>
+<li>Transitions are named, so <code>machine.send(&#39;start&#39;)</code> drives the machine without
+holding transition objects.</li>
+<li><code>machine.can(&#39;start&#39;)</code> answers whether that event would succeed.</li>
+<li>Every refusal is reported through the <code>rejected</code> event with a reason.</li>
+<li>Transitions are synchronous. Asynchronous work belongs between <code>send</code> calls.</li>
+</ul>
+<h2 id="canonical-example">Canonical Example</h2>
+<pre><code class="language-js">import { machine } from &#39;asljs-machine&#39;;
+
+const light =
+  machine(
+    &#39;red&#39;,
+    { red: { go: &#39;green&#39; },
+      green: { slow: &#39;amber&#39; },
+      amber: { stop: &#39;red&#39; } });
+
+light.on(
+  &#39;transition&#39;,
+  ({ from, to, event }) =&gt; {
+    console.log(`${from.name} -&gt; ${to.name} (${event})`);
+  });
+
+light.can(&#39;go&#39;);    // true
+light.send(&#39;go&#39;);   // true, logs &#39;red -&gt; green (go)&#39;
+light.can(&#39;stop&#39;);  // false, &#39;stop&#39; is not an event of &#39;green&#39;
+light.send(&#39;stop&#39;); // false, emits &#39;rejected&#39; with reason &#39;unknown-event&#39;
+
+light.state.name;     // &#39;green&#39;
+light.previous.name;  // &#39;red&#39;
+</code></pre>
+<h2 id="runtime-model">Runtime Model</h2>
+<ul>
+<li><code>machine(initial, definition?)</code> returns a new machine.</li>
+<li><code>machine(base, initial, definition?)</code> returns the base object extended with
+machine behavior.</li>
+<li><code>machine.state</code> holds the active state, and <code>machine.previous</code> holds the state
+left by the last successful transition, or <code>null</code>.</li>
+<li>Both are observable, so <code>machine.on(&#39;set:state&#39;, …)</code> and
+<code>machine.watch(&#39;state&#39;, …)</code> report every change. <code>watch</code> reports the current
+value first.</li>
+<li><code>machine.send(event)</code> fires the active state&#39;s transition with that name.</li>
+<li><code>machine.go(target)</code> fires the active state&#39;s transition that leads to
+<code>target</code>, named by state name or by state object. It only uses declared
+transitions, so it cannot jump outside the graph.</li>
+<li><code>machine.can(event)</code> and <code>machine.canGo(target)</code> answer whether the call would
+succeed, guards included, without changing anything.</li>
+<li><code>machine.getStates()</code> and <code>state.getTransitions()</code> return copies.</li>
+<li><code>machine.getState(name)</code> and <code>state.getTransition(event)</code> return the object or
+<code>null</code>.</li>
+<li><code>machine.createState(name?, options?)</code> and <code>state.createTransition(to, options?)</code> build the same machine imperatively.</li>
+</ul>
+<h2 id="declaring-a-machine">Declaring A Machine</h2>
+<p>A definition maps each state name to a map of event name to target:</p>
+<pre><code class="language-js">machine(
+  &#39;idle&#39;,
+  { idle: { start: &#39;running&#39; },
+    running:
+      { tick: { to: &#39;running&#39;, reentry: true },
+        finish: &#39;done&#39; },
+    done: null });
+</code></pre>
+<ul>
+<li>A string target is shorthand for <code>{ to: target }</code>.</li>
+<li><code>when</code> is a guard: the transition is refused when it returns <code>false</code>.</li>
+<li><code>reentry: true</code> allows a transition whose target is its own source state.</li>
+<li><code>null</code> in place of the event map declares a final state.</li>
+<li>States are created in definition order, after the initial state.</li>
+<li>A definition that targets an unknown state throws.</li>
+</ul>
+<p>Because the definition is plain data, it can be generated. The example agent
+builds one pipeline state per configured document kind, so adding a pipeline is
+a configuration change rather than a code change.</p>
+<h2 id="guards">Guards</h2>
+<p>A guard receives the transition payload and returns whether the transition may
+run:</p>
+<pre><code class="language-js">const light =
+  machine(
+    &#39;red&#39;,
+    { red:
+        { go:
+            { to: &#39;green&#39;,
+              when: () =&gt; pedestrianWaiting } },
+      green: { stop: &#39;red&#39; } });
+</code></pre>
+<p>Guards run inside <code>can</code>, <code>canGo</code>, and <code>activate</code>, so keep them cheap and free of
+side effects.</p>
+<h2 id="transition-activation">Transition Activation</h2>
+<p>Activation succeeds only when all of the following are true:</p>
+<ul>
+<li>the transition&#39;s source state is the active state</li>
+<li>another transition is not already running</li>
+<li>the source state is not final</li>
+<li>the target is not the source state, unless the transition allows reentry</li>
+<li>the guard, if any, returns true</li>
+</ul>
+<h2 id="rejection">Rejection</h2>
+<p><code>send</code>, <code>go</code>, and <code>activate</code> return <code>false</code> instead of throwing, and emit
+<code>rejected</code> on the transition, when there is one, and then on the machine. The
+payload carries <code>reason</code>, <code>event</code>, <code>from</code>, <code>to</code>, <code>machine</code>, and <code>transition</code>.</p>
+<p>Reasons are:</p>
+<ul>
+<li><code>unknown-event</code> - the active state has no transition with that name</li>
+<li><code>unknown-state</code> - no state with that name belongs to this machine</li>
+<li><code>no-transition</code> - the target exists, but the active state has no transition to
+it</li>
+<li><code>not-active</code> - the transition&#39;s source state is not the active state</li>
+<li><code>in-transition</code> - another transition is already running</li>
+<li><code>final</code> - the source state is final</li>
+<li><code>self-transition</code> - source and target are the same and reentry was not
+requested</li>
+<li><code>guard</code> - the guard returned false</li>
+</ul>
+<h2 id="event-order">Event Order</h2>
+<p>When activation succeeds, the contract order is:</p>
+<ol>
+<li>transition <code>activating</code></li>
+<li>source state <code>leaving</code></li>
+<li>machine <code>set:previous</code></li>
+<li>machine <code>set:state</code></li>
+<li>target state <code>entered</code></li>
+<li>transition <code>completed</code></li>
+<li>machine <code>transition</code></li>
+</ol>
+<p>Steps 3 and 4 are the observable property updates, so listeners such as
+<code>set:state</code> and <code>watch(&#39;state&#39;, …)</code> run as part of the transition flow.</p>
+<h2 id="asynchronous-work">Asynchronous Work</h2>
+<p>Transitions are synchronous: the machine never awaits a listener. Run
+asynchronous work between transitions, and let each result send the next event:</p>
+<pre><code class="language-js">if (agent.send(&#39;step&#39;)) {
+  await runStep();
+  agent.send(&#39;done&#39;);
+}
+</code></pre>
+<p>That keeps <code>machine.state</code> an accurate answer to &quot;what is happening right now&quot;,
+which a transition that awaited its listeners could not provide.</p>
+<h2 id="safe-usage-rules">Safe Usage Rules</h2>
+<ul>
+<li>Prefer a definition over imperative wiring, and name every transition that
+something outside the machine has to trigger.</li>
+<li>Drive enablement from <code>can</code> and <code>canGo</code> instead of from separate flags.</li>
+<li>Subscribe to <code>rejected</code> while developing; a silent <code>false</code> is usually a guard
+or a missing event name.</li>
+<li>Use this package for control-flow state transitions, not as a general app
+state store.</li>
+</ul>
+<h2 id="example">Example</h2>
+<p><code>examples/document-agent.ts</code> is a folder-monitoring document agent whose entire
+control flow is one machine: it polls, classifies each document, routes it to a
+preconfigured pipeline, walks the pipeline steps, and returns to idle through a
+completed, failed, or discarded state. Run it with:</p>
+<pre><code>npm -w asljs-machine run example
+</code></pre>
+<h2 id="what-not-to-assume">What Not To Assume</h2>
+<ul>
+<li>Do not assume hierarchical statecharts.</li>
+<li>Do not assume parallel states.</li>
+<li>Do not assume transitions can target states from another machine.</li>
+<li>Do not assume a self-transition activates without <code>reentry</code>.</li>
+<li>Do not assume a final state can be left.</li>
+<li>Do not assume <code>machine.state</code> can be assigned; use <code>send</code> or <code>go</code>.</li>
+<li>Do not assume <code>getStates()</code> or <code>getTransitions()</code> return live collections.</li>
+</ul>
+<h2 id="related-packages">Related Packages</h2>
+<ul>
+<li>For generic event APIs, see <code>asljs-eventful</code>.</li>
+<li>For observable property watching, see <code>asljs-observable</code>.</li>
+<li>Use <code>asljs-machine</code> for transition-based control flow rather than as a
+general-purpose state container.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/machine/README.md">View source</a>
+  </footer>
+</body>
+</html>

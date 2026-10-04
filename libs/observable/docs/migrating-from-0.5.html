@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Migrating from 0.5 · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="migrating-from-05">Migrating from 0.5</h1>
+<h2 id="purpose">Purpose</h2>
+<p>0.6 is one major release with no deprecation path. The package was three things
+fused into one entry point — a contract, a query, and a converter — and this
+release separates them. Nothing about the event model survives unchanged.</p>
+<p>This page lists what breaks and what to replace it with.</p>
+<h2 id="the-event-model">The event model</h2>
+<p>Every <code>set</code>, <code>set:&lt;property&gt;</code>, <code>delete</code>, <code>delete:&lt;property&gt;</code>, <code>define</code> and
+<code>define:&lt;property&gt;</code> listener is replaced by one <code>change</code> event carrying a list
+of entries.</p>
+<p>Before:</p>
+<pre><code>model.on(&#39;set:name&#39;, ({ value, previous }) =&gt; { ... });
+model.on(&#39;set&#39;, ({ property, value, previous }) =&gt; { ... });
+model.on(&#39;delete&#39;, ({ property, previous }) =&gt; { ... });
+</code></pre>
+<p>After:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ name: &#39;Alice&#39; });
+
+model.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    if (change.kind !== &#39;set&#39;) {
+      continue;
+    }
+
+    console.log(change.property, change.previous, &#39;-&gt;&#39;, change.value);
+  }
+});
+
+model.name = &#39;Bob&#39;;
+
+delete model.name;
+
+// Output:
+// name Alice -&gt; Bob
+// name Bob -&gt; undefined
+</code></pre>
+<p>Consequences to check in your own code:</p>
+<ul>
+<li><strong>Payloads changed.</strong> An array index change loses its numeric <code>index</code> field
+and becomes a string <code>property</code>. <code>define</code> payloads are gone entirely.</li>
+<li><strong>Removal is a set to <code>undefined</code>.</strong> There is no delete event, so a consumer
+can no longer distinguish a deleted key from one present and undefined, nor an
+array hole from an <code>undefined</code> element.</li>
+<li><strong>Descriptor observation is gone.</strong> Flag-only changes, and installing a setter
+with no getter, are not reported at all. A definition that changes the
+observed value is reported as a <code>set</code>.</li>
+<li><strong>Notification counts changed.</strong> An array method call is one notification
+instead of N, and it usually carries a <code>splice</code> entry rather than per-index
+<code>set</code> entries.</li>
+<li><strong>Deleted properties are now watched.</strong> A query of <code>&#39;user.name&#39;</code> re-runs when
+<code>name</code> is deleted, where <code>watch</code> previously did not.</li>
+</ul>
+<p>See <a href="contract.html">the contract</a> for the entry shapes and the rules a consumer has to
+apply.</p>
+<h2 id="watch-is-gone"><code>watch</code> is gone</h2>
+<p>All three entry points are removed: the method injected into every converted
+object, <code>observable.watch</code>, and <code>ObservableObject.prototype.watch</code>. Use
+<code>observe(source)</code>.</p>
+<p>Before:</p>
+<pre><code>state.watch(&#39;user.name&#39;, name =&gt; { ... });
+state.watch([ &#39;user.name&#39;, &#39;active&#39; ], (name, active) =&gt; { ... });
+observable.watch(state, &#39;user.name&#39;, name =&gt; { ... });
+</code></pre>
+<p>After:</p>
+<pre><code class="language-js">import { combine, observable, observe } from &#39;asljs-observable&#39;;
+
+const state = observable(
+  { user: { name: &#39;Alice&#39; }, active: false },
+  { deep: true });
+
+observe(state).at(&#39;user.name&#39;).subscribe(name =&gt; console.log(&#39;name&#39;, name));
+
+combine([
+  observe(state).at(&#39;user.name&#39;),
+  observe(state).at(&#39;active&#39;)
+]).subscribe(([ name, active ]) =&gt; console.log(&#39;both&#39;, name, active));
+
+state.user.name = &#39;Bob&#39;;
+
+// Output:
+// name Alice
+// both Alice false
+// name Bob
+// both Bob false
+</code></pre>
+<p>Two behaviour changes come with it:</p>
+<ul>
+<li><strong>A plain root throws.</strong> <code>observe()</code> refuses a source that does not conform,
+where <code>watch</code> used to call back once with a snapshot and fall silent. The
+message names the fix: wrap it with <code>observable()</code>.</li>
+<li><strong>Arrays are queryable.</strong> <code>watch</code> threw for any array target. <code>observe(array)</code>
+and <code>at(&#39;items.0.name&#39;)</code> both work.</li>
+</ul>
+<p>See <a href="query.html">the query</a> for the operators and the deduplication rules.</p>
+<h2 id="conversion-is-single-level-by-default">Conversion is single-level by default</h2>
+<p>0.5 converted nested plain objects and arrays by default, and took <code>shallow: true</code> to convert only the top-level value. <code>shallow</code> is gone: conversion is
+single-level by default, and <code>deep: true</code> restores the old default.</p>
+<p>Before:</p>
+<pre><code>observable(model);
+observable(model, { shallow: true });
+</code></pre>
+<p>After:</p>
+<pre><code>observable(model, { deep: true });
+observable(model);
+</code></pre>
+<p>A model whose nested members are observed, queried along a path below the root,
+or relied on to be refused when unsupported needs <code>deep: true</code>. The <code>convert</code>
+hook is consulted for nested values only under <code>deep: true</code>.</p>
+<h2 id="observable-returns-a-copy"><code>observable</code> returns a copy</h2>
+<p>0.5 added the Eventful API to the object it was given and returned a proxy over
+it, so the original and the result were one object. 0.6 creates a new observable
+version and leaves the original untouched. Consequences to check:</p>
+<ul>
+<li><strong>The original no longer changes.</strong> Writes through the result do not reach it,
+and writes to it do not reach the result. Values held by reference, such as a
+nested object without <code>deep: true</code>, are still shared.</li>
+<li><strong>Separate calls give separate observables.</strong> <code>observable(x) === observable(x)</code> is <code>false</code>. Within one call, an object reached twice becomes
+one observable.</li>
+<li><strong>Cycles throw under <code>deep: true</code></strong>, naming the path, instead of converging.</li>
+<li><strong>An observable or emitter passed as the top-level value throws.</strong> Nested, it
+is kept by reference as before.</li>
+<li><strong>Values written later are not converted.</strong> <code>model.user = { name: &#39;Ann&#39; }</code>
+stores the plain object; convert it first if its own changes should be
+reported.</li>
+</ul>
+<p>See <a href="converter.html">the converter</a> for the rules, and <a href="Design.html">the design</a> for the
+reasoning.</p>
+<h2 id="models-the-converter-used-to-accept">Models the converter used to accept</h2>
+<p>Conversion now requires plain data, and an unsupported value throws with the
+path in the message instead of being stored silently:</p>
+<ul>
+<li><strong>Class instances, <code>Map</code>, <code>Set</code> and other non-plain objects</strong> throw unless the
+<a href="converter.html#the-convert-hook"><code>convert</code> hook</a> takes them over. Nested under <code>deep: false</code> they are
+kept by reference.</li>
+<li><strong>Accessors, symbol keys, read-only or hidden properties, sealed objects and
+sparse arrays</strong> throw. 0.5 skipped or kept them.</li>
+<li><strong>A frozen object at the top level throws</strong>: it cannot change, so there is
+nothing to observe. Nested, a frozen plain object or array is a value, kept by
+reference.</li>
+</ul>
+<p><code>Date</code>, <code>RegExp</code> and functions are values: kept by reference when nested, and
+boxed as <code>{ value }</code> at the top level.</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const created = new Date(1);
+const model = observable({ created }, { deep: true });
+
+console.log(&#39;kept:&#39;, model.created === created);
+
+// Output:
+// kept: true
+</code></pre>
+<h2 id="type-names">Type names</h2>
+<ul>
+<li><code>Observable</code> is now the contract interface. The converter&#39;s return type is
+<code>Converted&lt;T&gt;</code>, with <code>ConvertedObject&lt;T&gt;</code>, <code>ConvertedArray&lt;T&gt;</code> and
+<code>ConvertedPrimitive&lt;T&gt;</code> behind it. It describes the top-level value only:
+members keep their declared type, with or without <code>deep: true</code>. Reach a
+converted member through <code>isObservable</code>, or wrap it yourself.</li>
+<li><code>ObservableOpaque</code> is <code>UnsupportedValue</code>.</li>
+<li><code>WatchPath</code>, <code>WatchPathValue</code> and <code>WatchPathValues</code> are <code>ObservablePath</code>,
+<code>ObservablePathValue</code> and <code>ObservablePathValues</code>.</li>
+<li><code>WatchedValues</code>, <code>WatchMethod</code>, <code>ObservableWatchFn</code>, the local
+<code>EventfulFactory</code>, and the per-event map types (<code>ObservableEventsObject</code>,
+<code>KeyedSetEvents</code>, <code>ArraySetPayload</code> and the rest) are gone. One
+<code>ObservableEvents</code> map replaces them.</li>
+<li><code>ObservableTraceFn</code> reports <code>&#39;new&#39;</code> and <code>&#39;change&#39;</code>; <code>&#39;set&#39;</code>, <code>&#39;delete&#39;</code> and
+<code>&#39;define&#39;</code> are gone.</li>
+<li>A value the converter refuses types as <code>never</code>, because converting it throws.
+Type the model with your wrapper if you rely on the <code>convert</code> hook.</li>
+</ul>
+<h2 id="new-in-06">New in 0.6</h2>
+<p>Not breaking, but worth knowing about while you are here:</p>
+<ul>
+<li><a href="batching.html"><code>batch(fn)</code></a> groups changes into one notification per emitter.</li>
+<li><code>isObservable</code> and <code>asObservable</code> test conformance.</li>
+<li><code>map</code>, <code>filter</code>, <code>distinct</code> and <code>combine</code> operators.</li>
+<li><code>.value</code> reads a query once without subscribing.</li>
+<li>A source works with RxJS <code>fromEvent</code> unchanged; see <a href="rxjs.html">RxJS</a>.</li>
+</ul>
+<h2 id="still-not-built">Still not built</h2>
+<p>None of these is required for the package to be complete, and none should be
+built speculatively:</p>
+<ul>
+<li>Async iteration as a terminal.</li>
+<li><code>[Symbol.observable]</code> on a chain, so <code>from(chain)</code> works in RxJS.</li>
+<li><code>share()</code>, if fan-out over an expensive <code>map</code> ever justifies it.</li>
+<li>A <code>change:&lt;property&gt;</code> fast path a source can advertise — an optimisation, not
+a second contract.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/migrating-from-0.5.md">View source</a>
+  </footer>
+</body>
+</html>

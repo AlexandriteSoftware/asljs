@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Chat · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="ai-chat">AI Chat</h1>
+<p><code>asljs-ai-chat</code> (<code>AiChat</code>) is a chat UI around an observable, eventful model,
+with optional persistence and tool execution hooks. <code>asljs-ai-chat-key</code> collects
+an API key from the user.</p>
+<h2 id="the-chat">The chat</h2>
+<ul>
+<li>API: <code>createAiChatModel()</code>, <code>AiChat</code></li>
+<li>Custom element: <code>asljs-ai-chat</code></li>
+</ul>
+<p>The chat state lives directly on the custom element: <code>messages</code>, <code>promptDraft</code>,
+<code>choicePrompt</code>, <code>progress</code>, <code>sending</code> and the related fields. The element keeps
+that state in a model it creates itself, so no separate model object is passed
+in. <code>messages</code> is a store object with <code>save(...)</code>, <code>read()</code> and a <code>list</code>
+collection for rendering and data binding.</p>
+<p><code>options</code> carries the request, persistence and tool callbacks the chat needs:</p>
+<ul>
+<li><code>options.transport</code> sets the HTTP transport. <code>OpenAiTransport</code> is the built-in
+OpenAI Responses API transport, constructed with an API key string. Without a
+transport, the component falls back to <code>options.provider.getOpenAiApiKey()</code>.</li>
+<li><code>options.stateStore</code> persists the chat state. Without it, the state is kept in
+<code>sessionStorage</code>, under a key derived from the page path and the element id.</li>
+</ul>
+<p>Persisted state includes <code>lastResponseId</code> and the operational UI state
+(<code>choicePrompt</code>, <code>progress</code> and <code>sending</code>), so a page refresh can restore an
+in-progress chat.</p>
+<h2 id="the-key-prompt">The key prompt</h2>
+<p><code>asljs-ai-chat-key</code> (<code>AiChatKeyPrompt</code>) is a small form that collects an API
+key. It has <code>label</code>, <code>placeholder</code>, <code>submitLabel</code> and <code>disabled</code> properties, and
+dispatches a <code>key-submit</code> event with the detail <code>{ key }</code> when the user submits
+a non-empty key.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/AI%20Chat.md">View source</a>
+  </footer>
+</body>
+</html>

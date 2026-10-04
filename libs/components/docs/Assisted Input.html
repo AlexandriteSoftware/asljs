@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assisted Input · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="assisted-input">Assisted Input</h1>
+<p><code>AssistedInput</code> is the shared Lit base class for the package&#39;s on-screen input
+surfaces: <a href="Keyboard.html">keyboard</a>, <a href="Letterpad.html">letterpad</a> and <a href="Numpad.html">numpad</a>. It is not a
+custom element itself.</p>
+<p>It owns the common assisted-input contract:</p>
+<ul>
+<li><code>characters</code> filtering: <code>Backspace</code> and <code>Enter</code> are always allowed; when
+<code>characters</code> is a non-empty string, single-character keys are enabled only if
+that string contains the key</li>
+<li>host accessibility defaults with <code>role=&quot;group&quot;</code></li>
+<li>bubbling <code>key</code> dispatch with the detail <code>{ key: string }</code></li>
+<li>bubbling <code>submit</code> dispatch for Enter</li>
+<li>pointer-down suppression, to keep focus on the target field</li>
+</ul>
+<p>The components that extend it provide only their layout-specific rendering and
+special interaction rules.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Assisted%20Input.md">View source</a>
+  </footer>
+</body>
+</html>

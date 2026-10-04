@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theme Provider · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="theme-provider">Theme Provider</h1>
+<p><code>asljs-theme-provider</code> (<code>ThemeProvider</code>) provides theme defaults to its
+descendant components.</p>
+<p>It is a lightweight provider element built directly on <code>HTMLElement</code>. Set its
+<code>theme</code> property; descendant components listen for theme changes and resolve
+their local overrides before the provider&#39;s defaults or the package defaults.</p>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const provider =
+  document.createElement(&#39;asljs-theme-provider&#39;) as HTMLElement &amp; {
+    theme: unknown;
+  };
+
+provider.theme =
+  { list:
+      { container:
+          &#39;&lt;div class=&quot;ui relaxed divided list&quot; data-role=&quot;items&quot;&gt;&lt;/div&gt;&#39;,
+        item:
+          `
+            &lt;div class=&quot;item&quot;&gt;
+              &lt;i class=&quot;folder icon&quot;&gt;&lt;/i&gt;
+              &lt;div class=&quot;content&quot;&gt;
+                &lt;a class=&quot;header&quot;
+                   data-bind-href=&quot;item.url&quot;
+                   data-bind-text=&quot;item.title&quot;&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          ` } };
+
+const list =
+  document.createElement(&#39;asljs-list&#39;);
+
+list.items =
+  [ { title: &#39;Docs&#39;, url: &#39;/docs&#39; } ];
+
+provider.appendChild(list);
+document.body.appendChild(provider);
+</code></pre>
+<p>How a provider&#39;s theme combines with the others is in <a href="Theming.html">Theming</a>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Theme%20Provider.md">View source</a>
+  </footer>
+</body>
+</html>

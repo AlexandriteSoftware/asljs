@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detecting leaked subscriptions · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="detecting-leaked-subscriptions">Detecting leaked subscriptions</h1>
+<h2 id="purpose">Purpose</h2>
+<p>A leaked subscription is invisible from both ends. The subscriber is gone, but
+the emitter still holds its listener, so the subscriber&#39;s state stays reachable
+through the emitter&#39;s listener map. Nothing fails. Memory grows, every emit does
+a little more work, and something unrelated falls over later.</p>
+<p>It only happens on shared, long lived emitters, where the subscriber detaches
+and the emitter does not. On an object you own, <code>removeAllListeners</code> ends the
+question. On an object you were handed, you have to notice.</p>
+<p>Both recipes below are consumer code. They use only the public API, and
+<code>eventful</code> carries no policy about thresholds or reporting.</p>
+<h2 id="what-the-package-gives-you-to-build-on">What the package gives you to build on</h2>
+<ul>
+<li>Every enhanced object reports its actions to <code>eventful</code> itself, so
+<code>eventful.on(&#39;new&#39; | &#39;on&#39; | &#39;off&#39; | &#39;emit&#39;, ...)</code> is a stream of everything
+happening across every instance.</li>
+<li>The stream is gated. Reporting costs nothing until something subscribes, so a
+guard that is not installed is not paid for.</li>
+<li><code>getListeners()</code> answers what is subscribed to one object right now.</li>
+<li><code>instanceId</code> names an instance in a report, as <code>Cart#3</code>.</li>
+</ul>
+<p>One limit applies to both recipes, and it is inherent: an object enhanced before
+you subscribe is never reported, and never gets an identity. Install at startup,
+before the application builds anything. Neither recipe can be attached to a
+running system to investigate a leak already under way.</p>
+<h2 id="recipe-1-an-in-flight-guard">Recipe 1: an in-flight guard</h2>
+<p>Checks the listener count as subscriptions happen, and warns the first time an
+object crosses a threshold on one event.</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+export function installLeakGuard(
+  { maxListeners = 10, warn = console.warn } = {}
+)
+{
+  const warned = new WeakMap();
+
+  return eventful.on(&#39;on&#39;, ({ object, id, event }) =&gt;
+  {
+    const count = object.getListeners().get(event)?.length ?? 0;
+
+    if (count &lt;= maxListeners) {
+      return;
+    }
+
+    let events = warned.get(object);
+
+    if (events === undefined) {
+      events = new Set();
+      warned.set(object, events);
+    }
+
+    if (events.has(event)) {
+      return;
+    }
+
+    events.add(event);
+
+    warn(`${id} has ${count} listeners for &quot;${String(event)}&quot;. Possible leak.`);
+  });
+}
+</code></pre>
+<p>With <code>maxListeners: 3</code>:</p>
+<pre><code>6 subscribers that never detach   Object#1 has 4 listeners for
+                                  &quot;change&quot;. Possible leak.
+50 subscribe and unsubscribe      silent
+50 once listeners that fire       silent
+after uninstall()                 silent
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>It returns the unsubscribe closure. Calling it stops the guard and, because
+reporting is gated, switches the global notifications back off.</li>
+<li><code>WeakMap</code> holds the warned-once bookkeeping, so the guard neither grows nor
+retains the objects it watched.</li>
+<li>Reading <code>getListeners()</code> on every subscription allocates a map and arrays. On
+a hot path, count with a cheap counter and call <code>getListeners()</code> only to
+confirm before warning.</li>
+<li>It speaks without being asked, which is the point: a leak is what nobody
+thought to look for.</li>
+</ul>
+<h2 id="recipe-2-a-snapshot-inspector">Recipe 2: a snapshot inspector</h2>
+<p>Records every object as it is enhanced, holding it weakly, and reports on
+demand.</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+export function createEmitterRegistry()
+{
+  let entries = [];
+
+  const stop = eventful.on(&#39;new&#39;, ({ object, id }) =&gt;
+  {
+    entries.push({ id, ref: new WeakRef(object) });
+  });
+
+  function sweep({ minListeners = 1 } = {})
+  {
+    const live = [];
+    const report = [];
+
+    for (const entry of entries) {
+      const object = entry.ref.deref();
+
+      if (object === undefined) {
+        continue;
+      }
+
+      live.push(entry);
+
+      for (const [event, listeners] of object.getListeners()) {
+        if (listeners.length &gt;= minListeners) {
+          report.push(
+            { id: entry.id, event: String(event), count: listeners.length }
+          );
+        }
+      }
+    }
+
+    entries = live;
+    report.sort((left, right) =&gt; right.count - left.count);
+
+    return { tracked: entries.length, report };
+  }
+
+  return { sweep, stop };
+}
+</code></pre>
+<p><code>WeakRef</code> means the registry never keeps an emitter alive, and a sweep drops the
+references that have been collected. Creating 102 emitters, of which 100 are
+discarded:</p>
+<pre><code>tracked before gc:       102
+tracked after gc+sweep:  3
+report: [{&quot;id&quot;:&quot;Store#1&quot;,&quot;event&quot;:&quot;change&quot;,&quot;count&quot;:12}]
+</code></pre>
+<h3 id="compare-two-sweeps-do-not-pick-a-threshold">Compare two sweeps, do not pick a threshold</h3>
+<p>A count is a poor signal on its own. Thirty subscribers is a leak in one
+application and a busy list in another: in this repository, each <code>asljs-list</code>
+element subscribes to <code>set</code>, <code>delete</code> and <code>define</code> on the collection it renders,
+so a page with thirty of them has thirty legitimate listeners per event.</p>
+<p>Growth between sweeps is the better signal, because a leak is not many
+listeners, it is listeners that keep arriving:</p>
+<pre><code>const before = new Map(
+  registry.sweep().report.map(r =&gt; [`${r.id} ${r.event}`, r.count])
+);
+
+// ... exercise the application ...
+
+const growing = registry.sweep().report.filter(
+  r =&gt; r.count &gt; (before.get(`${r.id} ${r.event}`) ?? 0)
+);
+</code></pre>
+<p>Against one store with thirty stable subscribers and one that grew from five to
+twelve:</p>
+<pre><code>static threshold of 10 flags:   Store#1=30, Store#2=12
+growth between sweeps flags:    Store#2: 5 -&gt; 12
+</code></pre>
+<p>The busy store is not a leak, and only the second report says so.</p>
+<p>Notes:</p>
+<ul>
+<li>Nothing happens per subscription. The cost is the <code>new</code> notification and the
+sweep you ask for, so this suits a devtools button, a test teardown, or an
+interval.</li>
+<li>A ranked report names the instance, the event and the count, which is enough
+to find the subscriber. The same handler appearing many times on one object is
+one subscriber that re-subscribed without detaching.</li>
+<li><code>WeakRef</code> is ES2021. Both recipes are development tools, so this is usually
+fine, but it is a real constraint in an old runtime.</li>
+<li>Instance numbers are assigned when an object is first reported, so <code>Store#1</code>
+means the first one this registry saw, not the first one created.</li>
+</ul>
+<h2 id="choosing-between-them">Choosing between them</h2>
+<ul>
+<li>Use the guard when you want to be told, during development, that something
+crossed a line you did not expect to cross. It is the only one that speaks on
+its own.</li>
+<li>Use the inspector when you are investigating, or when you want a check with no
+per-subscription cost: a sweep at the end of a test, or two sweeps around a
+scenario to see what grew.</li>
+<li>Use both, from the same startup path. They observe different things, the guard
+catching a sudden crossing and the inspector catching slow growth, and neither
+needs the other.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/eventful/docs/leak-detection.md">View source</a>
+  </footer>
+</body>
+</html>

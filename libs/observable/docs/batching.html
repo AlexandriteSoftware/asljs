@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Batching and delivery · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="batching-and-delivery">Batching and delivery</h1>
+<h2 id="purpose">Purpose</h2>
+<p><code>batch(fn)</code> groups everything that changes during <code>fn</code> into one notification per
+emitter. It is the boundary that fills the entry list the <a href="contract.html">contract</a>
+carries, and it is what turns an array operation from N notifications into one.</p>
+<p>Delivery is synchronous. A list only pays off if something fills it, and the
+proxy traps fire one at a time and cannot tell that <code>shift()</code> is a single
+operation, so the boundary has to be explicit.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { batch, observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ first: &#39;Ada&#39;, last: &#39;Lovelace&#39; });
+
+model.on(&#39;change&#39;, changes =&gt;
+  console.log(&#39;one notification, entries:&#39;, changes.length));
+
+batch(() =&gt; {
+  model.first = &#39;Grace&#39;;
+  model.last = &#39;Hopper&#39;;
+});
+
+// Output:
+// one notification, entries: 2
+</code></pre>
+<h2 id="what-a-batch-does-exactly">What a batch does, exactly</h2>
+<h3 id="every-write-is-delivered-in-order">Every write is delivered, in order</h3>
+<p>A batch records every modification in the order it was made and merges none of
+them, so a subscriber can always apply the list in order and arrive at the
+current state. Two writes to one property are two entries:</p>
+<pre><code class="language-js">import { batch, observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ n: 1 });
+
+model.on(&#39;change&#39;, changes =&gt; console.log(JSON.stringify(changes)));
+
+batch(() =&gt; {
+  model.n = 2;
+  model.n = 3;
+});
+
+// Output:
+// [{&quot;kind&quot;:&quot;set&quot;,&quot;property&quot;:&quot;n&quot;,&quot;value&quot;:2,&quot;previous&quot;:1},{&quot;kind&quot;:&quot;set&quot;,&quot;property&quot;:&quot;n&quot;,&quot;value&quot;:3,&quot;previous&quot;:2}]
+</code></pre>
+<p>Merging repeated writes into one entry, with the first <code>previous</code> and the last
+<code>value</code>, is left out on purpose. It is easy to get wrong for an array, where an
+index names a different element once a splice has run between two writes to it,
+and a merged list then no longer applies in order.</p>
+<p>A write that leaves the value as it was is not a modification, inside a batch as
+outside one, and a batch in which nothing changed reports nothing at all.</p>
+<h3 id="an-exception-still-flushes">An exception still flushes</h3>
+<p>The writes have already landed. Discarding their notifications would leave
+listeners describing a model that no longer exists, so the collected entries are
+delivered and the exception propagates after the flush.</p>
+<pre><code class="language-js">import { batch, observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ n: 1 });
+
+model.on(&#39;change&#39;, changes =&gt; console.log(&#39;delivered:&#39;, changes.length));
+
+try {
+  batch(() =&gt; {
+    model.n = 2;
+
+    throw new Error(&#39;boom&#39;);
+  });
+} catch (error) {
+  console.log(&#39;propagated:&#39;, error.message);
+}
+
+// Output:
+// delivered: 1
+// propagated: boom
+</code></pre>
+<h3 id="nesting-is-counted-not-stacked">Nesting is counted, not stacked</h3>
+<p>An inner <code>batch</code> joins the outer one, and only the outermost close emits.</p>
+<h3 id="grouping-is-per-emitter">Grouping is per emitter</h3>
+<p>&quot;One notification&quot; always means one per source. A batch touching <code>model.user</code>
+and <code>model.items</code> produces one <code>change</code> on each of the two objects, because each
+is its own emitter, and their relative order is the order the writes happened.</p>
+<pre><code class="language-js">import { batch, observable } from &#39;asljs-observable&#39;;
+
+const model = observable(
+  { user: { name: &#39;Ada&#39; }, items: { count: 0 } },
+  { deep: true });
+
+model.items.on(&#39;change&#39;, () =&gt; console.log(&#39;items notified&#39;));
+model.user.on(&#39;change&#39;, () =&gt; console.log(&#39;user notified&#39;));
+
+batch(() =&gt; {
+  model.user.name = &#39;Grace&#39;;
+  model.items.count = 1;
+});
+
+// Output:
+// user notified
+// items notified
+</code></pre>
+<p>A hand-written participant cannot be made to join a batch — it emits when it
+emits — so a mixed model gets batching only across the parts this package&#39;s
+producers own. <code>ObservableObject</code> does join, because it reports through the same
+path the converter does.</p>
+<h2 id="writes-made-during-delivery">Writes made during delivery</h2>
+<p>A write made by a listener while it is being notified is queued and delivered
+after the current notification finishes, as its own <code>change</code>. It does not join
+the list being delivered.</p>
+<p>This fixes an inversion. Given a listener that derives one property from another
+and a second listener that renders, the renderer would otherwise be told about
+the effect before the cause, and which order it saw would depend on subscription
+order:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ celsius: 0, fahrenheit: 32 });
+
+model.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    if (change.property === &#39;celsius&#39;) {
+      model.fahrenheit = change.value * 9 / 5 + 32;
+    }
+  }
+});
+
+model.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    console.log(&#39;render&#39;, change.property, &#39;=&#39;, change.value);
+  }
+});
+
+model.celsius = 100;
+
+// Output:
+// render celsius = 100
+// render fahrenheit = 212
+</code></pre>
+<p>The alternative of appending to the list being delivered is worse than either:
+listeners that already ran would have seen a shorter list than those still to
+run, so one notification would carry different payloads to different
+subscribers.</p>
+<p>Two precedents. Valtio v3 queues writes made by callbacks for the next round.
+And <code>eventful</code> already answers the analogous question this way: <code>emit</code> copies
+the listener set before dispatching, so a listener that subscribes or
+unsubscribes affects the next emit rather than the one in progress.</p>
+<h3 id="five-things-it-does-not-do">Five things it does not do</h3>
+<ul>
+<li><strong>The write itself lands immediately; only its notification is queued.</strong> A
+consumer that re-reads rather than reading the payload — which is what the
+query does — can therefore observe the new value before it is told about it.
+Queueing makes the entries every subscriber receives consistent and ordered;
+it does not make the model stand still.</li>
+<li><strong>It needs module-level state.</strong> The inversion it fixes involves a listener on
+one object writing to another, so the delivery state is shared across the
+package rather than held per object.</li>
+<li><strong>It covers this package&#39;s producers only.</strong> A hand-written participant that
+emits from inside a delivery dispatches nested, exactly as it would otherwise.
+The contract does not constrain timing, so this is consistent — but &quot;the same
+for every subscriber&quot; is a promise about converted models and
+<code>ObservableObject</code>, not about every model.</li>
+<li><strong>The cap throws after the queued writes have landed.</strong> See below.</li>
+<li><strong>A listener that throws stops the delivery.</strong> Whether a listener&#39;s error
+propagates is the factory&#39;s choice: with <code>strict</code> it does. When it does, the
+error propagates at once and the changes still queued are discarded. Their
+writes have happened, so the model and anything built from it can disagree
+until the next change.</li>
+</ul>
+<h3 id="the-round-cap">The round cap</h3>
+<p>Queueing converts recursion into iteration, which does not by itself stop a
+cycle: two listeners writing to each other would loop forever in rounds instead
+of overflowing the stack, which is worse, because there is no stack trace to
+show what happened.</p>
+<p>So the round count is capped at 100 and the cap throws, naming the properties
+still changing. Vue caps the same way, though it warns and abandons the flush
+rather than throwing; throwing is the choice here, because a silently abandoned
+flush leaves the model and every view disagreeing with no indication.</p>
+<p>The queued writes have already landed and are never delivered, so this is a
+broken state to recover from rather than a rejected operation, and the message
+says so.</p>
+<p>The common case terminates without the cap, and it is deduplication that makes
+it do so: a two-way binding settles because the write back is equal to what is
+already there and <code>Object.is</code> suppresses it.</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ left: 0, right: 0 });
+
+let deliveries = 0;
+
+model.on(&#39;change&#39;, changes =&gt; {
+  deliveries++;
+
+  for (const change of changes) {
+    if (change.property === &#39;left&#39;) {
+      model.right = change.value;
+    } else {
+      model.left = change.value;
+    }
+  }
+});
+
+model.left = 5;
+
+console.log(&#39;right:&#39;, model.right, &#39;deliveries:&#39;, deliveries);
+
+// Output:
+// right: 5 deliveries: 2
+</code></pre>
+<h2 id="why-synchronous-with-an-explicit-batch">Why synchronous, with an explicit batch</h2>
+<p>Three ways to get a batch boundary: flush on a microtask, which batches
+everything automatically but makes emission asynchronous; an explicit
+<code>batch(fn)</code>; or wrapping the mutating array methods so each closes its own
+batch.</p>
+<p>Valtio has already run this experiment. Version 2 batched on a microtask by
+default with a <code>notifyInSync</code> opt-out; version 3 removed <code>notifyInSync</code>, made
+notifications synchronous, and added <code>batch()</code>, keeping the microtask scheduler
+only for an opt-in asynchronous subscribe. The library furthest down this road
+reversed the asynchronous default after living with it.</p>
+<p>So: synchronous delivery, an explicit <code>batch(fn)</code>, and the converter wrapping
+its own mutating array methods in a batch. A hand-written participant emits a
+one-element list and never thinks about batching.</p>
+<p>Synchronous delivery also pays for itself elsewhere: it is what lets <code>combine</code>
+recompute once per delivery with a counter rather than a scheduler. See
+<a href="query.html#combining-paths">the query</a>.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="contract.html">The contract</a> — what the list carries.</li>
+<li><a href="converter.html#arrays">The converter</a> — which array methods batch.</li>
+<li><a href="performance.html">Performance</a> — grouping writes in a model that has to be fast.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/batching.md">View source</a>
+  </footer>
+</body>
+</html>

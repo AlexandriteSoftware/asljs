@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The converter · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="the-converter">The converter</h1>
+<h2 id="purpose">Purpose</h2>
+<p><code>observable(value, [options])</code> creates an observable version of plain JavaScript
+data: a new object, array or box that satisfies the <a href="contract.html">contract</a> and reports
+its own changes. It is a helper for the common case of a JSON-shaped model, not
+the reason the package exists.</p>
+<p>It copies rather than extends. The data it is given is left untouched, and what
+it returns emits <code>change</code> like any other participant, with no private event
+vocabulary of its own. The rules are stated one by one in <a href="Design.html">the design</a>;
+this page explains them with examples.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const original = { a: 1, b: 2 };
+const model = observable(original);
+
+model.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    console.log(`${change.property}: ${change.previous} -&gt; ${change.value}`);
+  }
+});
+
+model.a = 3;
+
+delete model.b;
+
+console.log(&#39;original:&#39;, JSON.stringify(original));
+
+// Output:
+// a: 1 -&gt; 3
+// b: 2 -&gt; undefined
+// original: {&quot;a&quot;:1,&quot;b&quot;:2}
+</code></pre>
+<p>A primitive is boxed into <code>{ value }</code>, and so are a <code>Date</code>, a <code>RegExp</code> and a
+function:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const box = observable(10);
+
+box.on(&#39;change&#39;, ([ change ]) =&gt;
+  console.log(`${change.previous} -&gt; ${change.value}`));
+
+box.value = 11;
+
+box.value = 11;
+
+// Output:
+// 10 -&gt; 11
+</code></pre>
+<h2 id="options">Options</h2>
+<ul>
+<li><code>deep</code>: <code>false</code> by default, which converts only the top-level value and keeps
+nested objects and arrays by reference. <code>true</code> converts nested plain objects
+and arrays too, all the way down.</li>
+<li><code>convert</code>: a hook that replaces one object with another. See
+<a href="#the-convert-hook">The convert hook</a>.</li>
+<li><code>eventful</code>: the factory that adds the methods, <code>eventful</code> from
+<code>asljs-eventful</code> by default. See <a href="#the-eventful-factory">The eventful factory</a>.</li>
+<li><code>trace</code>: a hook <code>(object, action, payload)</code>, invoked on <code>&#39;new&#39;</code> with <code>{ object }</code> for every observable the call creates, and on <code>&#39;change&#39;</code> with the entry
+list of one delivery. There is also a process-wide <code>observable.options.trace</code>,
+used when a call supplies none.</li>
+</ul>
+<h2 id="what-is-converted">What is converted</h2>
+<p>The value given to <code>observable</code> is checked against these rules in order, and the
+first that matches applies:</p>
+<ol>
+<li>A primitive, a <code>Date</code>, a <code>RegExp</code> or a function is boxed as <code>{ value }</code>.</li>
+<li>When <code>convert</code> returns something other than <code>null</code> or <code>undefined</code>, that is
+returned. It must be a new observable, not the value itself.</li>
+<li>An object that already has <code>on</code> and <code>off</code>, such as an <code>EventEmitter</code> or
+another observable, throws: returning it would make the observable version
+the original itself.</li>
+<li>An object or array that owns a property named like a method the factory adds
+throws. With the default factory those are <code>on</code>, <code>once</code>, <code>off</code>, <code>emit</code>,
+<code>emitAsync</code>, <code>has</code>, <code>removeAllListeners</code> and <code>getListeners</code>. With a custom
+factory only <code>on</code> and <code>off</code> are known; any other name it adds is its own
+responsibility.</li>
+<li>A plain object or plain array holding plain data is copied into a new
+observable. A frozen one throws: it cannot change, so there is nothing to
+observe.</li>
+<li>Anything else throws.</li>
+</ol>
+<p>Each value inside a copied object or array is checked against the nested rules,
+in order:</p>
+<ol>
+<li>A primitive is copied.</li>
+<li>A <code>Date</code>, a <code>RegExp</code>, a function, or a frozen plain object or array is kept
+by reference. These are values: never converted and never traversed.</li>
+<li>Without <code>deep: true</code>, any other object or array is kept by reference.</li>
+<li>When <code>convert</code> returns something other than <code>null</code> or <code>undefined</code>, that is
+used.</li>
+<li>An object that already has <code>on</code> and <code>off</code> is kept by reference.</li>
+<li>An object or array that owns a reserved name throws, as at the top level.</li>
+<li>A plain object or plain array holding plain data is converted, applying these
+rules to its own values.</li>
+<li>Anything else throws.</li>
+</ol>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const when = new Date(0);
+const user = { name: &#39;Ada&#39; };
+const model = observable({ when, user, tags: [ &#39;a&#39; ] }, { deep: true });
+
+console.log(&#39;date kept:&#39;, model.when === when);
+console.log(&#39;user copied:&#39;, model.user !== user);
+console.log(&#39;original untouched:&#39;, &#39;on&#39; in user);
+
+// Output:
+// date kept: true
+// user copied: true
+// original untouched: false
+</code></pre>
+<h3 id="plain-data">Plain data</h3>
+<p>An object is plain when its prototype is <code>null</code> or an <code>Object.prototype</code>, and an
+array is plain when its prototype is an <code>Array.prototype</code>. Both checks recognise
+any realm&#39;s prototypes, so a literal parsed in an iframe or a <code>vm</code> context is
+plain data too, and a <code>Date</code> or <code>RegExp</code> from another realm is still a value. A
+class instance, an instance of an <code>Array</code> subclass, a <code>Map</code>, a <code>Set</code> and every
+other object are not plain: they throw unless <code>convert</code> takes them over, or,
+nested without <code>deep: true</code>, they are kept by reference.</p>
+<p>A plain object or array is converted only when it holds plain data. Every own
+property, other than an array&#39;s <code>length</code>, must have a string key and be an
+ordinary data property that is enumerable, writable and configurable. The
+container must be extensible, and an array must have no holes and no own
+properties other than its indices. Accessors, symbol keys, read-only or hidden
+properties, sealed objects and sparse arrays all throw.</p>
+<p>The case <code>observable</code> is for is plain data such as <code>observable({ user })</code>. Data
+that needs accessors, hidden properties or symbol keys is a class in all but
+name, and a class reports its own changes through <code>eventful</code> or
+<a href="#observableobject"><code>ObservableObject</code></a> without <code>observable</code>.</p>
+<h3 id="errors-name-the-path">Errors name the path</h3>
+<p>Every refusal starts with the path of the offending value, written from <code>value</code>,
+then the reason:</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+try {
+  observable({ orders: [ { meta: new Map() } ] }, { deep: true });
+} catch (error) {
+  console.log(error.message.split(&#39;. &#39;)[0] + &#39;.&#39;);
+}
+
+// Output:
+// at value.orders[0].meta: Map is not supported.
+</code></pre>
+<p><code>observable(model)</code> failing with &quot;unsupported value&quot; on a large model is not
+debuggable; naming the path is. An error thrown by the <code>convert</code> hook or the
+factory is prefixed the same way, with the original error as its <code>cause</code>.</p>
+<h3 id="cycles-and-repeated-objects">Cycles and repeated objects</h3>
+<p>Under <code>deep: true</code> an object reached again while its own values are still being
+converted is a circular reference, and it throws, naming both ends. An object
+reached again after its conversion has finished is a repeated reference: it
+becomes one observable, used in both places, so the result keeps the shape of
+the data.</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const shared = { n: 1 };
+const model = observable({ a: shared, b: shared }, { deep: true });
+
+console.log(&#39;one observable:&#39;, model.a === model.b);
+
+const cyclic = {};
+cyclic.self = cyclic;
+
+try {
+  observable(cyclic, { deep: true });
+} catch (error) {
+  console.log(error.message);
+}
+
+// Output:
+// one observable: true
+// at value.self: circular reference to value
+</code></pre>
+<p>This holds within one call. Separate calls produce separate observables, because
+each one copies the data it is given.</p>
+<h3 id="why-dates-are-values">Why dates are values</h3>
+<p>A <code>Date</code> keeps its time in an internal slot and has no own properties, so a copy
+by its properties is empty, and a proxy cannot report what its mutators do.
+Rather than refuse it, <code>observable</code> treats it as a value, like a string: kept by
+reference, compared by identity, never converted. The same goes for a <code>RegExp</code>,
+a function, and a frozen plain object or array, which cannot change at all.</p>
+<p>The consequence to accept: changing a date in place, <code>model.when.setTime(0)</code>,
+changes it for every holder and reports nothing. Replace it instead,
+<code>model.when = new Date(0)</code>, and the replacement is reported.</p>
+<p>A frozen object with internal state, such as a frozen <code>Map</code>, is not a value:
+freezing does not stop its internal state changing.</p>
+<h2 id="after-conversion">After conversion</h2>
+<p>Conversion happens once, in the <code>observable</code> call. A value written to an
+observable later is stored as it is: not converted, not copied, not checked. The
+write itself is reported.</p>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable({ user: { name: &#39;Ann&#39; } }, { deep: true });
+
+model.user.on(&#39;change&#39;, () =&gt; console.log(&#39;user changed&#39;));
+
+model.on(&#39;change&#39;, changes =&gt;
+  console.log(&#39;model changed:&#39;, changes[0].property));
+
+model.user = { name: &#39;Bob&#39; };
+model.user.name = &#39;Carol&#39;;
+
+model.user = observable({ name: &#39;Dan&#39; });
+model.user.on(&#39;change&#39;, () =&gt; console.log(&#39;new user changed&#39;));
+model.user.name = &#39;Eve&#39;;
+
+// Output:
+// model changed: user
+// model changed: user
+// new user changed
+</code></pre>
+<p>Keeping the data observable after that is the caller&#39;s job: convert a value
+before assigning it if its own changes should be reported. A written value is
+stored by reference, so it is shared with whoever assigned it.</p>
+<h2 id="what-the-converter-reports">What the converter reports</h2>
+<ul>
+<li>An assignment reports one <code>set</code> entry. <code>[[Set]]</code> performs
+<code>[[DefineOwnProperty]]</code>, so a plain assignment trips two traps; the second is
+suppressed rather than reported twice.</li>
+<li><code>delete model.a</code> reports <code>{ kind: &#39;set&#39;, property: &#39;a&#39;, value: undefined }</code>.</li>
+<li>A write that leaves the value as it was, compared with <code>Object.is</code>, reports
+nothing.</li>
+<li>Symbol-keyed properties are stored and not reported: the contract&#39;s <code>property</code>
+is a string, and symbol keys are not data.</li>
+<li><code>Object.defineProperty</code> is reported by whether the observed value changed:<ul>
+<li>as a <code>set</code> when it changes, which covers a new value, converting an accessor
+back to a data property, and installing a getter;</li>
+<li>as nothing when it does not, which covers flipping <code>writable</code>, <code>enumerable</code>
+or <code>configurable</code> on their own, installing a setter with no getter, and
+redefining with the same value.</li>
+</ul>
+</li>
+</ul>
+<p>Reporting a value always means reading it, so installing a getter runs it, and
+an accessor&#39;s getter runs twice per reported change: once before the write for
+<code>previous</code> and once after it for <code>value</code>.</p>
+<h3 id="arrays">Arrays</h3>
+<pre><code class="language-js">import { observable } from &#39;asljs-observable&#39;;
+
+const items = observable([ &#39;a&#39;, &#39;b&#39;, &#39;c&#39; ]);
+
+items.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    console.log(
+      change.kind === &#39;splice&#39;
+        ? `splice at ${change.index}: `
+          + `-${change.removed.length} +${change.added.length}`
+        : `set ${change.property} = ${change.value}`);
+  }
+});
+
+items.shift();
+
+items[0] = &#39;z&#39;;
+
+items.length = 0;
+
+// Output:
+// splice at 0: -1 +0
+// set 0 = z
+// splice at 0: -2 +0
+</code></pre>
+<p>An observable array is an array: <code>Array.isArray</code> is <code>true</code>, it can be iterated
+and spread, <code>JSON.stringify</code> writes it as an array, and methods that return a
+new array, such as <code>map</code> and <code>slice</code>, return a plain one.</p>
+<p>Five methods report one <code>splice</code> entry each, because for those the arguments are
+the description:</p>
+<pre><code>push(x)                 { index: len,   removed: [],      added: [x] }
+pop()                   { index: len-1, removed: [last],  added: [] }
+shift()                 { index: 0,     removed: [first], added: [] }
+unshift(x)              { index: 0,     removed: [],      added: [x] }
+splice(i, d, ...items)  the arguments, normalised
+</code></pre>
+<p>A splice at <code>index</code> also changes every index from <code>index</code> onwards and, when the
+counts differ, <code>length</code>. No separate <code>set</code> is reported for them: a subscriber
+interprets the splice, or reads the array again.</p>
+<ul>
+<li><strong>Splice arguments are normalised, not passed through.</strong> A negative <code>i</code>, an
+<code>i</code> past the end, an omitted or over-long <code>d</code> all resolve first, so the entry
+carries the resolved start and the slice actually removed. <code>pop()</code> and
+<code>shift()</code> on an empty array report nothing rather than an entry at index <code>-1</code>.</li>
+<li><strong><code>added</code> holds the values as they were written</strong>, not converted.</li>
+<li><strong><code>arr.length = 0</code> reports a splice too.</strong> It is the common clear idiom and a
+raw assignment, so it would otherwise stay N <code>set</code> entries. The splice carries
+the dropped elements, so they are read before the write.</li>
+</ul>
+<p><code>sort</code>, <code>reverse</code>, <code>fill</code> and <code>copyWithin</code> report <code>set</code> entries, batched into
+one notification. They are permutations and range overwrites: the producer does
+not have a splice for them, and reporting a permutation as a whole-range splice
+would misinform, since <code>removed</code> means removed.</p>
+<p>Other array behaviour worth knowing:</p>
+<ul>
+<li>A method invoked so that it bypasses the wrapper, such as
+<code>Array.prototype.push.call(model, x)</code>, reports <code>set</code> entries. So does an own
+override of a mutating method written after creation, which the wrapper steps
+aside for. Both are consistent with the contract, since <code>splice</code> is optional.</li>
+<li>Growing an array by writing past the end reports the index <code>set</code> and then a
+<code>set</code> for <code>length</code>, because no splice describes the growth. Assigning <code>length</code>
+directly to grow the array reports it too.</li>
+</ul>
+<h2 id="nested-members-in-typescript">Nested members in TypeScript</h2>
+<p>The type promises what every call guarantees: the top-level value carries the
+methods. Members keep their declared type, with or without <code>deep</code>, so both calls
+below return the same type:</p>
+<pre><code class="language-ts">import { observable } from &#39;asljs-observable&#39;;
+
+const flat = observable({ user: { name: &#39;Alice&#39; } });
+const deep = observable({ user: { name: &#39;Alice&#39; } }, { deep: true });
+
+flat.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+deep.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+
+// error TS2339
+deep.user.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+</code></pre>
+<p><code>deep: true</code> converts nested objects at runtime, but a member can still hold
+either the plain value or its observable: a value assigned later is whatever it
+is. Test a member with <code>isObservable</code> to reach its methods:</p>
+<pre><code class="language-ts">import { isObservable, observable } from &#39;asljs-observable&#39;;
+
+const state = observable({ user: { name: &#39;Alice&#39; } }, { deep: true });
+
+if (isObservable(state.user)) {
+  state.user.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+}
+</code></pre>
+<p>Or wrap the member yourself, and its type says so:</p>
+<pre><code class="language-ts">import { observable } from &#39;asljs-observable&#39;;
+
+const user = observable({ name: &#39;Alice&#39; });
+const state = observable({ user });
+
+state.user.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+</code></pre>
+<p><code>Converted&lt;T&gt;</code> is the type of what <code>observable()</code> returns, with
+<code>ConvertedObject&lt;T&gt;</code>, <code>ConvertedArray&lt;T&gt;</code> and <code>ConvertedPrimitive&lt;T&gt;</code> behind it.
+A <code>Date</code>, a <code>RegExp</code> or a function converts to a <code>ConvertedPrimitive</code>. A
+top-level value the converter refuses, such as a <code>Map</code>, types as <code>never</code>,
+because converting it throws and there is no result to describe.</p>
+<h2 id="the-convert-hook">The convert hook</h2>
+<p>Observable does not ship wrappers for <code>Map</code>, <code>Set</code> or anything else it refuses,
+and it must not start: it cannot guess how you want them observed. The <code>convert</code>
+hook is the seam.</p>
+<p>It is asked about the top-level value when that is an object, and, under <code>deep: true</code>, about every nested object that is not kept by reference first. It is
+never asked about a primitive, a <code>Date</code>, a <code>RegExp</code>, a function or a nested
+frozen plain object or array. It has the first say on everything it is asked
+about, including whether an object already has <code>on</code> and <code>off</code>.</p>
+<ul>
+<li>Return <code>null</code> or <code>undefined</code> to leave the decision to the rules.</li>
+<li>Return anything else to use it in place of the object. No other rule applies
+to it, it is not checked and it is not traversed.</li>
+<li>At the top level the result is what <code>observable</code> returns, so it must be a new
+observable, with <code>on</code> and <code>off</code>, and not the given object itself; otherwise
+<code>observable</code> throws. A nested result is not checked, and returning the given
+object itself keeps it by reference.</li>
+</ul>
+<pre><code class="language-js">import { eventful } from &#39;asljs-eventful&#39;;
+import { observable, observe } from &#39;asljs-observable&#39;;
+
+// A wrapper for Set. Note the absence of `has`: eventful reserves `on`,
+// `off`, `emit`, `emitAsync`, `has`, `removeAllListeners` and `getListeners`,
+// and throws if the wrapped object already defines one of them.
+const observableSet = source =&gt; {
+  const wrapper = eventful({
+    contains: value =&gt; source.has(value),
+    get size() { return source.size; },
+    add(value) {
+      if (source.has(value)) {
+        return;
+      }
+
+      const previous = source.size;
+
+      source.add(value);
+
+      wrapper.emit(&#39;change&#39;, [
+        { kind: &#39;set&#39;, property: &#39;size&#39;, value: source.size, previous }
+      ]);
+    }
+  });
+
+  return wrapper;
+};
+
+const state = observable(
+  { tags: new Set([ &#39;a&#39; ]) },
+  {
+    deep: true,
+    convert: value =&gt;
+      value instanceof Set ? observableSet(value) : undefined
+  });
+
+observe(state).at(&#39;tags.size&#39;).subscribe(size =&gt; console.log(&#39;tags&#39;, size));
+
+state.tags.add(&#39;b&#39;);
+
+// Output:
+// tags 1
+// tags 2
+</code></pre>
+<p>Points worth knowing:</p>
+<ul>
+<li>An object reached twice in one call is asked about once, and the result is
+used in both places.</li>
+<li>A circular reference throws before the hook is asked again.</li>
+<li>A wrapper that conforms can be queried along a path, as above.</li>
+<li>Observable does not emit <code>new</code> for a wrapper it did not create.</li>
+<li><code>observable</code> recognises plain data from any realm, but a hook that tests with
+<code>instanceof</code> sees only its own realm&#39;s classes.</li>
+</ul>
+<h3 id="keeping-the-types-right">Keeping the types right</h3>
+<p>The types come from the model&#39;s declared type, never from the hook. A member
+declared as <code>Set&lt;string&gt;</code> is typed <code>Set&lt;string&gt;</code> whatever <code>convert</code> put there,
+and the path types stop at it, so <code>at(&#39;tags.size&#39;)</code> is not offered. When the
+replacement is not a <code>Set</code>, the type is wrong, and wrong quietly where the two
+share a method name: the wrapper above has no set <code>has</code>, but it has eventful&#39;s
+<code>has</code>, which checks for listeners, so <code>model.tags.has(&#39;a&#39;)</code> compiles and returns
+<code>false</code>.</p>
+<p>Two habits keep the types true:</p>
+<ul>
+<li><strong>Substitute before calling <code>observable()</code>.</strong> Put the observable replacement
+into the data yourself, so the model&#39;s type names it and <code>convert</code> is not
+needed for that member. A value that already has <code>on</code> and <code>off</code> is kept by
+reference, with or without <code>deep</code>.</li>
+<li><strong>When <code>convert</code> substitutes, return an object with the original&#39;s
+signature.</strong> An observable replacement for a <code>Map</code> should implement <code>Map</code>, and
+one for a <code>Set</code> should be a <code>Set</code>, so that the declared type stays true and
+every method it promises behaves as the original&#39;s would. Its path is still
+not offered below the member, because the types see a <code>Set</code>; subscribe to the
+member itself instead.</li>
+</ul>
+<pre><code class="language-ts">import { asObservable, observable, type Change } from &#39;asljs-observable&#39;;
+
+type Listener = (changes: readonly Change[]) =&gt; void;
+
+// A Set that reports its own changes. Every change to a set changes its size,
+// so a set entry for size describes them all.
+class ObservableSet&lt;T&gt; extends Set&lt;T&gt;
+{
+  #listeners = new Set&lt;Listener&gt;();
+
+  constructor(values: Iterable&lt;T&gt; = []) {
+    super();
+
+    for (const value of values) {
+      super.add(value);
+    }
+  }
+
+  on(_event: &#39;change&#39;, listener: Listener): void {
+    this.#listeners.add(listener);
+  }
+
+  off(_event: &#39;change&#39;, listener: Listener): void {
+    this.#listeners.delete(listener);
+  }
+
+  override add(value: T): this {
+    const previous = this.size;
+
+    super.add(value);
+    this.#report(previous);
+
+    return this;
+  }
+
+  override delete(value: T): boolean {
+    const previous = this.size;
+    const deleted = super.delete(value);
+
+    this.#report(previous);
+
+    return deleted;
+  }
+
+  override clear(): void {
+    const previous = this.size;
+
+    super.clear();
+    this.#report(previous);
+  }
+
+  #report(previous: number): void {
+    if (previous === this.size) {
+      return;
+    }
+
+    for (const listener of this.#listeners) {
+      listener([
+        { kind: &#39;set&#39;, property: &#39;size&#39;, value: this.size, previous }
+      ]);
+    }
+  }
+}
+
+// Substituted before the call: the type names the observable set.
+const prepared = observable({ tags: new ObservableSet([ &#39;a&#39; ]) });
+
+prepared.tags.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+
+// Substituted by convert: the type says Set, and the member is one.
+const converted = observable&lt;{ tags: Set&lt;string&gt; }&gt;(
+  { tags: new Set([ &#39;a&#39; ]) },
+  {
+    deep: true,
+    convert: value =&gt;
+      value instanceof Set ? new ObservableSet(value) : undefined
+  });
+
+converted.tags.has(&#39;a&#39;);
+
+asObservable(converted.tags)?.on(&#39;change&#39;, changes =&gt;
+  console.log(changes.length));
+</code></pre>
+<h2 id="observableobject"><code>ObservableObject</code></h2>
+<p>A base class for a hand-written participant. It emits <code>change</code> like every other
+producer here, and its emissions join an open <a href="batching.html"><code>batch(fn)</code></a>, because it
+reports through the same path the converter does.</p>
+<ul>
+<li><code>setAndEmit(property, previous, value, assign)</code> assigns and reports, unless
+<code>Object.is(previous, value)</code>.</li>
+<li><code>emitSet(property, previous, value)</code> reports one property change.</li>
+<li><code>emitChange(changes)</code> reports a list of changes as one notification.</li>
+</ul>
+<pre><code class="language-ts">import { ObservableObject, observe } from &#39;asljs-observable&#39;;
+
+class User extends ObservableObject&lt;{ name: string }&gt;
+{
+  #name: string;
+
+  constructor(name: string) {
+    super();
+
+    this.#name = name;
+  }
+
+  get name(): string {
+    return this.#name;
+  }
+
+  set name(value: string) {
+    this.setAndEmit(
+      &#39;name&#39;,
+      this.#name,
+      value,
+      next =&gt; {
+        this.#name = next;
+      });
+  }
+}
+
+const user = new User(&#39;Alice&#39;);
+
+observe(user).at(&#39;name&#39;).subscribe(name =&gt; console.log(name));
+</code></pre>
+<p>Query an instance with <code>observe(instance)</code>; the class carries no query of its
+own.</p>
+<h2 id="the-eventful-factory">The eventful factory</h2>
+<p>The <code>eventful</code> option takes the factory that adds the methods to every
+observable a call creates: the top-level one, every nested one, and the box. It
+must add at least <code>on</code>, <code>off</code> and <code>emit</code>; anything more is its choice, and the
+names it adds are the reserved ones. The default, <code>eventful</code> from
+<code>asljs-eventful</code>, adds its methods as non-enumerable properties, so
+<code>Object.keys</code>, spreading and <code>JSON.stringify</code> see only the data.</p>
+<p><code>strict</code>, the <code>error</code> hook, and eventful&#39;s own <code>trace</code> get no options of their
+own here. The factory is also how its settings are passed, so a closure supplies
+whatever eventful options it likes:</p>
+<pre><code class="language-js">import { eventful } from &#39;asljs-eventful&#39;;
+import { observable } from &#39;asljs-observable&#39;;
+
+const model = observable(
+  { a: 1 },
+  { eventful: value =&gt; eventful(value, { strict: true }) });
+
+model.on(&#39;change&#39;, () =&gt; {
+  throw new Error(&#39;from a listener&#39;);
+});
+
+try {
+  model.a = 2;
+} catch (error) {
+  console.log(&#39;propagated:&#39;, error.message);
+}
+
+// Output:
+// propagated: from a listener
+</code></pre>
+<p>One seam covers every present and future eventful option, so mirrored options
+here would be duplication that has to be maintained in step with the other
+package.</p>
+<ul>
+<li><code>strict</code> makes a listener that throws propagate out of an ordinary assignment.
+That is useful while debugging a model and surprising in one that is not.</li>
+<li>Observable&#39;s <code>trace</code> option and eventful&#39;s <code>trace</code> are different hooks and
+both can be active. Observable&#39;s is <code>(object, action, payload)</code> over <code>new</code> and
+<code>change</code>; eventful&#39;s is <code>(action, payload)</code> over <code>new</code>, <code>on</code>, <code>off</code>, <code>emit</code>
+and <code>emitAsync</code>.</li>
+<li>Writing a method the factory added, such as <code>model.on = null</code>, is not
+specified: what happens is whatever the factory&#39;s methods do.</li>
+</ul>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="Design.html">The design</a> — the rules, one by one.</li>
+<li><a href="contract.html">The contract</a> — what the converter&#39;s output satisfies.</li>
+<li><a href="batching.html">Batching and delivery</a> — when a notification arrives.</li>
+<li><a href="query.html">The query</a> — reading values out of a converted model.</li>
+<li><a href="performance.html">Performance</a> — what conversion costs, and what to write by hand instead.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/converter.md">View source</a>
+  </footer>
+</body>
+</html>

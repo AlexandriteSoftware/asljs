@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="design">Design</h1>
+<p>D1. The purpose of <code>observable</code> is to create an observable version of a given
+data structure, not to extend the existing data with observability.</p>
+<p>D2. <code>observable</code> is a function that returns an observable version of the given
+object, array or value, which reports its changes through <code>on(&#39;change&#39;, listener)</code>. The observable has at least <code>on</code> and <code>off</code>. Its methods are added by
+the <code>eventful</code> factory (D18), which defines the full set; the default,
+<code>eventful</code> from <code>asljs-eventful</code>, adds <code>on</code>, <code>once</code>, <code>off</code>, <code>emit</code>, <code>emitAsync</code>,
+<code>has</code>, <code>removeAllListeners</code> and <code>getListeners</code>.</p>
+<p>The listener receives one argument: the list of modifications that make up the
+change, in the order they were carried out. Applying them in that order turns
+the previous state into the current one, except that a <code>reset</code> (D15) says only
+that the array must be read again. The kinds of modification are listed in D15.</p>
+<pre><code>const model = observable({ a: 1 });
+
+model.on(&#39;change&#39;, changes =&gt; console.log(changes));
+
+model.a = 2;    // [ { kind: &#39;set&#39;, property: &#39;a&#39;, value: 2, previous: 1 } ]
+</code></pre>
+<p>D3. <code>observable</code> does not mutate the original object or array; it returns a new
+observable version.</p>
+<p>D4. <code>observable</code> treats <code>Date</code>, <code>RegExp</code> and function values as immutable:
+conversion keeps the reference and does not convert them.</p>
+<p>A frozen plain object or plain array (D12) nested in the data is a value in the
+same sense, an object-value like a <code>Date</code>: it is kept by reference, <code>convert</code> is
+not asked about it, it is not traversed, and a query with <code>observe()</code> stops on
+it as it does on a <code>Date</code>. Freezing is shallow, so whatever a frozen value
+refers to is kept as it is too. At the top level a frozen object throws unless
+<code>convert</code> takes it over (D10): observing something that cannot change is an
+invalid operation (D16).</p>
+<p>A frozen object with internal state, such as a frozen <code>Map</code> or a frozen class
+instance, is not a value: freezing does not stop its internal state changing, so
+it is handled like any other object of its kind.</p>
+<pre><code>const config = Object.freeze({ theme: &#39;dark&#39; });
+
+observable({ config }, { deep: true }).config === config;   // true
+observable(config);                                         // throws
+</code></pre>
+<p>D5. The <code>deep</code> parameter controls whether nested objects and arrays are also
+made observable. If <code>deep</code> is <code>true</code>, the observation is applied recursively; if
+<code>false</code>, only the top-level object is observed.</p>
+<p>Each observable reports changes to its own properties only. A change inside a
+nested observable is reported by that observable and not by its parent, because
+the parent still holds the same object.</p>
+<pre><code>const model = observable({ user: { name: &#39;Ann&#39; } }, { deep: true });
+
+model.user.name = &#39;Bob&#39;;    // reported by model.user, not by model
+model.user = null;          // reported by model
+</code></pre>
+<p>D6. Changes to the observable&#39;s own properties do not affect the original object
+or array, and changes to the original&#39;s own properties do not affect the
+observable. A value both of them hold by reference — a nested object under
+<code>deep: false</code>, a <code>Date</code>, a <code>RegExp</code>, a function, a frozen plain object or array,
+an object kept because it implements <code>on</code> and <code>off</code>, or a value <code>convert</code>
+returned that is held elsewhere too — is one object, so a change made inside it
+is visible from both sides.</p>
+<pre><code>const original = { nested: { x: 0 } };
+const result = observable(original);   // deep: false
+
+result.nested.x = 1;    // changes nested, which both hold
+original.nested.x;      // 1
+
+result.nested = null;   // changes result&#39;s own property
+original.nested;        // still { x: 1 }
+</code></pre>
+<p>D7. When <code>deep</code> is <code>true</code>, <code>observable</code> throws on a circular reference, detected
+while the object graph is being traversed. A circular reference is an object
+reached again while its own values are still being converted; an object reached
+again after its conversion has finished is a repeated reference, which D8
+allows. Anything kept by reference or replaced by <code>convert</code> (D11, rules 2 to 5)
+is not traversed, so a cycle inside it is allowed.</p>
+<p>Example of circular reference detection:</p>
+<pre><code>const obj = {};
+obj.self = obj;
+
+observable(obj, { deep: true });
+// throws: at value.self: circular reference to value
+</code></pre>
+<p>Example of a cycle inside a value, which is not traversed:</p>
+<pre><code>const dt = new Date();
+dt.self = dt;
+
+observable({ date: dt }, { deep: true });   // converted, date kept by reference
+</code></pre>
+<p>D8. When <code>deep</code> is <code>true</code>, the same object reached twice within one call becomes
+one observable, used in both places. The result keeps the shape of the data it
+was given, and an object is converted once however many times it is referenced.
+This holds within one call only: separate calls to <code>observable</code> produce separate
+observables.</p>
+<pre><code>const shared = { n: 1 };
+
+const result = observable(
+  { value1: shared,
+    value2: shared },
+  { deep: true });
+
+result.value1 === result.value2;    // true
+result.value1.n = 2;
+result.value2.n;                    // 2, one observable reports the change
+</code></pre>
+<p>A <code>Date</code>, a <code>RegExp</code> or a function reached twice is kept by reference in both
+places, as D4 states:</p>
+<pre><code>const dt = new Date();
+
+const result = observable(
+  { value1: dt,
+    value2: dt },
+  { deep: true });
+
+result.value1 === result.value2;    // true, dt itself
+</code></pre>
+<p>D9. The <code>convert</code> hook replaces one object with another. It is called for
+objects only, arrays included: primitive values, <code>Date</code>, <code>RegExp</code>, functions and
+nested frozen plain objects and arrays are values (D4), and <code>convert</code> is never
+asked about them. It is called before <code>observable</code> decides what to do with an
+object, including whether it already implements <code>on</code> and <code>off</code>, so it has the
+first say. It is asked about the top-level value when that value is an object,
+and, when <code>deep</code> is <code>true</code>, about every nested object that is not kept by
+reference first (D11). When <code>deep</code> is <code>false</code> it is called at most once.</p>
+<pre><code>observable(false, { convert });       // convert not called: a value
+observable(new Map(), { convert });   // called once, for the Map
+observable(
+  { a: new Map() },
+  { convert });                       // called once, for the top-level object
+</code></pre>
+<p>Returning <code>null</code> or <code>undefined</code> leaves the decision to the rules below. Any
+other value is the converted object: no other rule applies to it, it is not
+checked or traversed, and it is stored in place of the original, after which
+conversion continues with the next value. Returning the given object itself is
+allowed: the original is then stored by reference and shared, as D6 describes.
+At the top level the result is what <code>observable</code> returns, so there it must
+implement <code>on</code> and <code>off</code> and must not be the given object itself, otherwise
+<code>observable</code> throws (D10); a nested result is not checked. <code>observable</code>
+recognises plain data from any realm (D12), but a hook that tests with
+<code>instanceof</code> sees only its own realm&#39;s classes, so recognising objects from
+other realms is up to the hook.</p>
+<p>D7 and D8 are applied before <code>convert</code> is asked. An object reached a second time
+reuses what its first occurrence became, so <code>convert</code> is called once for it and
+its result is used in both places; a circular reference throws without <code>convert</code>
+being called again. What <code>convert</code> returns is not traversed, so D7 and D8 do not
+apply inside it.</p>
+<p>D10. The value given to <code>observable</code> is checked against these rules in order,
+and the first that matches applies:</p>
+<ol>
+<li>A primitive value, a <code>Date</code>, a <code>RegExp</code> or a function is boxed as <code>{ value: ... }</code>.</li>
+<li>When <code>convert</code> returns a value other than <code>null</code> or <code>undefined</code>, that value
+is returned (D9). It must implement <code>on</code> and <code>off</code> and must not be the value
+it was given, otherwise <code>observable</code> throws, so that what <code>observable</code>
+returns is always a new observable version (D2, D3).</li>
+<li>An object that already implements <code>on</code> and <code>off</code> throws: returning it as is
+would make the observable version the original itself, contrary to D3 and D6.
+That covers an <code>EventEmitter</code> and an observable produced by <code>observable</code>.</li>
+<li>An object or array that has a property named like a method the <code>eventful</code>
+factory adds throws, because the observable it would be converted to has
+methods with those names. With the default factory those are the eight names
+listed in D2. With a custom factory <code>observable</code> knows only <code>on</code> and <code>off</code>;
+any other name the factory adds is the factory&#39;s responsibility, and a
+property of the data with that name is whatever the factory makes of it.</li>
+<li>A plain object or a plain array (D12) holding plain data (D16) is converted
+to an observable, applying D11 to its own values.</li>
+<li>Anything else throws.</li>
+</ol>
+<pre><code>const emitter = new EventEmitter();
+
+observable(emitter);               // throws
+observable(observable({ a: 1 }));  // throws
+observable({ on: null });          // throws
+observable(emitter, {              // converted by the hook
+  convert: value =&gt;
+    value === emitter
+      ? observable({ source: &#39;emitter&#39; })
+      : undefined
+});
+</code></pre>
+<p>D11. While rebuilding an object or array, each property value or element is
+checked against these rules in order, and the first that matches applies:</p>
+<ol>
+<li>A primitive value is copied.</li>
+<li>A <code>Date</code>, a <code>RegExp</code>, a function, or a frozen plain object or plain array is
+kept by reference (D4).</li>
+<li>When <code>deep</code> is <code>false</code>, any other object or array is kept by reference.</li>
+<li>When <code>convert</code> returns a value other than <code>null</code> or <code>undefined</code>, that value
+is used (D9).</li>
+<li>An object that already implements <code>on</code> and <code>off</code> (e.g., <code>EventEmitter</code>) is
+kept by reference.</li>
+<li>An object or array that has a property named like a method the <code>eventful</code>
+factory adds throws, as in D10.</li>
+<li>A plain object or a plain array (D12) holding plain data (D16) is converted
+to an observable, applying these rules to its own values.</li>
+<li>Anything else throws.</li>
+</ol>
+<p>Because rule 3 comes before rules 4 to 8, <code>convert</code> is not called and nothing
+throws for nested values when <code>deep</code> is <code>false</code>. Because rule 5 comes before
+rule 8, an <code>EventEmitter</code> is kept although it is a class instance, unlike at the
+top level (D10). Because rule 5 comes before rule 6, an object whose <code>on</code> and
+<code>off</code> are both functions is kept rather than refused, while one where either is
+anything else, or one with only a reserved name such as <code>emit</code>, is refused.</p>
+<pre><code>const emitter = new EventEmitter();
+
+observable({ events: emitter }, { deep: true });         // events kept
+observable({ a: { on: null } }, { deep: true });         // throws
+observable({ a: { on: null } });                         // kept, deep: false
+observable(
+  { a: { on: () =&gt; {}, off: () =&gt; {} } },
+  { deep: true });                                       // a kept by reference
+</code></pre>
+<p>D12. Only plain objects are converted. An object is plain when its prototype is
+<code>Object.prototype</code> or <code>null</code>, which is what an object literal <code>{ property: &#39;value&#39;, ... }</code>, <code>Object.create(null)</code> and <code>JSON.parse</code> produce. An object with
+any other prototype, such as one created by <code>new Class()</code>, is not converted. At
+the top level it throws unless <code>convert</code> takes it over (D10). Nested under
+<code>deep: true</code> it throws unless <code>convert</code> takes it over or it implements <code>on</code> and
+<code>off</code> (D11). Nested under <code>deep: false</code> it is kept by reference. <code>Date</code>,
+<code>RegExp</code> and functions are not objects in this sense: they are boxed at the top
+level (D10) and kept by reference when nested (D11).</p>
+<p>Only plain arrays are converted. An array is plain when its prototype is
+<code>Array.prototype</code>, which is what an array literal <code>[ ... ]</code>, <code>Array.from</code> and
+<code>JSON.parse</code> produce. An instance of a subclass of <code>Array</code>, such as one created
+by <code>new List()</code> for <code>class List extends Array</code>, is a class instance like any
+other, and is handled as one.</p>
+<p>These checks hold across realms. An object or array created in another realm,
+such as a same-origin iframe or a Node <code>vm</code> context, has that realm&#39;s
+<code>Object.prototype</code> or <code>Array.prototype</code>, and it is plain data all the same, so
+the checks recognise any realm&#39;s prototypes rather than only this realm&#39;s:</p>
+<ul>
+<li>an object is plain when its prototype is <code>null</code>, or is an <code>Object.prototype</code>
+of some realm: an object whose own prototype is <code>null</code> and whose <code>constructor</code>
+is a function named <code>Object</code>;</li>
+<li>an array is plain when both it and its prototype are arrays by
+<code>Array.isArray</code>, because every realm&#39;s <code>Array.prototype</code> is an array and a
+subclass prototype is not;</li>
+<li>a <code>Date</code> or a <code>RegExp</code> (D4) is recognised by what it is, not by <code>instanceof</code>,
+so one from another realm is a value too.</li>
+</ul>
+<p>A prototype made to look like <code>Object.prototype</code> passes the object check. That
+takes deliberate effort, and the result is still handled as plain data.</p>
+<pre><code>const data = frame.JSON.parse(&#39;{&quot;a&quot;:1,&quot;list&quot;:[1]}&#39;);   // another realm
+
+observable(data, { deep: true });                       // converted
+observable({ when: new frame.Date() }, { deep: true }); // when kept, a value
+</code></pre>
+<p>The rule is decided by the prototype, not by how the object was written, because
+the prototype is all <code>observable</code> can see. A copy by <code>{ ...instance }</code> would
+keep the own properties and lose the prototype, and with it the methods,
+accessors and <code>instanceof</code>, so the result would no longer be the class it came
+from.</p>
+<pre><code>class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+observable({ x: 1, y: 2 });             // converted
+observable(Object.create(null));        // converted
+observable(new Point(1, 2));            // throws
+observable(new Point(1, 2), {           // converted by the hook
+  convert: value =&gt;
+    value instanceof Point
+      ? observable({ x: value.x, y: value.y })
+      : undefined
+});
+</code></pre>
+<p>D13. Conversion happens once, when <code>observable</code> is called. A value written to an
+observable later is stored as it is: it is not converted, copied or checked, and
+D7, D8, D9, D10, D11, D12 and D16 do not apply to it. The write itself is
+reported, as D15 describes. How the data is managed after that is up to the
+caller, who converts a value before assigning it if its own changes should be
+reported. Writing a method the <code>eventful</code> factory added is not specified: what
+happens is whatever the factory&#39;s methods do with a write to their names.</p>
+<pre><code>const model = observable({ user: { name: &#39;Ann&#39; } }, { deep: true });
+
+model.user = { name: &#39;Bob&#39; };       // reported; model.user is plain
+model.user.name = &#39;Carol&#39;;          // not reported
+
+model.user = observable({ name: &#39;Dan&#39; });
+model.user.name = &#39;Eve&#39;;            // reported by model.user
+</code></pre>
+<p>Because a written value is stored by reference, it is shared with whoever
+assigned it, as D6 describes for values held by reference:</p>
+<pre><code>const user = { name: &#39;Ann&#39; };
+
+model.user = user;
+user.name = &#39;Bob&#39;;                  // not reported
+model.user.name;                    // &#39;Bob&#39;
+</code></pre>
+<p>D14. An observable looks as much as possible like the data it was converted
+from. The default <code>eventful</code> factory adds its methods as own, non-enumerable
+properties, so <code>Object.keys</code>, <code>for...in</code>, spreading and <code>JSON.stringify</code> see the
+data and not the methods, while <code>&#39;on&#39; in result</code> is <code>true</code>. A custom factory
+decides for itself how its methods are defined. The prototype of an observable
+object is not specified: it is whatever the implementation finds simplest.</p>
+<p>An observable array is an array: <code>Array.isArray</code> returns <code>true</code> for it, it has
+<code>length</code>, index access and the array methods, it can be iterated and spread, and
+<code>JSON.stringify</code> writes it as an array. With the default factory its methods are
+non-enumerable too, so none of these see them. Methods that return a new array,
+such as <code>map</code>, <code>filter</code>, <code>slice</code>, <code>concat</code> and <code>flat</code>, return a plain array, not
+an observable.</p>
+<pre><code>const result = observable({ a: 1 });
+
+Object.keys(result);        // [ &#39;a&#39; ]
+JSON.stringify(result);     // &#39;{&quot;a&quot;:1}&#39;
+&#39;on&#39; in result;             // true
+
+const list = observable([ 1, 2 ]);
+
+Array.isArray(list);        // true
+JSON.stringify(list);       // &#39;[1,2]&#39;
+[ ...list ];                // [ 1, 2 ]
+</code></pre>
+<p>D15. A modification is one of these kinds:</p>
+<ul>
+<li><code>{ kind: &#39;set&#39;, property, value, previous }</code>: a property of an object, an
+index of an array, or an array&#39;s <code>length</code> was set from <code>previous</code> to <code>value</code>.
+<code>property</code> is always a string, so an array index is reported as <code>&#39;0&#39;</code>, not
+<code>0</code>. Deleting a property is reported as a <code>set</code> to <code>undefined</code>, so a deleted
+property and one set to <code>undefined</code> are reported alike.</li>
+<li><code>{ kind: &#39;splice&#39;, index, removed, added }</code>: at position <code>index</code> of an array,
+the elements in <code>removed</code> were removed and the elements in <code>added</code> were
+inserted. Both are lists of the values themselves, not counts.</li>
+<li><code>{ kind: &#39;reset&#39; }</code>: the array changed so much that it is better read again.
+It carries no other properties.</li>
+</ul>
+<p>An object reports <code>set</code> only. <code>splice</code> and <code>reset</code> are reported by arrays.</p>
+<p>An index written past the end of an array grows its <code>length</code>, and no splice
+describes that, so the change also carries a <code>set</code> for <code>length</code>, after the <code>set</code>
+for the index.</p>
+<p>A <code>splice</code> at <code>index</code> also changes every index from <code>index</code> onwards and, when
+the counts differ, <code>length</code>; no separate <code>set</code> is reported for them. A
+subscriber that tracks indices or <code>length</code> either interprets <code>splice</code> that way
+or, like for any kind it does not handle, reads the array again.</p>
+<p>A modification is reported only when the property reads differently afterwards,
+compared with <code>Object.is</code>. Assigning the value a property already has, or
+deleting a property that reads as <code>undefined</code>, reports nothing.</p>
+<p>A definition with <code>Object.defineProperty</code> is reported the same way, by the value
+the property reads as before and after. Defining a getter therefore runs it once
+to obtain <code>value</code>, and replacing one runs the old getter once to obtain
+<code>previous</code>. A definition that changes only attributes, such as <code>enumerable</code>,
+reports nothing.</p>
+<p>A write under a symbol key, its deletion included, is stored and not reported:
+<code>property</code> is always a string, and symbol keys are not data (D16).</p>
+<pre><code>const model = observable({ a: 1, first: &#39;Ann&#39;, last: &#39;Lee&#39; });
+
+model.a = 1;                                        // not reported: same value
+model.a = NaN;                                      // reported
+model.a = NaN;                                      // not reported: Object.is
+
+Object.defineProperty(model, &#39;full&#39;, {
+  get() { return `${this.first} ${this.last}`; }
+});                                                 // set, value: &#39;Ann Lee&#39;
+
+Object.defineProperty(model, &#39;a&#39;, {
+  enumerable: false });                             // not reported
+
+model[Symbol(&#39;meta&#39;)] = 1;                          // not reported
+</code></pre>
+<p>A subscriber must handle <code>set</code>. For any other kind it does not recognise,
+<code>splice</code> and <code>reset</code> included, it reads the array again. That lets an observable
+report a change in whatever form is cheapest and lets new kinds be added without
+breaking subscribers.</p>
+<p>How a change is split into <code>change</code> events is up to the implementation, but one
+call that changes an array, such as <code>push(a, b)</code> or <code>sort()</code>, is preferably one
+<code>change</code> event carrying all its modifications.</p>
+<pre><code>const list = observable([ &#39;a&#39;, &#39;b&#39; ]);
+
+list.on(&#39;change&#39;, changes =&gt; {
+  for (const change of changes) {
+    if (change.kind !== &#39;set&#39;) {
+      render([ ...list ]);      // unknown kind: read the array again
+      return;
+    }
+
+    if (change.property !== &#39;length&#39;) {
+      renderAt(change.property, change.value);
+    }
+  }
+});
+
+list.push(&#39;c&#39;, &#39;d&#39;);            // one change
+</code></pre>
+<p>D16. A plain object or plain array is converted only when it holds plain data,
+and throws otherwise. Plain data means that every own property, other than an
+array&#39;s <code>length</code>:</p>
+<ul>
+<li>has a string key: a symbol key throws;</li>
+<li>is a data property: a getter or a setter throws;</li>
+<li>is enumerable, writable and configurable, as a property created by a literal
+or by assignment is: any other attributes throw.</li>
+</ul>
+<p>The object or array itself must be extensible, so a frozen, sealed or
+non-extensible one throws. A nested frozen plain object or array never reaches
+this check: it is kept as a value (D4, D11). An array must also have no holes
+and no own properties other than its indices and <code>length</code>.</p>
+<p>The case <code>observable</code> is for is plain data such as <code>observable({ user: ... })</code>.
+Data that needs accessors, hidden or read-only properties, or symbol keys is a
+class in all but name, and a class can report its own changes through <code>eventful</code>
+without <code>observable</code>.</p>
+<pre><code>observable({ get full() { return &#39;Ann Lee&#39;; } });        // throws: accessor
+observable({ [Symbol(&#39;meta&#39;)]: 1 });                     // throws: symbol key
+observable(Object.freeze({ a: 1 }));                     // throws: frozen
+observable([ 1, , 3 ]);                                  // throws: hole
+observable(Object.assign([ 1 ], { total: 1 }));          // throws: extra key
+observable({ a: 1, list: [ 1, 2 ] }, { deep: true });    // converted
+</code></pre>
+<p>D17. An error thrown by <code>observable</code> says where the problem is and what it is.
+The message starts with the path of the offending value, written from <code>value</code> as
+the top level, with <code>.name</code> for a property and <code>[0]</code> for an array index,
+followed by the reason. A circular reference names both ends: where the cycle
+was found and the object it leads back to. An error thrown by the <code>convert</code> hook
+or by the <code>eventful</code> factory is reported the same way, prefixed with the path of
+the value it was handling, with the original error as its <code>cause</code>.</p>
+<pre><code>observable({ orders: [ { meta: new Map() } ] }, { deep: true });
+// throws: at value.orders[0].meta: Map is not supported
+
+const a = { b: {} };
+a.b.back = a;
+observable({ a }, { deep: true });
+// throws: at value.a.b.back: circular reference to value.a
+
+observable({ list: [ 1, , 3 ] }, { deep: true });
+// throws: at value.list: an array with holes is not supported
+</code></pre>
+<p>D18. <code>observable</code> takes these options:</p>
+<ul>
+<li><code>deep</code> (D5).</li>
+<li><code>convert</code> (D9).</li>
+<li><code>eventful</code>: the factory that adds the methods to each observable, the
+top-level one and every nested one created in the same call. It is given the
+new object, array or box and must give it at least <code>on</code> and <code>off</code>, and a way
+for <code>observable</code> to deliver <code>change</code>; anything more is the factory&#39;s choice.
+The default is <code>eventful</code> from <code>asljs-eventful</code>. Whatever the emitter does
+beyond that, such as what happens when a listener throws, is the factory&#39;s
+behaviour, and the factory is also how its settings are passed:
+<code>observable(model, { eventful: value =&gt; eventful(value, { strict: true }) })</code>.</li>
+<li><code>trace</code>: a hook <code>(object, action, payload)</code> called with <code>&#39;new&#39;</code> and <code>{ object }</code> when an observable is created, and with <code>&#39;change&#39;</code> and the list of
+modifications each time a change is delivered. Every observable created in the
+same call shares it. When a call passes none, the process-wide
+<code>observable.options.trace</code> is used, if set.</li>
+</ul>
+<p>D19. <code>batch(fn)</code> groups the changes made while <code>fn</code> runs:</p>
+<ul>
+<li>Every observable written to during <code>fn</code> delivers one <code>change</code> when the batch
+ends, carrying all its modifications in the order they were made. Nothing is
+merged or dropped: two writes to one property are two <code>set</code> entries, so the
+list can always be applied in order (D2).</li>
+<li>The observables deliver in the order they were first written to.</li>
+<li>Batches nest: an inner <code>batch</code> joins the outer one, and only the outermost
+delivers.</li>
+<li>When <code>fn</code> throws, the changes already made are still delivered, because the
+writes have happened, and the exception is rethrown afterwards.</li>
+<li>A write made by a listener while a change is being delivered takes effect at
+once, but its own <code>change</code> is delivered after the current delivery finishes,
+so every listener of one change receives the same list. Listeners that keep
+causing writes are stopped after a fixed number of rounds with an error.</li>
+<li>When a listener throws, which the factory decides (D18), the error propagates
+at once. Changes still queued for delivery are discarded: the writes have
+happened, but their <code>change</code> is not delivered.</li>
+</ul>
+<pre><code>const model = observable({ n: 1 });
+
+model.on(&#39;change&#39;, changes =&gt; console.log(changes.length));
+
+batch(() =&gt; {
+  model.n = 2;
+  model.n = 3;
+});
+// 2: set n 1 → 2, then set n 2 → 3
+</code></pre>
+<p>Merging repeated writes is left for later: it is easy to get wrong for arrays,
+where an index means a different element after a <code>splice</code>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/observable/docs/Design.md">View source</a>
+  </footer>
+</body>
+</html>

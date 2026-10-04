@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forwarding eventful traces to OpenTelemetry · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="forwarding-eventful-traces-to-opentelemetry">Forwarding eventful traces to OpenTelemetry</h1>
+<h2 id="purpose">Purpose</h2>
+<p><code>eventful</code> records who sent a message and what caused it. That is enough to
+render a sequence diagram locally, and enough to hand the same information to
+OpenTelemetry when something outside the process needs to consume it.</p>
+<p>This is a worked example, not a dependency. <code>eventful</code> does not depend on
+OpenTelemetry, and nothing here changes if you never adopt it.</p>
+<h2 id="what-maps-onto-what">What maps onto what</h2>
+<p>OpenTelemetry standardises the two halves separately, and neither half was
+designed for object instances, so the mapping is a choice rather than a
+specification:</p>
+<ul>
+<li>A message becomes a <strong>span</strong>. <code>messageId</code> is the natural span name suffix, and
+the span covers the dispatch of that message to its listeners.</li>
+<li><code>causationId</code> becomes the <strong>parent span</strong>. This is the whole reason causation
+is recorded: a parent link is what turns a flat list into a tree.</li>
+<li><code>correlationId</code> becomes the <strong>trace id</strong>, since a trace is exactly the set of
+spans belonging to one interaction.</li>
+<li><code>id</code>, the instance identity, becomes a <strong>span attribute</strong>. There is no
+standard attribute for an application object, so pick a namespace of your own
+and stay consistent.</li>
+</ul>
+<p>The messaging semantic conventions are the closest published fit for the
+attribute names. Borrowing them buys recognition in existing trace viewers:</p>
+<ul>
+<li><code>messaging.message.id</code> for <code>messageId</code></li>
+<li><code>messaging.destination.name</code> for the event name</li>
+<li><code>messaging.operation.name</code> for <code>emit</code> or <code>emitAsync</code></li>
+</ul>
+<p>The instance identity has no equivalent, so it stays custom. <code>eventful.emitter</code>
+is used below.</p>
+<h2 id="a-minimal-exporter">A minimal exporter</h2>
+<p>The trace hook receives everything needed. Keep a map from <code>messageId</code> to the
+span so a caused message can find its parent.</p>
+<pre><code>import {
+  context,
+  SpanKind,
+  trace
+} from &#39;@opentelemetry/api&#39;;
+import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const tracer = trace.getTracer(&#39;asljs-eventful&#39;);
+
+const spansByMessageId = new Map();
+
+function traceToOtel(action, payload)
+{
+  if (action !== &#39;emit&#39; &amp;&amp; action !== &#39;emitAsync&#39;) {
+    return;
+  }
+
+  const parentSpan = payload.causationId === null
+    ? undefined
+    : spansByMessageId.get(payload.causationId);
+
+  const parentContext = parentSpan === undefined
+    ? context.active()
+    : trace.setSpan(context.active(), parentSpan);
+
+  const span = tracer.startSpan(
+    `${payload.id} ${String(payload.event)}`,
+    {
+      kind: SpanKind.PRODUCER,
+      attributes: {
+        &#39;eventful.emitter&#39;: payload.id,
+        &#39;eventful.correlation_id&#39;: payload.correlationId,
+        &#39;messaging.message.id&#39;: payload.messageId,
+        &#39;messaging.destination.name&#39;: String(payload.event),
+        &#39;messaging.operation.name&#39;: action,
+        &#39;messaging.listener.count&#39;: payload.listeners.length
+      }
+    },
+    parentContext
+  );
+
+  spansByMessageId.set(payload.messageId, span);
+
+  span.end();
+}
+
+const cart = eventful(new Cart(), { trace: traceToOtel });
+</code></pre>
+<h2 id="running-it-without-a-backend">Running it without a backend</h2>
+<p><code>@opentelemetry/sdk-trace-node</code> with <code>ConsoleSpanExporter</code> is enough to see the
+result, with no collector and no service to send anything to. It is the fastest
+way to check that the causation chain really does become a span tree.</p>
+<pre><code>import {
+  BasicTracerProvider,
+  ConsoleSpanExporter,
+  SimpleSpanProcessor
+} from &#39;@opentelemetry/sdk-trace-node&#39;;
+
+const provider = new BasicTracerProvider({
+  spanProcessors: [new SimpleSpanProcessor(new ConsoleSpanExporter())]
+});
+
+trace.setGlobalTracerProvider(provider);
+
+// ... emit as usual, then:
+await provider.forceFlush();
+</code></pre>
+<p>Running the exporter above against <code>cart.emit(&#39;checkout&#39;)</code>, where the checkout
+listener emits <code>stocked</code> on a basket, prints two spans:</p>
+<pre><code>traceId:           32c99ff710f26fbd96133a8f10100b05
+name:              &#39;Cart#1 checkout&#39;
+id:                cfff4535fec1e82a
+parentSpanContext: undefined
+  eventful.emitter        &#39;Cart#1&#39;
+  messaging.message.id    &#39;m5&#39;
+
+traceId:           32c99ff710f26fbd96133a8f10100b05
+name:              &#39;Basket#1 stocked&#39;
+id:                57b45bbb460a2802
+parentSpanContext: { spanId: &#39;cfff4535fec1e82a&#39;, ... }
+  eventful.emitter        &#39;Basket#1&#39;
+  messaging.message.id    &#39;m7&#39;
+</code></pre>
+<p>Both spans share one trace, and the second names the first as its parent. That
+is the causation chain, expressed in OpenTelemetry&#39;s own terms.</p>
+<p>Two details the output makes obvious. Message ids are not <code>m1</code> and <code>m2</code>, because
+the counter is process wide and <code>eventful</code> emits internally before any of this
+runs; treat the values as opaque. And <code>service.name</code> reads
+<code>unknown_service:node.exe</code> until a resource is configured, which is worth doing
+before any of this reaches a real backend.</p>
+<h2 id="three-things-this-example-gets-wrong-on-purpose">Three things this example gets wrong on purpose</h2>
+<p>It is short enough to read, which means it is not production code.</p>
+<ul>
+<li><strong>The span ends immediately.</strong> A real span should stay open for the duration
+of the dispatch, so its duration means something. The trace hook fires before
+listeners run and is not called again afterwards, so covering the dispatch
+needs the emit to be wrapped rather than observed. Ending the span at once
+gives a correct tree with meaningless durations.</li>
+<li><strong><code>spansByMessageId</code> never shrinks.</strong> It is a leak. Bound it by correlation,
+and drop a correlation once its root message has been dispatched.</li>
+<li><strong>Only the producer side exists.</strong> The conventions describe a producer span
+and a consumer span per listener. <code>eventful</code> does not report listener entry
+and exit, so there is nothing to hang consumer spans on without wrapping
+listeners in <code>on</code>.</li>
+</ul>
+<h2 id="when-to-do-this-at-all">When to do this at all</h2>
+<p>Not by default. The ids are useful on their own: a structured log of <code>{ id, event, messageId, correlationId, causationId }</code> is already a graph, and
+rendering it as a mermaid sequence diagram takes a few lines. That costs no
+dependency and no per-event allocation, which matters for a library that runs in
+a browser.</p>
+<p>Reach for OpenTelemetry when something outside the process has to consume the
+trace, or when these events need to sit in the same view as HTTP and database
+spans from the rest of a system. Then the cost buys real interoperability.</p>
+<h2 id="rendering-without-opentelemetry">Rendering without OpenTelemetry</h2>
+<p>The same payloads produce a sequence diagram directly:</p>
+<pre><code>const lines = [&#39;sequenceDiagram&#39;];
+
+function traceToMermaid(action, payload)
+{
+  if (action !== &#39;emit&#39; &amp;&amp; action !== &#39;emitAsync&#39;) {
+    return;
+  }
+
+  const from = payload.causationId === null
+    ? &#39;caller&#39;
+    : emitterByMessageId.get(payload.causationId) ?? &#39;caller&#39;;
+
+  emitterByMessageId.set(payload.messageId, payload.id);
+
+  lines.push(`  ${from}-&gt;&gt;${payload.id}: ${String(payload.event)}`);
+}
+</code></pre>
+<p>Participants are the instance identities, arrows are the causation chain, and
+one diagram per <code>correlationId</code> is one interaction.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/eventful/docs/opentelemetry.md">View source</a>
+  </footer>
+</body>
+</html>

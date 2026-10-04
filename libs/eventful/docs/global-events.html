@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Global events and tracing · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="global-events-and-tracing">Global events and tracing</h1>
+<h2 id="purpose">Purpose</h2>
+<p>How to observe emitters from the outside: the package-level emitter that sees
+every enhanced object, the per-object <code>trace</code> hook, and the identities that make
+a trace readable.</p>
+<h2 id="the-package-level-emitter">The package-level emitter</h2>
+<p><code>eventful</code> is not only an object enhancer. The package-level <code>eventful</code> function
+is also an emitter. When you create an enhanced object via <code>eventful(target, options)</code>, its lifecycle and actions are reported to the per-instance <code>trace</code>
+hook and also emitted as global events on <code>eventful</code>.</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const offNew = eventful.on(
+  &#39;new&#39;,
+  ({ object }) =&gt;
+  {
+    console.log(&#39;created&#39;, object);
+  }
+);
+
+const offError = eventful.on(
+  &#39;error&#39;,
+  ({ error, object, event }) =&gt;
+  {
+    console.error(&#39;listener error&#39;, event, error);
+  }
+);
+
+// Later
+offNew();
+offError();
+</code></pre>
+<p>In TypeScript the payloads are checked: the exported <code>GlobalEvents</code> map declares
+the arguments of <code>new</code>, <code>on</code>, <code>off</code>, <code>emit</code>, <code>emitAsync</code> and <code>error</code>, and
+<code>EventfulFn</code> is the type of <code>eventful</code> itself. See <a href="typescript.html#the-package-level-emitter">typescript.md</a>.</p>
+<p>Reporting is gated: an object without a <code>trace</code> hook reports an action only
+while a global listener for that action exists, so an unused stream costs
+nothing.</p>
+<p>If a <strong>global</strong> <code>eventful.on(&#39;error&#39;, ...)</code> listener throws, <code>eventful</code> throws a
+<code>ListenerError</code> (an <code>Error</code> subclass with fields <code>{ error, object, event, listener }</code>) to avoid an infinite error loop.</p>
+<p>A global listener that performs the action it is listening for, on an enhanced
+object, recurses until the stack ends. A listener for <code>emit</code> that emits on an
+enhanced object is traced in turn, which calls the listener again. The same
+holds for a listener for <code>on</code> that subscribes. This is not guarded, for the same
+reason a function that calls itself is not: read from the payload rather than
+acting on it, and where a listener has to act, emit on <code>eventful</code> itself, which
+is not re-broadcast. <code>GlobalEvents</code> leaves room for such an event: a name it
+does not declare is accepted, with <code>unknown[]</code> arguments. The
+<a href="leak-detection.html">leak detection</a> recipes take the first route, and only read.</p>
+<h2 id="the-trace-hook">The trace hook</h2>
+<p>Trace event invocations for one object:</p>
+<pre><code class="language-js">import {
+  eventful
+} from &#39;asljs-eventful&#39;;
+
+const obj = eventful(
+  {},
+  {
+    trace: (action, payload) =&gt;
+    {
+      console.log(
+        `Action: ${action}`,
+        payload
+      );
+    }
+  }
+);
+</code></pre>
+<p>Actions and payloads:</p>
+<ul>
+<li><code>new</code> on creation, <code>{ object }</code></li>
+<li><code>on</code> when subscribing, <code>{ object, event, listener }</code></li>
+<li><code>off</code> when unsubscribing, <code>{ object, event, listener }</code></li>
+<li><code>emit</code> for sync emit, <code>{ object, event, args, listeners }</code></li>
+<li><code>emitAsync</code> for async emit, <code>{ object, event, args, listeners }</code></li>
+</ul>
+<p>Every payload also carries <code>id</code>, the emitter identity. <code>emit</code> and <code>emitAsync</code>
+payloads also carry <code>messageId</code>, <code>correlationId</code> and <code>causationId</code>.</p>
+<p>Every subscription and every removal is reported, whichever path it took, and
+only removals that actually removed something, so a count of <code>on</code> against <code>off</code>
+stays balanced.</p>
+<h2 id="instance-identity-and-message-context">Instance identity and message context</h2>
+<p>A trace is only readable if you can tell who sent what, and what caused it.
+Every trace payload carries the identity of the object it came from, and every
+emit carries the identity of the message.</p>
+<h3 id="instanceidobject">instanceId(object)</h3>
+<p>Returns a stable <code>&lt;Type&gt;#&lt;n&gt;</code> identifier for an instance, assigning one on first
+use. Instances are held weakly, so identifying one does not keep it alive.</p>
+<pre><code class="language-js">import {
+  eventful,
+  instanceId
+} from &#39;asljs-eventful&#39;;
+
+class Cart
+{}
+
+const cart = eventful(new Cart());
+
+console.log(instanceId(cart));
+
+// Output:
+// Cart#1
+</code></pre>
+<h3 id="message-context">Message context</h3>
+<p>Each emit is a message with three ids:</p>
+<ul>
+<li><code>messageId</code> identifies this message.</li>
+<li><code>correlationId</code> is shared by every message in one interaction.</li>
+<li><code>causationId</code> is the message whose dispatch caused this one, or null when the
+message starts an interaction.</li>
+</ul>
+<p>The ids are opaque. The counter is process wide, so do not depend on particular
+values or on a message being the first one.</p>
+<p>A message emitted by a listener is caused by the message being dispatched, and
+joins its correlation, so a chain of events is recoverable from the trace alone:</p>
+<pre><code>cart.on(&#39;checkout&#39;, () =&gt; basket.emit(&#39;stocked&#39;));
+
+cart.emit(&#39;checkout&#39;);
+// emit  Cart#1   checkout  { messageId: A, correlationId: A, causationId: null }
+// emit  Basket#1 stocked   { messageId: B, correlationId: A, causationId: A }
+</code></pre>
+<h3 id="getcurrentmessagecontext-and-runinmessagecontextcontext-fn">getCurrentMessageContext() and runInMessageContext(context, fn)</h3>
+<p><code>getCurrentMessageContext</code> returns the message being dispatched on this call
+stack, or null outside a dispatch.</p>
+<p>The context is ambient on the call stack, so it reaches emits a listener makes
+synchronously. A listener that emits <em>after awaiting</em> has already left that
+stack, and its message starts a new correlation. To keep the chain across an
+await, capture the context and restore it:</p>
+<pre><code>cart.on(&#39;checkout&#39;, async () =&gt;
+{
+  const context = getCurrentMessageContext();
+
+  await settle();
+
+  runInMessageContext(context, () =&gt; basket.emit(&#39;stocked&#39;));
+});
+</code></pre>
+<p>For a worked example of forwarding these ids to OpenTelemetry, see
+<a href="opentelemetry.html">opentelemetry.md</a>.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/eventful/docs/global-events.md">View source</a>
+  </footer>
+</body>
+</html>

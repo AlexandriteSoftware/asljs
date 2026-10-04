@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>data-binding · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="data-binding">data-binding</h1>
+<blockquote>
+<p>Part of <a href="https://github.com/AlexandriteSoftware/asljs">Alexandrite Software Library</a> - a set of high-quality, performant
+JavaScript libraries for everyday use.</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<p><code>asljs-data-binding</code> provides declarative DOM bindings using explicit
+<code>data-bind-*</code> attributes. Bindings are applied with <code>bindDataModel(root, model, options?)</code>.</p>
+<p>There are three binding families:</p>
+<ul>
+<li>Value bindings: write model values to <code>textContent</code>, <code>innerHTML</code>, or an
+attribute.</li>
+<li>Event bindings: wire DOM events to model actions.</li>
+<li>Context bindings: switch the model context for a descendant subtree.</li>
+</ul>
+<p>Bindings are reactive when the model conforms to the <code>asljs-observable</code>
+contract: each binding observes its path with <code>observe(model).at(path)</code> and
+re-renders when the value there changes. A plain object is bound once, with no
+reactivity.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install asljs-data-binding
+</code></pre>
+<p>NPM Package: <a href="https://www.npmjs.com/package/asljs-data-binding">asljs-data-binding</a></p>
+<h2 id="public-exports">Public Exports</h2>
+<p>Runtime exports:</p>
+<ul>
+<li><code>bindDataModel</code></li>
+<li><code>createBuiltInPipes</code></li>
+</ul>
+<p>Type exports:</p>
+<ul>
+<li><code>BindDataModelOptions</code></li>
+<li><code>DataModel</code></li>
+</ul>
+<h2 id="binding-contract-at-a-glance">Binding Contract At A Glance</h2>
+<ul>
+<li>Value bindings are path-based.</li>
+<li>Event bindings are path-based.</li>
+<li>Context bindings switch subtree model roots.</li>
+<li>Pipe args are static strings.</li>
+<li>Event actions are invoked as <code>(event, model, element)</code>.</li>
+<li>Missing or non-function actions warn instead of crashing the binding system.</li>
+</ul>
+<h2 id="unsupported-syntax">Unsupported Syntax</h2>
+<ul>
+<li>No inline function-call expressions like <code>save(item.id)</code>.</li>
+<li>No computed expressions like <code>price * qty</code>.</li>
+<li>No reactive pipe arguments.</li>
+<li>No template-language control structures inside attributes.</li>
+<li>No implicit two-way binding syntax.</li>
+</ul>
+<h2 id="choosing-the-right-binding-family">Choosing The Right Binding Family</h2>
+<ul>
+<li>If you need to write text, then use <code>data-bind-text</code>.</li>
+<li>If you need to write HTML, then use <code>data-bind-html</code>.</li>
+<li>If you need to write an attribute, then use <code>data-bind-&lt;attr&gt;</code>.</li>
+<li>If you need to write a DOM property, then use <code>data-bind-prop-&lt;name&gt;</code>.</li>
+<li>If you need to toggle a class, then use <code>data-bind-class-&lt;name&gt;</code>.</li>
+<li>If you need to handle an event, then use <code>data-bind-on&lt;event&gt;</code>.</li>
+<li>If you need to switch the descendant model root, then use <code>data-bind-context</code>.</li>
+</ul>
+<h2 id="safe-authoring-rules">Safe Authoring Rules</h2>
+<ul>
+<li>Keep each binding attribute focused on one concern.</li>
+<li>Prefer multiple binding attributes over overloaded single expressions.</li>
+<li>Use <code>data-bind-context</code> instead of repeating long nested paths.</li>
+<li>Keep event handler names on the model.</li>
+<li>Keep pipe arguments literal unless a custom pipe is intentionally designed for
+string arguments.</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import {
+    bindDataModel
+  } from &#39;asljs-data-binding&#39;;
+import {
+    observable
+  } from &#39;asljs-observable&#39;;
+
+const root =
+  document.body;
+
+const model =
+  observable(
+    { user:
+        { name: &#39;Alex&#39; },
+      save: () =&gt; {
+        console.log(&#39;saved&#39;);
+      } },
+    { deep: true });
+
+const dispose =
+  bindDataModel(
+    root,
+    model,
+    {
+      pipes:
+        { yesno: value =&gt; value ? &#39;Yes&#39; : &#39;No&#39; }
+    });
+
+// later:
+dispose();
+</code></pre>
+<p>Example bindings:</p>
+<pre><code class="language-html">&lt;div data-bind-text=&quot;user.name&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-text=&quot;user.active | yesno&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-html=&quot;body | wrap:&#39;&lt;span&gt;&#39;:&#39;&lt;/span&gt;&#39;&quot;&gt;&lt;/div&gt;
+&lt;button data-bind-onclick=&quot;save&quot;&gt;Save&lt;/button&gt;
+</code></pre>
+<p>Use <code>data-bind-context</code> to switch the model context for a subtree:</p>
+<pre><code class="language-html">&lt;div data-bind-context=&quot;user&quot;&gt;
+  &lt;h1 data-bind-text=&quot;name&quot;&gt;&lt;/h1&gt;
+  &lt;button data-bind-onclick=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Multiple bindings on the same element are supported and preferred when they
+describe different concerns:</p>
+<pre><code class="language-html">&lt;a
+  data-bind-href=&quot;url&quot;
+  data-bind-text=&quot;label | upper&quot;
+  data-bind-class-active=&quot;isActive&quot;
+  data-bind-onclick=&quot;openDetails&quot;
+&gt;&lt;/a&gt;
+</code></pre>
+<p>End-to-end example using context, value bindings, an event binding, and a custom
+pipe:</p>
+<pre><code class="language-html">&lt;section data-bind-context=&quot;user&quot;&gt;
+  &lt;h1 data-bind-text=&quot;name&quot;&gt;&lt;/h1&gt;
+  &lt;p data-bind-text=&quot;active | yesno&quot;&gt;&lt;/p&gt;
+  &lt;a data-bind-href=&quot;profileUrl&quot; data-bind-text=&quot;name | upper&quot;&gt;&lt;/a&gt;
+  &lt;button data-bind-onclick=&quot;save&quot;&gt;Save&lt;/button&gt;
+&lt;/section&gt;
+</code></pre>
+<h2 id="binding-syntax">Binding Syntax</h2>
+<h3 id="context-binding">Context binding</h3>
+<p><code>data-bind-context</code> switches the model context for the entire descendant
+subtree.</p>
+<p>General form:</p>
+<pre><code class="language-text">data-bind-context=&quot;path&quot;
+</code></pre>
+<p>The <code>path</code> is resolved against the current model. The resulting object becomes
+the model context for all descendant bindings.</p>
+<p>Example — binding to a nested object:</p>
+<pre><code class="language-html">&lt;div data-bind-context=&quot;user&quot;&gt;
+  &lt;h1 data-bind-text=&quot;name&quot;&gt;&lt;/h1&gt;
+  &lt;span data-bind-text=&quot;email&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;
+</code></pre>
+<p>This is equivalent to writing <code>user.name</code> and <code>user.email</code> on the descendants
+without the context switch.</p>
+<p>Nested <code>data-bind-context</code> attributes stack naturally:</p>
+<pre><code class="language-html">&lt;div data-bind-context=&quot;item&quot;&gt;
+  &lt;div data-bind-context=&quot;author&quot;&gt;
+    &lt;span data-bind-text=&quot;name&quot;&gt;&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Here <code>name</code> resolves relative to <code>item.author</code>.</p>
+<p>Reactivity:</p>
+<ul>
+<li><code>data-bind-context</code> watches its path on the parent context</li>
+<li>when the context object is replaced, all descendant bindings are rebound
+against the new context</li>
+<li>stale watchers from the old context are removed</li>
+</ul>
+<p>Null/undefined context:</p>
+<ul>
+<li>if the path resolves to <code>null</code> or <code>undefined</code>, descendant bindings degrade
+gracefully following the existing nullish conventions (empty text, removed
+attributes, action warnings)</li>
+<li>if the context later becomes a non-null object, descendants become active
+again</li>
+</ul>
+<h3 id="value-bindings">Value bindings</h3>
+<p>General form:</p>
+<pre><code class="language-text">data-bind-&lt;target&gt;=&quot;path[ | pipe[:arg1[:arg2...]]]*&quot;
+</code></pre>
+<p>Pipe arguments can be quoted when they contain characters like <code>:</code>.</p>
+<pre><code class="language-text">data-bind-html=&quot;content | wrap:&#39;&lt;span&gt;&#39;:&#39;&lt;/span&gt;&#39;&quot;
+</code></pre>
+<p>Supported targets:</p>
+<ul>
+<li><code>data-bind-text</code> -&gt; <code>textContent</code></li>
+<li><code>data-bind-html</code> -&gt; <code>innerHTML</code></li>
+<li><code>data-bind-&lt;attr&gt;</code> -&gt; HTML attribute (for example <code>href</code>, <code>title</code>,
+<code>aria-label</code>)</li>
+<li><code>data-bind-prop-&lt;name&gt;</code> -&gt; DOM property (for example <code>value</code>, <code>checked</code>)</li>
+<li><code>data-bind-class-&lt;name&gt;</code> -&gt; class toggle by truthy/falsy value</li>
+</ul>
+<p>Examples:</p>
+<pre><code class="language-html">&lt;div data-bind-text=&quot;name&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-text=&quot;name | upper&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-text=&quot;createdAt | date:short&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-text=&quot;amount | currency:GBP&quot;&gt;&lt;/div&gt;
+&lt;div data-bind-html=&quot;content | wrap:&#39;&lt;span&gt;&#39;:&#39;&lt;/span&gt;&#39;&quot;&gt;&lt;/div&gt;
+&lt;a data-bind-href=&quot;url&quot;&gt;&lt;/a&gt;
+&lt;input data-bind-prop-value=&quot;name&quot;&gt;
+&lt;button data-bind-class-active=&quot;isSelected&quot;&gt;&lt;/button&gt;
+&lt;div data-bind-html=&quot;body | safeHtml&quot;&gt;&lt;/div&gt;
+</code></pre>
+<p>Reactivity for value bindings:</p>
+<ul>
+<li>depends only on <code>path</code></li>
+<li>subscribes to updates for that path</li>
+<li>pipe args are static strings and are not reactive</li>
+</ul>
+<h3 id="event-bindings">Event bindings</h3>
+<p>General form:</p>
+<pre><code class="language-text">data-bind-on&lt;event&gt;=&quot;actionPath&quot;
+</code></pre>
+<p>Examples:</p>
+<pre><code class="language-html">&lt;button data-bind-onclick=&quot;activate&quot;&gt;&lt;/button&gt;
+&lt;a data-bind-onclick=&quot;openDetails&quot;&gt;&lt;/a&gt;
+&lt;form data-bind-onsubmit=&quot;save&quot;&gt;&lt;/form&gt;
+</code></pre>
+<p>Runtime behavior:</p>
+<ul>
+<li><code>data-bind-onclick</code> listens to <code>click</code>, <code>data-bind-onsubmit</code> listens to
+<code>submit</code>, etc.</li>
+<li>action is resolved from model by <code>actionPath</code></li>
+<li>when action is a function, it is invoked as <code>(event, model, element)</code></li>
+<li>missing or non-function actions emit warnings and keep binding alive</li>
+</ul>
+<p>Reactivity for event bindings:</p>
+<ul>
+<li>depends only on <code>actionPath</code></li>
+<li>subscribes to updates for that path</li>
+<li>handler reference refreshes when action changes</li>
+</ul>
+<h2 id="built-ins">Built-ins</h2>
+<p>Value pipes:</p>
+<ul>
+<li><code>string</code></li>
+<li><code>number</code></li>
+<li><code>currency[:code]</code></li>
+<li><code>date[:format]</code></li>
+<li><code>datetime[:format]</code></li>
+<li><code>fixed[:digits]</code></li>
+<li><code>upper</code></li>
+<li><code>lower</code></li>
+<li><code>json[:spaces]</code></li>
+<li><code>default:value</code></li>
+<li><code>safeHtml</code></li>
+</ul>
+<p>Locale behavior:</p>
+<ul>
+<li>by default, <code>Intl</code> pipes use runtime/browser locale settings</li>
+<li>to force a locale, compose custom pipes using <code>createBuiltInPipes(&#39;en-GB&#39;)</code> in
+your own implementation</li>
+</ul>
+<h2 id="error-handling">Error Handling</h2>
+<ul>
+<li>unknown pipe: throws</li>
+<li>pipe error: exception from pipe propagates</li>
+<li>missing/non-function action: warning, binding continues</li>
+</ul>
+<p>Behavior at a glance:</p>
+<ul>
+<li><code>data-bind-text</code> with <code>null</code> or <code>undefined</code> renders <code>&#39;&#39;</code>.</li>
+<li><code>data-bind-html</code> with <code>null</code> or <code>undefined</code> renders <code>&#39;&#39;</code>.</li>
+<li><code>data-bind-&lt;attr&gt;</code> with <code>null</code> or <code>undefined</code> removes the attribute.</li>
+<li>Unknown pipes throw.</li>
+<li>Pipe exceptions propagate.</li>
+<li>Missing or non-function event handlers warn and keep bindings alive.</li>
+</ul>
+<p>Nullish behavior:</p>
+<ul>
+<li>built-in pipes preserve <code>null</code> and <code>undefined</code> values</li>
+<li><code>data-bind-text</code> and <code>data-bind-html</code> render <code>null</code>/<code>undefined</code> as <code>&#39;&#39;</code></li>
+<li><code>data-bind-&lt;attr&gt;</code> removes the attribute when final value is <code>null</code> or
+<code>undefined</code></li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
+<p>Core API:</p>
+<ul>
+<li><code>bindDataModel(root, model, options)</code></li>
+</ul>
+<p>Types are exported from:</p>
+<ul>
+<li><code>BindDataModelOptions</code></li>
+<li><code>DataModel</code></li>
+</ul>
+<h2 id="related-packages">Related Packages</h2>
+<ul>
+<li>For model reactivity itself, see <code>asljs-observable</code>.</li>
+<li>For event primitives, see <code>asljs-eventful</code>.</li>
+<li>For reusable UI elements, see <code>asljs-components</code>.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT License. See <a href="LICENSE.html">LICENSE</a> for details.</p>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/data-binding/README.md">View source</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theming · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="theming">Theming</h1>
+<p>The components support structural theming through template fallback. Themes
+provide default templates and display values; they do not replace the
+slot-template contract.</p>
+<h2 id="resolution-order">Resolution order</h2>
+<p>A component takes each template from the first of these that provides it:</p>
+<ol>
+<li>a local <code>template[data-slot]</code> inside the component</li>
+<li>the component&#39;s own theme, such as <code>list.theme</code> or <code>textInput.theme</code></li>
+<li>the nearest <a href="Theme%20Provider.html"><code>asljs-theme-provider</code></a></li>
+<li>the package default theme, set with <code>setDefaultTheme(...)</code></li>
+</ol>
+<p>This keeps layout explicit and local overrides deterministic.</p>
+<h2 id="default-theme">Default theme</h2>
+<p>Use a package-level default for one app-wide baseline:</p>
+<pre><code class="language-ts">import {
+    setDefaultTheme,
+  } from &#39;asljs-components&#39;;
+
+setDefaultTheme(
+  { list:
+      { container:
+          &#39;&lt;section class=&quot;list-group&quot; data-role=&quot;items&quot;&gt;&lt;/section&gt;&#39;,
+        empty:
+          &#39;&lt;div class=&quot;text-muted&quot;&gt;No items&lt;/div&gt;&#39;,
+        item:
+          `
+            &lt;a class=&quot;list-group-item list-group-item-action&quot;
+               data-bind-href=&quot;item.url&quot;
+               data-bind-text=&quot;item.title&quot;&gt;&lt;/a&gt;
+          ` },
+    textInput:
+      { template:
+          `
+            &lt;div class=&quot;mb-3&quot;&gt;
+              &lt;label class=&quot;form-label&quot;
+                     data-bind-text=&quot;label&quot;
+                     data-bind-prop-hidden=&quot;hideLabel&quot;
+                     data-bind-prop-for=&quot;inputId&quot;&gt;&lt;/label&gt;
+              &lt;div data-role=&quot;control-host&quot;&gt;&lt;/div&gt;
+              &lt;div class=&quot;form-text&quot;
+                   data-bind-text=&quot;description&quot;
+                   data-bind-prop-hidden=&quot;hideDescription&quot;
+                   data-bind-prop-id=&quot;descriptionId&quot;&gt;&lt;/div&gt;
+              &lt;div class=&quot;invalid-feedback&quot;
+                   data-bind-text=&quot;errorMessage&quot;
+                   data-bind-prop-hidden=&quot;hideError&quot;
+                   data-bind-prop-id=&quot;errorId&quot;&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          ` } });
+</code></pre>
+<p><code>createBootstrapTheme()</code> returns a ready-made Bootstrap theme, including the
+<a href="Button.html">button</a> variant icons.</p>
+<h2 id="per-component-theme">Per-component theme</h2>
+<p>Use a component&#39;s own <code>theme</code> when one component should differ from the
+surrounding theme:</p>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const list =
+  document.createElement(&#39;asljs-list&#39;) as HTMLElement &amp; {
+    items: Array&lt;{ title: string; url: string }&gt;;
+    theme: unknown;
+  };
+
+list.theme =
+  { list:
+      { container:
+          &#39;&lt;md-list data-role=&quot;items&quot;&gt;&lt;/md-list&gt;&#39;,
+        item:
+          `
+            &lt;md-list-item&gt;
+              &lt;div slot=&quot;headline&quot;
+                   data-bind-text=&quot;item.title&quot;&gt;&lt;/div&gt;
+            &lt;/md-list-item&gt;
+          ` } };
+
+list.items =
+  [ { title: &#39;Inbox&#39;, url: &#39;/inbox&#39; } ];
+</code></pre>
+<h2 id="local-layout-override">Local layout override</h2>
+<p>Local slot templates take precedence over the active theme:</p>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const list =
+  document.createElement(&#39;asljs-list&#39;) as HTMLElement &amp; {
+    items: Array&lt;{ title: string; url: string }&gt;;
+    theme: unknown;
+  };
+
+list.theme =
+  { list:
+      { item:
+          &#39;&lt;div class=&quot;theme-row&quot; data-bind-text=&quot;item.title&quot;&gt;&lt;/div&gt;&#39; } };
+
+list.innerHTML =
+  `
+    &lt;template data-slot=&quot;item&quot;&gt;
+      &lt;article class=&quot;custom-row&quot;&gt;
+        &lt;a data-bind-href=&quot;item.url&quot;
+           data-bind-text=&quot;item.title&quot;&gt;&lt;/a&gt;
+      &lt;/article&gt;
+    &lt;/template&gt;
+  `;
+
+list.items =
+  [ { title: &#39;Custom layout&#39;, url: &#39;/custom&#39; } ];
+</code></pre>
+<h2 id="exports">Exports</h2>
+<ul>
+<li><code>setDefaultTheme</code>, <code>getDefaultTheme</code> and <code>createBootstrapTheme</code></li>
+<li><code>ThemeProvider</code></li>
+<li><code>ComponentsTheme</code>, <code>ThemeTemplateValue</code> and the per-component theme definition
+types</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Theming.md">View source</a>
+  </footer>
+</body>
+</html>

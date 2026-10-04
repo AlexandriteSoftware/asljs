@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Starcase Code Formatting Style · asljs</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="starcase-code-formatting-style">Starcase Code Formatting Style</h1>
+<p>This document defines formatting rules for TypeScript.</p>
+<h2 id="overview">Overview</h2>
+<p>When writing and maintaining code there are many factors to consider. The
+prioritisation of these factors is often a matter of personal or team
+preference. The following style guide emerged from thousands of hours writing
+and maintaining code with the following priorities in mind:</p>
+<ul>
+<li>Code readability is the most important factor. Everything else is secondary to
+readability. If the code is easy to read, it is easy to understand, spot
+errors, and change it.</li>
+<li>Code maintenance is the second most important factor. Compare code, review
+changes, and make changes should be as easy as possible.</li>
+</ul>
+<p>According to the research and experience, the most important readability metrics
+are:</p>
+<ul>
+<li>number of identifiers per line</li>
+<li>average line length</li>
+<li>average number of operations per line (e.g., parentheses, operators)</li>
+</ul>
+<p>While maintaining code, the most common operation is to compare two versions of
+a file. The code with good readability metrics also reduces the amount of noise
+in diffs.</p>
+<p>Applying these principles to the code makes it look like a staircase, hence the
+name of this style guide.</p>
+<pre><code class="language-typescript">function getIndentation(
+    sourceCode: SourceCode,
+    node: AST.Token
+  ): string
+{
+  const nodeLocation =
+    node.loc;
+
+  if (
+    nodeLocation === undefined
+    || nodeLocation === null
+  ) {
+    return &#39;&#39;;
+  }
+
+  const line =
+    sourceCode.lines[nodeLocation.start.line - 1];
+
+  const match =
+    /^[ \t]*/.exec(line);
+
+  return match?.[0] ?? &#39;&#39;;
+}
+</code></pre>
+<h2 id="definitions">Definitions</h2>
+<h3 id="simple-expression">Simple Expression</h3>
+<p>Expression is simple if:</p>
+<ul>
+<li>it is a literal (e.g., regex, number, string, boolean, null, undefined) that
+is not a template literal and less than 15 characters long</li>
+<li>it is an identifier that is less than 15 characters long</li>
+<li>it is an array with no or one item, of total length less than 15 characters</li>
+<li>it is an object with no or one property, of total length less than 15
+characters</li>
+<li>it is a new expression with no arguments, of total length less than 15
+characters</li>
+</ul>
+<p>Examples:</p>
+<ul>
+<li><code>&#39;abc&#39;</code></li>
+<li><code>123</code></li>
+<li><code>true</code></li>
+<li><code>null</code></li>
+<li><code>undefined</code></li>
+<li><code>[ 1 ]</code></li>
+<li><code>{ a: 1 }</code></li>
+<li><code>new Map()</code></li>
+</ul>
+<h2 id="rules">Rules</h2>
+<h3 id="indentation">Indentation</h3>
+<p>Indentation is 2 spaces per level. Tabs are not allowed.</p>
+<p>When a line is broken into multiple lines, the second and subsequent lines are
+aligned with the first line. The line is broken before the operator.</p>
+<pre><code class="language-js">if (
+  !(node instanceof AST.CallExpression
+    || node instanceof AST.NewExpression)
+) {
+  return true;
+}
+</code></pre>
+<h3 id="assignments">Assignments</h3>
+<p>When assigning a value to a variable, the statement is on the next line,
+indented one level from the variable declaration, unless the statement is
+simple.</p>
+<pre><code class="language-js">const output = [ ];
+
+const map = new Map();
+
+const code =
+  getCode(
+    declaration);
+</code></pre>
+<h3 id="for">For</h3>
+<p>In for loops, the initialization, condition, and increment expressions are on
+separate lines, indented one level from the for statement.</p>
+<pre><code class="language-js">for (
+  let index = 0;
+  index &lt; node.arguments.length;
+  index++
+) {
+  ...
+}
+</code></pre>
+<h3 id="if">If</h3>
+<p>When if&#39;s condition is not simple, it is on the next line, indented one level
+from the if statement.</p>
+<pre><code class="language-js">if (ok) {
+  return true;
+}
+
+if (
+  nodeLocation === undefined
+  || nodeLocation === null
+) {
+  return &#39;&#39;;
+}
+</code></pre>
+<h3 id="expression">Expression</h3>
+<p>In expressions, operators of the same precedence can be on the same line. Lower
+precedence operators break the line and are aligned with the first line.</p>
+<pre><code class="language-js">const isDefined =
+  nodeLocation !== undefined
+  &amp;&amp; nodeLocation !== null;
+
+const length =
+  Math.sqrt(
+    x * x
+    + y * y);
+</code></pre>
+<h3 id="calls">Calls</h3>
+<p>When calling a function, the simple single argument can be on the same line. In
+all other cases, the arguments are on separate lines, indented one level from
+the function call.</p>
+<pre><code class="language-js">just(
+  like,
+  this);
+</code></pre>
+<h3 id="call-chains">Call Chains</h3>
+<p>When resolving a chain of functions, the first and the second items are on the
+same line. The third and subsequent function calls are on separate lines.</p>
+<pre><code class="language-js">const result =
+  this.road
+    .goes
+    .ever
+    .on();
+</code></pre>
+<h3 id="spacing">Spacing</h3>
+<p>Multiline statements are separated by a single empty line.</p>
+<p>No empty lines before first or after last statement in a block.</p>
+<pre><code class="language-js">if (success) {
+  record(
+    this.data);
+
+  print(
+    &#39;Success!&#39;);
+}
+</code></pre>
+<p>Operators, punctuation, and keywords are almost always surrounded by a single
+space.</p>
+<h3 id="arrays">Arrays</h3>
+<p>The first item in an array is on the same line as the opening bracket.</p>
+<p>The second and subsequent items are on separate lines, aligned with the first
+item.</p>
+<p>The closing bracket is on the same line as the last item.</p>
+<pre><code class="language-js">const array =
+  [ 1,
+    2,
+    3 ];
+</code></pre>
+<h3 id="objects">Objects</h3>
+<p>The first property in an object is on the same line as the opening brace.</p>
+<p>The second and subsequent properties are on separate lines, aligned with the
+first property.</p>
+<p>The closing brace is on the same line as the last property.</p>
+<pre><code class="language-js">const object =
+  { a: 1,
+    b: 2,
+    c: 3 };
+</code></pre>
+<p>Multiline properties are on separate lines, indented one level from the property
+name.</p>
+<pre><code class="language-js">const object =
+  { a: 1,
+    b:
+      { c: 2,
+        d: 3 } };
+</code></pre>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/sfmt/FORMATTING.md">View source</a>
+  </footer>
+</body>
+</html>

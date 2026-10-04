@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Concept · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="concept">Concept</h1>
+<h2 id="purpose">Purpose</h2>
+<p>A personal, AI-assisted performance dashboard. Agents collect, the server
+stores, the page renders.</p>
+<p>This is a concept document: facts and decisions, not instructions. It exists so
+an agent can add monitors and cards without re-deriving the design. It is
+deliberately small.</p>
+<hr>
+<h2 id="1-vision">1. Vision</h2>
+<ul>
+<li>One wall-display page that answers &quot;how are my things doing right now, and is
+it getting better or worse&quot;.</li>
+<li>Personal tool, single user, single machine, trusted network. No auth, no
+multi-tenancy, no cloud.</li>
+<li>Several projects at once. Each project owns one config file, and dash shows
+every loaded project&#39;s tabs in one bar.</li>
+<li>Adding a monitor is a 10-minute job: write a script, add a counter to a
+project config, add a card to the same file.</li>
+<li>Every new monitor is expected to be added <em>by Claude Code</em>, from a prompt. The
+design optimises for that: plain files, obvious names, no GUI, no build step.</li>
+<li>Hardcoding and plain JSON configs are correct choices here. Generality is not
+a goal.</li>
+</ul>
+<h2 id="2-non-goals">2. Non-goals</h2>
+<ul>
+<li>No user accounts, roles, or sharing.</li>
+<li>No web-based editor for dashboards or agents. CLI and text files only.</li>
+<li>No plugin registry, no npm package per card, no bundler, no framework.</li>
+<li>No alerting of any kind — no delivery, no pinning, no attention zone. A card
+that matters is a card you put on a tab.</li>
+<li>No horizontal scale, no clustering, no migration tooling beyond a single
+schema file.</li>
+</ul>
+<h2 id="3-domain-terms">3. Domain terms</h2>
+<p>Use these words in code, config, docs, and commit messages.</p>
+<ul>
+<li><strong>key</strong> — a name a value is stored under. <code>[a-zA-Z0-9_.-]+</code>. Example:
+<code>disk.c</code>, <code>calendar.due</code>.</li>
+<li><strong>value</strong> — the text an agent puts under a key. Usually JSON; may be a bare
+string or number.</li>
+<li><strong>sample</strong> — one <code>(key, value, timestamp)</code> record. History is a list of
+samples.</li>
+<li><strong>agent</strong> — an executable or script that produces a value for one key.</li>
+<li><strong>counter</strong> — a key together with what feeds it: a schedule, a command, and
+how long its samples are kept. Declared in a project config.</li>
+<li><strong>project</strong> — one config file: a database, a set of counters, and a set of
+tabs. Loaded with <code>--config</code>, and several may be loaded at once.</li>
+<li><strong>dashboard</strong> — one screenful of cards. Reached by a tab in the top bar.</li>
+<li><strong>tab</strong> — the navigation entry for a dashboard.</li>
+<li><strong>card</strong> — one box on the grid. A renderer plus a key plus parameters.</li>
+<li><strong>renderer</strong> — the code that turns a value into card content. Named, reusable,
+parameterised.</li>
+<li><strong>grid step</strong> — 36px. All card geometry is in grid steps.</li>
+</ul>
+<h2 id="4-architecture">4. Architecture</h2>
+<p>Two layers, joined only by the HTTP API and the key namespace.</p>
+<pre><code>collecting layer                 presentation layer
+----------------                 ------------------
+agents/*.{ps1,js,exe}            index.html + renderers/*.js
+      |  PUT /api/put/:key             ^  GET /api/get/:keys
+      v                                |  GET /api/history/:key
+   +-------------------------------------------+
+   |            server.js (Express 5)          |
+   |     one dash.sqlite per project loaded    |
+   +-------------------------------------------+
+                   ^
+                   |  reads
+            dash.config.json  (one per project, --config)
+</code></pre>
+<ul>
+<li>The server knows nothing about agents. An agent is just an HTTP client.</li>
+<li>The server knows nothing about card semantics. A value is opaque text.</li>
+<li>Renderers know nothing about where a value came from.</li>
+<li>Consequence: any of the three can change alone. This is the main property to
+preserve.</li>
+</ul>
+<h2 id="5-storage">5. Storage</h2>
+<ul>
+<li><p>One SQLite file per project, named by its config&#39;s <code>db</code> and resolved against
+the config&#39;s own directory. One table.</p>
+</li>
+<li><p>A key belongs to exactly one project — the one whose config declares it as a
+counter — and its samples live in that project&#39;s database. Keys no config
+declares belong to the first project loaded.</p>
+</li>
+<li><p>Key names are therefore one global namespace across every loaded config: a key
+declared twice is a config error, and the second declaration is ignored.</p>
+</li>
+<li><p>Two projects may name the same file; the store is per file, so they then share
+one connection. Moving a counter to another project leaves its old samples
+behind in the previous project&#39;s database.</p>
+</li>
+<li><p><code>samples(key TEXT, ts INTEGER, seen INTEGER, value TEXT)</code>, index on <code>(key, ts DESC)</code>.</p>
+</li>
+<li><p>Current value of a key = its newest sample. There is no separate current-value
+table.</p>
+</li>
+<li><p><strong>Values are sticky.</strong> A put whose value is byte-identical to the key&#39;s newest
+sample creates no new record; it only bumps that sample&#39;s <code>seen</code>. A new record
+appears only when the value actually changes.</p>
+<ul>
+<li><code>ts</code> — when this value first appeared. <code>seen</code> — when it was last confirmed
+still current.</li>
+<li>History is therefore a list of <em>changes</em>, not of polls. A steady value costs
+one row, however often its agent runs.</li>
+<li>Consequence for renderers: consecutive samples are not evenly spaced.
+Anything plotting over time must carry each value forward to the next
+sample&#39;s <code>ts</code>, and the newest value forward to <code>seen</code>.</li>
+<li>Consequence for freshness: staleness is <code>now - seen</code>, never <code>now - ts</code>.</li>
+</ul>
+</li>
+<li><p><strong>Persistence is per key, and always bounded.</strong> A counter&#39;s <code>samples</code> line
+gives its key four fields:</p>
+<pre><code>&quot;ping.gw&quot;: { &quot;samples&quot;: &quot;database, 30*24h, 50k, 20Mb&quot; }
+                         store,    retention, count, quota
+</code></pre>
+<ul>
+<li><code>store</code> — <code>memory</code> (process-local, lost on restart, never touches SQLite) or
+<code>database</code>.</li>
+<li><code>retention</code> — how long a sample survives, counted from <code>seen</code>. Suffixes <code>s</code>
+(default), <code>m</code>, <code>h</code>.</li>
+<li><code>count</code> — how many samples the key may hold. Suffixes <code>k</code>, <code>M</code>, <code>G</code>
+(decimal).</li>
+<li><code>quota</code> — total size of the key&#39;s stored data. Suffixes <code>Kb</code>, <code>Mb</code>, <code>Gb</code>
+(1024-based).</li>
+<li>Suffixes are case-insensitive, and any field may be a product: <code>90*24h</code>,
+<code>2*512Kb</code>.</li>
+<li>There is no unlimited option. Every field must be greater than zero; <code>0</code> is
+a config error.</li>
+<li>Size counts the values only, as UTF-8 bytes. Keys, timestamps and index
+overhead are not the user&#39;s budget to spend.</li>
+<li>Whichever limit bites first wins, and the oldest sample always goes first.
+The one exception: the quota never evicts the newest sample, because that
+sample is the key&#39;s current value.</li>
+<li>A counter without a <code>samples</code> line gets its project&#39;s top-level <code>samples</code>
+policy, which itself defaults to <code>database, 90*24h, 100k, 100Mb</code>.</li>
+<li>Limits are applied on write, and swept once a minute besides — expiry is a
+clock event, so a key nobody writes to still ages out.</li>
+<li>Configs are read at startup and reloaded when one changes on disk; editing a
+policy needs no restart. A malformed entry is reported on stderr, is
+skipped, and the rest of the file still loads.</li>
+</ul>
+</li>
+<li><p>The store is the record of performance over time. Charts read it directly;
+agents never keep state.</p>
+</li>
+</ul>
+<h2 id="6-http-api">6. HTTP API</h2>
+<ul>
+<li><code>PUT /api/put/:key</code> — body is the value, any content-type, read as text.
+Echoes the body. Appends a sample, or bumps <code>seen</code> on the newest one if the
+value is unchanged (see §5).<ul>
+<li><code>POST</code> on the same path is an alias, so one-line curl and
+<code>Invoke-RestMethod</code> recipes keep working.</li>
+<li><code>/api/set/:key</code> stays as a deprecated alias of the same handler.</li>
+</ul>
+</li>
+<li><code>GET /api/get/:key</code> — newest value as <code>text/plain</code>. Empty string if the key
+was never written.</li>
+<li><code>GET /api/get/:k1,:k2,...</code> — JSON object of newest values, <code>null</code> for unknown
+keys.</li>
+<li><code>GET /api/history/:key?limit=N&amp;since=&lt;ms&gt;</code> — JSON array of <code>{ts, seen, value}</code>, newest first. For charts.</li>
+<li><code>GET /api/meta/:keys</code> — the same keys with their <code>ts</code> and <code>seen</code>, for
+freshness checks.</li>
+<li><code>GET /api/next/:keys</code> — per key, <code>{ state, ms }</code> against its schedule: <code>wait</code>
+with the milliseconds until its counter next runs, or <code>due</code> / <code>stale</code> with the
+milliseconds it is overdue by. <code>null</code> for a key nothing is scheduled to write.
+This is what the card countdowns read.</li>
+<li><code>GET /api/keys</code> — every key the store has ever seen.</li>
+<li><code>GET /api/dashboards</code> — <code>{ projects, tabs, errors }</code> merged from every loaded
+config, so the page does not embed its own. Database paths and counter
+commands stay on the server.</li>
+<li><code>GET /</code> — the single page. Tab selection is client-side, in the fragment
+(<code>/#day</code>).</li>
+<li>Only <code>index.html</code>, <code>dash.js</code>, <code>layout.js</code> and <code>renderers/</code> are served. The
+stores, the agents and the configs are never static files on the wire.</li>
+</ul>
+<p>Rules:</p>
+<ul>
+<li>The API is textual and curl-friendly. Anything doable from PowerShell in one
+line stays that way.</li>
+<li>No request validation beyond the key pattern. Bad JSON is a rendering problem,
+not a server problem.</li>
+</ul>
+<h2 id="7-collecting-layer">7. Collecting layer</h2>
+<ul>
+<li><p>The agents dash ships live in <code>agents/</code>, one file per monitor, named after its
+key: <code>agents/disk.c.ps1</code>. A project may keep its own agents anywhere; its
+counter&#39;s command is what says where.</p>
+</li>
+<li><p>An agent may be any executable, or a script run through one (<code>powershell</code>,
+<code>node</code>, <code>python</code>, <code>cmd</code>).</p>
+</li>
+<li><p>Contract: write the value to stdout, exit 0. A non-zero exit means &quot;no sample&quot;
+and is logged.</p>
+</li>
+<li><p>Writing to stdout is preferred over putting directly, so an agent can be run
+and inspected alone.</p>
+</li>
+<li><p>Agents are stateless and idempotent. Running one twice is harmless.</p>
+</li>
+<li><p>A <strong>counter</strong> in a project config names the key, its schedule and its command:</p>
+<pre><code>&quot;disk.c&quot;: { &quot;schedule&quot;: &quot;*/5 * * * *&quot;,
+            &quot;command&quot;: &quot;pwsh -NoProfile -File agents/disk.c.ps1&quot; }
+</code></pre>
+<ul>
+<li>A counter with neither schedule nor command is a declared key nothing runs
+for: it exists to carry a <code>samples</code> policy for a value pushed in by hand.</li>
+<li>The command runs with the config file&#39;s own directory as its working
+directory, so a relative path is project-local.</li>
+</ul>
+</li>
+<li><p><code>runner.js</code> reads the same configs as the server, runs commands on schedule,
+and puts stdout to the counter&#39;s key.</p>
+<ul>
+<li>Separate process from the web server, restartable independently. For the
+simple setup, <code>server.js --with-runner</code> runs it inside the server instead;
+it still puts over HTTP, so the server still knows nothing about agents.</li>
+<li>Configs are read at startup, so restart the runner after editing a schedule.</li>
+<li>Timeout per run; stderr goes to the runner&#39;s log, never into the value.</li>
+</ul>
+</li>
+<li><p>Adding a monitor never touches <code>server.js</code>.</p>
+</li>
+</ul>
+<h2 id="8-value-conventions">8. Value conventions</h2>
+<p>A value is whatever the card&#39;s renderer expects. Conventions, not enforcement:</p>
+<ul>
+<li>Single number or string: put it bare — <code>41.3</code>, <code>online</code>.</li>
+<li>Anything structured: put JSON, keyed by the fields the renderer names.</li>
+<li>Lists: a JSON array of objects, each with at least a <code>label</code>.</li>
+<li>Status: a <code>status</code> field of <code>ok</code> | <code>warn</code> | <code>error</code>, optionally <code>message</code>. The
+<code>status</code> renderer colours the card by it; nothing else reacts to it.</li>
+<li>Timestamps inside a value are ISO strings; the sample&#39;s <code>ts</code> is authoritative
+for <em>when</em>.</li>
+<li>Absolute dates only, never &quot;in 5 days&quot; — agent and page render at different
+times.</li>
+<li>Keep values free of incidental noise. A timestamp or run counter the renderer
+never shows defeats stickiness and turns every poll into a new row.</li>
+</ul>
+<h2 id="9-presentation-layer">9. Presentation layer</h2>
+<h3 id="page-structure">Page structure</h3>
+<ul>
+<li><strong>Top bar</strong> — one grid step tall. <code>DASH</code> wordmark (plain text, not a link)
+flush with column 0, then the tabs immediately after it. Nothing else lives in
+the bar.</li>
+<li><strong>Dashboard</strong> — the grid: absolutely positioned cards on 36px steps.</li>
+<li>Every tab is an ordinary tab; the first one is simply the one shown by
+default. Tabs of every loaded project sit in the same bar, in config order,
+each under its own label. Tab names are global, so two projects cannot both
+call a tab <code>git</code>.</li>
+<li><strong>Countdown</strong> — each card says when its own data is next expected, in the
+right corner of its label row.<ul>
+<li>The time is to the next scheduled run of the counter that writes the card&#39;s
+key, as the largest unit that fits: <code>3h</code> above an hour, <code>12m</code> above a
+minute, <code>45s</code> below one.</li>
+<li>A scheduled minute that passes without the key being written reads <code>due</code>,
+and <code>stale</code> once it has stayed unwritten for more than five seconds.</li>
+<li>A card whose key has no counter, or whose counter has no schedule, shows
+nothing. Two cards on the same key always agree, because the countdown is a
+property of the key, not of the card.</li>
+</ul>
+</li>
+</ul>
+<h3 id="grid">Grid</h3>
+<ul>
+<li><code>--grid-step: 36px</code>. Card geometry comes from four inline CSS custom
+properties — <code>--left</code>, <code>--top</code>, <code>--width</code>, <code>--height</code> — each in steps.</li>
+<li>Background grid lines are drawn at the same step, so cards visibly snap to it.</li>
+</ul>
+<h3 id="layout">Layout</h3>
+<p>Geometry is smart: only what you care about is written down.</p>
+<ul>
+<li><code>width</code> and <code>height</code> default to <strong>6</strong> steps. A card with no geometry at all is
+legal.</li>
+<li><code>top</code> and <code>left</code> are optional. Column count is computed from the viewport:
+<code>cols = floor(innerWidth / gridStep)</code>, so a card never lands off-screen to the
+right.</li>
+<li>A <strong>virtual screen</strong> — a 2-D array of cells, <code>@</code> where occupied — drives
+placement. Rows are added as needed; the page scrolls vertically if cards
+outgrow the viewport.</li>
+<li>Two passes, in this order:<ol>
+<li><strong>Anchored cards</strong> — both <code>top</code> and <code>left</code> given. Placed exactly as
+written, and marked on the virtual screen. They always win; an anchored
+card is never moved.</li>
+<li><strong>Flowed cards</strong> — in the order they appear in the tab&#39;s <code>cards</code> list. For
+each, scan the virtual screen horizontally, line by line (<code>y</code> outward, <code>x</code>
+from 0 to <code>cols - width</code>), testing the <code>width × height</code> rectangle at each
+position; place at the first one containing no <code>@</code>.</li>
+</ol>
+</li>
+<li>Partially anchored cards flow with that axis pinned: <code>left</code> only scans
+downward in that column, <code>top</code> only scans rightward along that row and then
+continues below it.</li>
+<li>A card wider than <code>cols</code> is clamped to <code>cols</code>. The algorithm is naive and
+re-runs on resize — at this card count that is free, and it keeps the rule
+easy to predict.</li>
+<li>Reordering cards in <code>dashboards.json</code> is therefore the normal way to rearrange
+a tab.</li>
+</ul>
+<h3 id="design">Design</h3>
+<ul>
+<li>Light and dark, chosen by <code>prefers-color-scheme</code>, both low contrast. Paper and
+ink, not black on white.</li>
+<li><strong>Pico CSS 2</strong> (classless, CDN, no build) supplies reset, typography, and both
+colour schemes. Dash adds only the top bar, the grid, and the cards on top of
+it.</li>
+<li>Tokens are CSS custom properties on <code>:root</code>, redefined in a dark media block.
+Never a hardcoded colour in a renderer.</li>
+<li>Token set: <code>--paper</code>, <code>--panel</code>, <code>--ink</code>, <code>--muted</code>, <code>--line</code>, <code>--accent</code>,
+<code>--signal</code>, <code>--grid-step</code>.</li>
+<li>Values are monospace; labels are small, uppercase, muted. One accent colour,
+one signal colour.</li>
+<li>Restrained: thin borders, small radius, at most one flat shadow. No gradients,
+no glow, no animation beyond a value fading when it changes.</li>
+</ul>
+<h3 id="refresh">Refresh</h3>
+<ul>
+<li>The page polls <code>GET /api/get/&lt;keys on the active tab&gt;</code> every 5s and re-renders
+cards whose value changed.</li>
+<li>On the same 5s beat it polls <code>GET /api/next/&lt;keys on the active tab&gt;</code> and
+repaints the card countdowns, so they are never more than five seconds out.</li>
+<li>Chart cards additionally poll their own <code>/api/history/...</code> on a longer
+interval.</li>
+<li>A screen wake lock is held while the page is visible, so it survives on a wall
+display.</li>
+</ul>
+<h2 id="10-cards-and-renderers">10. Cards and renderers</h2>
+<ul>
+<li>A card is a config entry; a renderer is a function. Cards are data, renderers
+are code.</li>
+<li>The page owns the card&#39;s chrome — its label and its countdown — and the
+renderer owns only the body. A renderer never draws the label row.</li>
+<li>Card config fields:<ul>
+<li><code>key</code> — the key to read. Required except for renderers that read nothing.</li>
+<li><code>label</code> — the heading shown on the card.</li>
+<li><code>render</code> — renderer name.</li>
+<li><code>width</code>, <code>height</code> — grid steps. Optional, default 6.</li>
+<li><code>left</code>, <code>top</code> — grid steps. Optional; omit to let the card flow (see
+Layout).</li>
+<li><code>params</code> — renderer-specific object. Everything variable lives here, nothing
+at the top level.</li>
+</ul>
+</li>
+<li>A renderer is one file, <code>renderers/&lt;name&gt;.js</code>, default-exporting <code>(el, value, params, ctx) =&gt; void</code>.<ul>
+<li>It receives the parsed value when the value is JSON, the raw string
+otherwise.</li>
+<li>It writes into <code>el</code>, the card body, and must escape anything it did not
+create.</li>
+<li><code>ctx</code> carries <code>key</code>, <code>card</code>, and <code>history({ limit, since })</code> — the only way
+to reach the store.</li>
+<li>It is synchronous and free of side effects outside <code>el</code>. Chart renderers may
+await <code>ctx.history</code>.</li>
+</ul>
+</li>
+<li>Renderers are resolved by name from <code>dashboards.json</code>. Adding one is adding a
+file.</li>
+</ul>
+<h3 id="built-in-renderers">Built-in renderers</h3>
+<ul>
+<li><code>value</code> — one big number or word. <code>params</code>: <code>unit</code>, <code>precision</code>.</li>
+<li><code>text</code> — preformatted text, scrollable. For command output. <code>params</code>: <code>wrap</code>.</li>
+<li><code>chart</code> — line or bar over history. <code>params</code>: <code>field</code>, <code>limit</code>, <code>kind</code>, <code>min</code>,
+<code>max</code>.</li>
+<li><code>list</code> — rows from a JSON array. <code>params</code>: <code>fields</code>, <code>limit</code>, <code>empty</code>.</li>
+<li><code>status</code> — status word plus message, coloured by <code>status</code>. <code>params</code>: <code>labels</code>.</li>
+<li><code>table</code> — a JSON array as columns. <code>params</code>: <code>columns</code>.</li>
+<li><code>git</code> — a git working folder: branch, commit, remote position and what is
+uncommitted. <code>params</code>: <code>empty</code>.</li>
+</ul>
+<h3 id="custom-cards">Custom cards</h3>
+<ul>
+<li>A card needing a purpose-built view gets its own renderer named for the task
+(<code>renderers/calendar-due.js</code>), never a new card type in the server.</li>
+<li>Data <em>shaping</em> belongs in the agent, not the renderer. &quot;Calendar items due
+within 5 days&quot; is an agent that queries the calendar and puts the filtered
+list; the renderer just draws rows.</li>
+<li>Rule of thumb: if the change is about <em>what</em> is shown, edit the agent. About
+<em>how</em>, edit the renderer.</li>
+</ul>
+<h2 id="11-project-configuration">11. Project configuration</h2>
+<ul>
+<li>One JSON file per project, hand- and CLI-editable, read by the server and by
+the runner. <code>dash.config.json</code> is the conventional name.</li>
+<li>The server and the runner take <code>--config &lt;path&gt;</code>, repeatable. Without it,
+<code>DASH_CONFIG</code> is read as a path list, and failing that the package&#39;s own
+<code>dash.config.json</code> is used.</li>
+<li>One file carries all four of a project&#39;s concerns: where its database is, how
+long samples are kept, which counters feed it, and which tabs it shows.</li>
+</ul>
+<pre><code class="language-json">{
+  &quot;project&quot;: &quot;asljs&quot;,
+  &quot;label&quot;: &quot;ASLJS&quot;,
+  &quot;db&quot;: &quot;dash.sqlite&quot;,
+  &quot;samples&quot;: &quot;database, 90*24h, 100k, 100Mb&quot;,
+
+  &quot;counters&quot;: {
+    &quot;asljs.git&quot;: {
+      &quot;schedule&quot;: &quot;*/2 * * * *&quot;,
+      &quot;command&quot;: &quot;pwsh -NoProfile -File dash/agents/git.ps1&quot;,
+      &quot;samples&quot;: &quot;database, 30*24h, 5k, 5Mb&quot;
+    }
+  },
+
+  &quot;tabs&quot;: [
+    {
+      &quot;tab&quot;: &quot;asljs&quot;,
+      &quot;label&quot;: &quot;ASLJS git&quot;,
+      &quot;cards&quot;: [
+        { &quot;key&quot;: &quot;asljs.git&quot;, &quot;label&quot;: &quot;Working folder&quot;, &quot;render&quot;: &quot;git&quot;,
+          &quot;width&quot;: 7, &quot;height&quot;: 5 }
+      ]
+    }
+  ]
+}
+</code></pre>
+<ul>
+<li><code>project</code> is required and matches <code>[a-zA-Z0-9_.-]+</code>. <code>label</code> defaults to it.</li>
+<li><code>db</code> and every relative command path resolve against the config&#39;s own
+directory, so a project config travels with its project. <code>db</code> defaults to
+<code>DASH_DB</code>, and failing that to <code>dash.sqlite</code> beside the config.</li>
+<li><code>samples</code> at the top level is the project&#39;s default policy; a counter&#39;s own
+<code>samples</code> overrides it for that key.</li>
+<li>Tabs and cards are as before: the first tab in the first config is the
+default, and tab order in the files is tab order in the bar.</li>
+<li>Several cards may read the same key. Keys and cards are independent.</li>
+<li>Names are global across every loaded config: project names, keys and tab names
+must each be unique. A duplicate is reported on stderr naming the config that
+claimed it first, and the later one is ignored.</li>
+<li>A file that does not parse at all is reported and skipped; the other projects
+still load. Card-level errors show on the card, never thrown, and a missing
+renderer draws a visible placeholder.</li>
+<li>Configs are reloaded when they change on disk, so editing a card needs a page
+reload, not a server restart. The runner reads them once, at startup.</li>
+</ul>
+<h2 id="12-typical-workflow">12. Typical workflow</h2>
+<p>Adding a monitor, end to end:</p>
+<ol>
+<li>Write <code>agents/&lt;key&gt;.ps1</code> (or any executable) that prints the value to stdout.</li>
+<li>Run it by hand once; confirm the output is the shape the renderer wants.</li>
+<li>Add a counter to the project&#39;s config: key, schedule, command, and a
+<code>samples</code> policy if the default does not suit.</li>
+<li>Add a card to the right tab of the same file — key, label, renderer,
+geometry, params.</li>
+<li>Restart the cron runner. Reload the page.</li>
+</ol>
+<p>Variations:</p>
+<ul>
+<li>New view of existing data: step 4 only.</li>
+<li>New shape of data: steps 1–4, plus a renderer if no built-in fits.</li>
+<li>New project: one more config file and one more <code>--config</code>.</li>
+<li>Retire a monitor: remove the counter and the card. Samples stay until the
+policy that was in force trims them.</li>
+</ul>
+<h2 id="13-file-map">13. File map</h2>
+<pre><code>dash/
+  src/
+    server.js         Express app: put, get, history, dashboards, page
+    runner.js         runs each counter&#39;s command on its schedule
+    cron.js           the cron expression: parse, match, next and previous
+    store.js          the sticky put, get and history, one store per project
+    config.js         project configs: counters, tabs, policies, key routing
+    samples.js        the policy syntax &quot;&lt;store&gt;, &lt;retention&gt;, &lt;count&gt;, &lt;quota&gt;&quot;
+    schema.sql        the one table and its index
+    index.html        shell: top bar, grid, Pico CSS
+    dash.js           page loop: fetch config, place cards, poll values
+    layout.js         virtual-screen card placement
+    renderers/        one file per renderer
+  dash.sqlite         the machine project&#39;s store (gitignored)
+  dash.config.json    the machine project: db, counters and tabs
+  agents/             one file per monitor
+  package.json        the asljs-dash workspace package
+  eslint.config.js    repo lint rules, split by Node and browser runtime
+  AGENTS.md           AI-facing constraints for this package
+  README.md           landing page
+  docs/operations.md  running it, the HTTP API, backup
+  docs/monitors.md    adding a monitor
+  docs/concept.md     this document
+</code></pre>
+<h2 id="14-operational-facts">14. Operational facts</h2>
+<ul>
+<li>Two processes: <code>node src/server.js</code> and <code>node src/runner.js</code>, both given the
+same <code>--config</code> list. Either restarts alone. From the repository root: <code>npm -w asljs-dash run start</code> and <code>run runner</code>, which pass the repository&#39;s own
+configs. <code>node src/server.js --with-runner</code> folds both into one process (<code>run start:with-runner</code>).</li>
+<li>ES modules throughout, server and page alike, as the rest of the repository.</li>
+<li>Port from <code>PORT</code>, default 3000. Configs from <code>--config</code> or <code>DASH_CONFIG</code>; see
+docs/operations.md.</li>
+<li>Restarting no longer loses values — that is the point of SQLite.</li>
+<li>Logs go to stdout. The runner logs each run&#39;s key, exit code, and duration.</li>
+<li>Backup is copying each project&#39;s <code>dash.sqlite</code>.</li>
+</ul>
+<h2 id="15-decisions-worth-not-revisiting">15. Decisions worth not revisiting</h2>
+<ul>
+<li><strong>Append-on-change samples, newest-wins reads.</strong> Makes history free, keeps the
+store small, and makes &quot;when did this last change&quot; answerable without
+scanning.</li>
+<li><strong>Text API.</strong> Any shell can feed the dashboard in one line; no client library
+is ever needed.</li>
+<li><strong>Agents shape, renderers draw.</strong> Keeps renderers small and reusable, and
+keeps task-specific logic somewhere it can be run and tested on its own.</li>
+<li><strong>JSON config, no editor.</strong> The intended editor is an AI coding agent.</li>
+<li><strong>One file per project, several projects at once.</strong> A project&#39;s database, its
+counters and its dashboard are one thing to read, one thing to copy and one
+thing to delete, and <code>--config</code> is the only thing that joins them.</li>
+<li><strong>One global key namespace.</strong> A key names exactly one counter, so
+<code>/api/get/:key</code> stays a single word and the routing to a project&#39;s database is
+the server&#39;s business, not the caller&#39;s.</li>
+<li><strong>No build step.</strong> <code>index.html</code> and <code>renderers/*.js</code> are served as written, as
+ES modules.</li>
+</ul>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/apps/dash/docs/concept.md">View source</a>
+  </footer>
+</body>
+</html>

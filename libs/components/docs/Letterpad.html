@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Letterpad · asljs</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-home" href="../../../index.html">asljs</a>
+    <a href="https://github.com/AlexandriteSoftware/asljs">GitHub</a>
+  </header>
+  <main>
+<h1 id="letterpad">Letterpad</h1>
+<p><code>asljs-letterpad</code> is a visual keypad for alphabetic entry. It extends
+<a href="Assisted%20Input.html">assisted input</a>.</p>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><code>characters</code> — the keys to enable</li>
+<li><code>collapsed</code> — whether the keypad is hidden</li>
+</ul>
+<p><code>Backspace</code> and <code>Enter</code> are always allowed. When <code>characters</code> is a non-empty
+string, single-character keys are enabled only if that string contains the key.</p>
+<p>The keyboard toggle button flips <code>collapsed</code> and updates its own accessible
+label between <code>Show letterpad</code> and <code>Hide letterpad</code>.</p>
+<h2 id="events">Events</h2>
+<ul>
+<li><code>key</code>, bubbling, with the detail <code>{ key: string }</code></li>
+<li><code>submit</code>, bubbling, for Enter</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import &#39;asljs-components&#39;;
+
+const letterpad =
+  document.createElement(&#39;asljs-letterpad&#39;) as HTMLElement &amp; {
+    characters: string;
+    collapsed: boolean;
+  };
+
+letterpad.characters = &#39;trace&#39;;
+letterpad.collapsed = false;
+
+letterpad.addEventListener(
+  &#39;key&#39;,
+  event =&gt; {
+    const detail =
+      (event as CustomEvent&lt;{ key: string }&gt;).detail;
+
+    console.log(detail.key);
+  });
+
+letterpad.addEventListener(
+  &#39;submit&#39;,
+  () =&gt; {
+    console.log(&#39;submit&#39;);
+  });
+</code></pre>
+
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/AlexandriteSoftware/asljs/blob/main/libs/components/docs/Letterpad.md">View source</a>
+  </footer>
+</body>
+</html>
