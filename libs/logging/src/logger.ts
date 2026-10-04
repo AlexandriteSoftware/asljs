@@ -52,4 +52,16 @@ export interface Logger
     head: LogEntryHead,
     ...params: any[]
   ): void;
+
+  /**
+   * Returns a logger whose entries all carry `fields`, for context shared by a
+   * unit of work, such as a request or a job id. The scoped logger has the same
+   * level and context; fields given to a call are written after the scope's.
+   *
+   * The scope belongs to the returned logger, not to the code that runs while
+   * it exists: pass the scoped logger to that code.
+   */
+  scope(
+    fields: LogFields
+  ): Logger;
 }

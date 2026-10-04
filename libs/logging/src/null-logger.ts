@@ -1,4 +1,5 @@
-import { Logger }
+import { type LogFields,
+         type Logger }
   from './logger.js';
 
 export class NullLogger implements Logger
@@ -32,8 +33,10 @@ export class NullLogger implements Logger
   {
   }
 
-  scope(): Logger
+  scope(
+    _fields: LogFields
+  ): Logger
   {
-    return new NullLogger();
+    return this;
   }
 }

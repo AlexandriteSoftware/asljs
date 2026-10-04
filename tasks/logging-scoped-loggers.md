@@ -1,38 +1,46 @@
-# logging-child-loggers
+# logging-scoped-loggers
 
-Attach fields once to a logger, so every entry it writes carries them.
+Decide whether loggers get an ambient scope, so fields reach code that is not
+given a scoped logger.
 
 Package: `logging`.
 
-Entries now take a leading fields object (see `libs/logging/docs/Logging.md`,
-"Writing an entry"), which replaced the old behaviour of dropping fields passed
-after the message. What is still missing is the bound form: a request id, a job
-id or a tenant that every entry in a unit of work should carry, without
-repeating it on each call.
+`Logger.scope(fields)` exists (see `libs/logging/docs/Logging.md`, "Scopes"):
+it returns a logger whose entries all carry `fields`, like pino's `child()`.
+That covers every case where the scoped logger can be passed down. It does not
+cover code that takes no logger, or takes one from elsewhere, during a request
+or a job; such code logs without the request id.
 
-`LoggerProvider.getLogger(context)` already binds one field, `context`.
+The alternative is an ambient scope, tied to the async context rather than to
+a logger object:
 
-Proposed:
+- .NET `ILogger.BeginScope(state)` - fields apply to every entry written,
+  through any logger, until the returned scope is disposed.
+- In JavaScript, built on `AsyncLocalStorage`: pino's `mixin` option adds
+  fields from a store to every entry; LogTape's `withContext(fields, callback)`
+  applies them for the duration of the callback.
 
-- `Logger.child(fields)` returns a logger whose entries include `fields`, merged
-  under the fields of each call. `PinoLogger` maps it to pino's `child()`.
-- `NullLogger.child()` returns a `NullLogger`. `NullLogger` already has an
-  unused `scope()` that returns one; replace it, or remove it.
-- Decide whether implicit context through `AsyncLocalStorage` (pino `mixin`,
-  LogTape `withContext`) is wanted, so a request id reaches code that has no
-  logger parameter. It is a separate decision from `child()`.
+A possible shape:
+`loggerProvider.withScope({ requestId }, async () => { ... })`, with
+`PinoLoggerProvider` reading the store in a pino `mixin`.
 
-Adding `child` to the `Logger` interface breaks hand-written implementations,
-such as the recording logger in `libs/tmpdir/src/tmp-dir.test.ts`; make it
-optional, or update them.
+Points to settle:
 
-Update `libs/logging/docs/Logging.md` and `RQ002 logging public API`, and test
-that bound fields reach the output and that call fields win on a clash.
+- Whether the explicit `scope()` is enough. Prefer it while it is: an ambient
+  scope is invisible at the call site, and its cost is paid on every entry.
+- If ambient scopes are added, which wins on a clash between an ambient field,
+  a `scope()` field and a call field; and that `NullLoggerProvider` accepts the
+  same calls.
+- Naming. "Scope" here means fields bound to entries, as in .NET.
+  OpenTelemetry's "instrumentation scope" is something else: the name of the
+  library that emitted a record. Say so wherever both appear.
 
 ## Background
 
 How other libraries attach structured data to log entries, collected when the
-fields-first form (A, with a fallback for B-shaped calls) was chosen.
+fields-first form (A, with a fallback for B-shaped calls) was chosen. Bound
+fields (E) are what `scope()` implements; most JavaScript libraries call them a
+child logger.
 
 ### How OpenTelemetry models it
 

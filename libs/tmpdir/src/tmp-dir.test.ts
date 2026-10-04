@@ -285,7 +285,8 @@ test(
         error:
           fallbackLogger.error
         .bind(
-          fallbackLogger) };
+          fallbackLogger),
+        scope: () => logger };
 
     using tmpDir =
       new TmpDir(

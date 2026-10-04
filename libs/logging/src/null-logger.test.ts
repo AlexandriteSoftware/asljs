@@ -22,3 +22,21 @@ test(
         'trace'),
       false);
   });
+
+test(
+  'null logger scope returns a logger that also discards entries',
+  () =>
+  {
+    const logger =
+      new NullLogger();
+
+    const scoped =
+      logger.scope(
+        { requestId: 'r1' });
+
+    assert.equal(
+      scoped.level,
+      'silent');
+
+    scoped.information('ignored');
+  });

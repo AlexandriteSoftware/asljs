@@ -28,6 +28,30 @@ provider and how it is configured, and the null implementations.
 - `isLevelEnabled(level)` - whether a message at `level` would be written.
 - `trace(...)`, `debug(...)`, `information(...)`, `warning(...)` and
   `error(...)` - write an entry at that level.
+- `scope(fields)` - returns a logger whose entries all carry `fields`.
+
+## Scopes
+
+A scope attaches fields to every entry of a unit of work, without repeating
+them on each call:
+
+```ts
+const requestLogger =
+  logger.scope({ requestId, method, path });
+
+requestLogger.information('received');
+requestLogger.error(error, 'failed');
+```
+
+- The scoped logger keeps the level and the context of the logger it came
+  from, and scopes nest: `logger.scope(a).scope(b)` carries both.
+- Fields given to a call are written after the scope's; a JSON reader takes the
+  call's value when the names clash.
+- The original logger is unchanged.
+- A scope belongs to the logger it returns, not to the code that runs while it
+  exists: pass the scoped logger to that code. This is pino's `child()`
+  under another name; it is not the ambient scope of .NET's `BeginScope`.
+- `NullLogger.scope()` returns the same `NullLogger`.
 
 ## Writing an entry
 

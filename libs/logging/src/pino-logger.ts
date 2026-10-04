@@ -91,6 +91,15 @@ export class PinoLogger implements Logger
       params);
   }
 
+  scope(
+    fields: LogFields
+  ): Logger
+  {
+    return new PinoLogger(
+      this.#logger.child(fields),
+      this.level);
+  }
+
   #write(
     level: PinoLevel,
     head: LogEntryHead,

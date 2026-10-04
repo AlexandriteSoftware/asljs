@@ -171,6 +171,9 @@ passes its own prefix, for example `createTestLoggerProvider('EDG_TEST_LOG_')`.
   exits, so buffered entries are written. That includes exits from fatal error
   handlers.
 - The context names the component, for example `TmpDir`, `cog.mcp` or `http`.
+- Fields shared by a unit of work, such as a request id, go on a scoped logger
+  (`logger.scope({ requestId })`) passed to the code doing that work, rather
+  than on every call.
 - A handled failure is logged once, where it is handled. Do not log an
   exception and rethrow it; whoever handles it logs it.
 - An exception nobody handles is not logged. Node prints it to stderr and exits

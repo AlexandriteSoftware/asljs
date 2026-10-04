@@ -238,3 +238,97 @@ test(
       records,
       [ ]);
   });
+
+test(
+  'PinoLogger scope writes its fields on every entry',
+  () =>
+  {
+    const { logger, records } =
+      createLogger();
+
+    const scoped =
+      logger.scope(
+        { requestId: 'r1' });
+
+    scoped.information('received');
+
+    scoped.debug(
+      { status: 200 },
+      'sent');
+
+    assert.deepEqual(
+      records,
+      [ { level: 30,
+          requestId: 'r1',
+          msg: 'received' },
+        { level: 20,
+          requestId: 'r1',
+          status: 200,
+          msg: 'sent' } ]);
+  });
+
+test(
+  'PinoLogger scopes nest and keep the level',
+  () =>
+  {
+    const { logger, records } =
+      createLogger('information');
+
+    const scoped =
+      logger
+      .scope(
+        { requestId: 'r1' })
+      .scope(
+        { userId: 'u1' });
+
+    assert.equal(
+      scoped.level,
+      'information');
+
+    scoped.debug('hidden');
+    scoped.information('visible');
+
+    assert.deepEqual(
+      records,
+      [ { level: 30,
+          requestId: 'r1',
+          userId: 'u1',
+          msg: 'visible' } ]);
+  });
+
+test(
+  'PinoLogger scope leaves the original logger unchanged',
+  () =>
+  {
+    const { logger, records } =
+      createLogger();
+
+    logger.scope(
+      { requestId: 'r1' });
+
+    logger.information('plain');
+
+    assert.deepEqual(
+      records,
+      [ { level: 30,
+          msg: 'plain' } ]);
+  });
+
+test(
+  'PinoLogger writes a call field after a scope field of the same name',
+  () =>
+  {
+    const { logger, records } =
+      createLogger();
+
+    logger
+      .scope(
+        { step: 'scope' })
+      .information(
+        { step: 'call' },
+        'clash');
+
+    assert.equal(
+      records[0].step,
+      'call');
+  });
