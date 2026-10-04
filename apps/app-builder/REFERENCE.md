@@ -34,7 +34,7 @@
 
 ## Validation commands
 
-- `npm -w asljs-app-builder run lint`
+- `npm -w asljs-app-builder run flint`
 - `npm -w asljs-app-builder run build`
 - `npm -w asljs-app-builder run test`
 - `npm -w asljs-app-builder run typecheck`

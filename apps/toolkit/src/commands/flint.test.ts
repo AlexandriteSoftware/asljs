@@ -2,17 +2,17 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { parseFintArgs }
-  from './fint.js';
+import { parseFlintArgs }
+  from './flint.js';
 
-const TEST_SUITE = 'fint';
+const TEST_SUITE = 'flint';
 
 test(
   `${TEST_SUITE}: args split into includes and excludes`,
   (): void =>
   {
     assert.deepEqual(
-      parseFintArgs(
+      parseFlintArgs(
         [ 'docs',
           '*.md',
           '--exclude',
@@ -24,7 +24,8 @@ test(
             '*.md' ],
         excludes:
           [ 'apps',
-            'libs' ] });
+            'libs' ],
+        fix: false });
   });
 
 test(
@@ -32,9 +33,27 @@ test(
   (): void =>
   {
     assert.deepEqual(
-      parseFintArgs(),
+      parseFlintArgs(),
       { includes: [ ],
-        excludes: [ ] });
+        excludes: [ ],
+        fix: false });
+  });
+
+test(
+  `${TEST_SUITE}: --fix lets eslint fix, wherever it appears`,
+  (): void =>
+  {
+    assert.deepEqual(
+      parseFlintArgs(
+        [ 'src',
+          '--fix',
+          '--exclude',
+          'build' ]),
+      { includes:
+          [ 'src' ],
+        excludes:
+          [ 'build' ],
+        fix: true });
   });
 
 test(
@@ -43,13 +62,13 @@ test(
   {
     assert.throws(
       () =>
-        parseFintArgs(
+        parseFlintArgs(
           [ '--exclude' ]),
       /--exclude needs a glob/);
 
     assert.throws(
       () =>
-        parseFintArgs(
+        parseFlintArgs(
           [ '--exclude',
             '--exclude',
             'apps' ]),
@@ -62,7 +81,7 @@ test(
   {
     assert.throws(
       () =>
-        parseFintArgs(
+        parseFlintArgs(
           [ '--include',
             'docs' ]),
       /Unknown option: --include/);

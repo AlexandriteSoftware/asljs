@@ -15,6 +15,8 @@ npm -w asljs-dash run start     # the web server, http://localhost:3000
 npm -w asljs-dash run runner    # the cron runner, in a second terminal
 ```
 
+Or both in one process: `npm -w asljs-dash run start:with-runner`.
+
 A value arrives as plain text under a key:
 
 ```powershell

@@ -50,36 +50,44 @@ Reads the file at the given path, resolved against the current working
 directory, and writes it to standard output without its trailing newline. Use it
 to show repository notes at the end of another script.
 
-## fint [glob...] [--exclude glob]...
+## flint [glob...] [--exclude glob]... [--fix]
 
-> Format and lint the repository's markdown and JSON files.
+> Format and lint the selected files: markdown, JSON, TypeScript and JavaScript.
 
-Formats each selected markdown file with dprint and then lints it with remark,
-so the linter sees what dprint left rather than what the author typed. Formats
-each selected JSON file with dprint. Ignores every other file, so a glob may
-name a directory without picking up its sources.
+Formats every selected JSON, markdown and TypeScript file with dprint, then
+formats the TypeScript files again with sfmt, which refines dprint's layout.
+JavaScript is linted but not formatted: sfmt has no rules for it, and dprint
+alone would undo the layout the hand-written scripts share with the TypeScript.
+Then lints the TypeScript and JavaScript files with eslint and the markdown
+files with remark, so the linters see what the formatters left rather than what
+the author typed. Ignores every other file, so a glob may name a directory
+without picking up its binaries. `--fix` lets eslint fix what it can.
 
 Candidates come from `asljs-locator`, rooted at the current working directory
 and filtered through `GitIgnore`, so `.gitignore` decides what belongs to the
 repository. With no glob every candidate is selected, so `--exclude` alone
 means "everything but these". A glob that names a directory matches everything
-beneath it, and one with wildcards is matched as written.
+beneath it, and one with wildcards is matched as written. A package script runs
+it with no glob, and the root script excludes `apps` and `libs`, which format
+and lint themselves.
 
 Formats with the `dprint.json` nearest to the working directory, looking there
 and then upwards, so a package with its own configuration uses it and every
-other package uses the root one. remark finds its own nearest `.remarkrc*` the
-same way. Expects `dprint` and `remark` on `PATH`, which an npm script
-provides.
+other package uses the root one. eslint and remark find their own nearest
+`eslint.config.*` and `.remarkrc*` the same way. A file eslint's configuration
+ignores is passed over without a warning. Expects `dprint`, `sfmt`, `eslint`
+and `remark` on `PATH`, which an npm script provides.
 
 The file list reaches dprint through a `.toolkit-dprint.json` written in the
 working directory for the run and removed again afterwards, which extends the
 configuration found above and names each file. That keeps the command short and
-lifts the limit on how many files one run can take. remark has no configuration
-key for its files, so it is the one command that carries them as arguments and
-is split into several runs to stay within the command line limit; its log
+lifts the limit on how many files one run can take. sfmt, eslint and remark
+have no configuration key for their files, so they carry them as arguments and
+are split into several runs to stay within the command line limit; the log
 records the count rather than the paths.
 
-Fails when remark reports a warning, because it runs with `--frail`.
+Stops at the first tool that fails. Fails when eslint reports an error, and when
+remark reports a warning, because it runs with `--frail`.
 
 ## remove-local-modules
 

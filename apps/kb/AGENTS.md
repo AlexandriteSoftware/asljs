@@ -176,7 +176,7 @@ From the repository root:
 ```pwsh
 npm -w kb run test
 npm -w kb run typecheck
-npm -w kb run lint
+npm -w kb run flint
 npm -w kb run build
 ```
 

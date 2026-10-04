@@ -53,14 +53,14 @@ export async function format(
     ...args: string[]
   ): Promise<void>
 {
-  const pattern =
+  const patterns =
     args.length > 0
-    ? args[0]
-    : '**/*.{ts,mts,cts,js,mjs,cjs}';
+    ? args
+    : [ '**/*.{ts,mts,cts,js,mjs,cjs}' ];
 
   const paths =
     await glob(
-      pattern,
+      patterns,
       { absolute: true,
         cwd: environment.cwd,
         dot: true,

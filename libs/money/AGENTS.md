@@ -91,7 +91,7 @@ Safe usage rules:
 
 - `npm -w asljs-money run test`
 - `npm -w asljs-money run typecheck`
-- `npm -w asljs-money run lint`
+- `npm -w asljs-money run flint`
 
 Update this file when AI-facing arithmetic or formatting constraints, exported
 surface expectations, or validation commands change. Update `README.md`

@@ -40,7 +40,7 @@ export async function releasePatch(
     [ 'npm run clean',
       'npm run build:dist',
       'npm run typecheck',
-      'npm run lint',
+      'npm run flint',
       'npm run build',
       'npm run test',
       'npm version patch --no-git-tag-version' ]);

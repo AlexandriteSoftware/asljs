@@ -39,15 +39,14 @@ Publishable library packages expose a common script shape:
 - `test`
 - `test:watch`
 - `typecheck`
-- `lint`
-- `lint:fix`
-- `lint:md` - checks the links in the package's markdown files
+- `flint` - formats the package's files and lints them with eslint and remark;
+  `npm -w <workspace-name> run flint -- --fix` lets eslint fix what it can
 - `coverage`
 
 What `build`, `typecheck` and `test` run is in [TypeScript Configuration][TSC].
 
 `app-builder` is a private browser app, not a publishable library. It exposes
-`dev`, `test`, `typecheck`, `build` and `lint:md`. `dev` is for iterating on UI
+`dev`, `test`, `typecheck`, `build` and `flint`. `dev` is for iterating on UI
 behavior; `build` emits the demo output.
 
 `dash` is a private Node application with no build step and no test suite yet.

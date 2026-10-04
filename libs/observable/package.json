@@ -37,17 +37,11 @@
     }
   },
   "scripts": {
-    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
-    "format:ts": "dprint fmt --config ../../dprint.json \"src/**/*.ts\"",
-    "format:sfmt": "sfmt format \"src/**/*.ts\"",
-    "format": "npm run format:json && npm run format:ts && npm run format:sfmt",
+    "flint": "toolkit flint",
     "clean": "toolkit clean",
     "build": "tsc -p tsconfig.build.json",
     "build:dist": "tsc -p tsconfig.dist.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:md": "remark --frail --quiet --no-stdout .",
     "guard:clean-git": "toolkit ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
     "postpublish": "toolkit tag-release-revision",
@@ -55,7 +49,7 @@
     "test:watch": "node --watch --test build/**/*.test.js",
     "coverage": "npm run build && node --test --experimental-test-coverage --enable-source-maps --test-coverage-exclude=\"**/*.test.js\" build/**/*.test.js",
     "release:patch": "toolkit release-patch",
-    "all": "npm run clean && npm run format && npm run typecheck && npm run lint && npm run lint:md && npm run build:dist && npm run build && npm run test"
+    "all": "npm run clean && npm run flint && npm run typecheck && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {
     "asljs-eventful": "^0.4.10"

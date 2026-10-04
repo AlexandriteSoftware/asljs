@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import * as config from './config.js';
+import * as runner from './runner.js';
 import * as store from './store.js';
 
 const app = express();
@@ -169,5 +170,11 @@ app.listen(port, () =>
   }
   for (const file of config.files()) {
     console.log(`  config ${file}`);
+  }
+
+  // The simple setup: one process. The runner still puts through /api/put, to
+  // this server, so a value takes the same path whoever runs the counters.
+  if (process.argv.includes('--with-runner')) {
+    runner.start({ url: `http://localhost:${port}` });
   }
 });

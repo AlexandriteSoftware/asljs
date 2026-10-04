@@ -75,6 +75,8 @@ ask before proceeding rather than changing the design silently.
   expiry is a clock event
 - a key can be unbounded — every field of a policy must be greater than zero
 - the runner is required — anything that can issue a `PUT` can feed the store
+- `--with-runner` lets the server call agents directly — the embedded runner
+  still puts through `/api/put` to its own port, so the layering is unchanged
 - the card countdown measures the page's own polling — it measures the counter's
   schedule against the sample's `seen`, so it reads `stale` when nothing is
   running the counters

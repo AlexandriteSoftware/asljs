@@ -132,7 +132,7 @@ Do not change that sequence silently, and do not make the reason list narrower.
 - `npm -w asljs-machine run build`
 - `npm -w asljs-machine run test`
 - `npm -w asljs-machine run typecheck`
-- `npm -w asljs-machine run lint`
+- `npm -w asljs-machine run flint`
 - `npm -w asljs-machine run example`
 
 `build` compiles `src/` and `examples/` into `build/`, so `test` covers both.
