@@ -10,7 +10,8 @@ import test
   from 'node:test';
 import { findDprintConfig,
          toCommandBatches,
-         toDprintConfig }
+         toDprintConfig,
+         toToolError }
   from './formatters.js';
 
 const TEST_SUITE = 'formatters';
@@ -170,4 +171,64 @@ test(
     assert.deepEqual(
       toCommandBatches([ ]),
       [ ]);
+  });
+
+test(
+  `${TEST_SUITE}: a linter that exits with 1 reported problems`,
+  (): void =>
+  {
+    assert.equal(
+      toToolError(
+        'remark',
+        1,
+        true).message,
+      'remark reported problems in the files above.');
+  });
+
+test(
+  `${TEST_SUITE}: a linter with any other status could not run`,
+  (): void =>
+  {
+    assert.equal(
+      toToolError(
+        'eslint',
+        2,
+        true).message,
+      'eslint could not run (exit code 2); see its output above.');
+  });
+
+test(
+  `${TEST_SUITE}: a formatter that fails could not run, whatever the status`,
+  (): void =>
+  {
+    assert.equal(
+      toToolError(
+        'sfmt',
+        1,
+        false).message,
+      'sfmt could not run (exit code 1); see its output above.');
+
+    assert.equal(
+      toToolError(
+        'dprint',
+        null,
+        false).message,
+      'dprint could not run; see its output above.');
+  });
+
+test(
+  `${TEST_SUITE}: the error keeps what the tool threw as its cause`,
+  (): void =>
+  {
+    const cause =
+      new Error(
+        'Command failed: remark');
+
+    assert.strictEqual(
+      toToolError(
+        'remark',
+        1,
+        true,
+        cause).cause,
+      cause);
   });

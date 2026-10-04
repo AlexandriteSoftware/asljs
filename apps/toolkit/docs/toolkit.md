@@ -88,7 +88,10 @@ records how many files each tool processes, and with `--loglevel debug` it
 lists every file, once per tool.
 
 Stops at the first tool that fails. Fails when eslint reports an error, and when
-remark reports a warning, because it runs with `--frail`.
+remark reports a warning, because it runs with `--frail`. A linter that found
+problems ends the run with "<tool> reported problems in the files above"; a
+tool that could not run at all ends it with "<tool> could not run", and its own
+output above says why.
 
 ## remove-local-modules
 

@@ -133,6 +133,56 @@ export function toCommandBatches(
   return batches;
 }
 
+/**
+ * The error for a tool that exited with a non-zero status.
+ *
+ * `execSync` reports any non-zero exit as "Command failed" followed by the
+ * whole command line, which reads as if the tool could not run. A linter that
+ * exits with status 1 did run: it found problems, which it has already
+ * printed. Any other status, and any failure of a formatter, means the tool
+ * could not do its job, and its own output says why.
+ */
+export function toToolError(
+    tool: string,
+    status: number | null | undefined,
+    reportsProblems: boolean,
+    cause?: unknown
+  ): Error
+{
+  if (
+    reportsProblems
+    && status === 1
+  ) {
+    return new Error(
+      `${tool} reported problems in the files above.`,
+      { cause });
+  }
+
+  return new Error(
+    typeof status === 'number'
+      ? `${tool} could not run (exit code ${status}); see its output above.`
+      : `${tool} could not run; see its output above.`,
+    { cause });
+}
+
+/** Runs one tool, turning its failure into the error `toToolError` describes. */
+function runTool(
+    tool: string,
+    reportsProblems: boolean,
+    run: () => void
+  ): void
+{
+  try {
+    run();
+  } catch (error) {
+    throw toToolError(
+      tool,
+      (error as { status?: number | null; }).status,
+      reportsProblems,
+      error);
+  }
+}
+
 /** Formats the files with dprint, through a configuration written for the run. */
 export async function formatWithDprint(
     dprintConfigPath: string,
@@ -157,9 +207,13 @@ export async function formatWithDprint(
     'utf8');
 
   try {
-    start(
-      `dprint fmt --config "${GENERATED_CONFIG_NAME}"`,
-      { cwd });
+    runTool(
+      'dprint',
+      false,
+      () =>
+        start(
+          `dprint fmt --config "${GENERATED_CONFIG_NAME}"`,
+          { cwd }));
   } finally {
     await fsPromises.rm(
       generatedConfigPath,
@@ -180,7 +234,9 @@ export function formatWithSfmt(
   ): void
 {
   runInBatches(
+    'sfmt',
     'sfmt format',
+    false,
     filePaths,
     cwd,
     onBatch);
@@ -201,9 +257,11 @@ export function lintWithEslint(
   ): void
 {
   runInBatches(
+    'eslint',
     fix
       ? 'eslint --no-warn-ignored --fix'
       : 'eslint --no-warn-ignored',
+    true,
     filePaths,
     cwd,
     onBatch);
@@ -221,7 +279,9 @@ export function lintWithRemark(
   ): void
 {
   runInBatches(
+    'remark',
     'remark --frail --quiet --no-stdout',
+    true,
     filePaths,
     cwd,
     onBatch);
@@ -236,7 +296,9 @@ export function lintWithRemark(
  * it runs, so the caller decides what to record.
  */
 function runInBatches(
+    tool: string,
     command: string,
+    reportsProblems: boolean,
     filePaths: readonly string[],
     cwd: string,
     onBatch: (batch: readonly string[]) => void
@@ -251,10 +313,14 @@ function runInBatches(
 
     onBatch(batch);
 
-    start(
-      `${command} ${quotedPaths}`,
-      { cwd,
-        quiet: true });
+    runTool(
+      tool,
+      reportsProblems,
+      () =>
+        start(
+          `${command} ${quotedPaths}`,
+          { cwd,
+            quiet: true }));
   }
 }
 
