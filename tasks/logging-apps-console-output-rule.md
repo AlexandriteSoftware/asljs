@@ -1,8 +1,9 @@
 # logging-apps-console-output-rule
 
 Bring every application and tool in line with `docs/Logging.md`: silent by
-default, `--loglevel` enables logging on the console, `--logfile` sends it to a
-file instead, with the same environment variables everywhere.
+default, `--loglevel` enables logging on the console, `--logfile` chooses the
+target (a path, `stdout` or `stderr`), `--logformat` the format, with the same
+environment variables everywhere, and MCP servers refuse to log to stdout.
 
 Packages: `toolkit`, `part`, `kb`, `cog`.
 
@@ -27,23 +28,28 @@ Verified by running each tool with stdout captured separately from stderr.
   the commands write no log entries yet, so nothing appears even at `trace`.
   Make the default `silent` before the first log call is added.
 - `kb` MCP server (`apps/kb/src/mcp/main.ts`) - silent unless `KB_LOG_FILE` is
-  set, which is the MCP exception in the rules. Checked: with
-  `KB_LOG_LEVEL=trace` and no file, stdout carries only JSON-RPC.
+  set: `logLevel()` forces `silent` without a file, so `KB_LOG_LEVEL=trace`
+  alone is ignored. Checked: stdout carries only JSON-RPC either way. The rule
+  is now stricter: a level with stdout as the target throws at startup, naming
+  `--logfile stderr` and `--logfile <path>`. Replace `logLevel()` with that
+  check.
 - `cog` CLI (`apps/cog/src/main/main.ts`, `apps/cog/src/logger.ts`) - the
   builder starts at `information`. cog only writes `debug` and `trace` entries,
   so it is quiet in practice; make the default `silent` so it is quiet by rule.
   If some of its progress is meant for the user, it moves to direct output, as
   for toolkit.
-- `cog` MCP server (`apps/cog/src/mcp.ts`) - breaks the MCP exception: with
+- `cog` MCP server (`apps/cog/src/mcp.ts`) - breaks the rule: with
   `COG_LOG_LEVEL=debug` and no file, a `get-changed-files` call wrote two
   `DEBUG` lines to stdout between the JSON-RPC responses, corrupting the
-  protocol. Until [mcp-server-transport][MCP] lands, do what `kb-mcp` does: log
-  only when `COG_LOG_FILE` is set.
+  protocol. Throw at startup in that case, as for `kb-mcp`;
+  `COG_LOG_FILE=stderr` is then the way to see the entries.
 
 ## Also
 
-- Each application accepts both `--loglevel` and `--logfile` and both
-  environment variables; `--logfile` alone enables logging at `information`.
+- Each application accepts `--loglevel`, `--logfile` and `--logformat` and the
+  three environment variables; `--logfile` alone enables logging at
+  `information`. MCP servers accept the same; their launch configurations
+  usually set the environment variables.
 - The application READMEs and requirements describe logging by pointing at
   `docs/Logging.md` instead of restating it. `apps/cog/README.md` gives `info`
   as an example level, which the options builder rejects; the name is

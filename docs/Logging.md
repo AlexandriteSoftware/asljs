@@ -23,23 +23,32 @@ through a `Logger`.
 
 ## Enabling logging
 
-Every application and tool takes the same two arguments:
+Every application and tool takes the same three arguments:
 
-- `--loglevel <level>` - enables logging at that level, to the console.
-- `--logfile <path>` - writes the log to that file instead of the console. The
-  directory is created if needed. Without `--loglevel`, the level is
-  `information`.
+- `--loglevel <level>` - enables logging at that level. Without `--logfile`,
+  the log goes to the console (stdout).
+- `--logfile <target>` - where the log goes. Without `--loglevel`, the level is
+  `information`. The target is one of:
+  - a path - the log is written to that file; its directory is created if
+    needed.
+  - `stdout` - the console. The same as leaving `--logfile` out: the log is
+    written once, to stdout.
+  - `stderr` - standard error, which keeps stdout free for the tool's output.
+- `--logformat <format>` - `auto`, `json` or `pretty`; see
+  [Format][FMT]. Defaults to `auto`.
 
 So:
 
 - If you want to watch what a tool does, then pass `--loglevel debug`.
-- If the console is not the place for it, because the tool's stdout is its
-  output or because you want to keep the log, then add `--logfile <path>`.
+- If stdout is not the place for it, because it carries the tool's output, then
+  add `--logfile stderr`.
+- If you want to keep the log, then add `--logfile <path>`.
 
 Each argument has an environment variable, named after the application:
 
 - `<APP>_LOG_LEVEL` - the level, for example `PART_LOG_LEVEL`.
-- `<APP>_LOG_FILE` - the file, for example `PART_LOG_FILE`.
+- `<APP>_LOG_FILE` - the target, for example `PART_LOG_FILE=stderr`.
+- `<APP>_LOG_FORMAT` - the format, for example `PART_LOG_FORMAT=json`.
 
 An argument takes precedence over its environment variable, which takes
 precedence over the default.
@@ -70,27 +79,63 @@ From the most to the least verbose:
 
 Any other name is rejected. `info` and `warn` are pino's names, not these.
 
-## Console format
+## Format
 
-On the console, entries are pretty-printed for a person when stdout is a
-terminal, and written as JSON lines when it is not: a container, a hosting
-platform, a pipe or a redirect. `<APP>_LOG_FORMAT` set to `pretty` or `json`
-overrides the choice. A log file always holds JSON lines.
+The same three formats apply to every target, console or file:
+
+- `json` - one JSON object per line. For machines: hosting platforms, log
+  collectors, `jq`, and replaying a log.
+- `pretty` - one readable line per entry, coloured when the target is a
+  terminal. For people.
+- `auto` - the default. Picks one of the two by asking whether a person is
+  watching the target:
+  - stdout or stderr that is a terminal - `pretty`.
+  - stdout or stderr that is not a terminal (a container, a hosting platform
+    such as Azure App Service, a pipe, a redirect) - `json`.
+  - a file - `json`.
+
+`auto` looks at the target itself, through `isTTY` on that stream, rather than
+guessing the environment from variables such as `CI`, `NODE_ENV` or
+`KUBERNETES_SERVICE_HOST`. A service therefore writes JSON on its hosting
+platform with no configuration, and the same service run from a terminal
+prints readable lines.
+
+Pass a format only to override `auto`:
+
+- `--logformat pretty` with a file, to read the file directly instead of through
+  a formatter.
+- `--logformat pretty` under a tool that pipes output but is still read by a
+  person, such as `concurrently` in a development script.
+- `--logformat json` on a terminal, to see exactly what a log collector will
+  receive.
+
+Applications do not fix the format in code; that would take the choice away
+from `auto` and from the person running the tool.
 
 Planned in [logging-json-console-output][OUT]; today the console is always
-pretty-printed, with colour codes even when stdout is not a terminal.
+pretty-printed, with colour codes even when stdout is not a terminal, and a file
+is always JSON.
 
 ## Tools whose stdout is their output
 
-A tool whose stdout carries data, such as a printed file, a generated document,
-`--format json` output, or a protocol, still follows the rule: `--loglevel`
-alone logs to the console and mixes log entries into the output. That is the
-user's choice; `--logfile` is the way to log without it.
+A tool whose stdout carries data, such as a printed file, a generated document
+or `--format json` output, still follows the rule: `--loglevel` alone logs to
+stdout and mixes log entries into the output. That is the user's choice;
+`--logfile stderr` or `--logfile <path>` keeps the output clean.
 
-MCP servers are the exception that cannot rely on the user: a log line on a
-stdio server's stdout breaks the protocol. Until
-[mcp-server-transport][MCP] settles how they communicate, an MCP server logs
-only to a file, and `--loglevel` without `--logfile` leaves it silent.
+MCP servers cannot leave that choice to the user: a log line on a stdio
+server's stdout breaks the protocol. So an MCP server:
+
+- stays silent when no level is given, like every tool;
+- throws at startup when a level is given and the target is stdout, whether
+  `--logfile` is left out or set to `stdout`, with a message that names
+  `--logfile stderr` and `--logfile <path>` as the alternatives;
+- logs normally to `stderr` or to a file. MCP clients read a server's stderr
+  and show or record it, so `--logfile stderr` is the way to watch an MCP
+  server.
+
+Protecting the protocol from output that does not come from the logger, such as
+`console.log` in a dependency, is [mcp-server-transport][MCP].
 
 ## Tests
 
@@ -98,9 +143,11 @@ Tests log by default, because a failing test is when the log is needed:
 
 - The default level is `debug`, written to the console.
 - `<PREFIX>TEST_LOG_LEVEL` changes the level; `silent` turns logging off.
-- `<PREFIX>TEST_LOG_FILE` writes the log to a file instead of the console.
-- The console format is pretty, because a person reads test output, even though
-  the test runner pipes it.
+- `<PREFIX>TEST_LOG_FILE` takes the same targets as `--logfile`: a path,
+  `stdout` or `stderr`.
+- The default format is `pretty` rather than `auto`, because a person reads
+  test output even though the test runner pipes it. `<PREFIX>TEST_LOG_FORMAT`
+  overrides it.
 
 Inside this repository the prefix is `ASLJS_`:
 
@@ -140,6 +187,7 @@ Planned in [logging-test-logger-provider][TLP]; today tests construct
   the message without a placeholder is dropped.
 
 [APP]: ../tasks/logging-apps-console-output-rule.md
+[FMT]: #format
 [FLD]: ../tasks/logging-structured-fields-dropped.md
 [LOG]: ../libs/logging/docs/Logging.md
 [MCP]: ../tasks/mcp-server-transport.md

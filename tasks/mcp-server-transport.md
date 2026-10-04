@@ -26,8 +26,11 @@ JSON-RPC responses (see [logging-apps-console-output-rule][APP]). The children
 the servers start today use piped stdio, so they are safe, but nothing enforces
 that.
 
-Keeping stdout clean by discipline, one rule per logger and per dependency,
-does not scale. The transport has to make it structural.
+The logger is covered by the rules in `docs/Logging.md`: an MCP server throws
+at startup when asked to log to stdout, and `--logfile stderr` is how it logs to
+the console. That does not cover `console.log` in this code or a dependency, or
+a library's own warnings. Keeping stdout clean by discipline, one rule per
+dependency, does not scale. The transport has to make it structural.
 
 ## Alternatives
 
@@ -93,9 +96,6 @@ Points to settle:
 - Where the shared module lives. Both servers are applications; a small
   library, or a module in `asljs-logging` if it ends up owning the stderr
   redirection, are the candidates.
-- Whether, once stdout is reserved, MCP servers may log to the console (now
-  stderr) under `--loglevel` like every other tool, which would remove the
-  exception in `docs/Logging.md`.
 - Windows behaviour of the redirection, since the tools are developed there.
 
 Record the decision in `docs/` and update the logging rules in
