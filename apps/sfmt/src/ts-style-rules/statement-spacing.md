@@ -61,7 +61,7 @@ import { b }
   from 'b';
 ```
 
-```ts focus
+```ts
 type A =
   (
     a: string,

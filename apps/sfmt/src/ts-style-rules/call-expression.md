@@ -114,7 +114,7 @@ test(
 
 Nested calls require chopping:
 
-```js focus
+```js
 test(test(test()));
 // ---
 test(
@@ -263,4 +263,22 @@ test
     readFileSync(
       gitIgnorePath,
       'utf8');
+```
+
+A call whose rebuilt layout would delete a comment between its arguments is left
+as it is, because the formatter rebuilds the call from tokens, which carry no
+comments:
+
+```ts
+assert.equal(
+  // @ts-expect-error a member is typed as declared
+  typeof deep.user.on,
+  'function'
+);
+// ---
+assert.equal(
+  // @ts-expect-error a member is typed as declared
+  typeof deep.user.on,
+  'function'
+);
 ```

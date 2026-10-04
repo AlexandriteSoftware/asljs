@@ -4,6 +4,8 @@ import { Logger }
   from 'asljs-logging';
 import path
   from 'node:path';
+import { guardComments }
+  from './comment-guard.js';
 
 export type SupportedFileType =
   | 'javascript'
@@ -50,8 +52,17 @@ export function tsFormatterFactory(
         schema: [ ],
         messages: messages };
 
-    const create: RuleListenerFactory =
+    const createListener: RuleListenerFactory =
       ruleListenerCreateFn(logger);
+
+    // Every rule's fix rebuilds code from tokens, which carry no comments, so
+    // a report whose fix would delete one is dropped here, for all rules.
+    const create: RuleListenerFactory =
+      context =>
+        createListener(
+          guardComments(
+            context,
+            logger));
 
     const eslintRule: TSESLint.RuleModule<string> =
       { meta,

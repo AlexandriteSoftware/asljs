@@ -146,6 +146,13 @@ function checkLayout(
     return result;
   }
 
+  // An array with a hole is not checked, because `fmtArrayExpression` does not
+  // rebuild one: reporting it would offer a fix that changes nothing, which
+  // eslint applies again and again until it reports circular fixes.
+  if (node.elements.includes(null)) {
+    return true;
+  }
+
   const baseIndentation =
     new Indentation(
       firstTokenLocation.start.column);
@@ -178,11 +185,6 @@ function checkLayout(
   ) {
     const element =
       node.elements[index];
-
-    if (element === null) {
-      // do not check if the element is null
-      return true;
-    }
 
     const elementLocation = element?.loc;
 
