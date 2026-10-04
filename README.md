@@ -3,6 +3,8 @@
 Libraries, project tools, and productivity apps to enhance everyday development.
 By Alexandrite Software Ltd. In JavaScript (with TypeScript).
 
+Documentation site: [alexandritesoftware.github.io/asljs][SITE].
+
 Applications:
 
 - [app-builder][APPS] - builds this site from the repository's markdown files,
@@ -48,3 +50,4 @@ Libraries:
 [SFMT]: ./apps/sfmt/README.md
 [APPS]: ./apps/app-builder/README.md
 [DASH]: ./apps/dash/README.md
+[SITE]: https://alexandritesoftware.github.io/asljs/
