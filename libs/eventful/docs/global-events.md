@@ -42,7 +42,7 @@ offError();
 In TypeScript the payloads are checked: the exported `GlobalEvents` map
 declares the arguments of `new`, `on`, `off`, `emit`, `emitAsync` and `error`,
 and `EventfulFn` is the type of `eventful` itself. See
-[typescript.md](typescript.md#the-package-level-emitter).
+[typescript.md][TPE].
 
 Reporting is gated: an object without a `trace` hook reports an action only
 while a global listener for that action exists, so an unused stream costs
@@ -59,8 +59,8 @@ holds for a listener for `on` that subscribes. This is not guarded, for the same
 reason a function that calls itself is not: read from the payload rather than
 acting on it, and where a listener has to act, emit on `eventful` itself, which
 is not re-broadcast. `GlobalEvents` leaves room for such an event: a name it
-does not declare is accepted, with `unknown[]` arguments. The [leak detection](leak-detection.md) recipes take the
-first route, and only read.
+does not declare is accepted, with `unknown[]` arguments. The
+[leak detection][LKD] recipes take the first route, and only read.
 
 ## The trace hook
 
@@ -173,4 +173,8 @@ cart.on('checkout', async () =>
 ```
 
 For a worked example of forwarding these ids to OpenTelemetry, see
-[opentelemetry.md](opentelemetry.md).
+[opentelemetry.md][OTL].
+
+[LKD]: leak-detection.md
+[OTL]: opentelemetry.md
+[TPE]: typescript.md#the-package-level-emitter

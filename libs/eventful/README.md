@@ -49,7 +49,7 @@ Out of scope:
 npm install asljs-eventful
 ```
 
-NPM Package: [asljs-eventful](https://www.npmjs.com/package/asljs-eventful)
+NPM Package: [asljs-eventful][NPM]
 
 Ships as an ES module with TypeScript declarations.
 
@@ -95,17 +95,16 @@ Which form to pick:
 
 ## Further reading
 
-- [API reference](docs/api.md) — every function, method and option, and what
+- [API reference][API] — every function, method and option, and what
   happens when a listener throws.
-- [TypeScript](docs/typescript.md) — event maps, and typing classes and plain
+- [TypeScript][TYP] — event maps, and typing classes and plain
   objects.
-- [Global events and tracing](docs/global-events.md) — watching every emitter,
+- [Global events and tracing][GLB] — watching every emitter,
   instance identity, and message correlation ids.
-- [Detecting leaked subscriptions](docs/leak-detection.md).
-- [Forwarding traces to OpenTelemetry](docs/opentelemetry.md).
+- [Detecting leaked subscriptions][LKD].
+- [Forwarding traces to OpenTelemetry][OTL].
 
-Questions and bugs:
-[asljs/issues](https://github.com/AlexandriteSoftware/asljs/issues).
+Questions and bugs: [asljs/issues][ISS].
 
 ## Related packages
 
@@ -114,6 +113,14 @@ Questions and bugs:
 
 ## License
 
-MIT License. See [LICENSE](LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[API]: docs/api.md
+[GLB]: docs/global-events.md
+[ISS]: https://github.com/AlexandriteSoftware/asljs/issues
+[LIC]: LICENSE.md
+[LKD]: docs/leak-detection.md
+[NPM]: https://www.npmjs.com/package/asljs-eventful
+[OTL]: docs/opentelemetry.md
+[TYP]: docs/typescript.md
