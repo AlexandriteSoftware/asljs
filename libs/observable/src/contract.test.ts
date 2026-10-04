@@ -1,3 +1,5 @@
+import { eventful }
+  from 'asljs-eventful';
 import assert
   from 'node:assert/strict';
 import { EventEmitter }
@@ -123,11 +125,12 @@ test(
   });
 
 /**
- * Two entries for one property in one list would force every consumer to fold
- * them, and the fold has only one sensible result.
+ * A batch records every write in the order it was made and merges none, so the
+ * list can always be applied in order. Merging is left out deliberately: for an
+ * array, an index names a different element once a splice has run.
  */
 test(
-  `${TEST_SUITE}: repeated writes to one property coalesce`,
+  `${TEST_SUITE}: repeated writes to one property are each delivered`,
   () =>
   {
     const model =
@@ -142,29 +145,31 @@ test(
       {
         model.a = 2;
         model.a = 3;
-        model.a = 4;
       });
 
     assert.deepEqual(
       deliveries,
       [ [ { kind: 'set',
             property: 'a',
-            value: 4,
-            previous: 1 } ] ]);
+            value: 2,
+            previous: 1 },
+          { kind: 'set',
+            property: 'a',
+            value: 3,
+            previous: 2 } ] ]);
   });
 
 /**
- * The entry list is what changed, so a coalesced entry whose net effect is
- * nothing is not in it -- and a batch in which nothing changed reports nothing.
+ * A write that leaves the value as it was is not a modification, inside a
+ * batch as outside, and a batch in which nothing changed reports nothing.
  */
 test(
-  `${TEST_SUITE}: a batch whose net effect is nothing reports nothing`,
+  `${TEST_SUITE}: a write that changes nothing is not delivered`,
   () =>
   {
     const model =
       observable(
-        { a: 1,
-          b: 2 });
+        { a: 1 });
 
     const deliveries =
       record(model);
@@ -172,7 +177,6 @@ test(
     batch(
       () =>
       {
-        model.a = 2;
         model.a = 1;
       });
 
@@ -185,14 +189,18 @@ test(
       {
         model.a = 2;
         model.a = 1;
-        model.b = 3;
       });
 
+    // Two real changes that happen to cancel out are both delivered.
     assert.deepEqual(
       deliveries,
       [ [ { kind: 'set',
-            property: 'b',
-            value: 3,
+            property: 'a',
+            value: 2,
+            previous: 1 },
+          { kind: 'set',
+            property: 'a',
+            value: 1,
             previous: 2 } ] ]);
   });
 
@@ -496,4 +504,117 @@ test(
         batch(
           123 as any),
       /Expect a function\./);
+  });
+
+/**
+ * Emitters deliver in the order they were first changed. A write that left a
+ * value as it was, or an array call that changed nothing, takes no place.
+ */
+test(
+  `${TEST_SUITE}: delivery order follows the first real change`,
+  () =>
+  {
+    const a =
+      observable(
+        { n: 1 });
+
+    const b =
+      observable(
+        { n: 1 });
+
+    const list =
+      observable(
+        [ 1 ]);
+
+    const order: string[] = [ ];
+
+    a.on(
+      'change',
+      () => order.push('a'));
+
+    b.on(
+      'change',
+      () => order.push('b'));
+
+    list.on(
+      'change',
+      () => order.push('list'));
+
+    batch(
+      () =>
+      {
+        a.n = 1;
+        list.push();
+        b.n = 2;
+        list.push(2);
+        a.n = 2;
+      });
+
+    assert.deepEqual(
+      order,
+      [ 'b',
+        'list',
+        'a' ]);
+  });
+
+/**
+ * The exception `fn` throws is the one a caller sees, even when a listener
+ * throws while the collected changes are delivered.
+ */
+test(
+  `${TEST_SUITE}: a batch rethrows the exception its function threw`,
+  () =>
+  {
+    const model =
+      observable(
+        { n: 1 },
+        { eventful:
+            (value: any) =>
+          eventful(
+            value,
+            { strict: true }) });
+
+    model.on(
+      'change',
+      () =>
+      {
+        throw new Error('listener');
+      });
+
+    // The listener's error is rethrown from a microtask; capture it instead.
+    const deferred: Array<() => void> = [ ];
+
+    const original =
+      globalThis.queueMicrotask;
+
+    globalThis.queueMicrotask =
+      (
+          callback: () => void
+        ): void =>
+      {
+      deferred.push(callback);
+    };
+
+    try {
+      assert.throws(
+        () =>
+          batch(
+            () =>
+            {
+              model.n = 2;
+
+              throw new Error('fn');
+            }),
+        /^Error: fn$/);
+    } finally {
+      globalThis.queueMicrotask = original;
+    }
+
+    assert.equal(
+      deferred.length,
+      1);
+
+    assert.throws(
+      deferred[0],
+      /^Error: listener$/);
   });

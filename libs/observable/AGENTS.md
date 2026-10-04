@@ -67,8 +67,11 @@ Exports from `src/index.ts`:
 
 ### Batching and delivery
 
-- `batch(fn)` coalesces repeated writes to one property into one entry, carrying
-  the first `previous` and the last `value`.
+- `batch(fn)` delivers every modification in the order it was made and merges
+  none. Do not add merging without handling arrays: an index names a different
+  element once a splice has run, and a merged list no longer applies in order.
+- A write that leaves the value as it was, by `Object.is`, is not a
+  modification, inside a batch as outside.
 - An exception inside `fn` still flushes: the writes have landed.
 - Nesting is counted, not stacked. Only the outermost close emits.
 - Grouping is per emitter. "One notification" always means one per source, and
@@ -104,24 +107,38 @@ Exports from `src/index.ts`:
 
 ### The converter
 
-- Only plain objects (`{}` literals and null-prototype objects) and arrays are
-  converted.
-- Leaf kinds are explicit: `string`, `number`, `boolean`, `bigint`, `symbol`,
-  `null`, `undefined`, and functions. Ordinary JSON data and models with methods
-  depend on this.
-- A value that already conforms is passed through, which is how a hand-written
-  or `EventEmitter`-based object joins a converted model.
-- Anything else throws, with the path in the message. `observable(model)` failing
-  with "unsupported value" on a large model is not debuggable.
-- `Date` is refused deliberately, and must not become a leaf: there is no
-  immutable `Date` in JavaScript, `Object.freeze` does not stop its mutators, and
-  refusing it is what gives dates value semantics under `Object.is`.
-- Non-extensible objects are refused for the same reason: the Eventful API cannot
-  be attached, and freezing is shallow.
-- The package ships no wrappers for `Date`, `Map`, `Set` or any other refused
-  kind, and must not start shipping them. Callers add their own through the
-  `convert` hook, which is consulted for every object before the built-in rule
-  and whose results join the identity map.
+`DESIGN.md` states the converter's rules one by one (D1-D19); it is the source
+of truth for them. The points below are the ones a change is most likely to
+undo.
+
+- `observable` creates a new observable version of plain data and never
+  extends or mutates what it is given. Do not go back to grafting the API onto
+  the input.
+- Repeated references and cycles are resolved per call: within one call an
+  object reached twice becomes one observable, a cycle throws, and separate
+  calls produce separate observables. There is no process-wide identity map.
+- The top-level rules (D10) and the nested rules (D11) are ordered checks. Keep
+  them as two ordered functions in `observable.ts`, in the order the design
+  gives, because the order is what decides every overlapping case.
+- `Date`, `RegExp`, functions and nested frozen plain data are values: kept by
+  reference, never converted or traversed, and boxed at the top level. They
+  are recognised by brand checks that work across realms, not by `instanceof`.
+- Plain objects and arrays are recognised by prototype, across realms. Only
+  plain data is converted (D16): accessors, symbol keys, read-only, hidden or
+  non-configurable properties, inextensible containers, holes and extra array
+  properties throw. The check counts own index keys rather than walking
+  `length`, so a sparse array is refused without visiting every index.
+- The reserved names are the methods the factory adds, checked as own
+  properties. With a custom factory only `on` and `off` are known.
+- `convert` is asked before the built-in rules, never about values. A top-level
+  result must be a new observable; a nested result is used unchecked and not
+  traversed.
+- Values written after conversion are stored as they are (D13). The traps
+  report writes and never convert them.
+- Every refusal names the path of the offending value (D17). The messages are
+  asserted in the tests.
+- The package ships no wrappers for `Map`, `Set` or any other refused kind, and
+  must not start shipping them. Callers add their own through `convert`.
 - The `set` trap raises a re-entrancy flag around its `Reflect.set`, and the
   `defineProperty` trap reports nothing while it is raised. Without it a plain
   assignment is reported twice, because `[[Set]]` performs
@@ -129,10 +146,9 @@ Exports from `src/index.ts`:
 - A definition is reported by whether the observed value changed, not by what the
   descriptor says. Descriptor observation is out of the contract.
 - Five array methods produce a splice: `push`, `pop`, `shift`, `unshift`,
-  `splice`. Their arguments are normalised rather than passed through, `added`
-  holds the converted values, and the call goes through the proxy so that
-  elements are converted on the way in -- which is why index `set` entries are
-  suppressed while a splice is collected.
+  `splice`. Their arguments are normalised rather than passed through, and the
+  call goes through the proxy, which is why index `set` entries are suppressed
+  while a splice is collected.
 - `arr.length = 0` produces a splice too.
 - `sort`, `reverse`, `fill` and `copyWithin` batch their `set` entries and emit
   no splice. Do not add a whole-range splice for a permutation: `removed` means
@@ -143,40 +159,13 @@ Exports from `src/index.ts`:
   Do not optimise it for speed: the converter trades speed for convenience,
   and `docs/performance.md` says so and points to hand-written participants.
 - Symbol keys are stored and not reported: the contract's `property` is a string.
-- Conversion is top-level-only by default. `deep: true` converts nested plain
-  objects and arrays, and is the only mode in which nested values are checked,
-  refused, or passed to the `convert` hook.
-- Conversion visits only writable data properties. Accessors stay accessors and
-  their getters must not run during conversion; non-writable members and array
-  holes are skipped.
-- One target maps to one wrapper, process-wide. The identity map is a
-  module-level `WeakMap`, not per call, so repeated references, cycles, and
-  separate `observable(...)` calls on the same target all resolve to the same
-  observable. The wrapper is registered before its members are converted, which
-  is what makes cycles converge.
-- A target already in the map is returned as it is. The options of a later call
-  are not applied to it, and that is the documented trade: conversion grafts the
-  Eventful API onto the target, so an object can only belong to one observable.
-- Callers that want one `trace`, `convert` or `eventful` across a model pass one
-  options object to every call for it.
-- An unsupported value passed as the top-level target throws a `TypeError`, in
-  the shape `eventful` uses for a target it cannot augment, with the
-  inextensible case worded as `eventful` words it. Do not go back to boxing: the
-  box reads as undefined for every property the caller expects and fails
-  silently.
-- The refusal messages are asserted in the tests. Keep them in step with
-  `eventful` when either package changes them.
-- Observable differs from `eventful` on primitives on purpose: `eventful` refuses
-  them, observable boxes them into `{ value }`.
 - The return type promises only the top-level conversion: `T` plus the Eventful
   API. Members keep their declared type, with or without `deep`, because a
   member may hold either the plain value or its observable. Do not make the
-  type follow `deep`. Under `deep: true` the runtime converts a plain value
-  assigned to a member, with the parent's options, which an explicitly wrapped
-  value does not inherit.
+  type follow `deep`.
 - `ObservablePath` caps its depth. Without the cap a self-referential model
   recurses forever. It excludes the names `eventful` occupies, or the methods
-  conversion adds become watchable properties.
+  conversion adds become watchable properties, and it stops at values.
 
 ## Not Yet Built, Deliberately
 
@@ -199,6 +188,9 @@ Do not build these speculatively; they need evidence first.
   the detail. Each records
   the reasoning behind its decisions, not only the behaviour, because the
   reasoning is what stops a later change undoing a deliberate one.
+- `DESIGN.md` states the converter's design rule by rule (D1-D19). Its examples
+  are illustrations and are not run by the harness; `docs/converter.md` carries
+  the runnable ones.
 - Every ```js and ```ts block in `README.md` and `docs` is executed or compiled
   by `src/docs-examples.test.ts`. A JavaScript block must be a complete program
   and, where it ends with an `// Output:` comment block, must print exactly

@@ -73,3 +73,76 @@ export function isPlainObject(
   return prototype === null
     || isObjectPrototype(prototype);
 }
+
+/**
+ * Whether a value is an array whose prototype is some realm's
+ * `Array.prototype`.
+ *
+ * Every realm's `Array.prototype` is itself an array, while the prototype of a
+ * subclass instance is not, so the check needs no identity comparison.
+ */
+export function isPlainArray(
+    value: any
+  ): value is unknown[]
+{
+  return Array.isArray(value)
+    && Array.isArray(
+      Object.getPrototypeOf(value));
+}
+
+const getTime =
+  Date.prototype.getTime;
+
+const regExpSource =
+  Object.getOwnPropertyDescriptor(
+    RegExp.prototype,
+    'source')!.get!;
+
+/**
+ * Whether a value is a `Date` from any realm.
+ *
+ * `instanceof` only recognises this realm's `Date`. `getTime` throws for
+ * anything without a `Date`'s internal slot, so calling it is a brand check.
+ */
+export function isDateValue(
+    value: any
+  ): value is Date
+{
+  if (!isObject(value)) {
+    return false;
+  }
+
+  if (value instanceof Date) {
+    return true;
+  }
+
+  try {
+    getTime.call(value);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Whether a value is a `RegExp` from any realm, by the same kind of check. */
+export function isRegExpValue(
+    value: any
+  ): value is RegExp
+{
+  if (!isObject(value)) {
+    return false;
+  }
+
+  if (value instanceof RegExp) {
+    return true;
+  }
+
+  try {
+    regExpSource.call(value);
+
+    return true;
+  } catch {
+    return false;
+  }
+}

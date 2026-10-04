@@ -19,7 +19,8 @@ type Change =
     index: number;
     removed: readonly unknown[];
     added: readonly unknown[];
-  };
+  }
+  | { kind: 'reset'; };
 
 interface Observable
 {
@@ -139,8 +140,10 @@ model.on('change', (changes: readonly Change[]) => {
   for (const change of changes) {
     if (change.kind === 'set') {
       console.log(change.property, change.previous, change.value);
-    } else {
+    } else if (change.kind === 'splice') {
       console.log(change.index, change.removed.length, change.added.length);
+    } else {
+      console.log('read the whole array again');
     }
   }
 });
@@ -163,12 +166,14 @@ producer and a hand-written consumer both have to apply them.
 - `splice` is optional. A participant that only ever emits `set` entries
   conforms fully. Only a producer that intercepts the mutating array methods is
   in a position to know a splice cheaply.
+- A `reset` entry says that an array changed so much that it is better read
+  again. It carries nothing else, so a consumer reads the array again.
 - A `splice` entry counts as a change to every index from `splice.index`
   onwards, and to `length`. It carries no `property`, and nothing else reports
   the length change.
-- Entries are not ordered by property or index. A producer reports them in
-  whatever order it made the changes, so `reverse()` on a five-element array
-  reports indices 0, 4, 1, 3.
+- Entries are in the order the changes were made, not ordered by property or
+  index, so `reverse()` on a five-element array reports indices 0, 4, 1, 3.
+  Applying them in order turns the previous state into the current one.
 - Unchanged positions are absent. The entry list is what changed, never the
   affected range. The middle element of an odd-length reversal never appears.
 - An entry kind a consumer does not understand means "something changed,

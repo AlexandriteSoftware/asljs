@@ -5,9 +5,12 @@ import test
 import vm
   from 'node:vm';
 import { functionTypeGuard,
+         isDateValue,
          isFunction,
          isObject,
-         isPlainObject }
+         isPlainArray,
+         isPlainObject,
+         isRegExpValue }
   from './guards.js';
 
 const TEST_SUITE = 'guards';
@@ -152,5 +155,74 @@ test(
     assert.equal(
       isPlainObject(
         Object.create(prototype)),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: isPlainArray accepts arrays from any realm, not subclasses`,
+  () =>
+  {
+    class List extends Array {}
+
+    assert.equal(
+      isPlainArray(
+        [ 1 ]),
+      true);
+
+    assert.equal(
+      isPlainArray(
+        vm.runInNewContext('[ 1 ]')),
+      true);
+
+    assert.equal(
+      isPlainArray(
+        new List()),
+      false);
+
+    assert.equal(
+      isPlainArray(
+        { length: 0 }),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: isDateValue and isRegExpValue recognise any realm's values`,
+  () =>
+  {
+    assert.equal(
+      isDateValue(
+        new Date(0)),
+      true);
+
+    assert.equal(
+      isDateValue(
+        vm.runInNewContext('new Date(0)')),
+      true);
+
+    assert.equal(
+      isDateValue(
+        { getTime: () => 0 }),
+      false);
+
+    assert.equal(
+      isDateValue(0),
+      false);
+
+    assert.equal(
+      isRegExpValue(/x/),
+      true);
+
+    assert.equal(
+      isRegExpValue(
+        vm.runInNewContext('/x/')),
+      true);
+
+    assert.equal(
+      isRegExpValue(
+        { source: 'x' }),
+      false);
+
+    assert.equal(
+      isRegExpValue('x'),
       false);
   });

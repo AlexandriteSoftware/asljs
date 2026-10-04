@@ -2,20 +2,23 @@
 
 ## Purpose
 
-`observable(value, [options])` makes plain JavaScript data satisfy the
-[contract](contract.md) without the author writing any subscription code. It is
-a helper for the common case of a JSON-shaped model, not the reason the package
-exists.
+`observable(value, [options])` creates an observable version of plain
+JavaScript data: a new object, array or box that satisfies the
+[contract](contract.md) and reports its own changes. It is a helper for the
+common case of a JSON-shaped model, not the reason the package exists.
 
-What it produces emits `change` like any other participant; it has no private
-event vocabulary of its own.
+It copies rather than extends. The data it is given is left untouched, and what
+it returns emits `change` like any other participant, with no private event
+vocabulary of its own. The rules are stated one by one in
+[`DESIGN.md`](../DESIGN.md); this page explains them with examples.
 
 ## Usage
 
 ```js
 import { observable } from 'asljs-observable';
 
-const model = observable({ a: 1, b: 2 });
+const original = { a: 1, b: 2 };
+const model = observable(original);
 
 model.on('change', changes => {
   for (const change of changes) {
@@ -27,13 +30,16 @@ model.a = 3;
 
 delete model.b;
 
+console.log('original:', JSON.stringify(original));
+
 // Output:
 // a: 1 -> 3
 // b: 2 -> undefined
+// original: {"a":1,"b":2}
 ```
 
-A primitive is boxed into `{ value }`. Unlike `eventful`, which refuses a
-primitive, observable accepts one:
+A primitive is boxed into `{ value }`, and so are a `Date`, a `RegExp` and a
+function:
 
 ```js
 import { observable } from 'asljs-observable';
@@ -53,38 +59,98 @@ box.value = 11;
 
 ## Options
 
-- `eventful`: custom `eventful` factory, defaulting to `asljs-eventful`. This is
-  also the seam for every `eventful` option; see
-  [Eventful's own options](#eventfuls-own-options).
-- `trace`: hook `(object, action, payload)`, invoked on `'new'` with
-  `{ object }` and on `'change'` with the entry list of one delivery. There is
-  also a process-wide `observable.options.trace`, used when a call supplies
-  none.
-- `convert`: hook that takes over conversion for a single value. See
+- `deep`: `false` by default, which converts only the top-level value and keeps
+  nested objects and arrays by reference. `true` converts nested plain objects
+  and arrays too, all the way down.
+- `convert`: a hook that replaces one object with another. See
   [The convert hook](#the-convert-hook).
-- `deep`: `false` by default, which converts only the top-level value and
-  produces partial observation on purpose: nested plain objects and arrays are
-  stored as they are, and the `convert` hook is not consulted for them. `true`
-  converts nested plain objects and arrays recursively, and applies the rules
-  below at every level.
+- `eventful`: the factory that adds the methods, `eventful` from
+  `asljs-eventful` by default. See
+  [The eventful factory](#the-eventful-factory).
+- `trace`: a hook `(object, action, payload)`, invoked on `'new'` with
+  `{ object }` for every observable the call creates, and on `'change'` with the
+  entry list of one delivery. There is also a process-wide
+  `observable.options.trace`, used when a call supplies none.
 
 ## What is converted
 
-The rule is explicit and narrow:
+The value given to `observable` is checked against these rules in order, and the
+first that matches applies:
 
-- Plain object (`{}` literal or null-prototype) or array: convert, and with
-  `deep: true` recurse into its members. A literal created in another realm,
-  such as an iframe or a `vm` context, is a plain object too.
-- `string`, `number`, `boolean`, `bigint`, `symbol`, `null`, `undefined`,
-  function: leaf, stored as it is. Ordinary JSON data and models with methods
-  depend on this.
-- Already conforms to the contract, meaning `on` **and** `off`: left as it is.
-  This is how a hand-written or `EventEmitter`-based object is stitched into a
-  converted model. Testing for `on` alone would admit a value that then fails at
-  teardown.
-- Anything else, `Date` included: throws, naming the path at which the
-  unsupported value was found. Without `deep: true` only the top-level value is
-  checked, so a nested one is stored as it is.
+1. A primitive, a `Date`, a `RegExp` or a function is boxed as `{ value }`.
+2. When `convert` returns something other than `null` or `undefined`, that is
+   returned. It must be a new observable, not the value itself.
+3. An object that already has `on` and `off`, such as an `EventEmitter` or
+   another observable, throws: returning it would make the observable version
+   the original itself.
+4. An object or array that owns a property named like a method the factory adds
+   throws. With the default factory those are `on`, `once`, `off`, `emit`,
+   `emitAsync`, `has`, `removeAllListeners` and `getListeners`. With a custom
+   factory only `on` and `off` are known; any other name it adds is its own
+   responsibility.
+5. A plain object or plain array holding plain data is copied into a new
+   observable. A frozen one throws: it cannot change, so there is nothing to
+   observe.
+6. Anything else throws.
+
+Each value inside a copied object or array is checked against the nested rules,
+in order:
+
+1. A primitive is copied.
+2. A `Date`, a `RegExp`, a function, or a frozen plain object or array is kept
+   by reference. These are values: never converted and never traversed.
+3. Without `deep: true`, any other object or array is kept by reference.
+4. When `convert` returns something other than `null` or `undefined`, that is
+   used.
+5. An object that already has `on` and `off` is kept by reference.
+6. An object or array that owns a reserved name throws, as at the top level.
+7. A plain object or plain array holding plain data is converted, applying these
+   rules to its own values.
+8. Anything else throws.
+
+```js
+import { observable } from 'asljs-observable';
+
+const when = new Date(0);
+const user = { name: 'Ada' };
+const model = observable({ when, user, tags: [ 'a' ] }, { deep: true });
+
+console.log('date kept:', model.when === when);
+console.log('user copied:', model.user !== user);
+console.log('original untouched:', 'on' in user);
+
+// Output:
+// date kept: true
+// user copied: true
+// original untouched: false
+```
+
+### Plain data
+
+An object is plain when its prototype is `null` or an `Object.prototype`, and
+an array is plain when its prototype is an `Array.prototype`. Both checks
+recognise any realm's prototypes, so a literal parsed in an iframe or a `vm`
+context is plain data too, and a `Date` or `RegExp` from another realm is still
+a value. A class instance, an instance of an `Array` subclass, a `Map`, a `Set`
+and every other object are not plain: they throw unless `convert` takes them
+over, or, nested without `deep: true`, they are kept by reference.
+
+A plain object or array is converted only when it holds plain data. Every own
+property, other than an array's `length`, must have a string key and be an
+ordinary data property that is enumerable, writable and configurable. The
+container must be extensible, and an array must have no holes and no own
+properties other than its indices. Accessors, symbol keys, read-only or hidden
+properties, sealed objects and sparse arrays all throw.
+
+The case `observable` is for is plain data such as `observable({ user })`.
+Data that needs accessors, hidden properties or symbol keys is a class in all
+but name, and a class reports its own changes through `eventful` or
+[`ObservableObject`](#observableobject) without `observable`.
+
+### Errors name the path
+
+Every refusal starts with the path of the offending value, written from `value`,
+then the reason:
 
 ```js
 import { observable } from 'asljs-observable';
@@ -99,62 +165,90 @@ try {
 // at value.orders[0].meta: Map is not supported.
 ```
 
-The path matters: `observable(model)` failing with "unsupported value" on a
-large model is not debuggable.
+`observable(model)` failing with "unsupported value" on a large model is not
+debuggable; naming the path is. An error thrown by the `convert` hook or the
+factory is prefixed the same way, with the original error as its `cause`.
 
-A frozen, sealed, or otherwise non-extensible object is refused for the same
-reason a `Map` is: the Eventful API cannot be attached to it, and freezing is
-shallow, so storing it would leave exactly the half-observable model this rule
-exists to prevent.
+### Cycles and repeated objects
 
-Passing something unconvertible as the top-level target throws in the shape
-`eventful` uses for a target it cannot augment:
+Under `deep: true` an object reached again while its own values are still being
+converted is a circular reference, and it throws, naming both ends. An object
+reached again after its conversion has finished is a repeated reference: it
+becomes one observable, used in both places, so the result keeps the shape of
+the data.
 
+```js
+import { observable } from 'asljs-observable';
+
+const shared = { n: 1 };
+const model = observable({ a: shared, b: shared }, { deep: true });
+
+console.log('one observable:', model.a === model.b);
+
+const cyclic = {};
+cyclic.self = cyclic;
+
+try {
+  observable(cyclic, { deep: true });
+} catch (error) {
+  console.log(error.message);
+}
+
+// Output:
+// one observable: true
+// at value.self: circular reference to value
 ```
-Expect an extensible object or array, but the object is frozen.
-Expect a plain object, an array, or a primitive, but the value is opaque.
+
+This holds within one call. Separate calls produce separate observables, because
+each one copies the data it is given.
+
+### Why dates are values
+
+A `Date` keeps its time in an internal slot and has no own properties, so a copy
+by its properties is empty, and a proxy cannot report what its mutators do.
+Rather than refuse it, `observable` treats it as a value, like a string: kept by
+reference, compared by identity, never converted. The same goes for a `RegExp`,
+a function, and a frozen plain object or array, which cannot change at all.
+
+The consequence to accept: changing a date in place, `model.when.setTime(0)`,
+changes it for every holder and reports nothing. Replace it instead,
+`model.when = new Date(0)`, and the replacement is reported.
+
+A frozen object with internal state, such as a frozen `Map`, is not a value:
+freezing does not stop its internal state changing.
+
+## After conversion
+
+Conversion happens once, in the `observable` call. A value written to an
+observable later is stored as it is: not converted, not copied, not checked. The
+write itself is reported.
+
+```js
+import { observable } from 'asljs-observable';
+
+const model = observable({ user: { name: 'Ann' } }, { deep: true });
+
+model.user.on('change', () => console.log('user changed'));
+
+model.on('change', changes =>
+  console.log('model changed:', changes[0].property));
+
+model.user = { name: 'Bob' };
+model.user.name = 'Carol';
+
+model.user = observable({ name: 'Dan' });
+model.user.on('change', () => console.log('new user changed'));
+model.user.name = 'Eve';
+
+// Output:
+// model changed: user
+// model changed: user
+// new user changed
 ```
 
-### Why `Date` is not a leaf
-
-It is the obvious candidate for one, and it is refused.
-
-Freezing does not help, which is worth recording because it is the first thing
-anyone reaches for. A `Date` keeps its time in the `[[DateValue]]` internal slot
-and has **no own properties at all**, so `Object.freeze` freezes an empty
-property set and every mutator keeps working. Sealing behaves the same, strict
-mode makes no difference, and the mutators live on `Date.prototype` where no
-per-instance trap reaches them. There is no immutable `Date` in JavaScript, so a
-check on `Object.isFrozen` would admit every mutable date while reading like a
-guarantee.
-
-Which leaves admitting `Date` as a mutable leaf or refusing it. Three reasons to
-refuse:
-
-- Every other leaf is immutable, except functions, which nobody expects to
-  observe. `Date` would be the only leaf that is both mutable and value-like,
-  and mutating a date is something people actually do.
-- It is not JSON. `JSON.parse` never produces a `Date`; a JSON-shaped model
-  already carries an ISO string.
-- Value semantics come free from refusing it. `model.created = new Date(t)`
-  would emit every time, because each `new Date` is a distinct object and
-  `Object.is` compares identity. An ISO string or an epoch number reassigned to
-  the same instant emits nothing, so the deduplication that works everywhere
-  else in the model starts working for dates too.
-
-The cost is friction for models that genuinely hold `Date` objects, and the
-`convert` hook is the answer — the same answer the package gives for `Map` and
-`Set`. `Date` is not being singled out for refusal; it is being left out of a
-special case it did not earn.
-
-### What conversion does not touch
-
-Only writable data properties are visited. Accessors are left as accessors,
-because reading one to convert it would run the getter and writing the result
-back would replace the accessor with a plain value; assigning through an
-accessor still reports a change. Non-writable members and array holes have no
-descriptor to rewrite, so they are skipped, and the values they hold are not
-converted.
+Keeping the data observable after that is the caller's job: convert a value
+before assigning it if its own changes should be reported. A written value is
+stored by reference, so it is shared with whoever assigned it.
 
 ## What the converter reports
 
@@ -162,8 +256,10 @@ converted.
   `[[DefineOwnProperty]]`, so a plain assignment trips two traps; the second is
   suppressed rather than reported twice.
 - `delete model.a` reports `{ kind: 'set', property: 'a', value: undefined }`.
+- A write that leaves the value as it was, compared with `Object.is`, reports
+  nothing.
 - Symbol-keyed properties are stored and not reported: the contract's `property`
-  is a string.
+  is a string, and symbol keys are not data.
 - `Object.defineProperty` is reported by whether the observed value changed:
   - as a `set` when it changes, which covers a new value, converting an accessor
     back to a data property, and installing a getter;
@@ -171,21 +267,9 @@ converted.
     or `configurable` on their own, installing a setter with no getter, and
     redefining with the same value.
 
-Descriptor observation is therefore outside the contract, with two consequences
-to accept: flipping `enumerable` changes what `JSON.stringify` produces and
-notifies nobody, and installing a getter runs it, because reporting the value
-means reading the property.
-
-Reporting a value always means reading it, so an accessor's getter runs twice
-per reported change: once before the write for `previous` and once after it for
-`value`. This holds for an assignment through an accessor as much as for a
-definition. Neither read can be skipped: a setter may store something other
-than what was assigned, and an entry whose two values are equal is not reported.
-Reading a data property runs no code.
-
-This is reversible. The unrecognised-kind rule means a `define` entry kind can
-be added later without breaking any consumer, which is the main reason to take
-the narrower contract now.
+Reporting a value always means reading it, so installing a getter runs it, and
+an accessor's getter runs twice per reported change: once before the write for
+`previous` and once after it for `value`.
 
 ### Arrays
 
@@ -216,6 +300,10 @@ items.length = 0;
 // splice at 0: -2 +0
 ```
 
+An observable array is an array: `Array.isArray` is `true`, it can be iterated
+and spread, `JSON.stringify` writes it as an array, and methods that return a
+new array, such as `map` and `slice`, return a plain one.
+
 Five methods report one `splice` entry each, because for those the arguments are
 the description:
 
@@ -227,92 +315,39 @@ unshift(x)              { index: 0,     removed: [],      added: [x] }
 splice(i, d, ...items)  the arguments, normalised
 ```
 
-Four details decide whether that is correct:
+A splice at `index` also changes every index from `index` onwards and, when the
+counts differ, `length`. No separate `set` is reported for them: a subscriber
+interprets the splice, or reads the array again.
 
-- **The call goes through the proxy, not the raw target.** Calling on the raw
-  target would skip conversion, so pushed values would not be converted and
-  would not join the identity map. Calling through the proxy means the `set`
-  trap fires N times inside the batch, so those index entries are suppressed
-  while the splice is collected — that is what the "never both" rule costs in
-  practice.
 - **Splice arguments are normalised, not passed through.** A negative `i`, an
   `i` past the end, an omitted or over-long `d` all resolve first, so the entry
   carries the resolved start and the slice actually removed. `pop()` and
   `shift()` on an empty array report nothing rather than an entry at index `-1`.
-- **`added` holds what a read returns**, meaning the converted values.
+- **`added` holds the values as they were written**, not converted.
 - **`arr.length = 0` reports a splice too.** It is the common clear idiom and a
-  raw assignment, so it would otherwise stay N `set` entries — the fan-out the
-  list exists to remove, for the operation most likely to be large. The splice
-  carries the dropped elements, so they are read before the write, and any
-  getters among them run.
+  raw assignment, so it would otherwise stay N `set` entries. The splice carries
+  the dropped elements, so they are read before the write.
 
 `sort`, `reverse`, `fill` and `copyWithin` report `set` entries, batched into
 one notification. They are permutations and range overwrites: the producer does
-not *have* a splice for them, it would have to compute one, and the rule that a
-producer emits the most specific description it has then applies unchanged.
-Reporting a permutation as a whole-range splice would cost two copies per sort
-and actively misinform, since `removed` means removed, so a consumer that
-releases resources for removed elements would tear down and rebuild everything
-for a reorder. A dedicated `permute` kind would be exact, but it needs a
-before-snapshot, O(n) matching, is ambiguous when the array holds duplicates,
-and serves a consumer this package does not yet have.
+not have a splice for them, and reporting a permutation as a whole-range splice
+would misinform, since `removed` means removed.
 
 Other array behaviour worth knowing:
 
 - A method invoked so that it bypasses the wrapper, such as
   `Array.prototype.push.call(model, x)`, reports `set` entries. So does an own
-  override of a mutating method, which the wrapper steps aside for. Both are
-  consistent with the contract, since `splice` is optional.
-- A raw index assignment reports a `set`, because there is no splice to
-  describe. So `arr.shift()` and `arr[0] = x` report different entry kinds for
-  arguably similar edits; that is inherent to what is observable through a
-  proxy.
-- Growing an array by writing past the end reports the index `set` and no
-  `length` change. The array exotic object updates `length` itself, so by the
-  time the trap sees the write the value is already current. Assigning `length`
-  directly to grow the array does report it.
-
-## Identity
-
-One target maps to one observable, and that holds for the lifetime of the
-process rather than for one call. An object reached twice, from two properties,
-through a cycle, or from two separate `observable(...)` calls, resolves to the
-same wrapper, so every handle on it sees the same events:
-
-```js
-import { observable } from 'asljs-observable';
-
-const shared = { n: 1 };
-
-const left = observable({ shared }, { deep: true });
-const right = observable({ shared }, { deep: true });
-
-console.log('one wrapper:', left.shared === right.shared);
-
-right.shared.n = 7;
-
-console.log('seen through the other handle:', left.shared.n);
-
-// Output:
-// one wrapper: true
-// seen through the other handle: 7
-```
-
-That is not a convenience: conversion grafts the Eventful API onto the target
-itself, so an object can only belong to one observable. Wrapping an already
-converted target again returns what it already has, which means the options of
-the later call have nothing to apply to. Pass one options object to every call
-for a model if you want the same `trace`, `convert` or `eventful` applied
-throughout.
-
-The wrapper is registered before its members are converted, which is what makes
-a cyclic model converge.
+  override of a mutating method written after creation, which the wrapper steps
+  aside for. Both are consistent with the contract, since `splice` is optional.
+- Growing an array by writing past the end reports the index `set` and then a
+  `set` for `length`, because no splice describes the growth. Assigning
+  `length` directly to grow the array reports it too.
 
 ## Nested members in TypeScript
 
 The type promises what every call guarantees: the top-level value carries the
-Eventful API. Members keep their declared type, with or without `deep`, so both
-calls below return the same type:
+methods. Members keep their declared type, with or without `deep`, so both calls
+below return the same type:
 
 ```ts
 import { observable } from 'asljs-observable';
@@ -328,9 +363,8 @@ deep.user.on('change', changes => console.log(changes.length));
 ```
 
 `deep: true` converts nested objects at runtime, but a member can still hold
-either the plain value or its observable: a value assigned later, or one
-converted by the `convert` hook, is whatever it is. Test a member with
-`isObservable` to reach its Eventful API:
+either the plain value or its observable: a value assigned later is whatever it
+is. Test a member with `isObservable` to reach its methods:
 
 ```ts
 import { isObservable, observable } from 'asljs-observable';
@@ -353,30 +387,31 @@ const state = observable({ user });
 state.user.on('change', changes => console.log(changes.length));
 ```
 
-A plain value assigned to a member is converted on the way in under
-`deep: true`, using the options the parent was created with. An explicitly
-wrapped value does not inherit those, so pass them again if the parent was
-created with `trace`, `convert`, or a custom `eventful`.
-
 `Converted<T>` is the type of what `observable()` returns, with
 `ConvertedObject<T>`, `ConvertedArray<T>` and `ConvertedPrimitive<T>` behind
-it. A top-level value the converter refuses types as `never`, because
-converting it throws and there is no result to describe.
+it. A `Date`, a `RegExp` or a function converts to a `ConvertedPrimitive`. A
+top-level value the converter refuses, such as a `Map`, types as `never`,
+because converting it throws and there is no result to describe.
 
 ## The convert hook
 
-Observable does not ship wrappers for `Date`, `Map`, `Set` or anything else it
-refuses, and it must not start: it cannot guess how you want them observed. The
-`convert` hook is the seam, and with throw-by-default it is the only escape from
-an unsupported value.
+Observable does not ship wrappers for `Map`, `Set` or anything else it refuses,
+and it must not start: it cannot guess how you want them observed. The `convert`
+hook is the seam.
 
-It is called with every object observable reaches, including the ones it would
-otherwise refuse, and it decides before the built-in rule does.
+It is asked about the top-level value when that is an object, and, under
+`deep: true`, about every nested object that is not kept by reference first. It
+is never asked about a primitive, a `Date`, a `RegExp`, a function or a nested
+frozen plain object or array. It has the first say on everything it is asked
+about, including whether an object already has `on` and `off`.
 
-- Return a wrapper to take over that value.
-- Return the value itself to keep it as it is, even where observable would
-  convert or refuse it.
-- Return `undefined` to let observable decide.
+- Return `null` or `undefined` to leave the decision to the rules.
+- Return anything else to use it in place of the object. No other rule applies
+  to it, it is not checked and it is not traversed.
+- At the top level the result is what `observable` returns, so it must be a new
+  observable, with `on` and `off`, and not the given object itself; otherwise
+  `observable` throws. A nested result is not checked, and returning the given
+  object itself keeps it by reference.
 
 ```js
 import { eventful } from 'asljs-eventful';
@@ -426,14 +461,15 @@ state.tags.add('b');
 
 Points worth knowing:
 
-- Wrappers take part in the identity map, so one target still maps to one
-  wrapper however many times it is referenced.
+- An object reached twice in one call is asked about once, and the result is
+  used in both places.
+- A circular reference throws before the hook is asked again.
 - A wrapper that conforms can be queried along a path, as above.
-- Primitives are never passed to the hook: there is nothing to observe.
-- Observable does not emit `new` for a wrapper it did not create, and does not
-  check that a wrapper conforms.
-- The path types stop at the kinds observable refuses. Type the model with
-  your wrapper rather than with `Set` if you want `at('tags.size')` checked
+- Observable does not emit `new` for a wrapper it did not create.
+- `observable` recognises plain data from any realm, but a hook that tests with
+  `instanceof` sees only its own realm's classes.
+- The path types stop at the kinds observable refuses. Type the model with your
+  wrapper rather than with `Set` if you want `at('tags.size')` checked
   statically.
 
 ## `ObservableObject`
@@ -483,12 +519,18 @@ observe(user).at('name').subscribe(name => console.log(name));
 Query an instance with `observe(instance)`; the class carries no query of its
 own.
 
-## Eventful's own options
+## The eventful factory
+
+The `eventful` option takes the factory that adds the methods to every
+observable a call creates: the top-level one, every nested one, and the box. It
+must add at least `on`, `off` and `emit`; anything more is its choice, and the
+names it adds are the reserved ones. The default, `eventful` from
+`asljs-eventful`, adds its methods as non-enumerable properties, so
+`Object.keys`, spreading and `JSON.stringify` see only the data.
 
 `strict`, the `error` hook, and eventful's own `trace` get no options of their
-own here. `ObservableOptions.eventful` takes the factory itself, so a closure
-supplies whatever eventful options it likes. This applies to the top-level
-target, to nested conversions, and to the primitive box.
+own here. The factory is also how its settings are passed, so a closure supplies
+whatever eventful options it likes:
 
 ```js
 import { eventful } from 'asljs-eventful';
@@ -521,10 +563,13 @@ package.
 - Observable's `trace` option and eventful's `trace` are different hooks and
   both can be active. Observable's is `(object, action, payload)` over `new` and
   `change`; eventful's is `(action, payload)` over `new`, `on`, `off`, `emit`
-  and `emitAsync`. They report different things and neither replaces the other.
+  and `emitAsync`.
+- Writing a method the factory added, such as `model.on = null`, is not
+  specified: what happens is whatever the factory's methods do.
 
 ## See also
 
+- [`DESIGN.md`](../DESIGN.md) — the rules, one by one.
 - [The contract](contract.md) — what the converter's output satisfies.
 - [Batching and delivery](batching.md) — when a notification arrives.
 - [The query](query.md) — reading values out of a converted model.

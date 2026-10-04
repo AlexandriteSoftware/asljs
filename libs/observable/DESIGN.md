@@ -193,7 +193,10 @@ and the first that matches applies:
 4. An object or array that has a property named like a method the `eventful`
    factory adds throws, because the observable it would be converted to has
    methods with those names. With the default factory those are the eight
-   names listed in D2.
+   names listed in D2. With a custom factory `observable` knows only `on` and
+   `off`; any other name the factory adds is the factory's responsibility, and
+   a property of the data with that name is whatever the factory makes of
+   it.
 5. A plain object or a plain array (D12) holding plain data (D16) is converted
    to an observable, applying D11 to its own values.
 6. Anything else throws.
@@ -385,6 +388,10 @@ D15. A modification is one of these kinds:
 
 An object reports `set` only. `splice` and `reset` are reported by arrays.
 
+An index written past the end of an array grows its `length`, and no splice
+describes that, so the change also carries a `set` for `length`, after the
+`set` for the index.
+
 A `splice` at `index` also changes every index from `index` onwards and, when
 the counts differ, `length`; no separate `set` is reported for them. A
 subscriber that tracks indices or `length` either interprets `splice` that way
@@ -480,7 +487,9 @@ D17. An error thrown by `observable` says where the problem is and what it is.
 The message starts with the path of the offending value, written from `value`
 as the top level, with `.name` for a property and `[0]` for an array index,
 followed by the reason. A circular reference names both ends: where the cycle
-was found and the object it leads back to.
+was found and the object it leads back to. An error thrown by the `convert`
+hook or by the `eventful` factory is reported the same way, prefixed with the
+path of the value it was handling, with the original error as its `cause`.
 
 ```js
 observable({ orders: [ { meta: new Map() } ] }, { deep: true });
@@ -528,6 +537,9 @@ D19. `batch(fn)` groups the changes made while `fn` runs:
   once, but its own `change` is delivered after the current delivery finishes,
   so every listener of one change receives the same list. Listeners that keep
   causing writes are stopped after a fixed number of rounds with an error.
+- When a listener throws, which the factory decides (D18), the error
+  propagates at once. Changes still queued for delivery are discarded: the
+  writes have happened, but their `change` is not delivered.
 
 ```js
 const model = observable({ n: 1 });

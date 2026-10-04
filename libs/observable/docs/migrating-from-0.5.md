@@ -141,38 +141,54 @@ A model whose nested members are observed, queried along a path below the
 root, or relied on to be refused when unsupported needs `deep: true`. The
 `convert` hook is consulted for nested values only under `deep: true`.
 
+## `observable` returns a copy
+
+0.5 added the Eventful API to the object it was given and returned a proxy over
+it, so the original and the result were one object. 0.6 creates a new observable
+version and leaves the original untouched. Consequences to check:
+
+- **The original no longer changes.** Writes through the result do not reach
+  it, and writes to it do not reach the result. Values held by reference, such
+  as a nested object without `deep: true`, are still shared.
+- **Separate calls give separate observables.**
+  `observable(x) === observable(x)` is `false`. Within one call, an object reached twice becomes one observable.
+- **Cycles throw under `deep: true`**, naming the path, instead of converging.
+- **An observable or emitter passed as the top-level value throws.** Nested,
+  it is kept by reference as before.
+- **Values written later are not converted.** `model.user = { name: 'Ann' }`
+  stores the plain object; convert it first if its own changes should be
+  reported.
+
+See [the converter](converter.md) for the rules, and [`DESIGN.md`](../DESIGN.md)
+for the reasoning.
+
 ## Models the converter used to accept
 
-Under `deep: true`, an unsupported nested value now throws, with the path in the
-message, instead of being stored silently. The two cases most likely to be hit:
+Conversion now requires plain data, and an unsupported value throws with the
+path in the message instead of being stored silently:
 
-- **`Date`.** A nested date was stored as it was; it is refused now. See
-  [why](converter.md#why-date-is-not-a-leaf), and use the
-  [`convert` hook](converter.md#the-convert-hook) for a model that genuinely
-  holds one.
-- **Frozen and sealed objects.** Previously stored as they were, refused now.
+- **Class instances, `Map`, `Set` and other non-plain objects** throw unless the
+  [`convert` hook](converter.md#the-convert-hook) takes them over. Nested under
+  `deep: false` they are kept by reference.
+- **Accessors, symbol keys, read-only or hidden properties, sealed objects and
+  sparse arrays** throw. 0.5 skipped or kept them.
+- **A frozen object at the top level throws**: it cannot change, so there is
+  nothing to observe. Nested, a frozen plain object or array is a value, kept by
+  reference.
 
-`Map`, `Set`, `RegExp`, typed arrays and class instances were already unusable
-as nested values in the sense that nothing about them was observed; the
-difference is that the failure is loud rather than silent.
-
-If you want the old behaviour for a particular kind, return the value itself
-from the `convert` hook:
+`Date`, `RegExp` and functions are values: kept by reference when nested, and
+boxed as `{ value }` at the top level.
 
 ```js
 import { observable } from 'asljs-observable';
 
-const model = observable(
-  { created: new Date(1) },
-  {
-    deep: true,
-    convert: value => value instanceof Date ? value : undefined
-  });
+const created = new Date(1);
+const model = observable({ created }, { deep: true });
 
-console.log('kept:', model.created.getTime());
+console.log('kept:', model.created === created);
 
 // Output:
-// kept: 1
+// kept: true
 ```
 
 ## Type names

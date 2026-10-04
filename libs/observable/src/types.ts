@@ -1,5 +1,4 @@
-import { Eventful,
-         EventfulFactory }
+import { Eventful }
   from 'asljs-eventful';
 import { Change }
   from './contract.js';
@@ -16,7 +15,7 @@ export type ObservableEvents = {
 };
 
 /**
- * Names `eventful` occupies on every converted target.
+ * Names the default `eventful` factory adds to every observable.
  *
  * Excluded from path descent, so the methods conversion adds are not offered
  * as properties to observe.
@@ -37,29 +36,31 @@ export type EventfulMethodName =
 export interface ObservableOptions
 {
   /**
-   * Custom factory to augment the target with eventful API (defaults to
-   * imported `asljs-eventful`).
+   * The factory that adds the methods to every observable a call creates
+   * (defaults to `eventful` from `asljs-eventful`). It must add at least `on`,
+   * `off` and `emit`; anything more is its choice.
    *
-   * The factory itself is the seam for every `eventful` option, present and
-   * future: pass a closure that supplies them.
+   * The factory is also how its own settings are passed:
    *
    * ```js
    * observable(model, { eventful: v => eventful(v, { strict: true }) });
    * ```
    */
-  eventful?: EventfulFactory;
+  eventful?: ObservableFactory;
 
   /**
    * Optional trace hook: `(object, action, payload)` invoked on `'new'` with
-   * `{ object }`, and on `'change'` with the entry list of one delivery.
+   * `{ object }` for every observable the call creates, and on `'change'` with
+   * the entry list of one delivery.
    */
   trace?: ObservableTraceFn | null;
 
   /**
    * Controls nested conversion for object/array inputs.
    *
-   * - `false` (default): converts only the top-level value.
-   * - `true`: recursively converts nested objects and arrays.
+   * - `false` (default): converts only the top-level value; nested objects and
+   *   arrays are kept by reference.
+   * - `true`: recursively converts nested plain objects and arrays.
    *
    * The return type is the same either way: only the top-level value is
    * guaranteed to be converted, and members keep their declared type.
@@ -67,37 +68,44 @@ export interface ObservableOptions
   deep?: boolean;
 
   /**
-   * Optional hook consulted for every object reached during conversion,
-   * before observable applies its own rule. See `ObservableConvertFn`.
+   * Optional hook asked about objects before observable applies its own
+   * rules. See `ObservableConvertFn`.
    */
   convert?: ObservableConvertFn | null;
 }
 
 /**
- * Takes over conversion for a single value.
+ * Replaces one object with another during conversion.
  *
- * Called with every object observable reaches, including the values it would
- * otherwise refuse, and before its own rule is applied. With
- * throw-by-default it is the only escape from an unsupported value.
+ * Asked about the top-level value when it is an object, and, under
+ * `deep: true`, about every nested object not kept by reference first. Never
+ * asked about primitives, functions, dates, regular expressions, or nested
+ * frozen plain data: those are values.
  *
- * - Return a wrapper to take over that value. It is stored in place of the
- *   original and, like anything else observable converts, one wrapper is
- *   reused for every reference to the same target.
- * - Return the value itself to keep it as it is, even if observable would
- *   normally convert or refuse it.
- * - Return `undefined` to let observable decide.
- *
- * A wrapper should conform to the contract -- `on`, `off`, and a `change`
- * event -- so that a query can bind to it along a path. Observable does not
- * check this, and it does not emit `new` for a wrapper it did not create.
- *
- * Primitives are never passed to the hook: they have nothing to observe.
+ * - Return `null` or `undefined` to let observable decide.
+ * - Return anything else to use it in place of the object. No other rule
+ *   applies to it and it is not traversed. A nested object reached twice in
+ *   one call is asked about once, and the result is used in both places.
+ * - At the top level the result is what `observable` returns, so it must be a
+ *   new observable, with `on` and `off`, and not the object itself; otherwise
+ *   `observable` throws. A nested result is not checked, and returning the
+ *   object itself keeps it by reference.
  */
 export type ObservableConvertFn =
   (
     value: object
   ) =>
     unknown;
+
+/**
+ * Adds the methods to a new observable: at least `on`, `off` and `emit`.
+ * `eventful` from `asljs-eventful` is one, and the default.
+ */
+export type ObservableFactory =
+  (
+    target: object
+  ) =>
+    object;
 
 export type ObservableTraceFn =
   (
@@ -130,15 +138,15 @@ type ModelKey<T> = Exclude<
  *
  * Array indices are ordinary string keys, so an array is descended through
  * `${number}` rather than treated as a leaf. Descent stops at values the
- * converter refuses and at leaf kinds, so a path can only name something that
- * is actually there.
+ * converter refuses and at values it keeps as they are, so a path can only
+ * name something that is actually there.
  */
 export type ObservablePath<
   T,
   Depth extends readonly unknown[] = []
 > = Depth['length'] extends ObservablePathDepthLimit ? never
   : T extends UnsupportedValue ? never
-  : T extends Function ? never
+  : T extends ObservableValue ? never
   : T extends readonly (infer Element)[] ?
       | `${number}`
       | 'length'
@@ -201,22 +209,23 @@ export type ConvertedPrimitive<T> =
   & Eventful<ObservableEvents>;
 
 /**
- * Values the converter refuses, because a proxy cannot forward access to their
- * internal slots and storing them silently would leave the model half
- * observable with no indication.
- *
- * `Date` is refused like the rest: there is no immutable `Date` in JavaScript,
- * so admitting it would carve out the one leaf that is both mutable and
- * value-like. The `convert` hook is the answer for a model that genuinely
- * holds one.
+ * Objects observable treats as values: never converted, boxed at the top
+ * level and kept by reference when nested.
+ */
+export type ObservableValue =
+  | Date
+  | RegExp
+  | Function;
+
+/**
+ * Values the converter refuses unless `convert` takes them over, because
+ * their state lives in internal slots a copy cannot carry.
  *
  * Class instances are refused at runtime too, but TypeScript cannot tell an
  * instance type from a structurally identical plain object, so they are not
  * listed here.
  */
 export type UnsupportedValue =
-  | Date
-  | RegExp
   | Error
   | Promise<unknown>
   | Map<any, any>
@@ -231,13 +240,14 @@ export type UnsupportedValue =
  *
  * - plain objects and arrays carry the Eventful API and emit `change`. Their
  *   members keep their declared type, whatever the `deep` option.
- * - primitives are boxed into `{ value }`.
+ * - primitives, dates, regular expressions and functions are boxed into
+ *   `{ value }`.
  * - unsupported values resolve to `never`: converting one throws, so there is
  *   no result to describe.
  */
 export type Converted<T> = T extends readonly any[] ? ConvertedArray<T>
   : T extends UnsupportedValue ? never
-  : T extends Function ? never
+  : T extends ObservableValue ? ConvertedPrimitive<T>
   : T extends object ? ConvertedObject<T>
   : ConvertedPrimitive<T>;
 
@@ -253,10 +263,16 @@ export type ObservableFn = {
    * so the call resolves to `never`. Hold the value in a plain object, or take
    * it over with the `convert` option.
    */
-  <T extends UnsupportedValue | Function>(
+  <T extends UnsupportedValue>(
     value: T,
     options?: ObservableOptions
   ): never;
+
+  /** Value overload: a date, regular expression or function is boxed. */
+  <T extends ObservableValue>(
+    value: T,
+    options?: ObservableOptions
+  ): ConvertedPrimitive<T>;
 
   /** Plain object overload */
   <T extends object>(

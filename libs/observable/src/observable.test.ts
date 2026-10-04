@@ -2,15 +2,20 @@ import { eventful }
   from 'asljs-eventful';
 import assert
   from 'node:assert/strict';
+import { EventEmitter }
+  from 'node:events';
 import test
   from 'node:test';
 import vm
   from 'node:vm';
 import { batch,
-         Change }
+         Change,
+         isObservable }
   from './contract.js';
 import { observable }
   from './observable.js';
+import { observe }
+  from './observe.js';
 import { createTracer }
   from './testing/tracer.js';
 
@@ -39,140 +44,1206 @@ function flat(
     changes => [ ...changes ]);
 }
 
-/**
- * With `deep: true`, nested object fields are observable so listeners can
- * subscribe without manual wrapping.
- */
+class Point
+{
+  constructor(
+      public x: number,
+      public y: number
+    )
+  {}
+}
+
+// D1, D3, D6: an observable version is a new object, independent of the
+// original in its own properties.
+
 test(
-  `${TEST_SUITE}: deep:true observes nested objects`,
-  async () =>
+  `${TEST_SUITE}: the result is a new object and the original is untouched`,
+  () =>
   {
-    const object =
-      { a:
-          { b: 1 } };
+    const original =
+      { a: 1 };
 
-    const proxy =
-      observable(
-        object,
-        { deep: true });
+    const result =
+      observable(original);
 
-    const deliveries =
-      record(proxy.a);
-
-    proxy.a.b = 2;
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'b',
-          value: 2,
-          previous: 1 } ]);
-  });
-
-/**
- * Values introduced through defineProperty must follow the same deep
- * conversion rules as normal assignment paths.
- */
-test(
-  `${TEST_SUITE}: defineProperty converts nested value in deep mode`,
-  async () =>
-  {
-    const proxy =
-      observable(
-        {} as { x?: { y: number; }; },
-        { deep: true });
-
-    Object.defineProperty(
-      proxy,
-      'x',
-      { value:
-          { y: 1 },
-        writable: true,
-        configurable: true,
-        enumerable: true });
-
-    const deliveries =
-      record(proxy.x);
-
-    (proxy.x as any).y = 2;
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'y',
-          value: 2,
-          previous: 1 } ]);
-  });
-
-/**
- * Conversion is single-level by default, so child objects stay raw unless the
- * caller asks for recursion.
- */
-test(
-  `${TEST_SUITE}: keeps nested objects non-observable by default`,
-  async () =>
-  {
-    const object =
-      { a:
-          { b: 1 } };
-
-    const proxy =
-      observable(object);
+    assert.notStrictEqual(
+      result,
+      original);
 
     assert.equal(
-      typeof (proxy.a as any).on,
-      'undefined');
+      'on' in original,
+      false);
+
+    result.a = 2;
+
+    assert.equal(
+      original.a,
+      1);
+
+    original.a = 3;
+
+    assert.equal(
+      result.a,
+      2);
   });
 
-/**
- * With `deep: true`, nested entries inside arrays are observable so
- * item-level edits notify listeners.
- */
 test(
-  `${TEST_SUITE}: deep:true observes nested objects inside arrays`,
-  async () =>
+  `${TEST_SUITE}: an array is copied too`,
+  () =>
   {
-    const object =
-      { items:
-          [ { name: 'A' } ] };
+    const original =
+      [ 1,
+        2 ];
 
-    const proxy =
+    const result =
+      observable(original);
+
+    result.push(3);
+
+    assert.deepEqual(
+      original,
+      [ 1,
+        2 ]);
+
+    assert.deepEqual(
+      [ ...result ],
+      [ 1,
+        2,
+        3 ]);
+  });
+
+test(
+  `${TEST_SUITE}: values held by reference are shared with the original`,
+  () =>
+  {
+    const original =
+      { nested:
+          { x: 0 } };
+
+    const result =
+      observable(original);
+
+    assert.strictEqual(
+      result.nested,
+      original.nested);
+
+    result.nested.x = 1;
+
+    assert.equal(
+      original.nested.x,
+      1);
+
+    result.nested =
+      null as any;
+
+    assert.deepEqual(
+      original.nested,
+      { x: 1 });
+  });
+
+// D2, D14: the methods and the payload.
+
+test(
+  `${TEST_SUITE}: a listener receives the list of modifications`,
+  () =>
+  {
+    const model =
       observable(
-        object,
-        { deep: true });
+        { a: 1 });
 
     const deliveries =
-      record(proxy.items[0]);
+      record(model);
 
-    proxy.items[0].name = 'B';
+    model.a = 2;
+
+    assert.deepEqual(
+      deliveries,
+      [ [ { kind: 'set',
+            property: 'a',
+            value: 2,
+            previous: 1 } ] ]);
+  });
+
+test(
+  `${TEST_SUITE}: the default factory's methods are hidden from the data`,
+  () =>
+  {
+    const model =
+      observable(
+        { a: 1 });
+
+    for (const name of [ 'on',
+                         'once',
+                         'off',
+                         'emit',
+                         'emitAsync',
+                         'has',
+                         'removeAllListeners',
+                         'getListeners' ]) {
+      assert.equal(
+        typeof (model as any)[name],
+        'function',
+        name);
+    }
+
+    assert.deepEqual(
+      Object.keys(model),
+      [ 'a' ]);
+
+    assert.equal(
+      JSON.stringify(model),
+      '{"a":1}');
+
+    assert.deepEqual(
+      { ...model },
+      { a: 1 });
+  });
+
+test(
+  `${TEST_SUITE}: an observable array is an array`,
+  () =>
+  {
+    const list =
+      observable(
+        [ 1,
+          2,
+          3 ]);
+
+    assert.ok(
+      Array.isArray(list));
+
+    assert.equal(
+      JSON.stringify(list),
+      '[1,2,3]');
+
+    assert.deepEqual(
+      [ ...list ],
+      [ 1,
+        2,
+        3 ]);
+
+    const doubled =
+      list.map(
+        n => n * 2);
+
+    // A method that returns a new array returns a plain one.
+    assert.equal(
+      isObservable(doubled),
+      false);
+
+    assert.deepEqual(
+      doubled,
+      [ 2,
+        4,
+        6 ]);
+  });
+
+// D4, D10 rule 1: values.
+
+test(
+  `${TEST_SUITE}: a primitive is boxed as { value }`,
+  () =>
+  {
+    const boxed =
+      observable(42);
+
+    const deliveries =
+      record(boxed);
+
+    boxed.value = 43;
+
+    // An equal write is not a change.
+    boxed.value = 43;
 
     assert.deepEqual(
       flat(deliveries),
+      [ { kind: 'set',
+          property: 'value',
+          value: 43,
+          previous: 42 } ]);
+  });
+
+test(
+  `${TEST_SUITE}: observable with no argument boxes undefined`,
+  () =>
+  {
+    const boxed =
+      observable();
+
+    const deliveries =
+      record(boxed);
+
+    (boxed as any).value = 1;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'value',
+          value: 1,
+          previous: undefined } ]);
+  });
+
+test(
+  `${TEST_SUITE}: a date, regular expression or function is boxed at the top`,
+  () =>
+  {
+    const date =
+      new Date(1);
+
+    const pattern = /x/;
+
+    const fn = (): number => 1;
+
+    assert.strictEqual(
+      observable(date).value,
+      date);
+
+    assert.strictEqual(
+      observable(pattern).value,
+      pattern);
+
+    assert.strictEqual(
+      observable(fn).value,
+      fn);
+  });
+
+test(
+  `${TEST_SUITE}: nested values are kept by reference and never converted`,
+  () =>
+  {
+    const date =
+      new Date(1);
+
+    const pattern = /x/;
+
+    const fn = (): number => 1;
+
+    const config =
+      Object.freeze(
+        { theme: 'dark' });
+
+    const list =
+      Object.freeze(
+        [ 1 ]);
+
+    const asked: unknown[] = [ ];
+
+    const model: any =
+      observable(
+        { date,
+          pattern,
+          fn,
+          config,
+          list,
+          text: 'a',
+          nothing: null,
+          big: 1n },
+        { deep: true,
+          convert:
+            (
+                value
+              ) =>
+            {
+          asked.push(value);
+
+          return undefined;
+        } });
+
+    assert.strictEqual(
+      model.date,
+      date);
+
+    assert.strictEqual(
+      model.pattern,
+      pattern);
+
+    assert.strictEqual(
+      model.fn,
+      fn);
+
+    assert.strictEqual(
+      model.config,
+      config);
+
+    assert.strictEqual(
+      model.list,
+      list);
+
+    // Only the top-level object was asked about.
+    assert.equal(
+      asked.length,
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: a cycle inside a value is not traversed`,
+  () =>
+  {
+    const date: any =
+      new Date(1);
+
+    date.self = date;
+
+    const model =
+      observable(
+        { date },
+        { deep: true });
+
+    assert.strictEqual(
+      model.date,
+      date);
+  });
+
+test(
+  `${TEST_SUITE}: a frozen object at the top level throws`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          Object.freeze(
+            { a: 1 })),
+      { name: 'TypeError',
+        message:
+          'at value: a frozen object cannot change, so there is nothing to '
+            + 'observe' });
+
+    assert.throws(
+      () =>
+        observable(
+          Object.freeze(
+            [ 1 ])),
+      /^TypeError: at value: a frozen object/);
+  });
+
+test(
+  `${TEST_SUITE}: convert can take over a frozen object at the top level`,
+  () =>
+  {
+    const replacement =
+      observable(
+        { a: 1 });
+
+    assert.strictEqual(
+      observable(
+        Object.freeze(
+          { a: 1 }),
+        { convert: () => replacement }),
+      replacement);
+  });
+
+test(
+  `${TEST_SUITE}: a frozen object with internal state is not a value`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { map:
+              Object.freeze(
+                new Map()) },
+          { deep: true }),
+      /^TypeError: at value\.map: Map is not supported/);
+  });
+
+// D5: each observable reports changes to its own properties only.
+
+test(
+  `${TEST_SUITE}: a nested change is reported by the nested observable only`,
+  () =>
+  {
+    const model =
+      observable(
+        { user:
+            { name: 'Ann' } },
+        { deep: true });
+
+    const top =
+      record(model);
+
+    const user =
+      record(model.user);
+
+    model.user.name = 'Bob';
+
+    assert.equal(
+      top.length,
+      0);
+
+    assert.deepEqual(
+      flat(user),
       [ { kind: 'set',
           property: 'name',
-          value: 'B',
-          previous: 'A' } ]);
+          value: 'Bob',
+          previous: 'Ann' } ]);
   });
 
-/**
- * By default, array items stay plain objects so nested wrapping is not applied
- * automatically.
- */
-test(
-  `${TEST_SUITE}: keeps nested objects inside arrays non-observable by default`,
-  async () =>
-  {
-    const object =
-      { items:
-          [ { name: 'A' } ] };
+// D5, D11 rule 3: deep.
 
-    const proxy =
-      observable(object);
+test(
+  `${TEST_SUITE}: without deep, nested objects and arrays are kept by reference`,
+  () =>
+  {
+    const user =
+      { name: 'Ann' };
+
+    const items =
+      [ { title: 'A' } ];
+
+    const model =
+      observable(
+        { user,
+          items });
+
+    assert.strictEqual(
+      model.user,
+      user);
+
+    assert.strictEqual(
+      model.items,
+      items);
 
     assert.equal(
-      typeof (proxy.items[0] as any).on,
-      'undefined');
+      isObservable(model.user),
+      false);
   });
+
+test(
+  `${TEST_SUITE}: with deep, nested plain objects and arrays are converted`,
+  () =>
+  {
+    const user =
+      { name: 'Ann' };
+
+    const model =
+      observable(
+        { user,
+          items:
+            [ { title: 'A' } ] },
+        { deep: true });
+
+    assert.notStrictEqual(
+      model.user,
+      user);
+
+    assert.ok(
+      isObservable(model.user));
+
+    assert.ok(
+      isObservable(model.items));
+
+    assert.ok(
+      isObservable(model.items[0]));
+
+    const deliveries =
+      record(model.items[0]);
+
+    model.items[0].title = 'B';
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'title',
+          value: 'B',
+          previous: 'A' } ]);
+
+    assert.equal(
+      user.name,
+      'Ann');
+  });
+
+test(
+  `${TEST_SUITE}: without deep, nested values that would be refused are kept`,
+  () =>
+  {
+    const point =
+      new Point(
+        1,
+        2);
+
+    const model: any =
+      observable(
+        { point,
+          map: new Map(),
+          frozenless:
+            Object.seal(
+              { a: 1 }) });
+
+    assert.strictEqual(
+      model.point,
+      point);
+  });
+
+// D7: circular references.
+
+test(
+  `${TEST_SUITE}: a circular reference throws, naming both ends`,
+  () =>
+  {
+    const obj: any = {};
+
+    obj.self = obj;
+
+    assert.throws(
+      () =>
+        observable(
+          obj,
+          { deep: true }),
+      { name: 'TypeError',
+        message:
+          'at value.self: circular reference to value' });
+
+    const a: any =
+      { b: {} };
+
+    a.b.back = a;
+
+    assert.throws(
+      () =>
+        observable(
+          { a },
+          { deep: true }),
+      { message:
+          'at value.a.b.back: circular reference to value.a' });
+
+    // Without deep nothing nested is traversed, so the cycle is kept.
+    assert.strictEqual(
+      observable(obj).self,
+      obj);
+  });
+
+// D8: repeated references.
+
+test(
+  `${TEST_SUITE}: an object reached twice in one call becomes one observable`,
+  () =>
+  {
+    const shared =
+      { n: 1 };
+
+    const result: any =
+      observable(
+        { value1: shared,
+          value2: shared,
+          list:
+            [ shared ] },
+        { deep: true });
+
+    assert.strictEqual(
+      result.value1,
+      result.value2);
+
+    assert.strictEqual(
+      result.list[0],
+      result.value1);
+
+    result.value1.n = 2;
+
+    assert.equal(
+      result.value2.n,
+      2);
+  });
+
+test(
+  `${TEST_SUITE}: separate calls produce separate observables`,
+  () =>
+  {
+    const shared =
+      { n: 1 };
+
+    const left =
+      observable(
+        { shared },
+        { deep: true });
+
+    const right =
+      observable(
+        { shared },
+        { deep: true });
+
+    assert.notStrictEqual(
+      left.shared,
+      right.shared);
+
+    assert.notStrictEqual(
+      observable(shared),
+      observable(shared));
+  });
+
+// D9: the convert hook.
+
+test(
+  `${TEST_SUITE}: convert is asked once without deep, for an object only`,
+  () =>
+  {
+    const asked: unknown[] = [ ];
+
+    const convert =
+      (
+          value: object
+        ): undefined =>
+      {
+      asked.push(value);
+
+      return undefined;
+    };
+
+    observable(
+      false,
+      { convert });
+
+    assert.equal(
+      asked.length,
+      0);
+
+    const top =
+      { a: new Map() };
+
+    observable(
+      top,
+      { convert });
+
+    assert.deepEqual(
+      asked,
+      [ top ]);
+  });
+
+test(
+  `${TEST_SUITE}: convert can take over a value observable would refuse`,
+  () =>
+  {
+    const tags =
+      new Set(
+        [ 'a' ]);
+
+    const wrapper =
+      observable(
+        { size: 1 });
+
+    const model: any =
+      observable(
+        { tags },
+        { deep: true,
+          convert:
+            value =>
+              value instanceof Set
+                ? wrapper
+                : undefined });
+
+    assert.strictEqual(
+      model.tags,
+      wrapper);
+  });
+
+test(
+  `${TEST_SUITE}: convert returning null or undefined leaves the decision`,
+  () =>
+  {
+    const model: any =
+      observable(
+        { a:
+            { b: 1 },
+          c:
+            { d: 2 } },
+        { deep: true,
+          convert:
+            value =>
+              'b' in value
+                ? null
+                : undefined });
+
+    assert.ok(
+      isObservable(model.a));
+
+    assert.ok(
+      isObservable(model.c));
+  });
+
+test(
+  `${TEST_SUITE}: a nested convert result is used as it is`,
+  () =>
+  {
+    const point =
+      new Point(
+        1,
+        2);
+
+    // Returning the object itself keeps it by reference; a nested result is
+    // not checked.
+    const model: any =
+      observable(
+        { point,
+          other:
+            { n: 1 } },
+        { deep: true,
+          convert:
+            value =>
+              value instanceof Point
+                ? value
+                : 'b' in value
+                ? 42
+                : undefined });
+
+    assert.strictEqual(
+      model.point,
+      point);
+  });
+
+test(
+  `${TEST_SUITE}: a nested convert result is not traversed`,
+  () =>
+  {
+    const replacement: any =
+      { self: null };
+
+    replacement.self = replacement;
+
+    const model: any =
+      observable(
+        { a:
+            new Point(
+              1,
+              2) },
+        { deep: true,
+          convert:
+            value =>
+              value instanceof Point
+                ? replacement
+                : undefined });
+
+    assert.strictEqual(
+      model.a,
+      replacement);
+  });
+
+test(
+  `${TEST_SUITE}: convert is asked once for an object reached twice`,
+  () =>
+  {
+    const point =
+      new Point(
+        1,
+        2);
+
+    let calls = 0;
+
+    const model: any =
+      observable(
+        { a: point,
+          b: point },
+        { deep: true,
+          convert:
+            (
+                value
+              ) =>
+            {
+          if (value instanceof Point) {
+            calls++;
+
+            return { wrapped: value };
+          }
+
+          return undefined;
+        } });
+
+    assert.equal(
+      calls,
+      1);
+
+    assert.strictEqual(
+      model.a,
+      model.b);
+  });
+
+test(
+  `${TEST_SUITE}: a top-level convert result must be a new observable`,
+  () =>
+  {
+    const map =
+      new Map();
+
+    assert.throws(
+      () =>
+        observable(
+          map,
+          { convert: value => value }),
+      { message:
+          'at value: convert must return a new observable, with on and off, '
+            + 'for the top-level value' });
+
+    assert.throws(
+      () =>
+        observable(
+          map,
+          { convert: () => 42 }),
+      /^TypeError: at value: convert must return a new observable/);
+
+    const emitter =
+      new EventEmitter();
+
+    // Returning the given emitter is returning the original itself.
+    assert.throws(
+      () =>
+        observable(
+          emitter,
+          { convert: value => value }),
+      /^TypeError: at value: convert must return a new observable/);
+
+    const replacement =
+      observable(
+        { size: 0 });
+
+    assert.strictEqual(
+      observable(
+        map,
+        { convert: () => replacement }),
+      replacement);
+  });
+
+test(
+  `${TEST_SUITE}: convert must be a function`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { a: 1 },
+          { convert:
+              123 as any }),
+      /Expect a function\./);
+  });
+
+// D10, D11: the rules, in order.
+
+test(
+  `${TEST_SUITE}: an observable or emitter at the top level throws`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          new EventEmitter()),
+      /^TypeError: at value: the value is already observable/);
+
+    assert.throws(
+      () =>
+        observable(
+          observable(
+            { a: 1 })),
+      /^TypeError: at value: the value is already observable/);
+  });
+
+test(
+  `${TEST_SUITE}: a nested observable or emitter is kept by reference`,
+  () =>
+  {
+    const emitter =
+      new EventEmitter();
+
+    const inner =
+      observable(
+        { n: 1 });
+
+    const model: any =
+      observable(
+        { emitter,
+          inner },
+        { deep: true });
+
+    assert.strictEqual(
+      model.emitter,
+      emitter);
+
+    assert.strictEqual(
+      model.inner,
+      inner);
+  });
+
+test(
+  `${TEST_SUITE}: a name the factory adds is reserved`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { on: null }),
+      { message:
+          'at value: the property "on" has the name of a method the '
+            + 'observable adds' });
+
+    assert.throws(
+      () =>
+        observable(
+          { a:
+              { emit: 1 } },
+          { deep: true }),
+      /^TypeError: at value\.a: the property "emit"/);
+
+    // Without deep the nested object is kept, so its names do not matter.
+    assert.doesNotThrow(
+      () =>
+        observable(
+          { a:
+              { on: null } }));
+
+    // Both on and off as functions make an object already observable, kept.
+    const handlers =
+      { on: () => { },
+        off: () => { } };
+
+    assert.strictEqual(
+      observable(
+        { a: handlers },
+        { deep: true }).a,
+      handlers);
+  });
+
+test(
+  `${TEST_SUITE}: a custom factory reserves on and off only`,
+  () =>
+  {
+    const factory =
+      (
+          target: object
+        ): any =>
+      {
+      const listeners =
+        new Set<Function>();
+
+      Object.defineProperties(
+        target,
+        { on:
+            { value:
+                (
+                    _event: string,
+                    listener: Function
+                  ) => listeners.add(listener) },
+          off:
+            { value:
+                (
+                    _event: string,
+                    listener: Function
+                  ) => listeners.delete(listener) },
+          emit:
+            { value:
+                (
+                    _event: string,
+                    payload: unknown
+                  ) =>
+                {
+              for (const listener of listeners) {
+                listener(payload);
+              }
+            } } });
+
+      return target;
+    };
+
+    const model: any =
+      observable(
+        { has: true,
+          a: 1 },
+        { eventful: factory });
+
+    const deliveries =
+      record(model);
+
+    model.a = 2;
+
+    assert.equal(
+      flat(deliveries).length,
+      1);
+
+    assert.throws(
+      () =>
+        observable(
+          { off: 1 },
+          { eventful: factory }),
+      /^TypeError: at value: the property "off"/);
+  });
+
+test(
+  `${TEST_SUITE}: a class instance or unsupported value throws`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          new Point(
+            1,
+            2)),
+      { message:
+          'at value: Point is not supported. Hold it in a plain object, or '
+            + 'take it over with the convert option.' });
+
+    assert.throws(
+      () =>
+        observable(
+          new Map()),
+      /^TypeError: at value: Map is not supported/);
+
+    assert.throws(
+      () =>
+        observable(
+          { orders:
+              [ { meta: new Map() } ] },
+          { deep: true }),
+      /^TypeError: at value\.orders\[0\]\.meta: Map is not supported/);
+  });
+
+// D12: plain objects and arrays.
+
+test(
+  `${TEST_SUITE}: a null-prototype object is converted`,
+  () =>
+  {
+    const source =
+      Object.create(null);
+
+    source.a = 1;
+
+    const model =
+      observable(source);
+
+    assert.equal(
+      model.a,
+      1);
+
+    assert.ok(
+      isObservable(model));
+  });
+
+test(
+  `${TEST_SUITE}: plain data from another realm is converted`,
+  () =>
+  {
+    const foreign =
+      vm.runInNewContext(
+        '({ a: { b: 1 }, list: [ 1 ], when: new Date(1) })');
+
+    const model: any =
+      observable(
+        foreign,
+        { deep: true });
+
+    assert.ok(
+      isObservable(model.a));
+
+    assert.ok(
+      isObservable(model.list));
+
+    // A date from another realm is a value too.
+    assert.strictEqual(
+      model.when,
+      foreign.when);
+  });
+
+test(
+  `${TEST_SUITE}: an array subclass is a class instance`,
+  () =>
+  {
+    class List extends Array<number> {}
+
+    assert.throws(
+      () =>
+        observable(
+          List.from(
+            [ 1 ])),
+      /^TypeError: at value: List is not supported/);
+  });
+
+test(
+  `${TEST_SUITE}: a look-alike prototype is not plain`,
+  () =>
+  {
+    const fake =
+      Object.create(
+        Object.create(null));
+
+    assert.throws(
+      () =>
+        observable(fake),
+      /^TypeError: at value: .* is not supported/);
+  });
+
+// D13: writes after creation.
+
+test(
+  `${TEST_SUITE}: a written value is stored as it is`,
+  () =>
+  {
+    const model: any =
+      observable(
+        { user:
+            { name: 'Ann' } },
+        { deep: true });
+
+    const user =
+      { name: 'Bob' };
+
+    const deliveries =
+      record(model);
+
+    model.user = user;
+
+    assert.strictEqual(
+      model.user,
+      user);
+
+    // Not converted, so its own changes are not reported.
+    assert.equal(
+      isObservable(model.user),
+      false);
+
+    // Not checked either: what conversion refuses can be written.
+    const point =
+      new Point(
+        1,
+        2);
+
+    model.point = point;
+
+    model.self = model;
+
+    assert.strictEqual(
+      model.point,
+      point);
+
+    assert.equal(
+      flat(deliveries).length,
+      3);
+  });
+
+test(
+  `${TEST_SUITE}: a pushed object is stored as it is`,
+  () =>
+  {
+    const list: any =
+      observable(
+        [ ] as Array<{ n: number; }>,
+        { deep: true });
+
+    const deliveries =
+      record(list);
+
+    const item =
+      { n: 1 };
+
+    list.push(item);
+
+    assert.strictEqual(
+      list[0],
+      item);
+
+    const entry =
+      flat(deliveries)[0] as Extract<Change, { kind: 'splice'; }>;
+
+    assert.strictEqual(
+      entry.added[0],
+      item);
+  });
+
+// D15: the modifications.
 
 /**
  * One event, one payload shape. A plain assignment trips both the `set` and the
@@ -181,33 +1252,30 @@ test(
  */
 test(
   `${TEST_SUITE}: an object assignment is one change`,
-  async () =>
+  () =>
   {
     const tracer =
       createTracer();
 
-    const object =
-      { a: 1 };
-
-    const proxy =
+    const model =
       observable(
-        object,
+        { a: 1 },
         { eventful:
             (value: any) =>
           eventful(
             value,
             tracer) });
 
-    proxy.a = 2;
+    model.a = 2;
 
     assert.deepEqual(
       tracer.getMinimalTraces(),
       [ { action: 'new',
           payload:
-            { object } },
+            { object: model } },
         { action: 'emit',
           payload:
-            { object,
+            { object: model,
               event: 'change',
               args:
                 [ [ { kind: 'set',
@@ -222,7 +1290,7 @@ test(
  */
 test(
   `${TEST_SUITE}: removing a property is a set to undefined`,
-  async () =>
+  () =>
   {
     const proxy =
       observable(
@@ -252,11 +1320,11 @@ test(
 
 /**
  * A definition is reported by whether the observed value changed, not by what
- * the descriptor says. Descriptor observation is not part of the contract.
+ * the descriptor says.
  */
 test(
   `${TEST_SUITE}: a definition is reported as a value change or not at all`,
-  async () =>
+  () =>
   {
     const proxy: any =
       observable(
@@ -345,13 +1413,73 @@ test(
     assert.ok(reads > 0);
   });
 
+test(
+  `${TEST_SUITE}: only a write that changes the value is reported`,
+  () =>
+  {
+    const model: any =
+      observable(
+        { a: 1 });
+
+    const deliveries =
+      record(model);
+
+    model.a = 1;
+    model.a = Number.NaN;
+    model.a = Number.NaN;
+    model.a = 0;
+    model.a = -0;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: 'a',
+          value: Number.NaN,
+          previous: 1 },
+        { kind: 'set',
+          property: 'a',
+          value: 0,
+          previous: Number.NaN },
+        { kind: 'set',
+          property: 'a',
+          value: -0,
+          previous: 0 } ]);
+  });
+
+test(
+  `${TEST_SUITE}: a write under a symbol key is stored and not reported`,
+  () =>
+  {
+    const model: any =
+      observable(
+        { a: 1 });
+
+    const deliveries =
+      record(model);
+
+    const meta =
+      Symbol('meta');
+
+    model[meta] = 1;
+
+    assert.equal(
+      model[meta],
+      1);
+
+    delete model[meta];
+
+    assert.equal(
+      deliveries.length,
+      0);
+  });
+
 /**
  * An array index is an ordinary string property, so there is no numeric `index`
  * field on a `set` and no separate array change type.
  */
 test(
   `${TEST_SUITE}: array index and property writes are set entries`,
-  async () =>
+  () =>
   {
     const arr: any =
       observable(
@@ -386,12 +1514,10 @@ test(
           previous: undefined } ]);
   });
 
-/**
- * Deleting an index is a set to undefined, and it does not change length.
- */
+/** Deleting an index is a set to undefined, and it does not change length. */
 test(
   `${TEST_SUITE}: deleting an array index is a set to undefined`,
-  async () =>
+  () =>
   {
     const arr =
       observable(
@@ -421,7 +1547,7 @@ test(
  */
 test(
   `${TEST_SUITE}: truncating an array through length is a splice`,
-  async () =>
+  () =>
   {
     const arr =
       observable(
@@ -454,7 +1580,7 @@ test(
  */
 test(
   `${TEST_SUITE}: growing or keeping array length reports no splice`,
-  async () =>
+  () =>
   {
     const arr =
       observable(
@@ -486,7 +1612,7 @@ test(
  */
 test(
   `${TEST_SUITE}: the splicing array methods report one splice each`,
-  async () =>
+  () =>
   {
     const cases: Array<[string, (arr: any) => void, Change]> =
       [ [ 'push',
@@ -601,7 +1727,7 @@ test(
 /** An operation that changes nothing reports nothing. */
 test(
   `${TEST_SUITE}: a splicing method that changes nothing is silent`,
-  async () =>
+  () =>
   {
     const arr: any =
       observable(
@@ -624,35 +1750,6 @@ test(
       [ ]);
   });
 
-/** Pushed values are converted, because the call goes through the proxy. */
-test(
-  `${TEST_SUITE}: a pushed object is converted and reported as added`,
-  async () =>
-  {
-    const arr: any =
-      observable(
-        [ ] as Array<{ n: number; }>,
-        { deep: true });
-
-    const deliveries =
-      record(arr);
-
-    arr.push(
-      { n: 1 });
-
-    assert.equal(
-      typeof arr[0].on,
-      'function');
-
-    const entry =
-      flat(deliveries)[0] as Extract<Change, { kind: 'splice'; }>;
-
-    // `added` holds what a read returns, meaning the converted values.
-    assert.strictEqual(
-      entry.added[0],
-      arr[0]);
-  });
-
 /**
  * `sort` and `reverse` are permutations and `fill` is a range overwrite: the
  * producer does not have a splice for them, so it reports the `set` entries it
@@ -660,7 +1757,7 @@ test(
  */
 test(
   `${TEST_SUITE}: permutations and range writes report batched set entries`,
-  async () =>
+  () =>
   {
     const arr =
       observable(
@@ -679,8 +1776,7 @@ test(
       deliveries.length,
       1);
 
-    // The middle element did not move, so it is absent: the entry list is what
-    // changed, never the affected range.
+    // The middle element did not move, so it is absent.
     assert.deepEqual(
       flat(deliveries),
       [ { kind: 'set',
@@ -731,11 +1827,12 @@ test(
 
 /**
  * A method invoked so that it bypasses the `get` trap produces `set` entries.
- * That is consistent with the contract, since `splice` is optional.
+ * That is consistent with the contract, since `splice` is optional. The index
+ * written past the end grows the array, so `length` is reported too.
  */
 test(
   `${TEST_SUITE}: a borrowed array method reports set entries`,
-  async () =>
+  () =>
   {
     const arr =
       observable(
@@ -755,20 +1852,25 @@ test(
       [ { kind: 'set',
           property: '1',
           value: 'b',
-          previous: undefined } ]);
+          previous: undefined },
+        { kind: 'set',
+          property: 'length',
+          value: 2,
+          previous: 1 } ]);
   });
 
-/** An own override of a mutating method is left alone. */
+/** An own override of a mutating method, written later, is left alone. */
 test(
   `${TEST_SUITE}: an own array method override is not wrapped`,
-  async () =>
+  () =>
   {
-    const source: any =
-      [ 'a' ];
+    const arr: any =
+      observable(
+        [ 'a' ]);
 
     const calls: unknown[] = [ ];
 
-    source.push =
+    arr.push =
       (
           ...items: unknown[]
         ): number =>
@@ -777,9 +1879,6 @@ test(
 
       return 0;
     };
-
-    const arr: any =
-      observable(source);
 
     const deliveries =
       record(arr);
@@ -795,64 +1894,161 @@ test(
       [ ]);
   });
 
-/**
- * Starting without an initial value should still allow later assignment and
- * emit the same boxed contract.
- */
+// D16: plain data.
+
 test(
-  `${TEST_SUITE}: observable <empty>`,
-  async () =>
+  `${TEST_SUITE}: data that is not plain throws, naming where`,
+  () =>
   {
-    const boxed =
-      observable<number | undefined>(undefined);
+    const cases: Array<[string, () => unknown, string]> =
+      [ [ 'accessor',
+          () =>
+            observable(
+              { get full()
+                {
+                  return 'Ann';
+                } }),
+          'at value.full: an accessor property is not supported' ],
+        [ 'symbol key',
+          () =>
+            observable(
+              { [Symbol('meta')]: 1 }),
+          'at value: the symbol key Symbol(meta) is not supported' ],
+        [ 'read-only',
+          () =>
+            observable(
+              Object.defineProperty(
+                {},
+                'a',
+                { value: 1,
+                  enumerable: true,
+                  configurable: true })),
+          'at value.a: a read-only property is not supported' ],
+        [ 'non-enumerable',
+          () =>
+            observable(
+              Object.defineProperty(
+                {},
+                'a',
+                { value: 1,
+                  writable: true,
+                  configurable: true })),
+          'at value.a: a non-enumerable property is not supported' ],
+        [ 'non-configurable',
+          () =>
+            observable(
+              Object.defineProperty(
+                {},
+                'a',
+                { value: 1,
+                  writable: true,
+                  enumerable: true })),
+          'at value.a: a non-configurable property is not supported' ],
+        [ 'sealed',
+          () =>
+            observable(
+              Object.seal(
+                { a: 1 })),
+          'at value: a sealed object is not supported' ],
+        [ 'non-extensible',
+          () =>
+            observable(
+              Object.preventExtensions(
+                { a: 1 })),
+          'at value: a non-extensible object is not supported' ],
+        [ 'hole',
+          () =>
+            observable(
+              { list:
+                  [ 1,
+                    ,
+                    3 ] },
+              { deep: true }),
+          'at value.list: an array with holes is not supported' ],
+        [ 'extra array property',
+          () =>
+            observable(
+              Object.assign(
+                [ 1 ],
+                { total: 1 })),
+          'at value.total: an array property other than an index is not '
+            + 'supported' ],
+        [ 'nested sealed',
+          () =>
+            observable(
+              { a:
+                  Object.seal(
+                    { b: 1 }) },
+              { deep: true }),
+          'at value.a: a sealed object is not supported' ] ];
 
-    const deliveries =
-      record(boxed);
-
-    boxed.value = 43;
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'value',
-          value: 43,
-          previous: undefined } ]);
+    for (const [name, call, message] of cases) {
+      assert.throws(
+        call,
+        { name: 'TypeError',
+          message },
+        name);
+    }
   });
 
-/**
- * Telemetry gauge S5.1: a primitive reading wrapped as observable should emit
- * value transitions through the same event pipeline as object state.
- */
 test(
-  `${TEST_SUITE}: observable number`,
-  async () =>
+  `${TEST_SUITE}: a sparse array is refused without visiting every index`,
+  () =>
   {
-    const boxed =
-      observable(42);
+    const sparse: number[] = [ ];
 
-    const deliveries =
-      record(boxed);
+    sparse[1e9] = 1;
 
-    boxed.value = 43;
-
-    // An equal write is not a change.
-    boxed.value = 43;
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'value',
-          value: 43,
-          previous: 42 } ]);
+    assert.throws(
+      () =>
+        observable(sparse),
+      /an array with holes is not supported/);
   });
 
-/**
- * Misconfigured eventful factories must fail fast so startup issues are
- * explicit instead of silently degrading events.
- */
 test(
-  `${TEST_SUITE}: throws when eventful option is not a function`,
-  async () =>
+  `${TEST_SUITE}: a __proto__ key is an ordinary property of the copy`,
+  () =>
+  {
+    const source =
+      JSON.parse(
+        '{"__proto__":{"polluted":true},"a":1}');
+
+    const model: any =
+      observable(source);
+
+    assert.deepEqual(
+      model.__proto__,
+      { polluted: true });
+
+    assert.equal(
+      ({} as any).polluted,
+      undefined);
+
+    assert.equal(
+      model.polluted,
+      undefined);
+  });
+
+// D17: error paths.
+
+test(
+  `${TEST_SUITE}: a path names a key that is not an identifier in brackets`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { 'first name':
+              { meta: new Map() } },
+          { deep: true }),
+      /^TypeError: at value\["first name"\]\.meta: Map is not supported/);
+  });
+
+// D18: options.
+
+test(
+  `${TEST_SUITE}: throws when the eventful option is not a function`,
+  () =>
   {
     assert.throws(
       () =>
@@ -863,13 +2059,9 @@ test(
       /Expect a function\./);
   });
 
-/**
- * `strict` and the `error` hook are reachable through the same seam, because
- * `ObservableOptions.eventful` takes the factory itself.
- */
 test(
   `${TEST_SUITE}: the eventful factory carries eventful's own options`,
-  async () =>
+  () =>
   {
     const model =
       observable(
@@ -897,47 +2089,77 @@ test(
       /from a listener/);
   });
 
-/**
- * Wrapping an already-eventful object should preserve existing wiring and
- * avoid double augmentation.
- */
 test(
-  `${TEST_SUITE}: observable reuses pre-eventful object`,
-  async () =>
+  `${TEST_SUITE}: the factory is used for every observable a call creates`,
+  () =>
   {
-    const source =
-      eventful(
-        { name: 'Alice' });
+    let calls = 0;
 
-    const observed =
-      observable(
-        source,
-        { eventful:
-            () =>
-            {
-          throw new Error('should not extend');
-        } });
+    observable(
+      { a:
+          { b:
+              [ 1 ] } },
+      { deep: true,
+        eventful:
+          (
+              value: any
+            ) =>
+          {
+        calls++;
 
-    const deliveries =
-      record(observed);
+        return eventful(value);
+      } });
 
-    observed.name = 'Bob';
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'name',
-          value: 'Bob',
-          previous: 'Alice' } ]);
+    assert.equal(
+      calls,
+      3);
   });
 
-/**
- * The trace hook reports `new` and one `change` per delivery, with the entry
- * list of that delivery.
- */
 test(
-  `${TEST_SUITE}: per-instance trace hook captures new and change actions`,
-  async () =>
+  `${TEST_SUITE}: a factory that adds no emit throws`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { a: 1 },
+          { eventful:
+              (value: any) =>
+              Object.assign(
+                value,
+                { on: () => { },
+                  off: () => { } }) }),
+      { message:
+          'at value: the eventful factory must add on, off and emit' });
+  });
+
+test(
+  `${TEST_SUITE}: an error from the factory names the path`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { a:
+              { b: 1 } },
+          { deep: true,
+            eventful:
+              (
+                  value: any
+                ) =>
+              {
+            if ('b' in value) {
+              throw new Error('no');
+            }
+
+            return eventful(value);
+          } }),
+      { message: 'at value.a: no' });
+  });
+
+test(
+  `${TEST_SUITE}: the trace hook reports new and change`,
+  () =>
   {
     const actions: string[] = [ ];
     const payloads: any[] = [ ];
@@ -945,8 +2167,11 @@ test(
     const model =
       observable(
         { a: 1,
-          b: 2 },
-        { trace:
+          b: 2,
+          c:
+            { d: 1 } },
+        { deep: true,
+          trace:
             (
                 _source: unknown,
                 action: string,
@@ -964,9 +2189,11 @@ test(
         model.b = 3;
       });
 
+    // One new for the nested observable and one for the top level.
     assert.deepEqual(
       actions,
       [ 'new',
+        'new',
         'change' ]);
 
     assert.deepEqual(
@@ -981,13 +2208,9 @@ test(
           previous: 2 } ]);
   });
 
-/**
- * A global trace hook should capture lifecycle events when a local trace is
- * not supplied on the call.
- */
 test(
-  `${TEST_SUITE}: global trace option is used when local trace is absent`,
-  async () =>
+  `${TEST_SUITE}: the global trace is used when a call passes none`,
+  () =>
   {
     const actions: string[] = [ ];
 
@@ -1019,489 +2242,394 @@ test(
         'change' ]);
   });
 
-/**
- * Primitives, `null`, `undefined` and functions are explicit leaves, or
- * ordinary JSON data and models with methods would be refused.
- */
+// D19: batching.
+
 test(
-  `${TEST_SUITE}: leaf kinds are stored as they are`,
-  async () =>
-  {
-    const method = (): number => 1;
-
-    const model: any =
-      observable(
-        { text: 'a',
-          count: 1,
-          flag: true,
-          nothing: null,
-          missing: undefined,
-          method,
-          big: 1n,
-          tag:
-            Symbol('tag') });
-
-    assert.strictEqual(
-      model.method,
-      method);
-
-    assert.strictEqual(
-      model.nothing,
-      null);
-
-    assert.strictEqual(
-      model.missing,
-      undefined);
-
-    const deliveries =
-      record(model);
-
-    model.count = 2;
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'count',
-          value: 2,
-          previous: 1 } ]);
-  });
-
-/**
- * A nested value observable cannot make observable is refused, with the path at
- * which it was found. Storing it silently would leave the model half observable
- * with no indication.
- */
-test(
-  `${TEST_SUITE}: an unsupported nested value is refused with its path`,
-  async () =>
-  {
-    class Instance
-    {}
-
-    assert.throws(
-      () =>
-        observable(
-          { orders:
-              [ { meta: new Map() } ] },
-          { deep: true }),
-      { name: 'TypeError',
-        message:
-          'at value.orders[0].meta: Map is not supported. Hold it in a plain '
-          + 'object, or take it over with the convert option.' });
-
-    assert.throws(
-      () =>
-        observable(
-          { created:
-              new Date(1) },
-          { deep: true }),
-      { name: 'TypeError',
-        message:
-          /^at value\.created: Date is not supported\./ });
-
-    assert.throws(
-      () =>
-        observable(
-          { pattern: /x/ },
-          { deep: true }),
-      { name: 'TypeError',
-        message:
-          /^at value\.pattern: RegExp is not supported\./ });
-
-    assert.throws(
-      () =>
-        observable(
-          { instance:
-              new Instance() },
-          { deep: true }),
-      { name: 'TypeError',
-        message:
-          /^at value\.instance: Instance is not supported\./ });
-
-    assert.throws(
-      () =>
-        observable(
-          { config:
-              Object.freeze(
-                { a: 1 }) },
-          { deep: true }),
-      { name: 'TypeError',
-        message:
-          /^at value\.config: a frozen object is not supported\./ });
-
-    // The same rule applies to a value assigned later.
-    const model: any =
-      observable(
-        { created:
-            null as unknown },
-        { deep: true });
-
-    assert.throws(
-      () =>
-      {
-        model.created =
-          new Date(1);
-      },
-      /at value\.created: Date is not supported\./);
-  });
-
-/**
- * `Date` is the case most likely to be hit, and the `convert` hook is the
- * answer -- the same answer the package already gives for `Map` and `Set`.
- */
-test(
-  `${TEST_SUITE}: the convert hook is the escape from an unsupported value`,
-  async () =>
+  `${TEST_SUITE}: a batch delivers every write in order, unmerged`,
+  () =>
   {
     const model =
       observable(
-        { created:
-            new Date(1) },
-        { convert:
-            value =>
-          value instanceof Date
-            ? value
-            : undefined });
-
-    // The member type is `never`: a model that holds a `Date` has to be typed
-    // with the wrapper the hook returns, the same way it does for a `Set`.
-    assert.strictEqual(
-      (model.created as unknown as Date).getTime(),
-      1);
-  });
-
-/**
- * A value that already conforms is stitched in as it is. Testing for `on` alone
- * would admit a value that then fails at teardown.
- */
-test(
-  `${TEST_SUITE}: a conforming nested value is passed through`,
-  async () =>
-  {
-    const child =
-      eventful(
         { n: 1 });
 
-    const model =
-      observable(
-        { child });
-
-    assert.strictEqual(
-      model.child,
-      child);
-  });
-
-/**
- * A null-prototype object is still a plain object, so it has to be converted
- * like an object literal.
- */
-test(
-  `${TEST_SUITE}: null prototype objects are converted`,
-  async () =>
-  {
-    const bare =
-      Object.create(null) as { a: number; };
-
-    bare.a = 1;
-
-    const model =
-      observable(bare);
-
     const deliveries =
       record(model);
 
-    model.a = 2;
+    batch(
+      () =>
+      {
+        model.n = 2;
+        model.n = 3;
+      });
 
     assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'a',
-          value: 2,
-          previous: 1 } ]);
+      deliveries,
+      [ [ { kind: 'set',
+            property: 'n',
+            value: 2,
+            previous: 1 },
+          { kind: 'set',
+            property: 'n',
+            value: 3,
+            previous: 2 } ] ]);
   });
 
-/**
- * A literal from another realm (an iframe, a `vm` context) has that realm's
- * `Object.prototype`, and is still a plain object.
- */
 test(
-  `${TEST_SUITE}: plain objects from another realm are converted`,
-  async () =>
+  `${TEST_SUITE}: a batched list applies in order across a splice`,
+  () =>
   {
-    const model =
+    const list =
       observable(
-        vm.runInNewContext(
-          '({ a: { b: 1 }, list: [ 1 ] })'),
-        { deep: true });
+        [ 'a',
+          'b' ]);
 
     const deliveries =
-      record(model.a);
+      record(list);
 
-    model.a.b = 2;
+    batch(
+      () =>
+      {
+        list[0] = 'x';
+        list.shift();
+        list[0] = 'y';
+      });
 
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'b',
-          value: 2,
-          previous: 1 } ]);
+    // Replaying the entries on a copy of the original gives the result.
+    const replay: unknown[] =
+      [ 'a',
+        'b' ];
 
-    assert.equal(
-      typeof model.list.on,
-      'function');
-  });
-
-/**
- * A value observable cannot observe cannot be the top-level target either.
- * Boxing it would hand back something whose properties all read as undefined,
- * with nothing to say why.
- */
-test(
-  `${TEST_SUITE}: top-level unsupported value is refused`,
-  async () =>
-  {
-    class Instance
-    {}
-
-    for (
-      const value of [ new Date(9),
-                       new Map(),
-                       new Set(),
-                       /x/,
-                       new Instance(),
-                       Object.freeze(
-                         { a: 1 }),
-                       () => { } ]
-    ) {
-      assert.throws(
-        () =>
-          observable(
-            value as any),
-        TypeError);
+    for (const change of flat(deliveries)) {
+      if (change.kind === 'set') {
+        replay[Number(change.property)] = change.value;
+      } else if (change.kind === 'splice') {
+        replay.splice(
+          change.index,
+          change.removed.length,
+          ...change.added);
+      }
     }
 
-    // Primitives are still boxed.
-    assert.strictEqual(
-      observable(42).value,
-      42);
+    assert.deepEqual(
+      replay,
+      [ ...list ]);
+
+    assert.deepEqual(
+      [ ...list ],
+      [ 'y' ]);
   });
 
-/**
- * One target must map to one wrapper for the whole conversion, otherwise a
- * model that holds the same object twice ends up with a proxied and an
- * un-proxied handle, and writes through the second one emit nothing.
- */
-test(
-  `${TEST_SUITE}: repeated references share one wrapper`,
-  async () =>
-  {
-    const shared =
-      { s: 1 };
+// Edge cases: the order of the rules.
 
-    const model =
+test(
+  `${TEST_SUITE}: convert is asked about arrays too`,
+  () =>
+  {
+    const asked: boolean[] = [ ];
+
+    const convert =
+      (
+          value: object
+        ): undefined =>
+      {
+      asked.push(
+        Array.isArray(value));
+
+      return undefined;
+    };
+
+    observable(
+      [ 1 ],
+      { convert });
+
+    observable(
+      { list:
+          [ 1 ] },
+      { deep: true,
+        convert });
+
+    assert.deepEqual(
+      asked,
+      [ true,
+        false,
+        true ]);
+  });
+
+test(
+  `${TEST_SUITE}: convert is asked once for an emitter reached twice`,
+  () =>
+  {
+    const emitter =
+      new EventEmitter();
+
+    let calls = 0;
+
+    const model: any =
       observable(
-        { a: shared,
-          b: shared },
-        { deep: true });
+        { a: emitter,
+          b: emitter },
+        { deep: true,
+          convert:
+            (
+                value
+              ) =>
+            {
+          if (value === emitter) {
+            calls++;
+          }
+
+          return undefined;
+        } });
+
+    assert.equal(
+      calls,
+      1);
 
     assert.strictEqual(
       model.a,
       model.b);
-
-    const viaA =
-      record(model.a);
-
-    const viaB =
-      record(model.b);
-
-    model.b.s = 3;
-
-    assert.equal(
-      flat(viaA).length,
-      1);
-
-    assert.equal(
-      flat(viaB).length,
-      1);
-
-    assert.strictEqual(
-      model.a.s,
-      3);
   });
 
-/**
- * Sharing has to hold across branches of the model, not only between
- * siblings, so the identity map is threaded through the whole recursion.
- */
 test(
-  `${TEST_SUITE}: repeated references are shared across branches`,
-  async () =>
+  `${TEST_SUITE}: convert comes before the checks for on, off and reserved names`,
+  () =>
   {
-    const deep =
-      { z: 1 };
+    const emitter =
+      new EventEmitter();
 
-    const model =
+    const replacement =
       observable(
-        { x:
-            { deep },
-          y:
-            { deep } });
+        { source: 'emitter' });
 
+    // At the top level, before the already-observable refusal.
     assert.strictEqual(
-      model.x.deep,
-      model.y.deep);
+      observable(
+        emitter,
+        { convert: () => replacement }),
+      replacement);
+
+    // Nested, before keeping by reference and before the reserved names.
+    const model: any =
+      observable(
+        { e: emitter,
+          x:
+            { on: null } },
+        { deep: true,
+          convert:
+            value =>
+              value === emitter
+              || 'on' in value
+                ? 'replaced'
+                : undefined });
+
+    assert.equal(
+      model.e,
+      'replaced');
+
+    assert.equal(
+      model.x,
+      'replaced');
   });
 
-/**
- * A cyclic model must converge: the wrapper is registered before its members
- * are converted, so a self reference resolves to the wrapper itself.
- */
 test(
-  `${TEST_SUITE}: cyclic references converge`,
-  async () =>
+  `${TEST_SUITE}: a reserved name is refused before a frozen object`,
+  () =>
   {
-    type Cyclic = { n: number; self?: Cyclic; };
+    assert.throws(
+      () =>
+        observable(
+          Object.freeze(
+            { on: null })),
+      /^TypeError: at value: the property "on"/);
+  });
 
-    const source: Cyclic =
-      { n: 1 };
+test(
+  `${TEST_SUITE}: a frozen nested value is kept whatever it holds`,
+  () =>
+  {
+    const frozen =
+      Object.freeze(
+        { get x()
+          {
+            return 1;
+          },
+          [Symbol('meta')]: 1 });
 
-    source.self = source;
-
-    const model =
+    const model: any =
       observable(
-        source,
+        { frozen },
         { deep: true });
 
     assert.strictEqual(
-      model.self,
-      model);
-
-    const deliveries =
-      record(model);
-
-    model.self!.n = 5;
-
-    assert.equal(
-      flat(deliveries).length,
-      1);
-
-    assert.strictEqual(
-      model.n,
-      5);
+      model.frozen,
+      frozen);
   });
 
-/**
- * Accessors must survive conversion untouched: reading one to convert it
- * would run the getter, and writing the result back would replace the
- * accessor with a plain value.
- */
 test(
-  `${TEST_SUITE}: accessor properties are left untouched`,
-  async () =>
+  `${TEST_SUITE}: cycles and repeated objects through arrays`,
+  () =>
   {
-    let reads = 0;
-    let backing = 1;
+    const list: any[] = [ ];
 
-    const model =
+    list.push(list);
+
+    assert.throws(
+      () =>
+        observable(
+          list,
+          { deep: true }),
+      { message:
+          'at value[0]: circular reference to value' });
+
+    const node: any = {};
+
+    node.next = node;
+
+    assert.throws(
+      () =>
+        observable(
+          { list:
+              [ node ] },
+          { deep: true }),
+      { message:
+          'at value.list[0].next: circular reference to value.list[0]' });
+
+    const shared =
+      { n: 1 };
+
+    const model: any =
       observable(
-        { get computed(): object {
-          reads++;
-
-          return { deep: 1 };
-        },
-          get pair(): number {
-          return backing;
-        },
-          set pair(value: number) {
-          backing = value;
-        } });
+        [ shared,
+          [ shared ] ],
+        { deep: true });
 
     assert.strictEqual(
-      reads,
-      0);
+      model[0],
+      model[1][0]);
+  });
 
-    assert.equal(
-      typeof Object.getOwnPropertyDescriptor(
-        model,
-        'computed')?.get,
-      'function');
+test(
+  `${TEST_SUITE}: a numeric key of a plain object is not written as an index`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+          { 0:
+              { m: new Map() } },
+          { deep: true }),
+      /^TypeError: at value\["0"\]\.m: Map is not supported/);
+  });
+
+test(
+  `${TEST_SUITE}: holes are refused at the top level too`,
+  () =>
+  {
+    assert.throws(
+      () =>
+        observable(
+           
+          [ 1,
+            ,
+            3 ]),
+      { message:
+          'at value: an array with holes is not supported' });
+  });
+
+test(
+  `${TEST_SUITE}: a top-level array from another realm reports splices`,
+  () =>
+  {
+    const list: any =
+      observable(
+        vm.runInNewContext('[ 1 ]'));
 
     const deliveries =
-      record(model);
+      record(list);
 
-    model.pair = 7;
+    list.push(2);
 
-    assert.strictEqual(
-      backing,
-      7);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'splice',
+          index: 1,
+          removed: [ ],
+          added:
+            [ 2 ] } ]);
+  });
+
+// Edge cases: the box and the reports.
+
+test(
+  `${TEST_SUITE}: a definition or deletion of a box's value is reported`,
+  () =>
+  {
+    const boxed: any =
+      observable(1);
+
+    const deliveries =
+      record(boxed);
+
+    Object.defineProperty(
+      boxed,
+      'value',
+      { value: 5,
+        writable: true,
+        enumerable: true,
+        configurable: true });
+
+    boxed.value = 6;
+
+    delete boxed.value;
 
     assert.deepEqual(
       flat(deliveries),
       [ { kind: 'set',
-          property: 'pair',
-          value: 7,
-          previous: 1 } ]);
+          property: 'value',
+          value: 5,
+          previous: 1 },
+        { kind: 'set',
+          property: 'value',
+          value: 6,
+          previous: 5 },
+        { kind: 'set',
+          property: 'value',
+          value: undefined,
+          previous: 6 } ]);
   });
 
-/**
- * Non-writable members have no descriptor to rewrite, and array holes have no
- * descriptor at all, so conversion has to step over both rather than assign
- * through them.
- */
 test(
-  `${TEST_SUITE}: non-writable members and array holes are skipped`,
-  async () =>
+  `${TEST_SUITE}: defining a shorter length is a splice`,
+  () =>
   {
-    const source: any = {};
+    const list =
+      observable(
+        [ 1,
+          2,
+          3 ]);
+
+    const deliveries =
+      record(list);
 
     Object.defineProperty(
-      source,
-      'readonly',
-      { value:
-          { a: 1 },
-        writable: false,
-        enumerable: true,
-        configurable: true });
+      list,
+      'length',
+      { value: 1 });
 
-    const model =
-      observable(source);
-
-    assert.strictEqual(
-      model.readonly.a,
-      1);
-
-    assert.equal(
-      model.readonly.on,
-      undefined);
-
-    const sparse =
-      observable(
-        [, 1] as any);
-
-    assert.equal(
-      Object.prototype
-        .hasOwnProperty
-        .call(
-          sparse,
-          0),
-      false);
-
-    assert.strictEqual(
-      sparse.length,
-      2);
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'splice',
+          index: 1,
+          removed:
+            [ 2,
+              3 ],
+          added: [ ] } ]);
   });
 
-/**
- * Symbol keys have no place in a contract whose `property` is a string, so they
- * are stored and not reported.
- */
 test(
-  `${TEST_SUITE}: symbol keys are not reported`,
-  async () =>
+  `${TEST_SUITE}: deleting a missing property reports nothing`,
+  () =>
   {
-    const key =
-      Symbol('key');
-
     const model: any =
       observable(
         { a: 1 });
@@ -1509,369 +2637,198 @@ test(
     const deliveries =
       record(model);
 
-    model[key] = 2;
-
-    assert.strictEqual(
-      model[key],
-      2);
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ ]);
-  });
-
-/**
- * A wrapper for a kind observable does not support, built entirely outside the
- * library.
- */
-function makeObservableSet(
-    source: Set<unknown>
-  ): any
-{
-  const wrapper: any =
-    eventful(
-      { contains:
-          (
-        value: unknown
-      ): boolean => source.has(value),
-        get size(): number {
-        return source.size;
-      },
-        add(
-        value: unknown
-      ): void
-      {
-        if (source.has(value)) {
-          return;
-        }
-
-        const previous = source.size;
-
-        source.add(value);
-
-        wrapper.emit(
-          'change',
-          [ { kind: 'set',
-              property: 'size',
-              value: source.size,
-              previous } ]);
-      } });
-
-  return wrapper;
-}
-
-const convertSets =
-  (
-  value: object
-): unknown =>
-  value instanceof Set
-    ? makeObservableSet(value)
-    : undefined;
-
-/**
- * The convert hook has to see the values observable refuses, so a caller can
- * support a kind the library deliberately does not.
- */
-test(
-  `${TEST_SUITE}: convert hook takes over an otherwise unsupported value`,
-  async () =>
-  {
-    const model =
-      observable(
-        { tags:
-            new Set(
-              [ 'a' ]) },
-        { deep: true,
-          convert: convertSets });
-
-    const tags =
-      model.tags as any;
+    delete model.missing;
 
     assert.equal(
-      typeof tags.on,
-      'function');
-
-    assert.strictEqual(
-      tags.size,
-      1);
-
-    const deliveries =
-      record(tags);
-
-    tags.add('b');
-
-    assert.deepEqual(
-      flat(deliveries),
-      [ { kind: 'set',
-          property: 'size',
-          value: 2,
-          previous: 1 } ]);
+      deliveries.length,
+      0);
   });
 
-/**
- * Wrappers the hook returns take part in the identity map like anything else
- * observable converts, so one target still maps to one wrapper.
- */
 test(
-  `${TEST_SUITE}: convert hook results share one wrapper per target`,
-  async () =>
+  `${TEST_SUITE}: the methods exist but are not data`,
+  () =>
   {
-    const shared =
-      new Set(
-        [ 'a' ]);
-
     const model =
       observable(
-        { left: shared,
-          right: shared },
-        { convert: convertSets });
+        { a: 1 });
 
-    assert.strictEqual(
-      model.left,
-      model.right);
+    const keys: string[] = [ ];
 
-    (model.left as any).add('b');
+    for (const key in model) {
+      keys.push(key);
+    }
 
-    assert.strictEqual(
-      (model.right as any).size,
-      2);
+    assert.ok(
+      'on' in model);
+
+    assert.deepEqual(
+      keys,
+      [ 'a' ]);
   });
 
-/**
- * The identity map does not care how a target was reached. A wrapper the hook
- * returns for a top-level target is registered like a nested one, so the same
- * target handed over twice resolves to the one wrapper, and a target taken
- * over at the top is the same wrapper when it is later reached as a member.
- */
+// Edge cases: options.
+
 test(
-  `${TEST_SUITE}: convert hook results share one wrapper at the top level`,
-  async () =>
-  {
-    const shared =
-      new Set(
-        [ 'a' ]);
-
-    const first =
-      observable(
-        shared,
-        { convert: convertSets }) as any;
-
-    const second =
-      observable(
-        shared,
-        { convert: convertSets }) as any;
-
-    assert.strictEqual(
-      first,
-      second);
-
-    const holder =
-      observable(
-        { tags: shared },
-        { deep: true,
-          convert: convertSets });
-
-    assert.strictEqual(
-      holder.tags,
-      first);
-
-    first.add('b');
-
-    assert.strictEqual(
-      (holder.tags as any).size,
-      2);
-  });
-
-/**
- * Returning undefined leaves the decision to observable, and returning the
- * value itself keeps it as it is even where observable would convert it.
- */
-test(
-  `${TEST_SUITE}: convert hook can defer or opt a value out`,
-  async () =>
+  `${TEST_SUITE}: the factory's return value is ignored`,
+  () =>
   {
     const model: any =
       observable(
-        { converted:
-            { a: 1 },
-          untouched:
-            { keepAsIs: true,
-              b: 2 } },
-        { deep: true,
-          convert:
+        { a: 1 },
+        { eventful:
             (
-          value: any
-        ): unknown =>
-          value.keepAsIs
-            ? value
-            : undefined });
+                value: any
+              ) =>
+            {
+          eventful(value);
 
-    // deferred to observable, so it was converted as usual
-    assert.equal(
-      typeof model.converted.on,
-      'function');
-
-    // opted out, so it stayed a plain object
-    assert.equal(
-      model.untouched.on,
-      undefined);
-
-    assert.strictEqual(
-      model.untouched.b,
-      2);
-  });
-
-/**
- * Conversion grafts the Eventful API onto the target itself, so a target can
- * only belong to one observable. That has to hold across separate calls, not
- * only within one conversion.
- */
-test(
-  `${TEST_SUITE}: one target maps to one observable across calls`,
-  async () =>
-  {
-    const source =
-      { a: 1 };
-
-    assert.strictEqual(
-      observable(source),
-      observable(source));
-
-    const shared =
-      { n: 1 };
-
-    const left =
-      observable(
-        { shared },
-        { deep: true });
-
-    const right =
-      observable(
-        { shared },
-        { deep: true });
-
-    assert.strictEqual(
-      left.shared,
-      right.shared);
+          return { other: true };
+        } });
 
     const deliveries =
-      record(left.shared);
+      record(model);
 
-    right.shared.n = 7;
+    model.a = 2;
+
+    assert.equal(
+      model.other,
+      undefined);
 
     assert.equal(
       flat(deliveries).length,
       1);
-
-    assert.strictEqual(
-      left.shared.n,
-      7);
-
-    // A target reached first as a member resolves to the same observable when
-    // it is later passed as a top-level target, and the other way round.
-    const member =
-      { m: 1 };
-
-    const holder =
-      observable(
-        { member },
-        { deep: true });
-
-    assert.strictEqual(
-      holder.member,
-      observable(member));
   });
 
-/**
- * A target already converted is returned as it is, so the options of a later
- * call have nothing to apply to.
- */
 test(
-  `${TEST_SUITE}: a later call does not reconfigure an existing observable`,
-  async () =>
+  `${TEST_SUITE}: trace must be a function, and options may be null`,
+  () =>
   {
-    const source =
-      { a: 1 };
+    assert.throws(
+      () =>
+        observable(
+          { a: 1 },
+          { trace:
+              123 as any }),
+      /Expect a function\./);
 
-    const first =
-      observable(source);
-
-    const actions: string[] = [ ];
-
-    const second =
+    assert.equal(
       observable(
-        source,
+        { a: 1 },
+        null as any).a,
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: trace reports new for a box, with the observable itself`,
+  () =>
+  {
+    const seen: unknown[] = [ ];
+
+    const boxed =
+      observable(
+        1,
         { trace:
             (
-          _object: unknown,
-          action: string
-        ) => actions.push(action) });
-
-    assert.strictEqual(
-      second,
-      first);
-
-    second.a = 2;
+                object: unknown,
+                action: string,
+                payload: any
+              ) =>
+            {
+          seen.push(
+            [ action,
+              object === payload?.object ]);
+        } });
 
     assert.deepEqual(
-      actions,
-      [ ]);
+      seen,
+      [ [ 'new',
+          true ] ]);
+
+    assert.ok(
+      isObservable(boxed));
   });
 
-/**
- * Observable refuses a target it cannot observe the way eventful refuses one
- * it cannot augment, naming the cause rather than failing later or handing
- * back something inert.
- */
 test(
-  `${TEST_SUITE}: refusal names why the target cannot be observed`,
-  async () =>
+  `${TEST_SUITE}: an index written past the end also reports length`,
+  () =>
   {
-    assert.throws(
-      () =>
-        observable(
-          Object.freeze(
-            { a: 1 }) as any),
-      { name: 'TypeError',
-        message:
-          'Expect an extensible object or array, but the object is frozen.' });
+    const list: any =
+      observable(
+        [ 1 ]);
+
+    const deliveries =
+      record(list);
+
+    const lengths: unknown[] = [ ];
+
+    observe(list)
+      .at('length')
+      .subscribe(
+        length => lengths.push(length));
+
+    list[1] = 2;
+
+    list[5] = 3;
+
+    // Writing inside the array does not change its length.
+    list[0] = 9;
+
+    assert.deepEqual(
+      flat(deliveries),
+      [ { kind: 'set',
+          property: '1',
+          value: 2,
+          previous: undefined },
+        { kind: 'set',
+          property: 'length',
+          value: 2,
+          previous: 1 },
+        { kind: 'set',
+          property: '5',
+          value: 3,
+          previous: undefined },
+        { kind: 'set',
+          property: 'length',
+          value: 6,
+          previous: 2 },
+        { kind: 'set',
+          property: '0',
+          value: 9,
+          previous: 1 } ]);
+
+    assert.deepEqual(
+      lengths,
+      [ 1,
+        2,
+        6 ]);
+  });
+
+test(
+  `${TEST_SUITE}: an error from convert names the path`,
+  () =>
+  {
+    const failure =
+      new Error('hook failed');
 
     assert.throws(
       () =>
         observable(
-          Object.seal(
-            { a: 1 }) as any),
-      { name: 'TypeError',
-        message:
-          'Expect an extensible object or array, but the object is sealed.' });
+          { a:
+              { b: new Map() } },
+          { deep: true,
+            convert:
+              (
+                  value
+                ) =>
+              {
+            if (value instanceof Map) {
+              throw failure;
+            }
 
-    assert.throws(
-      () =>
-        observable(
-          Object.preventExtensions(
-            { a: 1 }) as any),
-      { name: 'TypeError',
-        message:
-          'Expect an extensible object or array, but the object is not '
-          + 'extensible.' });
-
-    // Arrays are refused here too, rather than deeper down by eventful.
-    assert.throws(
-      () =>
-        observable(
-          Object.freeze(
-            [ 1 ]) as any),
-      { name: 'TypeError',
-        message:
-          'Expect an extensible object or array, but the object is frozen.' });
-
-    assert.throws(
-      () =>
-        observable(
-          new Date() as any),
-      { name: 'TypeError',
-        message:
-          'Expect a plain object, an array, or a primitive, but the value '
-          + 'is opaque. Hold it in a plain object, or take it over with the '
-          + 'convert option.' });
+            return undefined;
+          } }),
+      (error: any) =>
+        error instanceof TypeError
+        && error.message === 'at value.a.b: hook failed'
+        && error.cause === failure);
   });

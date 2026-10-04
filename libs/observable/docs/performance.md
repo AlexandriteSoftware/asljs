@@ -21,8 +21,10 @@ is accepted by design, not a target to tune.
   and `value`.
 - Every reported change allocates an entry, and outside a
   [`batch(fn)`][BAT] every write is its own notification.
-- Conversion is eager. `observable(value)` converts only the top-level value;
-  with `deep: true` it visits the whole graph it is given.
+- Conversion is eager and copies. `observable(value)` copies only the top-level
+  value; with `deep: true` it visits and copies the whole graph it is given,
+  checking that every object in it holds plain data.
+- Values written later are stored as they are, so a write costs no conversion.
 
 A loop over a converted array pays all of this per element:
 
@@ -128,9 +130,9 @@ refuse.
 
 ### Group writes
 
-Inside `batch(fn)` repeated writes coalesce and each emitter delivers once. On
-an array, one call that adds many elements is one `splice` entry, while a loop
-of single-element calls is one entry each:
+Inside `batch(fn)` each emitter delivers once, with every write as its own
+entry. On an array, one call that adds many elements is one `splice` entry,
+while a loop of single-element calls is one entry each:
 
 ```js
 import { observable } from 'asljs-observable';
@@ -177,7 +179,7 @@ console.log(total);
 ### Convert less
 
 Leave `deep` off where nested values are never observed. Only the top-level
-value is converted, and nested plain objects and arrays stay plain.
+value is copied, and nested objects and arrays are kept by reference.
 
 ## Constraints
 
@@ -193,9 +195,9 @@ value is converted, and nested plain objects and arrays stay plain.
 
 - A conforming object nested in a converted model is not wrapped, so it costs
   what its own implementation costs.
-- With `deep: true`, a plain value assigned to a member of a converted object is
-  converted on the way in, so assigning a large plain structure pays for
-  converting all of it.
+- A value assigned to a member after conversion is stored as it is, so
+  assigning a large plain structure costs nothing, and its own changes are not
+  reported until it is converted with `observable` first.
 - A `slice()` copy is a snapshot. It does not follow later changes. With
   `deep: true` its elements are still the converted values, so a write to a
   nested object through the copy is reported.

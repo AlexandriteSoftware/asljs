@@ -37,6 +37,7 @@ export type {
   EventfulMethodName,
   ObservableConvertFn,
   ObservableEvents,
+  ObservableFactory,
   ObservableFn,
   ObservableGlobalOptions,
   ObservableOptions,
@@ -44,5 +45,6 @@ export type {
   ObservablePathValue,
   ObservablePathValues,
   ObservableTraceFn,
+  ObservableValue,
   UnsupportedValue
 } from './types.js';

@@ -223,8 +223,8 @@ expands forever, so it can be tuned but not removed.
 - Teardown prefers a disposer the source returns from `on`, and falls back to
   `off`. A source whose `on` returns `this`, such as a Node `EventEmitter`, uses
   `off`.
-- A cyclic model can bind two segments to the same object, which notifies twice;
-  deduplication absorbs the second.
+- A model that holds one object in two places can bind two segments to it,
+  which notifies twice; deduplication absorbs the second.
 
 ## Vocabulary
 

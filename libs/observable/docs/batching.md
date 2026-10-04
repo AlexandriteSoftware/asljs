@@ -32,11 +32,11 @@ batch(() => {
 
 ## What a batch does, exactly
 
-### Repeated writes coalesce
+### Every write is delivered, in order
 
-Two entries for one property in one list would force every consumer to fold
-them, and the fold has only one sensible result: the first `previous` and the
-last `value`.
+A batch records every modification in the order it was made and merges none of
+them, so a subscriber can always apply the list in order and arrive at the
+current state. Two writes to one property are two entries:
 
 ```js
 import { batch, observable } from 'asljs-observable';
@@ -51,11 +51,16 @@ batch(() => {
 });
 
 // Output:
-// [{"kind":"set","property":"n","value":3,"previous":1}]
+// [{"kind":"set","property":"n","value":2,"previous":1},{"kind":"set","property":"n","value":3,"previous":2}]
 ```
 
-A coalesced entry whose net effect is nothing is dropped, because the entry list
-is what changed. A batch in which nothing changed reports nothing at all.
+Merging repeated writes into one entry, with the first `previous` and the last
+`value`, is left out on purpose. It is easy to get wrong for an array, where an
+index names a different element once a splice has run between two writes to it,
+and a merged list then no longer applies in order.
+
+A write that leaves the value as it was is not a modification, inside a batch as
+outside one, and a batch in which nothing changed reports nothing at all.
 
 ### An exception still flushes
 
@@ -167,7 +172,7 @@ And `eventful` already answers the analogous question this way: `emit` copies
 the listener set before dispatching, so a listener that subscribes or
 unsubscribes affects the next emit rather than the one in progress.
 
-### Four things it does not do
+### Five things it does not do
 
 - **The write itself lands immediately; only its notification is queued.** A
   consumer that re-reads rather than reading the payload — which is what the
@@ -183,6 +188,11 @@ unsubscribes affects the next emit rather than the one in progress.
   for every subscriber" is a promise about converted models and
   `ObservableObject`, not about every model.
 - **The cap throws after the queued writes have landed.** See below.
+- **A listener that throws stops the delivery.** Whether a listener's error
+  propagates is the factory's choice: with `strict` it does. When it does, the
+  error propagates at once and the changes still queued are discarded. Their
+  writes have happened, so the model and anything built from it can disagree
+  until the next change.
 
 ### The round cap
 

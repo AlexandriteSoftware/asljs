@@ -16,6 +16,8 @@ import { functionTypeGuard,
  * - `splice` is optional. Only a producer that intercepts the mutating array
  *   methods is in a position to know a splice cheaply; a participant that only
  *   ever emits `set` entries conforms fully.
+ * - `reset` says that an array changed so much that it is better read again,
+ *   and carries nothing else.
  *
  * A consumer that meets a kind it does not understand treats it as "something
  * changed, re-read", which is what keeps the contract open to further kinds.
@@ -32,6 +34,9 @@ export type Change =
     index: number;
     removed: readonly unknown[];
     added: readonly unknown[];
+  }
+  | {
+    kind: 'reset';
   };
 
 export type ChangeListener =
@@ -123,6 +128,15 @@ export interface ChangeEmitter
 }
 
 /**
+ * Present in every runtime this package targets, browsers and Node alike, but
+ * declared here because the published build compiles without a platform
+ * library.
+ */
+declare const queueMicrotask: (
+  callback: () => void
+) => void;
+
+/**
  * How many rounds of listener-provoked writes are delivered before the
  * delivery is declared not to settle.
  *
@@ -134,7 +148,6 @@ const MAX_DELIVERY_ROUNDS = 100;
 
 type Collector = {
   entries: Change[];
-  sets: Map<string, number>;
   suppress: number;
 };
 
@@ -175,7 +188,6 @@ function ensureCollector(
   if (!collector) {
     collector =
       { entries: [ ],
-        sets: new Map(),
         suppress: 0 };
 
     collectors.set(
@@ -186,49 +198,41 @@ function ensureCollector(
   return collector;
 }
 
+/** Whether a change leaves the value it describes as it was. */
+function isUnchanged(
+    change: Change
+  ): boolean
+{
+  return change.kind === 'set'
+    && Object.is(
+      change.value,
+      change.previous);
+}
+
 /**
  * Adds one change to the open batch.
  *
- * Repeated writes to one property coalesce into one entry, carrying the first
- * `previous` and the last `value`. Two entries for one property in one list
- * would force every consumer to fold them, and the fold has only one sensible
- * result.
+ * Every change is kept, in the order it was made, and none is merged with
+ * another: the list can then always be applied in order. Merging repeated
+ * writes to one property is wrong for an array, where an index names a
+ * different element once a splice has run in between.
  */
 function collect(
     source: ChangeEmitter,
     change: Change
   ): void
 {
+  // Checked before the collector is created, so an emitter whose writes all
+  // left its values as they were takes no place in the delivery order.
+  if (isUnchanged(change)) {
+    return;
+  }
+
   const collector =
     ensureCollector(source);
 
   if (collector.suppress > 0) {
     return;
-  }
-
-  if (change.kind === 'set') {
-    const at =
-      collector.sets.get(change.property);
-
-    if (at !== undefined) {
-      const existing =
-        collector.entries[at] as Extract<
-        Change,
-        { kind: 'set'; }
-      >;
-
-      collector.entries[at] =
-        { kind: 'set',
-          property: change.property,
-          value: change.value,
-          previous: existing.previous };
-
-      return;
-    }
-
-    collector.sets.set(
-      change.property,
-      collector.entries.length);
   }
 
   collector.entries.push(change);
@@ -237,9 +241,6 @@ function collect(
 /**
  * Closes the batch: one notification per emitter, in the order the emitters
  * were first written to.
- *
- * A coalesced entry whose net effect is nothing is dropped, because the entry
- * list is what changed.
  */
 function flushCollected(
   ): void
@@ -256,21 +257,13 @@ function flushCollected(
   const round: Delivery[] = [ ];
 
   for (const [source, collector] of pending) {
-    const changes =
-      collector.entries.filter(
-        entry =>
-        entry.kind !== 'set'
-        || !Object.is(
-          entry.value,
-          entry.previous));
-
-    if (changes.length === 0) {
+    if (collector.entries.length === 0) {
       continue;
     }
 
     round.push(
       { source,
-        changes });
+        changes: collector.entries });
   }
 
   deliver(round);
@@ -313,7 +306,7 @@ function describeRunaway(
       properties.add(
         change.kind === 'set'
           ? change.property
-          : 'length');
+          : `(${change.kind})`);
     }
   }
 
@@ -404,12 +397,7 @@ export function reportChange(
     return;
   }
 
-  if (
-    change.kind === 'set'
-    && Object.is(
-      change.value,
-      change.previous)
-  ) {
+  if (isUnchanged(change)) {
     return;
   }
 
@@ -429,6 +417,8 @@ export function reportChange(
  *   writes have already landed. The exception propagates after the flush.
  * - Grouping is per emitter, not global. "One notification" always means one
  *   per source.
+ * - Every change is delivered, in the order it was made: two writes to one
+ *   property are two entries.
  *
  * A hand-written participant cannot be made to join a batch -- it emits when
  * it emits -- so a mixed model gets batching only across the parts this
@@ -442,13 +432,35 @@ export function batch<T>(
 
   batchDepth++;
 
+  let failed = false;
+
   try {
     return fn();
+  } catch (error) {
+    failed = true;
+
+    throw error;
   } finally {
     batchDepth--;
 
     if (batchDepth === 0) {
-      flushCollected();
+      if (failed) {
+        // `fn`'s exception is the one rethrown. One a listener throws while
+        // the collected changes are delivered is not discarded either: it is
+        // rethrown from a microtask, where it reaches the platform's
+        // unhandled-error channel.
+        try {
+          flushCollected();
+        } catch (flushError) {
+          queueMicrotask(
+            () =>
+            {
+              throw flushError;
+            });
+        }
+      } else {
+        flushCollected();
+      }
     }
   }
 }
@@ -474,6 +486,9 @@ export function withSplice<T>(
 {
   batchDepth++;
 
+  const existed =
+    collectors.has(source);
+
   const collector =
     ensureCollector(source);
 
@@ -496,6 +511,14 @@ export function withSplice<T>(
       collect(
         source,
         entry);
+    }
+
+    // A call that changed nothing takes no place in the delivery order.
+    if (
+      !existed
+      && collector.entries.length === 0
+    ) {
+      collectors.delete(source);
     }
 
     return result;

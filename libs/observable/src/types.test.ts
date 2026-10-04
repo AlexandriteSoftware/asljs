@@ -137,7 +137,8 @@ test(
         index: number;
         removed: readonly unknown[];
         added: readonly unknown[];
-      };
+      }
+      | { kind: 'reset'; };
 
     const pinned: Equals<Change, Restated> = true;
 
@@ -374,23 +375,16 @@ test(
   {
     // Converting one of these throws, so the call resolves to never rather
     // than describing a value that is never returned.
-    const dateIsNever: Equals<
-      Converted<Date>,
-      never
-    > = true;
-
     const mapIsNever: Equals<
       Converted<Map<string, number>>,
       never
     > = true;
 
-    // Primitives are still boxed.
+    // Primitives are boxed.
     const numberIsBoxed: Equals<
       Converted<number>['value'],
       number
     > = true;
-
-    assert.ok(dateIsNever);
 
     assert.ok(mapIsNever);
 
@@ -399,6 +393,41 @@ test(
     assert.throws(
       () =>
         observable(
-          new Date() as any),
+          new Map() as any),
       TypeError);
+  });
+
+test(
+  `${TEST_SUITE}: a date, regular expression or function is a boxed value`,
+  () =>
+  {
+    const dateIsBoxed: Equals<
+      Converted<Date>['value'],
+      Date
+    > = true;
+
+    const date =
+      new Date(1);
+
+    const boxed =
+      observable(date);
+
+    const typedBox: Date =
+      boxed.value;
+
+    assert.ok(dateIsBoxed);
+
+    assert.strictEqual(
+      typedBox,
+      date);
+
+    // A value is a leaf: a path does not descend into a date's methods.
+    type Model = { when: Date; };
+
+    const isLeaf: Equals<
+      ObservablePath<Model>,
+      'when'
+    > = true;
+
+    assert.ok(isLeaf);
   });
