@@ -21,8 +21,8 @@ an artefact definition. Fetch them as the work calls for them.
 
 ## Skills
 
-Read the skill before starting that kind of work. Each file opens with a
-`Use when` line.
+Read the skill before starting that kind of work. Each file opens with a `Use
+when` line.
 
 - [dictated requests][SKD] - a request that arrived through voice input. Apply
   before request analysis.

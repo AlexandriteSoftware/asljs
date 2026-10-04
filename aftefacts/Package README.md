@@ -44,8 +44,7 @@ sections with the conventional, understated noun a reader already expects, and
 let the prose do the work.
 
 Avoid headings phrased as a question the reader is being asked, and avoid
-headings that narrate the file: `Is it for you?`, `What it does`,
-`Where it
+headings that narrate the file: `Is it for you?`, `What it does`, `Where it
 fits`, `Examples`, `Documentation`.
 
 Pick the heading that covers the whole section. A section carrying both what the

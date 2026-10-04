@@ -49,9 +49,9 @@ Without an explicit `lib`, TypeScript would load the full library for the target
 (`lib.esnext.full.d.ts`), which includes `DOM` and `DOM.Iterable`. Pinning `lib`
 keeps DOM out unless a workspace asks for it.
 
-`types: []` only suppresses automatic inclusion. A `/// <reference lib>` or
-`/// <reference types>` inside any `.d.ts` that reaches the program still
-injects its library. See the DOM note under deviations.
+`types: []` only suppresses automatic inclusion. A `/// <reference lib>` or `///
+<reference types>` inside any `.d.ts` that reaches the program still injects its
+library. See the DOM note under deviations.
 
 ### Emit
 
@@ -108,11 +108,11 @@ Neither folder is hand-edited.
 ### Structural
 
 - `app-builder` does not follow the pattern at all. It has a single
-  [tsconfig.json][ABT] that extends nothing, sets `noEmit: true`,
-  `target: ES2025`, `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
-  `types: ["vite/client", "node"]`. `tsc` only typechecks it. `build` runs
-  `src/site/build-site.ts` through `tsx`, which writes the site to
-  `apps/app-builder/dist/`; Vite serves the App Builder demo in `dev` only.
+  [tsconfig.json][ABT] that extends nothing, sets `noEmit: true`, `target:
+  ES2025`, `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and `types: ["vite/client",
+  "node"]`. `tsc` only typechecks it. `build` runs `src/site/build-site.ts`
+  through `tsx`, which writes the site to `apps/app-builder/dist/`; Vite serves
+  the App Builder demo in `dev` only.
 
 ### Compiler options
 
@@ -125,10 +125,9 @@ Neither folder is hand-edited.
 - `dali` declares `lib: ["ES2025", "DOM"]` in both configs, which it needs for
   IndexedDB. It is the only workspace that asks for DOM in build compilation.
 - `types: ["node"]` appears in the build configs of `cog`, `kb`, `logging`,
-  `part`, `toolkit` and `sfmt`. It is redundant there, because the build
-  base already sets it. In dist configs it is the opt-in out of `types: []`, and
-  it is declared by `cog`, `kb`, `logging`, `part`, `toolkit`, `sfmt` and
-  `tmpdir`.
+  `part`, `toolkit` and `sfmt`. It is redundant there, because the build base
+  already sets it. In dist configs it is the opt-in out of `types: []`, and it
+  is declared by `cog`, `kb`, `logging`, `part`, `toolkit`, `sfmt` and `tmpdir`.
 
 ### DOM reaching build compilation indirectly
 

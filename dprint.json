@@ -72,7 +72,7 @@
   "markdown": {
     "lineWidth": 80,
     "newLineKind": "auto",
-    "textWrap": "maintainAndWrap",
+    "textWrap": "always",
     "emphasisKind": "underscores",
     "strongKind": "asterisks",
     "unorderedListKind": "dashes",

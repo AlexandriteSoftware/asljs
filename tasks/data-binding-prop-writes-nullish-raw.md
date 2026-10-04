@@ -1,7 +1,7 @@
 # data-binding-prop-writes-nullish-raw
 
-A property binding assigns `null` and `undefined` as they are, so an input
-bound to an absent value shows the text `undefined`.
+A property binding assigns `null` and `undefined` as they are, so an input bound
+to an absent value shows the text `undefined`.
 
 Package: `data-binding`.
 
@@ -26,11 +26,11 @@ nothing about properties, and `AGENTS.md` lists the nullish contract as
 case is unspecified rather than decided.
 
 Proposed behaviour: decide and document. The least surprising rule is to write
-`''` for a nullish value when the current property value is a string and
-`false` when it is a boolean, and otherwise pass the value through; a simpler
-rule that still fixes the visible case is to map nullish to `''` for `value`
-alone. Either way add the `undefined` input case to
-`write-binding-value.test.ts`, which today only writes `'abc'`.
+`''` for a nullish value when the current property value is a string and `false`
+when it is a boolean, and otherwise pass the value through; a simpler rule that
+still fixes the visible case is to map nullish to `''` for `value` alone. Either
+way add the `undefined` input case to `write-binding-value.test.ts`, which today
+only writes `'abc'`.
 
 ## Where
 

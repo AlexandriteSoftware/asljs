@@ -1,14 +1,14 @@
 # data-binding-date-pipe-shifts-date-only-strings
 
 The `date` pipe parses a date-only string as UTC and formats it in local time,
-so `2026-02-03` renders as `2026-02-02` west of Greenwich, and the shipped
-test for it fails there.
+so `2026-02-03` renders as `2026-02-02` west of Greenwich, and the shipped test
+for it fails there.
 
 Package: `data-binding`.
 
 `asDate` in `pipes.ts` turns a string into `new Date(value)`. For an ISO
-date-only string the platform defines that as UTC midnight. Both formatters
-then read local time: `formatDate` uses `getFullYear`, `getMonth`, `getDate`,
+date-only string the platform defines that as UTC midnight. Both formatters then
+read local time: `formatDate` uses `getFullYear`, `getMonth`, `getDate`,
 `getHours`, and `Intl.DateTimeFormat` without a `timeZone` option uses the
 runtime zone. Any zone with a negative offset lands on the previous day:
 
@@ -23,22 +23,21 @@ A date-only string is the shape a JSON API, `<input type="date">` and
 
 `pipes.test.ts` ("supports currency and date formatting") asserts
 `pipes.date('2026-02-03', 'yyyy-MM-dd') === '2026-02-03'`, which passes in
-London and fails under `TZ=America/New_York` with `actual: '2026-02-02'`.
-The same test asserts `pipes.number(1234.5) === '1,234.5'` through
-`mergePipes({})`, which formats in the runtime locale. With
-`createBuiltInPipes('de-DE')` the same call gives `1.234,5`, so a machine
-with a German default locale would fail that line too (not reproduced here:
-the host locale could not be switched).
+London and fails under `TZ=America/New_York` with `actual: '2026-02-02'`. The
+same test asserts `pipes.number(1234.5) === '1,234.5'` through `mergePipes({})`,
+which formats in the runtime locale. With `createBuiltInPipes('de-DE')` the same
+call gives `1.234,5`, so a machine with a German default locale would fail that
+line too (not reproduced here: the host locale could not be switched).
 
-`README.md` says the `Intl` pipes "use runtime/browser locale settings" and
-says nothing about time zones or date-only strings.
+`README.md` says the `Intl` pipes "use runtime/browser locale settings" and says
+nothing about time zones or date-only strings.
 
 Proposed behaviour: treat a string that matches `YYYY-MM-DD` as a local date
 (construct with `new Date(y, m - 1, d)`), which is what a user who wrote
-`yyyy-MM-dd` expects back, and document that other strings follow the
-platform's `Date` parsing. Make the tests independent of the host: build the
-`Date` with the local constructor, and pass an explicit locale to the
-`number` and `currency` assertions.
+`yyyy-MM-dd` expects back, and document that other strings follow the platform's
+`Date` parsing. Make the tests independent of the host: build the `Date` with
+the local constructor, and pass an explicit locale to the `number` and
+`currency` assertions.
 
 ## Where
 

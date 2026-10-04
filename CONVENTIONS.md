@@ -36,8 +36,8 @@ by tooling.
 
 - Do not expose internal collections directly; return safe views (e.g. spread
   copies, boolean results, or counters).
-- Injected methods use **non-enumerable** property descriptors
-  (`enumerable: false`) unless the method is intended for public iteration.
+- Injected methods use **non-enumerable** property descriptors (`enumerable:
+  false`) unless the method is intended for public iteration.
 - Idempotent operations (e.g. unsubscribe closures) are safe to call repeatedly
   and report whether the call did anything: the first call returns `true`, and
   every later call returns `false` without side effects.

@@ -14,33 +14,33 @@ document every attribute name is lowercase by the time it is read, so:
   `element.readOnly` stays `false`.
 - `data-bind-prop-innerText="t"` sets `element.innertext`; the element stays
   empty.
-- `data-bind-onvalueChanged="h"` listens to `valuechanged`; a
-  `new CustomEvent('valueChanged')` never reaches `h`.
+- `data-bind-onvalueChanged="h"` listens to `valuechanged`; a `new
+  CustomEvent('valueChanged')` never reaches `h`.
 
 Nothing warns: assigning an unknown property to an element succeeds, and
 `addEventListener` accepts any name.
 
 The case already shipping is `for`. The default templates in
 `libs/components/src/text-input.ts` and `libs/components/src/select.ts`, the
-Bootstrap theme, and the components README use
-`<label data-bind-prop-for="inputId">`. A label has no `for` property, only
-`htmlFor` and the `for` attribute, so the binding writes `label.for = 'x1'`
-as an expando: `label.htmlFor` is `''`, `getAttribute('for')` is `null`, and
-the label is not associated with the control. The components tests never
-assert the association, which is why it has not been noticed. `data-bind-for`
-(the attribute binding) does what was intended.
+Bootstrap theme, and the components README use `<label
+data-bind-prop-for="inputId">`. A label has no `for` property, only `htmlFor`
+and the `for` attribute, so the binding writes `label.for = 'x1'` as an expando:
+`label.htmlFor` is `''`, `getAttribute('for')` is `null`, and the label is not
+associated with the control. The components tests never assert the association,
+which is why it has not been noticed. `data-bind-for` (the attribute binding)
+does what was intended.
 
 `README.md` presents `data-bind-prop-<name>` with `value` and `checked`, which
 happen to be lowercase, and does not mention the limit.
 
 Proposed behaviour, in order of value:
 
-- Document that the property and event name are taken from the attribute as
-  the parser reports it, so only lowercase names work, and that attributes are
-  the right binding for `for`, `tabindex`, `aria-*` and anything the DOM
-  exposes under a different name.
-- Fix the four components call sites to `data-bind-for`, and add an assertion
-  on `label.htmlFor` to the text-input and select tests.
+- Document that the property and event name are taken from the attribute as the
+  parser reports it, so only lowercase names work, and that attributes are the
+  right binding for `for`, `tabindex`, `aria-*` and anything the DOM exposes
+  under a different name.
+- Fix the four components call sites to `data-bind-for`, and add an assertion on
+  `label.htmlFor` to the text-input and select tests.
 - Optionally, warn once when a `prop` target is not already a property of the
   element (`!(name in element)`), which would have caught this.
 
@@ -56,5 +56,5 @@ covers the real cases.
   assigns without checking the property exists.
 - `libs/data-binding/README.md` - "Value bindings" and "Event bindings".
 - `libs/components/src/text-input.ts`, `libs/components/src/select.ts`,
-  `libs/components/src/themes/bootstrap-theme.ts`,
-  `libs/components/README.md` - `data-bind-prop-for`.
+  `libs/components/src/themes/bootstrap-theme.ts`, `libs/components/README.md` -
+  `data-bind-prop-for`.

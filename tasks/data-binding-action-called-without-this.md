@@ -18,27 +18,25 @@ bindDataModel(root, model);
 // <button data-bind-onclick="increment">
 ```
 
-Clicking the button leaves `count` at `0` and logs
-`data-bind[0]: action 'increment' failed TypeError: Cannot read properties of
-undefined (reading 'count')`, once, because the error path goes through
-`warnOnce`. Nothing in `README.md` or `AGENTS.md` says that actions must be
-closures or arrow functions; `README.md` says "Keep event handler names on the
-model", and the app-builder prompt in `apps/app-builder/src/app-builder/ai/`
-repeats it to the generator. The generated example app avoids the trap by
-closing over its `state` variable instead of using `this`, which is a
-workaround, not a documented rule.
+Clicking the button leaves `count` at `0` and logs `data-bind[0]: action
+'increment' failed TypeError: Cannot read properties of undefined (reading
+'count')`, once, because the error path goes through `warnOnce`. Nothing in
+`README.md` or `AGENTS.md` says that actions must be closures or arrow
+functions; `README.md` says "Keep event handler names on the model", and the
+app-builder prompt in `apps/app-builder/src/app-builder/ai/` repeats it to the
+generator. The generated example app avoids the trap by closing over its `state`
+variable instead of using `this`, which is a workaround, not a documented rule.
 
 `asljs-components` sidesteps it in `src/list.ts`: `#createRowScopeContext`
 re-binds every function on the shared context to the derived row object with
 `value.bind(rowContext)`, precisely so that `context.select` can use `this`.
 That is caller work the binding could do.
 
-Proposed behaviour: call the action with the object that holds it as `this`.
-For `data-bind-onclick="user.activate"` that is `model.user`, for
+Proposed behaviour: call the action with the object that holds it as `this`. For
+`data-bind-onclick="user.activate"` that is `model.user`, for
 `data-bind-onclick="increment"` it is the context model. A function that was
-already bound, as the list rows are, ignores the `this` passed by `call`, so
-the components keep working. `(event, model, element)` stays as the argument
-shape.
+already bound, as the list rows are, ignores the `this` passed by `call`, so the
+components keep working. `(event, model, element)` stays as the argument shape.
 
 There is also no test for the two warning paths in `bindEventModel`, missing
 action and action that throws; the task should add them alongside the `this`
