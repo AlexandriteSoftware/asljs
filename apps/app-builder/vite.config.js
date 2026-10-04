@@ -6,7 +6,6 @@ import { defineConfig }
 export default defineConfig(
   { root: 'src',
     base: '/asljs/',
-    publicDir: '../public',
     server: {
       fs: {
         allow: [
@@ -14,23 +13,6 @@ export default defineConfig(
             import.meta.dirname,
             '../..')
           ]
-      }
-    },
-    build: {
-      outDir: '../dist',
-      emptyOutDir: true,
-      sourcemap: true,
-      rollupOptions: {
-        input: {
-          main:
-            resolve(
-              import.meta.dirname,
-              'src/index.html'),
-          app:
-            resolve(
-              import.meta.dirname,
-              'src/app-builder/index.html')
-        }
       }
     },
     resolve: {

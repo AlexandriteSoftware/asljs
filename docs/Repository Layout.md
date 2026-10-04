@@ -45,9 +45,10 @@ Publishable library packages expose a common script shape:
 
 What `build`, `typecheck` and `test` run is in [TypeScript Configuration][TSC].
 
-`app-builder` is a private browser app, not a publishable library. It exposes
-`dev`, `test`, `typecheck`, `build` and `flint`. `dev` is for iterating on UI
-behavior; `build` emits the demo output.
+`app-builder` is private, not a publishable library. It exposes `dev`, `test`,
+`typecheck`, `build` and `flint`. `build` generates the static site from the
+repository's markdown files, starting at the root `README.md`; `dev` runs the
+App Builder demo, whose sources the package still holds but does not publish.
 
 `dash` is a private Node application with no build step and no test suite yet.
 Its sources are in `src/`, served and run as written. It exposes `start`,
@@ -62,8 +63,9 @@ created on first start and ignored by git.
 - A workspace `build/` folder is build output, for testing and validation.
 - A workspace `dist/` folder is distributable output.
 
-`app-builder` builds into `apps/app-builder/dist/`. The deployment workflow then
-force-pushes the contents of that folder to the `pages` branch root.
+`app-builder` builds the site into `apps/app-builder/dist/`. The deployment
+workflow then force-pushes the contents of that folder to the `pages` branch
+root.
 
 Neither folder is hand-edited.
 

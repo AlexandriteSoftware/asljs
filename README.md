@@ -5,8 +5,8 @@ By Alexandrite Software Ltd. In JavaScript (with TypeScript).
 
 Applications:
 
-- [app-builder][APPS] - a demo application that uses the libraries to build a
-  simple app with AI-assisted features.
+- [app-builder][APPS] - builds this site from the repository's markdown files,
+  and holds the sources of an AI-assisted app builder demo.
 - [dash][DASH] - a personal performance dashboard fed by scheduled agents.
 
 Tools:

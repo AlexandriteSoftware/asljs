@@ -110,8 +110,9 @@ Neither folder is hand-edited.
 - `app-builder` does not follow the pattern at all. It has a single
   [tsconfig.json][ABT] that extends nothing, sets `noEmit: true`,
   `target: ES2025`, `lib: ["ES2025", "DOM", "DOM.Iterable"]`, and
-  `types: ["vite/client", "node"]`. It is a browser app: `tsc` only typechecks
-  it, and `vite build` produces `apps/app-builder/dist/`.
+  `types: ["vite/client", "node"]`. `tsc` only typechecks it. `build` runs
+  `src/site/build-site.ts` through `tsx`, which writes the site to
+  `apps/app-builder/dist/`; Vite serves the App Builder demo in `dev` only.
 
 ### Compiler options
 

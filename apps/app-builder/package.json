@@ -1,15 +1,14 @@
 {
   "name": "asljs-app-builder",
   "version": "0.1.0",
-  "description": "Browser-based AI-assisted local-first app builder — GitHub Pages front page and demo for ASLJS.",
+  "description": "Static site for ASLJS, generated from the repository's markdown files; also holds the App Builder demo's sources.",
   "private": true,
   "type": "module",
   "scripts": {
     "flint": "toolkit flint",
     "clean": "toolkit clean",
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "build": "node --import tsx src/site/build-site.ts",
     "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "all": "npm run clean && npm run flint",
@@ -25,6 +24,7 @@
     "esbuild-wasm": "^0.28.1"
   },
   "devDependencies": {
-    "asljs-toolkit": "^0.1.0"
+    "asljs-toolkit": "^0.1.0",
+    "marked": "^18.0.6"
   }
 }
