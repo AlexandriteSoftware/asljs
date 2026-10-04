@@ -468,9 +468,114 @@ Points worth knowing:
 - Observable does not emit `new` for a wrapper it did not create.
 - `observable` recognises plain data from any realm, but a hook that tests with
   `instanceof` sees only its own realm's classes.
-- The path types stop at the kinds observable refuses. Type the model with your
-  wrapper rather than with `Set` if you want `at('tags.size')` checked
-  statically.
+
+### Keeping the types right
+
+The types come from the model's declared type, never from the hook. A member
+declared as `Set<string>` is typed `Set<string>` whatever `convert` put there,
+and the path types stop at it, so `at('tags.size')` is not offered. When the
+replacement is not a `Set`, the type is wrong, and wrong quietly where the two
+share a method name: the wrapper above has no set `has`, but it has eventful's
+`has`, which checks for listeners, so `model.tags.has('a')` compiles and
+returns `false`.
+
+Two habits keep the types true:
+
+- **Substitute before calling `observable()`.** Put the observable replacement
+  into the data yourself, so the model's type names it and `convert` is not
+  needed for that member. A value that already has `on` and `off` is kept by
+  reference, with or without `deep`.
+- **When `convert` substitutes, return an object with the original's
+  signature.** An observable replacement for a `Map` should implement `Map`, and
+  one for a `Set` should be a `Set`, so that the declared type stays true and
+  every method it promises behaves as the original's would. Its path is still
+  not offered below the member, because the types see a `Set`; subscribe to the
+  member itself instead.
+
+```ts
+import { asObservable, observable, type Change } from 'asljs-observable';
+
+type Listener = (changes: readonly Change[]) => void;
+
+// A Set that reports its own changes. Every change to a set changes its size,
+// so a set entry for size describes them all.
+class ObservableSet<T> extends Set<T>
+{
+  #listeners = new Set<Listener>();
+
+  constructor(values: Iterable<T> = []) {
+    super();
+
+    for (const value of values) {
+      super.add(value);
+    }
+  }
+
+  on(_event: 'change', listener: Listener): void {
+    this.#listeners.add(listener);
+  }
+
+  off(_event: 'change', listener: Listener): void {
+    this.#listeners.delete(listener);
+  }
+
+  override add(value: T): this {
+    const previous = this.size;
+
+    super.add(value);
+    this.#report(previous);
+
+    return this;
+  }
+
+  override delete(value: T): boolean {
+    const previous = this.size;
+    const deleted = super.delete(value);
+
+    this.#report(previous);
+
+    return deleted;
+  }
+
+  override clear(): void {
+    const previous = this.size;
+
+    super.clear();
+    this.#report(previous);
+  }
+
+  #report(previous: number): void {
+    if (previous === this.size) {
+      return;
+    }
+
+    for (const listener of this.#listeners) {
+      listener([
+        { kind: 'set', property: 'size', value: this.size, previous }
+      ]);
+    }
+  }
+}
+
+// Substituted before the call: the type names the observable set.
+const prepared = observable({ tags: new ObservableSet([ 'a' ]) });
+
+prepared.tags.on('change', changes => console.log(changes.length));
+
+// Substituted by convert: the type says Set, and the member is one.
+const converted = observable<{ tags: Set<string> }>(
+  { tags: new Set([ 'a' ]) },
+  {
+    deep: true,
+    convert: value =>
+      value instanceof Set ? new ObservableSet(value) : undefined
+  });
+
+converted.tags.has('a');
+
+asObservable(converted.tags)?.on('change', changes =>
+  console.log(changes.length));
+```
 
 ## `ObservableObject`
 
