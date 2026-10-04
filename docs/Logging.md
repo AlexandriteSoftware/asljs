@@ -189,14 +189,15 @@ Planned in [logging-test-logger-provider][TLP]; today tests construct
 - Do not log file content or other bulk data above `trace`.
 - Build expensive messages only when the level is enabled:
   `if (logger.isLevelEnabled('trace')) { ... }`.
-- Pass values as placeholders (`'%s'`, `'%o'`), not by concatenation, so the
-  message text stays the same across entries. Structured fields are planned in
-  [logging-structured-fields-dropped][FLD]; until then, an object passed after
-  the message without a placeholder is dropped.
+- Keep the message the same across entries and put the values in fields:
+  `logger.information({ port, env }, 'listening')`. Placeholders (`'%s'`,
+  `'%o'`) are fine for values that only make the text readable; never build a
+  message by concatenation. Pass an error first, or as `err`:
+  `logger.error(error, 'request failed')`. See [Writing an entry][ENT].
 
 [APP]: ../tasks/logging-apps-console-output-rule.md
 [FMT]: #format
-[FLD]: ../tasks/logging-structured-fields-dropped.md
+[ENT]: ../libs/logging/docs/Logging.md#writing-an-entry
 [LOG]: ../libs/logging/docs/Logging.md
 [MCP]: ../tasks/mcp-server-transport.md
 [OUT]: ../tasks/logging-json-console-output.md

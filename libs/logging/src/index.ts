@@ -7,6 +7,8 @@ export {
 } from './null-logger-provider.js';
 
 export {
+  type LogEntryHead,
+  type LogFields,
   type Logger
 } from './logger.js';
 

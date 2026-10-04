@@ -1,3 +1,25 @@
+/**
+ * Named values attached to a log entry, written as fields of the record.
+ */
+export type LogFields = Record<string, unknown>;
+
+/**
+ * The first argument of a log method: a message, or fields (or an `Error`)
+ * followed by an optional message.
+ *
+ * - `logger.information('started')`
+ * - `logger.information('listening on %s', url)`
+ * - `logger.information({ port, env }, 'listening on %s', url)`
+ * - `logger.error(error, 'request failed')`
+ * - `logger.error({ err: error, path }, 'request failed')`
+ *
+ * After the message come its `printf` values (`%s`, `%d`, `%o`, ...).
+ */
+export type LogEntryHead =
+  | string
+  | LogFields
+  | Error;
+
 export interface Logger
 {
   readonly level: string;
@@ -7,27 +29,27 @@ export interface Logger
   ): boolean;
 
   trace(
-    message: string,
+    head: LogEntryHead,
     ...params: any[]
   ): void;
 
   debug(
-    message: string,
+    head: LogEntryHead,
     ...params: any[]
   ): void;
 
   information(
-    message: string,
+    head: LogEntryHead,
     ...params: any[]
   ): void;
 
   warning(
-    message: string,
+    head: LogEntryHead,
     ...params: any[]
   ): void;
 
   error(
-    message: string,
+    head: LogEntryHead,
     ...params: any[]
   ): void;
 }

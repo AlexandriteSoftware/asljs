@@ -8,6 +8,9 @@ provider and how it is configured, and the null implementations.
 ## Package exports
 
 - `Logger` - type. A logger bound to one context.
+- `LogFields` - type. Named values written as fields of a log record.
+- `LogEntryHead` - type. The first argument of a log method: a message, fields
+  or an `Error`.
 - `LoggerProvider` - type. Creates loggers and owns the resources behind them.
 - `PinoLoggerProvider` - a `LoggerProvider` backed by [Pino][PIN].
 - `PinoLoggerProviderOptions` - type. The provider's options.
@@ -19,8 +22,43 @@ provider and how it is configured, and the null implementations.
 
 - `level` - the level the logger was created with.
 - `isLevelEnabled(level)` - whether a message at `level` would be written.
-- `trace(message, ...params)`, `debug(...)`, `information(...)`, `warning(...)`
-  and `error(...)` - write a message at that level.
+- `trace(...)`, `debug(...)`, `information(...)`, `warning(...)` and
+  `error(...)` - write an entry at that level.
+
+## Writing an entry
+
+Every log method takes an optional leading fields object, then a message, then
+the message's `printf` values:
+
+```ts
+logger.information('started');
+logger.debug('found %d file(s) in %s', count, directory);
+logger.information({ port, env }, 'listening on %s', url);
+logger.trace({ step: 'scan' });
+logger.error(error, 'request failed');
+logger.error({ err: error, path }, 'request failed');
+```
+
+- Fields are merged into the record as named values, so a log query can filter
+  and group by them. The message stays the same across entries.
+- An `Error` in first place, or under the `err` key, is written as `err` with
+  its type, message and stack.
+- `printf` placeholders (`%s`, `%d`, `%i`, `%f`, `%j`, `%o`, `%O`) take the
+  values after the message in order; `%%` is a literal `%`.
+- Fields first is pino's own call shape, so `PinoLoggerProvider` passes it
+  through unchanged and records map onto OpenTelemetry's `attributes` and `body`
+  through pino's instrumentation.
+
+Pino drops arguments that no placeholder consumes. So that a message-first call
+does not lose data silently, `PinoLoggerProvider` merges any such plain object
+into the record as fields, and takes such an `Error` as `err`:
+
+```ts
+logger.information('started', { port });   // {"port":8080,"msg":"started"}
+```
+
+Prefer the fields-first form in new code; the fallback exists for calls written
+the other way round.
 
 ## Levels
 

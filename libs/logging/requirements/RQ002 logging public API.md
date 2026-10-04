@@ -5,6 +5,8 @@ The package root exports the following supported public API:
 - `NullLogger`
 - `NullLoggerProvider`
 - `Logger` type
+- `LogEntryHead` type
+- `LogFields` type
 - `LoggerProvider` type
 - `PinoLoggerProvider`
 - `PinoLoggerProviderOptions` type
