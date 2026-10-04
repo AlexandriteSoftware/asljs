@@ -75,6 +75,7 @@ export function formatConfig(
   outputEnvVars(
     'COG_LOG_LEVEL',
     'COG_LOG_FILE',
+    'COG_LOG_FORMAT',
     'COG_ENVELOPE_PATH');
 
   output.push('');

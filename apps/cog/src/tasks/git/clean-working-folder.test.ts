@@ -10,8 +10,8 @@ import test
   from 'node:test';
 import { Context }
   from '../../context.js';
-import { createLoggerProvider }
-  from '../../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { SingletonServiceProvider }
   from '../../service.js';
 import { DefaultTaskRunner,
@@ -26,7 +26,7 @@ import { GitTool }
   from './git.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
   async () => await loggerProvider.dispose());

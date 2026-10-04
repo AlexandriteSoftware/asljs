@@ -17,7 +17,8 @@ passes a null logger to discard them.
   output.
 - **A Pino implementation.** Messages go to a file, or are pretty-printed to the
   console.
-- **Configuration from the environment.** Level and file can come from
+- **Configuration from arguments and the environment.** Level, target and
+  format come from `--loglevel`, `--logfile` and `--logformat`, or from
   environment variables with a prefix you choose.
 - **Null implementations.** `NullLogger` and `NullLoggerProvider` discard every
   message.
@@ -35,27 +36,28 @@ NPM Package: [asljs-logging][21]
 ## Usage
 
 ```ts
-import { PinoLoggerProvider,
-         PinoLoggerProviderOptionsBuilder }
+import { createLoggerProvider,
+         readLoggerOptions }
   from 'asljs-logging';
 
-const options =
-  new PinoLoggerProviderOptionsBuilder()
-    .fromEnvironmentVariables('MY_APP_LOG_')
-    .build();
-
 await using loggerProvider =
-  new PinoLoggerProvider(options);
+  createLoggerProvider(
+    'MY_APP_LOG_',
+    readLoggerOptions(process.argv));
 
 const logger =
   loggerProvider
     .getLogger('my-context');
 
-logger.information('started');
+logger.information(
+  { port: 8080 },
+  'listening');
 ```
 
-Here `MY_APP_LOG_LEVEL` and `MY_APP_LOG_FILE` set the level and the output file.
-Without a prefix, the builder reads `ASLJS_LOG_LEVEL` and `ASLJS_LOG_FILE`.
+Logging is silent until `--loglevel` or `MY_APP_LOG_LEVEL` sets a level.
+`--logfile` or `MY_APP_LOG_FILE` sends it to a file, `stdout` or `stderr`, and
+`--logformat` or `MY_APP_LOG_FORMAT` chooses `auto`, `json`, `text` or
+`pretty`.
 
 ## Further reading
 

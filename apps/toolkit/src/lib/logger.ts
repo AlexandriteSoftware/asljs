@@ -1,74 +1,26 @@
-import { type LoggerProvider,
-         PinoLoggerProvider,
-         type PinoLoggerProviderOptions,
-         PinoLoggerProviderOptionsBuilder }
+import { createLoggerProvider as createProvider,
+         type LoggerOverrides,
+         type LoggerProvider,
+         readLoggerOptions }
   from 'asljs-logging';
 
+export {
+  readLoggerOptions
+};
+
 /**
- * Creates a logger provider with the specified options.
- *
- * Explicit options take precedence over environment variables, which take
- * precedence over the default level.
- *
- * Environment variables:
- *
- * - `TOOLKIT_LOG_LEVEL`: the logging level, for example 'silent', 'trace',
- *   'debug', 'information'.
- * - `TOOLKIT_LOG_FILE`: the file to write logs to, if any.
+ * Creates the toolkit's logger provider, following `docs/Logging.md`: silent
+ * unless asked, with `--loglevel`, `--logfile` and `--logformat` taking
+ * precedence over `TOOLKIT_LOG_LEVEL`, `TOOLKIT_LOG_FILE` and
+ * `TOOLKIT_LOG_FORMAT`.
  */
 export function createLoggerProvider(
-    options: Partial<PinoLoggerProviderOptions> = {}
+    options: LoggerOverrides = {}
   ): LoggerProvider
 {
-  const builder =
-    new PinoLoggerProviderOptionsBuilder()
-    .fromEnvironmentVariables('TOOLKIT_LOG_');
-
-  if (options.file) {
-    builder.withFile(
-      options.file);
-  }
-
-  if (options.level) {
-    builder.withLevel(
-      options.level);
-  }
-
-  return new PinoLoggerProvider(
-    builder.build());
-}
-
-/**
- * Reads the logging options from argv.
- *
- * Logging is configured before commander parses argv, so the flags are read
- * directly here as well as declared on the program.
- */
-export function readLoggerOptions(
-    argv: readonly string[]
-  ): Partial<PinoLoggerProviderOptions>
-{
-  const options: Partial<PinoLoggerProviderOptions> = {};
-
-  const level =
-    readOptionValue(
-      argv,
-      '--loglevel');
-
-  if (level) {
-    options.level = level;
-  }
-
-  const file =
-    readOptionValue(
-      argv,
-      '--logfile');
-
-  if (file) {
-    options.file = file;
-  }
-
-  return options;
+  return createProvider(
+    'TOOLKIT_LOG_',
+    options);
 }
 
 /**
@@ -85,7 +37,8 @@ export function stripLoggerOptions(
 {
   const names =
     [ '--loglevel',
-      '--logfile' ];
+      '--logfile',
+      '--logformat' ];
 
   const result: string[] = [ ];
 
@@ -117,30 +70,4 @@ export function stripLoggerOptions(
   }
 
   return result;
-}
-
-function readOptionValue(
-    argv: readonly string[],
-    name: string
-  ): string | undefined
-{
-  const index =
-    argv.indexOf(name);
-
-  if (
-    index !== -1
-    && index + 1
-       < argv.length
-  ) {
-    return argv[index + 1];
-  }
-
-  const prefix = `${name}=`;
-
-  const inline =
-    argv.find(
-      value => value.startsWith(prefix));
-
-  return inline?.slice(
-    prefix.length);
 }

@@ -24,6 +24,7 @@ export function execConfig(
   outputEnvVars(
     'PART_LOG_LEVEL',
     'PART_LOG_FILE',
+    'PART_LOG_FORMAT',
     'PART_DEFINITIONS',
     'PART_PROJECT');
 

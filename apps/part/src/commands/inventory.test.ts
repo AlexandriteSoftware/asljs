@@ -1,4 +1,4 @@
-import { NullLoggerProvider }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import assert
   from 'node:assert/strict';
@@ -14,12 +14,12 @@ import { execInventory }
   from './inventory.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
-  (): void =>
+  async (): Promise<void> =>
   {
-    loggerProvider.dispose();
+    await loggerProvider.dispose();
   });
 
 const tmpDir =

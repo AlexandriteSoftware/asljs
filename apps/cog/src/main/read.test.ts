@@ -4,8 +4,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createLoggerProvider }
-  from '../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { argv }
   from '../testing/test-helpers.js';
 import { Envelope }
@@ -14,7 +14,7 @@ import { main }
   from './main.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 const logger =
   loggerProvider.getLogger(

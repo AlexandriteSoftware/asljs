@@ -1,7 +1,4 @@
-import { LoggerProvider,
-         NullLoggerProvider,
-         PinoLoggerProvider,
-         PinoLoggerProviderOptionsBuilder }
+import { createLoggerProvider }
   from 'asljs-logging';
 import { Command }
   from 'commander';
@@ -112,8 +109,11 @@ function createCli(
       '--loglevel <level>',
       'Log level: trace, debug, information, warning, error')
     .option(
-      '--logfile <path>',
-      'Write logs to file')
+      '--logfile <target>',
+      'Where logs go: a file path, stdout or stderr')
+    .option(
+      '--logformat <format>',
+      'Log format: auto, json, text or pretty')
     .option(
       '--definitions <path>',
       'Path to artefact definitions directory. Defaults to the current working directory.')
@@ -130,24 +130,16 @@ function createCli(
         const options =
           actionCommand.optsWithGlobals();
 
-        const loggerOptionsBuilder =
-          new PinoLoggerProviderOptionsBuilder()
-          .withLevel('silent')
-          .fromEnvironmentVariables('PART_LOG_');
-
-        if (options.loglevel) {
-          loggerOptionsBuilder.withLevel(
-            options.loglevel);
-        }
-
-        if (options.logfile) {
-          loggerOptionsBuilder.withFile(
-            options.logfile);
-        }
-
+        // Silent unless asked; see docs/Logging.md at the repository root.
         const loggerProvider =
           createLoggerProvider(
-            loggerOptionsBuilder);
+            'PART_LOG_',
+            { level:
+                filterStringOption(options.loglevel),
+              file:
+                filterStringOption(options.logfile),
+              format:
+                filterStringOption(options.logformat) });
 
         environment.onDispose(
           async (): Promise<void> =>
@@ -574,23 +566,4 @@ function parseWithPropertiesOption(
   }
 
   return items;
-}
-
-/**
- * Logging is off unless the command line options or the PART_LOG_ environment
- * variables ask for it.
- */
-function createLoggerProvider(
-    loggerOptionsBuilder: PinoLoggerProviderOptionsBuilder
-  ): LoggerProvider
-{
-  const loggerOptions =
-    loggerOptionsBuilder.build();
-
-  if (loggerOptions.level === 'silent') {
-    return new NullLoggerProvider();
-  }
-
-  return new PinoLoggerProvider(
-    loggerOptions);
 }

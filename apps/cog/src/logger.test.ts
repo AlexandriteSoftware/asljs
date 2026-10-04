@@ -6,11 +6,38 @@ import { createLoggerProvider }
   from './logger.js';
 
 test(
-  'createLoggerProvider defaults to information',
-  () =>
+  'createLoggerProvider is silent by default',
+  async () =>
+  {
+    const previous =
+      process.env.COG_LOG_LEVEL;
+
+    delete process.env.COG_LOG_LEVEL;
+
+    try {
+      const loggerProvider =
+        createLoggerProvider();
+
+      assert.strictEqual(
+        loggerProvider.getLogger().level,
+        'silent');
+
+      await loggerProvider.dispose();
+    } finally {
+      if (previous !== undefined) {
+        process.env.COG_LOG_LEVEL = previous;
+      }
+    }
+  });
+
+test(
+  'createLoggerProvider logs at the level it is given',
+  async () =>
   {
     const loggerProvider =
-      createLoggerProvider();
+      createLoggerProvider(
+        { level: 'debug',
+          file: 'stderr' });
 
     const logger =
       loggerProvider.getLogger();
@@ -21,19 +48,19 @@ test(
 
     assert.strictEqual(
       logger.isLevelEnabled('debug'),
-      false);
-
-    assert.strictEqual(
-      logger.isLevelEnabled('info'),
       true);
 
-    assert.strictEqual(
-      logger.isLevelEnabled('warn'),
-      true);
+    await loggerProvider.dispose();
+  });
 
-    assert.strictEqual(
-      logger.isLevelEnabled('error'),
-      true);
-
-    void loggerProvider.dispose();
+test(
+  'createLoggerProvider refuses stdout when the caller does not allow it',
+  () =>
+  {
+    assert.throws(
+      () =>
+        createLoggerProvider(
+          { level: 'debug' },
+          { allowStdout: false }),
+      /--logfile stderr/);
   });

@@ -4,14 +4,14 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createLoggerProvider }
-  from '../../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { extractTodos,
          TodoTool }
   from './todo-reader.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
   async () => await loggerProvider.dispose());

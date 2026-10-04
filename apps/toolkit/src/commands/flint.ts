@@ -10,6 +10,8 @@ import { findDprintConfig,
          lintWithEslint,
          lintWithRemark }
   from '../lib/formatters.js';
+import { report }
+  from '../lib/output.js';
 
 /** What to look at, and whether eslint may fix what it reports. */
 export interface FlintOptions extends FileSelection
@@ -47,7 +49,7 @@ function logRun(
     files: readonly string[]
   ): void
 {
-  logger.information(
+  report(
     'flint: %s on %d files',
     tool,
     files.length);
@@ -153,7 +155,7 @@ export async function flint(
       files,
       TYPESCRIPT_EXTENSIONS);
 
-  logger.information(
+  report(
     'flint: %d json, %d markdown and %d script files',
     json.length,
     markdown.length,

@@ -4,6 +4,8 @@ import fs
   from 'node:fs/promises';
 import path
   from 'node:path';
+import { report }
+  from './output.js';
 
 /**
  * Removes a directory, refusing anything outside `baseDir`.
@@ -62,7 +64,7 @@ export async function removeDirectory(
       baseDir,
       fullPath);
 
-  logger.information(
+  report(
     '%s: removed %s',
     label,
     relativePath);

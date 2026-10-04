@@ -11,7 +11,8 @@ import { LibraryEntry }
 import { createTestEnvironment,
          withLibrary }
   from '../testing/library.js';
-import { connectToEndpoint,
+import { childEnvironment,
+         connectToEndpoint,
          createInProcessClient,
          openClient }
   from './client.js';
@@ -280,4 +281,30 @@ test(
                 connectOnly: true }),
           /No knowledge base server is listening/);
       });
+  });
+
+test(
+  'childEnvironment sends a requested log to stderr when no file is named',
+  () =>
+  {
+    assert.equal(
+      childEnvironment(
+        { KB_LOG_LEVEL: 'debug' }).KB_LOG_FILE,
+      'stderr');
+
+    assert.equal(
+      childEnvironment(
+        { KB_LOG_LEVEL: 'debug',
+          KB_LOG_FILE: 'stdout' }).KB_LOG_FILE,
+      'stderr');
+
+    assert.equal(
+      childEnvironment(
+        { KB_LOG_LEVEL: 'debug',
+          KB_LOG_FILE: 'kb.log' }).KB_LOG_FILE,
+      'kb.log');
+
+    assert.equal(
+      childEnvironment({}).KB_LOG_FILE,
+      undefined);
   });

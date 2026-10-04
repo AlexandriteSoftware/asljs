@@ -6,8 +6,8 @@ import { join }
   from 'node:path';
 import test
   from 'node:test';
-import { createLoggerProvider }
-  from '../../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { Envelope }
   from '../../working-folder/envelope.js';
 import { read }
@@ -20,7 +20,7 @@ const testBinaryFileContent: Buffer =
       255 ]);
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 const logger =
   loggerProvider.getLogger(

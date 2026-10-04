@@ -22,9 +22,10 @@ this code or in any dependency, a warning a library prints, and any child
 process started with an inherited stdout. One stray line and the client fails
 to parse the stream. This has already happened once in testing: `cog`'s server
 with `COG_LOG_LEVEL=debug` and no log file wrote two `DEBUG` lines between its
-JSON-RPC responses (see [logging-apps-console-output-rule][APP]). The children
-the servers start today use piped stdio, so they are safe, but nothing enforces
-that.
+JSON-RPC responses. Both servers now refuse to log to stdout at startup, so the
+logger is no longer the risk, but the same line from anywhere else would break
+them just as well. The children the servers start today use piped stdio, so
+they are safe, but nothing enforces that.
 
 The logger is covered by the rules in `docs/Logging.md`: an MCP server throws
 at startup when asked to log to stdout, and `--logfile stderr` is how it logs to
@@ -107,4 +108,3 @@ Record the decision in `docs/` and update the logging rules in
 - `apps/cog/src/mcp.ts`, `apps/cog/src/tasks/copilot/acp-client.ts`
 - `docs/Logging.md`
 
-[APP]: logging-apps-console-output-rule.md

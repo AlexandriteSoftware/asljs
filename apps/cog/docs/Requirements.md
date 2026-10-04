@@ -34,10 +34,10 @@ Tasks return values rather than writing to the console. When a generated task
 command completes, the CLI prints the result as indented JSON. Nothing is
 printed when the result is `undefined` or `null`.
 
-Tasks report progress through `context.logger`. Logging is off the output path,
-so `--loglevel <level>` and `--logfile <path>` control it. Explicit options take
-precedence over `COG_LOG_LEVEL` and `COG_LOG_FILE`, which take precedence over
-the default level `information`.
+Tasks report progress through `context.logger`. Logging follows the
+repository's logging rules: silent by default, and `--loglevel`, `--logfile`
+and `--logformat` take precedence over `COG_LOG_LEVEL`, `COG_LOG_FILE` and
+`COG_LOG_FORMAT`.
 
 Tasks are the only public automation building block. Task categories group
 related tasks in source folders, for example `tasks/git/get-changed-files.ts`

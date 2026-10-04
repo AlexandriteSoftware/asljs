@@ -9,7 +9,7 @@ Package: `cog`.
 under `src/testing`, so it is not published. Tests elsewhere that read
 configuration from the environment save and restore `process.env` by hand
 (EdGames' `server/src/config.unit.test.ts`), and the configuration tests
-proposed in [logging-test-logger-provider][TLP] need the same thing.
+in [logging-test-logger-provider][TLP] need the same thing.
 
 Decide where a shared test helper lives. If no package fits, leave it in cog
 and close this task; a second copy is cheaper than a package for one function.

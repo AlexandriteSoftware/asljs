@@ -15,6 +15,10 @@ provider and how it is configured, and the null implementations.
 - `PinoLoggerProvider` - a `LoggerProvider` backed by [Pino][PIN].
 - `PinoLoggerProviderOptions` - type. The provider's options.
 - `PinoLoggerProviderOptionsBuilder` - builds `PinoLoggerProviderOptions`.
+- `LogFormat` - type. `auto`, `json`, `text` or `pretty`.
+- `createLoggerProvider`, `createTestLoggerProvider` and `readLoggerOptions` -
+  create a provider by the repository's rules; with the `LoggerOverrides` and
+  `LoggerProviderSettings` types.
 - `NullLogger` and `NullLoggerProvider` - implementations that discard every
   message.
 
@@ -68,30 +72,86 @@ builder.
 
 ## LoggerProvider
 
-- `getLogger(context?)` - returns a logger whose messages carry `context`.
-- `dispose()` and `[Symbol.asyncDispose]()` - flush and release the output, so a
-  provider can be declared with `await using`.
+- `getLogger(context?)` - returns a logger whose entries carry `context`.
+- `dispose()` and `[Symbol.asyncDispose]()` - flush and close the output, and
+  resolve once every entry is written, so a provider can be declared with
+  `await using`. Call it before the process exits, including from fatal error
+  handlers. Calling it again does nothing.
+
+## Creating a provider
+
+For an application, `createLoggerProvider(prefix, overrides?, settings?)`
+applies the repository's rules (`docs/Logging.md` at the repository root):
+
+- Silent unless a level or a target is given; a target without a level logs
+  at `information`.
+- `overrides` - `{ level, file, format }`, usually `readLoggerOptions(argv)`.
+  Each one takes precedence over its environment variable.
+- `settings.allowStdout: false` - for a process whose stdout carries a
+  protocol, such as an MCP server: a level with stdout as the target throws.
+- `settings.base` - fields written on every entry, such as `{ service }`.
+- Returns a `NullLoggerProvider` when the level is `silent`, so a silent
+  application starts no worker thread.
+
+```ts
+await using loggerProvider =
+  createLoggerProvider(
+    'MY_APP_LOG_',
+    readLoggerOptions(process.argv));
+```
+
+`readLoggerOptions(argv)` reads `--loglevel`, `--logfile` and `--logformat`, in
+the `--name value` and `--name=value` forms.
+
+For a test file, `createTestLoggerProvider(prefix = 'ASLJS_TEST_LOG_')` logs at
+`debug` to stdout by default, `pretty` on stdout and stderr and `json` in a
+file; `<prefix>LEVEL`, `<prefix>FILE` and `<prefix>FORMAT` override it, and
+`silent` returns a `NullLoggerProvider`.
+
+```ts
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+```
 
 ## PinoLoggerProvider
 
 `new PinoLoggerProvider(options)` takes `PinoLoggerProviderOptions`:
 
-- `level` - the minimum level written. Defaults to `silent` when the option is
-  absent.
-- `file` - a file path. When set, messages are written to that file, creating
-  its directory if needed. When absent, messages are pretty-printed to the
-  console.
+- `level` - the minimum level written. Defaults to `silent`, at which no
+  worker thread is started and every logger is a `NullLogger`.
+- `file` - the target: a file path (its directory is created if needed),
+  `stdout` or `stderr`. Defaults to `stdout`.
+- `format` - `auto` (the default), `json`, `text` or `pretty`:
+  - `json` - one JSON object per line.
+  - `text` - one readable line per entry, without colour codes.
+  - `pretty` - `text` with colour codes, for stdout and stderr only.
+  - `auto` - `pretty` when the target is a terminal stream, `json` for any
+    other stream and for a file.
+- `base` - fields written on every entry.
+- `allowStdout` - `false` refuses stdout as the target unless the level is
+  `silent`.
+
+The constructor throws for `pretty` with a file path and for stdout when
+`allowStdout` is `false`, so a misconfigured process fails at startup.
 
 ## PinoLoggerProviderOptionsBuilder
 
-The builder starts from level `information` and no file.
+With nothing set, the builder builds level `silent`; with only a file set, it
+builds level `information`.
 
 - `withLevel(level)` - sets the level. Throws for an unknown level name.
-- `withFile(file)` - sets the output file.
-- `fromEnvironmentVariables(prefix?)` - reads the level and file from
-  environment variables, and keeps the current value for a variable that is
-  unset.
-- `build()` - returns the options.
+- `withFile(file)` - sets the target: a file path, `stdout` or `stderr`.
+- `withFormat(format)` - sets the format. Throws for an unknown format.
+- `withBase(fields)` - sets the fields written on every entry.
+- `withoutStdout()` - refuses stdout as the target.
+- `fromEnvironmentVariables(prefix?)` - reads the level, target and format
+  from environment variables, and keeps the current value for a variable that
+  is unset.
+- `build()` - returns the options, and throws for the same combinations as the
+  provider.
 
 ## Environment variables
 
@@ -99,7 +159,8 @@ The builder starts from level `information` and no file.
 default; pass another prefix to use your own:
 
 - `<prefix>LEVEL` - the level. An unknown level name throws.
-- `<prefix>FILE` - the output file path.
+- `<prefix>FILE` - the target: a file path, `stdout` or `stderr`.
+- `<prefix>FORMAT` - `auto`, `json`, `text` or `pretty`.
 
 ## Null implementations
 

@@ -4,13 +4,15 @@ import { ROOT_DIR }
   from '../api.js';
 import { start }
   from './process.js';
+import { report }
+  from './output.js';
 
 export function tagRepository(
     logger: Logger,
     tag: string
   ): void
 {
-  logger.information(
+  report(
     'Creating tag: %s',
     tag);
 
@@ -37,7 +39,7 @@ export function tagRepository(
     { cwd: ROOT_DIR,
       logger });
 
-  logger.information(
+  report(
     'Created tag: %s',
     tag);
 }

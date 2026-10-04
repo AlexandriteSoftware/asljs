@@ -126,10 +126,17 @@ List is dynamically generated from the registered tasks.
 
 There are some global options that can be used with any command:
 
-- `--loglevel <level>` sets the logging level (e.g., trace, debug, info, ...).
-- `--logfile <path>` sets the path to the log file.
+- `--loglevel <level>` enables logging at that level (`trace`, `debug`,
+  `information`, `warning` or `error`). Logging is silent by default.
+- `--logfile <target>` sends the log to a file path, `stdout` or `stderr`.
+- `--logformat <format>` chooses `auto`, `json`, `text` or `pretty`.
+
+`COG_LOG_LEVEL`, `COG_LOG_FILE` and `COG_LOG_FORMAT` do the same; see
+[Logging][LOGGING]. The task server that Copilot starts refuses to log to
+stdout, which carries its protocol: set `COG_LOG_FILE` to `stderr` or a path.
 - `--tasks-dir <path>` loads task modules from a directory. Repeat it to load
   multiple task collections.
 - `--init-context <path>` loads initial context data for the invoked task.
 - `--context <path>` loads persisted context data when the file exists and
   writes it after every task execution.
+[LOGGING]: ../../docs/Logging.md

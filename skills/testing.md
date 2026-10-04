@@ -7,9 +7,14 @@ Use when: writing tests, or deciding what a change needs to be covered by.
 - Tie directly to the feature/change.
 - For every publishable package, maintain at least one explicit package-root
   public API contract test.
+- Give code under test a logger from `createTestLoggerProvider()`, created
+  once per test file and disposed in `test.after`, rather than a
+  `NullLoggerProvider`, so `ASLJS_TEST_LOG_LEVEL` can show what happened; see
+  [Logging][LGG].
 
 [CONVENTIONS.md][CNV] carries the rest under **Testing**: a test file next to
 every file with runtime behaviour, `.test.ts` naming, and how unexported helpers
 and type-only files are covered.
 
 [CNV]: ../CONVENTIONS.md
+[LGG]: ../docs/Logging.md

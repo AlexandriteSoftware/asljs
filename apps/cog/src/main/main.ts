@@ -195,8 +195,11 @@ export async function main(
         '--loglevel <level>',
         'logging level, for example trace or information')
       .option(
-        '--logfile <path>',
-        'file to write logs to')
+        '--logfile <target>',
+        'where logs go: a file path, stdout or stderr')
+      .option(
+        '--logformat <format>',
+        'log format: auto, json, text or pretty')
       .showHelpAfterError();
 
     configureReadCommand(

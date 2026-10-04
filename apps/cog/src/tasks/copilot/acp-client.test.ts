@@ -2,15 +2,15 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createLoggerProvider }
-  from '../../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { TaskRegistry }
   from '../../task.js';
 import { CopilotAcpTool }
   from './acp-client.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
   async () => await loggerProvider.dispose());

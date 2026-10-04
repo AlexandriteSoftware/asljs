@@ -4,6 +4,8 @@ import { ROOT_DIR }
   from '../api.js';
 import { start }
   from '../lib/process.js';
+import { report }
+  from '../lib/output.js';
 
 export async function ensureCleanWorkingDirectory(
     logger: Logger
@@ -28,7 +30,7 @@ export async function ensureCleanWorkingDirectory(
       'Working directory has uncommitted or untracked changes.');
   }
 
-  logger.information(
+  report(
     'Working directory `%s` is clean.',
     ROOT_DIR);
 }

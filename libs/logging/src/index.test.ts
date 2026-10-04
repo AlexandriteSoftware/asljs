@@ -14,5 +14,8 @@ test(
       [ 'NullLogger',
         'NullLoggerProvider',
         'PinoLoggerProvider',
-        'PinoLoggerProviderOptionsBuilder' ]);
+        'PinoLoggerProviderOptionsBuilder',
+        'createLoggerProvider',
+        'createTestLoggerProvider',
+        'readLoggerOptions' ]);
   });

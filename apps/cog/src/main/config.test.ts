@@ -30,6 +30,7 @@ test(
         'Environment Variables:',
         '  COG_LOG_LEVEL=debug',
         '  COG_LOG_FILE=/work/cog.log',
+        '  COG_LOG_FORMAT=',
         '  COG_ENVELOPE_PATH=/work/envelope.json',
         '' ].join(
           '\n'));

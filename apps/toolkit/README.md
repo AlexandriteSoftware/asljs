@@ -11,6 +11,10 @@ workspace script reaches it by name rather than by path.
 from their own `dist`, which a fresh clone does not have. So `prepare` builds
 their `dist` first, `asljs-logging` before `asljs-locator`, which imports it.
 
+Every action is silent apart from its own output. `--loglevel`, `--logfile` and
+`--logformat`, or `TOOLKIT_LOG_LEVEL`, `TOOLKIT_LOG_FILE` and
+`TOOLKIT_LOG_FORMAT`, enable logging as described in [Logging][LOG].
+
 ## Notes
 
 The `all` [npm script][21] runs `build:dist` straight after `clean`, because
@@ -26,3 +30,4 @@ npm run clean `
 ```
 
 [21]: package.json
+[LOG]: ../../docs/Logging.md

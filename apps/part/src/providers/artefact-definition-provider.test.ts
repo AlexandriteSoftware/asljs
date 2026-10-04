@@ -1,6 +1,6 @@
 import { type Location }
   from 'asljs-locator';
-import { NullLoggerProvider }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import assert
   from 'node:assert/strict';
@@ -16,12 +16,12 @@ import { providersFactory }
   from './providers.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
-  () =>
+  async () =>
   {
-    loggerProvider.dispose();
+    await loggerProvider.dispose();
   });
 
 const tmpDir =

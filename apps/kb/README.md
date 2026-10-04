@@ -164,8 +164,9 @@ Global options:
 - `--library <path>` - library root.
 - `--format <format>` - `text` or `json`. `extract` defaults to `json`, every
   other command defaults to `text`.
-- `--loglevel <level>` and `--logfile <path>` - logging, also settable through
-  `KB_LOG_LEVEL` and `KB_LOG_FILE`.
+- `--loglevel <level>`, `--logfile <target>` and `--logformat <format>` -
+  logging, silent by default; also settable through `KB_LOG_LEVEL`,
+  `KB_LOG_FILE` and `KB_LOG_FORMAT`. See [Logging][LOGGING].
 
 Exit codes are `0` on success and `1` on failure. Three commands report a
 negative outcome with `1` as well: `search` when nothing matches, `backlinks`
@@ -398,8 +399,9 @@ Options:
 - `--no-index` - do not index or watch. The CLI passes this to the server it
   starts for one command, where an index would be built and thrown away.
 
-Standard output carries the JSON-RPC stream, so the MCP server logs nothing
-unless `KB_LOG_FILE` names a file to write to.
+Standard output carries the JSON-RPC stream, so the MCP server refuses to log
+there: a log level with no log file, or with `stdout`, stops it at startup. Set
+`KB_LOG_FILE` to `stderr` or to a file path to see its log.
 
 ## Embedding
 
@@ -421,3 +423,4 @@ const report =
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
 [MWL]: #moving-with-links
+[LOGGING]: ../../docs/Logging.md

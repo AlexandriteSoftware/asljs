@@ -166,7 +166,9 @@ export async function startInternalServer(
         '--library',
         root,
         '--no-index' ],
-      { stdio:
+      { env:
+          childEnvironment(process.env),
+        stdio:
           [ 'pipe',
             'pipe',
             'inherit' ] });
@@ -468,4 +470,34 @@ function serverPath(
     new URL(
       '../../bin/kb-mcp.js',
       import.meta.url));
+}
+
+/**
+ * The environment of a server started for one call.
+ *
+ * Its stdout carries the protocol, so it refuses to log there. When the
+ * caller asked for logging without naming a file other than stdout, the server
+ * logs to stderr instead, which it shares with the caller.
+ */
+export function childEnvironment(
+    environment: NodeJS.ProcessEnv
+  ): NodeJS.ProcessEnv
+{
+  const level =
+    environment.KB_LOG_LEVEL;
+
+  const file =
+    environment.KB_LOG_FILE;
+
+  if (
+    level
+    && level !== 'silent'
+    && (!file
+        || file === 'stdout')
+  ) {
+    return { ...environment,
+             KB_LOG_FILE: 'stderr' };
+  }
+
+  return environment;
 }

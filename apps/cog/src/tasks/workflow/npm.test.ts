@@ -4,8 +4,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createLoggerProvider }
-  from '../../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { NodeCommandRunner }
   from '../../node-command-runner.js';
 import { type CommandResult,
@@ -16,7 +16,7 @@ import { NpmCliTool,
   from './npm.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
   async () => await loggerProvider.dispose());

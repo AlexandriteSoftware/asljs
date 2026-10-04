@@ -11,3 +11,8 @@ The package root exports the following supported public API:
 - `PinoLoggerProvider`
 - `PinoLoggerProviderOptions` type
 - `PinoLoggerProviderOptionsBuilder`
+- `LogFormat` type
+- `createLoggerProvider`, with the `LoggerOverrides` and
+  `LoggerProviderSettings` types
+- `createTestLoggerProvider`
+- `readLoggerOptions`

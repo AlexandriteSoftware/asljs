@@ -1,4 +1,4 @@
-import { NullLoggerProvider }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import assert
   from 'node:assert/strict';
@@ -15,15 +15,15 @@ import { MarkdownDocument }
   from './model/markdown-document.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
 const MARKDOWN_PARSER =
   unified().use(remarkParse);
 
 test.after(
-  () =>
+  async () =>
   {
-    loggerProvider.dispose();
+    await loggerProvider.dispose();
   });
 
 test(

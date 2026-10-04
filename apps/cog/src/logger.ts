@@ -1,45 +1,25 @@
-import { type LoggerProvider,
-         PinoLoggerProvider,
-         type PinoLoggerProviderOptions,
-         PinoLoggerProviderOptionsBuilder }
+import { createLoggerProvider as createProvider,
+         type LoggerOverrides,
+         type LoggerProvider,
+         type LoggerProviderSettings }
   from 'asljs-logging';
 
 /**
- * Creates a logger provider with the specified options.
+ * Creates cog's logger provider, following `docs/Logging.md` at the repository
+ * root: silent unless asked, with `--loglevel`, `--logfile` and `--logformat`
+ * taking precedence over `COG_LOG_LEVEL`, `COG_LOG_FILE` and
+ * `COG_LOG_FORMAT`.
  *
- * Explicit options take precedence over environment variables, which take
- * precedence over the default level 'information'.
- *
- * Environment variables:
- *
- * - `COG_LOG_LEVEL`: The logging level (e.g., 'silent', 'trace', 'debug',
- *   'info', ...).
- * - `COG_LOG_FILE`: The file path to write logs to (if specified).
+ * The MCP server passes `{ allowStdout: false }`, because its stdout carries
+ * the protocol.
  */
 export function createLoggerProvider(
-    options: Partial<PinoLoggerProviderOptions> = {}
+    options: LoggerOverrides = {},
+    settings: LoggerProviderSettings = {}
   ): LoggerProvider
 {
-  const builder =
-    new PinoLoggerProviderOptionsBuilder()
-    .fromEnvironmentVariables('COG_LOG_');
-
-  if (options.file) {
-    builder.withFile(
-      options.file);
-  }
-
-  if (options.level) {
-    builder.withLevel(
-      options.level);
-  }
-
-  const providerOptions =
-    builder.build();
-
-  const provider =
-    new PinoLoggerProvider(
-      providerOptions);
-
-  return provider;
+  return createProvider(
+    'COG_LOG_',
+    options,
+    settings);
 }

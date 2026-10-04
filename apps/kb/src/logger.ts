@@ -1,37 +1,24 @@
-import { type LoggerProvider,
-         PinoLoggerProvider,
-         type PinoLoggerProviderOptions,
-         PinoLoggerProviderOptionsBuilder }
+import { createLoggerProvider as createProvider,
+         type LoggerOverrides,
+         type LoggerProvider,
+         type LoggerProviderSettings }
   from 'asljs-logging';
 
 /**
- * Create a logger provider for the CLI and the MCP server.
+ * Creates kb's logger provider, following `docs/Logging.md` at the repository
+ * root: silent unless asked, with `--loglevel`, `--logfile` and `--logformat`
+ * taking precedence over `KB_LOG_LEVEL`, `KB_LOG_FILE` and `KB_LOG_FORMAT`.
  *
- * Explicit options take precedence over environment variables, which take
- * precedence over the default level.
- *
- * Environment variables:
- *
- * - `KB_LOG_LEVEL`: the logging level, for example 'silent', 'trace',
- *   'debug', 'information', 'warning', 'error'.
- * - `KB_LOG_FILE`: the file to write logs to.
+ * The MCP server passes `{ allowStdout: false }`, because its stdout carries
+ * the protocol.
  */
 export function createLoggerProvider(
-    options: Partial<PinoLoggerProviderOptions> = {}
+    options: LoggerOverrides = {},
+    settings: LoggerProviderSettings = {}
   ): LoggerProvider
 {
-  const builder =
-    new PinoLoggerProviderOptionsBuilder()
-    .fromEnvironmentVariables('KB_LOG_');
-
-  if (options.file) {
-    builder.withFile(options.file);
-  }
-
-  if (options.level) {
-    builder.withLevel(options.level);
-  }
-
-  return new PinoLoggerProvider(
-    builder.build());
+  return createProvider(
+    'KB_LOG_',
+    options,
+    settings);
 }

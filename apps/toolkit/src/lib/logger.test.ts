@@ -58,6 +58,13 @@ test(
 
     assert.deepEqual(
       stripLoggerOptions(
+        [ '--logformat',
+          'json',
+          'docs' ]),
+      [ 'docs' ]);
+
+    assert.deepEqual(
+      stripLoggerOptions(
         [ 'docs' ]),
       [ 'docs' ]);
   });

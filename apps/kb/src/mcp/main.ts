@@ -7,6 +7,8 @@ import { createLinkGraph }
   from '../graph.js';
 import { resolveLibraryRoot }
   from '../library.js';
+import { readLoggerOptions }
+  from 'asljs-logging';
 import { createLoggerProvider }
   from '../logger.js';
 import { watchLibrary }
@@ -41,7 +43,8 @@ export interface ServerOptions
  * environment variable, then from the working directory.
  *
  * Standard output carries the JSON-RPC stream, so logging is silent unless
- * `KB_LOG_FILE` names a file to write to.
+ * asked, and asking for it on stdout throws: `--logfile stderr` or a file path
+ * is required (`KB_LOG_FILE` from the environment).
  *
  * The library is indexed before the first request is served, and the index is
  * then kept current by watching the library, so link questions are answered
@@ -58,9 +61,12 @@ export async function main(
   const options =
     readOptions(argv);
 
+  // Standard output carries the JSON-RPC stream, so a log level without a log
+  // file other than stdout throws here, before the first request is read.
   const loggerProvider =
     createLoggerProvider(
-      logLevel());
+      readLoggerOptions(argv),
+      { allowStdout: false });
 
   const environment =
     createEnvironment(
@@ -292,16 +298,6 @@ function ignoreBrokenPipe(
         throw error;
       }
     });
-}
-
-function logLevel(
-  ): { level?: string; }
-{
-  if (process.env.KB_LOG_FILE) {
-    return {};
-  }
-
-  return { level: 'silent' };
 }
 
 function valueAt(

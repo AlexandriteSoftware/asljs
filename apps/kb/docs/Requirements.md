@@ -285,8 +285,9 @@ Exit codes:
 - `1` from `backlinks` when nothing links to the entry;
 - `1` from `format --check` when at least one file needs formatting.
 
-Logging is off the output path. `--loglevel` and `--logfile` take precedence
-over `KB_LOG_LEVEL` and `KB_LOG_FILE`.
+Logging follows the repository's logging rules: silent by default, and
+`--loglevel`, `--logfile` and `--logformat` take precedence over
+`KB_LOG_LEVEL`, `KB_LOG_FILE` and `KB_LOG_FORMAT`.
 
 ## MCP Server
 
@@ -312,6 +313,8 @@ afterwards, so link questions are answered from memory.
 A tool failure is reported as a successful response carrying `isError`, as the
 protocol requires. Only an unknown method produces a JSON-RPC error.
 
-Standard output carries the protocol, so the server logs nothing unless
-`KB_LOG_FILE` names a file to write to. A line that is not valid JSON is
+Standard output carries the protocol, so the server refuses to log there: a
+log level with no log file, or with `stdout`, stops it at startup. A server
+the CLI starts for one command logs to the stderr it shares with the CLI when a
+level is set without a file. A line that is not valid JSON is
 ignored.

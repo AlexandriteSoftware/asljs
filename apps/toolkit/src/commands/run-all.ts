@@ -8,6 +8,8 @@ import { getPackageJson,
   from '../lib/packages.js';
 import { start }
   from '../lib/process.js';
+import { report }
+  from '../lib/output.js';
 
 const DEFAULT_SCRIPT_NAME = 'all';
 
@@ -132,14 +134,14 @@ export async function runAll(
     sortWorkspacesByDependencyOrder(
       workspacePackages);
 
-  logger.information(
+  report(
     '[run-all] order: %s',
     ordered.map(
       workspacePackage => workspacePackage.name).join(' -> '));
 
   for (const workspacePackage of ordered) {
     if (!workspacePackage.scriptNames.includes(scriptName)) {
-      logger.information(
+      report(
         '[run-all] %s has no "%s" script, skipped',
         workspacePackage.name,
         scriptName);

@@ -3,6 +3,8 @@ import { Context }
 import { CopilotAcpService,
          type CopilotService }
   from './copilot.js';
+import { readLoggerOptions }
+  from 'asljs-logging';
 import { createLoggerProvider }
   from './logger.js';
 import { NodeCommandRunner }
@@ -48,8 +50,12 @@ export async function main(
 
   registerCoreTasks(registry);
 
+  // stdout carries the MCP protocol, so a log level without a log file other
+  // than stdout throws here, before the first message is read.
   const loggerProvider =
-    createLoggerProvider();
+    createLoggerProvider(
+      readLoggerOptions(process.argv),
+      { allowStdout: false });
 
   const serviceProvider =
     new SingletonServiceProvider();

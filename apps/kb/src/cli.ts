@@ -47,6 +47,8 @@ import { resolveLibraryRoot }
   from './library.js';
 import { createLoggerProvider }
   from './logger.js';
+import { type LoggerOverrides }
+  from 'asljs-logging';
 import { McpClient,
          openClient }
   from './mcp/client.js';
@@ -194,8 +196,11 @@ function createCli(
       '--loglevel <level>',
       'Log level: trace, debug, information, warning, error')
     .option(
-      '--logfile <path>',
-      'Write logs to file')
+      '--logfile <target>',
+      'Where logs go: a file path, stdout or stderr')
+    .option(
+      '--logformat <format>',
+      'Log format: auto, json, text or pretty')
     .option(
       '--library <path>',
       'Path to the library root. Defaults to the current working directory.')
@@ -803,9 +808,9 @@ function applyGlobalOptions(
 
 function loggerOptionsFrom(
     options: Record<string, unknown>
-  ): { level?: string; file?: string; }
+  ): LoggerOverrides
 {
-  const resolved: { level?: string; file?: string; } = {};
+  const resolved: LoggerOverrides = {};
 
   const level =
     filterStringOption(options.loglevel);
@@ -819,6 +824,13 @@ function loggerOptionsFrom(
 
   if (file !== '') {
     resolved.file = file;
+  }
+
+  const format =
+    filterStringOption(options.logformat);
+
+  if (format !== '') {
+    resolved.format = format;
   }
 
   return resolved;

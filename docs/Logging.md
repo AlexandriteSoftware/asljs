@@ -7,9 +7,6 @@ arguments and environment variables control logging, and the rules code follows
 when it writes a log entry. The API of the logging package itself is in
 [asljs-logging][LOG].
 
-Some of the behaviour below is not implemented everywhere yet. Where that is
-the case, the rule names the task that brings the code in line.
-
 ## Default: silent
 
 An application or tool writes no log entries unless asked to. With no
@@ -60,9 +57,6 @@ The prefixes in use:
 - `part` - `PART_LOG_`
 - `toolkit` - `TOOLKIT_LOG_`
 - `asljs-logging` used directly, without a prefix of its own - `ASLJS_LOG_`
-
-Bringing every application to this default is
-[logging-apps-console-output-rule][APP].
 
 ## Levels
 
@@ -119,10 +113,6 @@ Pass a format only to override `auto`:
 Applications do not fix the format in code; that would take the choice away
 from `auto` and from the person running the tool.
 
-Planned in [logging-json-console-output][OUT]; today the console is always
-pretty-printed, with colour codes even when stdout is not a terminal, and a file
-is always JSON.
-
 ## Tools whose stdout is their output
 
 A tool whose stdout carries data, such as a printed file, a generated document
@@ -165,21 +155,21 @@ $env:ASLJS_TEST_LOG_FILE = 'build/test.log'
 npm -w asljs-part run test
 ```
 
-A test file creates one provider at module level, hands loggers to the code
-under test, and disposes the provider in `test.after`. A project that uses
-asljs packages uses its own prefix, for example `EDG_TEST_LOG_`.
-
-Planned in [logging-test-logger-provider][TLP]; today tests construct
-`NullLoggerProvider` and log nothing.
+A test file creates one provider at module level with
+`createTestLoggerProvider()`, hands loggers to the code under test, and
+disposes the provider in `test.after`. A project that uses asljs packages
+passes its own prefix, for example `createTestLoggerProvider('EDG_TEST_LOG_')`.
 
 ## Rules for code
 
 - A library takes a `Logger` from its caller and never creates a provider. When
   the caller gives none, it uses a `NullLogger`, as `TmpDir` does.
-- An application creates one `LoggerProvider` at its entry point, hands
-  `getLogger(context)` to the parts it builds, and disposes the provider before
-  it exits, so buffered entries are flushed. That includes exits from fatal
-  error handlers.
+- An application creates one `LoggerProvider` at its entry point with
+  `createLoggerProvider('<APP>_LOG_', readLoggerOptions(argv))`, passing
+  `{ allowStdout: false }` when its stdout carries a protocol. It hands
+  `getLogger(context)` to the parts it builds, and awaits `dispose()` before it
+  exits, so buffered entries are written. That includes exits from fatal error
+  handlers.
 - The context names the component, for example `TmpDir`, `cog.mcp` or `http`.
 - A handled failure is logged once, where it is handled. Do not log an
   exception and rethrow it; whoever handles it logs it.
@@ -195,10 +185,7 @@ Planned in [logging-test-logger-provider][TLP]; today tests construct
   message by concatenation. Pass an error first, or as `err`:
   `logger.error(error, 'request failed')`. See [Writing an entry][ENT].
 
-[APP]: ../tasks/logging-apps-console-output-rule.md
 [FMT]: #format
 [ENT]: ../libs/logging/docs/Logging.md#writing-an-entry
 [LOG]: ../libs/logging/docs/Logging.md
 [MCP]: ../tasks/mcp-server-transport.md
-[OUT]: ../tasks/logging-json-console-output.md
-[TLP]: ../tasks/logging-test-logger-provider.md

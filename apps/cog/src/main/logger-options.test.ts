@@ -26,8 +26,11 @@ test(
       readLoggerOptions(
         argv(
           'find-todo',
-          '--loglevel=debug')),
-      { level: 'debug' });
+          '--loglevel=debug',
+          '--logformat',
+          'text')),
+      { level: 'debug',
+        format: 'text' });
   });
 
 test(

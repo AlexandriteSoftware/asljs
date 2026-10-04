@@ -8,6 +8,8 @@ import { removeDirectory }
   from '../lib/filesystem.js';
 import { getWorkspacePackageDirs }
   from '../lib/packages.js';
+import { report }
+  from '../lib/output.js';
 
 /**
  * The `node_modules` of each workspace package.
@@ -52,7 +54,7 @@ export async function removeLocalModules(
     }
   }
 
-  logger.information(
+  report(
     'remove-local-modules: removed %d of %d',
     removed,
     paths.length);

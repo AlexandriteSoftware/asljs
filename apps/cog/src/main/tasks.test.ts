@@ -16,8 +16,8 @@ import { DefaultHostConsole }
   from '../console.js';
 import { Context }
   from '../context.js';
-import { createLoggerProvider }
-  from '../logger.js';
+import { createTestLoggerProvider }
+  from 'asljs-logging';
 import { SingletonServiceProvider }
   from '../service.js';
 import { DefaultTaskRunner,
@@ -31,7 +31,7 @@ import { ExecutionContext }
   from './types.js';
 
 const loggerProvider =
-  createLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
   async () => await loggerProvider.dispose());

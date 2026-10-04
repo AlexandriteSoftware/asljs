@@ -1,4 +1,4 @@
-import { NullLoggerProvider }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -9,6 +9,18 @@ import { createEnvironment,
   from '../environment.js';
 import { createInProcessClient }
   from '../mcp/client.js';
+import test
+  from 'node:test';
+
+/**
+ * One provider for every test file that imports this module, configured by
+ * `ASLJS_TEST_LOG_LEVEL`, `ASLJS_TEST_LOG_FILE` and `ASLJS_TEST_LOG_FORMAT`.
+ */
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
 
 /**
  * Write a set of library files, keyed by library-relative path.
@@ -36,8 +48,7 @@ export async function withLibrary<T>(
 {
   const library =
     new TmpDir(
-      new NullLoggerProvider()
-      .getLogger());
+      loggerProvider.getLogger('TmpDir'));
 
   try {
     await writeFiles(

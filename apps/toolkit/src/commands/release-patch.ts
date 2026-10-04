@@ -14,12 +14,14 @@ import { tagRepository }
   from '../lib/repository.js';
 import { ensureCleanWorkingDirectory }
   from './ensure-clean-working-directory.js';
+import { report }
+  from '../lib/output.js';
 
 export async function releasePatch(
     logger: Logger
   ): Promise<void>
 {
-  logger.information(
+  report(
     'patch-release of the package `%s`...',
     process.cwd());
 

@@ -1,48 +1,39 @@
 # logging-test-logger-provider
 
-Tests cannot be made to log without editing them.
+Move the remaining tests from `NullLoggerProvider` to
+`createTestLoggerProvider()`.
 
-Package: `logging`, with every package's tests as callers.
+Package: `logging`, with the tests of `sfmt`, `toolkit`, `locator` and `tmpdir`
+as callers.
 
-Tests construct `NullLoggerProvider` directly (for example all of
-`apps/part/src/commands/*.test.ts` and `apps/kb/src/testing/library.ts`). When
-a test fails, the trace that `TmpDir`, `LocationResolver` and the commands
-write is unreachable: getting it means editing the test.
+`createTestLoggerProvider()` exists and follows the test rules in
+`docs/Logging.md`: `debug` on the console by default, `ASLJS_TEST_LOG_LEVEL`,
+`ASLJS_TEST_LOG_FILE` and `ASLJS_TEST_LOG_FORMAT` to change it. The tests of
+`cog`, `kb` (through `apps/kb/src/testing/library.ts`) and `part` (under
+`apps/part/src`) use it. These still construct a `NullLoggerProvider` or
+`NullLogger`, so their log cannot be switched on:
 
-Proposed, following the test rules in `docs/Logging.md`: a provider for tests
-that logs at `debug` to the console by default, so a failing run already shows
-what happened, and that the environment can raise, lower or redirect:
+- `apps/sfmt/src/format.test.ts` and `apps/sfmt/src/ts-style-rules/*.test.ts`
+- `apps/toolkit/src/lib/filesystem.test.ts`,
+  `apps/toolkit/src/lib/files.test.ts`,
+  `apps/toolkit/src/commands/print-file.test.ts`
+- `libs/locator/src/git-ignore.test.ts`, `libs/locator/src/location.test.ts`
+- `libs/tmpdir/src/tmp-dir.test.ts` - except where a test needs a logger that
+  records calls.
+- `apps/part/src/index.test.ts` - checks that `NullLoggerProvider` is
+  re-exported; leave it.
 
-```pwsh
-$env:ASLJS_TEST_LOG_LEVEL = 'trace'
-$env:ASLJS_TEST_LOG_FILE = 'build/test.log'
-npm -w asljs-part run test
-```
+Each file creates one provider at module level and disposes it in an awaited
+`test.after`. Check the output volume of `sfmt`'s rule tests at `debug` before
+switching them: if it buries the test report, lower their level in code and
+say why.
 
-- `createTestLoggerProvider(prefix = 'ASLJS_TEST_LOG_')` - level `debug`
-  unless `<prefix>LEVEL` says otherwise; `<prefix>FILE` writes to that file
-  instead of the console; `silent` returns a `NullLoggerProvider`, see
-  [logging-silent-provider-starts-transport][SIL].
-- The default format is `pretty` on stdout or stderr, whatever `auto` would
-  choose, because `node --test` pipes the test processes but a person reads the
-  output; `json` when `<prefix>FILE` is a path, since `pretty` is refused for
-  files. `<prefix>FORMAT` overrides it.
-- Each test file creates one at module level and disposes it in `test.after`,
-  the pattern part's tests already follow with `NullLoggerProvider`.
-- Document the variables in `HOWTO.md` and in the testing skill.
-
-Check the volume before switching every package over. `debug` on the console in
-every test file can bury the test report; if it does, keep the default and use
-`ASLJS_TEST_LOG_LEVEL=silent` in CI, or lower the default and record why in
-`docs/Logging.md`.
-
-Consumers outside the repository (EdGames) use it with their own prefix.
+The artefact rule tests under `aftefacts/parts` and
+`apps/part/artefacts/parts` go through `testing/tmpDir.js`; they move with
+[part-export-rule-test-helpers][EXP].
 
 ## Where
 
-- `libs/logging/src/` - new export.
-- `apps/part/src/testing/tmpDir.ts`, `apps/kb/src/testing/library.ts` - first
-  callers.
-- `skills/testing.md`, `HOWTO.md`
+- The files listed above.
 
-[SIL]: logging-silent-provider-starts-transport.md
+[EXP]: part-export-rule-test-helpers.md

@@ -22,6 +22,20 @@ npm -w $env:FOLDER run typecheck
 npm -w $env:FOLDER run build
 ```
 
+## Log while running tests
+
+Tests that use `createTestLoggerProvider()` log at `debug` to the console. Raise
+the level, or write the log to a file:
+
+```pwsh
+$env:ASLJS_TEST_LOG_LEVEL = 'trace'
+$env:ASLJS_TEST_LOG_FILE = 'build/test.log'
+npm -w asljs-part run test
+```
+
+`ASLJS_TEST_LOG_LEVEL = 'silent'` turns it off. The rules are in
+[Logging][LGG].
+
 ## Check markdown links
 
 [remark-validate-links][RVL] reports links to missing files and headings. Each
@@ -85,3 +99,4 @@ git diff <tag>...HEAD -- path/to/subfolder
 
 [RLY]: <docs/Repository Layout.md>
 [RVL]: https://github.com/remarkjs/remark-validate-links
+[LGG]: docs/Logging.md
