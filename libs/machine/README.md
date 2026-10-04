@@ -1,14 +1,14 @@
 # machine
 
 > Part of [Alexandrite Software Library][#1] - a set of high-quality and
-performant JavaScript libraries for everyday use.
+> performant JavaScript libraries for everyday use.
 
 State machine library for JavaScript.
 
 ## Public Contract At A Glance
 
-- Root export: `machine(initial, definition?)` or
-  `machine(base, initial, definition?)`
+- Root export: `machine(initial, definition?)` or `machine(base, initial,
+  definition?)`
 - Public types: `Machine`, `MachineState`, `MachineTransition`, and the
   definition, option, payload, and event types in `src/types.ts`
 - A machine is both eventful and observable, with typed events.
@@ -65,8 +65,8 @@ light.previous.name;  // 'red'
 - `machine.getStates()` and `state.getTransitions()` return copies.
 - `machine.getState(name)` and `state.getTransition(event)` return the object or
   `null`.
-- `machine.createState(name?, options?)` and
-  `state.createTransition(to, options?)` build the same machine imperatively.
+- `machine.createState(name?, options?)` and `state.createTransition(to,
+  options?)` build the same machine imperatively.
 
 ## Declaring A Machine
 
@@ -132,8 +132,8 @@ Reasons are:
 
 - `unknown-event` - the active state has no transition with that name
 - `unknown-state` - no state with that name belongs to this machine
-- `no-transition` - the target exists, but the active state has no transition
-  to it
+- `no-transition` - the target exists, but the active state has no transition to
+  it
 - `not-active` - the transition's source state is not the active state
 - `in-transition` - another transition is already running
 - `final` - the source state is final

@@ -12,9 +12,9 @@ Creates a machine whose active state is `initial`.
 
 ## machine(base, initial, definition?)
 
-Same, with `base` extended in place of a new object. The result is
-`base & Machine`. Base properties stay enumerable and observable; machine
-methods are non-enumerable.
+Same, with `base` extended in place of a new object. The result is `base &
+Machine`. Base properties stay enumerable and observable; machine methods are
+non-enumerable.
 
 ## Machine
 

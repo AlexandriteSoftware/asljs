@@ -33,8 +33,8 @@ Public types live in `src/types.ts` and are re-exported from `src/index.ts`:
 ## Current Runtime Model
 
 - The machine object is observable and eventful, with a typed event map.
-- `machine.state` is the active state and `machine.previous` is the state left by
-  the last successful transition. Both are observable.
+- `machine.state` is the active state and `machine.previous` is the state left
+  by the last successful transition. Both are observable.
 - Transitions are named; `machine.send(name)` and `machine.go(target)` drive the
   machine without holding transition objects.
 - `machine.can` and `machine.canGo` answer the same checks without changing
@@ -81,8 +81,8 @@ Do not change that sequence silently, and do not make the reason list narrower.
   new framework layers.
 - Preserve the combination of `asljs-eventful` and `asljs-observable` unless a
   requested change explicitly replaces it.
-- Keep the machine synchronous. If asynchronous transitions are requested,
-  treat that as a new, separately documented capability rather than a change to
+- Keep the machine synchronous. If asynchronous transitions are requested, treat
+  that as a new, separately documented capability rather than a change to
   `activate`.
 - Guards run inside `can`, `canGo`, and `activate`, so they must stay free of
   side effects; document that wherever guards are described.
