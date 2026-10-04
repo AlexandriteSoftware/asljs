@@ -19,7 +19,7 @@ not as a public API.
 - Persistence: SQLite through `node:sqlite`, so Node 22 or later
 - Only runtime dependency: `express`
 
-Key modules:
+Key modules, all under `src/`:
 
 - `server.js` — the HTTP surface and the static assets
 - `config.js` — the command line, the project configs, and which project a key
@@ -116,8 +116,8 @@ ask before proceeding rather than changing the design silently.
 
 There is no automated test suite in this package yet. Validate changes with:
 
-- `npm -w asljs-dash run lint`
-- `npm -w asljs-dash run format`
+- `npm -w asljs-dash run flint`, which formats the JSON and markdown files and
+  lints the scripts with eslint and the markdown with remark
 - `npm -w asljs-dash run start`, then exercise the endpoints with curl
 - `npm -w asljs-dash run once` to run every counter and confirm samples land
 

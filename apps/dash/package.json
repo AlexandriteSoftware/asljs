@@ -4,21 +4,15 @@
   "description": "Personal, agent-fed performance dashboard — Node server, SQLite store, static page.",
   "private": true,
   "type": "module",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "format:json": "dprint fmt --config ../../dprint.json \"*.json\"",
-    "format:js": "dprint fmt --config ../../dprint.json \"*.js\" \"renderers/*.js\"",
-    "format:md": "dprint fmt --config ../../dprint.json \"*.md\" \"docs/*.md\"",
-    "format": "npm run format:json && npm run format:js && npm run format:md",
+    "flint": "toolkit flint",
     "clean": "toolkit clean",
-    "start": "node server.js --config dash.config.json --config ../../dash.config.json",
-    "start:with-runner": "node server.js --with-runner --config dash.config.json --config ../../dash.config.json",
-    "runner": "node runner.js --config dash.config.json --config ../../dash.config.json",
-    "once": "node runner.js --once --config dash.config.json --config ../../dash.config.json",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "lint:md": "remark --frail --quiet --no-stdout .",
-    "all": "npm run clean && npm run format && npm run lint && npm run lint:md"
+    "start": "node src/server.js --config dash.config.json --config ../../dash.config.json",
+    "start:with-runner": "node src/server.js --with-runner --config dash.config.json --config ../../dash.config.json",
+    "runner": "node src/runner.js --config dash.config.json --config ../../dash.config.json",
+    "once": "node src/runner.js --once --config dash.config.json --config ../../dash.config.json",
+    "all": "npm run clean && npm run flint"
   },
   "dependencies": {
     "express": "^5.1.0"

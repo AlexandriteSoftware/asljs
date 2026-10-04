@@ -65,7 +65,7 @@ const parseArgs = (argv = process.argv.slice(2)) =>
     );
   }
   if (configs.length === 0) {
-    configs.push(path.join(import.meta.dirname, 'dash.config.json'));
+    configs.push(path.join(import.meta.dirname, '..', 'dash.config.json'));
   }
 
   return { configs: configs.map(file => path.resolve(file)), errors };

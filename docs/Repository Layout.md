@@ -50,11 +50,12 @@ What `build`, `typecheck` and `test` run is in [TypeScript Configuration][TSC].
 behavior; `build` emits the demo output.
 
 `dash` is a private Node application with no build step and no test suite yet.
-It exposes `start`, `runner`, `once`, `lint`, `lint:md` and `format`. `start`
-serves the page and the API on `PORT`, default 3000. `runner` is the second
-process and runs the agents in `cronfile` on schedule. `once` runs every agent
-immediately, which is how a newly added card gets its first sample. The SQLite
-store, `apps/dash/dash.sqlite`, is created on first start and ignored by git.
+Its sources are in `src/`, served and run as written. It exposes `start`,
+`runner`, `once` and `flint`. `start` serves the page and the API on `PORT`,
+default 3000. `runner` is the second process and runs the agents in `cronfile`
+on schedule. `once` runs every agent immediately, which is how a newly added
+card gets its first sample. The SQLite store, `apps/dash/dash.sqlite`, is
+created on first start and ignored by git.
 
 ## Generated output
 

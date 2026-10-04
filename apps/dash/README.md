@@ -99,8 +99,8 @@ $drive = Get-PSDrive -Name C
 Point both processes at as many configs as you like:
 
 ```powershell
-node server.js --config dash.config.json --config ../dash.config.json
-node runner.js --config dash.config.json --config ../dash.config.json
+node src/server.js --config dash.config.json --config ../dash.config.json
+node src/runner.js --config dash.config.json --config ../dash.config.json
 ```
 
 Adding a card is an edit and a page reload. Adding a monitor is an agent, a
@@ -117,15 +117,14 @@ curl.exe "http://localhost:3000/api/history/disk.c?limit=50"
 
 ## Further reading
 
-- [Running it](docs/operations.md) — the two processes, environment variables,
+- [Running it][OPS] — the two processes, environment variables,
   the HTTP API, and backup.
-- [Adding a monitor](docs/monitors.md) — agents, counters, cards, renderers, how
+- [Adding a monitor][MON] — agents, counters, cards, renderers, how
   long samples are kept, and adding a project.
-- [Concept](docs/concept.md) — the design: layers, storage model, value
+- [Concept][CON] — the design: layers, storage model, value
   conventions, and the decisions worth not revisiting.
 
-Questions and bugs:
-[asljs/issues](https://github.com/AlexandriteSoftware/asljs/issues).
+Questions and bugs: [asljs/issues][ISS].
 
 ## Related packages
 
@@ -133,6 +132,11 @@ Questions and bugs:
 
 ## License
 
-MIT License. See [LICENSE](../../LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[CON]: docs/concept.md
+[ISS]: https://github.com/AlexandriteSoftware/asljs/issues
+[LIC]: ../../LICENSE.md
+[MON]: docs/monitors.md
+[OPS]: docs/operations.md

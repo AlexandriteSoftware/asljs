@@ -6,11 +6,17 @@ import config from '../../eslint.config.js';
 export default [
   ...config,
   {
-    files: ['server.js', 'runner.js', 'store.js', 'samples.js', 'config.js'],
+    files: [
+      'src/server.js',
+      'src/runner.js',
+      'src/store.js',
+      'src/samples.js',
+      'src/config.js'
+    ],
     languageOptions: { globals: globals.node }
   },
   {
-    files: ['dash.js', 'layout.js', 'renderers/*.js'],
+    files: ['src/dash.js', 'src/layout.js', 'src/renderers/*.js'],
     languageOptions: { globals: globals.browser }
   }
 ];

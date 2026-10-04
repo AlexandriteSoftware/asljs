@@ -440,19 +440,20 @@ Variations:
 
 ```
 dash/
-  server.js           Express app: put, get, history, dashboards, page
-  runner.js           runs each counter's command on its schedule
-  cron.js             the cron expression: parse, match, next and previous
-  store.js            the sticky put, get and history, one store per project
-  config.js           project configs: counters, tabs, policies, key routing
-  samples.js          the policy syntax "<store>, <retention>, <count>, <quota>"
-  schema.sql          the one table and its index
+  src/
+    server.js         Express app: put, get, history, dashboards, page
+    runner.js         runs each counter's command on its schedule
+    cron.js           the cron expression: parse, match, next and previous
+    store.js          the sticky put, get and history, one store per project
+    config.js         project configs: counters, tabs, policies, key routing
+    samples.js        the policy syntax "<store>, <retention>, <count>, <quota>"
+    schema.sql        the one table and its index
+    index.html        shell: top bar, grid, Pico CSS
+    dash.js           page loop: fetch config, place cards, poll values
+    layout.js         virtual-screen card placement
+    renderers/        one file per renderer
   dash.sqlite         the machine project's store (gitignored)
   dash.config.json    the machine project: db, counters and tabs
-  index.html          shell: top bar, grid, Pico CSS
-  dash.js             page loop: fetch config, place cards, poll values
-  layout.js           virtual-screen card placement
-  renderers/          one file per renderer
   agents/             one file per monitor
   package.json        the asljs-dash workspace package
   eslint.config.js    repo lint rules, split by Node and browser runtime
@@ -465,10 +466,10 @@ dash/
 
 ## 14. Operational facts
 
-- Two processes: `node server.js` and `node runner.js`, both given the same
-  `--config` list. Either restarts alone. From the repository root:
+- Two processes: `node src/server.js` and `node src/runner.js`, both given the
+  same `--config` list. Either restarts alone. From the repository root:
   `npm -w asljs-dash run start` and `run runner`, which pass the repository's
-  own configs. `node server.js --with-runner` folds both into one process
+  own configs. `node src/server.js --with-runner` folds both into one process
   (`run start:with-runner`).
 - ES modules throughout, server and page alike, as the rest of the repository.
 - Port from `PORT`, default 3000. Configs from `--config` or `DASH_CONFIG`; see
