@@ -4,8 +4,8 @@
 
 Use this file as AI-facing guidance for `asljs-locator`.
 
-This package locates files from glob patterns with exclusions and named
-filters, and answers whether a single path belongs to a location.
+This package locates files from glob patterns with exclusions and named filters,
+and answers whether a single path belongs to a location.
 
 ## Package Scope
 
@@ -27,16 +27,15 @@ Stable public behaviours:
 - `resolve` takes one location or several, and returns absolute paths,
   deduplicated and sorted with `localeCompare`
 - `check` answers for one path without walking the filesystem
-- patterns must be all files or all directories, a directory pattern ending
-  with `/`; mixing them throws
+- patterns must be all files or all directories, a directory pattern ending with
+  `/`; mixing them throws
 - `GitIgnore` is the only filter name implemented, and an unknown name throws
 - `GitIgnore` reads the `.gitignore` of the path's own directory and every
   directory above it, so a nested file applies to its own subtree
 
 Use this package when:
 
-- a tool needs to find files from declared patterns rather than hard-coded
-  walks
+- a tool needs to find files from declared patterns rather than hard-coded walks
 - a tool needs to honour `.gitignore` without reimplementing it
 - a tool needs to test one path against the same declaration
 
@@ -80,9 +79,9 @@ Do not assume:
 ## Related Packages
 
 - If the task is about logging rather than locating, move to `asljs-logging`.
-- `asljs-part`, `asljs-cog` and `asljs-toolkit` are the consumers; a change
-  here has to keep all three working.
+- `asljs-part`, `asljs-cog` and `asljs-toolkit` are the consumers; a change here
+  has to keep all three working.
 
-Update this file when AI-facing constraints, the exported surface, or
-validation commands change. Update `README.md` separately only when
-user-facing behaviour changes.
+Update this file when AI-facing constraints, the exported surface, or validation
+commands change. Update `README.md` separately only when user-facing behaviour
+changes.
