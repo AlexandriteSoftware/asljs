@@ -1,23 +1,22 @@
 # components
 
-> Part of [Alexandrite Software Library][#1] - a set of high-quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
+> JavaScript libraries for everyday use.
 
 ## Overview
 
 `asljs-components` is a catalog of reusable UI components for web applications:
-buttons, text inputs, selects, lists, file views, on-screen keypads, a
-generated property editor and an AI chat. Each is a custom element with an
-explicit property-and-event contract, and their layout comes from templates and
-themes rather than from code.
+buttons, text inputs, selects, lists, file views, on-screen keypads, a generated
+property editor and an AI chat. Each is a custom element with an explicit
+property-and-event contract, and their layout comes from templates and themes
+rather than from code.
 
 ## Scope
 
-The components fit ASLJS applications that bind state with
-`asljs-data-binding` and `asljs-observable`. Rendering is template-driven:
-rows, layouts and controls come from slot templates and themes, and event
-handlers are binding paths. Render callbacks and inline template expressions are
-outside that model.
+The components fit ASLJS applications that bind state with `asljs-data-binding`
+and `asljs-observable`. Rendering is template-driven: rows, layouts and controls
+come from slot templates and themes, and event handlers are binding paths.
+Render callbacks and inline template expressions are outside that model.
 
 ## Installation
 
@@ -61,8 +60,8 @@ The components:
 - [`asljs-select`][SEL] — a drop-down with validation
 - [`asljs-list`][LST] — a collection rendered from templates
 - [`asljs-file`][FIL] — a file view with pluggable display handlers
-- [`asljs-keyboard`][KBD], [`asljs-letterpad`][LTR] and [`asljs-numpad`][NUM]
-  — on-screen keypads, built on [`AssistedInput`][AIN]
+- [`asljs-keyboard`][KBD], [`asljs-letterpad`][LTR] and [`asljs-numpad`][NUM] —
+  on-screen keypads, built on [`AssistedInput`][AIN]
 - [`asljs-properties`][PRP] — an editor generated from a component's model
   definition
 - [`asljs-theme-provider`][THP] — theme defaults for a subtree
@@ -88,19 +87,19 @@ MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
 [AIN]: <docs/Assisted Input.md>
-[BTN]: <docs/Button.md>
+[BTN]: docs/Button.md
 [CHT]: <docs/AI Chat.md>
 [CMP]: docs/Components.md
-[FIL]: <docs/File.md>
+[FIL]: docs/File.md
 [ISS]: https://github.com/AlexandriteSoftware/asljs/issues
-[KBD]: <docs/Keyboard.md>
+[KBD]: docs/Keyboard.md
 [LIC]: LICENSE.md
-[LST]: <docs/List.md>
-[LTR]: <docs/Letterpad.md>
+[LST]: docs/List.md
+[LTR]: docs/Letterpad.md
 [NPM]: https://www.npmjs.com/package/asljs-components
-[NUM]: <docs/Numpad.md>
-[PRP]: <docs/Properties.md>
-[SEL]: <docs/Select.md>
-[THM]: <docs/Theming.md>
+[NUM]: docs/Numpad.md
+[PRP]: docs/Properties.md
+[SEL]: docs/Select.md
+[THM]: docs/Theming.md
 [THP]: <docs/Theme Provider.md>
 [TXT]: <docs/Text Input.md>

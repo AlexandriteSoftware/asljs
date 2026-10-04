@@ -65,4 +65,4 @@ setDefaultTheme(
 `createBootstrapTheme()` supplies Bootstrap icon markup and labels for the
 `add`, `delete` and `settings` variants. See [Theming][THM].
 
-[THM]: <Theming.md>
+[THM]: Theming.md

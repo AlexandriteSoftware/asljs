@@ -15,9 +15,9 @@
 - `theme`
 - local `template[data-slot="template"]` and `template[data-slot="select"]`
 
-As with [text input][TXT], `value` is a set/reset input. The user's
-selection is kept in `draftValue`, reflected in the observable `status` object,
-and emitted through `input` and `change` events. Their detail is:
+As with [text input][TXT], `value` is a set/reset input. The user's selection is
+kept in `draftValue`, reflected in the observable `status` object, and emitted
+through `input` and `change` events. Their detail is:
 
 ```ts
 {
@@ -63,5 +63,5 @@ select.addEventListener(
 Layout and control markup can be overridden with local slot templates or a
 theme, as for text input; see [Theming][THM].
 
-[THM]: <Theming.md>
+[THM]: Theming.md
 [TXT]: <Text Input.md>

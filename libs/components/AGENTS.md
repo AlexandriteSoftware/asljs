@@ -151,10 +151,10 @@ Component contract at a glance:
   the user; it dispatches a `key-submit` event with `{ detail: { key } }` when
   the user submits the key
 - `AssistedInput` is the shared Lit base for keyboard-like input surfaces
-- button rendering uses explicit `icon`, `text`, `buttonClassName`, and
-  optional `variant`; theme lookup checks variant-specific overrides first,
-  then base button defaults, with built-in package defaults for `add`,
-  `delete`, and `settings`
+- button rendering uses explicit `icon`, `text`, `buttonClassName`, and optional
+  `variant`; theme lookup checks variant-specific overrides first, then base
+  button defaults, with built-in package defaults for `add`, `delete`, and
+  `settings`
 - runtime model metadata is exported through `*ModelDefinition` values whose
   `properties` arrays describe runtime-visible property names, types, and edit
   metadata
@@ -162,14 +162,14 @@ Component contract at a glance:
   target object, using `asljs-text-input` for string/number and `asljs-select`
   for boolean values
 - file viewing uses provider + ordered handler matching
-- keyboard uses a fixed QWERTY layout, a `characters` filter, and bubbling
-  `key` plus `submit` events
-- letterpad uses a fixed alphabetic layout, a `characters` filter, a
-  `collapsed` toggle, and bubbling `key` plus `submit` events
-- numpad uses a fixed keypad layout, a `characters` filter, and bubbling
-  `key` events
-- text input editing uses explicit properties plus `input` and `change`
-  events whose detail reports draft value, validity, and dirty state
+- keyboard uses a fixed QWERTY layout, a `characters` filter, and bubbling `key`
+  plus `submit` events
+- letterpad uses a fixed alphabetic layout, a `characters` filter, a `collapsed`
+  toggle, and bubbling `key` plus `submit` events
+- numpad uses a fixed keypad layout, a `characters` filter, and bubbling `key`
+  events
+- text input editing uses explicit properties plus `input` and `change` events
+  whose detail reports draft value, validity, and dirty state
 - theme provider element: `asljs-theme-provider`
 - required row template: `template[data-slot="item"]`
 - optional templates: `template[data-slot="empty"]` and
@@ -183,10 +183,10 @@ Component contract at a glance:
   `asljs-theme-provider` -> package default theme
 - container templates must include `[data-role="items"]`
 - text-input templates must include `[data-role="control-host"]`
-- text-input control templates must include a real `input` or `textarea`
-  element that matches the slot name
-- row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`,
-  `count`, and `context`
+- text-input control templates must include a real `input` or `textarea` element
+  that matches the slot name
+- row bindings expose `item`, `index`, `first`, `last`, `odd`, `even`, `count`,
+  and `context`
 
 Use this package when:
 
@@ -212,16 +212,16 @@ The package currently uses more than one component form.
 - `Letterpad` is a Lit custom element driven by `characters`, `collapsed`, and
   event dispatch through `AssistedInput`.
 - `List` is a Lit custom element with explicit properties.
-- `Button` is a Lit custom element driven by explicit icon/text properties,
-  an optional `variant`, and theme-backed defaults.
+- `Button` is a Lit custom element driven by explicit icon/text properties, an
+  optional `variant`, and theme-backed defaults.
 - `Properties` is a Lit custom element that renders a generated property form
   from runtime model metadata.
-- `Numpad` is a Lit custom element driven by a `characters` filter and key
-  event dispatch through `AssistedInput`.
-- `Select` is a Lit custom element with explicit items, validation, and
+- `Numpad` is a Lit custom element driven by a `characters` filter and key event
+  dispatch through `AssistedInput`.
+- `Select` is a Lit custom element with explicit items, validation, and template
+  properties.
+- `TextInput` is a Lit custom element with explicit reset-value, validation, and
   template properties.
-- `TextInput` is a Lit custom element with explicit reset-value, validation,
-  and template properties.
 - `ThemeProvider` is a lightweight `HTMLElement` provider.
 - `AiChat` is a Lit custom element with explicit state properties and `options`.
 - `AiChatKeyPrompt` is a Lit custom element that renders an API key input form;
@@ -274,10 +274,10 @@ Inside `asljs-button`, configure:
 - `buttonClassName` when host CSS needs to target the inner native button
 - `type` and `disabled` for native button behavior
 
-Prefer `variant="add"`, `variant="delete"`, or `variant="settings"` when
-their defaults fit. Theme overrides live under
-`button.variants.<variantName>.icon`, `.text`, and `.className`. Explicit
-`icon`, `text`, and `buttonClassName` values still win over theme defaults.
+Prefer `variant="add"`, `variant="delete"`, or `variant="settings"` when their
+defaults fit. Theme overrides live under `button.variants.<variantName>.icon`,
+`.text`, and `.className`. Explicit `icon`, `text`, and `buttonClassName` values
+still win over theme defaults.
 
 If Bootstrap icon markup is desired, prefer `createBootstrapTheme()` over
 duplicating raw icon HTML literals at multiple call sites.
@@ -291,12 +291,12 @@ Inside `asljs-text-input`, configure:
 - `multiline` and `enterKeyBehavior` for editing behavior
 - `autoExtend` plus `autoExtendMaxRows` for textarea growth
 - `theme` or a local `template[data-slot="template"]` for layout override
-- local `template[data-slot="input"]` or `template[data-slot="textarea"]`
-  for themed native control markup override
+- local `template[data-slot="input"]` or `template[data-slot="textarea"]` for
+  themed native control markup override
 
 User edits update `draftValue` and `status`; they do not mutate `value`
-directly. Consumers should listen for `input` or `change` and decide whether
-to persist or reset.
+directly. Consumers should listen for `input` or `change` and decide whether to
+persist or reset.
 
 ### Use explicit items/value semantics for select
 
@@ -311,18 +311,19 @@ Inside `asljs-select`, configure:
 - local `template[data-slot="select"]` for themed control markup override
 
 User selection updates `draftValue` and `status`; it does not mutate `value`
-directly. Consumers should listen for `input` or `change` and decide whether
-to persist or reset.
+directly. Consumers should listen for `input` or `change` and decide whether to
+persist or reset.
 
 ### Use explicit state/options semantics for AI chat
 
 Inside `asljs-ai-chat`, configure:
 
-- `messages`, `promptDraft`, and related chat state directly
-  on the custom element
+- `messages`, `promptDraft`, and related chat state directly on the custom
+  element
 - `options` as the request/persistence/tool callbacks the chat runtime needs
 - `messages` as a store object (`save(...)`, `read()`, and `list`)
-- rely on default sessionStorage persistence when `options.stateStore` is omitted
+- rely on default sessionStorage persistence when `options.stateStore` is
+  omitted
 
 The chat element owns the rendered conversation UI and the primary state
 surface.
@@ -330,8 +331,8 @@ surface.
 ### Keep text-input templates control-host based
 
 If a local or themed template is used for `asljs-text-input`, it must include
-`[data-role="control-host"]`. That host is where the real `input` or
-`textarea` is mounted.
+`[data-role="control-host"]`. That host is where the real `input` or `textarea`
+is mounted.
 
 If a local or themed `template[data-slot="input"]` or
 `template[data-slot="textarea"]` is used, it must include the matching native
@@ -459,5 +460,5 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 - `npm -w asljs-components run flint`
 
 Update this file when AI-facing constraints, exported surface expectations, or
-validation commands change. Update `README.md` separately only when
-user-facing usage or behavior changes.
+validation commands change. Update `README.md` separately only when user-facing
+usage or behavior changes.

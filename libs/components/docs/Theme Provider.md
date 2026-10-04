@@ -43,4 +43,4 @@ document.body.appendChild(provider);
 
 How a provider's theme combines with the others is in [Theming][THM].
 
-[THM]: <Theming.md>
+[THM]: Theming.md

@@ -84,8 +84,8 @@ list.items =
 
 Rendering is template-driven. That shapes how a list is written:
 
-- Rows come from templates, not from React-style render callbacks or
-  prop-driven row renderers.
+- Rows come from templates, not from React-style render callbacks or prop-driven
+  row renderers.
 - Bindings are `asljs-data-binding` paths, not template expressions with inline
   function calls, and event handlers follow its path-based rules.
 - Only the documented slots are used, and a container template must keep its
@@ -99,7 +99,6 @@ Rendering is template-driven. That shapes how a list is written:
 
 - `List`
 - `ListItem`, `ListItemsSource` and `ListRowContext` types
-- `ListThemeDefinition` type, with the theming exports listed in
-  [Theming][THM]
+- `ListThemeDefinition` type, with the theming exports listed in [Theming][THM]
 
-[THM]: <Theming.md>
+[THM]: Theming.md

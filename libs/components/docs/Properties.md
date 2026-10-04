@@ -52,5 +52,5 @@ properties.definition = ButtonModelDefinition;
 properties.target = button;
 ```
 
-[SEL]: <Select.md>
+[SEL]: Select.md
 [TXT]: <Text Input.md>

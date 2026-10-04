@@ -107,4 +107,4 @@ attributes, for example to place validation feedback next to the real control.
 
 Themes can supply the same templates; see [Theming][THM].
 
-[THM]: <Theming.md>
+[THM]: Theming.md

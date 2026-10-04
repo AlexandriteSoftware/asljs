@@ -126,8 +126,8 @@ list.items =
 
 - `setDefaultTheme`, `getDefaultTheme` and `createBootstrapTheme`
 - `ThemeProvider`
-- `ComponentsTheme`, `ThemeTemplateValue` and the per-component theme
-  definition types
+- `ComponentsTheme`, `ThemeTemplateValue` and the per-component theme definition
+  types
 
-[BTN]: <Button.md>
+[BTN]: Button.md
 [THP]: <Theme Provider.md>

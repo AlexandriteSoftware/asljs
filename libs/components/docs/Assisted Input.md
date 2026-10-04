@@ -1,8 +1,8 @@
 # Assisted Input
 
 `AssistedInput` is the shared Lit base class for the package's on-screen input
-surfaces: [keyboard][KBD], [letterpad][LTR] and
-[numpad][NUM]. It is not a custom element itself.
+surfaces: [keyboard][KBD], [letterpad][LTR] and [numpad][NUM]. It is not a
+custom element itself.
 
 It owns the common assisted-input contract:
 
@@ -17,6 +17,6 @@ It owns the common assisted-input contract:
 The components that extend it provide only their layout-specific rendering and
 special interaction rules.
 
-[KBD]: <Keyboard.md>
-[LTR]: <Letterpad.md>
-[NUM]: <Numpad.md>
+[KBD]: Keyboard.md
+[LTR]: Letterpad.md
+[NUM]: Numpad.md
