@@ -1,6 +1,6 @@
 import { bindDataModel }
   from 'asljs-data-binding';
-import { Observable,
+import { type Converted,
          observable }
   from 'asljs-observable';
 import { html,
@@ -45,7 +45,7 @@ export interface SelectChangeDetail
   dirty: boolean;
 }
 
-export type SelectStatus = Observable<{
+export type SelectStatus = Converted<{
   draftValue: string;
   isEmpty: boolean;
   isValid: boolean;
@@ -53,7 +53,7 @@ export type SelectStatus = Observable<{
   dirty: boolean;
 }>;
 
-type SelectTemplateModel = Observable<{
+type SelectTemplateModel = Converted<{
   label: string;
   description: string;
   errorMessage: string;

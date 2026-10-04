@@ -423,8 +423,8 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 - `template[data-slot="input"]` and `template[data-slot="textarea"]` for
   `TextInput` must keep a matching native control element.
 - `List.items` can be a plain array or an eventful-like collection; when the
-  source emits `set`, `delete`, or `define`, list rerender behavior is part of
-  the current design.
+  source emits `change`, the observable contract's one event, list rerender
+  behavior is part of the current design.
 
 ## Safe Authoring Rules
 

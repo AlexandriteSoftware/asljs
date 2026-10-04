@@ -1,6 +1,6 @@
 import { bindDataModel }
   from 'asljs-data-binding';
-import { Observable,
+import { type Converted,
          observable }
   from 'asljs-observable';
 import { html,
@@ -43,7 +43,7 @@ export interface TextInputChangeDetail
   dirty: boolean;
 }
 
-export type TextInputStatus = Observable<{
+export type TextInputStatus = Converted<{
   draftValue: string;
   isEmpty: boolean;
   isValid: boolean;
@@ -51,7 +51,7 @@ export type TextInputStatus = Observable<{
   dirty: boolean;
 }>;
 
-type TextInputTemplateModel = Observable<{
+type TextInputTemplateModel = Converted<{
   label: string;
   description: string;
   errorMessage: string;

@@ -458,20 +458,18 @@ export class List extends LitElement
       this.requestUpdate();
     };
 
-    for (const eventName of [ 'set',
-                              'delete',
-                              'define' ]) {
-      const unsubscribe =
-        eventSource.on(
-          eventName,
-          onCollectionChanged);
+    // An observable collection reports every change as one `change` event,
+    // carrying the list of what changed; the list re-reads it all anyway.
+    const unsubscribe =
+      eventSource.on(
+        'change',
+        onCollectionChanged);
 
-      unsubscribers.push(
-        () =>
-        {
-          unsubscribe();
-        });
-    }
+    unsubscribers.push(
+      () =>
+      {
+        unsubscribe();
+      });
 
     this.#itemsObserverDispose =
       () =>
