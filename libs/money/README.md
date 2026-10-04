@@ -1,7 +1,7 @@
 # money
 
 > Part of [Alexantrite Software Library][#1] - a set of high-quality and
-performant JavaScript libraries for everyday use.
+> performant JavaScript libraries for everyday use.
 
 Provides a lightweight fixed-point type and helpers for financial calculations
 in JavaScript, now with optional currency tracking.
@@ -33,8 +33,8 @@ in JavaScript, now with optional currency tracking.
 - If you have a human-readable amount string, then use `money.parse(...)` or
   `money.fromString(...)`.
 - If you have a JavaScript number input, then use `money.fromNumber(...)`.
-- If you already have a `Money` instance or minor-unit integer and want the
-  main factory entrypoint, then use `money(value, currency?)`.
+- If you already have a `Money` instance or minor-unit integer and want the main
+  factory entrypoint, then use `money(value, currency?)`.
 
 ## Conversion And Truncation Contract
 
@@ -63,9 +63,9 @@ in JavaScript, now with optional currency tracking.
 number. This type is designed to be used in financial calculations, where
 rounding errors are not acceptable.
 
-The `asljs-money` named export `money` creates a new instance of `Money` from
-a number of minor units (e.g. cents) or another `Money` instance. It also
-provides functions to create a `Money` instance from a variety of sources:
+The `asljs-money` named export `money` creates a new instance of `Money` from a
+number of minor units (e.g. cents) or another `Money` instance. It also provides
+functions to create a `Money` instance from a variety of sources:
 
 - from a string formatted as `-1,234.56`, use `money.parse(value)` or
   `money.fromString(value)`.
@@ -114,7 +114,8 @@ Import `money` (ESM):
 import { money } from 'asljs-money';
 ```
 
-Create a `Money` instance, distribute it among shareholders, and sum up the result:
+Create a `Money` instance, distribute it among shareholders, and sum up the
+result:
 
 ```js
 const amount =
@@ -141,8 +142,8 @@ console.log(usd.toString()); // "100.00 USD"
 console.log(eur.toString()); // "90.00 EUR"
 ```
 
-If you need generic number utilities or presentation-layer formatting beyond
-the package string output, keep those concerns outside `asljs-money` and keep
-domain arithmetic on `Money` values.
+If you need generic number utilities or presentation-layer formatting beyond the
+package string output, keep those concerns outside `asljs-money` and keep domain
+arithmetic on `Money` values.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs

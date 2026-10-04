@@ -79,8 +79,7 @@ Safe usage rules:
 
 ## Edit Safety Checklist
 
-- If touching formatting, then re-check `toString()` with and without
-  currency.
+- If touching formatting, then re-check `toString()` with and without currency.
 - If touching arithmetic, then re-check same-currency enforcement.
 - If touching conversion, then re-check positive finite rate validation and
   truncation behavior.
