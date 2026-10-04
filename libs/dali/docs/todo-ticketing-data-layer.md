@@ -5,11 +5,11 @@ features.
 
 For implementation details, use:
 
-- [Table Guide](./table.md)
-- [Delete Strategy and Soft Deletes](./delete-strategy-soft-deletes.md)
-- [Versioning Strategy](./versioning-strategy.md)
-- [Saga Guide](./saga.md)
-- [Event Source Guide](./event-source.md)
+- [Table Guide][TAB]
+- [Delete Strategy and Soft Deletes][DEL]
+- [Versioning Strategy][VER]
+- [Saga Guide][SAG]
+- [Event Source Guide][EVE]
 
 ## Target Architecture
 
@@ -103,3 +103,9 @@ When remote is ahead:
    - linked append barrier
    - remote ahead synchronization
    - projection checkpoint replay
+
+[DEL]: ./delete-strategy-soft-deletes.md
+[EVE]: ./event-source.md
+[SAG]: ./saga.md
+[TAB]: ./table.md
+[VER]: ./versioning-strategy.md

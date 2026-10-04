@@ -55,8 +55,8 @@ What not to assume:
 - Use `notify(...)` for local-only subscribers.
 - Use `observe(...)` only when cross-tab or remote-origin events are needed.
 - Use `record(key)` and `recordset(predicate)` for live-first consumers.
-- Use snapshot methods like `getOne(...)` and `scan(...)` when reactivity is
-  not needed.
+- Use snapshot methods like `getOne(...)` and `scan(...)` when reactivity is not
+  needed.
 - Keep broadcast delivery post-commit only.
 
 ## Common Wrong Assumptions
@@ -65,8 +65,7 @@ What not to assume:
 - `notify(...)` includes remote tab changes
 - `observe(...)` re-broadcasts remote changes
 - live views imply joins or rich query composition
-- broadcast delivery happens during tentative mutations instead of after
-  commit
+- broadcast delivery happens during tentative mutations instead of after commit
 
 ## Constraints To Preserve
 
@@ -92,8 +91,7 @@ What not to assume:
 ## Change Safety Checklist
 
 - If touching observation, then re-check `notify(...)` vs `observe(...)`.
-- If touching live views, then re-check snapshot alternatives and stated
-  limits.
+- If touching live views, then re-check snapshot alternatives and stated limits.
 - If touching broadcast handling, then re-check post-commit-only behavior and
   echo suppression.
 - If touching version strategies, then re-check documented conflict behavior.
@@ -106,8 +104,8 @@ What not to assume:
 ## Related Packages
 
 - If the task is really about event primitives, move to `asljs-eventful`.
-- If the task is really about path queries and the observable contract, move
-  to `asljs-observable`.
+- If the task is really about path queries and the observable contract, move to
+  `asljs-observable`.
 - If the task is really about DOM binding on observable models, move to
   `asljs-data-binding`.
 
@@ -118,5 +116,5 @@ What not to assume:
 - `npm -w asljs-dali run flint`
 
 Update this file when AI-facing constraints, exported surface expectations, or
-validation commands change. Update `README.md` separately only when
-user-facing behavior changes.
+validation commands change. Update `README.md` separately only when user-facing
+behavior changes.

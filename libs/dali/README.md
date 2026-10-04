@@ -1,14 +1,14 @@
 # dali
 
-> Part of [Alexandrite Software Library][#1] - a set of high-quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
+> JavaScript libraries for everyday use.
 
 ## Overview
 
 `asljs-dali` is a data layer for apps that store data in IndexedDB. It is for
 developers who want a typed, event-aware table abstraction instead of
-hand-writing low-level request and transaction plumbing. Use it to model
-stores as `Table<T>`, keep CRUD operations consistent, and optionally enforce
+hand-writing low-level request and transaction plumbing. Use it to model stores
+as `Table<T>`, keep CRUD operations consistent, and optionally enforce
 optimistic concurrency with version strategies.
 
 ## Installation
@@ -17,7 +17,7 @@ optimistic concurrency with version strategies.
 npm install asljs-dali
 ```
 
-NPM Package: [asljs-dali](https://www.npmjs.com/package/asljs-dali)
+NPM Package: [asljs-dali][NPM]
 
 ## Package Concept Map
 
@@ -143,10 +143,10 @@ const row =
 
 `Table` supports two notification paths:
 
-- If you want callbacks only for writes committed by this `Table` instance,
-  then use `notify(receiver)`.
-- If you want callbacks for local writes and remote writes from other tabs,
-  then use `observe(receiver)`.
+- If you want callbacks only for writes committed by this `Table` instance, then
+  use `notify(receiver)`.
+- If you want callbacks for local writes and remote writes from other tabs, then
+  use `observe(receiver)`.
 
 Pass a `broadcastService` to the Table constructor to enable cross-tab delivery.
 The service is an abstraction — you can implement it with `BroadcastChannel` or
@@ -214,11 +214,11 @@ notes.dispose();
 ### Live views with `record()` and `recordset()`
 
 `Table` provides **live-first** APIs that return reactive containers tracking
-committed table changes automatically.  Both containers are built on
-**ASLJS eventful** (for domain events) and conform to the **ASLJS observable**
-contract: they report their property as a `change` event, so the `observe`
-query from `asljs-observable` follows paths into them.  That `observe` is the
-package import, not `Table.observe()`.
+committed table changes automatically. Both containers are built on **ASLJS
+eventful** (for domain events) and conform to the **ASLJS observable** contract:
+they report their property as a `change` event, so the `observe` query from
+`asljs-observable` follows paths into them. That `observe` is the package
+import, not `Table.observe()`.
 
 #### `Table.record(key)` → `LiveRecord<T>`
 
@@ -258,11 +258,11 @@ Behaviour:
   fires.
 - On `delete` or `clear` — `record` becomes `null` and `deleted` fires.
 - Unrelated changes on the same table do not affect this view.
-- `observe(live).at(path).subscribe(cb)` calls back immediately with the
-  current value and again whenever the value at the path changes.  The query is
-  anchored to the stable container, so a replaced record is followed.
-- `record` changes are reported as a `change` event carrying one entry:
-  `{ kind: 'set', property: 'record', value, previous }`.
+- `observe(live).at(path).subscribe(cb)` calls back immediately with the current
+  value and again whenever the value at the path changes. The query is anchored
+  to the stable container, so a replaced record is followed.
+- `record` changes are reported as a `change` event carrying one entry: `{ kind:
+  'set', property: 'record', value, previous }`.
 
 > **Snapshot read**: use `table.getOne(key)` instead.
 >
@@ -305,8 +305,8 @@ Behaviour:
   fires accordingly.
 - On `delete` — the record is removed if it was present; `removed` fires.
 - On `clear` — the set is emptied and `cleared` fires.
-- `changed` fires after every mutation, together with a `change` event
-  carrying `{ kind: 'set', property: 'records', value, previous }`.
+- `changed` fires after every mutation, together with a `change` event carrying
+  `{ kind: 'set', property: 'records', value, previous }`.
 - `records` returns a new array on every read, so a query on `records` reports
   every mutation; `records.length` reports only a change of size.
 
@@ -329,7 +329,8 @@ Live views:
 - `LiveRecord<T>` — live single-record container returned by `Table.record(key)`
   - Events (ASLJS eventful): `changed`, `deleted`
   - Observable contract: `change`; query paths such as `record.someField`
-- `LiveRecordSet<T>` — live filtered set container returned by `Table.recordset(predicate)`
+- `LiveRecordSet<T>` — live filtered set container returned by
+  `Table.recordset(predicate)`
   - Events (ASLJS eventful): `added`, `removed`, `updated`, `cleared`, `changed`
   - Observable contract: `change`; query paths such as `records.length`
 - `LiveRecordEvents<T>` — event map type for `LiveRecord`
@@ -369,8 +370,7 @@ Broadcast / cross-tab:
 - `notify(...)` includes remote tab changes.
 - `observe(...)` re-broadcasts remote changes.
 - live views imply joins or rich query composition.
-- broadcast delivery happens during tentative mutations instead of after
-  commit.
+- broadcast delivery happens during tentative mutations instead of after commit.
 
 ## Related Packages
 
@@ -388,6 +388,8 @@ Broadcast / cross-tab:
 
 ## License
 
-MIT License. See [LICENSE](LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[LIC]: LICENSE.md
+[NPM]: https://www.npmjs.com/package/asljs-dali
