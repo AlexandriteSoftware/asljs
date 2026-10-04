@@ -176,7 +176,7 @@ export async function formatWithDprint(
 export function formatWithSfmt(
     filePaths: readonly string[],
     cwd: string,
-    onBatch: (count: number) => void
+    onBatch: (batch: readonly string[]) => void
   ): void
 {
   runInBatches(
@@ -197,7 +197,7 @@ export function lintWithEslint(
     filePaths: readonly string[],
     cwd: string,
     fix: boolean,
-    onBatch: (count: number) => void
+    onBatch: (batch: readonly string[]) => void
   ): void
 {
   runInBatches(
@@ -217,7 +217,7 @@ export function lintWithEslint(
 export function lintWithRemark(
     filePaths: readonly string[],
     cwd: string,
-    onBatch: (count: number) => void
+    onBatch: (batch: readonly string[]) => void
   ): void
 {
   runInBatches(
@@ -232,13 +232,14 @@ export function lintWithRemark(
  *
  * sfmt, eslint and remark have no configuration key for their files, so the
  * list is carried on the command line and split to stay within its limit. The
- * command is left out of the log, which records the count instead.
+ * command is left out of the log; `onBatch` receives each batch's files before
+ * it runs, so the caller decides what to record.
  */
 function runInBatches(
     command: string,
     filePaths: readonly string[],
     cwd: string,
-    onBatch: (count: number) => void
+    onBatch: (batch: readonly string[]) => void
   ): void
 {
   for (const batch of toCommandBatches(filePaths)) {
@@ -248,7 +249,7 @@ function runInBatches(
         filePath => `"${filePath}"`)
       .join(' ');
 
-    onBatch(batch.length);
+    onBatch(batch);
 
     start(
       `${command} ${quotedPaths}`,

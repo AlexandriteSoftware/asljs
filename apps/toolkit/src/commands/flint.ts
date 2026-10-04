@@ -37,6 +37,33 @@ const TYPESCRIPT_EXTENSIONS =
     '.mts',
     '.cts' ];
 
+/**
+ * Records a tool's run: the count at information level, and each file at debug
+ * level, so `--loglevel debug` shows exactly what the tool processed.
+ */
+function logRun(
+    logger: Logger,
+    tool: string,
+    files: readonly string[]
+  ): void
+{
+  logger.information(
+    'flint: %s on %d files',
+    tool,
+    files.length);
+
+  if (!logger.isLevelEnabled('debug')) {
+    return;
+  }
+
+  for (const file of files) {
+    logger.debug(
+      'flint: %s: %s',
+      tool,
+      file);
+  }
+}
+
 export function parseFlintArgs(
     args: readonly string[] = [ ]
   ): FlintOptions
@@ -135,35 +162,48 @@ export async function flint(
   // Formatting first means the linters report what the files now hold, not
   // what they held before the formatters rewrote them. sfmt runs after dprint
   // because it refines dprint's layout.
-  await formatWithDprint(
-    findDprintConfig(cwd),
+  const formatted =
     [ ...json,
       ...markdown,
-      ...typescript ],
+      ...typescript ];
+
+  if (formatted.length > 0) {
+    logRun(
+      logger,
+      'dprint',
+      formatted);
+  }
+
+  await formatWithDprint(
+    findDprintConfig(cwd),
+    formatted,
     cwd);
 
   formatWithSfmt(
     typescript,
     cwd,
-    count =>
-      logger.information(
-        'flint: sfmt on %d files',
-        count));
+    batch =>
+      logRun(
+        logger,
+        'sfmt',
+        batch));
 
   lintWithEslint(
     scripts,
     cwd,
     options.fix,
-    count =>
-      logger.information(
-        'flint: eslint on %d files',
-        count));
+    batch =>
+      logRun(
+        logger,
+        'eslint',
+        batch));
 
   lintWithRemark(
     markdown,
     cwd,
-    count =>
-      logger.information(
-        'flint: remark on %d files',
-        count));
+    batch =>
+      logRun(
+        logger,
+        'remark',
+        batch));
 }

@@ -83,8 +83,9 @@ working directory for the run and removed again afterwards, which extends the
 configuration found above and names each file. That keeps the command short and
 lifts the limit on how many files one run can take. sfmt, eslint and remark
 have no configuration key for their files, so they carry them as arguments and
-are split into several runs to stay within the command line limit; the log
-records the count rather than the paths.
+are split into several runs to stay within the command line limit. The log
+records how many files each tool processes, and with `--loglevel debug` it
+lists every file, once per tool.
 
 Stops at the first tool that fails. Fails when eslint reports an error, and when
 remark reports a warning, because it runs with `--frail`.
