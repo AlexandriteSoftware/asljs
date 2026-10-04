@@ -127,7 +127,7 @@ console.log('listeners left:', model.listenerCount('change'));
 ```
 
 `ObservableObject` is the base class to extend when the model is a class of your
-own; see [the converter](converter.md#observableobject).
+own; see [the converter][CON].
 
 ## Consuming it
 
@@ -157,9 +157,9 @@ producer and a hand-written consumer both have to apply them.
 - The contract covers an object's **own** properties. A participant does not
   know its position in someone else's graph, so it never reports a path. Paths
   are composed by the query, which subscribes segment by segment.
-- Array indices are ordinary string properties, so an index change is
-  `{ kind: 'set', property: '0' }`. There is no `index` field on a `set` and no
-  separate array change type.
+- Array indices are ordinary string properties, so an index change is `{ kind:
+  'set', property: '0' }`. There is no `index` field on a `set` and no separate
+  array change type.
 - Removal is a set to `undefined`. There is no delete event.
 - A producer emits the most specific description it has, and never both. A
   `shift()` is one `splice` entry, not N `set` entries plus a `splice`.
@@ -190,16 +190,16 @@ A consumer must not assume that listeners have run by the time a mutating call
 returns.
 
 What this package's own producers do is narrower than what the contract allows:
-they emit synchronously, and [`batch(fn)`](batching.md) is the explicit boundary
-that fills the list.
+they emit synchronously, and [`batch(fn)`][BAT] is the explicit boundary that
+fills the list.
 
 ## Edge cases
 
-- **Key presence is not observable.** `{ a: undefined }` and `{}` differ in
-  `'a' in o`, `Object.keys` and `JSON.stringify`, but removal is reported as a
-  set to `undefined`, so a consumer cannot tell them apart. Nor can it tell
-  `delete arr[1]` from `arr[1] = undefined`. The query re-reads, so it does not
-  care; a consumer that tracks key presence does.
+- **Key presence is not observable.** `{ a: undefined }` and `{}` differ in `'a'
+  in o`, `Object.keys` and `JSON.stringify`, but removal is reported as a set to
+  `undefined`, so a consumer cannot tell them apart. Nor can it tell `delete
+  arr[1]` from `arr[1] = undefined`. The query re-reads, so it does not care; a
+  consumer that tracks key presence does.
 - **A change that changes nothing is not reported.** Producers in this package
   compare with `Object.is` and stay silent when the value is already there, so
   `NaN` replacing `NaN` is silent and `-0` replacing `+0` is a change.
@@ -252,8 +252,13 @@ alongside it.
 
 ## See also
 
-- [The query](query.md) — reading values out of a source.
-- [Batching and delivery](batching.md) — what fills the list, and when it
-  arrives.
-- [The converter](converter.md) — what `observable()` produces.
-- [Performance](performance.md) — when to implement the contract by hand.
+- [The query][QUE] — reading values out of a source.
+- [Batching and delivery][BAT] — what fills the list, and when it arrives.
+- [The converter][CON2] — what `observable()` produces.
+- [Performance][PER] — when to implement the contract by hand.
+
+[BAT]: batching.md
+[CON]: converter.md#observableobject
+[CON2]: converter.md
+[PER]: performance.md
+[QUE]: query.md

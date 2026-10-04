@@ -1,7 +1,7 @@
 # observable
 
-> Part of [Alexandrite Software Library][#1] – a set of high‑quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] – a set of high‑quality, performant
+> JavaScript libraries for everyday use.
 
 ## Overview
 
@@ -52,7 +52,7 @@ storage, or a Node `EventEmitter` joins the same query as the rest of a model.
 npm install asljs-observable
 ```
 
-NPM Package: [asljs-observable](https://www.npmjs.com/package/asljs-observable)
+NPM Package: [asljs-observable][NPM]
 
 ## Usage
 
@@ -119,22 +119,18 @@ reads a path once without subscribing.
 
 ## Further reading
 
-- [The contract](docs/contract.md) — what an object must provide to be observed,
-  and how to implement it yourself.
-- [The query](docs/query.md) — `observe`, the operators, and how values are
-  deduplicated.
-- [Batching and delivery](docs/batching.md) — `batch(fn)`, and when a
-  notification arrives.
-- [The converter](docs/converter.md) — what `observable()` converts, what it
-  reports, and the `convert` hook.
-- [Performance](docs/performance.md) — what the converter costs, and how to
-  write the parts of a model that have to be fast.
-- [Using it with RxJS](docs/rxjs.md).
-- [Migrating from 0.5](docs/migrating-from-0.5.md) — 0.6 changes every event and
-  removes `watch`.
+- [The contract][CON] — what an object must provide to be observed, and how to
+  implement it yourself.
+- [The query][QUE] — `observe`, the operators, and how values are deduplicated.
+- [Batching and delivery][BAT] — `batch(fn)`, and when a notification arrives.
+- [The converter][CON2] — what `observable()` converts, what it reports, and the
+  `convert` hook.
+- [Performance][PER] — what the converter costs, and how to write the parts of a
+  model that have to be fast.
+- [Using it with RxJS][RXJ].
+- [Migrating from 0.5][MIG] — 0.6 changes every event and removes `watch`.
 
-Questions and bugs:
-[asljs/issues](https://github.com/AlexandriteSoftware/asljs/issues).
+Questions and bugs: [asljs/issues][GIT].
 
 ## Related packages
 
@@ -144,6 +140,16 @@ Questions and bugs:
 
 ## License
 
-MIT License. See [LICENSE](LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[BAT]: docs/batching.md
+[CON]: docs/contract.md
+[CON2]: docs/converter.md
+[GIT]: https://github.com/AlexandriteSoftware/asljs/issues
+[LIC]: LICENSE.md
+[MIG]: docs/migrating-from-0.5.md
+[NPM]: https://www.npmjs.com/package/asljs-observable
+[PER]: docs/performance.md
+[QUE]: docs/query.md
+[RXJ]: docs/rxjs.md

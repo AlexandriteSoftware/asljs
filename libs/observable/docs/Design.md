@@ -4,11 +4,11 @@ D1. The purpose of `observable` is to create an observable version of a given
 data structure, not to extend the existing data with observability.
 
 D2. `observable` is a function that returns an observable version of the given
-object, array or value, which reports its changes through
-`on('change', listener)`. The observable has at least `on` and `off`. Its
-methods are added by the `eventful` factory (D18), which defines the full set;
-the default, `eventful` from `asljs-eventful`, adds `on`, `once`, `off`, `emit`,
-`emitAsync`, `has`, `removeAllListeners` and `getListeners`.
+object, array or value, which reports its changes through `on('change',
+listener)`. The observable has at least `on` and `off`. Its methods are added by
+the `eventful` factory (D18), which defines the full set; the default,
+`eventful` from `asljs-eventful`, adds `on`, `once`, `off`, `emit`, `emitAsync`,
+`has`, `removeAllListeners` and `getListeners`.
 
 The listener receives one argument: the list of modifications that make up the
 change, in the order they were carried out. Applying them in that order turns
@@ -38,8 +38,8 @@ refers to is kept as it is too. At the top level a frozen object throws unless
 invalid operation (D16).
 
 A frozen object with internal state, such as a frozen `Map` or a frozen class
-instance, is not a value: freezing does not stop its internal state changing,
-so it is handled like any other object of its kind.
+instance, is not a value: freezing does not stop its internal state changing, so
+it is handled like any other object of its kind.
 
 ```
 const config = Object.freeze({ theme: 'dark' });
@@ -49,8 +49,8 @@ observable(config);                                         // throws
 ```
 
 D5. The `deep` parameter controls whether nested objects and arrays are also
-made observable. If `deep` is `true`, the observation is applied recursively;
-if `false`, only the top-level object is observed.
+made observable. If `deep` is `true`, the observation is applied recursively; if
+`false`, only the top-level object is observed.
 
 Each observable reports changes to its own properties only. A change inside a
 nested observable is reported by that observable and not by its parent, because
@@ -108,11 +108,11 @@ dt.self = dt;
 observable({ date: dt }, { deep: true });   // converted, date kept by reference
 ```
 
-D8. When `deep` is `true`, the same object reached twice within one call
-becomes one observable, used in both places. The result keeps the shape of the
-data it was given, and an object is converted once however many times it is
-referenced. This holds within one call only: separate calls to `observable`
-produce separate observables.
+D8. When `deep` is `true`, the same object reached twice within one call becomes
+one observable, used in both places. The result keeps the shape of the data it
+was given, and an object is converted once however many times it is referenced.
+This holds within one call only: separate calls to `observable` produce separate
+observables.
 
 ```
 const shared = { n: 1 };
@@ -146,10 +146,9 @@ objects only, arrays included: primitive values, `Date`, `RegExp`, functions and
 nested frozen plain objects and arrays are values (D4), and `convert` is never
 asked about them. It is called before `observable` decides what to do with an
 object, including whether it already implements `on` and `off`, so it has the
-first say. It is asked about the top-level value when that
-value is an object, and, when `deep` is `true`, about every nested object that
-is not kept by reference first (D11). When `deep` is `false` it is called at
-most once.
+first say. It is asked about the top-level value when that value is an object,
+and, when `deep` is `true`, about every nested object that is not kept by
+reference first (D11). When `deep` is `false` it is called at most once.
 
 ```
 observable(false, { convert });       // convert not called: a value
@@ -173,30 +172,28 @@ other realms is up to the hook.
 
 D7 and D8 are applied before `convert` is asked. An object reached a second time
 reuses what its first occurrence became, so `convert` is called once for it and
-its result is used in both places; a circular reference throws without
-`convert` being called again. What `convert` returns is not traversed, so D7
-and D8 do not apply inside it.
+its result is used in both places; a circular reference throws without `convert`
+being called again. What `convert` returns is not traversed, so D7 and D8 do not
+apply inside it.
 
 D10. The value given to `observable` is checked against these rules in order,
 and the first that matches applies:
 
-1. A primitive value, a `Date`, a `RegExp` or a function is boxed as
-   `{ value: ... }`.
+1. A primitive value, a `Date`, a `RegExp` or a function is boxed as `{ value:
+   ... }`.
 2. When `convert` returns a value other than `null` or `undefined`, that value
    is returned (D9). It must implement `on` and `off` and must not be the value
    it was given, otherwise `observable` throws, so that what `observable`
    returns is always a new observable version (D2, D3).
 3. An object that already implements `on` and `off` throws: returning it as is
-   would make the observable version the original itself, contrary to D3 and
-   D6. That covers an `EventEmitter` and an observable produced by
-   `observable`.
+   would make the observable version the original itself, contrary to D3 and D6.
+   That covers an `EventEmitter` and an observable produced by `observable`.
 4. An object or array that has a property named like a method the `eventful`
    factory adds throws, because the observable it would be converted to has
-   methods with those names. With the default factory those are the eight
-   names listed in D2. With a custom factory `observable` knows only `on` and
-   `off`; any other name the factory adds is the factory's responsibility, and
-   a property of the data with that name is whatever the factory makes of
-   it.
+   methods with those names. With the default factory those are the eight names
+   listed in D2. With a custom factory `observable` knows only `on` and `off`;
+   any other name the factory adds is the factory's responsibility, and a
+   property of the data with that name is whatever the factory makes of it.
 5. A plain object or a plain array (D12) holding plain data (D16) is converted
    to an observable, applying D11 to its own values.
 6. Anything else throws.
@@ -219,8 +216,8 @@ D11. While rebuilding an object or array, each property value or element is
 checked against these rules in order, and the first that matches applies:
 
 1. A primitive value is copied.
-2. A `Date`, a `RegExp`, a function, or a frozen plain object or plain array
-   is kept by reference (D4).
+2. A `Date`, a `RegExp`, a function, or a frozen plain object or plain array is
+   kept by reference (D4).
 3. When `deep` is `false`, any other object or array is kept by reference.
 4. When `convert` returns a value other than `null` or `undefined`, that value
    is used (D9).
@@ -251,15 +248,14 @@ observable(
 ```
 
 D12. Only plain objects are converted. An object is plain when its prototype is
-`Object.prototype` or `null`, which is what an object literal
-`{ property: 'value', ... }`, `Object.create(null)` and `JSON.parse` produce.
-An object with any other prototype, such as one created by `new Class()`, is
-not converted. At the top level it throws unless `convert` takes it over (D10).
-Nested under `deep: true` it throws unless `convert` takes it over or it
-implements `on` and `off` (D11). Nested under `deep: false` it is kept by
-reference. `Date`, `RegExp` and functions are not
-objects in this sense: they are boxed at the top level (D10) and kept by
-reference when nested (D11).
+`Object.prototype` or `null`, which is what an object literal `{ property:
+'value', ... }`, `Object.create(null)` and `JSON.parse` produce. An object with
+any other prototype, such as one created by `new Class()`, is not converted. At
+the top level it throws unless `convert` takes it over (D10). Nested under
+`deep: true` it throws unless `convert` takes it over or it implements `on` and
+`off` (D11). Nested under `deep: false` it is kept by reference. `Date`,
+`RegExp` and functions are not objects in this sense: they are boxed at the top
+level (D10) and kept by reference when nested (D11).
 
 Only plain arrays are converted. An array is plain when its prototype is
 `Array.prototype`, which is what an array literal `[ ... ]`, `Array.from` and
@@ -273,8 +269,8 @@ such as a same-origin iframe or a Node `vm` context, has that realm's
 the checks recognise any realm's prototypes rather than only this realm's:
 
 - an object is plain when its prototype is `null`, or is an `Object.prototype`
-  of some realm: an object whose own prototype is `null` and whose
-  `constructor` is a function named `Object`;
+  of some realm: an object whose own prototype is `null` and whose `constructor`
+  is a function named `Object`;
 - an array is plain when both it and its prototype are arrays by
   `Array.isArray`, because every realm's `Array.prototype` is an array and a
   subclass prototype is not;
@@ -380,17 +376,17 @@ D15. A modification is one of these kinds:
   `property` is always a string, so an array index is reported as `'0'`, not
   `0`. Deleting a property is reported as a `set` to `undefined`, so a deleted
   property and one set to `undefined` are reported alike.
-- `{ kind: 'splice', index, removed, added }`: at position `index` of an
-  array, the elements in `removed` were removed and the elements in `added`
-  were inserted. Both are lists of the values themselves, not counts.
+- `{ kind: 'splice', index, removed, added }`: at position `index` of an array,
+  the elements in `removed` were removed and the elements in `added` were
+  inserted. Both are lists of the values themselves, not counts.
 - `{ kind: 'reset' }`: the array changed so much that it is better read again.
   It carries no other properties.
 
 An object reports `set` only. `splice` and `reset` are reported by arrays.
 
 An index written past the end of an array grows its `length`, and no splice
-describes that, so the change also carries a `set` for `length`, after the
-`set` for the index.
+describes that, so the change also carries a `set` for `length`, after the `set`
+for the index.
 
 A `splice` at `index` also changes every index from `index` onwards and, when
 the counts differ, `length`; no separate `set` is reported for them. A
@@ -428,9 +424,9 @@ model[Symbol('meta')] = 1;                          // not reported
 ```
 
 A subscriber must handle `set`. For any other kind it does not recognise,
-`splice` and `reset` included, it reads the array again. That lets an
-observable report a change in whatever form is cheapest and lets new kinds be
-added without breaking subscribers.
+`splice` and `reset` included, it reads the array again. That lets an observable
+report a change in whatever form is cheapest and lets new kinds be added without
+breaking subscribers.
 
 How a change is split into `change` events is up to the implementation, but one
 call that changes an array, such as `push(a, b)` or `sort()`, is preferably one
@@ -471,8 +467,8 @@ and no own properties other than its indices and `length`.
 
 The case `observable` is for is plain data such as `observable({ user: ... })`.
 Data that needs accessors, hidden or read-only properties, or symbol keys is a
-class in all but name, and a class can report its own changes through
-`eventful` without `observable`.
+class in all but name, and a class can report its own changes through `eventful`
+without `observable`.
 
 ```
 observable({ get full() { return 'Ann Lee'; } });        // throws: accessor
@@ -484,12 +480,12 @@ observable({ a: 1, list: [ 1, 2 ] }, { deep: true });    // converted
 ```
 
 D17. An error thrown by `observable` says where the problem is and what it is.
-The message starts with the path of the offending value, written from `value`
-as the top level, with `.name` for a property and `[0]` for an array index,
+The message starts with the path of the offending value, written from `value` as
+the top level, with `.name` for a property and `[0]` for an array index,
 followed by the reason. A circular reference names both ends: where the cycle
-was found and the object it leads back to. An error thrown by the `convert`
-hook or by the `eventful` factory is reported the same way, prefixed with the
-path of the value it was handling, with the original error as its `cause`.
+was found and the object it leads back to. An error thrown by the `convert` hook
+or by the `eventful` factory is reported the same way, prefixed with the path of
+the value it was handling, with the original error as its `cause`.
 
 ```
 observable({ orders: [ { meta: new Map() } ] }, { deep: true });
@@ -516,10 +512,10 @@ D18. `observable` takes these options:
   beyond that, such as what happens when a listener throws, is the factory's
   behaviour, and the factory is also how its settings are passed:
   `observable(model, { eventful: value => eventful(value, { strict: true }) })`.
-- `trace`: a hook `(object, action, payload)` called with `'new'` and
-  `{ object }` when an observable is created, and with `'change'` and the list
-  of modifications each time a change is delivered. Every observable created in
-  the same call shares it. When a call passes none, the process-wide
+- `trace`: a hook `(object, action, payload)` called with `'new'` and `{ object
+  }` when an observable is created, and with `'change'` and the list of
+  modifications each time a change is delivered. Every observable created in the
+  same call shares it. When a call passes none, the process-wide
   `observable.options.trace` is used, if set.
 
 D19. `batch(fn)` groups the changes made while `fn` runs:
@@ -537,9 +533,9 @@ D19. `batch(fn)` groups the changes made while `fn` runs:
   once, but its own `change` is delivered after the current delivery finishes,
   so every listener of one change receives the same list. Listeners that keep
   causing writes are stopped after a fixed number of rounds with an error.
-- When a listener throws, which the factory decides (D18), the error
-  propagates at once. Changes still queued for delivery are discarded: the
-  writes have happened, but their `change` is not delivered.
+- When a listener throws, which the factory decides (D18), the error propagates
+  at once. Changes still queued for delivery are discarded: the writes have
+  happened, but their `change` is not delivered.
 
 ```
 const model = observable({ n: 1 });

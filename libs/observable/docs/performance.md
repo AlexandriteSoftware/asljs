@@ -4,8 +4,8 @@
 
 The converter trades speed for convenience. `observable(value)` makes existing
 data report its changes with one call, which suits prototypes, UI state, and
-small to medium models. It is not a substitute for a data structure designed
-for its task, and it does not try to be fast.
+small to medium models. It is not a substitute for a data structure designed for
+its task, and it does not try to be fast.
 
 This page states what the converter costs and how to build the part of a model
 that has to perform. No figures are given, because none are measured: the cost
@@ -15,12 +15,12 @@ is accepted by design, not a target to tune.
 
 - Every read and write of a converted object or array goes through a `Proxy`.
 - On an array, every string-keyed read also pays a `Map` lookup, indices and
-  `length` included, because the `get` trap has to recognise the nine methods
-  it wraps. A symbol key, `Symbol.iterator` included, skips the lookup.
+  `length` included, because the `get` trap has to recognise the nine methods it
+  wraps. A symbol key, `Symbol.iterator` included, skips the lookup.
 - A reported write reads the property before and after it, to report `previous`
   and `value`.
-- Every reported change allocates an entry, and outside a
-  [`batch(fn)`][BAT] every write is its own notification.
+- Every reported change allocates an entry, and outside a [`batch(fn)`][BAT]
+  every write is its own notification.
 - Conversion is eager and copies. `observable(value)` copies only the top-level
   value; with `deep: true` it visits and copies the whole graph it is given,
   checking that every object in it holds plain data.
@@ -48,15 +48,15 @@ console.log(total);
 
 ## Usage
 
-Keep the converter for the parts of a model where convenience matters, and
-write the hot parts by hand. The contract is small, so a hand-written
-participant is short, and the converter passes one through unchanged.
+Keep the converter for the parts of a model where convenience matters, and write
+the hot parts by hand. The contract is small, so a hand-written participant is
+short, and the converter passes one through unchanged.
 
 ### Write a class with `ObservableObject`
 
-A class that extends [`ObservableObject`][OOB] keeps
-its state in its own fields. Nothing is proxied, and a change is reported only
-where the class calls `setAndEmit`, `emitSet` or `emitChange`.
+A class that extends [`ObservableObject`][OOB] keeps its state in its own
+fields. Nothing is proxied, and a change is reported only where the class calls
+`setAndEmit`, `emitSet` or `emitChange`.
 
 ### Write a collection that reports splices
 
@@ -124,9 +124,8 @@ console.log('sum', state.numbers.sum());
 ```
 
 The loop in `sum` runs over a plain array, so it pays nothing for being
-observable. The [`convert` hook][HOK] is the way to
-supply such a wrapper for a value the converter would otherwise convert or
-refuse.
+observable. The [`convert` hook][HOK] is the way to supply such a wrapper for a
+value the converter would otherwise convert or refuse.
 
 ### Group writes
 
@@ -150,9 +149,9 @@ list.push(1, 2, 3);
 
 ### Read outside the proxy
 
-Read a converted array into a plain copy with `slice()` before a tight loop,
-and keep `length` in a local variable. The copy is a plain array, so the loop
-pays the trap once per element for the copy and nothing afterwards:
+Read a converted array into a plain copy with `slice()` before a tight loop, and
+keep `length` in a local variable. The copy is a plain array, so the loop pays
+the trap once per element for the copy and nothing afterwards:
 
 ```js
 import { observable } from 'asljs-observable';
@@ -195,19 +194,18 @@ value is copied, and nested objects and arrays are kept by reference.
 
 - A conforming object nested in a converted model is not wrapped, so it costs
   what its own implementation costs.
-- A value assigned to a member after conversion is stored as it is, so
-  assigning a large plain structure costs nothing, and its own changes are not
-  reported until it is converted with `observable` first.
-- A `slice()` copy is a snapshot. It does not follow later changes. With
-  `deep: true` its elements are still the converted values, so a write to a
-  nested object through the copy is reported.
+- A value assigned to a member after conversion is stored as it is, so assigning
+  a large plain structure costs nothing, and its own changes are not reported
+  until it is converted with `observable` first.
+- A `slice()` copy is a snapshot. It does not follow later changes. With `deep:
+  true` its elements are still the converted values, so a write to a nested
+  object through the copy is reported.
 
 ## See also
 
 - [The converter][CNV] — what `observable()` converts and reports.
 - [The contract][CTR] — what a hand-written participant must emit.
-- [Batching and delivery][BAT] — what groups writes into one
-  notification.
+- [Batching and delivery][BAT] — what groups writes into one notification.
 
 [BAT]: batching.md
 [CNV]: converter.md

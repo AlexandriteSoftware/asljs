@@ -168,7 +168,7 @@ function describeValue(
     : (value as { constructor?: { name?: unknown; }; }).constructor?.name;
 
   return typeof name === 'string'
-    && name !== ''
+      && name !== ''
     ? name
     : 'the value';
 }
@@ -484,12 +484,14 @@ function traceNew(
       conversion.traceOf()?.(
         object,
         'change',
-        changes));
+        changes
+      ));
 
   conversion.traceOf()?.(
     object,
     'new',
-    { object });
+    { object }
+  );
 }
 
 /**
@@ -1274,10 +1276,10 @@ function convertTop(
  */
 const observableImpl =
   (
-      ...args: [ value?: unknown, options?: ObservableOptions ]
+      ...args: [value?: unknown, options?: ObservableOptions]
     ): any =>
   {
-  const [ value, options ] = args;
+  const [value, options] = args;
 
   const {
     eventful: factory = eventful,
@@ -1309,19 +1311,19 @@ const observableImpl =
       factory,
       reserved:
         factory === eventful
-        ? EVENTFUL_METHOD_NAMES
-        : REQUIRED_METHOD_NAMES,
+      ? EVENTFUL_METHOD_NAMES
+      : REQUIRED_METHOD_NAMES,
       traceOf:
         () =>
         {
-        const traceFn =
-          trace
-          || observable.options.trace;
+      const traceFn =
+        trace
+        || observable.options.trace;
 
-        return isFunction(traceFn)
-          ? traceFn
-          : null;
-      },
+      return isFunction(traceFn)
+        ? traceFn
+        : null;
+    },
       ancestors: new Map(),
       converted: new Map() };
 

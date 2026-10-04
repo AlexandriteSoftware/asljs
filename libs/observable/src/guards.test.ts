@@ -162,7 +162,8 @@ test(
   `${TEST_SUITE}: isPlainArray accepts arrays from any realm, not subclasses`,
   () =>
   {
-    class List extends Array {}
+    class List extends Array
+    {}
 
     assert.equal(
       isPlainArray(

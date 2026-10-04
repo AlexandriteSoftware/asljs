@@ -287,11 +287,10 @@ test(
     };
 
     const create =
-      (): State =>
-        ({ user:
-             { name: 'Alice' },
-           list:
-             [ { n: 1 } ] });
+      (): State => ({ user:
+                        { name: 'Alice' },
+                      list:
+                        [ { n: 1 } ] });
 
     // Separate data for each call: conversion grafts onto the target, so a
     // shared member would be converted for both.
@@ -343,7 +342,8 @@ test(
     assert.equal(
       // @ts-expect-error a member is typed as declared, not as converted
       typeof deep.user.on,
-      'function');
+      'function'
+    );
 
     // Deep conversion made the member observable at runtime, and the guard is
     // how a caller reaches it.
@@ -412,8 +412,7 @@ test(
     const boxed =
       observable(date);
 
-    const typedBox: Date =
-      boxed.value;
+    const typedBox: Date = boxed.value;
 
     assert.ok(dateIsBoxed);
 

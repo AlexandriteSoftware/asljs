@@ -52,7 +52,7 @@ function isObjectPrototype(
     Object.getOwnPropertyDescriptor(
       prototype,
       'constructor')
-      ?.value;
+    ?.value;
 
   return isFunction(constructor)
     && constructor.prototype === prototype

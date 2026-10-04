@@ -64,8 +64,8 @@ Consequences to check in your own code:
 - **Deleted properties are now watched.** A query of `'user.name'` re-runs when
   `name` is deleted, where `watch` previously did not.
 
-See [the contract](contract.md) for the entry shapes and the rules a consumer
-has to apply.
+See [the contract][CON] for the entry shapes and the rules a consumer has to
+apply.
 
 ## `watch` is gone
 
@@ -114,14 +114,13 @@ Two behaviour changes come with it:
 - **Arrays are queryable.** `watch` threw for any array target. `observe(array)`
   and `at('items.0.name')` both work.
 
-See [the query](query.md) for the operators and the deduplication rules.
+See [the query][QUE] for the operators and the deduplication rules.
 
 ## Conversion is single-level by default
 
-0.5 converted nested plain objects and arrays by default, and took
-`shallow: true` to convert only the top-level value. `shallow` is gone:
-conversion is single-level by default, and `deep: true` restores the old
-default.
+0.5 converted nested plain objects and arrays by default, and took `shallow:
+true` to convert only the top-level value. `shallow` is gone: conversion is
+single-level by default, and `deep: true` restores the old default.
 
 Before:
 
@@ -137,9 +136,9 @@ observable(model, { deep: true });
 observable(model);
 ```
 
-A model whose nested members are observed, queried along a path below the
-root, or relied on to be refused when unsupported needs `deep: true`. The
-`convert` hook is consulted for nested values only under `deep: true`.
+A model whose nested members are observed, queried along a path below the root,
+or relied on to be refused when unsupported needs `deep: true`. The `convert`
+hook is consulted for nested values only under `deep: true`.
 
 ## `observable` returns a copy
 
@@ -147,21 +146,21 @@ root, or relied on to be refused when unsupported needs `deep: true`. The
 it, so the original and the result were one object. 0.6 creates a new observable
 version and leaves the original untouched. Consequences to check:
 
-- **The original no longer changes.** Writes through the result do not reach
-  it, and writes to it do not reach the result. Values held by reference, such
-  as a nested object without `deep: true`, are still shared.
-- **Separate calls give separate observables.**
-  `observable(x) === observable(x)` is `false`. Within one call, an object
-  reached twice becomes one observable.
+- **The original no longer changes.** Writes through the result do not reach it,
+  and writes to it do not reach the result. Values held by reference, such as a
+  nested object without `deep: true`, are still shared.
+- **Separate calls give separate observables.** `observable(x) ===
+  observable(x)` is `false`. Within one call, an object reached twice becomes
+  one observable.
 - **Cycles throw under `deep: true`**, naming the path, instead of converging.
-- **An observable or emitter passed as the top-level value throws.** Nested,
-  it is kept by reference as before.
+- **An observable or emitter passed as the top-level value throws.** Nested, it
+  is kept by reference as before.
 - **Values written later are not converted.** `model.user = { name: 'Ann' }`
   stores the plain object; convert it first if its own changes should be
   reported.
 
-See [the converter](converter.md) for the rules, and [the design](Design.md)
-for the reasoning.
+See [the converter][CON2] for the rules, and [the design][DES] for the
+reasoning.
 
 ## Models the converter used to accept
 
@@ -169,8 +168,8 @@ Conversion now requires plain data, and an unsupported value throws with the
 path in the message instead of being stored silently:
 
 - **Class instances, `Map`, `Set` and other non-plain objects** throw unless the
-  [`convert` hook](converter.md#the-convert-hook) takes them over. Nested under
-  `deep: false` they are kept by reference.
+  [`convert` hook][CON3] takes them over. Nested under `deep: false` they are
+  kept by reference.
 - **Accessors, symbol keys, read-only or hidden properties, sealed objects and
   sparse arrays** throw. 0.5 skipped or kept them.
 - **A frozen object at the top level throws**: it cannot change, so there is
@@ -215,11 +214,11 @@ console.log('kept:', model.created === created);
 
 Not breaking, but worth knowing about while you are here:
 
-- [`batch(fn)`](batching.md) groups changes into one notification per emitter.
+- [`batch(fn)`][BAT] groups changes into one notification per emitter.
 - `isObservable` and `asObservable` test conformance.
 - `map`, `filter`, `distinct` and `combine` operators.
 - `.value` reads a query once without subscribing.
-- A source works with RxJS `fromEvent` unchanged; see [RxJS](rxjs.md).
+- A source works with RxJS `fromEvent` unchanged; see [RxJS][RXJ].
 
 ## Still not built
 
@@ -231,3 +230,11 @@ built speculatively:
 - `share()`, if fan-out over an expensive `map` ever justifies it.
 - A `change:<property>` fast path a source can advertise — an optimisation, not
   a second contract.
+
+[BAT]: batching.md
+[CON]: contract.md
+[CON2]: converter.md
+[CON3]: converter.md#the-convert-hook
+[DES]: Design.md
+[QUE]: query.md
+[RXJ]: rxjs.md

@@ -2,15 +2,15 @@
 
 ## Purpose
 
-`observable(value, [options])` creates an observable version of plain
-JavaScript data: a new object, array or box that satisfies the
-[contract](contract.md) and reports its own changes. It is a helper for the
-common case of a JSON-shaped model, not the reason the package exists.
+`observable(value, [options])` creates an observable version of plain JavaScript
+data: a new object, array or box that satisfies the [contract][CON] and reports
+its own changes. It is a helper for the common case of a JSON-shaped model, not
+the reason the package exists.
 
 It copies rather than extends. The data it is given is left untouched, and what
 it returns emits `change` like any other participant, with no private event
-vocabulary of its own. The rules are stated one by one in
-[the design](Design.md); this page explains them with examples.
+vocabulary of its own. The rules are stated one by one in [the design][DES];
+this page explains them with examples.
 
 ## Usage
 
@@ -63,14 +63,13 @@ box.value = 11;
   nested objects and arrays by reference. `true` converts nested plain objects
   and arrays too, all the way down.
 - `convert`: a hook that replaces one object with another. See
-  [The convert hook](#the-convert-hook).
+  [The convert hook][THE].
 - `eventful`: the factory that adds the methods, `eventful` from
-  `asljs-eventful` by default. See
-  [The eventful factory](#the-eventful-factory).
-- `trace`: a hook `(object, action, payload)`, invoked on `'new'` with
-  `{ object }` for every observable the call creates, and on `'change'` with the
-  entry list of one delivery. There is also a process-wide
-  `observable.options.trace`, used when a call supplies none.
+  `asljs-eventful` by default. See [The eventful factory][THE2].
+- `trace`: a hook `(object, action, payload)`, invoked on `'new'` with `{ object
+  }` for every observable the call creates, and on `'change'` with the entry
+  list of one delivery. There is also a process-wide `observable.options.trace`,
+  used when a call supplies none.
 
 ## What is converted
 
@@ -127,13 +126,13 @@ console.log('original untouched:', 'on' in user);
 
 ### Plain data
 
-An object is plain when its prototype is `null` or an `Object.prototype`, and
-an array is plain when its prototype is an `Array.prototype`. Both checks
-recognise any realm's prototypes, so a literal parsed in an iframe or a `vm`
-context is plain data too, and a `Date` or `RegExp` from another realm is still
-a value. A class instance, an instance of an `Array` subclass, a `Map`, a `Set`
-and every other object are not plain: they throw unless `convert` takes them
-over, or, nested without `deep: true`, they are kept by reference.
+An object is plain when its prototype is `null` or an `Object.prototype`, and an
+array is plain when its prototype is an `Array.prototype`. Both checks recognise
+any realm's prototypes, so a literal parsed in an iframe or a `vm` context is
+plain data too, and a `Date` or `RegExp` from another realm is still a value. A
+class instance, an instance of an `Array` subclass, a `Map`, a `Set` and every
+other object are not plain: they throw unless `convert` takes them over, or,
+nested without `deep: true`, they are kept by reference.
 
 A plain object or array is converted only when it holds plain data. Every own
 property, other than an array's `length`, must have a string key and be an
@@ -142,10 +141,10 @@ container must be extensible, and an array must have no holes and no own
 properties other than its indices. Accessors, symbol keys, read-only or hidden
 properties, sealed objects and sparse arrays all throw.
 
-The case `observable` is for is plain data such as `observable({ user })`.
-Data that needs accessors, hidden properties or symbol keys is a class in all
-but name, and a class reports its own changes through `eventful` or
-[`ObservableObject`](#observableobject) without `observable`.
+The case `observable` is for is plain data such as `observable({ user })`. Data
+that needs accessors, hidden properties or symbol keys is a class in all but
+name, and a class reports its own changes through `eventful` or
+[`ObservableObject`][OBS] without `observable`.
 
 ### Errors name the path
 
@@ -340,8 +339,8 @@ Other array behaviour worth knowing:
   override of a mutating method written after creation, which the wrapper steps
   aside for. Both are consistent with the contract, since `splice` is optional.
 - Growing an array by writing past the end reports the index `set` and then a
-  `set` for `length`, because no splice describes the growth. Assigning
-  `length` directly to grow the array reports it too.
+  `set` for `length`, because no splice describes the growth. Assigning `length`
+  directly to grow the array reports it too.
 
 ## Nested members in TypeScript
 
@@ -388,8 +387,8 @@ state.user.on('change', changes => console.log(changes.length));
 ```
 
 `Converted<T>` is the type of what `observable()` returns, with
-`ConvertedObject<T>`, `ConvertedArray<T>` and `ConvertedPrimitive<T>` behind
-it. A `Date`, a `RegExp` or a function converts to a `ConvertedPrimitive`. A
+`ConvertedObject<T>`, `ConvertedArray<T>` and `ConvertedPrimitive<T>` behind it.
+A `Date`, a `RegExp` or a function converts to a `ConvertedPrimitive`. A
 top-level value the converter refuses, such as a `Map`, types as `never`,
 because converting it throws and there is no result to describe.
 
@@ -399,9 +398,9 @@ Observable does not ship wrappers for `Map`, `Set` or anything else it refuses,
 and it must not start: it cannot guess how you want them observed. The `convert`
 hook is the seam.
 
-It is asked about the top-level value when that is an object, and, under
-`deep: true`, about every nested object that is not kept by reference first. It
-is never asked about a primitive, a `Date`, a `RegExp`, a function or a nested
+It is asked about the top-level value when that is an object, and, under `deep:
+true`, about every nested object that is not kept by reference first. It is
+never asked about a primitive, a `Date`, a `RegExp`, a function or a nested
 frozen plain object or array. It has the first say on everything it is asked
 about, including whether an object already has `on` and `off`.
 
@@ -476,8 +475,8 @@ declared as `Set<string>` is typed `Set<string>` whatever `convert` put there,
 and the path types stop at it, so `at('tags.size')` is not offered. When the
 replacement is not a `Set`, the type is wrong, and wrong quietly where the two
 share a method name: the wrapper above has no set `has`, but it has eventful's
-`has`, which checks for listeners, so `model.tags.has('a')` compiles and
-returns `false`.
+`has`, which checks for listeners, so `model.tags.has('a')` compiles and returns
+`false`.
 
 Two habits keep the types true:
 
@@ -580,8 +579,8 @@ asObservable(converted.tags)?.on('change', changes =>
 ## `ObservableObject`
 
 A base class for a hand-written participant. It emits `change` like every other
-producer here, and its emissions join an open [`batch(fn)`](batching.md),
-because it reports through the same path the converter does.
+producer here, and its emissions join an open [`batch(fn)`][BAT], because it
+reports through the same path the converter does.
 
 - `setAndEmit(property, previous, value, assign)` assigns and reports, unless
   `Object.is(previous, value)`.
@@ -674,9 +673,17 @@ package.
 
 ## See also
 
-- [The design](Design.md) — the rules, one by one.
-- [The contract](contract.md) — what the converter's output satisfies.
-- [Batching and delivery](batching.md) — when a notification arrives.
-- [The query](query.md) — reading values out of a converted model.
-- [Performance](performance.md) — what conversion costs, and what to write by
-  hand instead.
+- [The design][DES] — the rules, one by one.
+- [The contract][CON] — what the converter's output satisfies.
+- [Batching and delivery][BAT] — when a notification arrives.
+- [The query][QUE] — reading values out of a converted model.
+- [Performance][PER] — what conversion costs, and what to write by hand instead.
+
+[BAT]: batching.md
+[CON]: contract.md
+[DES]: Design.md
+[OBS]: #observableobject
+[PER]: performance.md
+[QUE]: query.md
+[THE]: #the-convert-hook
+[THE2]: #the-eventful-factory

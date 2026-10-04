@@ -117,8 +117,7 @@ incremented once per delivery; it works because delivery is synchronous, so
 nothing else can be running.
 
 Grouping is per emitter, so a batch touching two objects still produces one
-notification each and `combine` recomputes twice. See
-[batching](batching.md#grouping-is-per-emitter).
+notification each and `combine` recomputes twice. See [batching][BAT].
 
 ## Equality and deduplication
 
@@ -141,10 +140,10 @@ Consequences:
 - The first callback always happens, except where `filter` rejects the current
   value. A chain that starts rejected is silent, and its `.value` is
   `undefined`.
-- A projection that rebuilds a value is never deduplicated.
-  `map(u => ({ name: u.name }))` returns a new object every time, `Object.is`
-  says different, and it fires on every upstream notification. `distinct` is the
-  way out, and keeping it separate is why `map` needs no comparison argument.
+- A projection that rebuilds a value is never deduplicated. `map(u => ({ name:
+  u.name }))` returns a new object every time, `Object.is` says different, and
+  it fires on every upstream notification. `distinct` is the way out, and
+  keeping it separate is why `map` needs no comparison argument.
 - `combine` is never deduplicated, because it builds a fresh tuple. That is a
   consequence of the rule rather than an exception to it.
 - Executing a chain is stateful even though the chain is not. Each operator in
@@ -223,8 +222,8 @@ expands forever, so it can be tuned but not removed.
 - Teardown prefers a disposer the source returns from `on`, and falls back to
   `off`. A source whose `on` returns `this`, such as a Node `EventEmitter`, uses
   `off`.
-- A model that holds one object in two places can bind two segments to it,
-  which notifies twice; deduplication absorbs the second.
+- A model that holds one object in two places can bind two segments to it, which
+  notifies twice; deduplication absorbs the second.
 
 ## Vocabulary
 
@@ -241,10 +240,16 @@ Rx.NET kept the LINQ names; the JavaScript port moved away from them.
 
 The operator set stays small on purpose: `at` is the operator RxJS has no
 equivalent for, and everything else RxJS already does better. See
-[RxJS interop](rxjs.md).
+[RxJS interop][RXJ].
 
 ## See also
 
-- [The contract](contract.md) — what a source has to provide.
-- [Batching and delivery](batching.md) — when a notification arrives.
-- [Performance](performance.md) — what reading through the converter costs.
+- [The contract][CON] — what a source has to provide.
+- [Batching and delivery][BAT2] — when a notification arrives.
+- [Performance][PER] — what reading through the converter costs.
+
+[BAT]: batching.md#grouping-is-per-emitter
+[BAT2]: batching.md
+[CON]: contract.md
+[PER]: performance.md
+[RXJ]: rxjs.md

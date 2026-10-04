@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The [contract](contract.md) was chosen for hand-implementation and for Node
+The [contract][CON] was chosen for hand-implementation and for Node
 `EventEmitter` interop. It happens to also make a source directly consumable by
 RxJS, which is worth not spoiling by accident.
 
@@ -60,7 +60,7 @@ chain with `subscribe` and `.value` and no `on`/`off` at all.
   contains an error raised inside its own pipeline and routes it to the
   subscriber, so this mostly affects listeners attached directly rather than
   through `fromEvent`. Both are reachable through
-  [the `eventful` factory seam](converter.md#eventfuls-own-options).
+  [the `eventful` factory seam][CON2].
 - Unsubscribe returns `boolean` where RxJS expects `void`. An adapter ignores
   it.
 
@@ -104,5 +104,9 @@ warning.
 
 ## See also
 
-- [The contract](contract.md) — what makes a source an event target.
-- [The query](query.md) — what a chain is, and is not.
+- [The contract][CON] — what makes a source an event target.
+- [The query][QUE] — what a chain is, and is not.
+
+[CON]: contract.md
+[CON2]: converter.md#the-eventful-factory
+[QUE]: query.md

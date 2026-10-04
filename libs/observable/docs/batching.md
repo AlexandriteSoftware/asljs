@@ -3,9 +3,8 @@
 ## Purpose
 
 `batch(fn)` groups everything that changes during `fn` into one notification per
-emitter. It is the boundary that fills the entry list the
-[contract](contract.md) carries, and it is what turns an array operation from N
-notifications into one.
+emitter. It is the boundary that fills the entry list the [contract][CON]
+carries, and it is what turns an array operation from N notifications into one.
 
 Delivery is synchronous. A list only pays off if something fills it, and the
 proxy traps fire one at a time and cannot tell that `shift()` is a single
@@ -260,11 +259,15 @@ one-element list and never thinks about batching.
 
 Synchronous delivery also pays for itself elsewhere: it is what lets `combine`
 recompute once per delivery with a counter rather than a scheduler. See
-[the query](query.md#combining-paths).
+[the query][QUE].
 
 ## See also
 
-- [The contract](contract.md) — what the list carries.
-- [The converter](converter.md#arrays) — which array methods batch.
-- [Performance](performance.md) — grouping writes in a model that has to be
-  fast.
+- [The contract][CON] — what the list carries.
+- [The converter][CON2] — which array methods batch.
+- [Performance][PER] — grouping writes in a model that has to be fast.
+
+[CON]: contract.md
+[CON2]: converter.md#arrays
+[PER]: performance.md
+[QUE]: query.md#combining-paths

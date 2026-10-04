@@ -5,8 +5,8 @@
 Use this file as AI-facing guidance for `asljs-observable`.
 
 This package owns three things, in order of importance: a contract for
-observable objects, a query over it, and a converter that makes plain
-JavaScript data satisfy the contract.
+observable objects, a query over it, and a converter that makes plain JavaScript
+data satisfy the contract.
 
 ## Package Scope
 
@@ -24,12 +24,12 @@ Exports from `src/index.ts`:
 
 - Use `observable(value, options?)` to convert plain objects, arrays, or
   primitives.
-- Use `observe(source).at(path)` for path-based reactive reads, and
-  `combine([ ... ])` for several paths at once.
+- Use `observe(source).at(path)` for path-based reactive reads, and `combine([
+  ... ])` for several paths at once.
 - Use `ObservableObject` when implementing a class with explicit getters and
   setters.
-- Keep change notifications expressed through one `change` event carrying a
-  list of discriminated entries.
+- Keep change notifications expressed through one `change` event carrying a list
+  of discriminated entries.
 
 ## Constraints To Preserve
 
@@ -55,15 +55,15 @@ Exports from `src/index.ts`:
   applies it too.
 - Entries are unordered and unchanged positions are absent. The list is what
   changed, never the affected range.
-- An unrecognised entry kind means "something changed, re-read". Keep this, it is
-  what allows a `delete`, `permute` or `change:<property>` kind to be added later
-  without breaking a consumer.
+- An unrecognised entry kind means "something changed, re-read". Keep this, it
+  is what allows a `delete`, `permute` or `change:<property>` kind to be added
+  later without breaking a consumer.
 - The contract covers own properties only and never carries a path. Paths are
   composed by the query.
 - Timing is not part of the contract. This package's own producers are
   synchronous, which is narrower than what the contract allows.
-- `Observable` is the contract interface, and it is the most valuable name in the
-  package. Do not give it back to a converter return type.
+- `Observable` is the contract interface, and it is the most valuable name in
+  the package. Do not give it back to a converter return type.
 
 ### Batching and delivery
 
@@ -76,8 +76,8 @@ Exports from `src/index.ts`:
 - Nesting is counted, not stacked. Only the outermost close emits.
 - Grouping is per emitter. "One notification" always means one per source, and
   the flush order is the order the emitters were first written to.
-- A write made by a listener during delivery is queued and delivered after,
-  as its own `change`. It must not join the list being delivered, or one
+- A write made by a listener during delivery is queued and delivered after, as
+  its own `change`. It must not join the list being delivered, or one
   notification would carry different payloads to different subscribers.
 - The round count is capped and the cap throws. A silently abandoned flush would
   leave the model and every view disagreeing with no indication.
@@ -111,9 +111,9 @@ Exports from `src/index.ts`:
 source of truth for them. The points below are the ones a change is most likely
 to undo.
 
-- `observable` creates a new observable version of plain data and never
-  extends or mutates what it is given. Do not go back to grafting the API onto
-  the input.
+- `observable` creates a new observable version of plain data and never extends
+  or mutates what it is given. Do not go back to grafting the API onto the
+  input.
 - Repeated references and cycles are resolved per call: within one call an
   object reached twice becomes one observable, a cycle throws, and separate
   calls produce separate observables. There is no process-wide identity map.
@@ -121,8 +121,8 @@ to undo.
   them as two ordered functions in `observable.ts`, in the order the design
   gives, because the order is what decides every overlapping case.
 - `Date`, `RegExp`, functions and nested frozen plain data are values: kept by
-  reference, never converted or traversed, and boxed at the top level. They
-  are recognised by brand checks that work across realms, not by `instanceof`.
+  reference, never converted or traversed, and boxed at the top level. They are
+  recognised by brand checks that work across realms, not by `instanceof`.
 - Plain objects and arrays are recognised by prototype, across realms. Only
   plain data is converted (D16): accessors, symbol keys, read-only, hidden or
   non-configurable properties, inextensible containers, holes and extra array
@@ -133,8 +133,8 @@ to undo.
 - `convert` is asked before the built-in rules, never about values. A top-level
   result must be a new observable; a nested result is used unchecked and not
   traversed.
-- Values written after conversion are stored as they are (D13). The traps
-  report writes and never convert them.
+- Values written after conversion are stored as they are (D13). The traps report
+  writes and never convert them.
 - Every refusal names the path of the offending value (D17). The messages are
   asserted in the tests.
 - The package ships no wrappers for `Map`, `Set` or any other refused kind, and
@@ -143,8 +143,8 @@ to undo.
   `defineProperty` trap reports nothing while it is raised. Without it a plain
   assignment is reported twice, because `[[Set]]` performs
   `[[DefineOwnProperty]]`.
-- A definition is reported by whether the observed value changed, not by what the
-  descriptor says. Descriptor observation is out of the contract.
+- A definition is reported by whether the observed value changed, not by what
+  the descriptor says. Descriptor observation is out of the contract.
 - Five array methods produce a splice: `push`, `pop`, `shift`, `unshift`,
   `splice`. Their arguments are normalised rather than passed through, and the
   call goes through the proxy, which is why index `set` entries are suppressed
@@ -155,14 +155,15 @@ to undo.
   removed, so a consumer releasing resources would tear down and rebuild
   everything for a reorder.
 - The `get` trap exists only on array targets, does nothing but a `Map` lookup
-  for anything but the wrapped methods, and steps aside for an own override.
-  Do not optimise it for speed: the converter trades speed for convenience,
-  and `docs/performance.md` says so and points to hand-written participants.
-- Symbol keys are stored and not reported: the contract's `property` is a string.
+  for anything but the wrapped methods, and steps aside for an own override. Do
+  not optimise it for speed: the converter trades speed for convenience, and
+  `docs/performance.md` says so and points to hand-written participants.
+- Symbol keys are stored and not reported: the contract's `property` is a
+  string.
 - The return type promises only the top-level conversion: `T` plus the Eventful
   API. Members keep their declared type, with or without `deep`, because a
-  member may hold either the plain value or its observable. Do not make the
-  type follow `deep`.
+  member may hold either the plain value or its observable. Do not make the type
+  follow `deep`.
 - `ObservablePath` caps its depth. Without the cap a self-referential model
   recurses forever. It excludes the names `eventful` occupies, or the methods
   conversion adds become watchable properties, and it stops at values.
@@ -180,19 +181,19 @@ Do not build these speculatively; they need evidence first.
 
 ## Documentation Layout
 
-- `README.md` is a landing page for a first-time reader: what it does, whether it
-  is for them, how to install, a few small examples, and links onward. Keep
+- `README.md` is a landing page for a first-time reader: what it does, whether
+  it is for them, how to install, a few small examples, and links onward. Keep
   detail, reference and rationale out of it; the root `AGENTS.md` has the rule.
 - `docs/contract.md`, `docs/query.md`, `docs/batching.md`, `docs/converter.md`,
   `docs/performance.md`, `docs/rxjs.md` and `docs/migrating-from-0.5.md` carry
-  the detail. Each records
-  the reasoning behind its decisions, not only the behaviour, because the
-  reasoning is what stops a later change undoing a deliberate one.
+  the detail. Each records the reasoning behind its decisions, not only the
+  behaviour, because the reasoning is what stops a later change undoing a
+  deliberate one.
 - `docs/Design.md` states the converter's design rule by rule (D1-D19). Its
   examples are illustrations in plain fences, so the harness does not run them;
   `docs/converter.md` carries the runnable ones.
-- Every ```js and ```ts block in `README.md` and `docs` is executed or compiled
-  by `src/docs-examples.test.ts`. A JavaScript block must be a complete program
+- Every `js and `ts block in `README.md` and `docs` is executed or compiled by
+  `src/docs-examples.test.ts`. A JavaScript block must be a complete program
   and, where it ends with an `// Output:` comment block, must print exactly
   those lines; a TypeScript block must compile standalone against `dist`, or
   carry an `// error TSxxxx` comment and produce that error. Use a plain fence

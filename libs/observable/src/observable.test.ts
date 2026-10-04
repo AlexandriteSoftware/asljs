@@ -47,9 +47,9 @@ function flat(
 class Point
 {
   constructor(
-      public x: number,
-      public y: number
-    )
+    public x: number,
+    public y: number
+  )
   {}
 }
 
@@ -172,14 +172,16 @@ test(
       observable(
         { a: 1 });
 
-    for (const name of [ 'on',
-                         'once',
-                         'off',
-                         'emit',
-                         'emitAsync',
-                         'has',
-                         'removeAllListeners',
-                         'getListeners' ]) {
+    for (
+      const name of [ 'on',
+                      'once',
+                      'off',
+                      'emit',
+                      'emitAsync',
+                      'has',
+                      'removeAllListeners',
+                      'getListeners' ]
+    ) {
       assert.equal(
         typeof (model as any)[name],
         'function',
@@ -406,7 +408,7 @@ test(
       { name: 'TypeError',
         message:
           'at value: a frozen object cannot change, so there is nothing to '
-            + 'observe' });
+          + 'observe' });
 
     assert.throws(
       () =>
@@ -726,9 +728,9 @@ test(
         { deep: true,
           convert:
             value =>
-              value instanceof Set
-                ? wrapper
-                : undefined });
+          value instanceof Set
+            ? wrapper
+            : undefined });
 
     assert.strictEqual(
       model.tags,
@@ -748,9 +750,9 @@ test(
         { deep: true,
           convert:
             value =>
-              'b' in value
-                ? null
-                : undefined });
+          'b' in value
+            ? null
+            : undefined });
 
     assert.ok(
       isObservable(model.a));
@@ -778,11 +780,11 @@ test(
         { deep: true,
           convert:
             value =>
-              value instanceof Point
-                ? value
-                : 'b' in value
-                ? 42
-                : undefined });
+          value instanceof Point
+            ? value
+            : 'b' in value
+            ? 42
+            : undefined });
 
     assert.strictEqual(
       model.point,
@@ -807,9 +809,9 @@ test(
         { deep: true,
           convert:
             value =>
-              value instanceof Point
-                ? replacement
-                : undefined });
+          value instanceof Point
+            ? replacement
+            : undefined });
 
     assert.strictEqual(
       model.a,
@@ -859,8 +861,7 @@ test(
   `${TEST_SUITE}: a top-level convert result must be a new observable`,
   () =>
   {
-    const map =
-      new Map();
+    const map = new Map();
 
     assert.throws(
       () =>
@@ -869,7 +870,7 @@ test(
           { convert: value => value }),
       { message:
           'at value: convert must return a new observable, with on and off, '
-            + 'for the top-level value' });
+          + 'for the top-level value' });
 
     assert.throws(
       () =>
@@ -969,7 +970,7 @@ test(
           { on: null }),
       { message:
           'at value: the property "on" has the name of a method the '
-            + 'observable adds' });
+          + 'observable adds' });
 
     assert.throws(
       () =>
@@ -1007,23 +1008,22 @@ test(
           target: object
         ): any =>
       {
-      const listeners =
-        new Set<Function>();
+      const listeners = new Set<Function>();
 
       Object.defineProperties(
         target,
         { on:
             { value:
                 (
-                    _event: string,
-                    listener: Function
-                  ) => listeners.add(listener) },
+              _event: string,
+              listener: Function
+            ) => listeners.add(listener) },
           off:
             { value:
                 (
-                    _event: string,
-                    listener: Function
-                  ) => listeners.delete(listener) },
+              _event: string,
+              listener: Function
+            ) => listeners.delete(listener) },
           emit:
             { value:
                 (
@@ -1074,7 +1074,7 @@ test(
             2)),
       { message:
           'at value: Point is not supported. Hold it in a plain object, or '
-            + 'take it over with the convert option.' });
+          + 'take it over with the convert option.' });
 
     assert.throws(
       () =>
@@ -1142,7 +1142,8 @@ test(
   `${TEST_SUITE}: an array subclass is a class instance`,
   () =>
   {
-    class List extends Array<number> {}
+    class List extends Array<number>
+    {}
 
     assert.throws(
       () =>
@@ -1161,8 +1162,7 @@ test(
         Object.create(null));
 
     assert.throws(
-      () =>
-        observable(fake),
+      () => observable(fake),
       /^TypeError: at value: .* is not supported/);
   });
 
@@ -1903,83 +1903,80 @@ test(
     const cases: Array<[string, () => unknown, string]> =
       [ [ 'accessor',
           () =>
-            observable(
-              { get full()
-                {
-                  return 'Ann';
-                } }),
+        observable(
+          { get full() {
+              return 'Ann';
+            } }),
           'at value.full: an accessor property is not supported' ],
         [ 'symbol key',
           () =>
-            observable(
-              { [Symbol('meta')]: 1 }),
+      observable(
+        { [Symbol('meta')]: 1 }),
           'at value: the symbol key Symbol(meta) is not supported' ],
         [ 'read-only',
           () =>
-            observable(
-              Object.defineProperty(
-                {},
-                'a',
-                { value: 1,
-                  enumerable: true,
-                  configurable: true })),
+        observable(
+          Object.defineProperty(
+            {},
+            'a',
+            { value: 1,
+              enumerable: true,
+              configurable: true })),
           'at value.a: a read-only property is not supported' ],
         [ 'non-enumerable',
           () =>
-            observable(
-              Object.defineProperty(
-                {},
-                'a',
-                { value: 1,
-                  writable: true,
-                  configurable: true })),
+      observable(
+        Object.defineProperty(
+          {},
+          'a',
+          { value: 1,
+            writable: true,
+            configurable: true })),
           'at value.a: a non-enumerable property is not supported' ],
         [ 'non-configurable',
           () =>
-            observable(
-              Object.defineProperty(
-                {},
-                'a',
-                { value: 1,
-                  writable: true,
-                  enumerable: true })),
+        observable(
+          Object.defineProperty(
+            {},
+            'a',
+            { value: 1,
+              writable: true,
+              enumerable: true })),
           'at value.a: a non-configurable property is not supported' ],
         [ 'sealed',
           () =>
-            observable(
-              Object.seal(
-                { a: 1 })),
+      observable(
+        Object.seal(
+          { a: 1 })),
           'at value: a sealed object is not supported' ],
         [ 'non-extensible',
           () =>
-            observable(
-              Object.preventExtensions(
-                { a: 1 })),
+        observable(
+          Object.preventExtensions(
+            { a: 1 })),
           'at value: a non-extensible object is not supported' ],
         [ 'hole',
           () =>
-            observable(
-              { list:
-                  [ 1,
-                    ,
-                    3 ] },
-              { deep: true }),
+      observable(
+        { list:
+            [1, , 3] },
+        { deep: true }),
           'at value.list: an array with holes is not supported' ],
         [ 'extra array property',
           () =>
-            observable(
-              Object.assign(
-                [ 1 ],
-                { total: 1 })),
+        observable(
+          Object.assign(
+            [ 1 ],
+            { total: 1 })),
           'at value.total: an array property other than an index is not '
-            + 'supported' ],
+      + 'supported' ],
         [ 'nested sealed',
           () =>
-            observable(
-              { a:
-                  Object.seal(
-                    { b: 1 }) },
-              { deep: true }),
+      observable(
+        { a:
+            Object.seal(
+              { b: 1 }) },
+        { deep: true }),
           'at value.a: a sealed object is not supported' ] ];
 
     for (const [name, call, message] of cases) {
@@ -2000,8 +1997,7 @@ test(
     sparse[1e9] = 1;
 
     assert.throws(
-      () =>
-        observable(sparse),
+      () => observable(sparse),
       /an array with holes is not supported/);
   });
 
@@ -2105,10 +2101,10 @@ test(
               value: any
             ) =>
           {
-        calls++;
+          calls++;
 
-        return eventful(value);
-      } });
+          return eventful(value);
+        } });
 
     assert.equal(
       calls,
@@ -2148,12 +2144,12 @@ test(
                   value: any
                 ) =>
               {
-            if ('b' in value) {
-              throw new Error('no');
-            }
+              if ('b' in value) {
+                throw new Error('no');
+              }
 
-            return eventful(value);
-          } }),
+              return eventful(value);
+            } }),
       { message: 'at value.a: no' });
   });
 
@@ -2417,10 +2413,10 @@ test(
         { deep: true,
           convert:
             value =>
-              value === emitter
-              || 'on' in value
-                ? 'replaced'
-                : undefined });
+          value === emitter
+            || 'on' in value
+            ? 'replaced'
+            : undefined });
 
     assert.equal(
       model.e,
@@ -2449,10 +2445,9 @@ test(
   {
     const frozen =
       Object.freeze(
-        { get x()
-          {
-            return 1;
-          },
+        { get x() {
+          return 1;
+        },
           [Symbol('meta')]: 1 });
 
     const model: any =
@@ -2528,10 +2523,7 @@ test(
     assert.throws(
       () =>
         observable(
-           
-          [ 1,
-            ,
-            3 ]),
+          [1, , 3]),
       { message:
           'at value: an array with holes is not supported' });
   });
@@ -2821,12 +2813,12 @@ test(
                   value
                 ) =>
               {
-            if (value instanceof Map) {
-              throw failure;
-            }
+              if (value instanceof Map) {
+                throw failure;
+              }
 
-            return undefined;
-          } }),
+              return undefined;
+            } }),
       (error: any) =>
         error instanceof TypeError
         && error.message === 'at value.a.b: hook failed'
