@@ -1,13 +1,13 @@
 # data-binding
 
-> Part of [Alexandrite Software Library][#1] - a set of high-quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
+> JavaScript libraries for everyday use.
 
 ## Overview
 
 `asljs-data-binding` provides declarative DOM bindings using explicit
-`data-bind-*` attributes. Bindings are applied with
-`bindDataModel(root, model, options?)`.
+`data-bind-*` attributes. Bindings are applied with `bindDataModel(root, model,
+options?)`.
 
 There are three binding families:
 
@@ -27,8 +27,7 @@ reactivity.
 npm install asljs-data-binding
 ```
 
-NPM Package:
-[asljs-data-binding](https://www.npmjs.com/package/asljs-data-binding)
+NPM Package: [asljs-data-binding][NPM]
 
 ## Public Exports
 
@@ -67,8 +66,7 @@ Type exports:
 - If you need to write a DOM property, then use `data-bind-prop-<name>`.
 - If you need to toggle a class, then use `data-bind-class-<name>`.
 - If you need to handle an event, then use `data-bind-on<event>`.
-- If you need to switch the descendant model root, then use
-  `data-bind-context`.
+- If you need to switch the descendant model root, then use `data-bind-context`.
 
 ## Safe Authoring Rules
 
@@ -76,8 +74,8 @@ Type exports:
 - Prefer multiple binding attributes over overloaded single expressions.
 - Use `data-bind-context` instead of repeating long nested paths.
 - Keep event handler names on the model.
-- Keep pipe arguments literal unless a custom pipe is intentionally designed
-  for string arguments.
+- Keep pipe arguments literal unless a custom pipe is intentionally designed for
+  string arguments.
 
 ## Usage
 
@@ -144,8 +142,8 @@ describe different concerns:
 ></a>
 ```
 
-End-to-end example using context, value bindings, an event binding, and a
-custom pipe:
+End-to-end example using context, value bindings, an event binding, and a custom
+pipe:
 
 ```html
 <section data-bind-context="user">
@@ -303,8 +301,8 @@ Value pipes:
 Locale behavior:
 
 - by default, `Intl` pipes use runtime/browser locale settings
-- to force a locale, compose custom pipes using `createBuiltInPipes('en-GB')`
-  in your own implementation
+- to force a locale, compose custom pipes using `createBuiltInPipes('en-GB')` in
+  your own implementation
 
 ## Error Handling
 
@@ -347,6 +345,8 @@ Types are exported from:
 
 ## License
 
-MIT License. See [LICENSE](LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[LIC]: LICENSE.md
+[NPM]: https://www.npmjs.com/package/asljs-data-binding

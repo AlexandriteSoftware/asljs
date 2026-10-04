@@ -4,8 +4,8 @@
 
 Use this file as AI-facing guidance for `asljs-data-binding`.
 
-This package provides declarative DOM binding through explicit
-`data-bind-*` attributes and `bindDataModel(root, model, options?)`.
+This package provides declarative DOM binding through explicit `data-bind-*`
+attributes and `bindDataModel(root, model, options?)`.
 
 ## Package Scope
 
@@ -71,15 +71,15 @@ Unsupported syntax:
 
 ## Constraints To Preserve
 
-- Event bindings currently resolve a function and invoke it as
-  `(event, model, element)`.
+- Event bindings currently resolve a function and invoke it as `(event, model,
+  element)`.
 - Do not introduce expression-call syntax in binding attributes unless
   explicitly requested.
 - Pipe arguments are static strings, not reactive model paths.
 - `data-bind-context` rebinding must continue to dispose stale descendant
   watchers when context objects are replaced.
-- Nullish behavior is part of the contract:
-  text/html render empty string, nullish attributes are removed.
+- Nullish behavior is part of the contract: text/html render empty string,
+  nullish attributes are removed.
 - Missing or non-function event handlers warn and keep bindings alive.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
@@ -108,8 +108,7 @@ Unsupported syntax:
 
 - If the task is really about model reactivity, move to `asljs-observable`.
 - If the task is really about event primitives, move to `asljs-eventful`.
-- If the task is really about reusable UI elements, move to
-  `asljs-components`.
+- If the task is really about reusable UI elements, move to `asljs-components`.
 
 ## Validation
 
