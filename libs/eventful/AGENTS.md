@@ -138,7 +138,7 @@ Treat these as public contract behaviors that should not drift silently:
 
 - `npm -w asljs-eventful run test`
 - `npm -w asljs-eventful run typecheck`
-- `npm -w asljs-eventful run lint`
+- `npm -w asljs-eventful run flint`
 
 ## Related Packages
 

@@ -115,7 +115,7 @@ Unsupported syntax:
 
 - `npm -w asljs-data-binding run test`
 - `npm -w asljs-data-binding run typecheck`
-- `npm -w asljs-data-binding run lint`
+- `npm -w asljs-data-binding run flint`
 
 Update this file when AI-facing binding constraints, preserved runtime
 contracts, or validation commands change. Update `README.md` separately only

@@ -456,7 +456,7 @@ If a handler needs row data, prefer the `context` plus `this` pattern.
 
 - `npm -w asljs-components run test`
 - `npm -w asljs-components run typecheck`
-- `npm -w asljs-components run lint`
+- `npm -w asljs-components run flint`
 
 Update this file when AI-facing constraints, exported surface expectations, or
 validation commands change. Update `README.md` separately only when

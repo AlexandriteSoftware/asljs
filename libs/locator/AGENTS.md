@@ -75,7 +75,7 @@ Do not assume:
 
 - `npm -w asljs-locator run test`
 - `npm -w asljs-locator run typecheck`
-- `npm -w asljs-locator run lint`
+- `npm -w asljs-locator run flint`
 
 ## Related Packages
 

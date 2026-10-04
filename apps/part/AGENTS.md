@@ -66,7 +66,7 @@ Do not assume:
 ## Validation
 
 - `npm -w asljs-part run test`
-- `npm -w asljs-part run lint`
+- `npm -w asljs-part run flint`
 
 Update this file when AI-facing exported-surface expectations, CLI contracts,
 or validation commands change. Update `README.md` separately only when

@@ -115,7 +115,7 @@ What not to assume:
 
 - `npm -w asljs-dali run test`
 - `npm -w asljs-dali run typecheck`
-- `npm -w asljs-dali run lint`
+- `npm -w asljs-dali run flint`
 
 Update this file when AI-facing constraints, exported surface expectations, or
 validation commands change. Update `README.md` separately only when

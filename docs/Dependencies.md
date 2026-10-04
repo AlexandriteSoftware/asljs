@@ -35,7 +35,7 @@ graph TD
 `package.json`.
 
 The four packages that use it directly, `cog`, `kb`, `part` and `sfmt`, already
-ask for that major. `remark-validate-links`, which `lint:md` runs, reaches
+ask for that major. `remark-validate-links`, which `flint` runs, reaches
 `glob@^10` through `unified-engine` and again through `@npmcli/config`, and
 version 10 is deprecated, so `npm i` printed one deprecation warning per path.
 

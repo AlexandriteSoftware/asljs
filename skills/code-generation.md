@@ -17,7 +17,7 @@ Validate the package you changed, from the repository root, in this order:
 
 1. `npm -w <package> run test`
 2. `npm -w <package> run typecheck`
-3. `npm -w <package> run lint`
+3. `npm -w <package> run flint`
 4. `npm -w <package> run build`, when emitted output matters
 
 The script shape and the per-app exceptions are in [Repository Layout][RPL].

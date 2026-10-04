@@ -16,23 +16,22 @@ npm i
 ```pwsh
 $env:FOLDER = 'eventful'
 
+npm -w $env:FOLDER run flint
 npm -w $env:FOLDER run test
 npm -w $env:FOLDER run typecheck
-npm -w $env:FOLDER run lint
-npm -w $env:FOLDER run lint:md
 npm -w $env:FOLDER run build
 ```
 
 ## Check markdown links
 
 [remark-validate-links][RVL] reports links to missing files and headings. Each
-package checks its own markdown files with `lint:md`; the root `lint:md` checks
-the repository-level files: the root markdown files and `docs`, `skills`,
-`tasks` and `aftefacts`.
+package checks its own markdown files with `flint`, after formatting them; the
+root `flint` checks the repository-level files: the root markdown files and
+`docs`, `skills`, `tasks` and `aftefacts`.
 
 ```pwsh
-npm run lint:md
-npm -w asljs-eventful run lint:md
+npm run flint
+npm -w asljs-eventful run flint
 ```
 
 The plugin list is in `.remarkrc.json` and the ignored folders in

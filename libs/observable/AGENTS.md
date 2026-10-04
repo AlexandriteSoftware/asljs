@@ -212,7 +212,7 @@ Do not build these speculatively; they need evidence first.
 
 - `npm -w asljs-observable run test`
 - `npm -w asljs-observable run typecheck`
-- `npm -w asljs-observable run lint`
+- `npm -w asljs-observable run flint`
 
 Update this file when AI-facing constraints, preserved payload semantics, or
 validation commands change. Update `README.md` separately only when user-facing
