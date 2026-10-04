@@ -5,8 +5,8 @@
 
 Framework for developing and running automations from composable tasks.
 
-COG provides a shared execution context, a task factory and runner, and
-reusable services.
+COG provides a shared execution context, a task factory and runner, and reusable
+services.
 
 [1]: https://github.com/AlexandriteSoftware/asljs
 
@@ -61,10 +61,10 @@ Example:
 
 ## Writing Tasks
 
-A task implements `Task<TResult>` and has an asynchronous `run(context)`
-method. Register it with a stable command name, a description, and its
-parameters. Mark command-line positional parameters with `position: true`;
-they are required by the CLI.
+A task implements `Task<TResult>` and has an asynchronous `run(context)` method.
+Register it with a stable command name, a description, and its parameters. Mark
+command-line positional parameters with `position: true`; they are required by
+the CLI.
 
 Tasks may create and run another task with `context.createTask()` and
 `context.run()`. Use `context.setData(name, value)` to update a named shared

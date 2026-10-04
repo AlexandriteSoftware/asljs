@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Builds the project in a working directory without throwing on a failed build,
-so a caller (for example `TodoTask`) can inspect what went wrong and decide
-what to do next.
+Builds the project in a working directory without throwing on a failed build, so
+a caller (for example `TodoTask`) can inspect what went wrong and decide what to
+do next.
 
 ## Parameters
 
@@ -17,13 +17,12 @@ what to do next.
    - otherwise `dotnet` if a `.slnx`, `.sln`, or `.csproj` file exists there
      (checked in that order);
    - otherwise `null`.
-2. If no project kind is detected, logs a debug message and returns
-   `{ tool: null, issues: [] }` without running any command.
-3. For `npm`, runs `npm run build` through the `npm` tool
-   (`NpmCliTool.build`).
+2. If no project kind is detected, logs a debug message and returns `{ tool:
+   null, issues: [] }` without running any command.
+3. For `npm`, runs `npm run build` through the `npm` tool (`NpmCliTool.build`).
 4. For `dotnet`, runs `dotnet build <target>` through the `dotnet` tool
-   (`DotnetCliTool.build`), where `target` is the detected solution or
-   project file.
+   (`DotnetCliTool.build`), where `target` is the detected solution or project
+   file.
 5. If the underlying tool throws (non-zero exit code), the error is caught and
    converted with `toCommandIssues()`, which splits the error message into
    trimmed, non-empty lines.

@@ -1,3 +1,6 @@
+import { GitIgnore,
+         type Location }
+  from 'asljs-locator';
 import { Logger }
   from 'asljs-logging';
 import { glob }
@@ -17,9 +20,6 @@ import { getListItemsAsText,
   from '../markdown-document-queries.js';
 import { ArtefactDefinitionProperty }
   from '../model/artefact-definition-property.js';
-import { GitIgnore,
-         type Location }
-  from 'asljs-locator';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
 import { ArtefactDefinition }

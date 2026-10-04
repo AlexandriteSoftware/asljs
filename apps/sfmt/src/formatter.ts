@@ -59,10 +59,10 @@ export function tsFormatterFactory(
     // a report whose fix would delete one is dropped here, for all rules.
     const create: RuleListenerFactory =
       context =>
-        createListener(
-          guardComments(
-            context,
-            logger));
+      createListener(
+        guardComments(
+          context,
+          logger));
 
     const eslintRule: TSESLint.RuleModule<string> =
       { meta,

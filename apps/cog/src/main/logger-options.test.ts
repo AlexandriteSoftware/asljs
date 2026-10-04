@@ -2,10 +2,10 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { readLoggerOptions }
-  from './logger-options.js';
 import { argv }
   from '../testing/test-helpers.js';
+import { readLoggerOptions }
+  from './logger-options.js';
 
 test(
   'reads logging options from separate and inline arguments',

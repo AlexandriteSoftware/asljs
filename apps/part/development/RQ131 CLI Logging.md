@@ -1,10 +1,10 @@
 # RQ131 CLI Logging
 
-Logging is disabled by default. The parameter `--log` enables logging with
-the default log level of `information`.
+Logging is disabled by default. The parameter `--log` enables logging with the
+default log level of `information`.
 
-The parameter `--loglevel` allows specifying the log level. The log level can
-be specified as a full name or an alias. The log level is case-insensitive.
+The parameter `--loglevel` allows specifying the log level. The log level can be
+specified as a full name or an alias. The log level is case-insensitive.
 
 The log levels are as follows, in order of increasing severity:
 
@@ -13,8 +13,8 @@ The log levels are as follows, in order of increasing severity:
 - `debug` - includes detailed information about the execution flow, but does not
   include method entry and exit logs.
 - `information` - includes high-level information about the execution flow.
-- `warning` - includes information about potential issues that may affect
-  the execution.
+- `warning` - includes information about potential issues that may affect the
+  execution.
 - `error` - includes information about errors that occurred during execution.
 
 Logs can be redirected to a file using the `--logfile` parameter, which

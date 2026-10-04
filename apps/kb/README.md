@@ -3,9 +3,9 @@
 > Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
 > JavaScript libraries for everyday use.
 
-Knowledge base tooling for a markdown library: file and folder operations,
-full text search, formatting, and structured data extraction, available both as
-a CLI and as an MCP server.
+Knowledge base tooling for a markdown library: file and folder operations, full
+text search, formatting, and structured data extraction, available both as a CLI
+and as an MCP server.
 
 Markdown is the base file type. Other file types are supported for the
 operations that make sense for them; PDF files, for example, take part in text
@@ -26,19 +26,19 @@ npx kb --library ./notes list
 ## How A Command Runs
 
 The CLI does not touch the library. Every command that reads or changes it is
-carried out by a server, and the CLI parses the arguments, asks, and renders
-the answer.
+carried out by a server, and the CLI parses the arguments, asks, and renders the
+answer.
 
 For each command:
 
 - if a server is already serving that library, the CLI connects to it, so the
   command is answered from that server's warm index;
-- otherwise the CLI starts a server for that one command, and shuts it down
-  when it is done.
+- otherwise the CLI starts a server for that one command, and shuts it down when
+  it is done.
 
-A server is found at an address derived from the library root, so nothing has
-to be configured and no discovery file is written. `kb config` reports the
-address and whether anything is listening there:
+A server is found at an address derived from the library root, so nothing has to
+be configured and no discovery file is written. `kb config` reports the address
+and whether anything is listening there:
 
 ```text
 endpoint: /tmp/asljs-kb-90542ecd1d4b82be.sock
@@ -51,26 +51,24 @@ To leave a server running, so that commands connect instead of starting one:
 kb-mcp --library ./notes --listen
 ```
 
-A listening server outlives its standard input and stops on SIGINT or
-SIGTERM. Its index follows the library, so a file written by one command is
-visible to the next one immediately.
+A listening server outlives its standard input and stops on SIGINT or SIGTERM.
+Its index follows the library, so a file written by one command is visible to
+the next one immediately.
 
 `version` and `config` are the only commands that do not go through a server,
 because they describe the tool rather than the library.
 
 ## The Library
 
-Every command works inside one library root. The root is resolved in this
-order:
+Every command works inside one library root. The root is resolved in this order:
 
 - the `--library <path>` option, if given;
 - the `KB_LIBRARY` environment variable, if set;
 - the current working directory.
 
 All paths given to commands are relative to that root, and all reported paths
-are library-relative POSIX paths. A path that resolves outside of the library
-is rejected, so a knowledge base cannot be read from or written to through
-`../`.
+are library-relative POSIX paths. A path that resolves outside of the library is
+rejected, so a knowledge base cannot be read from or written to through `../`.
 
 `node_modules` and `.git` are always excluded. Dot files and dot folders are
 excluded unless `--hidden` is given.
@@ -145,9 +143,8 @@ File and folder operations:
 
 Search, formatting, and extraction:
 
-- `kb search <query>` - search the text of every readable document;
-  `--regex`, `--case-sensitive`, `--pattern` and `--max-results` narrow the
-  search.
+- `kb search <query>` - search the text of every readable document; `--regex`,
+  `--case-sensitive`, `--pattern` and `--max-results` narrow the search.
 - `kb format [pattern]` - format markdown files in place; `--check` reports the
   files that need formatting without writing them.
 - `kb extract <kind> <path>` - extract `headings`, `links`, `tasks`, `tables`,
@@ -188,8 +185,8 @@ kb move notes/one.md archive/two.md # archive/two.md
 
 An existing target is never replaced unless `--overwrite` is given.
 
-`kb move` and `kb rename` rewrite the links the move would otherwise break.
-See [Moving With Links](#moving-with-links).
+`kb move` and `kb rename` rewrite the links the move would otherwise break. See
+[Moving With Links][MWL].
 
 ## Search
 
@@ -206,8 +203,8 @@ Matching is case-insensitive by default and reports at most one match per line.
 kb search "^## " --regex --pattern "notes/**/*.md"
 ```
 
-Scanned PDF files without a text layer produce no matches; `kb` does not
-perform OCR.
+Scanned PDF files without a text layer produce no matches; `kb` does not perform
+OCR.
 
 ## Extraction
 
@@ -265,8 +262,8 @@ Use `--dry-run` to see the move and every edit without performing either, and
 `--no-update-links` to move without touching any link.
 
 A link whose destination cannot be resolved is left alone rather than guessed
-at. A link that needs an edit but cannot be located in the source is reported
-as `skipped` and its file is left untouched, so nothing is written blind.
+at. A link that needs an edit but cannot be located in the source is reported as
+`skipped` and its file is left untouched, so nothing is written blind.
 
 ## Backlinks
 
@@ -292,18 +289,17 @@ A link counts as pointing at the entry when:
 
 - it is a wiki link written as a bare name, and the entry has that name, in any
   folder;
-- it is a wiki link containing a slash, and that path, resolved from the
-  library root, is the entry;
+- it is a wiki link containing a slash, and that path, resolved from the library
+  root, is the entry;
 - it starts with `/`, and that path, resolved from the library root, is the
   entry;
 - it is any other relative target that, resolved from the folder of the linking
   document, is the entry.
 
-Fragments and query strings are dropped before resolving, so
-`budget.md#summary` counts. A target without an extension also matches the
-markdown file of that name, so `[budget](budget)` counts. External URLs, bare
-fragments such as `[here](#plan)`, and paths that leave the library never
-count.
+Fragments and query strings are dropped before resolving, so `budget.md#summary`
+counts. A target without an extension also matches the markdown file of that
+name, so `[budget](budget)` counts. External URLs, bare fragments such as
+`[here](#plan)`, and paths that leave the library never count.
 
 Inline links, images, and link reference definitions are all reported, because
 each holds a path that a rename has to update. A `[text][id]` reference is not
@@ -314,8 +310,8 @@ Only markdown documents are scanned, since only they carry links.
 ## The Link Index
 
 The library is two collections: the articles, and the links between them.
-`LinkGraph` holds both in memory, with every link destination resolved once,
-at index time, by the rules above.
+`LinkGraph` holds both in memory, with every link destination resolved once, at
+index time, by the rules above.
 
 A server builds the index before it serves its first request and then keeps it
 current by watching the library, so link questions are answered from memory
@@ -356,13 +352,12 @@ incoming: 3
 
 Watching follows the library live: a change naming a markdown file re-indexes
 that one file, and anything else, such as a renamed folder, rebuilds the index.
-Changes are debounced, so a burst of writes collapses into one update.
-Recursive watching is not available on every platform; where it cannot start,
-the server logs it, keeps serving, and the index simply stops following
-changes.
+Changes are debounced, so a burst of writes collapses into one update. Recursive
+watching is not available on every platform; where it cannot start, the server
+logs it, keeps serving, and the index simply stops following changes.
 
-The index covers markdown documents only, under the same exclusion rules as
-`kb list`.
+The index covers markdown documents only, under the same exclusion rules as `kb
+list`.
 
 ## Formatting
 
@@ -385,11 +380,10 @@ preserved verbatim, because re-printing YAML would lose comments and key order.
 }
 ```
 
-The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`,
-`kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each returns its result as
-JSON text, and reports a failure as an error result rather than as a protocol
-error.
+The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`, `kb_move`,
+`kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
+`kb_format`, `kb_extract` and `kb_info`. Each returns its result as JSON text,
+and reports a failure as an error result rather than as a protocol error.
 
 The server indexes the library at startup and watches it for changes, so
 `kb_backlinks` and `kb_graph` answer from memory. `kb_graph` reports `live`,
@@ -399,8 +393,8 @@ from one built for that one request.
 Options:
 
 - `--library <path>` - library root.
-- `--listen [address]` - also serve an address, which the CLI finds on its
-  own. Without an address, the address of the library is used.
+- `--listen [address]` - also serve an address, which the CLI finds on its own.
+  Without an address, the address of the library is used.
 - `--no-index` - do not index or watch. The CLI passes this to the server it
   starts for one command, where an index would be built and thrown away.
 
@@ -426,3 +420,4 @@ const report =
 `runMcpServer(...)` the same behavior as `kb-mcp`.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[MWL]: #moving-with-links

@@ -1,7 +1,7 @@
 # sfmt
 
-> Part of [Alexandrite Software Library][1] - a set of high-quality,
-performant JavaScript libraries for everyday use.
+> Part of [Alexandrite Software Library][1] - a set of high-quality, performant
+> JavaScript libraries for everyday use.
 
 Below are some examples of how the code is formatted with this tool. For more
 details, see the [FORMATTING.md][2] file. The source code of this project is

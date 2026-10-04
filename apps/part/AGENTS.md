@@ -16,8 +16,8 @@ Public behavior at a glance:
 - definition `Location` paths are resolved relative to the definition file
 - definitions can declare `Properties` and `Rules`
 - rules resolve from a sibling `parts/` directory
-- JavaScript rules receive `context.artefacts` as an `ArtefactProvider`
-  rooted at the current repository
+- JavaScript rules receive `context.artefacts` as an `ArtefactProvider` rooted
+  at the current repository
 - cli command `inventory` shows all matching definitions for each artefact
 - cli command `check` runs all rules from all matching definitions for each
   artefact
@@ -46,8 +46,8 @@ Do not assume:
 - Use `runCli(...)` when you want the same behavior as the `part` executable.
 - Use `DefinitionProvider` to discover definitions rather than hand-rolling
   markdown scans.
-- Use `ArtefactProvider` when you need definition-aware artefact discovery or
-  to inspect which definitions apply to a file.
+- Use `ArtefactProvider` when you need definition-aware artefact discovery or to
+  inspect which definitions apply to a file.
 - Use the report builders for embedding inventory or check flows in scripts.
 - Keep stable public usage on the package-root exports; treat other `src/*`
   files as internal implementation unless they are re-exported.
@@ -56,8 +56,8 @@ Do not assume:
 
 - If changing definition parsing, then re-check heading validation and location
   parsing.
-- If changing discovery, then re-check `.gitignore` behavior for both
-  definition discovery and artefact locations.
+- If changing discovery, then re-check `.gitignore` behavior for both definition
+  discovery and artefact locations.
 - If changing rule execution, then re-check both JavaScript rules and external
   executable rules.
 - If changing CLI output, then re-check `inventory`, `artefactdefinition`, and
@@ -68,9 +68,9 @@ Do not assume:
 - `npm -w asljs-part run test`
 - `npm -w asljs-part run flint`
 
-Update this file when AI-facing exported-surface expectations, CLI contracts,
-or validation commands change. Update `README.md` separately only when
-user-facing behavior changes.
+Update this file when AI-facing exported-surface expectations, CLI contracts, or
+validation commands change. Update `README.md` separately only when user-facing
+behavior changes.
 
 ## CLI Contract
 
@@ -80,8 +80,8 @@ user-facing behavior changes.
 
 ### init
 
-- Copies `Artefact Definition.md` and `Rule File.md` into the chosen
-  definitions directory.
+- Copies `Artefact Definition.md` and `Rule File.md` into the chosen definitions
+  directory.
 - Ensures a sibling `parts/` directory exists in the chosen definitions
   directory.
 - Uses the current working directory by default and `--definitions <path>` when

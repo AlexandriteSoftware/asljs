@@ -117,12 +117,12 @@ curl.exe "http://localhost:3000/api/history/disk.c?limit=50"
 
 ## Further reading
 
-- [Running it][OPS] — the two processes, environment variables,
-  the HTTP API, and backup.
-- [Adding a monitor][MON] — agents, counters, cards, renderers, how
-  long samples are kept, and adding a project.
-- [Concept][CON] — the design: layers, storage model, value
-  conventions, and the decisions worth not revisiting.
+- [Running it][OPS] — the two processes, environment variables, the HTTP API,
+  and backup.
+- [Adding a monitor][MON] — agents, counters, cards, renderers, how long samples
+  are kept, and adding a project.
+- [Concept][CON] — the design: layers, storage model, value conventions, and the
+  decisions worth not revisiting.
 
 Questions and bugs: [asljs/issues][ISS].
 

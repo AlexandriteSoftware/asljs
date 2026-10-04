@@ -11,11 +11,11 @@ import test
   from 'node:test';
 import { TaskRegistry }
   from '../task.js';
+import { argv }
+  from '../testing/test-helpers.js';
 import { readTaskDirectories,
          registerTaskDirectories }
   from './task-directories.js';
-import { argv }
-  from '../testing/test-helpers.js';
 
 test(
   'reads multiple task directories from command arguments',

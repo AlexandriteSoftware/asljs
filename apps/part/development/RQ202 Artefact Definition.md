@@ -1,7 +1,7 @@
 # RQ202 Artefact Definition
 
-Defines types of the artefacts. Provides description, location patterns,
-and rules. See [Artefact Definition][1].
+Defines types of the artefacts. Provides description, location patterns, and
+rules. See [Artefact Definition][1].
 
 Artefact Definition is defined in [model/artefact-definition.ts][2] as follows:
 
@@ -15,13 +15,13 @@ Artefact Definition is defined in [model/artefact-definition.ts][2] as follows:
 ```
 
 [1]: <../artefacts/Artefact Definition.md>
-[2]: <../src/model/artefact-definition.ts>
+[2]: ../src/model/artefact-definition.ts
 
 ## Name
 
 The definition name is obtained from definition file name by removing the file
-extension. For example, the definition name of `Unit Test.md` would be
-`Unit Test`.
+extension. For example, the definition name of `Unit Test.md` would be `Unit
+Test`.
 
 It also should match the top heading in the definition file.
 

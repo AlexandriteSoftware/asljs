@@ -12,7 +12,7 @@ const TEST_SUITE = 'comment-guard';
 /** A source of `text` whose comments sit at the given ranges. */
 function sourceWith(
     text: string,
-    commentRanges: Array<[ number, number ]>
+    commentRanges: Array<[number, number]>
   ): TSESLint.SourceCode
 {
   const comments =
@@ -21,16 +21,16 @@ function sourceWith(
 
   return { getAllComments: () => comments,
            getText:
-             (node: { range: [ number, number ]; }) =>
-               text.slice(
-                 node.range[0],
-                 node.range[1]) } as unknown as TSESLint.SourceCode;
+             (node: { range: [number, number]; }) =>
+      text.slice(
+        node.range[0],
+        node.range[1]) } as unknown as TSESLint.SourceCode;
 }
 
 const SOURCE =
   'f(\n  // keep\n  a);';
 
-const COMMENT: [ number, number ] =
+const COMMENT: [number, number] =
   [ 5,
     12 ];
 
@@ -62,7 +62,8 @@ test(
         [ { range:
               [ 0,
                 SOURCE.length ],
-            text: 'f(\n  // keep\n  a);' } ]),
+            text:
+              'f(\n  // keep\n  a);' } ]),
       false);
   });
 

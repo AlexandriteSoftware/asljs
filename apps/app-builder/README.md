@@ -5,12 +5,12 @@
 `asljs-app-builder` builds the GitHub Pages site for [ASLJS][#1] (Alexandrite
 Software Libraries for JavaScript) from the repository's markdown files. The
 landing page is the repository's `README.md`, and every markdown file it reaches
-through relative links becomes a page of its own. A link to any other
-repository file goes to that file on GitHub.
+through relative links becomes a page of its own. A link to any other repository
+file goes to that file on GitHub.
 
 The package also holds the sources of the App Builder demo: a static,
-browser-based, AI-assisted, local-first app builder. It runs locally with
-`npm -w asljs-app-builder run dev` and is not part of the published site.
+browser-based, AI-assisted, local-first app builder. It runs locally with `npm
+-w asljs-app-builder run dev` and is not part of the published site.
 
 The App Builder lets users:
 
@@ -29,12 +29,11 @@ the OpenAI request.
 `asljs-app-builder` has two distinct responsibilities:
 
 - the host app, which runs in the browser and manages projects, storage,
-   preview, and settings
+  preview, and settings
 - the generator system, which uses a system prompt to produce and repair the
-   generated app files
+  generated app files
 
-The main AI prompt lives in
-`src/app-builder/ai/ai-instruction.ts`.
+The main AI prompt lives in `src/app-builder/ai/ai-instruction.ts`.
 
 Runtime app state lives under `src/app-builder/state.ts` and related UI wiring
 modules.
@@ -75,24 +74,24 @@ straight to code on the first sentence.
    `CHANGE.md`, update runtime files, update `README.md`, and clear `CHANGE.md`
    when done.
 10. After a fix or implementation pass, the agent should ask whether it worked
-   and either continue repairing or return to the add/change loop.
+    and either continue repairing or return to the add/change loop.
 
-The generated-app workflow also supports a maintained `app.tests.js` test
-module so the agent can keep executable checks aligned with `README.md`. Tests
-are normal JavaScript code, not JSON-encoded checks. When `README.md`
-requirements change intentionally, the implementation pass should update that
-test module in the same loop before finishing.
+The generated-app workflow also supports a maintained `app.tests.js` test module
+so the agent can keep executable checks aligned with `README.md`. Tests are
+normal JavaScript code, not JSON-encoded checks. When `README.md` requirements
+change intentionally, the implementation pass should update that test module in
+the same loop before finishing.
 
-Direct editing of `README.md` and `PLAN.md` is part of this workflow. User
-edits are treated as intentional design changes, not incidental text edits.
+Direct editing of `README.md` and `PLAN.md` is part of this workflow. User edits
+are treated as intentional design changes, not incidental text edits.
 
 ## User Profiling
 
 The chat should default to language that is easy for non-developers to follow.
 
 - Start with simple wording, short questions, and concrete examples.
-- Assume a child-level reader unless the user clearly writes in a more
-  technical style.
+- Assume a child-level reader unless the user clearly writes in a more technical
+  style.
 - If the user uses software-engineering terms comfortably, the assistant may
   become more technical, but it should not start there by default.
 - Clarifying questions should be about the product idea first, for example who
@@ -114,11 +113,11 @@ Read the package in this order when working on AI behavior:
 - `README.md`: human-facing app-builder behavior, workflow, and deployment
 - `AGENTS.md`: AI rules for editing the app-builder package itself
 - `src/app-builder/ai/ai-instruction.ts`: system prompt for generated app
-   behavior
+  behavior
 - `src/app-builder/ai/AGENTS.md`: AI-subsystem maintenance notes for the
-   conversation loop, transcript handling, and PLAN/CHANGE workflow contract
+  conversation loop, transcript handling, and PLAN/CHANGE workflow contract
 - imported package `AGENTS.md` files: package capability context used by the
-   generator
+  generator
 
 If you are changing host runtime behavior, update the host source and nearby
 docs.
@@ -158,14 +157,13 @@ The dev server starts at `http://localhost:5173/asljs/`.
 npm -w asljs-app-builder run build
 ```
 
-The site is written to **`app-builder/dist/`** as the local staging output.
-Its pages link to each other relatively, so opening `dist/index.html` in a
-browser shows it without a server.
+The site is written to **`app-builder/dist/`** as the local staging output. Its
+pages link to each other relatively, so opening `dist/index.html` in a browser
+shows it without a server.
 
 ## GitHub Pages setup
 
-GitHub Pages is configured to publish from the **root of the `pages`
-branch**:
+GitHub Pages is configured to publish from the **root of the `pages` branch**:
 
 1. Go to **Settings → Pages** in the repository.
 2. Under **Build and deployment**, set source to **Deploy from a branch**.
@@ -210,12 +208,12 @@ Internal modules (not exported as a library):
 - `src/app-builder/storage.ts` — IndexedDB persistence via `asljs-dali`
 - `src/app-builder/ai/ai-repl.ts` — OpenAI Responses transport and tool-call
   loop
-- `src/app-builder/ai/ai-tools.ts` — generated-app tool schemas and runtime
-  tool execution
+- `src/app-builder/ai/ai-tools.ts` — generated-app tool schemas and runtime tool
+  execution
 - `src/app-builder/ai/chat-instruction.ts` — normal chat-lane prompt
 - `src/app-builder/ai/ai-instruction.ts` — generated-app coding prompt
-- `src/app-builder/ai/conversation-loop.ts` — kickoff text, transcript
-  shaping, and README snapshot contract
+- `src/app-builder/ai/conversation-loop.ts` — kickoff text, transcript shaping,
+  and README snapshot contract
 - `src/app-builder/preview.ts` — sandboxed iframe renderer
 - `src/app-builder/main.ts` — UI wiring, prompt routing, storage, preview,
   import/export, sharing, and event handling
@@ -223,13 +221,13 @@ Internal modules (not exported as a library):
 Prompt input inventory:
 
 - imported package AI guides from ASLJS package folders
-- host context values such as
-   `window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey`
+- host context values such as `window.__ASLJS_APP_BUILDER_HOST__?.openAiApiKey`
 - generated app tool contract definitions
 - generated app validation and repair workflow rules
 
 ## License
 
-MIT License. See [LICENSE](../../LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[LIC]: ../../LICENSE.md

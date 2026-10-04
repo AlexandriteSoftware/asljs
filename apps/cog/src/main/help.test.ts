@@ -2,10 +2,10 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { main }
-  from './main.js';
 import { argv }
   from '../testing/test-helpers.js';
+import { main }
+  from './main.js';
 
 test(
   'help lists task commands built from the registry',

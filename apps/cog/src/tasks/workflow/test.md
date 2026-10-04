@@ -11,11 +11,11 @@ mirroring `BuildTask` so a caller can inspect test issues and react to them.
 
 ## How it works
 
-1. Calls `detectProjectKind(workingDirectory)` (same detection as
-   `BuildTask`: `npm` if `package.json` exists, otherwise `dotnet` if a
+1. Calls `detectProjectKind(workingDirectory)` (same detection as `BuildTask`:
+   `npm` if `package.json` exists, otherwise `dotnet` if a
    `.slnx`/`.sln`/`.csproj` file exists, otherwise `null`).
-2. If no project kind is detected, logs a debug message and returns
-   `{ tool: null, issues: [] }` without running any command.
+2. If no project kind is detected, logs a debug message and returns `{ tool:
+   null, issues: [] }` without running any command.
 3. For `npm`, runs `npm run test` through the `npm` tool (`NpmCliTool.test`).
 4. For `dotnet`, runs `dotnet test <target>` through the `dotnet` tool
    (`DotnetCliTool.test`), where `target` is the detected solution or project

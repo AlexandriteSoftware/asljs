@@ -19,7 +19,7 @@ Assigns `context.task = task` directly.
 
 ## Notes
 
-- `task` is optional on `Context`; `ContextProcessTask` only includes it in
-  the Copilot prompt when it has been set to a non-blank value.
+- `task` is optional on `Context`; `ContextProcessTask` only includes it in the
+  Copilot prompt when it has been set to a non-blank value.
 - See also `ContextInstructionTask` (`context-instruction`), which sets the
   sibling `instruction` field.

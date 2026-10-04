@@ -135,8 +135,8 @@ test(
     'part-gitignore-'));
 ```
 
-Definitely, async arrow function is a complex one (new line before
-the parameter, the rest will be handled by other indentation rules):
+Definitely, async arrow function is a complex one (new line before the
+parameter, the rest will be handled by other indentation rules):
 
 ```js
 test('test', async () => {

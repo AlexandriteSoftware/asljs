@@ -95,8 +95,8 @@ agents/*.{ps1,js,exe}            index.html + renderers/*.js
 - Two projects may name the same file; the store is per file, so they then share
   one connection. Moving a counter to another project leaves its old samples
   behind in the previous project's database.
-- `samples(key TEXT, ts INTEGER, seen INTEGER, value TEXT)`, index on
-  `(key, ts DESC)`.
+- `samples(key TEXT, ts INTEGER, seen INTEGER, value TEXT)`, index on `(key, ts
+  DESC)`.
 - Current value of a key = its newest sample. There is no separate current-value
   table.
 - **Values are sticky.** A put whose value is byte-identical to the key's newest
@@ -155,8 +155,8 @@ agents/*.{ps1,js,exe}            index.html + renderers/*.js
   was never written.
 - `GET /api/get/:k1,:k2,...` — JSON object of newest values, `null` for unknown
   keys.
-- `GET /api/history/:key?limit=N&since=<ms>` — JSON array of
-  `{ts, seen, value}`, newest first. For charts.
+- `GET /api/history/:key?limit=N&since=<ms>` — JSON array of `{ts, seen,
+  value}`, newest first. For charts.
 - `GET /api/meta/:keys` — the same keys with their `ts` and `seen`, for
   freshness checks.
 - `GET /api/next/:keys` — per key, `{ state, ms }` against its schedule: `wait`
@@ -325,8 +325,8 @@ Geometry is smart: only what you care about is written down.
     Layout).
   - `params` — renderer-specific object. Everything variable lives here, nothing
     at the top level.
-- A renderer is one file, `renderers/<name>.js`, default-exporting
-  `(el, value, params, ctx) => void`.
+- A renderer is one file, `renderers/<name>.js`, default-exporting `(el, value,
+  params, ctx) => void`.
   - It receives the parsed value when the value is JSON, the raw string
     otherwise.
   - It writes into `el`, the card body, and must escape anything it did not
@@ -467,10 +467,10 @@ dash/
 ## 14. Operational facts
 
 - Two processes: `node src/server.js` and `node src/runner.js`, both given the
-  same `--config` list. Either restarts alone. From the repository root:
-  `npm -w asljs-dash run start` and `run runner`, which pass the repository's
-  own configs. `node src/server.js --with-runner` folds both into one process
-  (`run start:with-runner`).
+  same `--config` list. Either restarts alone. From the repository root: `npm -w
+  asljs-dash run start` and `run runner`, which pass the repository's own
+  configs. `node src/server.js --with-runner` folds both into one process (`run
+  start:with-runner`).
 - ES modules throughout, server and page alike, as the rest of the repository.
 - Port from `PORT`, default 3000. Configs from `--config` or `DASH_CONFIG`; see
   docs/operations.md.

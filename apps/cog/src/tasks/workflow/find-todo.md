@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Returns the first TODO found in the codebase, or `null` if there is none.
-Used to drive TODO-based workflows (see `TodoTask`) without loading every
-TODO up front.
+Returns the first TODO found in the codebase, or `null` if there is none. Used
+to drive TODO-based workflows (see `TodoTask`) without loading every TODO up
+front.
 
 ## Parameters
 
@@ -25,6 +25,6 @@ TODO up front.
 
 ## Notes
 
-- Writes no output of its own and does not change context data; it only
-  reports progress through the context logger.
+- Writes no output of its own and does not change context data; it only reports
+  progress through the context logger.
 - Requires the `todos` tool.

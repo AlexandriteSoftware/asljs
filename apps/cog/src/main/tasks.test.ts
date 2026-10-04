@@ -23,10 +23,10 @@ import { SingletonServiceProvider }
 import { DefaultTaskRunner,
          TaskRegistry }
   from '../task.js';
-import { configureTaskCommands }
-  from './tasks.js';
 import { argv }
   from '../testing/test-helpers.js';
+import { configureTaskCommands }
+  from './tasks.js';
 import { ExecutionContext }
   from './types.js';
 

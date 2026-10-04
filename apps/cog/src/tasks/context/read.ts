@@ -1,11 +1,11 @@
+import { LocationResolver }
+  from 'asljs-locator';
 import fsp
   from 'node:fs/promises';
 import path
   from 'node:path';
 import { type ContextFile }
   from '../../context.js';
-import { LocationResolver }
-  from 'asljs-locator';
 import { createLoggerProvider }
   from '../../logger.js';
 import { ExecutionContext }

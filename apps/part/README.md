@@ -105,8 +105,8 @@ Export inventory as JSON:
 part inventory --format=json
 ```
 
-The diagram rendering path uses the local `@mermaid-js/mermaid-cli`
-dependency bundled with this package.
+The diagram rendering path uses the local `@mermaid-js/mermaid-cli` dependency
+bundled with this package.
 
 Bootstrap a definitions folder:
 

@@ -23,8 +23,8 @@ continuation lines that keep the same comment prefix into a single entry.
 - `excerpt` - the exact source text of the entry;
 - `file` - the absolute file path;
 - `startLine` / `endLine` - 1-based line numbers;
-- `startPosition` / `endPosition` - character offsets of the TODO marker and
-  the end of the last line.
+- `startPosition` / `endPosition` - character offsets of the TODO marker and the
+  end of the last line.
 
 ## Notes
 

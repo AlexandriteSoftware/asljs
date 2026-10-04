@@ -44,9 +44,9 @@ npm -w asljs-dash run start:with-runner
 node server.js --with-runner --config dash.config.json
 ```
 
-The embedded runner is the same code: it puts each value through
-`PUT /api/put/:key` on the server's own port, ignoring `DASH_URL`, and its log
-lines go to the server's stdout. Restarting the server restarts the runner too.
+The embedded runner is the same code: it puts each value through `PUT
+/api/put/:key` on the server's own port, ignoring `DASH_URL`, and its log lines
+go to the server's stdout. Restarting the server restarts the runner too.
 
 The server has no dependency on the runner. Values can arrive from anything that
 can issue a `PUT`, and the runner is only the scheduled case of that.
@@ -94,9 +94,8 @@ Reading:
   a key that was never written.
 - `GET /api/get/:k1,:k2,...` — a JSON object of newest values, `null` for
   unknown keys.
-- `GET /api/history/:key?limit=N&since=<ms>` — a JSON array of
-  `{ts, seen, value}`, newest first. `limit` defaults to 500 and is capped at
-  5000.
+- `GET /api/history/:key?limit=N&since=<ms>` — a JSON array of `{ts, seen,
+  value}`, newest first. `limit` defaults to 500 and is capped at 5000.
 - `GET /api/meta/:keys` — the same keys with their `ts` and `seen`, for
   freshness and change detection.
 - `GET /api/next/:keys` — per key, `{ state, ms }`: `wait` with the milliseconds

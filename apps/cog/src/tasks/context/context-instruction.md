@@ -21,5 +21,5 @@ Assigns `context.instruction = instruction` directly.
 
 - Typically set once per context, before adding files or calling
   `context-process`.
-- See also `ContextTaskTask` (`context-task`), which sets the sibling
-  `task` field.
+- See also `ContextTaskTask` (`context-task`), which sets the sibling `task`
+  field.

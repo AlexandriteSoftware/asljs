@@ -129,8 +129,8 @@ a
 + (b, c)
 ```
 
-An operand of equal priority keeps its parentheses on the side the operator
-does not associate towards:
+An operand of equal priority keeps its parentheses on the side the operator does
+not associate towards:
 
 ```ts
 a - (b - c)

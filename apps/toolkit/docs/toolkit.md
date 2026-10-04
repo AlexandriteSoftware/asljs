@@ -5,8 +5,8 @@
 > Removes build artefacts in the current folder.
 
 Deletes the 'build' and 'dist' directories in the current working directory
-unless arguments are provided, in which case it deletes the specified
-folders and files instead. Ignores non-existent paths.
+unless arguments are provided, in which case it deletes the specified folders
+and files instead. Ignores non-existent paths.
 
 ## ensure-clean-working-directory
 
@@ -36,8 +36,8 @@ files, tags the release, and pushes commits and tags.
 > Run a workspace script across all workspaces in dependency order.
 
 Reads the workspaces listed in the root `package.json`, builds the dependency
-graph from each package `dependencies` and `devDependencies`, and runs
-`npm run <script>` in every workspace, dependencies first. Defaults to the `all`
+graph from each package `dependencies` and `devDependencies`, and runs `npm
+run <script>` in every workspace, dependencies first. Defaults to the `all`
 script. Independent packages run in alphabetical order. Packages without the
 requested script are skipped. Throws when the workspace packages form a
 dependency cycle.
@@ -65,32 +65,32 @@ without picking up its binaries. `--fix` lets eslint fix what it can.
 
 Candidates come from `asljs-locator`, rooted at the current working directory
 and filtered through `GitIgnore`, so `.gitignore` decides what belongs to the
-repository. With no glob every candidate is selected, so `--exclude` alone
-means "everything but these". A glob that names a directory matches everything
-beneath it, and one with wildcards is matched as written. A package script runs
-it with no glob, and the root script excludes `apps` and `libs`, which format
-and lint themselves.
+repository. With no glob every candidate is selected, so `--exclude` alone means
+"everything but these". A glob that names a directory matches everything beneath
+it, and one with wildcards is matched as written. A package script runs it with
+no glob, and the root script excludes `apps` and `libs`, which format and lint
+themselves.
 
 Formats with the `dprint.json` nearest to the working directory, looking there
 and then upwards, so a package with its own configuration uses it and every
 other package uses the root one. eslint and remark find their own nearest
 `eslint.config.*` and `.remarkrc*` the same way. A file eslint's configuration
-ignores is passed over without a warning. Expects `dprint`, `sfmt`, `eslint`
-and `remark` on `PATH`, which an npm script provides.
+ignores is passed over without a warning. Expects `dprint`, `sfmt`, `eslint` and
+`remark` on `PATH`, which an npm script provides.
 
 The file list reaches dprint through a `.toolkit-dprint.json` written in the
 working directory for the run and removed again afterwards, which extends the
 configuration found above and names each file. That keeps the command short and
-lifts the limit on how many files one run can take. sfmt, eslint and remark
-have no configuration key for their files, so they carry them as arguments and
-are split into several runs to stay within the command line limit. The log
-records how many files each tool processes, and with `--loglevel debug` it
-lists every file, once per tool.
+lifts the limit on how many files one run can take. sfmt, eslint and remark have
+no configuration key for their files, so they carry them as arguments and are
+split into several runs to stay within the command line limit. The log records
+how many files each tool processes, and with `--loglevel debug` it lists every
+file, once per tool.
 
 Stops at the first tool that fails. Fails when eslint reports an error, and when
 remark reports a warning, because it runs with `--frail`. A linter that found
-problems ends the run with "<tool> reported problems in the files above"; a
-tool that could not run at all ends it with "<tool> could not run", and its own
+problems ends the run with "<tool> reported problems in the files above"; a tool
+that could not run at all ends it with "<tool> could not run", and its own
 output above says why.
 
 ## remove-local-modules
@@ -98,10 +98,10 @@ output above says why.
 > Remove the node_modules directory of every workspace package.
 
 Reads the workspaces listed in the root `package.json` and removes the
-`node_modules` directory inside each one, reporting how many of them existed.
-A package without one is not an error.
+`node_modules` directory inside each one, reporting how many of them existed. A
+package without one is not an error.
 
 The root `node_modules` is left alone, because it holds the hoisted install
 every package resolves through; removing that is a reinstall rather than this
-command. Discovering the packages rather than listing them is what keeps the
-set complete when a package is added.
+command. Discovering the packages rather than listing them is what keeps the set
+complete when a package is added.

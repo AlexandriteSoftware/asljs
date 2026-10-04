@@ -1,7 +1,7 @@
 # RQ121 CLI Inventory action
 
-Inventory command enumerates all files and folders in the project folder and
-for each of them lists all artefact definitions that apply to it.
+Inventory command enumerates all files and folders in the project folder and for
+each of them lists all artefact definitions that apply to it.
 
 Parameters:
 
@@ -61,8 +61,8 @@ part inventory
 
 ### `table`
 
-The default format is a Markdown table, with one row per artefact and one
-column per property requested.
+The default format is a Markdown table, with one row per artefact and one column
+per property requested.
 
 ```markdown
 | Location | Definitions | Definition1.Property1 | Definition2.Property1 |

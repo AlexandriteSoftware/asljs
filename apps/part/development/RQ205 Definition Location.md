@@ -2,9 +2,8 @@
 
 Artefact definition defines location of the artefacts in the `Location` section.
 
-There may be multiple locations defined in the `Location` section.
-Each location is defined by a `Pattern` and optional `Exclude` and special
-filters.
+There may be multiple locations defined in the `Location` section. Each location
+is defined by a `Pattern` and optional `Exclude` and special filters.
 
 Example:
 
@@ -29,14 +28,14 @@ There are three types of the location instructions:
   optional and can be used multiple times.
 - Special filters, e.g. `GitIgnore` - defines location in a special way.
 
-`Pattern` and `Exclude` has glob pattern as a parameter. The glob
-pattern is either relative to the artefact definition file or absolute,
-calculated from the project root. Absolute patterns starts with `/`, e.g.
-`/src/**/*.js`. Folder patterns should end with `/`, e.g. `src/`.
+`Pattern` and `Exclude` has glob pattern as a parameter. The glob pattern is
+either relative to the artefact definition file or absolute, calculated from the
+project root. Absolute patterns starts with `/`, e.g. `/src/**/*.js`. Folder
+patterns should end with `/`, e.g. `src/`.
 
 For defining project location see [RQ132] and [RQ133].
 
-Definition location is defined in [model/location.ts][2] as follows:
+Definition location is defined in [asljs-locator location.ts][2] as follows:
 
 ```ts
 { pattern: string,
@@ -44,9 +43,9 @@ Definition location is defined in [model/location.ts][2] as follows:
   filters?: object[] }
 ```
 
-Filters are represented as objects with at least a `name` property, e.g.
-`{ name: 'GitIgnore' }`. Other properties of the filter object depend on
-the filter type.
+Filters are represented as objects with at least a `name` property, e.g. `{
+name: 'GitIgnore' }`. Other properties of the filter object depend on the filter
+type.
 
 Special filters:
 
@@ -57,6 +56,6 @@ See also:
 - [RQ203 GitIgnore][1]
 
 [1]: <RQ203 GitIgnore.md>
-[2]: <../src/model/location.ts>
+[2]: ../../../libs/locator/src/location.ts
 [RQ132]: <RQ132 CLI Project parameter.md>
 [RQ133]: <RQ133 CLI Project environment variable.md>

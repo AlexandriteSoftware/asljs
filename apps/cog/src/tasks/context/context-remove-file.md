@@ -6,8 +6,7 @@ Removes a project file and its corresponding envelope entry.
 
 ## Parameters
 
-`ContextRemoveFileTaskParameters` (see
-[`context-remove-file.ts`][SRC]):
+`ContextRemoveFileTaskParameters` (see [`context-remove-file.ts`][SRC]):
 
 - `path` (`string`, required).
 

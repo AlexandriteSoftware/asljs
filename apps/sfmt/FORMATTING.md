@@ -4,19 +4,19 @@ This document defines formatting rules for TypeScript.
 
 ## Overview
 
-When writing and maintaining code there are many factors to consider.
-The prioritisation of these factors is often a matter of personal or team
+When writing and maintaining code there are many factors to consider. The
+prioritisation of these factors is often a matter of personal or team
 preference. The following style guide emerged from thousands of hours writing
 and maintaining code with the following priorities in mind:
 
-- Code readability is the most important factor. Everything else is secondary
-  to readability. If the code is easy to read, it is easy to understand, spot
+- Code readability is the most important factor. Everything else is secondary to
+  readability. If the code is easy to read, it is easy to understand, spot
   errors, and change it.
 - Code maintenance is the second most important factor. Compare code, review
   changes, and make changes should be as easy as possible.
 
-According to the research and experience, the most important readability
-metrics are:
+According to the research and experience, the most important readability metrics
+are:
 
 - number of identifiers per line
 - average line length
@@ -26,8 +26,8 @@ While maintaining code, the most common operation is to compare two versions of
 a file. The code with good readability metrics also reduces the amount of noise
 in diffs.
 
-Applying these principles to the code makes it look like a staircase, hence
-the name of this style guide.
+Applying these principles to the code makes it look like a staircase, hence the
+name of this style guide.
 
 ```typescript
 function getIndentation(
@@ -61,8 +61,8 @@ function getIndentation(
 
 Expression is simple if:
 
-- it is a literal (e.g., regex, number, string, boolean, null, undefined)
-  that is not a template literal and less than 15 characters long
+- it is a literal (e.g., regex, number, string, boolean, null, undefined) that
+  is not a template literal and less than 15 characters long
 - it is an identifier that is less than 15 characters long
 - it is an array with no or one item, of total length less than 15 characters
 - it is an object with no or one property, of total length less than 15
@@ -87,8 +87,8 @@ Examples:
 
 Indentation is 2 spaces per level. Tabs are not allowed.
 
-When a line is broken into multiple lines, the second and subsequent
-lines are aligned with the first line. The line is broken before the operator.
+When a line is broken into multiple lines, the second and subsequent lines are
+aligned with the first line. The line is broken before the operator.
 
 ```js
 if (
@@ -132,8 +132,8 @@ for (
 
 ### If
 
-When if's condition is not simple, it is on the next line, indented one
-level from the if statement.
+When if's condition is not simple, it is on the next line, indented one level
+from the if statement.
 
 ```js
 if (ok) {
@@ -150,8 +150,8 @@ if (
 
 ### Expression
 
-In expressions, operators of the same precedence can be on the same line.
-Lower precedence operators break the line and are aligned with the first line.
+In expressions, operators of the same precedence can be on the same line. Lower
+precedence operators break the line and are aligned with the first line.
 
 ```js
 const isDefined =
@@ -166,8 +166,8 @@ const length =
 
 ### Calls
 
-When calling a function, the simple single argument can be on the same line.
-In all other cases, the arguments are on separate lines, indented one level from
+When calling a function, the simple single argument can be on the same line. In
+all other cases, the arguments are on separate lines, indented one level from
 the function call.
 
 ```js
@@ -178,8 +178,8 @@ just(
 
 ### Call Chains
 
-When resolving a chain of functions, the first and the second items are on
-the same line. The third and subsequent function calls are on separate lines.
+When resolving a chain of functions, the first and the second items are on the
+same line. The third and subsequent function calls are on separate lines.
 
 ```js
 const result =
@@ -228,8 +228,8 @@ const array =
 
 The first property in an object is on the same line as the opening brace.
 
-The second and subsequent properties are on separate lines, aligned with the first
-property.
+The second and subsequent properties are on separate lines, aligned with the
+first property.
 
 The closing brace is on the same line as the last property.
 

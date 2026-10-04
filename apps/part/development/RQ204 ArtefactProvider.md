@@ -1,11 +1,11 @@
 # RQ204 ArtefactProvider
 
-`ArtefactProvider` is a class that given an artefact definition provides
-a list of artefacts that match the definition. E.g., given a definition of
-`Rule File` it returns a list of files that are rule files.
+`ArtefactProvider` is a class that given an artefact definition provides a list
+of artefacts that match the definition. E.g., given a definition of `Rule File`
+it returns a list of files that are rule files.
 
-`ArtefactProvider` is available to JS rules via the `artefacts` property of
-the `context` object.
+`ArtefactProvider` is available to JS rules via the `artefacts` property of the
+`context` object.
 
 ## Example: get list of artefacts
 

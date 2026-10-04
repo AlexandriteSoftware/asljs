@@ -2,9 +2,8 @@
 
 ## Purpose
 
-Commits all current changes, or does nothing when the working folder is
-already clean, so callers don't have to check for changes themselves before
-committing.
+Commits all current changes, or does nothing when the working folder is already
+clean, so callers don't have to check for changes themselves before committing.
 
 ## Parameters
 
@@ -12,8 +11,7 @@ committing.
 
 ## How it works
 
-1. Reads the list of modified and untracked files with
-   `git.getChangedFiles()`.
+1. Reads the list of modified and untracked files with `git.getChangedFiles()`.
 2. If that list is empty, logs a debug message and returns `null` without
    running `commit`.
 3. Otherwise runs the `commit` task (`CommitTask`) and returns its result (the

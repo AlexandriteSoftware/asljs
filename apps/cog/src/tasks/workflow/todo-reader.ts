@@ -1,11 +1,11 @@
+import { LocationResolver }
+  from 'asljs-locator';
 import { type Logger }
   from 'asljs-logging';
 import fs
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { LocationResolver }
-  from 'asljs-locator';
 import { type Tool }
   from '../../tool.js';
 

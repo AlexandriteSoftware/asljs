@@ -1,9 +1,9 @@
 # RQ123 CLI Check action
 
-When CLI is invoked with Check action, it obtains all artefact definitions,
-gets list of artefacts and list of rules per definition, and runs rule function
-for each file and rule. If multiple definitions apply to the same path, it
-runs rules from all of those definitions.
+When CLI is invoked with Check action, it obtains all artefact definitions, gets
+list of artefacts and list of rules per definition, and runs rule function for
+each file and rule. If multiple definitions apply to the same path, it runs
+rules from all of those definitions.
 
 Parameters:
 
@@ -11,13 +11,13 @@ Parameters:
   `check src/**/*.js`
 - `--check-definitions=...` - limit check to specific definitions,
   comma-separated list.
-- `--check-rules=...` - limit check to specific rules (in format
-  `<artefact definition>_<rule id>`), comma-separated list.
+- `--check-rules=...` - limit check to specific rules (in format `<artefact
+  definition>_<rule id>`), comma-separated list.
 - `--with-positives` - flag, if set, show all rows including `OK`; otherwise
   only failing rows are shown.
 
-Check returns non-zero exit code if any of the rules fails for any of
-the artefacts.
+Check returns non-zero exit code if any of the rules fails for any of the
+artefacts.
 
 It prints a report with these columns:
 

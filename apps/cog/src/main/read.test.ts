@@ -6,12 +6,12 @@ import test
   from 'node:test';
 import { createLoggerProvider }
   from '../logger.js';
+import { argv }
+  from '../testing/test-helpers.js';
 import { Envelope }
   from '../working-folder/envelope.js';
 import { main }
   from './main.js';
-import { argv }
-  from '../testing/test-helpers.js';
 
 const loggerProvider =
   createLoggerProvider();

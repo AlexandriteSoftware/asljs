@@ -4,8 +4,8 @@ This rule formats `ImportDeclaration` nodes.
 
 `ImportDeclaration` has the following structure:
 
-- `specifiers` (array of `ImportSpecifier`, `ImportDefaultSpecifier`,
-  or `ImportNamespaceSpecifier`)
+- `specifiers` (array of `ImportSpecifier`, `ImportDefaultSpecifier`, or
+  `ImportNamespaceSpecifier`)
   - `ImportSpecifier` (for named imports, e.g., `{ readFile }`)
   - `ImportDefaultSpecifier` (for default imports, e.g., `fs`)
   - `ImportNamespaceSpecifier` (for namespace imports, e.g., `* as fs`)

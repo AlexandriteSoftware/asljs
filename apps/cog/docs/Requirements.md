@@ -188,7 +188,8 @@ data; it reports progress through the context logger.
 its `files`. `EnvelopeInstructionTask` (`envelope-instruction`) sets
 `envelope.instruction`. `EnvelopeTaskTask` (`envelope-task`) sets
 `envelope.task`. Both require the envelope and mutate it in place, the same way
-`EnvelopeAddFilesTask`, `EnvelopeWriteFileTask`, and `EnvelopeRemoveFileTask` do.
+`EnvelopeAddFilesTask`, `EnvelopeWriteFileTask`, and `EnvelopeRemoveFileTask`
+do.
 
 `EnvelopeProcessTask` (`envelope-process`) builds a single prompt from the
 envelope's `instruction`, `task` (when set), and each file (its path and, for
@@ -211,23 +212,23 @@ that message, and returns the message.
 returns `null` instead of failing.
 
 `CleanWorkingFolderTask` reads the diff against `HEAD` and the content of every
-untracked file, discards all local changes with `git checkout -- .` and
-`git clean -fd`, then writes what it read to `clean.<timestamp>.bak` in the
-working directory (JSON with a `diff` string and a `untrackedFiles` array of
-`{ path, contentBase64 }`). The backup file is written after the working tree
-is cleaned, so it is not itself removed by `git clean`.
+untracked file, discards all local changes with `git checkout -- .` and `git
+clean -fd`, then writes what it read to `clean.<timestamp>.bak` in the working
+directory (JSON with a `diff` string and a `untrackedFiles` array of `{ path,
+contentBase64 }`). The backup file is written after the working tree is cleaned,
+so it is not itself removed by `git clean`.
 
 `TodoTask` is the TODO-driven workflow:
 
 1. Run `commit-if-changed` so the working folder starts clean.
-2. Run `find-todo`. If there is no TODO, return `{ todo: null, addressed:
-   false }`.
+2. Run `find-todo`. If there is no TODO, return `{ todo: null, addressed: false
+   }`.
 3. Ask the `copilot` service to implement the TODO and remove the comment. The
    prompt asks Copilot to reply with exactly `TODO_DONE` on success, or
    `TODO_STOP` followed by a reason when it cannot make the change. A
    `TODO_STOP` reply stops (throws).
-4. Run `find-todo` again. If the same TODO (same file, start line, and text)
-   is still present, the task fails, since Copilot reported success without
+4. Run `find-todo` again. If the same TODO (same file, start line, and text) is
+   still present, the task fails, since Copilot reported success without
    removing it.
 5. Run `format-changed-files` to format whatever Copilot changed.
 6. Run `build`, retrying up to 3 times: on issues, ask Copilot to fix them and
@@ -245,10 +246,10 @@ command.
 
 For `npm`, `BuildTask` runs `npm run build` and `TestTask` runs `npm run test`.
 For `dotnet`, `BuildTask` runs `dotnet build` and `TestTask` runs `dotnet test`,
-both against the detected target. Neither task lets a failing command throw:
-it catches the tool's error and returns `{ tool, issues }`, where `issues` is
-the error message split into trimmed, non-empty lines. This lets a caller such
-as `TodoTask` inspect and react to failures instead of aborting the workflow.
+both against the detected target. Neither task lets a failing command throw: it
+catches the tool's error and returns `{ tool, issues }`, where `issues` is the
+error message split into trimmed, non-empty lines. This lets a caller such as
+`TodoTask` inspect and react to failures instead of aborting the workflow.
 
 ### Service
 

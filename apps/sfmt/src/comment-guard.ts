@@ -5,7 +5,7 @@ import { type TSESLint }
 import { Logger }
   from 'asljs-logging';
 
-type Range = Readonly<[ number, number ]>;
+type Range = Readonly<[number, number]>;
 
 /**
  * A fixer that records the edits a fix would make instead of making them.
@@ -19,68 +19,61 @@ function recordingFixer(
 {
   const rangeOf =
     (
-        nodeOrToken: TSESTree.Node | TSESTree.Token
-      ): Range =>
-      nodeOrToken.range;
+    nodeOrToken: TSESTree.Node | TSESTree.Token
+  ): Range => nodeOrToken.range;
 
   return { insertTextAfter:
              (
-                 nodeOrToken,
-                 text
-               ) =>
-               ({ range:
-                    [ rangeOf(nodeOrToken)[1],
-                      rangeOf(nodeOrToken)[1] ],
-                  text }),
+      nodeOrToken,
+      text
+    ) => ({ range:
+              [ rangeOf(nodeOrToken)[1],
+                rangeOf(nodeOrToken)[1] ],
+            text }),
            insertTextAfterRange:
              (
-                 range,
-                 text
-               ) =>
-               ({ range:
-                    [ range[1],
-                      range[1] ],
-                  text }),
+      range,
+      text
+    ) => ({ range:
+              [ range[1],
+                range[1] ],
+            text }),
            insertTextBefore:
              (
-                 nodeOrToken,
-                 text
-               ) =>
-               ({ range:
-                    [ rangeOf(nodeOrToken)[0],
-                      rangeOf(nodeOrToken)[0] ],
-                  text }),
+      nodeOrToken,
+      text
+    ) => ({ range:
+              [ rangeOf(nodeOrToken)[0],
+                rangeOf(nodeOrToken)[0] ],
+            text }),
            insertTextBeforeRange:
              (
-                 range,
-                 text
-               ) =>
-               ({ range:
-                    [ range[0],
-                      range[0] ],
-                  text }),
+      range,
+      text
+    ) => ({ range:
+              [ range[0],
+                range[0] ],
+            text }),
            remove:
-             nodeOrToken =>
-               ({ range: rangeOf(nodeOrToken),
-                  text: '' }),
+             nodeOrToken => ({ range:
+                                 rangeOf(nodeOrToken),
+                               text: '' }),
            removeRange:
-             range =>
-               ({ range,
-                  text: '' }),
+             range => ({ range,
+                         text: '' }),
            replaceText:
              (
-                 nodeOrToken,
-                 text
-               ) =>
-               ({ range: rangeOf(nodeOrToken),
-                  text }),
+      nodeOrToken,
+      text
+    ) => ({ range:
+              rangeOf(nodeOrToken),
+            text }),
            replaceTextRange:
              (
-                 range,
-                 text
-               ) =>
-               ({ range,
-                  text }) };
+      range,
+      text
+    ) => ({ range,
+            text }) };
 }
 
 /** The edits a fix function produces, as a list. */
@@ -89,7 +82,8 @@ function editsOf(
   ): TSESLint.RuleFix[]
 {
   const result =
-    fix(recordingFixer());
+    fix(
+      recordingFixer());
 
   if (result === null) {
     return [ ];
@@ -118,7 +112,7 @@ export function editsDropComment(
     sourceCode.getAllComments();
 
   for (const edit of edits) {
-    const [ start, end ] = edit.range;
+    const [start, end] = edit.range;
 
     for (const comment of comments) {
       if (

@@ -19,23 +19,22 @@ matches its extension.
 
 1. Runs `get-changed-files` to get the list of modified, staged, renamed,
    copied, and untracked paths.
-2. Filters that list down to paths that currently exist as files (deleted
-   paths are dropped).
+2. Filters that list down to paths that currently exist as files (deleted paths
+   are dropped).
 3. Splits the remaining files by extension:
    - `.ts` / `.tsx` -> TypeScript;
    - `.md` -> Markdown;
-   - `.cs` -> C#.
-   Files with any other extension are ignored.
+   - `.cs` -> C#. Files with any other extension are ignored.
 4. Runs `AsljsFormatterTool.format()` for the TypeScript files with
    `asljsConfigPath`.
 5. Runs `DprintFormatterTool.format()` for the Markdown files with
    `markdownConfigPath`.
-6. If there are C# files, resolves a target (`dotnetTarget` if given,
-   otherwise the first `.slnx`, `.sln`, or `.csproj` file found in the
-   working directory, checked in that order - throws if none exists) and
-   runs `JbDotnetFormatterTool.format()` with `dotnetProfile`.
-7. Returns the subset of changed files that were actually routed to a
-   formatter (TypeScript, Markdown, or C#).
+6. If there are C# files, resolves a target (`dotnetTarget` if given, otherwise
+   the first `.slnx`, `.sln`, or `.csproj` file found in the working directory,
+   checked in that order - throws if none exists) and runs
+   `JbDotnetFormatterTool.format()` with `dotnetProfile`.
+7. Returns the subset of changed files that were actually routed to a formatter
+   (TypeScript, Markdown, or C#).
 
 ## Returns
 
@@ -43,8 +42,8 @@ matches its extension.
 
 ## Failure modes
 
-- Throws if C# files need formatting and no `.slnx`/`.sln`/`.csproj` target
-  can be found or was provided.
+- Throws if C# files need formatting and no `.slnx`/`.sln`/`.csproj` target can
+  be found or was provided.
 - Propagates any formatter tool failure (non-zero exit code).
 
 ## Notes

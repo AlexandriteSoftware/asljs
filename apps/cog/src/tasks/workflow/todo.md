@@ -2,9 +2,9 @@
 
 ## Purpose
 
-The TODO-driven workflow: finds the first TODO in the codebase, asks Copilot
-to implement and remove it, verifies the result, and commits it - retrying
-build and test fixes with Copilot along the way.
+The TODO-driven workflow: finds the first TODO in the codebase, asks Copilot to
+implement and remove it, verifies the result, and commits it - retrying build
+and test fixes with Copilot along the way.
 
 ## Parameters
 
@@ -14,16 +14,16 @@ build and test fixes with Copilot along the way.
 ## How it works
 
 1. Runs `commit-if-changed` so the working folder starts clean.
-2. Runs `find-todo` with `patterns`. If there is no TODO, logs a debug
-   message and returns `{ todo: null, addressed: false }` immediately.
+2. Runs `find-todo` with `patterns`. If there is no TODO, logs a debug message
+   and returns `{ todo: null, addressed: false }` immediately.
 3. Sends a prompt to the `copilot` service describing the TODO (file, line
    range, body, and excerpt) and asking it to:
    - implement the change, remove the TODO comment, and reply with exactly
      `TODO_DONE`; or
    - make no changes and reply with `TODO_STOP` followed by a reason, if it
      cannot implement it.
-4. If the response starts with `TODO_STOP`, throws
-   `stop: Copilot did not address the TODO in <file>:<line>: <reason>`.
+4. If the response starts with `TODO_STOP`, throws `stop: Copilot did not
+   address the TODO in <file>:<line>: <reason>`.
 5. Runs `find-todo` again with the same `patterns`. If a TODO with the same
    file, start line, and text is still present, throws - Copilot reported
    success without actually removing it.
@@ -50,5 +50,5 @@ build and test fixes with Copilot along the way.
 
 - Requires the `git`, `npm`, and `dotnet` tools, and the `copilot` service.
 - Composes `commit-if-changed`, `find-todo`, `format-changed-files`, `build`,
-  and `test` rather than talking to any tool directly (other than `copilot`
-  for prompts).
+  and `test` rather than talking to any tool directly (other than `copilot` for
+  prompts).

@@ -2,14 +2,14 @@
 
 ## Purpose
 
-Smoke-tests the Copilot ACP integration: starts the ACP server, sends a
-couple of trivial prompts, and confirms it responds, then always stops the
-server again.
+Smoke-tests the Copilot ACP integration: starts the ACP server, sends a couple
+of trivial prompts, and confirms it responds, then always stops the server
+again.
 
 ## Parameters
 
-- `prompts` (`string[]`, optional) - defaults to
-  `['Reply with exactly: PING', 'Reply with exactly: PONG']`.
+- `prompts` (`string[]`, optional) - defaults to `['Reply with exactly: PING',
+  'Reply with exactly: PONG']`.
 
 ## How it works
 
@@ -19,8 +19,7 @@ server again.
    the `initialize` / `session/new` handshake.
 3. Sends each prompt in turn with `copilot.prompt(text)` and collects the
    responses. Throws if any response is empty after trimming.
-4. In a `finally` block, always calls `copilot.stop()`, even if a prompt
-   failed.
+4. In a `finally` block, always calls `copilot.stop()`, even if a prompt failed.
 
 ## Returns
 

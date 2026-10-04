@@ -1,3 +1,5 @@
+import { type Location }
+  from 'asljs-locator';
 import { NullLoggerProvider }
   from 'asljs-logging';
 import assert
@@ -8,8 +10,6 @@ import { ArtefactDefinitionProperty }
   from '../model/artefact-definition-property.js';
 import { ArtefactDefinitionRule }
   from '../model/artefact-definition-rule.js';
-import { type Location }
-  from 'asljs-locator';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }

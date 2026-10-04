@@ -3,12 +3,11 @@
 ## Purpose
 
 Adds files matching a pattern to `Context.files`. It is also what
-`ContextUpdateFilesTask` runs
-for each file's stored update command.
+`ContextUpdateFilesTask` runs for each file's stored update command.
 
 ## Parameters
 
-`ReadParameters` (see [`read.ts`](read.ts)):
+`ReadParameters` (see [`read.ts`][RDT]):
 
 - `pattern` (`string`, required) - a file, folder, or glob pattern.
 - `exclude` (`string[]`, optional).
@@ -24,3 +23,5 @@ Reads matching files and appends or replaces entries in `context.files`.
 ## Requires
 
 - The CLI host persists `Context.files` in envelope-compatible storage.
+
+[RDT]: read.ts

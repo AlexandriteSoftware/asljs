@@ -6,8 +6,8 @@ the AI loop work.
 ## Scope
 
 - `ai-instruction.ts` defines the generated-app agent behavior.
-- `conversation-loop.ts` defines host-side kickoff text, transcript shaping,
-  and the stable README snapshot file name.
+- `conversation-loop.ts` defines host-side kickoff text, transcript shaping, and
+  the stable README snapshot file name.
 - `main.ts` is responsible for preserving recent chat turns so the AI can
   understand short follow-up answers.
 
@@ -16,15 +16,15 @@ the AI loop work.
 This subsystem is intentionally split across host code and prompt rules.
 
 - The host app owns short-term conversation memory for the open app.
-- The generator prompt owns the staged behavior: clarify, update README, ask
-  the next question, request implementation approval, implement, test, and ask
+- The generator prompt owns the staged behavior: clarify, update README, ask the
+  next question, request implementation approval, implement, test, and ask
   whether the result works.
-- The generated app itself remains tool-driven and does not get hidden access
-  to host chat state.
+- The generated app itself remains tool-driven and does not get hidden access to
+  host chat state.
 
 Do not remove the host-side transcript shaping unless you replace it with an
-equivalent stateful input model. Without that context, short answers like
-"yes" or "2 players" become ambiguous.
+equivalent stateful input model. Without that context, short answers like "yes"
+or "2 players" become ambiguous.
 
 ## README Contract
 

@@ -6,30 +6,30 @@ through a command line interface and through an MCP server.
 
 ## Structure
 
-The package has one implementation of every library operation, and it is
-reached in one way: as a tool on the MCP server.
+The package has one implementation of every library operation, and it is reached
+in one way: as a tool on the MCP server.
 
-The command line interface is a client. It parses arguments, asks the server
-to carry the command out, and renders the answer. It performs no library
-operation itself.
+The command line interface is a client. It parses arguments, asks the server to
+carry the command out, and renders the answer. It performs no library operation
+itself.
 
 A client reaches a server in one of two ways:
 
 - if a server is already serving that library, it connects to it, and the
   command is answered from that server's index;
-- otherwise it starts a server for that one command, and shuts it down when
-  the command is done.
+- otherwise it starts a server for that one command, and shuts it down when the
+  command is done.
 
-The address of a server is derived from the library root, so a client finds
-one without configuration and without a discovery file. A refused connection
-means no server is there. A peer that answers but does not identify itself as
-a knowledge base server is treated as no server.
+The address of a server is derived from the library root, so a client finds one
+without configuration and without a discovery file. A refused connection means
+no server is there. A peer that answers but does not identify itself as a
+knowledge base server is treated as no server.
 
-A server started for one command is started without an index, because
-building one to answer a single question costs more than the question.
+A server started for one command is started without an index, because building
+one to answer a single question costs more than the question.
 
-Two commands do not go through a server, because they describe the tool
-rather than the library: the version, and the configuration.
+Two commands do not go through a server, because they describe the tool rather
+than the library: the version, and the configuration.
 
 ## Library
 
@@ -48,8 +48,8 @@ root is rejected with `LibraryPathError`, and the operation does not run.
 Reported paths are library-relative and use POSIX separators, so that output is
 stable across platforms. The root itself is reported as `.`.
 
-Listings, searches and formatting always exclude `node_modules` and `.git`.
-They exclude dot files and dot folders unless the `hidden` option is set.
+Listings, searches and formatting always exclude `node_modules` and `.git`. They
+exclude dot files and dot folders unless the `hidden` option is set.
 
 ## File Types
 
@@ -63,16 +63,16 @@ verbatim, and how to extract text. The default registry has two readers:
 - the PDF reader, for `.pdf`, returning the text layer of the document, with
   pages separated by a line break.
 
-Operations that need document text - search, read, info - work for any file
-type with a registered reader. Operations that need markdown structure -
-extraction, formatting, note creation - are markdown only.
+Operations that need document text - search, read, info - work for any file type
+with a registered reader. Operations that need markdown structure - extraction,
+formatting, note creation - are markdown only.
 
 There is no OCR: a scanned PDF without a text layer yields empty text.
 
 ## File And Folder Operations
 
-- listing returns entries matching a glob pattern, with kind, size in bytes,
-  and modification time, sorted by path;
+- listing returns entries matching a glob pattern, with kind, size in bytes, and
+  modification time, sorted by path;
 - reading returns the text of one file, through its reader;
 - writing stores UTF-8 text, creating missing parent folders;
 - note creation writes YAML front matter with `title`, `created` and optional
@@ -105,8 +105,8 @@ Writing rules:
 
 Search scans every file that matches the pattern and has a registered reader.
 
-- the query is literal text by default, and a regular expression when `regex`
-  is set;
+- the query is literal text by default, and a regular expression when `regex` is
+  set;
 - matching is case-insensitive unless `ignoreCase` is disabled;
 - at most one match is reported per line;
 - each match carries the file path, a one-based line, a one-based column, and
@@ -211,8 +211,8 @@ Rewriting keeps the style a link was written in:
 - a fragment or query string survives unchanged;
 - a wiki link written as a bare name changes only when the name changes, and
   keeps its alias;
-- a reference use is never rewritten, because it carries no path; its
-  definition is.
+- a reference use is never rewritten, because it carries no path; its definition
+  is.
 
 Links that are not rewritten:
 
@@ -237,10 +237,10 @@ An article carries its library path, its title, its size, and its modification
 time. The title is the `title` front matter value, else the first level 1
 heading, else the file name without its extension.
 
-A link carries the document it is written in, its line and column, its kind,
-the target as written, its text, and the library paths it resolves to.
-Destinations are resolved once, at index time, by the backlink rules above. A
-link that leaves the library resolves to nothing and is counted as external.
+A link carries the document it is written in, its line and column, its kind, the
+target as written, its text, and the library paths it resolves to. Destinations
+are resolved once, at index time, by the backlink rules above. A link that
+leaves the library resolves to nothing and is counted as external.
 
 The index covers markdown documents only, under the same exclusion rules as
 listing.
@@ -254,11 +254,11 @@ Maintenance:
   point at it, so a removed document still reports its backlinks.
 
 A host keeps the index current by watching the library. Changes are debounced,
-so a burst collapses into one update. A change naming a markdown file
-re-indexes that file; anything else, such as a renamed folder or a platform
-that reports no file name, triggers a rebuild. Recursive watching is not
-available on every platform; where it cannot start, the failure is logged and
-the index stops following changes rather than failing the host.
+so a burst collapses into one update. A change naming a markdown file re-indexes
+that file; anything else, such as a renamed folder or a platform that reports no
+file name, triggers a rebuild. Recursive watching is not available on every
+platform; where it cannot start, the failure is logged and the index stops
+following changes rather than failing the host.
 
 A server indexes at startup and watches, unless it was told not to. A server
 started to answer one command is told not to, and answers by scanning.
@@ -270,12 +270,12 @@ answers.
 ## Command Line Interface
 
 The CLI is `kb`. Commands are `list`, `read`, `write`, `new`, `mkdir`, `move`,
-`rename`, `copy`, `remove`, `search`, `backlinks`, `graph`, `format`,
-`extract`, `info`, `config` and `version`.
+`rename`, `copy`, `remove`, `search`, `backlinks`, `graph`, `format`, `extract`,
+`info`, `config` and `version`.
 
 Output format is `text` or `json`, chosen with the global `--format` option.
-`extract` defaults to `json`, because its result is structured data; every
-other command defaults to `text`.
+`extract` defaults to `json`, because its result is structured data; every other
+command defaults to `text`.
 
 Exit codes:
 
@@ -290,8 +290,8 @@ over `KB_LOG_LEVEL` and `KB_LOG_FILE`.
 
 ## MCP Server
 
-The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 and
-implements `initialize`, `tools/list` and `tools/call`.
+The MCP server is `kb-mcp`. It speaks line-delimited JSON-RPC 2.0 and implements
+`initialize`, `tools/list` and `tools/call`.
 
 It serves standard input, and, when asked to listen, an address as well. Each
 connection to that address is an independent stream over the same library and
@@ -301,11 +301,10 @@ input ends; one that listens outlives it and stops on SIGINT or SIGTERM.
 A socket file outlives the process that listened on it, so one left by a
 previous run is cleared before listening and removed on shutdown.
 
-The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`,
-`kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`,
-`kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each declares a JSON
-Schema for its arguments, validates them, and returns its result as JSON
-text.
+The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`, `kb_move`,
+`kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
+`kb_format`, `kb_extract` and `kb_info`. Each declares a JSON Schema for its
+arguments, validates them, and returns its result as JSON text.
 
 The server indexes the library before serving its first request, and watches it
 afterwards, so link questions are answered from memory.

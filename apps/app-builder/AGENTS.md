@@ -50,10 +50,9 @@ Keep these layers distinct when editing the package:
 - `README.md` owns human-facing package behavior and workflow
 - `AGENTS.md` owns AI editing rules for the app-builder package itself
 - `src/app-builder/ai/ai-instruction.ts` owns generated app behavior rules
-- `src/app-builder/ai/AGENTS.md` owns AI-subsystem architectural notes that
-  are specific to the prompt loop and transcript contract
-- imported package `AGENTS.md` files own library semantics for generator
-  context
+- `src/app-builder/ai/AGENTS.md` owns AI-subsystem architectural notes that are
+  specific to the prompt loop and transcript contract
+- imported package `AGENTS.md` files own library semantics for generator context
 
 Do not treat app-builder docs as the canonical source for library package
 semantics when the package-local guide exists.
@@ -94,8 +93,7 @@ semantics when the package-local guide exists.
 - Do not introduce server-side assumptions into storage, preview, or AI flows.
 - Build output is the site only, staged into `app-builder/dist/`, then the
   deployment workflow force-pushes it to the `pages` branch root. Do not link
-  the site to the App Builder or ship it in `dist/` unless explicitly
-  requested.
+  the site to the App Builder or ship it in `dist/` unless explicitly requested.
 - Every link on the site resolves: a link to a page goes to its HTML, and a link
   to any other repository file goes to that file on GitHub.
 - Keep imports and code compatible with the repo ESM conventions.
@@ -113,8 +111,7 @@ semantics when the package-local guide exists.
   guidance.
 - If prompt changes the staged chat loop, then re-check `main.ts` and
   `conversation-loop.ts` together.
-- If prompt changes generated file expectations, then re-check README and
-  tests.
+- If prompt changes generated file expectations, then re-check README and tests.
 - If prompt changes tool protocol, then re-check the generated app contract.
 - If prompt changes validation rules, then re-check diagnostics and repair-loop
   docs.
@@ -141,7 +138,6 @@ Use the package scripts when validating changes:
 
 If a change affects the published site, rebuild `app-builder/dist/` locally and
 verify the deployment workflow contract still matches the `pages` branch publish
-flow.
-Update this file when AI-facing app constraints, module boundaries, or
-validation commands change. Update `README.md` separately only when
-user-facing app behavior or usage changes.
+flow. Update this file when AI-facing app constraints, module boundaries, or
+validation commands change. Update `README.md` separately only when user-facing
+app behavior or usage changes.

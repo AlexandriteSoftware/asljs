@@ -22,14 +22,14 @@ snapshot moved into `CHANGE.md` at the moment generation starts.
   - generation lane dropdown below the files/preview area
 - Keep OpenAI model discovery on startup so the dropdowns can be populated from
   real available models.
-- Preserve direct-file commands as an escape hatch when the user explicitly
-  asks to modify a specific file or asset outside the normal
-  `PLAN.md -> CHANGE.md -> README.md` cycle.
+- Preserve direct-file commands as an escape hatch when the user explicitly asks
+  to modify a specific file or asset outside the normal `PLAN.md -> CHANGE.md ->
+  README.md` cycle.
 
 ## Current Baseline
 
-- Host control path is still single-lane in
-  `src/app-builder/main.ts` via `handleGenerate()`.
+- Host control path is still single-lane in `src/app-builder/main.ts` via
+  `handleGenerate()`.
 - Generated-app workflow and prompt rules still assume README-driven staging in
   `src/app-builder/ai/ai-instruction.ts`.
 - The current UI only has one chat send control and one preview refresh/run

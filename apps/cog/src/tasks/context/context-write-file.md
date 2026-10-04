@@ -6,8 +6,7 @@ Creates a project file or replaces its content.
 
 ## Parameters
 
-`ContextWriteFileTaskParameters` (see
-[`context-write-file.ts`][SRC]):
+`ContextWriteFileTaskParameters` (see [`context-write-file.ts`][SRC]):
 
 - `path` (`string`, required).
 - `content` (`string`, required).

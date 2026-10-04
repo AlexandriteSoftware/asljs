@@ -1,7 +1,7 @@
 # toolkit
 
-Repository maintenance commands for ASLJS projects, run as
-`toolkit <action>`. Not published.
+Repository maintenance commands for ASLJS projects, run as `toolkit <action>`.
+Not published.
 
 The package is a workspace, so npm links its `toolkit` binary into
 `node_modules/.bin`, and its `prepare` script builds `dist` on install. Every
