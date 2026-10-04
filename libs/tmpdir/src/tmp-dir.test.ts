@@ -1,5 +1,6 @@
-import { type Logger,
-         NullLoggerProvider }
+import { createTestLoggerProvider,
+         NullLoggerProvider,
+         type Logger }
   from 'asljs-logging';
 import assert
   from 'node:assert';
@@ -13,6 +14,15 @@ import test
   from 'node:test';
 import { TmpDir }
   from './tmp-dir.js';
+
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
+const logger =
+  loggerProvider.getLogger('TmpDir');
 
 test(
   'RQ003 constructor creates unique temporary directories',
@@ -71,7 +81,7 @@ test(
   async (): Promise<void> =>
   {
     using tmpDir =
-      new TmpDir();
+      new TmpDir(logger);
 
     const directoryPath =
       await tmpDir.mkdir(
@@ -114,7 +124,7 @@ test(
   async (): Promise<void> =>
   {
     const tmpDir =
-      new TmpDir();
+      new TmpDir(logger);
 
     const tmpDirectoryPath = tmpDir.path;
 
@@ -151,6 +161,7 @@ test(
 
     const tmpDir =
       new TmpDir(
+        logger,
         { tmpDir: parentDirectoryPath,
           prefix: 'case-' });
 
@@ -199,7 +210,7 @@ test(
       async (): Promise<string> =>
       {
       using tmpDir =
-        new TmpDir();
+        new TmpDir(logger);
 
       await tmpDir.writeText(
         'content.txt',
@@ -226,7 +237,7 @@ test(
       async (): Promise<string> =>
       {
       await using tmpDir =
-        new TmpDir();
+        new TmpDir(logger);
 
       await tmpDir.writeText(
         'content.txt',

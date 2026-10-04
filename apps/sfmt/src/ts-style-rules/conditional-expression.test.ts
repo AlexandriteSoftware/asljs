@@ -2,8 +2,10 @@ import { RuleDefinition }
   from '@eslint/core';
 import tsParser
   from '@typescript-eslint/parser';
-import { NullLoggerProvider }
+import { createTestLoggerProvider }
   from 'asljs-logging';
+import test
+  from 'node:test';
 import { ESLint }
   from 'eslint';
 import { fileURLToPath }
@@ -14,7 +16,10 @@ import tsConditionalExpressionFormatterFactory
   from './conditional-expression.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
 
 const tsConditionalExpressionFormatter =
   tsConditionalExpressionFormatterFactory(

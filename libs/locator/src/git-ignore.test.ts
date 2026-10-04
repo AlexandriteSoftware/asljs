@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -11,8 +11,14 @@ import { GitIgnore }
 
 const TEST_SUITE = 'git-ignore';
 
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
 const logger =
-  new NullLogger();
+  loggerProvider.getLogger('git-ignore');
 
 test(
   `${TEST_SUITE}: paths are filtered by the root and nested .gitignore files`,

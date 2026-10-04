@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -15,6 +15,15 @@ import { applyFormatters,
   from './format.js';
 import tsImportDeclarationFormatterFactory
   from './ts-style-rules/import-declaration.js';
+
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
+const logger =
+  loggerProvider.getLogger('format');
 
 test(
   'format rewrites TypeScript files with the registered formatters',
@@ -94,7 +103,7 @@ test(
         code,
         'example.ts',
         [ tsImportDeclarationFormatterFactory(
-          new NullLogger()) ]);
+          logger) ]);
 
     assert.strictEqual(
       formatted,
@@ -118,7 +127,7 @@ test(
         code,
         'example.ts',
         [ tsImportDeclarationFormatterFactory(
-          new NullLogger()) ]);
+          logger) ]);
 
     assert.strictEqual(
       formatted,

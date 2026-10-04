@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -15,8 +15,14 @@ import { removeDirectory }
 
 const TEST_SUITE = 'filesystem';
 
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
 const logger =
-  new NullLogger();
+  loggerProvider.getLogger('filesystem');
 
 async function exists(
     targetPath: string

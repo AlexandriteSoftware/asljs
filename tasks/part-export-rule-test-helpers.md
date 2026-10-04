@@ -18,8 +18,8 @@ from it already; only the factory is missing.
 Proposed:
 
 - Export `tmpDirFactory(loggerProvider)` from the package root.
-- Re-export `createTestLoggerProvider` from `asljs-logging` (see
-  [logging-test-logger-provider][TLP]) so a rule test needs no local helper.
+- Re-export `createTestLoggerProvider` from `asljs-logging`, which the rest of
+  the repository's tests use, so a rule test needs no local helper.
 - Delete the local `testing/tmpDir.js` copies and import from `asljs-part`.
 - Cover the export in the package-root public API test.
 
@@ -35,4 +35,3 @@ move to.
 - The `testing/tmpDir.js` copies listed above.
 
 [TMP]: part-artefact-tmpdir-helper-ignores-logger.md
-[TLP]: logging-test-logger-provider.md

@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -14,8 +14,14 @@ import { LocationResolver,
 
 const TEST_SUITE = 'location';
 
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
 const logger =
-  new NullLogger();
+  loggerProvider.getLogger('location');
 
 const FILES =
   [ 'f1.txt',

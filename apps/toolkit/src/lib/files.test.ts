@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -13,8 +13,14 @@ import { groupByExtension,
 
 const TEST_SUITE = 'files';
 
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
 const logger =
-  new NullLogger();
+  loggerProvider.getLogger('files');
 
 test(
   `${TEST_SUITE}: nothing to include falls back to everything`,

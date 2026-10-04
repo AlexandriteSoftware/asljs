@@ -1,4 +1,4 @@
-import { NullLogger }
+import { createTestLoggerProvider }
   from 'asljs-logging';
 import assert
   from 'node:assert/strict';
@@ -15,8 +15,14 @@ import test
 import { printFile }
   from './print-file.js';
 
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
+
 const logger =
-  new NullLogger();
+  loggerProvider.getLogger('print-file');
 
 async function capturePrintFile(
     args?: string[]
