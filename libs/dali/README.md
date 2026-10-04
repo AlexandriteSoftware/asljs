@@ -5,11 +5,26 @@
 
 ## Overview
 
-`asljs-dali` is a data layer for apps that store data in IndexedDB. It is for
-developers who want a typed, event-aware table abstraction instead of
-hand-writing low-level request and transaction plumbing. Use it to model stores
-as `Table<T>`, keep CRUD operations consistent, and optionally enforce
-optimistic concurrency with version strategies.
+`asljs-dali` is a data layer for apps that store data in IndexedDB. It models
+each object store as a typed, event-aware `Table<T>`, so CRUD operations stay
+consistent without hand-written request and transaction plumbing.
+
+## Scope
+
+- **Typed tables.** `Table<T>` reads, scans and writes one object store, and
+  raises `add`, `update`, `delete` and `clear` events after each commit.
+- **Optimistic concurrency and soft deletes**, as pluggable version and delete
+  strategies.
+- **Cross-tab notifications.** With a broadcast service, a table reports writes
+  committed in other tabs as well as its own.
+- **Live views.** `record(key)` and `recordset(predicate)` return containers
+  that follow committed changes and conform to the `asljs-observable` contract.
+- **Sagas and event sourcing.** Sagas roll back a group of table operations when
+  one fails; an event source stores chained transactions for synchronization.
+- **Transaction helpers** for the cases where `Table<T>` is not the right layer.
+
+Live views filter on the client: joins, ordering and database-level query
+composition are out of scope.
 
 ## Installation
 
@@ -18,91 +33,6 @@ npm install asljs-dali
 ```
 
 NPM Package: [asljs-dali][NPM]
-
-## Package Concept Map
-
-- `dbOpen(...)`, `dbDelete(...)`, and `dbRequestAsync(...)` manage database
-  setup and low-level request handling.
-- `Table<T>` is the main high-level abstraction for typed IndexedDB work.
-- `notify(...)` and `observe(...)` handle committed change notifications.
-- `record(...)` and `recordset(...)` provide live-first containers.
-- Transaction helpers support lower-level control when `Table<T>` is not the
-  right layer.
-- Version and delete strategies customize concurrency and deletion behavior.
-
-## Choose This API When
-
-- If you need a one-time single-row read, then use `getOne(key)`.
-- If you need a one-time filtered scan, then use `scan(predicate)`.
-- If you need live single-row tracking, then use `record(key)`.
-- If you need live filtered tracking, then use `recordset(predicate)`.
-- If you need local-only mutation notifications, then use `notify(...)`.
-- If you need local-plus-remote committed notifications, then use
-  `observe(...)`.
-
-## Public Contracts
-
-- `notify(...)` is local-only.
-- `observe(...)` includes local and remote committed changes.
-- Broadcasts happen only after a successful commit.
-- Remote messages are not re-published.
-- `record(key)` is key-based only.
-- `recordset(predicate)` is client-side predicate filtering only.
-
-## What This Package Does Not Provide
-
-- No joins.
-- No server-style query planners.
-- No DB-level query composition through `recordset(...)`.
-- No automatic ordering semantics for live sets.
-- No re-publishing of remote messages.
-
-## Public Surface Summary
-
-DB helpers:
-
-- `dbOpen`
-- `dbDelete`
-- `dbRequestAsync`
-
-Tables and live views:
-
-- `Table`
-- `LiveRecord`
-- `LiveRecordSet`
-
-Version and delete strategies:
-
-- `IncrementTableVersionStrategy`
-- `UuidTableVersionStrategy`
-- `TableVersionStrategy`
-- `TableVersionConflictError`
-- `TableDeleteStrategy`
-- `UuidSoftDeleteTableDeleteStrategy`
-
-Transaction helpers:
-
-- `txRead`
-- `txWrite`
-- `txDone`
-- `txEnsure`
-- `txReuseOrCreate`
-- `TxMode`
-
-Broadcast and observe types:
-
-- `TableBroadcastService`
-- `TableBroadcastMessage`
-- `TableObservedEvent`
-- `TableObservedReceiver`
-
-Event-source and saga helpers:
-
-- `EventSourceManager`
-- `IndexedDbEventSourceAdapter`
-- `EventSourceProjectionManager`
-- `SagaManager`
-- setup and store helper exports from event-source and saga modules
 
 ## Usage
 
@@ -139,257 +69,52 @@ const row =
   await notes.getOne('1');
 ```
 
-### Cross-tab notifications with `observe()`
-
-`Table` supports two notification paths:
-
-- If you want callbacks only for writes committed by this `Table` instance, then
-  use `notify(receiver)`.
-- If you want callbacks for local writes and remote writes from other tabs, then
-  use `observe(receiver)`.
-
-Pass a `broadcastService` to the Table constructor to enable cross-tab delivery.
-The service is an abstraction — you can implement it with `BroadcastChannel` or
-any equivalent transport.
+Follow a record as it changes:
 
 ```ts
-import {
-    type TableBroadcastMessage,
-    type TableBroadcastService,
-  } from 'asljs-dali';
-
-// BroadcastChannel-backed implementation
-function makeBroadcastService(
-    channelName: string
-  ): TableBroadcastService
-{
-  const channel = new BroadcastChannel(channelName);
-
-  return {
-    publish(message: TableBroadcastMessage) {
-      channel.postMessage(message);
-    },
-    subscribe(handler) {
-      const listener = (ev: MessageEvent) => handler(ev.data);
-      channel.addEventListener('message', listener);
-      return () => channel.removeEventListener('message', listener);
-    },
-  };
-}
-
-const notes =
-  new Table<Note>(
-    'notes',
-    db,
-    { broadcastService: makeBroadcastService('notes-sync') });
-
-// Local-only — fires only for writes made by this Table instance.
-notes.notify(
-  { add(record) { console.log('local add', record); } });
-
-// Observed — fires for both local and remote writes.
-// The `source` field tells you where the change came from.
-const unobserve =
-  notes.observe(event => {
-    console.log(event.source, event.eventType);
-    if (event.eventType === 'add')
-      console.log(event.record);
-  });
-
-// When the Table is no longer needed, dispose it to stop listening.
-notes.dispose();
-```
-
-**Design rules:**
-
-- Broadcast messages are published **only after** a successful IndexedDB
-  transaction; rolled-back or provisional changes are never broadcast.
-- A Table instance **discards its own echoed messages** using a per-instance
-  `originId` included in every broadcast message.
-- Remote messages are routed only to `observe()` subscribers; local-only
-  `notify()` subscribers are never called for remote events.
-- A Table receiving a remote message **does not re-publish** it, preventing
-  broadcast loops.
-
-### Live views with `record()` and `recordset()`
-
-`Table` provides **live-first** APIs that return reactive containers tracking
-committed table changes automatically. Both containers are built on **ASLJS
-eventful** (for domain events) and conform to the **ASLJS observable** contract:
-they report their property as a `change` event, so the `observe` query from
-`asljs-observable` follows paths into them. That `observe` is the package
-import, not `Table.observe()`.
-
-#### `Table.record(key)` → `LiveRecord<T>`
-
-Returns a live single-record view for a specific primary key.
-
-```ts
-import { observe } from 'asljs-observable';
-
 const live = notes.record('1');
 
-// Stable property — null until the initial load settles.
-console.log(live.record); // { id: '1', title: 'Hello' } | null
+live.on('changed', record => console.log('now', record));
+live.on('deleted', () => console.log('deleted'));
 
-// Domain events via ASLJS eventful.
-live.on('changed', (record, previous) => {
-  console.log('record changed to', record, 'was', previous);
-});
-
-live.on('deleted', previous => {
-  console.log('record deleted, was', previous);
-});
-
-// Property-path query via ASLJS observable.
-const unsubscribe = observe(live)
-  .at('record.title')
-  .subscribe(title => console.log('title is now', title));
-
-// Release the query and the live view when no longer needed.
-unsubscribe();
+// release it when no longer needed
 live.dispose();
 ```
 
-Behaviour:
+Which read to use:
 
-- `record` is `null` until the initial database read settles.
-- On `add` / `update` for the tracked key — `record` is updated and `changed`
-  fires.
-- On `delete` or `clear` — `record` becomes `null` and `deleted` fires.
-- Unrelated changes on the same table do not affect this view.
-- `observe(live).at(path).subscribe(cb)` calls back immediately with the current
-  value and again whenever the value at the path changes. The query is anchored
-  to the stable container, so a replaced record is followed.
-- `record` changes are reported as a `change` event carrying one entry: `{ kind:
-  'set', property: 'record', value, previous }`.
+- If you need a one-time single-row read, then use `getOne(key)`.
+- If you need a one-time filtered scan, then use `scan(predicate)`.
+- If you need live single-row tracking, then use `record(key)`.
+- If you need live filtered tracking, then use `recordset(predicate)`.
 
-> **Snapshot read**: use `table.getOne(key)` instead.
->
-> **Limitation**: `record(key)` is limited to key-only semantics.
+## Further reading
 
-#### `Table.recordset(predicate)` → `LiveRecordSet<T>`
+- [API][API] - every export, grouped by layer.
+- [Table Guide][TAB] - constructor options, operations and event semantics.
+- [Notifications][NOT] - `notify`, `observe` and cross-tab delivery.
+- [Live Views][LIV] - `record`, `recordset` and querying them.
+- [Guides][GDS] - versioning, soft deletes, event sourcing, sagas, and an
+  application walkthrough.
 
-Returns a live filtered set view for records matching a client-side predicate.
+Questions and bugs: [asljs/issues][ISS].
 
-```ts
-import { observe } from 'asljs-observable';
+## Related packages
 
-const live = notes.recordset(note => note.title.startsWith('A'));
-
-// Stable property — a readonly array snapshot.
-console.log(live.records); // readonly Note[]
-
-// Domain events via ASLJS eventful.
-live.on('added',   record          => console.log('added',   record));
-live.on('removed', record          => console.log('removed', record));
-live.on('updated', (record, prev)  => console.log('updated', record, prev));
-live.on('cleared', ()              => console.log('cleared'));
-live.on('changed', records         => console.log('set now has', records.length));
-
-// Property-path query via ASLJS observable.
-const unsubscribe = observe(live)
-  .at('records.length')
-  .subscribe(count => console.log('count:', count));
-
-unsubscribe();
-live.dispose();
-```
-
-Behaviour:
-
-- On initial creation the table is scanned and all matching records are loaded.
-- On `add` — the record is included if the predicate returns `true`; `added`
-  fires.
-- On `update` — membership is re-evaluated; `added`, `updated`, or `removed`
-  fires accordingly.
-- On `delete` — the record is removed if it was present; `removed` fires.
-- On `clear` — the set is emptied and `cleared` fires.
-- `changed` fires after every mutation, together with a `change` event carrying
-  `{ kind: 'set', property: 'records', value, previous }`.
-- `records` returns a new array on every read, so a query on `records` reports
-  every mutation; `records.length` reports only a change of size.
-
-> **Snapshot read**: use `table.scan(predicate)` instead.
->
-> **Limitation**: `recordset(predicate)` is limited to client-side predicate
-> semantics. Joins, ordering, and DB-level query composition are not supported.
-
-## API Reference
-
-Core:
-
-- `dbOpen(name, upgrades)`
-- `dbDelete(name)`
-- `dbRequestAsync(request)`
-- `Table<T>`
-
-Live views:
-
-- `LiveRecord<T>` — live single-record container returned by `Table.record(key)`
-  - Events (ASLJS eventful): `changed`, `deleted`
-  - Observable contract: `change`; query paths such as `record.someField`
-- `LiveRecordSet<T>` — live filtered set container returned by
-  `Table.recordset(predicate)`
-  - Events (ASLJS eventful): `added`, `removed`, `updated`, `cleared`, `changed`
-  - Observable contract: `change`; query paths such as `records.length`
-- `LiveRecordEvents<T>` — event map type for `LiveRecord`
-- `LiveRecordSetEvents<T>` — event map type for `LiveRecordSet`
-
-Versioning:
-
-- `TableVersionStrategy<T>`
-- `TableVersionConflictError`
-- `IncrementTableVersionStrategy<T>`
-- `UuidTableVersionStrategy<T>`
-
-Delete strategies:
-
-- `TableDeleteStrategy<T>`
-- `UuidSoftDeleteTableDeleteStrategy<T>`
-
-Transactions:
-
-- `TxMode`
-- `txRead(db, storeName, tx?)`
-- `txWrite(db, storeName, tx?)`
-- `txDone(tx)`
-- `txEnsure(tx, storeName, mode)`
-- `txReuseOrCreate(tx, storeNames, mode, db)`
-
-Broadcast / cross-tab:
-
-- `TableBroadcastService` — interface for the publish/subscribe transport
-- `TableBroadcastMessage` — message shape published on every committed change
-- `TableObservedEvent<T>` — event delivered to `observe()` subscribers
-- `TableObservedReceiver<T>` — callback type for `observe()`
-
-## Common Wrong Assumptions
-
-- `recordset(predicate)` is a database query planner.
-- `notify(...)` includes remote tab changes.
-- `observe(...)` re-broadcasts remote changes.
-- live views imply joins or rich query composition.
-- broadcast delivery happens during tentative mutations instead of after commit.
-
-## Related Packages
-
-- For event primitives, see `asljs-eventful`.
-- For path queries and the observable contract, see `asljs-observable`.
-- For DOM binding on top of observable models, see `asljs-data-binding`.
-
-## Safe Usage Rules
-
-- Use `Table<T>` before dropping to raw transaction helpers.
-- Prefer snapshot reads unless reactivity is actually needed.
-- Use `observe(...)` only when remote-origin changes matter.
-- Dispose live views when they are no longer needed.
-- Do not describe `recordset(predicate)` as a full query engine.
+- `asljs-eventful` provides the events live views raise.
+- `asljs-observable` provides the path queries live views support.
+- `asljs-data-binding` binds observable models to the DOM.
 
 ## License
 
 MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[API]: docs/API.md
+[GDS]: docs/README.md
+[ISS]: https://github.com/AlexandriteSoftware/asljs/issues
 [LIC]: LICENSE.md
+[LIV]: <docs/Live Views.md>
+[NOT]: docs/Notifications.md
 [NPM]: https://www.npmjs.com/package/asljs-dali
+[TAB]: docs/table.md

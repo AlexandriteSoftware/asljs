@@ -1,7 +1,7 @@
 # REFERENCE
 
-Complete surface of `asljs-machine`. See `README.md` for the runtime model and
-`examples/` for a worked use.
+Complete surface of `asljs-machine`. See `docs/Runtime Model.md` for the runtime
+model and `examples/` for a worked use.
 
 ## machine(initial, definition?)
 

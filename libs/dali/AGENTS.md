@@ -116,5 +116,5 @@ What not to assume:
 - `npm -w asljs-dali run flint`
 
 Update this file when AI-facing constraints, exported surface expectations, or
-validation commands change. Update `README.md` separately only when user-facing
-behavior changes.
+validation commands change. Update `docs/` when user-facing behavior changes,
+and `README.md` only when the landing-page usage changes.

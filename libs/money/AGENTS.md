@@ -93,5 +93,6 @@ Safe usage rules:
 - `npm -w asljs-money run flint`
 
 Update this file when AI-facing arithmetic or formatting constraints, exported
-surface expectations, or validation commands change. Update `README.md`
-separately only when user-facing behavior changes.
+surface expectations, or validation commands change. Update `docs/Money.md` when
+user-facing behavior changes, and `README.md` only when the landing-page usage
+changes.

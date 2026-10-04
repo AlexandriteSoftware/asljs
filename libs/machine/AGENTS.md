@@ -6,7 +6,7 @@ Use this file as AI-facing guidance for `asljs-machine`.
 
 This package exports a state-machine factory. The behavioral contract is driven
 by the package root exports and the implementation in `src/`. `REFERENCE.md`
-holds the complete surface; `README.md` holds the user-facing model.
+holds the complete surface; `docs/Runtime Model.md` holds the runtime model.
 
 ## Package Scope
 
@@ -139,5 +139,5 @@ Do not change that sequence silently, and do not make the reason list narrower.
 `build:dist` compiles `src/` only, so examples never ship.
 
 Update this file when AI-facing constraints, preserved transition semantics, or
-validation commands change. Update `README.md` separately only when user-facing
-behavior or examples change.
+validation commands change. Update `docs/Runtime Model.md` when user-facing
+behavior changes, and `README.md` only when the landing-page usage changes.

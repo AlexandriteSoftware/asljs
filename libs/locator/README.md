@@ -3,11 +3,10 @@
 > Part of [Alexandrite Software Library][1] – a set of high‑quality, performant
 > JavaScript libraries for everyday use.
 
-Locates files by glob patterns, exclusions and filters such as `.gitignore`.
-
-[1]: https://github.com/AlexandriteSoftware/asljs
-
 ## Overview
+
+`asljs-locator` locates files by glob patterns, exclusions and filters such as
+`.gitignore`.
 
 A location says where a set of files lives: the patterns that match them, the
 patterns that take them away again, and the filters that drop whatever should
@@ -26,9 +25,11 @@ files it finds is the caller's business.
 
 ## Installation
 
-```pwsh
+```bash
 npm install asljs-locator
 ```
+
+NPM Package: [asljs-locator][NPM]
 
 ## Usage
 
@@ -70,14 +71,19 @@ Patterns must be all files or all directories; a directory pattern ends with
 
 - [Architecture][2] for where this sits among the packages.
 
-[2]: ../../docs/Architecture.md
+Questions and bugs: [asljs/issues][ISS].
 
 ## Related packages
 
 - [asljs-logging][3] provides the logger the resolver traces through.
 
-[3]: ../logging/README.md
-
 ## License
 
-MIT
+MIT License. See [LICENSE][LIC] for details.
+
+[1]: https://github.com/AlexandriteSoftware/asljs
+[2]: ../../docs/Architecture.md
+[3]: ../logging/README.md
+[ISS]: https://github.com/AlexandriteSoftware/asljs/issues
+[LIC]: LICENSE.md
+[NPM]: https://www.npmjs.com/package/asljs-locator

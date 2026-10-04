@@ -4,7 +4,10 @@ This folder contains implementation guides for core DALI patterns.
 
 ## Feature Guides
 
+- [API][API]
 - [Table Guide][TAB]
+- [Notifications][NOT]
+- [Live Views][LIV]
 - [Delete Strategy and Soft Deletes][DEL]
 - [Versioning Strategy][VER]
 - [Saga Guide][SAG]
@@ -17,8 +20,11 @@ This folder contains implementation guides for core DALI patterns.
 The application guide is conceptual and links to feature guides for detailed
 implementation rules and APIs.
 
+[API]: API.md
 [DEL]: ./delete-strategy-soft-deletes.md
 [EVE]: ./event-source.md
+[LIV]: <Live Views.md>
+[NOT]: Notifications.md
 [SAG]: ./saga.md
 [TAB]: ./table.md
 [TOD]: ./todo-ticketing-data-layer.md

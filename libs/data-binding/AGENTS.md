@@ -117,5 +117,5 @@ Unsupported syntax:
 - `npm -w asljs-data-binding run flint`
 
 Update this file when AI-facing binding constraints, preserved runtime
-contracts, or validation commands change. Update `README.md` separately only
-when user-facing binding usage or behavior changes.
+contracts, or validation commands change. Update `docs/` when binding syntax or
+pipe behavior changes, and `README.md` only when the landing-page usage changes.
