@@ -208,7 +208,7 @@ export function createSettingsModalUi(
       }
     });
 
-  return { open(): Promise<void>
+  return { async open(): Promise<void>
     {
       const values =
         await options.loadValues();
