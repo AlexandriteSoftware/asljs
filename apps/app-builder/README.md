@@ -6,7 +6,8 @@
 Software Libraries for JavaScript) from the repository's markdown files. The
 landing page is the repository's `README.md`, and every markdown file it reaches
 through relative links becomes a page of its own. A link to any other repository
-file goes to that file on GitHub.
+file goes to that file on GitHub. The pages are rendered by [MkDocs][MKD] with
+the [Material][MAT] theme.
 
 The package also holds the sources of the App Builder demo: a static,
 browser-based, AI-assisted, local-first app builder. It runs locally with `npm
@@ -153,13 +154,26 @@ The dev server starts at `http://localhost:5173/asljs/`.
 
 ### Build the site
 
+The build needs Python with the packages in `requirements.txt`, pinned so a
+MkDocs release cannot change the site unannounced:
+
 ```bash
+pip install -r apps/app-builder/requirements.txt
+
 npm -w asljs-app-builder run build
 ```
 
-The site is written to **`app-builder/dist/`** as the local staging output. Its
-pages link to each other relatively, so opening `dist/index.html` in a browser
-shows it without a server.
+`build` runs in two steps:
+
+1. `src/site/build-site.ts` collects the pages, rewrites their links, and stages
+   their markdown at their repository paths in `app-builder/build/site/`.
+2. `mkdocs build --strict` renders the staged markdown into `app-builder/dist/`
+   with `mkdocs.yml`. A warning, such as a link to a page that is not staged,
+   fails the build.
+
+Pages link to each other relatively, so opening `dist/index.html` in a browser
+shows the site without a server; search needs one, for example `python -m
+http.server -d apps/app-builder/dist`.
 
 ## GitHub Pages setup
 
@@ -171,11 +185,11 @@ GitHub Pages is configured to publish from the **root of the `pages` branch**:
 4. Save. GitHub Pages will serve the site at
    `https://alexandritesoftware.github.io/asljs/`.
 
-The workflow in `.github/workflows/build-app-builder.yml` builds the site
-whenever a markdown file or this package changes, copies the generated
-`app-builder/dist/` contents to a temporary repository, and force pushes that
-repository to the `pages` branch. The branch history is replaced on each
-publish.
+The workflow in `.github/workflows/build-app-builder.yml` installs Node and
+Python dependencies, builds the site whenever a markdown file or this package
+changes, copies the generated `app-builder/dist/` contents to a temporary
+repository, and force pushes that repository to the `pages` branch. The branch
+history is replaced on each publish.
 
 For a local rebuild before pushing source changes:
 
@@ -188,11 +202,13 @@ npm -w asljs-app-builder run build
 - `app-builder/dist/index.html`: the landing page, from the root `README.md`
 - `app-builder/dist/<path>/index.html`: the page for `<path>/README.md`
 - `app-builder/dist/<path>/<name>.html`: the page for any other `<name>.md`
-- `app-builder/dist/site.css`: the site's stylesheet
+- `app-builder/dist/assets/` and `app-builder/dist/search/`: the theme and the
+  search index, written by MkDocs
 
 Generated-output boundary:
 
 - source lives in `app-builder/src/**`
+- staged markdown is written to `app-builder/build/site/`
 - build output is written to `app-builder/dist/`
 - generated build output is not the main editing surface
 
@@ -200,9 +216,12 @@ Generated-output boundary:
 
 Internal modules (not exported as a library):
 
-- `src/site/site.ts` — which pages the site has, link rewriting, and the page
-  template
-- `src/site/build-site.ts` — reads the repository and writes `dist/`
+- `src/site/site.ts` — which pages the site has, and link rewriting
+- `src/site/build-site.ts` — reads the repository and stages the pages in
+  `build/site/`
+- `mkdocs.yml` — the MkDocs configuration: theme, navigation, markdown
+  extensions
+- `requirements.txt` — the pinned Python packages the build needs
 
 - `src/app-builder/state.ts` — reactive app state via `asljs-observable`
 - `src/app-builder/storage.ts` — IndexedDB persistence via `asljs-dali`
@@ -231,3 +250,5 @@ MIT License. See [LICENSE][LIC] for details.
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
 [LIC]: ../../LICENSE.md
+[MAT]: https://squidfunk.github.io/mkdocs-material/
+[MKD]: https://www.mkdocs.org/

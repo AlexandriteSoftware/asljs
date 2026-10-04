@@ -29,8 +29,16 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: apps/app-builder/requirements.txt
+
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          pip install -r apps/app-builder/requirements.txt
 
       - name: Build site
         run: cd apps/app-builder && npm run build

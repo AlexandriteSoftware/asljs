@@ -8,7 +8,7 @@
     "flint": "toolkit flint",
     "clean": "toolkit clean",
     "dev": "vite",
-    "build": "node --import tsx src/site/build-site.ts",
+    "build": "node --import tsx src/site/build-site.ts && mkdocs build --strict",
     "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "all": "npm run clean && npm run flint",

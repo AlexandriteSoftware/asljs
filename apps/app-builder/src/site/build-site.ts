@@ -1,17 +1,17 @@
 /**
- * Builds the static site from the repository's markdown files into `dist`.
+ * Stages the site's markdown into `build/site`, for MkDocs to build into
+ * `dist`.
  *
  * The landing page is the root `README.md`. Every markdown file it reaches
- * through relative links becomes a page of its own. See `README.md` of this
- * package.
+ * through relative links becomes a page of its own, staged at its repository
+ * path. See `README.md` of this package.
  */
 
 import fs
   from 'node:fs';
 import path
   from 'node:path';
-import { renderSite,
-         STYLESHEET_PATH }
+import { stageSite }
   from './site.js';
 
 const REPOSITORY_URL =
@@ -25,10 +25,11 @@ const packageDir =
     import.meta.dirname,
     '../..');
 
-const outputDir =
+const stagingDir =
   path.join(
     packageDir,
-    'dist');
+    'build',
+    'site');
 
 /** The workspace root: the nearest directory above whose package.json lists workspaces. */
 function findRepositoryRoot(
@@ -79,7 +80,7 @@ const toAbsolute =
     repositoryPath);
 
 const pages =
-  renderSite(
+  stageSite(
     ENTRY,
     { read:
         repositoryPath =>
@@ -103,26 +104,16 @@ const pages =
       repositoryUrl: REPOSITORY_URL,
       branch: BRANCH });
 
-// Emptied rather than removed: Windows refuses to remove a directory a process
-// is running in, such as a static server previewing the site.
-fs.mkdirSync(
-  outputDir,
-  { recursive: true });
-
-for (const entry of fs.readdirSync(outputDir)) {
-  fs.rmSync(
-    path.join(
-      outputDir,
-      entry),
-    { recursive: true,
-      force: true });
-}
+fs.rmSync(
+  stagingDir,
+  { recursive: true,
+    force: true });
 
 for (const page of pages) {
   const target =
     path.join(
-      outputDir,
-      page.outputPath);
+      stagingDir,
+      page.sourcePath);
 
   fs.mkdirSync(
     path.dirname(target),
@@ -130,24 +121,9 @@ for (const page of pages) {
 
   fs.writeFileSync(
     target,
-    page.html,
+    page.markdown,
     'utf8');
 }
 
-fs.copyFileSync(
-  path.join(
-    import.meta.dirname,
-    'site.css'),
-  path.join(
-    outputDir,
-    STYLESHEET_PATH));
-
-// GitHub Pages would otherwise run Jekyll over the output.
-fs.writeFileSync(
-  path.join(
-    outputDir,
-    '.nojekyll'),
-  '');
-
 console.log(
-  `site: ${pages.length} pages from ${ENTRY} -> ${outputDir}`);
+  `site: ${pages.length} pages from ${ENTRY} -> ${stagingDir}`);

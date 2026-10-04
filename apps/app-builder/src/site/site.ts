@@ -11,13 +11,11 @@ export type LinkTarget =
   | { kind: 'anchor'; href: string; }
   | { kind: 'repository'; path: string; hash: string; };
 
-/** A rendered page: where it is written, its title and its HTML. */
-export interface Page
+/** A page of the site: its repository path and its markdown, ready for MkDocs. */
+export interface StagedPage
 {
   sourcePath: string;
-  outputPath: string;
-  title: string;
-  html: string;
+  markdown: string;
 }
 
 export interface SiteOptions
@@ -32,43 +30,6 @@ export interface SiteOptions
   repositoryUrl: string;
   /** The branch those links point at. */
   branch: string;
-}
-
-/** The site title, shown in the header and in every page title. */
-export const SITE_NAME = 'asljs';
-
-/** The stylesheet every page links, at the site root. */
-export const STYLESHEET_PATH = 'site.css';
-
-/**
- * Where a markdown file is written in the site.
- *
- * A `README.md` becomes its directory's `index.html`, so the root README is the
- * landing page and a package README is the package's page. Any other file keeps
- * its name with `.html` in place of `.md`.
- */
-export function toOutputPath(
-    sourcePath: string
-  ): string
-{
-  const directory =
-    path.posix.dirname(sourcePath);
-
-  const name =
-    path.posix.basename(sourcePath);
-
-  const outputName =
-    name.toLowerCase() === 'readme.md'
-    ? 'index.html'
-    : `${
-      name.slice(
-        0,
-        -'.md'.length)
-    }.html`;
-
-  return directory === '.'
-    ? outputName
-    : `${directory}/${outputName}`;
 }
 
 /**
@@ -132,16 +93,16 @@ export function resolveLink(
            hash };
 }
 
-/** The href from one page of the site to another. */
+/** The href from one repository file to another, relative and encoded. */
 export function relativeHref(
-    fromOutputPath: string,
-    toOutputPath: string
+    fromSourcePath: string,
+    toSourcePath: string
   ): string
 {
   const relative =
     path.posix.relative(
-      path.posix.dirname(fromOutputPath),
-      toOutputPath);
+      path.posix.dirname(fromSourcePath),
+      toSourcePath);
 
   return relative
     .split('/')
@@ -213,146 +174,145 @@ export function collectPages(
 }
 
 /**
- * Renders every page of the site.
+ * The pages of the site with their links rewritten for MkDocs.
  *
- * A link to another page becomes a link to its HTML. A link to any other
- * repository file, or to a markdown file outside the site, goes to that file on
- * the repository's web host instead, so no link points at a file the site does
- * not have.
+ * A link to another page becomes a relative link to its markdown file, which
+ * MkDocs turns into a link to that page's HTML. A link to any other repository
+ * file, or to a markdown file outside the site, goes to that file on the
+ * repository's web host instead, so no link points at a file the site does not
+ * have.
  */
-export function renderSite(
+export function stageSite(
     entry: string,
     options: SiteOptions
-  ): Page[]
+  ): StagedPage[]
 {
   const sourcePaths =
     collectPages(
       entry,
       options);
 
-  const outputPaths =
-    new Map(
-      sourcePaths.map(
-        sourcePath => [ sourcePath,
-                        toOutputPath(sourcePath) ]));
+  const pages =
+    new Set(sourcePaths);
 
   return sourcePaths.map(
-    sourcePath =>
-      renderPage(
-        sourcePath,
-        outputPaths,
-        options));
+    sourcePath => (
+      { sourcePath,
+        markdown:
+          rewriteLinks(
+            options.read(sourcePath),
+            href =>
+            toStagedHref(
+              resolveLink(
+                href,
+                sourcePath),
+              sourcePath,
+              pages,
+              options)) }
+    ));
 }
 
-function renderPage(
-    sourcePath: string,
-    outputPaths: ReadonlyMap<string, string>,
-    options: SiteOptions
-  ): Page
+/**
+ * The markdown with the destination of every inline link and every link
+ * reference definition replaced by `rewrite`. Fenced code blocks and code spans
+ * are left as written.
+ */
+export function rewriteLinks(
+    markdown: string,
+    rewrite: (href: string) => string
+  ): string
 {
-  const outputPath =
-    outputPaths.get(sourcePath) as string;
+  let fence: string | null = null;
 
-  const slugs =
-    createSlugger();
+  return markdown
+    .split('\n')
+    .map(
+      (
+          line
+        ) =>
+      {
+        const fenceMatch =
+          /^ {0,3}(`{3,}|~{3,})/.exec(line);
 
-  let title: string | null = null;
-
-  const marked =
-    new Marked();
-
-  marked.use(
-    { renderer:
-        { link(
-          this: { parser: { parseInline: (tokens: Token[]) => string; }; },
-          token: Tokens.Link
-        ): string
-        {
-          const href =
-            toPageHref(
-              resolveLink(
-                token.href,
-                sourcePath),
-              outputPath,
-              outputPaths,
-              options);
-
-          const titleAttribute =
-            token.title
-            ? ` title="${escapeHtml(token.title)}"`
-            : '';
-
-          return `<a href="${escapeHtml(href)}"${titleAttribute}>${
-            this.parser.parseInline(token.tokens)
-          }</a>`;
-        },
-          heading(
-          this: { parser: { parseInline: (tokens: Token[]) => string; }; },
-          token: Tokens.Heading
-        ): string
-        {
-          const text =
-            this.parser.parseInline(token.tokens);
-
-          const plain =
-            stripTags(text);
-
+        if (fence !== null) {
           if (
-            title === null
-            && token.depth === 1
+            fenceMatch !== null
+            && fenceMatch[1][0] === fence[0]
+            && fenceMatch[1].length
+               >= fence.length
           ) {
-            title = plain;
+            fence = null;
           }
 
-          return `<h${token.depth} id="${
-            slugs(plain)
-          }">${text}</h${token.depth}>\n`;
-        } } });
+          return line;
+        }
 
-  const body =
-    marked.parse(
-      options.read(sourcePath),
-      { async: false });
+        if (fenceMatch !== null) {
+          fence = fenceMatch[1];
+          return line;
+        }
 
-  const pageTitle =
-    title
-    ?? path.posix.basename(sourcePath);
+        const definition =
+          /^( {0,3}\[[^\]]+\]:[ \t]*)(<[^>]*>|\S+)(.*)$/.exec(
+            line);
 
-  return { sourcePath,
-           outputPath,
-           title: pageTitle,
-           html:
-             renderDocument(
-               { title: pageTitle,
-                 body,
-                 outputPath,
-                 sourceUrl:
-                   repositoryFileUrl(
-                     sourcePath,
-                     options,
-                     false),
-                 repositoryUrl:
-                   options.repositoryUrl }) };
+        if (definition !== null) {
+          return definition[1]
+            + rewrite(
+              unwrapHref(definition[2]))
+            + definition[3];
+        }
+
+        return line
+          .split(/(`+[^`]*`+)/)
+          .map(
+            (
+              part,
+              index
+            ) =>
+              index % 2 === 1
+                ? part
+                : part.replace(
+                  /\]\((<[^>]*>|[^\s)]+)/g,
+                  (
+                    _match,
+                    href: string
+                  ) => `](${rewrite(
+                    unwrapHref(href))}`))
+          .join('');
+      })
+    .join('\n');
 }
 
-function toPageHref(
+function unwrapHref(
+    href: string
+  ): string
+{
+  return href.startsWith('<')
+      && href.endsWith('>')
+    ? href.slice(
+      1,
+      -1)
+    : href;
+}
+
+function toStagedHref(
     target: LinkTarget,
-    fromOutputPath: string,
-    outputPaths: ReadonlyMap<string, string>,
+    fromSourcePath: string,
+    pages: ReadonlySet<string>,
     options: SiteOptions
   ): string
 {
   if (target.kind !== 'repository') {
-    return target.href;
+    return target.href.replace(
+      / /g,
+      '%20');
   }
 
-  const page =
-    outputPaths.get(target.path);
-
-  if (page !== undefined) {
+  if (pages.has(target.path)) {
     return relativeHref(
-      fromOutputPath,
-      page)
+      fromSourcePath,
+      target.path)
       + target.hash;
   }
 
@@ -382,141 +342,6 @@ function repositoryFileUrl(
     .join('/');
 
   return `${options.repositoryUrl}/${kind}/${options.branch}/${encodedPath}`;
-}
-
-interface DocumentParts
-{
-  title: string;
-  body: string;
-  outputPath: string;
-  sourceUrl: string;
-  repositoryUrl: string;
-}
-
-/** The page around a rendered body: header, article and footer. */
-export function renderDocument(
-    parts: DocumentParts
-  ): string
-{
-  const home =
-    relativeHref(
-      parts.outputPath,
-      'index.html');
-
-  const stylesheet =
-    relativeHref(
-      parts.outputPath,
-      STYLESHEET_PATH);
-
-  const documentTitle =
-    parts.outputPath === 'index.html'
-    ? SITE_NAME
-    : `${parts.title} · ${SITE_NAME}`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(documentTitle)}</title>
-  <link rel="stylesheet" href="${escapeHtml(stylesheet)}">
-</head>
-<body>
-  <header class="site-header">
-    <a class="site-home" href="${escapeHtml(home)}">${SITE_NAME}</a>
-    <a href="${escapeHtml(parts.repositoryUrl)}">GitHub</a>
-  </header>
-  <main>
-${parts.body}
-  </main>
-  <footer class="site-footer">
-    <a href="${escapeHtml(parts.sourceUrl)}">View source</a>
-  </footer>
-</body>
-</html>
-`;
-}
-
-/**
- * Heading ids as GitHub makes them, so a `file.md#heading` link written for the
- * repository reaches the same heading on the site.
- */
-export function createSlugger(
-  ): (text: string) => string
-{
-  const counts = new Map<string, number>();
-
-  return (
-      text: string
-    ): string =>
-  {
-    const base =
-      text
-      .toLowerCase()
-      .trim()
-      .replace(
-        /[^\p{L}\p{N}\s_-]/gu,
-        '')
-      .replace(
-        /\s/g,
-        '-');
-
-    const count =
-      counts.get(base)
-      ?? 0;
-
-    counts.set(
-      base,
-      count + 1);
-
-    return count === 0
-      ? base
-      : `${base}-${count}`;
-  };
-}
-
-function stripTags(
-    html: string
-  ): string
-{
-  return html
-    .replace(
-      /<[^>]*>/g,
-      '')
-    .replace(
-      /&lt;/g,
-      '<')
-    .replace(
-      /&gt;/g,
-      '>')
-    .replace(
-      /&quot;/g,
-      '"')
-    .replace(
-      /&#39;/g,
-      "'")
-    .replace(
-      /&amp;/g,
-      '&');
-}
-
-function escapeHtml(
-    text: string
-  ): string
-{
-  return text
-    .replace(
-      /&/g,
-      '&amp;')
-    .replace(
-      /</g,
-      '&lt;')
-    .replace(
-      />/g,
-      '&gt;')
-    .replace(
-      /"/g,
-      '&quot;');
 }
 
 function safeDecodeUri(

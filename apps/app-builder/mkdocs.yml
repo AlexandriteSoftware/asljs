@@ -1,0 +1,54 @@
+# Builds the site from the markdown that `src/site/build-site.ts` stages.
+site_name: asljs
+site_url: https://alexandritesoftware.github.io/asljs/
+repo_url: https://github.com/AlexandriteSoftware/asljs
+repo_name: AlexandriteSoftware/asljs
+edit_uri: blob/main/
+
+docs_dir: build/site
+site_dir: dist
+
+# Pages are written as `<name>.html` and `<dir>/index.html`, so links between
+# them work when `dist` is opened from disk.
+use_directory_urls: false
+
+theme:
+  name: material
+  features:
+    - content.action.view
+    - navigation.indexes
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - mdx_truly_sane_lists:
+      nested_indent: 2
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.superfences
+  - pymdownx.tasklist
+
+validation:
+  links:
+    anchors: warn

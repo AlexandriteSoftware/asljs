@@ -3,12 +3,11 @@ import assert
 import test
   from 'node:test';
 import { collectPages,
-         createSlugger,
          relativeHref,
-         renderSite,
          resolveLink,
+         rewriteLinks,
          type SiteOptions,
-         toOutputPath }
+         stageSite }
   from './site.js';
 
 const TEST_SUITE = 'site';
@@ -40,25 +39,6 @@ function createOptions(
              'https://example.test/repo',
            branch: 'main' };
 }
-
-test(
-  `${TEST_SUITE}: a README becomes its directory's index page`,
-  (): void =>
-  {
-    assert.equal(
-      toOutputPath('README.md'),
-      'index.html');
-
-    assert.equal(
-      toOutputPath(
-        'libs/eventful/README.md'),
-      'libs/eventful/index.html');
-
-    assert.equal(
-      toOutputPath(
-        'docs/Repository Layout.md'),
-      'docs/Repository Layout.html');
-  });
 
 test(
   `${TEST_SUITE}: links resolve against the page that holds them`,
@@ -111,15 +91,15 @@ test(
   {
     assert.equal(
       relativeHref(
-        'index.html',
-        'docs/Repository Layout.html'),
-      'docs/Repository%20Layout.html');
+        'README.md',
+        'docs/Repository Layout.md'),
+      'docs/Repository%20Layout.md');
 
     assert.equal(
       relativeHref(
-        'libs/eventful/index.html',
-        'index.html'),
-      '../../index.html');
+        'libs/eventful/README.md',
+        'README.md'),
+      '../../README.md');
   });
 
 test(
@@ -146,11 +126,11 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: links to pages point at their HTML, others at the repository`,
+  `${TEST_SUITE}: links to pages stay relative, others go to the repository`,
   (): void =>
   {
-    const pages =
-      renderSite(
+    const [landing, packagePage] =
+      stageSite(
         'README.md',
         createOptions(
           { 'README.md':
@@ -158,67 +138,53 @@ test(
             + '[a](libs/a/README.md#usage) '
             + '[source](libs/a/src/index.ts) '
             + '[dir](libs/a/src) '
-            + '[site](https://example.test/)\n',
+            + '[site](https://example.test/) '
+            + '[b][B]\n\n'
+            + '[B]: <docs/b file.md>\n',
             'libs/a/README.md':
-              '# A\n\n[home](../../README.md)\n' },
+              '# A\n\n[home](../../README.md)\n',
+            'docs/b file.md': '# B' },
           [ 'libs/a/src' ]));
 
-    const [landing, packagePage] = pages;
+    assert.equal(
+      landing.sourcePath,
+      'README.md');
 
     assert.equal(
-      landing.outputPath,
-      'index.html');
+      landing.markdown,
+      '# Project\n\n'
+        + '[a](libs/a/README.md#usage) '
+        + '[source](https://example.test/repo/blob/main/libs/a/src/index.ts) '
+        + '[dir](https://example.test/repo/tree/main/libs/a/src) '
+        + '[site](https://example.test/) '
+        + '[b][B]\n\n'
+        + '[B]: docs/b%20file.md\n');
 
-    assert.match(
-      landing.html,
-      /<a href="libs\/a\/index\.html#usage">a<\/a>/);
-
-    assert.match(
-      landing.html,
-      /<a href="https:\/\/example\.test\/repo\/blob\/main\/libs\/a\/src\/index\.ts">source<\/a>/);
-
-    assert.match(
-      landing.html,
-      /<a href="https:\/\/example\.test\/repo\/tree\/main\/libs\/a\/src">dir<\/a>/);
-
-    assert.match(
-      landing.html,
-      /<a href="https:\/\/example\.test\/">site<\/a>/);
-
-    assert.match(
-      landing.html,
-      /<title>asljs<\/title>/);
-
-    assert.match(
-      packagePage.html,
-      /<a href="\.\.\/\.\.\/index\.html">home<\/a>/);
-
-    assert.match(
-      packagePage.html,
-      /<title>A · asljs<\/title>/);
-
-    assert.match(
-      packagePage.html,
-      /<link rel="stylesheet" href="\.\.\/\.\.\/site\.css">/);
+    assert.equal(
+      packagePage.markdown,
+      '# A\n\n[home](../../README.md)\n');
   });
 
 test(
-  `${TEST_SUITE}: headings get GitHub's ids, numbered when repeated`,
+  `${TEST_SUITE}: code blocks and code spans keep their links`,
   (): void =>
   {
-    const slug =
-      createSlugger();
+    const markdown =
+      'see `[x](a.md)` and [y](a.md)\n'
+      + '```md\n'
+      + '[z](a.md)\n'
+      + '[Z]: a.md\n'
+      + '```\n'
+      + '[Y]: a.md "title"\n';
 
     assert.equal(
-      slug('Further reading'),
-      'further-reading');
-
-    assert.equal(
-      slug(
-        '`on`, `off` & emit()'),
-      'on-off--emit');
-
-    assert.equal(
-      slug('Further reading'),
-      'further-reading-1');
+      rewriteLinks(
+        markdown,
+        href => `#${href}`),
+      'see `[x](a.md)` and [y](#a.md)\n'
+        + '```md\n'
+        + '[z](a.md)\n'
+        + '[Z]: a.md\n'
+        + '```\n'
+        + '[Y]: #a.md "title"\n');
   });
