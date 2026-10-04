@@ -34,7 +34,7 @@ Every application and tool takes the same three arguments:
   - `stdout` - the console. The same as leaving `--logfile` out: the log is
     written once, to stdout.
   - `stderr` - standard error, which keeps stdout free for the tool's output.
-- `--logformat <format>` - `auto`, `json` or `pretty`; see
+- `--logformat <format>` - `auto`, `json`, `text` or `pretty`; see
   [Format][FMT]. Defaults to `auto`.
 
 So:
@@ -81,14 +81,17 @@ Any other name is rejected. `info` and `warn` are pino's names, not these.
 
 ## Format
 
-The same three formats apply to every target, console or file:
+Four formats:
 
 - `json` - one JSON object per line. For machines: hosting platforms, log
-  collectors, `jq`, and replaying a log.
-- `pretty` - one readable line per entry, coloured when the target is a
-  terminal. For people.
-- `auto` - the default. Picks one of the two by asking whether a person is
-  watching the target:
+  collectors, `jq`, and replaying a log. Any target.
+- `text` - one readable line per entry, plain text without colour codes. For
+  people reading a file or a captured stream. Any target.
+- `pretty` - the same line as `text`, coloured. For people at a terminal. Only
+  stdout and stderr: `pretty` with a file path throws at startup, because colour
+  codes in a file are noise; use `text` there.
+- `auto` - the default. Picks by asking whether a person is watching the
+  target:
   - stdout or stderr that is a terminal - `pretty`.
   - stdout or stderr that is not a terminal (a container, a hosting platform
     such as Azure App Service, a pipe, a redirect) - `json`.
@@ -100,12 +103,16 @@ guessing the environment from variables such as `CI`, `NODE_ENV` or
 platform with no configuration, and the same service run from a terminal
 prints readable lines.
 
+`pretty` on stdout or stderr that is not a terminal is allowed: some tools that
+pipe output still show it to a person and pass colours through.
+
 Pass a format only to override `auto`:
 
-- `--logformat pretty` with a file, to read the file directly instead of through
+- `--logformat text` with a file, to read the file directly instead of through
   a formatter.
-- `--logformat pretty` under a tool that pipes output but is still read by a
-  person, such as `concurrently` in a development script.
+- `--logformat pretty` under a tool that pipes output but shows it to a person
+  with colours, such as `concurrently` in a development script; `text` if it
+  does not pass colours through.
 - `--logformat json` on a terminal, to see exactly what a log collector will
   receive.
 
@@ -145,9 +152,10 @@ Tests log by default, because a failing test is when the log is needed:
 - `<PREFIX>TEST_LOG_LEVEL` changes the level; `silent` turns logging off.
 - `<PREFIX>TEST_LOG_FILE` takes the same targets as `--logfile`: a path,
   `stdout` or `stderr`.
-- The default format is `pretty` rather than `auto`, because a person reads
-  test output even though the test runner pipes it. `<PREFIX>TEST_LOG_FORMAT`
-  overrides it.
+- The default format is `pretty` on stdout or stderr rather than `auto`,
+  because a person reads test output even though the test runner pipes it, and
+  `json` in a file, since `pretty` is not allowed there.
+  `<PREFIX>TEST_LOG_FORMAT` overrides it.
 
 Inside this repository the prefix is `ASLJS_`:
 

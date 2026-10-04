@@ -23,8 +23,10 @@ npm -w asljs-part run test
   unless `<prefix>LEVEL` says otherwise; `<prefix>FILE` writes to that file
   instead of the console; `silent` returns a `NullLoggerProvider`, see
   [logging-silent-provider-starts-transport][SIL].
-- Console output is pretty-printed, whatever the automatic format would choose:
-  `node --test` pipes the test processes, but a person reads the output.
+- The default format is `pretty` on stdout or stderr, whatever `auto` would
+  choose, because `node --test` pipes the test processes but a person reads the
+  output; `json` when `<prefix>FILE` is a path, since `pretty` is refused for
+  files. `<prefix>FORMAT` overrides it.
 - Each test file creates one at module level and disposes it in `test.after`,
   the pattern part's tests already follow with `NullLoggerProvider`.
 - Document the variables in `HOWTO.md` and in the testing skill.

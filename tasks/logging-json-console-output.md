@@ -34,12 +34,17 @@ A file literally named `stdout` or `stderr` is written as `./stdout`.
 ## Format
 
 `format` in the options, and `<prefix>FORMAT`, take `auto` (the default),
-`json` or `pretty`, for any target:
+`json`, `text` or `pretty`:
 
+- `json` - JSON lines, any target.
+- `text` - `pino-pretty` with `colorize: false`, any target.
+- `pretty` - `pino-pretty` with `colorize: true`, stdout or stderr only. With a
+  file path, building the options throws, naming `text` as the alternative.
+  Allowed on a stream that is not a terminal, for tools such as `concurrently`
+  that pass colours through.
 - `auto` on stdout or stderr - `pretty` when that stream's `isTTY` is true,
   `json` when it is not.
 - `auto` on a file - `json`.
-- `pretty` writes colour only when the target is a terminal.
 
 The automatic choice answers the real question, whether a person is watching
 the target, without guessing the platform from variables such as `CI`,
@@ -60,10 +65,15 @@ Cases to keep in mind:
 - `docker run -t` allocates a terminal and gets pretty output, which is right:
   someone is watching. Kubernetes and App Service do not allocate one.
 - `node --test` pipes the test processes, so `auto` would give JSON. Tests
-  default to `pretty` instead, see `logging-test-logger-provider`.
+  default to `pretty` on a stream and `json` in a file instead, see
+  `logging-test-logger-provider`.
 - CI logs are JSON unless the job sets the variable.
 
 ## Writing to stdout is a decision the caller can refuse
+
+The startup checks, `pretty` with a file path and stdout refused (below), use
+the same error path: the options are resolved and checked before the provider
+starts any transport.
 
 An MCP server must not log to stdout, and `docs/Logging.md` says it throws at
 startup when a level is given with stdout as the target. Give the options or
