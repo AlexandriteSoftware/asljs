@@ -74,4 +74,6 @@ await tmpDir.writeText(
 
 ## License
 
-MIT License. See [LICENSE](LICENSE.md) for details.
+MIT License. See [LICENSE][LIC] for details.
+
+[LIC]: LICENSE.md
