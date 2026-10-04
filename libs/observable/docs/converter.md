@@ -10,7 +10,7 @@ common case of a JSON-shaped model, not the reason the package exists.
 It copies rather than extends. The data it is given is left untouched, and what
 it returns emits `change` like any other participant, with no private event
 vocabulary of its own. The rules are stated one by one in
-[`DESIGN.md`](../DESIGN.md); this page explains them with examples.
+[the design](Design.md); this page explains them with examples.
 
 ## Usage
 
@@ -569,7 +569,7 @@ package.
 
 ## See also
 
-- [`DESIGN.md`](../DESIGN.md) — the rules, one by one.
+- [The design](Design.md) — the rules, one by one.
 - [The contract](contract.md) — what the converter's output satisfies.
 - [Batching and delivery](batching.md) — when a notification arrives.
 - [The query](query.md) — reading values out of a converted model.

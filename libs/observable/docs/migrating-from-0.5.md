@@ -151,7 +151,8 @@ version and leaves the original untouched. Consequences to check:
   it, and writes to it do not reach the result. Values held by reference, such
   as a nested object without `deep: true`, are still shared.
 - **Separate calls give separate observables.**
-  `observable(x) === observable(x)` is `false`. Within one call, an object reached twice becomes one observable.
+  `observable(x) === observable(x)` is `false`. Within one call, an object
+  reached twice becomes one observable.
 - **Cycles throw under `deep: true`**, naming the path, instead of converging.
 - **An observable or emitter passed as the top-level value throws.** Nested,
   it is kept by reference as before.
@@ -159,7 +160,7 @@ version and leaves the original untouched. Consequences to check:
   stores the plain object; convert it first if its own changes should be
   reported.
 
-See [the converter](converter.md) for the rules, and [`DESIGN.md`](../DESIGN.md)
+See [the converter](converter.md) for the rules, and [the design](Design.md)
 for the reasoning.
 
 ## Models the converter used to accept

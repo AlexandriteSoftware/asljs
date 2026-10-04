@@ -107,9 +107,9 @@ Exports from `src/index.ts`:
 
 ### The converter
 
-`DESIGN.md` states the converter's rules one by one (D1-D19); it is the source
-of truth for them. The points below are the ones a change is most likely to
-undo.
+`docs/Design.md` states the converter's rules one by one (D1-D19); it is the
+source of truth for them. The points below are the ones a change is most likely
+to undo.
 
 - `observable` creates a new observable version of plain data and never
   extends or mutates what it is given. Do not go back to grafting the API onto
@@ -188,9 +188,9 @@ Do not build these speculatively; they need evidence first.
   the detail. Each records
   the reasoning behind its decisions, not only the behaviour, because the
   reasoning is what stops a later change undoing a deliberate one.
-- `DESIGN.md` states the converter's design rule by rule (D1-D19). Its examples
-  are illustrations and are not run by the harness; `docs/converter.md` carries
-  the runnable ones.
+- `docs/Design.md` states the converter's design rule by rule (D1-D19). Its
+  examples are illustrations in plain fences, so the harness does not run them;
+  `docs/converter.md` carries the runnable ones.
 - Every ```js and ```ts block in `README.md` and `docs` is executed or compiled
   by `src/docs-examples.test.ts`. A JavaScript block must be a complete program
   and, where it ends with an `// Output:` comment block, must print exactly

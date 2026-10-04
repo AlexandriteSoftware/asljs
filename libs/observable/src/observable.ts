@@ -1270,7 +1270,7 @@ function convertTop(
 
 /**
  * Creates an observable version of plain data: a new object, array or box that
- * reports its own changes through `on('change', listener)`. See `DESIGN.md`.
+ * reports its own changes through `on('change', listener)`. See `docs/Design.md`.
  */
 const observableImpl =
   (

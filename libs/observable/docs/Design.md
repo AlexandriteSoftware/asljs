@@ -1,4 +1,4 @@
-# DESIGN
+# Design
 
 D1. The purpose of `observable` is to create an observable version of a given
 data structure, not to extend the existing data with observability.
@@ -15,7 +15,7 @@ change, in the order they were carried out. Applying them in that order turns
 the previous state into the current one, except that a `reset` (D15) says only
 that the array must be read again. The kinds of modification are listed in D15.
 
-```js
+```
 const model = observable({ a: 1 });
 
 model.on('change', changes => console.log(changes));
@@ -41,7 +41,7 @@ A frozen object with internal state, such as a frozen `Map` or a frozen class
 instance, is not a value: freezing does not stop its internal state changing,
 so it is handled like any other object of its kind.
 
-```js
+```
 const config = Object.freeze({ theme: 'dark' });
 
 observable({ config }, { deep: true }).config === config;   // true
@@ -56,7 +56,7 @@ Each observable reports changes to its own properties only. A change inside a
 nested observable is reported by that observable and not by its parent, because
 the parent still holds the same object.
 
-```js
+```
 const model = observable({ user: { name: 'Ann' } }, { deep: true });
 
 model.user.name = 'Bob';    // reported by model.user, not by model
@@ -71,7 +71,7 @@ an object kept because it implements `on` and `off`, or a value `convert`
 returned that is held elsewhere too — is one object, so a change made inside it
 is visible from both sides.
 
-```js
+```
 const original = { nested: { x: 0 } };
 const result = observable(original);   // deep: false
 
@@ -91,7 +91,7 @@ is not traversed, so a cycle inside it is allowed.
 
 Example of circular reference detection:
 
-```js
+```
 const obj = {};
 obj.self = obj;
 
@@ -101,7 +101,7 @@ observable(obj, { deep: true });
 
 Example of a cycle inside a value, which is not traversed:
 
-```js
+```
 const dt = new Date();
 dt.self = dt;
 
@@ -114,7 +114,7 @@ data it was given, and an object is converted once however many times it is
 referenced. This holds within one call only: separate calls to `observable`
 produce separate observables.
 
-```js
+```
 const shared = { n: 1 };
 
 const result = observable(
@@ -130,7 +130,7 @@ result.value2.n;                    // 2, one observable reports the change
 A `Date`, a `RegExp` or a function reached twice is kept by reference in both
 places, as D4 states:
 
-```js
+```
 const dt = new Date();
 
 const result = observable(
@@ -151,7 +151,7 @@ value is an object, and, when `deep` is `true`, about every nested object that
 is not kept by reference first (D11). When `deep` is `false` it is called at
 most once.
 
-```js
+```
 observable(false, { convert });       // convert not called: a value
 observable(new Map(), { convert });   // called once, for the Map
 observable(
@@ -201,7 +201,7 @@ and the first that matches applies:
    to an observable, applying D11 to its own values.
 6. Anything else throws.
 
-```js
+```
 const emitter = new EventEmitter();
 
 observable(emitter);               // throws
@@ -239,7 +239,7 @@ top level (D10). Because rule 5 comes before rule 6, an object whose `on` and
 `off` are both functions is kept rather than refused, while one where either is
 anything else, or one with only a reserved name such as `emit`, is refused.
 
-```js
+```
 const emitter = new EventEmitter();
 
 observable({ events: emitter }, { deep: true });         // events kept
@@ -284,7 +284,7 @@ the checks recognise any realm's prototypes rather than only this realm's:
 A prototype made to look like `Object.prototype` passes the object check. That
 takes deliberate effort, and the result is still handled as plain data.
 
-```js
+```
 const data = frame.JSON.parse('{"a":1,"list":[1]}');   // another realm
 
 observable(data, { deep: true });                       // converted
@@ -297,7 +297,7 @@ keep the own properties and lose the prototype, and with it the methods,
 accessors and `instanceof`, so the result would no longer be the class it came
 from.
 
-```js
+```
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -324,7 +324,7 @@ caller, who converts a value before assigning it if its own changes should be
 reported. Writing a method the `eventful` factory added is not specified: what
 happens is whatever the factory's methods do with a write to their names.
 
-```js
+```
 const model = observable({ user: { name: 'Ann' } }, { deep: true });
 
 model.user = { name: 'Bob' };       // reported; model.user is plain
@@ -337,7 +337,7 @@ model.user.name = 'Eve';            // reported by model.user
 Because a written value is stored by reference, it is shared with whoever
 assigned it, as D6 describes for values held by reference:
 
-```js
+```
 const user = { name: 'Ann' };
 
 model.user = user;
@@ -359,7 +359,7 @@ non-enumerable too, so none of these see them. Methods that return a new array,
 such as `map`, `filter`, `slice`, `concat` and `flat`, return a plain array, not
 an observable.
 
-```js
+```
 const result = observable({ a: 1 });
 
 Object.keys(result);        // [ 'a' ]
@@ -410,7 +410,7 @@ reports nothing.
 A write under a symbol key, its deletion included, is stored and not reported:
 `property` is always a string, and symbol keys are not data (D16).
 
-```js
+```
 const model = observable({ a: 1, first: 'Ann', last: 'Lee' });
 
 model.a = 1;                                        // not reported: same value
@@ -436,7 +436,7 @@ How a change is split into `change` events is up to the implementation, but one
 call that changes an array, such as `push(a, b)` or `sort()`, is preferably one
 `change` event carrying all its modifications.
 
-```js
+```
 const list = observable([ 'a', 'b' ]);
 
 list.on('change', changes => {
@@ -474,7 +474,7 @@ Data that needs accessors, hidden or read-only properties, or symbol keys is a
 class in all but name, and a class can report its own changes through
 `eventful` without `observable`.
 
-```js
+```
 observable({ get full() { return 'Ann Lee'; } });        // throws: accessor
 observable({ [Symbol('meta')]: 1 });                     // throws: symbol key
 observable(Object.freeze({ a: 1 }));                     // throws: frozen
@@ -491,7 +491,7 @@ was found and the object it leads back to. An error thrown by the `convert`
 hook or by the `eventful` factory is reported the same way, prefixed with the
 path of the value it was handling, with the original error as its `cause`.
 
-```js
+```
 observable({ orders: [ { meta: new Map() } ] }, { deep: true });
 // throws: at value.orders[0].meta: Map is not supported
 
@@ -541,7 +541,7 @@ D19. `batch(fn)` groups the changes made while `fn` runs:
   propagates at once. Changes still queued for delivery are discarded: the
   writes have happened, but their `change` is not delivered.
 
-```js
+```
 const model = observable({ n: 1 });
 
 model.on('change', changes => console.log(changes.length));
