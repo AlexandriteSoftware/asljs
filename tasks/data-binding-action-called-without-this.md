@@ -5,6 +5,67 @@ method that uses `this` fails.
 
 Package: `data-binding`.
 
+## Context
+
+`bindDataModel(root, model)` walks the elements under `root`. For each
+`data-bind-on<event>` attribute, `createBindingSpec` in `bind-data-model.ts`
+calls `parseEventBindingExpression`, which produces `{ kind: 'event', eventName,
+actionPath }`, and `bindEventModel` wires it:
+
+- `refreshAction` reads the action with `readModelPath(model, actionPath)` and
+  stores it in `currentAction`; `watchModelPath` runs it once now and again
+  whenever the path changes on an observable model.
+- `listener`, attached with `addEventListener`, calls `currentAction` on each
+  event.
+
+`libs/data-binding/src/bind-event-model.ts`:
+
+```ts
+  const refreshAction =
+    (): void =>
+    {
+    currentAction =
+      readModelPath(
+        model,
+        spec.actionPath);
+  };
+// ...
+    try {
+      (currentAction as ActionFn)(
+        event,
+        model,
+        element
+      );
+    } catch (error) {
+      warnOnce(
+        `${warnPrefix}:action-error:${spec.actionPath}`,
+        `${warnPrefix}: action '${spec.actionPath}' failed`,
+        error);
+    }
+```
+
+`readModelPath` returns only the leaf value; the object that held it is lost
+while walking:
+
+`libs/data-binding/src/read-model-path.ts`:
+
+```ts
+  let current: unknown = source;
+
+  for (const part of parts) {
+// ...
+    current =
+      (current as Record<string, unknown>)[part];
+  }
+
+  return current;
+```
+
+`warnOnce` is created per `bindDataModel` call and logs each key once with
+`console.warn`; `warnPrefix` is `data-bind[<n>]`, numbered per binding.
+
+## Problem
+
 `bindEventModel` resolves the action with `readModelPath` and calls it as
 `(currentAction as ActionFn)(event, model, element)`. Nothing is bound, so
 inside the action `this` is `undefined`. The most natural way to put an action
@@ -21,11 +82,13 @@ bindDataModel(root, model);
 Clicking the button leaves `count` at `0` and logs `data-bind[0]: action
 'increment' failed TypeError: Cannot read properties of undefined (reading
 'count')`, once, because the error path goes through `warnOnce`. Nothing in
-`README.md` or `AGENTS.md` says that actions must be closures or arrow
-functions; `README.md` says "Keep event handler names on the model", and the
-app-builder prompt in `apps/app-builder/src/app-builder/ai/` repeats it to the
-generator. The generated example app avoids the trap by closing over its `state`
-variable instead of using `this`, which is a workaround, not a documented rule.
+`docs/Bindings.md` or `AGENTS.md` says that actions must be closures or arrow
+functions; `docs/Bindings.md` says "Keep event handler names on the model" under
+"Authoring rules", and the app-builder prompts in
+`apps/app-builder/src/app-builder/ai/` embed the package `AGENTS.md`, which
+states only the `(event, model, element)` shape. The generated example app
+avoids the trap by closing over its `state` variable instead of using `this`,
+which is a workaround, not a documented rule.
 
 `asljs-components` sidesteps it in `src/list.ts`: `#createRowScopeContext`
 re-binds every function on the shared context to the derived row object with
@@ -47,6 +110,7 @@ test.
 - `libs/data-binding/src/bind-event-model.ts` - `listener`, the bare call.
 - `libs/data-binding/src/read-model-path.ts` - resolves the leaf but not its
   owner, which the fix needs.
-- `libs/data-binding/README.md` - "Event bindings", the invocation contract.
+- `libs/data-binding/docs/Bindings.md` - "Binding contract" and "Event
+  bindings", the invocation contract.
 - `libs/components/src/list.ts` - `#createRowScopeContext`, the caller-side
   workaround.

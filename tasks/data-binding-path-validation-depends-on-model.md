@@ -5,6 +5,71 @@ observable one, and for an event binding it only warns.
 
 Package: `data-binding`.
 
+## Context
+
+A binding path goes from markup to the model in this order:
+
+- `bindElementAttributes` in `bind-data-model.ts` reads each `data-bind-*`
+  attribute and parses it: `parseValueBindingExpression` takes the text before
+  the first `|` as `path`, `parseEventBindingExpression` takes the trimmed
+  attribute as `actionPath`. Neither checks the path's shape.
+- `bindValueModel` or `bindEventModel` passes the path to `watchModelPath`,
+  which calls `observe(model).at(path)` only when `isObservable(model)`.
+- On each callback the binding reads the value with `readModelPath`.
+
+`libs/data-binding/src/read-model-path.ts`:
+
+```ts
+  const parts =
+    path
+    .split('.')
+    .map(
+      part => part.trim())
+    .filter(
+      part => part !== '');
+// ...
+    if (
+      typeof current
+      !== 'object'
+      || current === null
+      || !(part in current)
+    ) {
+      return null;
+    }
+```
+
+`libs/observable/src/observe.ts` (`splitPath`, called by `at()` when the chain
+is built):
+
+```ts
+  const segments =
+    path.split('.');
+
+  for (const segment of segments) {
+    if (segment.trim() === '') {
+      throw new TypeError(
+        'Expect path segments to be non-empty.');
+    }
+  }
+```
+
+`libs/data-binding/src/bind-data-model.ts` (`bindElementAttributes`):
+
+```ts
+    } catch (error) {
+      if (spec.kind === 'value') {
+        throw error;
+      }
+
+      warnOnce(
+        `${prefix}:bind-error`,
+        `${prefix}: binding setup failed`,
+        error);
+    }
+```
+
+## Problem
+
 Two path readers disagree about what a path is:
 
 - `readNestedPath` in `read-model-path.ts` splits on `.`, trims, and drops empty
@@ -20,7 +85,10 @@ markup behaves three ways:
   `TypeError`, and whatever it bound before that is leaked (see
   `data-binding-setup-failure-leaks-subscriptions`).
 - observable model, `data-bind-onclick="save."`: `bindElementAttributes` catches
-  it and logs `binding setup failed`; the button stays dead.
+  it and logs `binding setup failed`. `bindEventModel` attached its listener
+  before `watchModelPath` threw, and that listener is never removed: the action
+  is never resolved, so each click only warns `action 'save.' is not a
+  function`.
 
 A typo therefore surfaces, or not, depending on which model the template is
 tried against first. The components tests bind plain objects in several places
