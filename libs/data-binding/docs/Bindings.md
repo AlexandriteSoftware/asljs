@@ -11,7 +11,9 @@ re-renders when the model changes.
 Runtime exports:
 
 - `bindDataModel(root, model, options?)` - binds every `data-bind-*` attribute
-  under `root` to `model` and returns a function that removes the bindings.
+  under `root` to `model` and returns a function that removes the bindings. It
+  returns `true` the first time it is called and `false`, doing nothing, after
+  that.
 - `createBuiltInPipes(locale?)` - creates the built-in pipe set, described in
   [Pipes][PIP].
 
@@ -114,7 +116,8 @@ data-bind-html="content | wrap:'<span>':'</span>'"
 Targets:
 
 - `data-bind-text` - `textContent`
-- `data-bind-html` - `innerHTML`
+- `data-bind-html` - `innerHTML`, written as it is; add the `safeHtml` pipe for
+  markup that is not trusted, see [Pipes][PIP]
 - `data-bind-<attr>` - an HTML attribute, for example `href`, `title`,
   `aria-label`
 - `data-bind-prop-<name>` - a DOM property, for example `value`, `checked`,

@@ -1,3 +1,5 @@
+import { createDisposer }
+  from './create-disposer.js';
 import { readModelPath,
          readModelPathOwner }
   from './read-model-path.js';
@@ -26,7 +28,7 @@ export function bindEventModel(
     message: string,
     error?: unknown
   ) => void
-  ): () => void
+  ): () => boolean
 {
   let currentAction: unknown = null;
 
@@ -89,12 +91,13 @@ export function bindEventModel(
       spec.actionPath,
       refreshAction);
 
-  return (): void =>
-  {
-    element.removeEventListener(
-      spec.eventName,
-      listener);
+  return createDisposer(
+    (): void =>
+    {
+      element.removeEventListener(
+        spec.eventName,
+        listener);
 
-    unsubscribe?.();
-  };
+      unsubscribe?.();
+    });
 }

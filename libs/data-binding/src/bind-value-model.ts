@@ -1,3 +1,5 @@
+import { createDisposer }
+  from './create-disposer.js';
 import { mergePipes }
   from './pipes.js';
 import { readModelPath }
@@ -20,7 +22,7 @@ export function bindValueModel(
     spec: ValueBindingSpec,
     model: DataModel,
     options: BindDataModelOptions
-  ): () => void
+  ): () => boolean
 {
   const pipeRegistry =
     mergePipes(options);
@@ -52,7 +54,8 @@ export function bindValueModel(
   if (spec.path === '') {
     update();
 
-    return () => { };
+    return createDisposer(
+      () => { });
   }
 
   return watchModelPath(

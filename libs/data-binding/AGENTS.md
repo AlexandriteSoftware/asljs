@@ -32,6 +32,14 @@ a change must preserve and how to check it.
   `<name>` with the `dataset` rule (`read-only` to `readOnly`); event, attribute
   and class names are used as written, so hyphenated custom events such as
   `key-submit` stay bindable.
+- `safeHtml` sanitizes with DOMPurify (`src/sanitize-html.ts`) and must never
+  return markup unsanitized: with no window, or one DOMPurify does not support,
+  it throws. An unsupported DOMPurify instance returns its input unchanged, so
+  the `isSupported` check must stay.
+- Every disposer runs once and reports it, through `createDisposer`: `true` on
+  the first call, `false` after, as `CONVENTIONS.md` asks of idempotent
+  operations. `watchModelPath` returns the subscription's own disposer, which
+  already follows the rule.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
   observable contract and binds a plain model once, statically. `observe()`

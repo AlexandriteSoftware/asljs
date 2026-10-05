@@ -107,7 +107,9 @@ test(
         'event[2]',
         () => { });
 
-    dispose();
+    assert.equal(
+      dispose(),
+      true);
 
     model.activate =
       () =>
@@ -128,6 +130,10 @@ test(
     assert.deepEqual(
       calls,
       [ ]);
+
+    assert.equal(
+      dispose(),
+      false);
   });
 
 test(

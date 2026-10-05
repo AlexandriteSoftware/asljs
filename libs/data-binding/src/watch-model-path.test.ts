@@ -88,3 +88,28 @@ test(
       calls,
       1);
   });
+
+test(
+  `${TEST_SUITE}: the disposer reports once, for a plain and an observable model`,
+  () =>
+  {
+    for (
+      const model of [ { name: 'plain' },
+                       observable(
+                         { name: 'observable' }) ]
+    ) {
+      const dispose =
+        watchModelPath(
+          model as unknown as Record<string, unknown>,
+          'name',
+          () => { });
+
+      assert.equal(
+        dispose(),
+        true);
+
+      assert.equal(
+        dispose(),
+        false);
+    }
+  });

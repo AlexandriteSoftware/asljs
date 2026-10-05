@@ -2,6 +2,8 @@ import { bindEventModel }
   from './bind-event-model.js';
 import { bindValueModel }
   from './bind-value-model.js';
+import { createDisposer }
+  from './create-disposer.js';
 import { parseEventBindingExpression,
          parseValueBindingExpression }
   from './parse-data-model-binding.js';
@@ -77,7 +79,7 @@ export function bindDataModel(
     root: ParentNode,
     model: DataModel,
     options: BindDataModelOptions = {}
-  ): () => void
+  ): () => boolean
 {
   const warned = new Set<string>();
 
@@ -122,9 +124,9 @@ function bindSubtree(
     options: BindDataModelOptions,
     warnOnce: WarnOnce,
     nextPrefix: () => string
-  ): () => void
+  ): () => boolean
 {
-  const disposers: Array<() => void> = [ ];
+  const disposers: Array<() => boolean> = [ ];
 
   for (const child of [ ...root.children ] as HTMLElement[]) {
     const contextPath =
@@ -158,12 +160,13 @@ function bindSubtree(
     }
   }
 
-  return (): void =>
-  {
-    for (const dispose of disposers) {
-      dispose();
-    }
-  };
+  return createDisposer(
+    (): void =>
+    {
+      for (const dispose of disposers) {
+        dispose();
+      }
+    });
 }
 
 function bindContextElement(
@@ -173,9 +176,9 @@ function bindContextElement(
     options: BindDataModelOptions,
     warnOnce: WarnOnce,
     nextPrefix: () => string
-  ): () => void
+  ): () => boolean
 {
-  const ownDisposers: Array<() => void> = [ ];
+  const ownDisposers: Array<() => boolean> = [ ];
 
   bindElementAttributes(
     element,
@@ -186,7 +189,7 @@ function bindContextElement(
     ownDisposers,
     CONTEXT_ATTR);
 
-  let childDisposer: (() => void) | null = null;
+  let childDisposer: (() => boolean) | null = null;
 
   const bindChildren =
     (): void =>
@@ -214,7 +217,7 @@ function bindContextElement(
         nextPrefix);
   };
 
-  let unsubscribe: (() => void) | null = null;
+  let unsubscribe: (() => boolean) | null = null;
 
   if (contextPath === '') {
     bindChildren();
@@ -226,15 +229,16 @@ function bindContextElement(
         bindChildren);
   }
 
-  return (): void =>
-  {
-    for (const dispose of ownDisposers) {
-      dispose();
-    }
+  return createDisposer(
+    (): void =>
+    {
+      for (const dispose of ownDisposers) {
+        dispose();
+      }
 
-    childDisposer?.();
-    unsubscribe?.();
-  };
+      childDisposer?.();
+      unsubscribe?.();
+    });
 }
 
 function bindElementAttributes(
@@ -243,7 +247,7 @@ function bindElementAttributes(
     options: BindDataModelOptions,
     warnOnce: WarnOnce,
     nextPrefix: () => string,
-    disposers: Array<() => void>,
+    disposers: Array<() => boolean>,
     skipAttr?: string
   ): void
 {

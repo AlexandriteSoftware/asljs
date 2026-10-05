@@ -1,6 +1,8 @@
 import { isObservable,
          observe }
   from 'asljs-observable';
+import { createDisposer }
+  from './create-disposer.js';
 import { DataModel }
   from './types.js';
 
@@ -9,31 +11,27 @@ import { DataModel }
  * disposer.
  *
  * A model that does not conform to the observable contract is read once: the
- * callback runs immediately and the disposer does nothing. `observe()` throws
+ * callback runs immediately and the disposer has nothing to release. `observe()` throws
  * for such a root, while a plain model is a supported, static binding source.
  */
 export function watchModelPath(
     model: DataModel,
     path: string,
     callback: () => void
-  ): () => void
+  ): () => boolean
 {
   if (!isObservable(model)) {
     callback();
 
-    return () => { };
+    return createDisposer(
+      () => { });
   }
 
   // The path comes from markup, so it cannot be checked against the model type.
-  const unsubscribe =
-    observe(model)
+  // The subscription's disposer already runs once and reports whether it did.
+  return observe(model)
     .at(
       path as never)
     .subscribe(
       () => callback());
-
-  return (): void =>
-  {
-    unsubscribe();
-  };
 }

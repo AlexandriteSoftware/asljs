@@ -1,5 +1,7 @@
 import { observable }
   from 'asljs-observable';
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -1142,6 +1144,118 @@ test(
     assert.equal(
       spans[1].textContent,
       'Alice');
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-html with safeHtml writes sanitized markup`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <div data-bind-html="body | safeHtml"></div>
+          </div>
+        `);
+
+    using globals =
+      new TmpGlobals(
+        { window: dom.window });
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { body:
+          '<em>hi</em><img src="x" onerror="steal()">' });
+
+    const host =
+      root.querySelector('div') as HTMLElement;
+
+    assert.equal(
+      host.innerHTML,
+      '<em>hi</em><img src="x">');
+
+    assert.equal(
+      host.querySelector('img')?.hasAttribute('onerror'),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: the disposer returns true once, false after, and stops updates`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <span data-bind-text="name"></span>
+            <button data-bind-on-click="save"></button>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const saves: string[] = [ ];
+
+    const model =
+      observable(
+        { name: 'Ada',
+          save:
+            () =>
+            {
+          saves.push('save');
+        } });
+
+    const dispose =
+      bindDataModel(
+        root,
+        model as unknown as Record<string, unknown>);
+
+    assert.equal(
+      dispose(),
+      true);
+
+    model.name = 'Grace';
+
+    (root.querySelector('button') as HTMLButtonElement).dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.equal(
+      (root.querySelector('span') as HTMLElement).textContent,
+      'Ada');
+
+    assert.deepEqual(
+      saves,
+      [ ]);
+
+    assert.equal(
+      dispose(),
+      false);
+  });
+
+test(
+  `${TEST_SUITE}: the disposer of a plain model also reports once`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        '<div id="root"><span data-bind-text="name"></span></div>');
+
+    const dispose =
+      bindDataModel(
+        dom.window.document.getElementById('root') as HTMLElement,
+        { name: 'Ada' });
+
+    assert.equal(
+      dispose(),
+      true);
+
+    assert.equal(
+      dispose(),
+      false);
   });
 
 type ReactiveModel =
