@@ -32,8 +32,8 @@ provider and how it is configured, and the null implementations.
 
 ## Scopes
 
-A scope attaches fields to every entry of a unit of work, without repeating
-them on each call:
+A scope attaches fields to every entry of a unit of work, without repeating them
+on each call:
 
 ```ts
 const requestLogger =
@@ -43,14 +43,19 @@ requestLogger.information('received');
 requestLogger.error(error, 'failed');
 ```
 
-- The scoped logger keeps the level and the context of the logger it came
-  from, and scopes nest: `logger.scope(a).scope(b)` carries both.
+- The scoped logger keeps the level and the context of the logger it came from,
+  and scopes nest: `logger.scope(a).scope(b)` carries both.
 - Fields given to a call are written after the scope's; a JSON reader takes the
   call's value when the names clash.
 - The original logger is unchanged.
 - A scope belongs to the logger it returns, not to the code that runs while it
-  exists: pass the scoped logger to that code. This is pino's `child()`
-  under another name; it is not the ambient scope of .NET's `BeginScope`.
+  exists: pass the scoped logger to that code. This is pino's `child()` under
+  another name; it is not the ambient scope of .NET's `BeginScope`.
+- `scope()` is the only way to attach shared fields; there is no ambient scope
+  tied to the async context. Fields that follow the code instead of the logger
+  would be invisible at the call site and cost every entry a context lookup. An
+  object that outlives a unit of work and should log its fields takes the scoped
+  logger for that work.
 - `NullLogger.scope()` returns the same `NullLogger`.
 
 ## Writing an entry
@@ -98,21 +103,21 @@ builder.
 
 - `getLogger(context?)` - returns a logger whose entries carry `context`.
 - `dispose()` and `[Symbol.asyncDispose]()` - flush and close the output, and
-  resolve once every entry is written, so a provider can be declared with
-  `await using`. Call it before the process exits, including from fatal error
-  handlers. Calling it again does nothing.
+  resolve once every entry is written, so a provider can be declared with `await
+  using`. Call it before the process exits, including from fatal error handlers.
+  Calling it again does nothing.
 
 ## Creating a provider
 
 For an application, `createLoggerProvider(prefix, overrides?, settings?)`
 applies the repository's rules (`docs/Logging.md` at the repository root):
 
-- Silent unless a level or a target is given; a target without a level logs
-  at `information`.
+- Silent unless a level or a target is given; a target without a level logs at
+  `information`.
 - `overrides` - `{ level, file, format }`, usually `readLoggerOptions(argv)`.
   Each one takes precedence over its environment variable.
-- `settings.allowStdout: false` - for a process whose stdout carries a
-  protocol, such as an MCP server: a level with stdout as the target throws.
+- `settings.allowStdout: false` - for a process whose stdout carries a protocol,
+  such as an MCP server: a level with stdout as the target throws.
 - `settings.base` - fields written on every entry, such as `{ service }`.
 - Returns a `NullLoggerProvider` when the level is `silent`, so a silent
   application starts no worker thread.
@@ -144,16 +149,16 @@ test.after(
 
 `new PinoLoggerProvider(options)` takes `PinoLoggerProviderOptions`:
 
-- `level` - the minimum level written. Defaults to `silent`, at which no
-  worker thread is started and every logger is a `NullLogger`.
+- `level` - the minimum level written. Defaults to `silent`, at which no worker
+  thread is started and every logger is a `NullLogger`.
 - `file` - the target: a file path (its directory is created if needed),
   `stdout` or `stderr`. Defaults to `stdout`.
 - `format` - `auto` (the default), `json`, `text` or `pretty`:
   - `json` - one JSON object per line.
   - `text` - one readable line per entry, without colour codes.
   - `pretty` - `text` with colour codes, for stdout and stderr only.
-  - `auto` - `pretty` when the target is a terminal stream, `json` for any
-    other stream and for a file.
+  - `auto` - `pretty` when the target is a terminal stream, `json` for any other
+    stream and for a file.
 - `base` - fields written on every entry.
 - `allowStdout` - `false` refuses stdout as the target unless the level is
   `silent`.
@@ -171,9 +176,9 @@ builds level `information`.
 - `withFormat(format)` - sets the format. Throws for an unknown format.
 - `withBase(fields)` - sets the fields written on every entry.
 - `withoutStdout()` - refuses stdout as the target.
-- `fromEnvironmentVariables(prefix?)` - reads the level, target and format
-  from environment variables, and keeps the current value for a variable that
-  is unset.
+- `fromEnvironmentVariables(prefix?)` - reads the level, target and format from
+  environment variables, and keeps the current value for a variable that is
+  unset.
 - `build()` - returns the options, and throws for the same combinations as the
   provider.
 
