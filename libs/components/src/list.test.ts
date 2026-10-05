@@ -278,7 +278,7 @@ test(
       `
         <template data-slot="item">
           <button data-bind-text="item.title"
-                  data-bind-onclick="context.select"></button>
+                  data-bind-on-click="context.select"></button>
         </template>
       `;
 
@@ -537,7 +537,7 @@ test(
       list.innerHTML =
         `
           <template data-slot="item">
-            <button data-bind-onclick="context.select"
+            <button data-bind-on-click="context.select"
                     data-bind-text="item.title"></button>
           </template>
         `;

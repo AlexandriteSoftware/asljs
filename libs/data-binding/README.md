@@ -72,7 +72,7 @@ dispose();
   <h1 data-bind-text="name | upper"></h1>
   <p data-bind-text="active | yesno"></p>
 </section>
-<button data-bind-onclick="save">Save</button>
+<button data-bind-on-click="save">Save</button>
 ```
 
 `data-bind-context` makes `name` and `active` resolve against `user`. Event

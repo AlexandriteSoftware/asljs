@@ -49,6 +49,15 @@ test(
       label.textContent,
       'Theme');
 
+    assert.notEqual(
+      select.id,
+      '');
+
+    // The label names the control through the for attribute.
+    assert.equal(
+      label.htmlFor,
+      select.id);
+
     assert.equal(
       select.value,
       'light');
@@ -96,6 +105,19 @@ test(
     assert.equal(
       select.value,
       'gpt-4.1');
+
+    const label =
+      element.querySelector(
+        'label.form-label') as HTMLLabelElement;
+
+    assert.notEqual(
+      select.id,
+      '');
+
+    // The label names the control through the for attribute.
+    assert.equal(
+      label.htmlFor,
+      select.id);
   });
 
 test(

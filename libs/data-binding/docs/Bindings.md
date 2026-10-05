@@ -26,7 +26,8 @@ Type exports:
 - Event bindings are path-based.
 - Context bindings switch the model root for a subtree.
 - Pipe arguments are static strings.
-- Event actions are invoked as `(event, model, element)`.
+- Event actions are invoked as `(event, model, element)`, with the object that
+  holds the action as `this`.
 - Missing or non-function actions warn instead of stopping the binding system.
 
 Bindings are reactive when the model conforms to the `asljs-observable`
@@ -41,7 +42,7 @@ reactivity.
 - If you need to write an attribute, then use `data-bind-<attr>`.
 - If you need to write a DOM property, then use `data-bind-prop-<name>`.
 - If you need to toggle a class, then use `data-bind-class-<name>`.
-- If you need to handle an event, then use `data-bind-on<event>`.
+- If you need to handle an event, then use `data-bind-on-<event>`.
 - If you need to switch the descendant model root, then use `data-bind-context`.
 
 ## Context binding
@@ -116,8 +117,25 @@ Targets:
 - `data-bind-html` - `innerHTML`
 - `data-bind-<attr>` - an HTML attribute, for example `href`, `title`,
   `aria-label`
-- `data-bind-prop-<name>` - a DOM property, for example `value`, `checked`
+- `data-bind-prop-<name>` - a DOM property, for example `value`, `checked`,
+  `read-only` for `readOnly`
 - `data-bind-class-<name>` - a class toggled by the truthiness of the value
+
+Names and case:
+
+- The HTML parser, and `setAttribute`, lowercase every attribute name, and a
+  `data-*` name must not contain uppercase letters, so a name is read in
+  lowercase whatever case the template uses.
+- `data-bind-prop-<name>` converts `<name>` the way `dataset` converts a
+  `data-*` name: a hyphen followed by a lowercase letter becomes that letter in
+  uppercase. `data-bind-prop-read-only` sets `readOnly`, and
+  `data-bind-prop-text-content` sets `textContent`.
+- `data-bind-<attr>` and `data-bind-class-<name>` use the name as written, so
+  `data-bind-aria-label` writes `aria-label` and `data-bind-class-is-active`
+  toggles `is-active`.
+- Bind an attribute, not a property, where the DOM exposes the two under
+  different names: `<label data-bind-for="inputId">` writes the `for` attribute.
+  A label has no `for` property; its property is `htmlFor`.
 
 Examples:
 
@@ -129,6 +147,8 @@ Examples:
 <div data-bind-html="content | wrap:'<span>':'</span>'"></div>
 <a data-bind-href="url"></a>
 <input data-bind-prop-value="name">
+<input data-bind-prop-read-only="locked">
+<label data-bind-for="inputId"></label>
 <button data-bind-class-active="isSelected"></button>
 <div data-bind-html="body | safeHtml"></div>
 ```
@@ -150,24 +170,50 @@ Nullish values:
 General form:
 
 ```text
-data-bind-on<event>="actionPath"
+data-bind-on-<event>="actionPath"
 ```
 
 Examples:
 
 ```html
-<button data-bind-onclick="activate"></button>
-<a data-bind-onclick="openDetails"></a>
-<form data-bind-onsubmit="save"></form>
+<button data-bind-on-click="activate"></button>
+<a data-bind-on-click="openDetails"></a>
+<form data-bind-on-submit="save"></form>
 ```
 
 Runtime behavior:
 
-- `data-bind-onclick` listens to `click`, `data-bind-onsubmit` listens to
+- `data-bind-on-click` listens to `click`, `data-bind-on-submit` listens to
   `submit`, and so on.
+- The event name is everything after `on-`, used as written in the lowercase the
+  parser gives it, so a hyphenated custom event works: `data-bind-on-key-submit`
+  listens to `key-submit`. An event whose name has an uppercase letter, such as
+  `valueChanged`, cannot be bound; listen to it with `addEventListener`.
+- Any other `data-bind-on...` attribute, such as the earlier form
+  `data-bind-onclick`, warns once and binds nothing. It is not bound as an
+  attribute either: an `on*` attribute is an inline event handler, and a binding
+  expression is not script.
 - The action is resolved from the model by `actionPath`.
 - When the action is a function, it is invoked as `(event, model, element)`.
+- `this` is the object that holds the action: the context model for
+  `data-bind-on-click="save"`, `model.user` for
+  `data-bind-on-click="user.activate"`. It is read when the event fires, so a
+  replaced `user` is the one used. A model method can therefore use `this`:
+
+  ```ts
+  const model =
+    observable(
+      { count: 0,
+        increment()
+        {
+          this.count++;
+        } });
+  ```
+
+  A function that is already bound, or an arrow function, keeps its own `this`.
 - A missing or non-function action emits a warning and the binding stays alive.
+- An action that throws emits a warning with the error, and the binding stays
+  alive.
 
 Reactivity:
 
@@ -185,7 +231,7 @@ describe different concerns:
   data-bind-href="url"
   data-bind-text="label | upper"
   data-bind-class-active="isActive"
-  data-bind-onclick="openDetails"
+  data-bind-on-click="openDetails"
 ></a>
 ```
 

@@ -987,7 +987,7 @@ function createDefaultTextInputTemplate(
         <label
                data-bind-text="label"
                data-bind-prop-hidden="hideLabel"
-               data-bind-prop-for="inputId"></label>
+               data-bind-for="inputId"></label>
         <div data-role="control-host"></div>
         <div
              data-bind-text="description"

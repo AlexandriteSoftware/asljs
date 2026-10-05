@@ -38,7 +38,7 @@ Each row is bound with `asljs-data-binding` to a row context with these fields:
 ## Row actions
 
 - Reference shared actions through the row context, for example
-  `data-bind-onclick="context.select"`.
+  `data-bind-on-click="context.select"`.
 - Row-specific values arrive through the derived row-local `this`, which
   includes row fields such as `item` and `index`.
 - Arguments are not written in attributes: `select(item.id)` is not a binding.
@@ -69,7 +69,7 @@ list.innerHTML = `
     <div>
       <a data-bind-href="item.url"
          data-bind-text="item.title"
-         data-bind-onclick="context.select"></a>
+         data-bind-on-click="context.select"></a>
       <small data-bind-text="index"></small>
     </div>
   </template>

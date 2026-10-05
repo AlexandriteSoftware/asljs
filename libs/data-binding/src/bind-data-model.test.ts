@@ -327,7 +327,7 @@ test(
       new JSDOM(
         `
           <div id="root">
-            <button data-bind-onclick="activate"></button>
+            <button data-bind-on-click="activate"></button>
           </div>
         `);
 
@@ -384,7 +384,7 @@ test(
       new JSDOM(
         `
           <div id="root">
-            <button data-bind-onclick="user.activate"></button>
+            <button data-bind-on-click="user.activate"></button>
           </div>
         `);
 
@@ -448,7 +448,7 @@ test(
       new JSDOM(
         `
           <div id="root">
-            <button data-bind-onclick="activate"></button>
+            <button data-bind-on-click="activate"></button>
           </div>
         `);
 
@@ -494,7 +494,7 @@ test(
             <a data-bind-href="url"
                data-bind-text="label | upper"
                data-bind-class-active="isActive"
-               data-bind-onclick="openDetails"></a>
+               data-bind-on-click="openDetails"></a>
           </div>
         `);
 
@@ -652,6 +652,146 @@ test(
   });
 
 test(
+  `${TEST_SUITE}: data-bind-prop- converts a hyphenated name to camel case`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <input data-bind-prop-read-only="locked">
+            <span data-bind-prop-text-content="caption"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { locked: true,
+        caption: 'Hello' });
+
+    const input =
+      root.querySelector('input') as HTMLInputElement;
+
+    assert.equal(
+      input.readOnly,
+      true);
+
+    assert.equal(
+      Object.hasOwn(
+        input,
+        'readonly'),
+      false);
+
+    assert.equal(
+      (root.querySelector('span') as HTMLElement).textContent,
+      'Hello');
+  });
+
+test(
+  `${TEST_SUITE}: class and event names keep their hyphens`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <div data-bind-class-is-active="active" data-bind-on-key-submit="submit"></div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const submitted: string[] = [ ];
+
+    bindDataModel(
+      root,
+      { active: true,
+        submit:
+          (
+              event: Event
+            ) =>
+          {
+          submitted.push(event.type);
+        } });
+
+    const element =
+      root.querySelector('div') as HTMLElement;
+
+    assert.equal(
+      element.classList.contains('is-active'),
+      true);
+
+    element.dispatchEvent(
+      new dom.window.CustomEvent('key-submit'));
+
+    assert.deepEqual(
+      submitted,
+      [ 'key-submit' ]);
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-on without a hyphen warns and binds nothing`,
+  (
+      t
+    ) =>
+  {
+    const warn =
+      t.mock.method(
+        console,
+        'warn',
+        () => { });
+
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <button data-bind-onclick="save"></button>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const calls: string[] = [ ];
+
+    bindDataModel(
+      root,
+      { save:
+          () =>
+          {
+          calls.push('save');
+        } });
+
+    const button =
+      root.querySelector('button') as HTMLButtonElement;
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.deepEqual(
+      calls,
+      [ ]);
+
+    // Not bound as an attribute either: an onclick attribute is script.
+    assert.equal(
+      button.hasAttribute('onclick'),
+      false);
+
+    assert.equal(
+      warn.mock.callCount(),
+      1);
+
+    assert.match(
+      String(
+        warn.mock.calls[0]?.arguments[0]),
+      /data-bind-onclick.*data-bind-on-<event>/);
+  });
+
+test(
   `${TEST_SUITE}: data-bind-context switches model context for event binding`,
   () =>
   {
@@ -660,7 +800,7 @@ test(
         `
           <div id="root">
             <div data-bind-context="item">
-              <button data-bind-onclick="save"></button>
+              <button data-bind-on-click="save"></button>
             </div>
           </div>
         `);

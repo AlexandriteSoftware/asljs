@@ -35,7 +35,7 @@ type WarnOnce =
  * - `data-bind-text="path | pipe[:arg]"` => textContent
  * - `data-bind-html="path | pipe[:arg]"` => innerHTML
  * - `data-bind-href="path | pipe[:arg]"` => attribute binding
- * - `data-bind-onclick="actionPath"` => event binding
+ * - `data-bind-on-click="actionPath"` => event binding
  * - `data-bind-class-active="path | pipe[:arg]"` => class toggle
  * - `data-bind-context="path"` => subtree context switch
  * - quoted pipe args are supported, e.g. `| wrap:'<span>':'</span>'`
@@ -59,8 +59,8 @@ type WarnOnce =
  * @example
  * Event bindings:
  * ```html
- * <button data-bind-onclick="activate"></button>
- * <form data-bind-onsubmit="save"></form>
+ * <button data-bind-on-click="activate"></button>
+ * <form data-bind-on-submit="save"></form>
  * ```
  *
  * @example
@@ -265,6 +265,24 @@ function bindElementAttributes(
 
     const expression = attribute.value ?? '';
 
+    // An event binding is written data-bind-on-<event>. Any other name that
+    // starts with "on" is skipped rather than bound as an attribute: an on*
+    // attribute is an inline event handler, and the expression is not script.
+    if (
+      suffix.startsWith('on')
+      && !isEventSuffix(suffix)
+    ) {
+      const prefix =
+        nextPrefix();
+
+      warnOnce(
+        `${prefix}:not-an-event:${attribute.name}`,
+        `${prefix}: '${attribute.name}' is ignored; event bindings are `
+          + `written data-bind-on-<event>, for example data-bind-on-click`);
+
+      continue;
+    }
+
     const spec =
       createBindingSpec(
         suffix,
@@ -308,18 +326,28 @@ function createBindingSpec(
     expression: string
   ): BindingSpec
 {
-  if (
-    suffix.startsWith('on')
-    && suffix.length > 2
-  ) {
+  if (isEventSuffix(suffix)) {
     return parseEventBindingExpression(
-      suffix.slice(2),
+      suffix.slice(
+        'on-'.length),
       expression);
   }
 
   return parseValueBindingExpression(
     resolveValueTarget(suffix),
     expression);
+}
+
+/**
+ * True for `on-<event>`: the event name follows `on-` and is used as written,
+ * so `on-click` listens to `click` and `on-key-submit` to `key-submit`.
+ */
+function isEventSuffix(
+    suffix: string
+  ): boolean
+{
+  return suffix.startsWith('on-')
+    && suffix.length > 'on-'.length;
 }
 
 function resolveValueTarget(
@@ -350,10 +378,30 @@ function resolveValueTarget(
   ) {
     return { kind: 'prop',
              name:
-               suffix.slice(
-                 'prop-'.length) };
+               toPropertyName(
+                 suffix.slice(
+                   'prop-'.length)) };
   }
 
   return { kind: 'attr',
            name: suffix };
+}
+
+/**
+ * Converts the property part of a `data-bind-prop-<name>` attribute the way
+ * `dataset` converts a `data-*` name: each hyphen followed by a lowercase
+ * letter is removed and the letter uppercased, so `read-only` becomes
+ * `readOnly`. The HTML parser lowercases attribute names, so this is the only
+ * way to reach a camel-case property.
+ */
+function toPropertyName(
+    name: string
+  ): string
+{
+  return name.replace(
+    /-([a-z])/g,
+    (
+      _match: string,
+      letter: string
+    ) => letter.toUpperCase());
 }

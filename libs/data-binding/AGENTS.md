@@ -13,8 +13,9 @@ a change must preserve and how to check it.
 
 ## Constraints To Preserve
 
-- Event bindings currently resolve a function and invoke it as `(event, model,
-  element)`.
+- Event bindings resolve a function and invoke it as `(event, model, element)`,
+  with the object that holds the action as `this`, read when the event fires
+  (`readModelPathOwner`).
 - Do not introduce expression-call syntax in binding attributes unless
   explicitly requested.
 - Pipe arguments are static strings, not reactive model paths.
@@ -23,6 +24,14 @@ a change must preserve and how to check it.
 - Nullish behavior is part of the contract: text/html render empty string,
   nullish attributes are removed.
 - Missing or non-function event handlers warn and keep bindings alive.
+- Event bindings are written `data-bind-on-<event>`, the same pattern as
+  `data-bind-prop-<name>`. Any other `data-bind-on...` name, such as the earlier
+  `data-bind-onclick`, warns and binds nothing; it must never fall through to an
+  attribute binding, which would write an inline `on*` handler.
+- Attribute names reach the binding lowercased. `data-bind-prop-<name>` converts
+  `<name>` with the `dataset` rule (`read-only` to `readOnly`); event, attribute
+  and class names are used as written, so hyphenated custom events such as
+  `key-submit` stay bindable.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
   observable contract and binds a plain model once, statically. `observe()`
@@ -31,10 +40,12 @@ a change must preserve and how to check it.
 ## Change Safety Checklist
 
 - If changing event binding, then re-check invocation shape `(event, model,
-  element)`.
+  element)` and the `this` of the call.
 - If changing context behavior, then re-check stale watcher disposal.
 - If changing nullish behavior, then re-check text, html, and attribute cases.
 - If changing syntax parsing, then re-check quoted pipe arguments.
+- If changing how binding names are read, then re-check `read-only` reaching
+  `readOnly`, and `data-bind-on-key-submit` listening to `key-submit`.
 - If changing value binding, then re-check that watch path subscriptions depend
   only on the main path.
 

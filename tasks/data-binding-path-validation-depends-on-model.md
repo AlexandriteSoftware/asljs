@@ -84,11 +84,11 @@ markup behaves three ways:
 - observable model, `data-bind-text="user."`: `bindDataModel` throws the
   `TypeError`, and whatever it bound before that is leaked (see
   `data-binding-setup-failure-leaks-subscriptions`).
-- observable model, `data-bind-onclick="save."`: `bindElementAttributes` catches
-  it and logs `binding setup failed`. `bindEventModel` attached its listener
-  before `watchModelPath` threw, and that listener is never removed: the action
-  is never resolved, so each click only warns `action 'save.' is not a
-  function`.
+- observable model, `data-bind-on-click="save."`: `bindElementAttributes`
+  catches it and logs `binding setup failed`. `bindEventModel` attached its
+  listener before `watchModelPath` threw, and that listener is never removed:
+  the action is never resolved, so each click only warns `action 'save.' is not
+  a function`.
 
 A typo therefore surfaces, or not, depending on which model the template is
 tried against first. The components tests bind plain objects in several places

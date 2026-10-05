@@ -47,6 +47,15 @@ test(
       label.textContent,
       'Title');
 
+    assert.notEqual(
+      input.id,
+      '');
+
+    // The label names the control through the for attribute.
+    assert.equal(
+      label.htmlFor,
+      input.id);
+
     assert.equal(
       textarea,
       null);
@@ -195,6 +204,15 @@ test(
     assert.equal(
       label.textContent,
       'Title');
+
+    assert.notEqual(
+      input.id,
+      '');
+
+    // The label names the control through the for attribute.
+    assert.equal(
+      label.htmlFor,
+      input.id);
 
     assert.equal(
       input.value,
