@@ -22,7 +22,8 @@ a change must preserve and how to check it.
 - `data-bind-context` rebinding must continue to dispose stale descendant
   watchers when context objects are replaced.
 - Nullish behavior is part of the contract: text/html render empty string,
-  nullish attributes are removed.
+  nullish attributes are removed, a nullish property is written `false` when it
+  currently holds a boolean and `''` otherwise, and a nullish class is removed.
 - Missing or non-function event handlers warn and keep bindings alive.
 - Event bindings are written `data-bind-on-<event>`, the same pattern as
   `data-bind-prop-<name>`. Any other `data-bind-on...` name, such as the earlier
@@ -57,7 +58,8 @@ a change must preserve and how to check it.
 - If changing event binding, then re-check invocation shape `(event, model,
   element)` and the `this` of the call.
 - If changing context behavior, then re-check stale watcher disposal.
-- If changing nullish behavior, then re-check text, html, and attribute cases.
+- If changing nullish behavior, then re-check text, html, attribute and property
+  cases.
 - If changing syntax parsing, then re-check quoted pipe arguments.
 - If changing how binding names are read, then re-check `read-only` reaching
   `readOnly`, and `data-bind-on-key-submit` listening to `key-submit`.

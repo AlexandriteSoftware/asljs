@@ -177,6 +177,10 @@ Nullish values:
 - `data-bind-text` and `data-bind-html` render `null` and `undefined` as `''`.
 - `data-bind-<attr>` removes the attribute when the final value is `null` or
   `undefined`.
+- `data-bind-prop-<name>` writes `false` to a property that currently holds a
+  boolean, such as `hidden` or `disabled`, and `''` to any other, so an input
+  bound to a missing value is empty rather than showing `undefined`.
+- `data-bind-class-<name>` removes the class.
 
 ## Event bindings
 

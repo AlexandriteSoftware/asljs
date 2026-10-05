@@ -149,3 +149,69 @@ test(
       element.classList.contains('active'),
       false);
   });
+
+test(
+  `${TEST_SUITE}: writes '' to a property for null and undefined`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        '<input value="previous">');
+
+    const element =
+      dom.window.document.querySelector(
+        'input') as HTMLInputElement;
+
+    for (const value of [ undefined,
+                          null ]) {
+      element.value = 'previous';
+
+      writeBindingValue(
+        element,
+        { kind: 'prop',
+          name: 'value' },
+        value);
+
+      assert.equal(
+        element.value,
+        '',
+        String(value));
+    }
+  });
+
+test(
+  `${TEST_SUITE}: a nullish boolean property is written false`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        '<button hidden></button>');
+
+    const element =
+      dom.window.document.querySelector(
+        'button') as HTMLButtonElement & { flag: unknown; };
+
+    writeBindingValue(
+      element,
+      { kind: 'prop',
+        name: 'hidden' },
+      undefined);
+
+    assert.equal(
+      element.hidden,
+      false);
+
+    // A plain property keeps exactly what was written, so this tells false
+    // from '', which a DOM boolean property would also read as false.
+    element.flag = true;
+
+    writeBindingValue(
+      element,
+      { kind: 'prop',
+        name: 'flag' },
+      null);
+
+    assert.equal(
+      element.flag,
+      false);
+  });

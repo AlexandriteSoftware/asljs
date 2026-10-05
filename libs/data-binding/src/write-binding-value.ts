@@ -24,7 +24,17 @@ export function writeBindingValue(
     const propertyName =
       target.name as keyof HTMLElement;
 
-    (element[propertyName] as unknown) = value;
+    // A nullish value is written as the property's empty value: false for a
+    // boolean property such as hidden, '' for any other. Assigned as it is,
+    // undefined would show as the text "undefined" in an input.
+    const written =
+      value === null
+        || value === undefined
+      ? emptyValueOf(
+        element[propertyName])
+      : value;
+
+    (element[propertyName] as unknown) = written;
 
     return;
   }
@@ -57,4 +67,18 @@ export function writeBindingValue(
   }
 
   element.textContent = displayValue;
+}
+
+function emptyValueOf(
+    current: unknown
+  ): false | ''
+{
+  if (
+    typeof current
+    === 'boolean'
+  ) {
+    return false;
+  }
+
+  return '';
 }
