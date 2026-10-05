@@ -37,13 +37,25 @@ test(
       pipes.default(
         null,
         'N/A'),
-      null);
+      'N/A');
 
     assert.equal(
       pipes.default(
         undefined,
         'N/A'),
-      undefined);
+      'N/A');
+
+    assert.equal(
+      pipes.default(
+        0,
+        'N/A'),
+      0);
+
+    assert.equal(
+      pipes.default(
+        false,
+        'N/A'),
+      false);
   });
 
 test(

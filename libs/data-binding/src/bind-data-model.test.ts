@@ -1290,6 +1290,45 @@ test(
     }
   });
 
+test(
+  `${TEST_SUITE}: default replaces a missing, a null and an empty value`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <span id="missing" data-bind-text="missing | default:unknown"></span>
+            <span id="nul" data-bind-text="nul | default:unknown"></span>
+            <span id="empty" data-bind-text="empty | default:unknown"></span>
+            <span id="zero" data-bind-text="zero | default:unknown"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    bindDataModel(
+      root,
+      { nul: null,
+        empty: '',
+        zero: 0 });
+
+    const text =
+      (id: string): string | null =>
+      (root.querySelector(`#${id}`) as HTMLElement).textContent;
+
+    assert.deepEqual(
+      [ text('missing'),
+        text('nul'),
+        text('empty'),
+        text('zero') ],
+      [ 'unknown',
+        'unknown',
+        'unknown',
+        '0' ]);
+  });
+
 type ReactiveModel =
   & Record<string, unknown>
   & {

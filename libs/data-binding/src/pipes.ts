@@ -36,7 +36,7 @@ const DATE_ONLY_PATTERN =
  * - `upper`
  * - `lower`
  * - `json[:spaces]`
- * - `default:value`
+ * - `default:value` - the fallback for `null`, `undefined` and `''`
  * - `safeHtml` - sanitizes HTML with DOMPurify, for `data-bind-html`
  *
  * @example
@@ -241,14 +241,13 @@ export function createBuiltInPipes(
                  ...fallbackParts
                ) =>
              {
+      // The one built-in that consumes a nullish value: a missing path reads
+      // null, and that is the value a default is for.
       if (
         value === null
         || value === undefined
+        || value === ''
       ) {
-        return value;
-      }
-
-      if (value === '') {
         return fallbackParts.join(':');
       }
 
