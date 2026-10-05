@@ -29,6 +29,9 @@ Type exports:
 
 - Value bindings are path-based.
 - Event bindings are path-based.
+- A path is read property by property, `user.name` as `model.user.name`. No
+  method on the model is called to resolve it: a model with a `get` method is
+  read like any other object.
 - Context bindings switch the model root for a subtree.
 - Pipe arguments are static strings.
 - Event actions are invoked as `(event, model, element)`, with the object that

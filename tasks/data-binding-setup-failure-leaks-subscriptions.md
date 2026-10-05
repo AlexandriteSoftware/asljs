@@ -28,7 +28,7 @@ Only a fully completed walk returns the disposer over the collected array.
 `libs/data-binding/src/bind-data-model.ts`:
 
 ```ts
-  const disposers: Array<() => void> = [ ];
+  const disposers: Array<() => boolean> = [ ];
 
   for (const child of [ ...root.children ] as HTMLElement[]) {
     // ...
@@ -42,12 +42,13 @@ Only a fully completed walk returns the disposer over the collected array.
     // ...
   }
 
-  return (): void =>
-  {
-    for (const dispose of disposers) {
-      dispose();
-    }
-  };
+  return createDisposer(
+    (): void =>
+    {
+      for (const dispose of disposers) {
+        dispose();
+      }
+    });
 ```
 
 Setup errors of value bindings are rethrown; those of event bindings are only

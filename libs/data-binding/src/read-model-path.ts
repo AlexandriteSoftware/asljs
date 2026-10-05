@@ -10,10 +10,6 @@ export function readModelPath(
     return null;
   }
 
-  if (hasGetMethod(model)) {
-    return model.get(path);
-  }
-
   return readNestedPath(
     model,
     path);
@@ -42,13 +38,6 @@ export function readModelPathOwner(
     parts.slice(
       0,
       -1).join('.'));
-}
-
-function hasGetMethod(
-    value: DataModel
-  ): value is DataModel & { get: (path: string) => unknown; }
-{
-  return typeof (value as { get?: unknown; }).get === 'function';
 }
 
 function readNestedPath(

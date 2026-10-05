@@ -24,24 +24,29 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: uses get(path) when provided`,
+  `${TEST_SUITE}: a get method is an ordinary property, not a path reader`,
   () =>
   {
     const model =
-      { get:
-          (path: string) => `value:${path}` } as Record<
-      string,
-      unknown
-    >;
-
-    const value =
-      readModelPath(
-        model,
-        'name');
+      { name: 'Alice',
+        get(
+        id: string
+      ): string
+      {
+        return `record-${id}`;
+      } };
 
     assert.equal(
-      value,
-      'value:name');
+      readModelPath(
+        model,
+        'name'),
+      'Alice');
+
+    assert.equal(
+      readModelPath(
+        model,
+        'get'),
+      model.get);
   });
 
 test(
@@ -98,19 +103,17 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: owner is read through get(path) when provided`,
+  `${TEST_SUITE}: owner ignores a get method on the model`,
   () =>
   {
-    const model =
-      { get:
-          (path: string) => `value:${path}` } as Record<
-      string,
-      unknown
-    >;
+    const user =
+      { activate: () => { } };
 
     assert.equal(
       readModelPathOwner(
-        model,
-        'user.profile.activate'),
-      'value:user.profile');
+        { user,
+          get:
+            () => 'not the owner' },
+        'user.activate'),
+      user);
   });

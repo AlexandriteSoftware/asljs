@@ -40,6 +40,9 @@ a change must preserve and how to check it.
   the first call, `false` after, as `CONVENTIONS.md` asks of idempotent
   operations. `watchModelPath` returns the subscription's own disposer, which
   already follows the rule.
+- Paths are read property by property (`readModelPath`); no model method, such
+  as `get(path)`, takes part. The subscription side, `observe().at()`, reads
+  properties too, and the two must agree.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
   observable contract and binds a plain model once, statically. `observe()`

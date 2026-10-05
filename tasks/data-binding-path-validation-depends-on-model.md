@@ -20,14 +20,6 @@ A binding path goes from markup to the model in this order:
 `libs/data-binding/src/read-model-path.ts`:
 
 ```ts
-  const parts =
-    path
-    .split('.')
-    .map(
-      part => part.trim())
-    .filter(
-      part => part !== '');
-// ...
     if (
       typeof current
       !== 'object'
@@ -36,6 +28,18 @@ A binding path goes from markup to the model in this order:
     ) {
       return null;
     }
+// ...
+function splitPath(
+    path: string
+  ): string[]
+{
+  return path
+    .split('.')
+    .map(
+      part => part.trim())
+    .filter(
+      part => part !== '');
+}
 ```
 
 `libs/observable/src/observe.ts` (`splitPath`, called by `at()` when the chain
