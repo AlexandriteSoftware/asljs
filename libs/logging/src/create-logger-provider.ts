@@ -113,8 +113,8 @@ export function createTestLoggerProvider(
 
     builder.withFormat(
       isStream
-      ? 'pretty'
-      : 'json');
+        ? 'pretty'
+        : 'json');
   }
 
   const options =

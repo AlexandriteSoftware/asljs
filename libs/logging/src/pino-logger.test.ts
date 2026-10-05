@@ -15,12 +15,12 @@ function createLogger(
 
   const stream =
     { write(
-        line: string
-      ): void
-      {
-        records.push(
-          JSON.parse(line));
-      } };
+      line: string
+    ): void
+    {
+      records.push(
+        JSON.parse(line));
+    } };
 
   const pinoLevel =
     level === 'information'
@@ -123,7 +123,7 @@ test(
       new TypeError('boom'),
       'request failed');
 
-    const [ record ] = records;
+    const [record] = records;
 
     assert.equal(
       record.msg,
@@ -175,7 +175,7 @@ test(
       'upload',
       new Error('timeout'));
 
-    const [ record ] = records;
+    const [record] = records;
 
     assert.equal(
       record.msg,

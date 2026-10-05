@@ -17,17 +17,17 @@ export {
 } from './pino-logger-provider.js';
 
 export {
-  type LogFormat,
   PinoLoggerProviderOptionsBuilder,
+  type LogFormat,
   type PinoLoggerProviderOptions
 } from './pino-logger-provider-options.js';
 
 export {
   createLoggerProvider,
   createTestLoggerProvider,
+  readLoggerOptions,
   type LoggerOverrides,
-  type LoggerProviderSettings,
-  readLoggerOptions
+  type LoggerProviderSettings
 } from './create-logger-provider.js';
 
 export {

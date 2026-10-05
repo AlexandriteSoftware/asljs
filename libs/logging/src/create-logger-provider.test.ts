@@ -16,10 +16,9 @@ async function withEnv(
     action: () => Promise<void>
   ): Promise<void>
 {
-  const previous =
-    new Map<string, string | undefined>();
+  const previous = new Map<string, string | undefined>();
 
-  for (const [ name, value ] of Object.entries(updates)) {
+  for (const [name, value] of Object.entries(updates)) {
     previous.set(
       name,
       process.env[name]);
@@ -34,7 +33,7 @@ async function withEnv(
   try {
     await action();
   } finally {
-    for (const [ name, value ] of previous) {
+    for (const [name, value] of previous) {
       if (value === undefined) {
         delete process.env[name];
       } else {
@@ -160,7 +159,7 @@ test(
       {
         assert.ok(
           createTestLoggerProvider('TEST_SUITE_LOG_')
-          instanceof NullLoggerProvider);
+            instanceof NullLoggerProvider);
       });
   });
 

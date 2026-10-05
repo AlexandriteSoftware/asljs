@@ -95,8 +95,7 @@ export class PinoLoggerProvider implements LoggerProvider
    */
   async dispose(): Promise<void>
   {
-    const transport =
-      this.#transport;
+    const transport = this.#transport;
 
     if (
       transport === null

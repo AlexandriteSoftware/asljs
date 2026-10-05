@@ -17,9 +17,9 @@ passes a null logger to discard them.
   output.
 - **A Pino implementation.** Messages go to a file, or are pretty-printed to the
   console.
-- **Configuration from arguments and the environment.** Level, target and
-  format come from `--loglevel`, `--logfile` and `--logformat`, or from
-  environment variables with a prefix you choose.
+- **Configuration from arguments and the environment.** Level, target and format
+  come from `--loglevel`, `--logfile` and `--logformat`, or from environment
+  variables with a prefix you choose.
 - **Null implementations.** `NullLogger` and `NullLoggerProvider` discard every
   message.
 
@@ -56,8 +56,7 @@ logger.information(
 
 Logging is silent until `--loglevel` or `MY_APP_LOG_LEVEL` sets a level.
 `--logfile` or `MY_APP_LOG_FILE` sends it to a file, `stdout` or `stderr`, and
-`--logformat` or `MY_APP_LOG_FORMAT` chooses `auto`, `json`, `text` or
-`pretty`.
+`--logformat` or `MY_APP_LOG_FORMAT` chooses `auto`, `json`, `text` or `pretty`.
 
 ## Further reading
 

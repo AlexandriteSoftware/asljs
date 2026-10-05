@@ -68,13 +68,13 @@ test(
     assert.throws(
       () =>
         new PinoLoggerProviderOptionsBuilder()
-        .withLevel('info'),
+          .withLevel('info'),
       /log level 'info' is invalid/);
 
     assert.throws(
       () =>
         new PinoLoggerProviderOptionsBuilder()
-        .withFormat('colour'),
+          .withFormat('colour'),
       /log format 'colour' is invalid/);
   });
 
@@ -117,18 +117,18 @@ test(
     assert.throws(
       () =>
         new PinoLoggerProviderOptionsBuilder()
-        .withLevel('debug')
-        .withoutStdout()
-        .build(),
+          .withLevel('debug')
+          .withoutStdout()
+          .build(),
       /--logfile stderr/);
 
     assert.throws(
       () =>
         new PinoLoggerProviderOptionsBuilder()
-        .withLevel('debug')
-        .withFile('stdout')
-        .withoutStdout()
-        .build(),
+          .withLevel('debug')
+          .withFile('stdout')
+          .withoutStdout()
+          .build(),
       /--logfile stderr/);
   });
 

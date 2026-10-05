@@ -239,8 +239,8 @@ export function resolveLogOutput(
   ) {
     throw new Error(
       'This process cannot log to stdout, which carries its output. '
-      + 'Set the log file to stderr (--logfile stderr) or to a file path '
-      + '(--logfile <path>).');
+        + 'Set the log file to stderr (--logfile stderr) or to a file path '
+        + '(--logfile <path>).');
   }
 
   if (
@@ -250,8 +250,8 @@ export function resolveLogOutput(
   ) {
     throw new Error(
       `The log format 'pretty' writes colour codes and is only for stdout and `
-      + `stderr, not the file '${destination}'. Use 'text' for readable `
-      + `lines in a file.`);
+        + `stderr, not the file '${destination}'. Use 'text' for readable `
+        + `lines in a file.`);
   }
 
   if (format !== 'auto') {
@@ -269,8 +269,8 @@ export function resolveLogOutput(
   return { destination,
            format:
              isTerminal
-             ? 'pretty'
-             : 'json' };
+      ? 'pretty'
+      : 'json' };
 }
 
 function validateLevel(
@@ -280,7 +280,7 @@ function validateLevel(
   if (!LOG_LEVELS.includes(level)) {
     throw new Error(
       `The log level '${level}' is invalid. Valid levels: `
-      + `${LOG_LEVELS.join(', ')}.`);
+        + `${LOG_LEVELS.join(', ')}.`);
   }
 }
 
@@ -291,6 +291,6 @@ function validateFormat(
   if (!(LOG_FORMATS as readonly string[]).includes(format)) {
     throw new Error(
       `The log format '${format}' is invalid. Valid formats: `
-      + `${LOG_FORMATS.join(', ')}.`);
+        + `${LOG_FORMATS.join(', ')}.`);
   }
 }

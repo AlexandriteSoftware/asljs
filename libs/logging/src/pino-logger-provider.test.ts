@@ -166,7 +166,6 @@ test(
 
         assert.doesNotMatch(
           content,
-           
           /\u001b\[/);
       });
   });
