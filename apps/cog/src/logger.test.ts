@@ -1,3 +1,5 @@
+import { TmpEnv }
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import test
@@ -9,25 +11,18 @@ test(
   'createLoggerProvider is silent by default',
   async () =>
   {
-    const previous =
-      process.env.COG_LOG_LEVEL;
+    using env =
+      new TmpEnv(
+        { COG_LOG_LEVEL: undefined });
 
-    delete process.env.COG_LOG_LEVEL;
+    const loggerProvider =
+      createLoggerProvider();
 
-    try {
-      const loggerProvider =
-        createLoggerProvider();
+    assert.strictEqual(
+      loggerProvider.getLogger().level,
+      'silent');
 
-      assert.strictEqual(
-        loggerProvider.getLogger().level,
-        'silent');
-
-      await loggerProvider.dispose();
-    } finally {
-      if (previous !== undefined) {
-        process.env.COG_LOG_LEVEL = previous;
-      }
-    }
+    await loggerProvider.dispose();
   });
 
 test(

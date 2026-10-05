@@ -1,3 +1,5 @@
+import { TmpEnv }
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import path
@@ -120,38 +122,31 @@ test(
   'resolveLibraryRoot prefers the explicit value over the environment',
   () =>
   {
-    const previous =
-      process.env.KB_LIBRARY;
+    using env =
+      new TmpEnv(
+        { KB_LIBRARY: 'from-environment' });
 
-    process.env.KB_LIBRARY = 'from-environment';
+    assert.equal(
+      resolveLibraryRoot(
+        root,
+        'explicit'),
+      path.join(
+        root,
+        'explicit'));
 
-    try {
-      assert.equal(
-        resolveLibraryRoot(
-          root,
-          'explicit'),
-        path.join(
-          root,
-          'explicit'));
+    assert.equal(
+      resolveLibraryRoot(
+        root,
+        ''),
+      path.join(
+        root,
+        'from-environment'));
 
-      assert.equal(
-        resolveLibraryRoot(
-          root,
-          ''),
-        path.join(
-          root,
-          'from-environment'));
+    env.set(
+      'KB_LIBRARY',
+      undefined);
 
-      delete process.env.KB_LIBRARY;
-
-      assert.equal(
-        resolveLibraryRoot(root),
-        root);
-    } finally {
-      if (previous === undefined) {
-        delete process.env.KB_LIBRARY;
-      } else {
-        process.env.KB_LIBRARY = previous;
-      }
-    }
+    assert.equal(
+      resolveLibraryRoot(root),
+      root);
   });

@@ -1,9 +1,9 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestLoggerProvider }
-  from 'asljs-logging';
 import { TaskRegistry }
   from '../../task.js';
 import { CopilotAcpTool }

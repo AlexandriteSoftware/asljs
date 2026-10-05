@@ -27,6 +27,7 @@
     "libs/machine",
     "libs/money",
     "libs/observable",
+    "libs/testing",
     "libs/tmpdir"
   ],
   "devDependencies": {

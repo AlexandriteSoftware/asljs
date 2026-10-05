@@ -1,3 +1,5 @@
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -7,7 +9,7 @@ import test
 import { Keyboard }
   from './keyboard.js';
 
-let restoreDom: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let isKeyboardModuleLoaded = false;
 
 test(
@@ -118,79 +120,29 @@ test(
 async function ensureDomAndModuleLoaded(
   ): Promise<void>
 {
-  if (restoreDom === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>');
 
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        Document: globalThis.Document,
-        Event: globalThis.Event,
-        CustomEvent:
-          globalThis.CustomEvent,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        HTMLButtonElement:
-          globalThis.HTMLButtonElement,
-        ShadowRoot:
-          globalThis.ShadowRoot,
-        CSSStyleSheet:
-          globalThis.CSSStyleSheet };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-    globalThis.Document = dom.window.Document;
-    globalThis.Event = dom.window.Event;
-
-    globalThis.CustomEvent =
-      dom.window.CustomEvent;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.HTMLButtonElement =
-      dom.window.HTMLButtonElement;
-
-    globalThis.ShadowRoot =
-      dom.window.ShadowRoot;
-
-    globalThis.CSSStyleSheet =
-      dom.window.CSSStyleSheet;
-
-    restoreDom =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-      globalThis.Document = previous.Document;
-      globalThis.Event = previous.Event;
-
-      globalThis.CustomEvent =
-        previous.CustomEvent;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.HTMLButtonElement =
-        previous.HTMLButtonElement;
-
-      globalThis.ShadowRoot = previous.ShadowRoot;
-
-      globalThis.CSSStyleSheet =
-        previous.CSSStyleSheet;
-    };
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          Document: dom.window.Document,
+          Event: dom.window.Event,
+          CustomEvent:
+            dom.window.CustomEvent,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          HTMLButtonElement:
+            dom.window.HTMLButtonElement,
+          ShadowRoot:
+            dom.window.ShadowRoot,
+          CSSStyleSheet:
+            dom.window.CSSStyleSheet });
   }
 
   if (!isKeyboardModuleLoaded) {

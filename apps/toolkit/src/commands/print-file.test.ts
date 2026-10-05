@@ -1,5 +1,5 @@
 import { createTestLoggerProvider }
-  from 'asljs-logging';
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import console

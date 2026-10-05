@@ -1,5 +1,5 @@
 import { createTestLoggerProvider }
-  from 'asljs-logging';
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert

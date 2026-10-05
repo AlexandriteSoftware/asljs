@@ -68,6 +68,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0"
   }
 }

@@ -24,6 +24,7 @@
     "pkg-types": "^2.3.1"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-tmpdir": "^0.1.13",
     "globals": "^17.7.0"
   }

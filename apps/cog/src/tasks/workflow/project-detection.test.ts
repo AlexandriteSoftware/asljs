@@ -1,11 +1,11 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestLoggerProvider }
-  from 'asljs-logging';
 import { detectProjectKind,
          toCommandIssues }
   from './project-detection.js';

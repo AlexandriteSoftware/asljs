@@ -1,5 +1,8 @@
 import { observable }
   from 'asljs-observable';
+import { TmpGlobals,
+         waitFor }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -7,7 +10,7 @@ import assert
 import { test }
   from 'node:test';
 
-let domRestore: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let isComponentsLoaded = false;
 
 const CONTEXT_NAME = 'list-test';
@@ -676,8 +679,8 @@ test(
 async function ensureDomAndListLoaded(
   ): Promise<void>
 {
-  if (domRestore === null) {
-    domRestore =
+  if (domGlobals === null) {
+    domGlobals =
       installDom();
   }
 
@@ -702,25 +705,6 @@ async function settle(
   await list.updateComplete;
 }
 
-async function waitFor(
-    predicate: () => boolean
-  ): Promise<void>
-{
-  for (
-    let index = 0;
-    index < 50;
-    index++
-  ) {
-    if (predicate()) {
-      return;
-    }
-
-    await nextTick();
-  }
-
-  throw new Error('waitFor timeout');
-}
-
 function nextTick(
   ): Promise<void>
 {
@@ -739,94 +723,44 @@ function nextTick(
 }
 
 function installDom(
-  ): () => void
+  ): TmpGlobals
 {
   const dom =
     new JSDOM(
       '<!doctype html><html><body></body></html>');
 
-  const previous =
-    { window:
-        (globalThis as any).window,
-      document:
-        (globalThis as any).document,
-      customElements:
-        (globalThis as any).customElements,
-      HTMLElement:
-        (globalThis as any).HTMLElement,
-      Event:
-        (globalThis as any).Event,
-      CustomEvent:
-        (globalThis as any).CustomEvent,
-      Node:
-        (globalThis as any).Node,
-      DocumentFragment:
-        (globalThis as any).DocumentFragment,
-      requestAnimationFrame:
-        (globalThis as any).requestAnimationFrame };
-
-  (globalThis as any).window = dom.window;
-  (globalThis as any).document = dom.window.document;
-
-  (globalThis as any).customElements =
-    dom.window.customElements;
-
-  (globalThis as any).HTMLElement =
-    dom.window.HTMLElement;
-
-  (globalThis as any).Event = dom.window.Event;
-
-  (globalThis as any).CustomEvent =
-    dom.window.CustomEvent;
-
-  (globalThis as any).Node = dom.window.Node;
-
-  (globalThis as any).DocumentFragment =
-    dom.window.DocumentFragment;
+  const globals =
+    new TmpGlobals(
+      { window: dom.window,
+        document: dom.window.document,
+        customElements:
+          dom.window.customElements,
+        HTMLElement:
+          dom.window.HTMLElement,
+        Event: dom.window.Event,
+        CustomEvent:
+          dom.window.CustomEvent,
+        Node: dom.window.Node,
+        DocumentFragment:
+          dom.window.DocumentFragment });
 
   if (
-    (globalThis as any).requestAnimationFrame
+    globalThis.requestAnimationFrame
     === undefined
   ) {
-    (globalThis as any).requestAnimationFrame =
+    globals.set(
+      'requestAnimationFrame',
       (
-          callback: FrameRequestCallback
-        ) =>
-      {
-      return setTimeout(
-        () =>
-        {
-          callback(
-            Date.now());
-        },
-        0) as unknown as number;
-    };
+        callback: FrameRequestCallback
+      ): number =>
+        setTimeout(
+          () =>
+          {
+            callback(
+              Date.now());
+          },
+          0) as unknown as number);
   }
 
-  return () =>
-  {
-    (globalThis as any).window = previous.window;
-    (globalThis as any).document = previous.document;
-
-    (globalThis as any).customElements =
-      previous.customElements;
-
-    (globalThis as any).HTMLElement =
-      previous.HTMLElement;
-
-    (globalThis as any).Event = previous.Event;
-
-    (globalThis as any).CustomEvent =
-      previous.CustomEvent;
-
-    (globalThis as any).Node = previous.Node;
-
-    (globalThis as any).DocumentFragment =
-      previous.DocumentFragment;
-
-    (globalThis as any).requestAnimationFrame =
-      previous.requestAnimationFrame;
-
-    dom.window.close();
-  };
+  return globals;
 }

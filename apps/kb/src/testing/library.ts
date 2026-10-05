@@ -1,7 +1,9 @@
 import { createTestLoggerProvider }
-  from 'asljs-logging';
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
+import test
+  from 'node:test';
 import { CommandContext }
   from '../commands/context.js';
 import { createEnvironment,
@@ -9,8 +11,6 @@ import { createEnvironment,
   from '../environment.js';
 import { createInProcessClient }
   from '../mcp/client.js';
-import test
-  from 'node:test';
 
 /**
  * One provider for every test file that imports this module, configured by

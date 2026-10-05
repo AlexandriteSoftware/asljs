@@ -1,7 +1,7 @@
 import { type Location }
   from 'asljs-locator';
 import { createTestLoggerProvider }
-  from 'asljs-logging';
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import test

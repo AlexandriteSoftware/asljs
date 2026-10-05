@@ -1,3 +1,5 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import { Command }
   from 'commander';
 import assert
@@ -16,8 +18,6 @@ import { DefaultHostConsole }
   from '../console.js';
 import { Context }
   from '../context.js';
-import { createTestLoggerProvider }
-  from 'asljs-logging';
 import { SingletonServiceProvider }
   from '../service.js';
 import { DefaultTaskRunner,

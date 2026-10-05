@@ -1,3 +1,5 @@
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -8,7 +10,7 @@ import { TextInput,
          TextInputChangeDetail }
   from './text-input.js';
 
-let domRestore: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let isTextInputModuleLoaded = false;
 
 test(
@@ -523,57 +525,13 @@ async function createElement(
 async function ensureDomAndModuleLoaded(
   ): Promise<void>
 {
-  if (domRestore === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>');
 
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        HTMLInputElement:
-          globalThis.HTMLInputElement,
-        HTMLTextAreaElement:
-          globalThis.HTMLTextAreaElement,
-        Event: globalThis.Event,
-        CustomEvent:
-          globalThis.CustomEvent,
-        KeyboardEvent:
-          globalThis.KeyboardEvent,
-        getComputedStyle:
-          globalThis.getComputedStyle };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.HTMLInputElement =
-      dom.window.HTMLInputElement;
-
-    globalThis.HTMLTextAreaElement =
-      dom.window.HTMLTextAreaElement;
-
-    globalThis.Event = dom.window.Event;
-
-    globalThis.CustomEvent =
-      dom.window.CustomEvent;
-
-    globalThis.KeyboardEvent =
-      dom.window.KeyboardEvent;
-
-    globalThis.getComputedStyle =
-      ((
+    const getComputedStyle =
+      (
           element: Element
         ): CSSStyleDeclaration =>
       {
@@ -606,37 +564,26 @@ async function ensureDomAndModuleLoaded(
         { value: '1px' });
 
       return style;
-    }) as typeof globalThis.getComputedStyle;
-
-    domRestore =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.HTMLInputElement =
-        previous.HTMLInputElement;
-
-      globalThis.HTMLTextAreaElement =
-        previous.HTMLTextAreaElement;
-
-      globalThis.Event = previous.Event;
-
-      globalThis.CustomEvent =
-        previous.CustomEvent;
-
-      globalThis.KeyboardEvent =
-        previous.KeyboardEvent;
-
-      globalThis.getComputedStyle =
-        previous.getComputedStyle;
     };
+
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          HTMLInputElement:
+            dom.window.HTMLInputElement,
+          HTMLTextAreaElement:
+            dom.window.HTMLTextAreaElement,
+          Event: dom.window.Event,
+          CustomEvent:
+            dom.window.CustomEvent,
+          KeyboardEvent:
+            dom.window.KeyboardEvent,
+          getComputedStyle });
   }
 
   if (!isTextInputModuleLoaded) {

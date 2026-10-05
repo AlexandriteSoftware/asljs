@@ -52,6 +52,7 @@
     "asljs-observable": "^0.5.4"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0"
   }
 }

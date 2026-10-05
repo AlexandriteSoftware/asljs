@@ -1,3 +1,5 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -10,8 +12,6 @@ import test
   from 'node:test';
 import { Context }
   from '../../context.js';
-import { createTestLoggerProvider }
-  from 'asljs-logging';
 import { SingletonServiceProvider }
   from '../../service.js';
 import { DefaultTaskRunner,

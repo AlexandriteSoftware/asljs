@@ -24,6 +24,7 @@
     "esbuild-wasm": "^0.28.1"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0",
     "marked": "^18.0.6"
   }

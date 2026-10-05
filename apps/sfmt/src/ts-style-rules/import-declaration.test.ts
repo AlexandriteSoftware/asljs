@@ -3,11 +3,11 @@ import { RuleDefinition }
 import tsParser
   from '@typescript-eslint/parser';
 import { createTestLoggerProvider }
-  from 'asljs-logging';
-import test
-  from 'node:test';
+  from 'asljs-testing';
 import { ESLint }
   from 'eslint';
+import test
+  from 'node:test';
 import { fileURLToPath }
   from 'node:url';
 import { buildStyleRuleTestsFromMarkdown }

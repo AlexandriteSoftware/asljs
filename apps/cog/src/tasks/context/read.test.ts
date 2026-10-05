@@ -1,3 +1,5 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -6,8 +8,6 @@ import { join }
   from 'node:path';
 import test
   from 'node:test';
-import { createTestLoggerProvider }
-  from 'asljs-logging';
 import { Envelope }
   from '../../working-folder/envelope.js';
 import { read }

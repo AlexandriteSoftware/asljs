@@ -64,6 +64,7 @@
     "minimatch": "^10.2.6"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0"
   }
 }

@@ -1,3 +1,5 @@
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -7,7 +9,7 @@ import test
 import * as AiChatModule
   from './ai-chat.js';
 
-let domRestore: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let modulesLoaded = false;
 let aiChatModulePromise: Promise<typeof AiChatModule> | null = null;
 
@@ -606,140 +608,45 @@ async function loadAiChatModule(
 async function ensureDom(
   ): Promise<void>
 {
-  if (domRestore === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>',
         { url:
             'https://asljs.test/' });
 
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        Document: globalThis.Document,
-        Event: globalThis.Event,
-        CustomEvent:
-          globalThis.CustomEvent,
-        KeyboardEvent:
-          globalThis.KeyboardEvent,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        HTMLButtonElement:
-          globalThis.HTMLButtonElement,
-        HTMLInputElement:
-          globalThis.HTMLInputElement,
-        HTMLSelectElement:
-          globalThis.HTMLSelectElement,
-        HTMLTextAreaElement:
-          globalThis.HTMLTextAreaElement,
-        ShadowRoot:
-          globalThis.ShadowRoot,
-        CSSStyleSheet:
-          globalThis.CSSStyleSheet,
-        Node: globalThis.Node,
-        getComputedStyle:
-          globalThis.getComputedStyle,
-        sessionStorage:
-          globalThis.sessionStorage,
-        location: globalThis.location };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-    globalThis.Document = dom.window.Document;
-    globalThis.Event = dom.window.Event;
-
-    globalThis.CustomEvent =
-      dom.window.CustomEvent;
-
-    globalThis.KeyboardEvent =
-      dom.window.KeyboardEvent;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.HTMLButtonElement =
-      dom.window.HTMLButtonElement;
-
-    globalThis.HTMLInputElement =
-      dom.window.HTMLInputElement;
-
-    globalThis.HTMLSelectElement =
-      dom.window.HTMLSelectElement;
-
-    globalThis.HTMLTextAreaElement =
-      dom.window.HTMLTextAreaElement;
-
-    globalThis.ShadowRoot =
-      dom.window.ShadowRoot;
-
-    globalThis.CSSStyleSheet =
-      dom.window.CSSStyleSheet;
-
-    globalThis.Node = dom.window.Node;
-
-    globalThis.getComputedStyle =
-      dom.window.getComputedStyle.bind(
-        dom.window);
-
-    globalThis.sessionStorage =
-      dom.window.sessionStorage;
-
-    globalThis.location = dom.window.location;
-
-    domRestore =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-      globalThis.Document = previous.Document;
-      globalThis.Event = previous.Event;
-
-      globalThis.CustomEvent =
-        previous.CustomEvent;
-
-      globalThis.KeyboardEvent =
-        previous.KeyboardEvent;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.HTMLButtonElement =
-        previous.HTMLButtonElement;
-
-      globalThis.HTMLInputElement =
-        previous.HTMLInputElement;
-
-      globalThis.HTMLSelectElement =
-        previous.HTMLSelectElement;
-
-      globalThis.HTMLTextAreaElement =
-        previous.HTMLTextAreaElement;
-
-      globalThis.ShadowRoot = previous.ShadowRoot;
-
-      globalThis.CSSStyleSheet =
-        previous.CSSStyleSheet;
-
-      globalThis.Node = previous.Node;
-
-      globalThis.getComputedStyle =
-        previous.getComputedStyle;
-
-      globalThis.sessionStorage =
-        previous.sessionStorage;
-
-      globalThis.location = previous.location;
-    };
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          Document: dom.window.Document,
+          Event: dom.window.Event,
+          CustomEvent:
+            dom.window.CustomEvent,
+          KeyboardEvent:
+            dom.window.KeyboardEvent,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          HTMLButtonElement:
+            dom.window.HTMLButtonElement,
+          HTMLInputElement:
+            dom.window.HTMLInputElement,
+          HTMLSelectElement:
+            dom.window.HTMLSelectElement,
+          HTMLTextAreaElement:
+            dom.window.HTMLTextAreaElement,
+          ShadowRoot:
+            dom.window.ShadowRoot,
+          CSSStyleSheet:
+            dom.window.CSSStyleSheet,
+          Node: dom.window.Node,
+          getComputedStyle:
+            dom.window.getComputedStyle.bind(dom.window),
+          sessionStorage:
+            dom.window.sessionStorage,
+          location: dom.window.location });
   }
 
   document.body.replaceChildren();

@@ -1,5 +1,6 @@
-import { createTestLoggerProvider }
-  from 'asljs-logging';
+import { createTestLoggerProvider,
+         TmpEnv }
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import fs
@@ -725,12 +726,11 @@ const svg =
 await fs.writeFile(outputPath, svg, 'utf8');
 `);
 
-    const originalMmdcPath =
-      process.env.PART_MMDC_PATH;
-
-    process.env.PART_MMDC_PATH =
-      workspace.resolve(
-        'tools/mmdc.js');
+    using env =
+      new TmpEnv(
+        { PART_MMDC_PATH:
+            workspace.resolve(
+              'tools/mmdc.js') });
 
     const environment =
       createEnvironment(
@@ -739,14 +739,10 @@ await fs.writeFile(outputPath, svg, 'utf8');
           project: workspace.path,
           loggerProvider });
 
-    try {
-      await execInventory(
-        execInventoryLogger,
-        environment,
-        { format: 'diagram' });
-    } finally {
-      process.env.PART_MMDC_PATH = originalMmdcPath;
-    }
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { format: 'diagram' });
 
     assert.equal(
       environment.stderr.toString(),
@@ -891,12 +887,11 @@ const svg =
 await fs.writeFile(outputPath, svg, 'utf8');
 `);
 
-    const originalMmdcPath =
-      process.env.PART_MMDC_PATH;
-
-    process.env.PART_MMDC_PATH =
-      workspace.resolve(
-        'tools/mmdc.js');
+    using env =
+      new TmpEnv(
+        { PART_MMDC_PATH:
+            workspace.resolve(
+              'tools/mmdc.js') });
 
     const environment =
       createEnvironment(
@@ -905,14 +900,10 @@ await fs.writeFile(outputPath, svg, 'utf8');
           project: workspace.path,
           loggerProvider });
 
-    try {
-      await execInventory(
-        execInventoryLogger,
-        environment,
-        { format: 'diagram' });
-    } finally {
-      process.env.PART_MMDC_PATH = originalMmdcPath;
-    }
+    await execInventory(
+      execInventoryLogger,
+      environment,
+      { format: 'diagram' });
 
     assert.equal(
       environment.stderr.toString(),

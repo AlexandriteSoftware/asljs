@@ -1,3 +1,5 @@
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -13,7 +15,7 @@ import { Properties }
 import { TextInput }
   from './text-input.js';
 
-let domRestore: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let isPropertiesModuleLoaded = false;
 
 test(
@@ -495,95 +497,33 @@ function queryPropertySelect(
 async function ensureDom(
   ): Promise<void>
 {
-  if (domRestore === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>');
 
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        Document: globalThis.Document,
-        Event: globalThis.Event,
-        CustomEvent:
-          globalThis.CustomEvent,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        HTMLInputElement:
-          globalThis.HTMLInputElement,
-        HTMLSelectElement:
-          globalThis.HTMLSelectElement,
-        HTMLTextAreaElement:
-          globalThis.HTMLTextAreaElement,
-        ShadowRoot:
-          globalThis.ShadowRoot,
-        CSSStyleSheet:
-          globalThis.CSSStyleSheet };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-    globalThis.Document = dom.window.Document;
-    globalThis.Event = dom.window.Event;
-
-    globalThis.CustomEvent =
-      dom.window.CustomEvent;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.HTMLInputElement =
-      dom.window.HTMLInputElement;
-
-    globalThis.HTMLSelectElement =
-      dom.window.HTMLSelectElement;
-
-    globalThis.HTMLTextAreaElement =
-      dom.window.HTMLTextAreaElement;
-
-    globalThis.ShadowRoot =
-      dom.window.ShadowRoot;
-
-    globalThis.CSSStyleSheet =
-      dom.window.CSSStyleSheet;
-
-    domRestore =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-      globalThis.Document = previous.Document;
-      globalThis.Event = previous.Event;
-
-      globalThis.CustomEvent =
-        previous.CustomEvent;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.HTMLInputElement =
-        previous.HTMLInputElement;
-
-      globalThis.HTMLSelectElement =
-        previous.HTMLSelectElement;
-
-      globalThis.HTMLTextAreaElement =
-        previous.HTMLTextAreaElement;
-
-      globalThis.ShadowRoot = previous.ShadowRoot;
-
-      globalThis.CSSStyleSheet =
-        previous.CSSStyleSheet;
-    };
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          Document: dom.window.Document,
+          Event: dom.window.Event,
+          CustomEvent:
+            dom.window.CustomEvent,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          HTMLInputElement:
+            dom.window.HTMLInputElement,
+          HTMLSelectElement:
+            dom.window.HTMLSelectElement,
+          HTMLTextAreaElement:
+            dom.window.HTMLTextAreaElement,
+          ShadowRoot:
+            dom.window.ShadowRoot,
+          CSSStyleSheet:
+            dom.window.CSSStyleSheet });
   }
 
   document.body.replaceChildren();

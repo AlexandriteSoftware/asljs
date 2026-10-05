@@ -1,3 +1,5 @@
+import { flushMicrotasks }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -7,13 +9,6 @@ import test
 import { createShareModalUi,
          renderShareModal }
   from './share-modal-ui.js';
-
-async function flushMicrotasks(
-  ): Promise<void>
-{
-  await Promise.resolve();
-  await Promise.resolve();
-}
 
 test(
   'createShareModalUi opens and prepares link with current share options',

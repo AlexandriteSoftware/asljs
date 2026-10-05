@@ -1,3 +1,5 @@
+import { TmpEnv }
+  from 'asljs-testing';
 import assert
   from 'node:assert/strict';
 import { createRequire }
@@ -297,7 +299,9 @@ test(
     const environment =
       createEnvironment();
 
-    process.env.PART_DEFINITIONS = 'artefacts';
+    using env =
+      new TmpEnv(
+        { PART_DEFINITIONS: 'artefacts' });
 
     await runCli(
       [ 'version' ],
@@ -315,7 +319,9 @@ test(
     const environment =
       createEnvironment();
 
-    process.env.PART_PROJECT = 'project';
+    using env =
+      new TmpEnv(
+        { PART_PROJECT: 'project' });
 
     await runCli(
       [ 'version' ],

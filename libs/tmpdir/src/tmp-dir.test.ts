@@ -1,7 +1,8 @@
-import { createTestLoggerProvider,
-         NullLoggerProvider,
-         type Logger }
+import { type Logger,
+         NullLoggerProvider }
   from 'asljs-logging';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
 import assert
   from 'node:assert';
 import fs

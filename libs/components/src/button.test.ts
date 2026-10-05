@@ -1,3 +1,5 @@
+import { TmpGlobals }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -9,7 +11,7 @@ import { Button }
 import { ThemeProvider }
   from './themes/theme-provider.js';
 
-let restoreDom: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 
 test(
   'button: renders provided icon and text',
@@ -356,71 +358,27 @@ test(
 async function ensureDom(
   ): Promise<void>
 {
-  if (restoreDom === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>');
 
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        Document: globalThis.Document,
-        Event: globalThis.Event,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        ShadowRoot:
-          globalThis.ShadowRoot,
-        HTMLButtonElement:
-          globalThis.HTMLButtonElement,
-        CSSStyleSheet:
-          globalThis.CSSStyleSheet };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-    globalThis.Document = dom.window.Document;
-    globalThis.Event = dom.window.Event;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.ShadowRoot =
-      dom.window.ShadowRoot;
-
-    globalThis.HTMLButtonElement =
-      dom.window.HTMLButtonElement;
-
-    globalThis.CSSStyleSheet =
-      dom.window.CSSStyleSheet;
-
-    restoreDom =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-      globalThis.Document = previous.Document;
-      globalThis.Event = previous.Event;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.ShadowRoot = previous.ShadowRoot;
-
-      globalThis.HTMLButtonElement =
-        previous.HTMLButtonElement;
-
-      globalThis.CSSStyleSheet =
-        previous.CSSStyleSheet;
-    };
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          Document: dom.window.Document,
+          Event: dom.window.Event,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          ShadowRoot:
+            dom.window.ShadowRoot,
+          HTMLButtonElement:
+            dom.window.HTMLButtonElement,
+          CSSStyleSheet:
+            dom.window.CSSStyleSheet });
   }
 
   document.body.replaceChildren();

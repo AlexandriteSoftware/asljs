@@ -1,3 +1,6 @@
+import { TmpGlobals,
+         waitFor }
+  from 'asljs-testing';
 import { JSDOM }
   from 'jsdom';
 import assert
@@ -29,7 +32,7 @@ type FileModule = {
   createTextFileHandler: typeof createTextFileHandler;
 };
 
-let domRestore: (() => void) | null = null;
+let domGlobals: TmpGlobals | null = null;
 let isComponentsLoaded = false;
 let fileModule: FileModule | null = null;
 
@@ -263,50 +266,10 @@ test(
 async function ensureDomAndFileLoaded(
   ): Promise<void>
 {
-  if (domRestore === null) {
+  if (domGlobals === null) {
     const dom =
       new JSDOM(
         '<!doctype html><html><body></body></html>');
-
-    const previous =
-      { window: globalThis.window,
-        document: globalThis.document,
-        customElements:
-          globalThis.customElements,
-        HTMLElement:
-          globalThis.HTMLElement,
-        HTMLTextAreaElement:
-          globalThis.HTMLTextAreaElement,
-        HTMLIFrameElement:
-          globalThis.HTMLIFrameElement,
-        HTMLImageElement:
-          globalThis.HTMLImageElement,
-        Blob: globalThis.Blob,
-        Event: globalThis.Event,
-        URL: globalThis.URL };
-
-    globalThis.window =
-      dom.window as unknown as typeof globalThis.window;
-
-    globalThis.document = dom.window.document;
-
-    globalThis.customElements =
-      dom.window.customElements;
-
-    globalThis.HTMLElement =
-      dom.window.HTMLElement;
-
-    globalThis.HTMLTextAreaElement =
-      dom.window.HTMLTextAreaElement;
-
-    globalThis.HTMLIFrameElement =
-      dom.window.HTMLIFrameElement;
-
-    globalThis.HTMLImageElement =
-      dom.window.HTMLImageElement;
-
-    globalThis.Blob = dom.window.Blob;
-    globalThis.Event = dom.window.Event;
 
     let counter = 0;
 
@@ -328,34 +291,23 @@ async function ensureDomAndFileLoaded(
             () => `blob:test-${++counter}`,
           revokeObjectURL: () => { } });
 
-    globalThis.URL =
-      mockedUrl as unknown as typeof globalThis.URL;
-
-    domRestore =
-      () =>
-      {
-      globalThis.window = previous.window;
-      globalThis.document = previous.document;
-
-      globalThis.customElements =
-        previous.customElements;
-
-      globalThis.HTMLElement =
-        previous.HTMLElement;
-
-      globalThis.HTMLTextAreaElement =
-        previous.HTMLTextAreaElement;
-
-      globalThis.HTMLIFrameElement =
-        previous.HTMLIFrameElement;
-
-      globalThis.HTMLImageElement =
-        previous.HTMLImageElement;
-
-      globalThis.Blob = previous.Blob;
-      globalThis.Event = previous.Event;
-      globalThis.URL = previous.URL;
-    };
+    domGlobals =
+      new TmpGlobals(
+        { window: dom.window,
+          document: dom.window.document,
+          customElements:
+            dom.window.customElements,
+          HTMLElement:
+            dom.window.HTMLElement,
+          HTMLTextAreaElement:
+            dom.window.HTMLTextAreaElement,
+          HTMLIFrameElement:
+            dom.window.HTMLIFrameElement,
+          HTMLImageElement:
+            dom.window.HTMLImageElement,
+          Blob: dom.window.Blob,
+          Event: dom.window.Event,
+          URL: mockedUrl });
   }
 
   if (!isComponentsLoaded) {
@@ -392,25 +344,4 @@ async function settle(
   await element.updateComplete;
   await Promise.resolve();
   await element.updateComplete;
-}
-
-async function waitFor(
-    predicate: () => boolean,
-    maxTries: number = 20
-  ): Promise<void>
-{
-  for (
-    let index = 0;
-    index < maxTries;
-    index++
-  ) {
-    if (predicate()) {
-      return;
-    }
-
-    await Promise.resolve();
-  }
-
-  throw new Error(
-    'Timed out waiting for condition.');
 }

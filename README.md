@@ -31,6 +31,8 @@ Libraries:
   flow.
 - [money][MNY] - provides utilities for handling monetary values.
 - [observable][OBS] - makes any object emit events on property changes.
+- [testing][TST] - test helpers: temporary environment variables and globals,
+  waiting for a condition, and the test logger.
 - [tmpdir][TDR] - provides temporary directory utilities for testing and
   development.
 
@@ -43,6 +45,7 @@ Libraries:
 [MCH]: ./libs/machine/README.md
 [MNY]: ./libs/money/README.md
 [OBS]: ./libs/observable/README.md
+[TST]: ./libs/testing/README.md
 [TDR]: ./libs/tmpdir/README.md
 [COG]: ./apps/cog/README.md
 [KB]: ./apps/kb/README.md

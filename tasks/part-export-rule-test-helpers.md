@@ -18,14 +18,14 @@ from it already; only the factory is missing.
 Proposed:
 
 - Export `tmpDirFactory(loggerProvider)` from the package root.
-- Re-export `createTestLoggerProvider` from `asljs-logging`, which the rest of
+- Re-export `createTestLoggerProvider` from `asljs-testing`, which the rest of
   the repository's tests use, so a rule test needs no local helper.
 - Delete the local `testing/tmpDir.js` copies and import from `asljs-part`.
 - Cover the export in the package-root public API test.
 
 Downstream: EdGames rule tests import `createPinoLoggerProvider` from
-`asljs-part`, which no longer exists. Whatever name lands here is what they
-move to.
+`asljs-part`, which no longer exists. Whatever name lands here is what they move
+to.
 
 ## Where
 
