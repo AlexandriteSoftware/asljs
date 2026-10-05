@@ -49,9 +49,11 @@
     "all": "npm run clean && npm run flint && npm run typecheck && npm run build:dist && npm run build && npm run test"
   },
   "dependencies": {
-    "asljs-observable": "^0.5.4"
+    "asljs-observable": "^0.5.4",
+    "dompurify": "^3.4.16"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0"
   }
 }

@@ -2,6 +2,8 @@ import { coerceDisplayValue }
   from './coerce-display-value.js';
 import { formatDate }
   from './date-formatting.js';
+import { sanitizeHtml }
+  from './sanitize-html.js';
 import { BindDataModelOptions,
          PipeFn }
   from './types.js';
@@ -30,7 +32,7 @@ const DATE_STYLE_NAMES =
  * - `lower`
  * - `json[:spaces]`
  * - `default:value`
- * - `safeHtml`
+ * - `safeHtml` - sanitizes HTML with DOMPurify, for `data-bind-html`
  *
  * @example
  * ```ts
@@ -247,7 +249,21 @@ export function createBuiltInPipes(
 
       return value;
     },
-           safeHtml: value => value };
+           safeHtml:
+             (
+                 value: unknown
+               ): unknown =>
+             {
+      if (
+        value === null
+        || value === undefined
+      ) {
+        return value;
+      }
+
+      return sanitizeHtml(
+        String(value));
+    } };
 }
 
 /**

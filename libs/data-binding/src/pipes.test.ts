@@ -1,3 +1,7 @@
+import { TmpGlobals }
+  from 'asljs-testing';
+import { JSDOM }
+  from 'jsdom';
 import assert
   from 'node:assert/strict';
 import { test }
@@ -143,4 +147,38 @@ test(
     assert.equal(
       pipes.upper('x'),
       'custom:x');
+  });
+
+test(
+  `${TEST_SUITE}: safeHtml passes null and undefined through`,
+  () =>
+  {
+    const pipes =
+      mergePipes({});
+
+    assert.equal(
+      pipes.safeHtml(null),
+      null);
+
+    assert.equal(
+      pipes.safeHtml(undefined),
+      undefined);
+  });
+
+test(
+  `${TEST_SUITE}: safeHtml sanitizes with DOMPurify`,
+  () =>
+  {
+    using globals =
+      new TmpGlobals(
+        { window:
+            new JSDOM('').window });
+
+    const pipes =
+      mergePipes({});
+
+    assert.equal(
+      pipes.safeHtml(
+        '<p onclick="steal()">text</p><script>steal()</script>'),
+      '<p>text</p>');
   });

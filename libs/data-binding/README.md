@@ -26,6 +26,9 @@ A binding attribute holds a model path, optionally followed by pipes with static
 string arguments. Expressions, inline function calls, control structures and
 two-way binding syntax are outside that syntax; that logic lives on the model.
 
+`data-bind-html` writes markup as it is; the built-in `safeHtml` pipe sanitizes
+untrusted markup with DOMPurify, the package's one third-party dependency.
+
 ## Installation
 
 ```bash
