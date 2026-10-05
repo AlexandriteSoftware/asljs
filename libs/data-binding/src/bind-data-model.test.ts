@@ -58,7 +58,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -101,7 +101,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -348,7 +348,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     const button =
       root.querySelector('button') as HTMLElement;
@@ -407,7 +407,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     const button =
       root.querySelector('button') as HTMLElement;
@@ -470,7 +470,7 @@ test(
     const dispose =
       bindDataModel(
         root,
-        model as unknown as Record<string, unknown>);
+        model);
 
     dispose();
 
@@ -522,7 +522,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     const anchor =
       root.querySelector('a') as HTMLAnchorElement;
@@ -884,7 +884,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -924,7 +924,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     model.user.name = 'Bob';
 
@@ -954,8 +954,7 @@ test(
       () =>
         bindDataModel(
           root,
-          { item:
-              null as unknown as Record<string, unknown> }));
+          { item: null }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -983,8 +982,7 @@ test(
       () =>
         bindDataModel(
           root,
-          { item:
-              undefined as unknown as Record<string, unknown> }));
+          { item: undefined }));
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -1016,7 +1014,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     const oldUser = model.user;
 
@@ -1058,7 +1056,7 @@ test(
     const dispose =
       bindDataModel(
         root,
-        model as unknown as Record<string, unknown>);
+        model);
 
     dispose();
 
@@ -1095,7 +1093,7 @@ test(
 
     bindDataModel(
       root,
-      model as unknown as Record<string, unknown>);
+      model);
 
     assert.equal(
       root.querySelector('span')?.textContent,
@@ -1212,7 +1210,7 @@ test(
     const dispose =
       bindDataModel(
         root,
-        model as unknown as Record<string, unknown>);
+        model);
 
     assert.equal(
       dispose(),

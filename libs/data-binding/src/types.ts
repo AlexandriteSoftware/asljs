@@ -23,7 +23,7 @@ export type PipeSpec = { name: string; args: string[]; };
  *
  * - `data-bind-text="..."` -> `{ kind: 'text' }`
  * - `data-bind-html="..."` -> `{ kind: 'html' }`
- * - `data-bind-attr-title="..."` -> `{ kind: 'attr', name: 'title' }`
+ * - `data-bind-title="..."` -> `{ kind: 'attr', name: 'title' }`
  * - `data-bind-prop-disabled="..."` -> `{ kind: 'prop', name: 'disabled' }`
  * - `data-bind-class-active="..."` -> `{ kind: 'class', name: 'active' }`
  */
@@ -68,7 +68,7 @@ export type ValueBindingSpec = {
  * Represents an event binding specification, including event name and action
  * path.
  *
- * Example: `data-bind-click="activate"`
+ * Example: `data-bind-on-click="activate"`
  *
  * ```json
  * { kind: 'event',
@@ -88,13 +88,9 @@ export type BindingSpec =
 
 export type BindDataModelOptions = { pipes?: Record<string, PipeFn>; };
 
-export type DataModel = Record<string, unknown>;
-
-export type DataModelWithOn =
-  & DataModel
-  & {
-    on: (
-      event: string,
-      listener: (...args: unknown[]) => void
-    ) => (() => boolean) | void;
-  };
+/**
+ * The model a binding reads from: any non-null object. A plain object, an
+ * object typed by an interface, a class instance and a converted observable all
+ * qualify; only an observable one is bound reactively.
+ */
+export type DataModel = object;

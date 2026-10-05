@@ -204,7 +204,7 @@ test(
       bindValueModel(
         element,
         spec,
-        model as unknown as Record<string, unknown>,
+        model,
         {});
 
     assert.equal(

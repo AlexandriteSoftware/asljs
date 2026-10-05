@@ -52,7 +52,7 @@ function hasGetMethod(
 }
 
 function readNestedPath(
-    source: Record<string, unknown>,
+    source: object,
     path: string
   ): unknown
 {

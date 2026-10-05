@@ -19,8 +19,11 @@ Runtime exports:
 
 Type exports:
 
-- `BindDataModelOptions`
-- `DataModel`
+- `BindDataModelOptions` - the options, `{ pipes?: Record<string, PipeFn> }`.
+- `DataModel` - the model: any non-null `object`. A plain object, an object
+  typed by an interface, a class instance and a converted observable are all
+  accepted without a cast; only an observable model is bound reactively.
+- `PipeFn` - a pipe, `(value, ...args: string[]) => unknown`.
 
 ## Binding contract
 

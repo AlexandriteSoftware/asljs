@@ -8,5 +8,6 @@ export {
 
 export type {
   BindDataModelOptions,
-  DataModel
+  DataModel,
+  PipeFn
 } from './types.js';

@@ -476,7 +476,7 @@ export class TextInput extends LitElement
     this.#templateDispose =
       bindDataModel(
         fragment,
-        this.#model as unknown as Record<string, unknown>);
+        this.#model);
 
     templateHost.replaceChildren(fragment);
 
@@ -546,7 +546,7 @@ export class TextInput extends LitElement
     this.#controlTemplateDispose =
       bindDataModel(
         mountedControl.fragment,
-        this.#model as unknown as Record<string, unknown>);
+        this.#model);
 
     controlHost.replaceChildren(
       mountedControl.fragment);

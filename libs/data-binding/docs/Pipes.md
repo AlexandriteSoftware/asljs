@@ -29,6 +29,16 @@ const dispose =
     });
 ```
 
+A pipe defined on its own is typed with `PipeFn`:
+
+```ts
+import { type PipeFn }
+  from 'asljs-data-binding';
+
+const yesno: PipeFn =
+  value => value ? 'Yes' : 'No';
+```
+
 ## Built-ins
 
 - `string`

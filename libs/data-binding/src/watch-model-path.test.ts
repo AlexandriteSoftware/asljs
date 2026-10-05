@@ -47,7 +47,7 @@ test(
 
     const dispose =
       watchModelPath(
-        model as unknown as Record<string, unknown>,
+        model,
         'user.name',
         () => calls++);
 
@@ -78,7 +78,7 @@ test(
     let calls = 0;
 
     watchModelPath(
-      model as unknown as Record<string, unknown>,
+      model,
       'name',
       () => calls++);
 
@@ -100,7 +100,7 @@ test(
     ) {
       const dispose =
         watchModelPath(
-          model as unknown as Record<string, unknown>,
+          model,
           'name',
           () => { });
 

@@ -166,7 +166,7 @@ test(
     bindEventModel(
       button,
       spec,
-      model as unknown as Record<string, unknown>,
+      model,
       'event[3]',
       () => { });
 
@@ -223,7 +223,7 @@ test(
       { kind: 'event',
         eventName: 'click',
         actionPath: 'increment' },
-      model as unknown as Record<string, unknown>,
+      model,
       'event[4]',
       () => { });
 
