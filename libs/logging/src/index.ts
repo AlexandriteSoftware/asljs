@@ -24,7 +24,6 @@ export {
 
 export {
   createLoggerProvider,
-  createTestLoggerProvider,
   readLoggerOptions,
   type LoggerOverrides,
   type LoggerProviderSettings

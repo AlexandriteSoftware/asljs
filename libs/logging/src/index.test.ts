@@ -16,6 +16,5 @@ test(
         'PinoLoggerProvider',
         'PinoLoggerProviderOptionsBuilder',
         'createLoggerProvider',
-        'createTestLoggerProvider',
         'readLoggerOptions' ]);
   });

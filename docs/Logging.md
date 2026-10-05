@@ -155,9 +155,12 @@ npm -w asljs-part run test
 ```
 
 A test file creates one provider at module level with
-`createTestLoggerProvider()`, hands loggers to the code under test, and disposes
-the provider in `test.after`. A project that uses asljs packages passes its own
-prefix, for example `createTestLoggerProvider('EDG_TEST_LOG_')`.
+`createTestLoggerProvider()`, imported from `asljs-testing`, hands loggers to
+the code under test, and disposes the provider in `test.after`. A project that
+uses asljs packages passes its own prefix, for example
+`createTestLoggerProvider('EDG_TEST_LOG_')`. `asljs-logging` does not export it;
+its own tests use an identical private copy, because `asljs-testing` depends on
+`asljs-logging`.
 
 ## Rules for code
 

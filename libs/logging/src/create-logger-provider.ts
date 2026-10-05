@@ -83,52 +83,6 @@ export function createLoggerProvider(
 }
 
 /**
- * Creates the logger provider of a test file:
- *
- * - The level is `debug` unless `<prefix>LEVEL` says otherwise; `silent` turns
- *   logging off.
- * - `<prefix>FILE` takes a file path, `stdout` (the default) or `stderr`.
- * - The format is `pretty` on stdout and stderr, because a person reads test
- *   output even though the test runner pipes it, and `json` in a file.
- *   `<prefix>FORMAT` overrides it.
- */
-export function createTestLoggerProvider(
-    prefix: string = 'ASLJS_TEST_LOG_'
-  ): LoggerProvider
-{
-  const builder =
-    new PinoLoggerProviderOptionsBuilder()
-    .withLevel('debug')
-    .fromEnvironmentVariables(prefix);
-
-  if (!process.env[`${prefix}FORMAT`]) {
-    const file =
-      process.env[`${prefix}FILE`];
-
-    const isStream =
-      file === undefined
-      || file === ''
-      || file === 'stdout'
-      || file === 'stderr';
-
-    builder.withFormat(
-      isStream
-        ? 'pretty'
-        : 'json');
-  }
-
-  const options =
-    builder.build();
-
-  if (options.level === 'silent') {
-    return new NullLoggerProvider();
-  }
-
-  return new PinoLoggerProvider(
-    options);
-}
-
-/**
  * Reads `--loglevel`, `--logfile` and `--logformat` from the command line, in
  * the `--name value` and `--name=value` forms.
  *

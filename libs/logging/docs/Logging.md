@@ -16,9 +16,9 @@ provider and how it is configured, and the null implementations.
 - `PinoLoggerProviderOptions` - type. The provider's options.
 - `PinoLoggerProviderOptionsBuilder` - builds `PinoLoggerProviderOptions`.
 - `LogFormat` - type. `auto`, `json`, `text` or `pretty`.
-- `createLoggerProvider`, `createTestLoggerProvider` and `readLoggerOptions` -
-  create a provider by the repository's rules; with the `LoggerOverrides` and
-  `LoggerProviderSettings` types.
+- `createLoggerProvider` and `readLoggerOptions` - create a provider by the
+  repository's rules; with the `LoggerOverrides` and `LoggerProviderSettings`
+  types.
 - `NullLogger` and `NullLoggerProvider` - implementations that discard every
   message.
 
@@ -132,18 +132,9 @@ await using loggerProvider =
 `readLoggerOptions(argv)` reads `--loglevel`, `--logfile` and `--logformat`, in
 the `--name value` and `--name=value` forms.
 
-For a test file, `createTestLoggerProvider(prefix = 'ASLJS_TEST_LOG_')` logs at
-`debug` to stdout by default, `pretty` on stdout and stderr and `json` in a
-file; `<prefix>LEVEL`, `<prefix>FILE` and `<prefix>FORMAT` override it, and
-`silent` returns a `NullLoggerProvider`.
-
-```ts
-const loggerProvider =
-  createTestLoggerProvider();
-
-test.after(
-  async () => await loggerProvider.dispose());
-```
+The provider for a test file, `createTestLoggerProvider`, is exported by
+`asljs-testing`. This package keeps an identical, unexported copy in
+`src/testing` for its own tests, which cannot depend on `asljs-testing`.
 
 ## PinoLoggerProvider
 

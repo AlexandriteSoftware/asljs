@@ -14,5 +14,4 @@ The package root exports the following supported public API:
 - `LogFormat` type
 - `createLoggerProvider`, with the `LoggerOverrides` and
   `LoggerProviderSettings` types
-- `createTestLoggerProvider`
 - `readLoggerOptions`
