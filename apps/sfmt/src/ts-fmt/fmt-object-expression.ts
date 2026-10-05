@@ -8,6 +8,8 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtObjectExpression(
     node: TSESTree.ObjectExpression,
@@ -129,9 +131,9 @@ export function fmtObjectExpression(
       code.push(' ');
 
       code.push(
-        context.sourceCode
-          .getText(
-            propertyValue));
+        getTextWithParentheses(
+          context.sourceCode,
+          propertyValue));
     } else {
       code.push(
         context.newLine);
@@ -143,9 +145,9 @@ export function fmtObjectExpression(
         valueIndentation.value);
 
       code.push(
-        context.sourceCode
-          .getText(
-            propertyValue));
+        getTextWithParentheses(
+          context.sourceCode,
+          propertyValue));
     }
   }
 

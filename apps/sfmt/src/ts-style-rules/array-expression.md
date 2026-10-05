@@ -39,3 +39,12 @@ the layout is not checked either.
 // ---
 [1, , 3]
 ```
+
+Parentheses around an element are kept, so a sequence stays one element:
+
+```ts
+[ (a, b), c ]
+// ---
+[ (a, b),
+  c ]
+```

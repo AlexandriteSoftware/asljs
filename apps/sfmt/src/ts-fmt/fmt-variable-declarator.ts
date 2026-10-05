@@ -9,6 +9,8 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtVariableDeclarator(
     node: TSESTree.VariableDeclarator,
@@ -28,7 +30,8 @@ export function fmtVariableDeclarator(
 
   if (nodeInit) {
     const initText =
-      context.sourceCode.getText(
+      getTextWithParentheses(
+        context.sourceCode,
         nodeInit);
 
     if (

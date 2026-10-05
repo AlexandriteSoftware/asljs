@@ -4,6 +4,8 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtForStatement(
     node: TSESTree.ForStatement,
@@ -30,7 +32,8 @@ export function fmtForStatement(
 
   if (node.init !== null) {
     code.push(
-      context.sourceCode.getText(
+      getTextWithParentheses(
+        context.sourceCode,
         node.init));
   }
 
@@ -44,7 +47,8 @@ export function fmtForStatement(
 
   if (node.test !== null) {
     code.push(
-      context.sourceCode.getText(
+      getTextWithParentheses(
+        context.sourceCode,
         node.test));
   }
 
@@ -61,7 +65,8 @@ export function fmtForStatement(
     !== null
   ) {
     code.push(
-      context.sourceCode.getText(
+      getTextWithParentheses(
+        context.sourceCode,
         node.update));
   }
 

@@ -29,3 +29,13 @@ const result =
   ? whenTrue
   : whenFalse;
 ```
+
+Parentheses around the parts are kept:
+
+```ts
+const result = (a, b) ? (c, d) : (f, g);
+// ---
+const result = (a, b)
+  ? (c, d)
+  : (f, g);
+```

@@ -13,6 +13,8 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtAssignmentExpression(
     node: TSESTree.AssignmentExpression,
@@ -22,7 +24,8 @@ export function fmtAssignmentExpression(
   const code: string[] = [ ];
 
   const leftText =
-    context.sourceCode.getText(
+    getTextWithParentheses(
+      context.sourceCode,
       node.left);
 
   code.push(leftText);
@@ -31,7 +34,8 @@ export function fmtAssignmentExpression(
   const nodeRight = node.right;
 
   const rightText =
-    context.sourceCode.getText(
+    getTextWithParentheses(
+      context.sourceCode,
       nodeRight);
 
   if (

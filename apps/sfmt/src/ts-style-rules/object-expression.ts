@@ -16,6 +16,8 @@ import { Indentation }
   from '../functions/indentations.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
+import { getLocationWithParentheses }
+  from '../functions/text-with-parentheses.js';
 import { fmtObjectExpression }
   from '../ts-fmt/fmt-object-expression.js';
 
@@ -238,7 +240,11 @@ function checkLayout(
 
     const value = property.value;
 
-    const valueLocation = value?.loc;
+    const valueLocation =
+      value
+      && getLocationWithParentheses(
+        context.sourceCode,
+        value);
 
     if (!valueLocation) {
       logger.debug(

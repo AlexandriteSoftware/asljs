@@ -56,3 +56,22 @@ a = fn(a, b);
 a =
   fn(a, b);
 ```
+
+Parentheses around the left side are kept. Without them a cast on the left would
+not parse:
+
+```ts
+(element[name] as unknown) = fn(a, b);
+// ---
+(element[name] as unknown) =
+  fn(a, b);
+```
+
+Parentheses around the right side are kept too:
+
+```js
+a = (fn(a, b));
+// ---
+a =
+  (fn(a, b));
+```

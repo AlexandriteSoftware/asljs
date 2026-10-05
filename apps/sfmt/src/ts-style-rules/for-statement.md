@@ -53,3 +53,15 @@ for (
     items[index]);
 }
 ```
+
+Parentheses around the clauses are kept:
+
+```ts
+for (let index = (a, b); (index, c); index = (index + 1, index)) { }
+// ---
+for (
+  let index = (a, b);
+  (index, c);
+  index = (index + 1, index)
+) { }
+```

@@ -13,6 +13,8 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { Indentation }
   from '../functions/indentations.js';
+import { getLocationWithParentheses }
+  from '../functions/text-with-parentheses.js';
 import { fmtArrayExpression }
   from '../ts-fmt/fmt-array-expression.js';
 
@@ -162,7 +164,11 @@ function checkLayout(
 
   const firstElement = node.elements[0];
 
-  const firstElementLocation = firstElement?.loc;
+  const firstElementLocation =
+    firstElement
+    && getLocationWithParentheses(
+      context.sourceCode,
+      firstElement);
 
   if (!firstElementLocation) {
     // do not check if the first element has no location
@@ -186,7 +192,11 @@ function checkLayout(
     const element =
       node.elements[index];
 
-    const elementLocation = element?.loc;
+    const elementLocation =
+      element
+      && getLocationWithParentheses(
+        context.sourceCode,
+        element);
 
     if (!elementLocation) {
       // do not check if the element has no location

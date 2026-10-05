@@ -97,3 +97,12 @@ const line = sourceCode.lines[nodeStartLine - 1];
 const line =
   sourceCode.lines[nodeStartLine - 1];
 ```
+
+Parentheses around the initialiser are kept:
+
+```ts
+const a = (fn(a, b) as number);
+// ---
+const a =
+  (fn(a, b) as number);
+```

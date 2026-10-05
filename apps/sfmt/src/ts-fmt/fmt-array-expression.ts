@@ -6,6 +6,8 @@ import { Indentation }
   from '../functions/indentations.js';
 import { tryGetLocation }
   from '../functions/location.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtArrayExpression(
     node: TSESTree.ArrayExpression,
@@ -76,9 +78,9 @@ export function fmtArrayExpression(
     }
 
     code.push(
-      context.sourceCode
-        .getText(
-          element));
+      getTextWithParentheses(
+        context.sourceCode,
+        element));
   }
 
   code.push(' ]');

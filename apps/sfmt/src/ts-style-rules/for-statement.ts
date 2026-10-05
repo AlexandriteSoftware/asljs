@@ -12,6 +12,8 @@ import { FormattingContext }
   from '../formatting-context.js';
 import { getIndentation }
   from '../functions/indentations.js';
+import { getLocationWithParentheses }
+  from '../functions/text-with-parentheses.js';
 import { fmtForStatement }
   from '../ts-fmt/fmt-for-statement.js';
 
@@ -182,6 +184,7 @@ function checkLayout(
 
   if (
     !checkClause(
+      sourceCode,
       node.init ?? null,
       openingParenLocation.end.line,
       firstSemicolonLocation.start.line,
@@ -192,6 +195,7 @@ function checkLayout(
 
   if (
     !checkClause(
+      sourceCode,
       node.test ?? null,
       firstSemicolonLocation.end.line,
       secondSemicolonLocation.start.line,
@@ -202,6 +206,7 @@ function checkLayout(
 
   if (
     !checkUpdateClause(
+      sourceCode,
       node.update ?? null,
       secondSemicolonLocation.end.line,
       closingParenLocation.start.line,
@@ -216,6 +221,7 @@ function checkLayout(
 }
 
 function checkClause(
+    sourceCode: Readonly<TSESLint.SourceCode>,
     clause: TSESTree.Node | null,
     previousTokenLine: number,
     semicolonLine: number,
@@ -226,11 +232,10 @@ function checkClause(
     return semicolonLine === previousTokenLine + 1;
   }
 
-  const clauseLocation = clause?.loc;
-
-  if (!clauseLocation) {
-    return true;
-  }
+  const clauseLocation =
+    getLocationWithParentheses(
+      sourceCode,
+      clause);
 
   return (
     clauseLocation.start.line === previousTokenLine + 1
@@ -240,6 +245,7 @@ function checkClause(
 }
 
 function checkUpdateClause(
+    sourceCode: Readonly<TSESLint.SourceCode>,
     clause: TSESTree.Node | null,
     previousTokenLine: number,
     closingParenLine: number,
@@ -255,11 +261,10 @@ function checkUpdateClause(
     );
   }
 
-  const clauseLocation = clause?.loc;
-
-  if (!clauseLocation) {
-    return true;
-  }
+  const clauseLocation =
+    getLocationWithParentheses(
+      sourceCode,
+      clause);
 
   return (
     clauseLocation.start.line === previousTokenLine + 1

@@ -282,3 +282,13 @@ assert.equal(
   'function'
 );
 ```
+
+Parentheses around an argument are kept, so a sequence stays one argument:
+
+```js
+test((a, b), c);
+// ---
+test(
+  (a, b),
+  c);
+```

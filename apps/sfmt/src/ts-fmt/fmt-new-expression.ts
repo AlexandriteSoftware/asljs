@@ -8,6 +8,8 @@ import { tryGetLocation }
   from '../functions/location.js';
 import { expressionIsSimple }
   from '../functions/simple-expression.js';
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
 
 export function fmtNewExpression(
     node: TSESTree.NewExpression,
@@ -40,7 +42,8 @@ export function fmtNewExpression(
   const code: string[] = [ ];
 
   const callee =
-    context.sourceCode.getText(
+    getTextWithParentheses(
+      context.sourceCode,
       node.callee);
 
   code.push('new ');
@@ -51,7 +54,8 @@ export function fmtNewExpression(
     const firstArgument = node.arguments[0];
 
     const firstArgumentText =
-      context.sourceCode.getText(
+      getTextWithParentheses(
+        context.sourceCode,
         firstArgument);
 
     const firstArgumentLocation = firstArgument?.loc;
@@ -108,7 +112,8 @@ export function fmtNewExpression(
         node.arguments[index];
 
       const argumentText =
-        context.sourceCode.getText(
+        getTextWithParentheses(
+          context.sourceCode,
           argument);
 
       code.push(

@@ -2,8 +2,9 @@ import { type TSESTree }
   from '@typescript-eslint/typescript-estree';
 import { FormattingContext }
   from '../formatting-context.js';
-import { asTextNode,
-         getIndentation }
+import { getTextWithParentheses }
+  from '../functions/text-with-parentheses.js';
+import { getIndentation }
   from '../ts-style-rules/conditional-expression.js';
 
 export function fmtConditionalExpression(
@@ -19,19 +20,19 @@ export function fmtConditionalExpression(
   const branchIndent = indent + '  ';
 
   const testText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.test));
+    getTextWithParentheses(
+      context.sourceCode,
+      node.test);
 
   const consequentText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.consequent));
+    getTextWithParentheses(
+      context.sourceCode,
+      node.consequent);
 
   const alternateText =
-    context.sourceCode.getText(
-      asTextNode(
-        node.alternate));
+    getTextWithParentheses(
+      context.sourceCode,
+      node.alternate);
 
   return `${testText}${context.newLine}${branchIndent}? ${consequentText}${context.newLine}${branchIndent}: ${alternateText}`;
 }

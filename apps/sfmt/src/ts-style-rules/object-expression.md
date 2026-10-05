@@ -115,3 +115,12 @@
    set test2(value) {
   } });
 ```
+
+Parentheses around a value are kept, so a sequence stays one value:
+
+```ts
+({ test: (a, b), test2: c });
+// ---
+({ test: (a, b),
+   test2: c });
+```
