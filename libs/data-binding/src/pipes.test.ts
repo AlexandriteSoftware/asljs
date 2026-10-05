@@ -6,7 +6,8 @@ import assert
   from 'node:assert/strict';
 import { test }
   from 'node:test';
-import { mergePipes }
+import { createBuiltInPipes,
+         mergePipes }
   from './pipes.js';
 
 const TEST_SUITE = 'pipes';
@@ -108,8 +109,9 @@ test(
         '2'),
       '12.35');
 
+    // An explicit locale, so the separators do not depend on the machine.
     assert.equal(
-      pipes.number(1234.5),
+      createBuiltInPipes('en-US').number(1234.5),
       '1,234.5');
   });
 
@@ -132,6 +134,70 @@ test(
         '2026-02-03',
         'yyyy-MM-dd'),
       '2026-02-03');
+  });
+
+test(
+  `${TEST_SUITE}: date reads a date-only string as that calendar day`,
+  () =>
+  {
+    const pipes =
+      createBuiltInPipes('en-US');
+
+    assert.equal(
+      pipes.date(
+        '2026-02-03',
+        'yyyy-MM-dd hh:mm'),
+      '2026-02-03 00:00');
+
+    assert.equal(
+      pipes.date(
+        '2026-02-03',
+        'short'),
+      '2/3/26');
+
+    // Built with the local constructor, so the expected text does not depend
+    // on the machine's time zone either.
+    assert.equal(
+      pipes.datetime(
+        new Date(
+          2026,
+          1,
+          3,
+          14,
+          5),
+        'yyyy-MM-dd hh:mm'),
+      '2026-02-03 14:05');
+  });
+
+test(
+  `${TEST_SUITE}: date renders an impossible date-only string as empty`,
+  () =>
+  {
+    const pipes =
+      createBuiltInPipes('en-US');
+
+    assert.equal(
+      pipes.date(
+        '2026-02-30',
+        'yyyy-MM-dd'),
+      '');
+
+    assert.equal(
+      pipes.date(
+        '2026-13-01',
+        'yyyy-MM-dd'),
+      '');
+  });
+
+test(
+  `${TEST_SUITE}: date keeps a year below 100 as written`,
+  () =>
+  {
+    assert.equal(
+      createBuiltInPipes('en-US').date(
+        '0026-02-03',
+        'yyyy-MM-dd'),
+      '0026-02-03');
   });
 
 test(

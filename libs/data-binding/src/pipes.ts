@@ -15,6 +15,11 @@ const DATE_STYLE_NAMES =
       'long',
       'full' ]);
 
+// An ISO date without a time, as a JSON API, <input type="date"> or a stored
+// record gives it.
+const DATE_ONLY_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})$/;
+
 /**
  * Creates the built-in value pipes used by data-bind value bindings.
  *
@@ -329,6 +334,21 @@ function asDate(
     value: unknown
   ): Date | null
 {
+  if (
+    typeof value
+    === 'string'
+  ) {
+    const dateOnly =
+      DATE_ONLY_PATTERN.exec(value);
+
+    if (dateOnly !== null) {
+      return localDate(
+        Number(dateOnly[1]),
+        Number(dateOnly[2]),
+        Number(dateOnly[3]));
+    }
+  }
+
   if (value instanceof Date) {
     return Number.isNaN(
       value.getTime())
@@ -352,4 +372,48 @@ function asDate(
   }
 
   return null;
+}
+
+/**
+ * The local midnight of a calendar date. `new Date('2026-02-03')` is UTC
+ * midnight, which the formatters, reading local time, show as 2 February west
+ * of Greenwich; a date written without a time means that day wherever it is
+ * shown.
+ *
+ * Returns `null` for a day the month does not have, which the `Date`
+ * constructor would roll over into the next month.
+ */
+function localDate(
+    year: number,
+    month: number,
+    day: number
+  ): Date | null
+{
+  const date =
+    new Date(0);
+
+  // setFullYear, unlike the constructor, keeps years below 100 as written.
+  date.setFullYear(
+    year,
+    month - 1,
+    day);
+
+  date.setHours(
+    0,
+    0,
+    0,
+    0);
+
+  if (
+    date.getFullYear()
+    !== year
+    || date.getMonth()
+       !== month - 1
+    || date.getDate()
+       !== day
+  ) {
+    return null;
+  }
+
+  return date;
 }

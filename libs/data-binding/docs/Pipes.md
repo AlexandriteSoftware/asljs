@@ -75,6 +75,38 @@ content, and returns the remaining markup:
 - DOMPurify's default configuration applies. A custom pipe that calls
   `DOMPurify.sanitize` with its own options covers other needs.
 
+## Dates
+
+`date[:format]` and `datetime[:format]` take a `Date`, a number of milliseconds
+or a string. There is no `time` pipe; a pattern gives the time alone.
+
+The format is a style name or a pattern:
+
+- `short`, `medium`, `long`, `full` - the locale's own layout, through
+  `Intl.DateTimeFormat`. `date` formats the date (`date:long` -> `3 February
+  2026`), `datetime` the date and the time (`datetime` -> `03/02/2026, 14:05` in
+  `en-GB`). The default is `short`.
+- A pattern of `yyyy`, `yy`, `MM` (month), `dd`, `hh` (hour, 0-23), `mm`
+  (minute) and `ss`; any other character is written as it is, and `\` escapes
+  one. `date` and `datetime` give the same result for a pattern.
+
+Arguments are separated by `:`, so quote a pattern that contains one:
+`date:'hh:mm'` gives `14:05`, while `date:hh:mm` passes `hh` and `mm` as two
+arguments and gives `14`.
+
+Strings:
+
+- A date without a time, `YYYY-MM-DD` as a JSON API or `<input type="date">`
+  gives it, is that calendar day in local time: `2026-02-03` renders as 3
+  February in every time zone.
+- A day the month does not have, such as `2026-02-30`, renders as `''`, like any
+  other value that is not a date.
+- Any other string, including one with a time, is parsed by the platform's
+  `Date`: `2026-02-03T00:00:00Z` is UTC midnight, which is 2 February in New
+  York.
+
+The output is in the runtime's time zone.
+
 ## Locale
 
 - By default, the `Intl`-based pipes use the runtime or browser locale.
