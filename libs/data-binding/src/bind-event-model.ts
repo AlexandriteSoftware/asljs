@@ -1,4 +1,5 @@
-import { readModelPath }
+import { readModelPath,
+         readModelPathOwner }
   from './read-model-path.js';
 import { DataModel,
          EventBindingSpec }
@@ -8,6 +9,7 @@ import { watchModelPath }
 
 type ActionFn =
   (
+    this: unknown,
     event: Event,
     model: DataModel,
     element: Element
@@ -53,12 +55,20 @@ export function bindEventModel(
       return;
     }
 
+    // The owner is read when the event fires rather than with the action: a
+    // replaced owner can carry the same function, which the watch does not
+    // report as a change.
+    const owner =
+      readModelPathOwner(
+        model,
+        spec.actionPath);
+
     try {
-      (currentAction as ActionFn)(
+      (currentAction as ActionFn).call(
+        owner,
         event,
         model,
-        element
-      );
+        element);
     } catch (error) {
       warnOnce(
         `${warnPrefix}:action-error:${spec.actionPath}`,

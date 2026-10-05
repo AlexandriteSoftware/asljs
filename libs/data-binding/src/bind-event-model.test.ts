@@ -194,6 +194,220 @@ test(
         'third' ]);
   });
 
+test(
+  `${TEST_SUITE}: calls an action with the model as this`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<button></button>');
+
+    const button =
+      dom.window.document.querySelector('button') as HTMLElement;
+
+    const model =
+      observable(
+        { count: 0,
+          increment()
+        {
+          this.count++;
+        } });
+
+    bindEventModel(
+      button,
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'increment' },
+      model as unknown as Record<string, unknown>,
+      'event[4]',
+      () => { });
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.equal(
+      model.count,
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: calls a nested action with the object that holds it as this`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<button></button>');
+
+    const button =
+      dom.window.document.querySelector('button') as HTMLElement;
+
+    const calls: string[] = [ ];
+
+    class User
+    {
+      constructor(
+        readonly name: string
+      )
+      {
+      }
+
+      activate(): void
+      {
+        calls.push(this.name);
+      }
+    }
+
+    const model: Record<string, unknown> =
+      { user:
+          new User('first') };
+
+    bindEventModel(
+      button,
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'user.activate' },
+      model,
+      'event[5]',
+      () => { });
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    // The same method on another object: the action is unchanged, the
+    // object that holds it is not.
+    model.user =
+      new User('second');
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.deepEqual(
+      calls,
+      [ 'first',
+        'second' ]);
+  });
+
+test(
+  `${TEST_SUITE}: a bound action keeps its own this`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<button></button>');
+
+    const button =
+      dom.window.document.querySelector('button') as HTMLElement;
+
+    const target =
+      { name: 'bound' };
+
+    const calls: unknown[] = [ ];
+
+    const model: Record<string, unknown> =
+      { save:
+          function (
+        this: unknown
+      ): void
+      {
+        calls.push(this);
+      }.bind(target) };
+
+    bindEventModel(
+      button,
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'save' },
+      model,
+      'event[6]',
+      () => { });
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.deepEqual(
+      calls,
+      [ target ]);
+  });
+
+test(
+  `${TEST_SUITE}: warns when the action is not a function`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<button></button>');
+
+    const button =
+      dom.window.document.querySelector('button') as HTMLElement;
+
+    const warnings: string[] = [ ];
+
+    bindEventModel(
+      button,
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'save' },
+      { save: 'not a function' },
+      'event[7]',
+      (
+          key: string
+        ) =>
+      {
+        warnings.push(key);
+      });
+
+    button.dispatchEvent(
+      new dom.window.Event('click'));
+
+    assert.deepEqual(
+      warnings,
+      [ 'event[7]:missing-action:save' ]);
+  });
+
+test(
+  `${TEST_SUITE}: warns with the error when the action throws`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<button></button>');
+
+    const button =
+      dom.window.document.querySelector('button') as HTMLElement;
+
+    const failure =
+      new Error('failed');
+
+    const warnings: Array<[string, unknown]> = [ ];
+
+    bindEventModel(
+      button,
+      { kind: 'event',
+        eventName: 'click',
+        actionPath: 'save' },
+      { save:
+          () =>
+          {
+          throw failure;
+        } },
+      'event[8]',
+      (
+          key: string,
+          _message: string,
+          error?: unknown
+        ) =>
+      {
+        warnings.push(
+          [ key,
+            error ]);
+      });
+
+    assert.doesNotThrow(
+      () =>
+        button.dispatchEvent(
+          new dom.window.Event('click')));
+
+    assert.deepEqual(
+      warnings,
+      [ [ 'event[8]:action-error:save',
+          failure ] ]);
+  });
+
 type ReactiveModel =
   & Record<string, unknown>
   & {

@@ -19,6 +19,31 @@ export function readModelPath(
     path);
 }
 
+/**
+ * Returns the object that holds the value at `path`: the model itself for a
+ * single-segment path, otherwise the value at the path without its last
+ * segment, read by the same rules as `readModelPath`. An event binding calls
+ * its action with this object as `this`.
+ */
+export function readModelPathOwner(
+    model: DataModel,
+    path: string
+  ): unknown
+{
+  const parts =
+    splitPath(path);
+
+  if (parts.length <= 1) {
+    return model;
+  }
+
+  return readModelPath(
+    model,
+    parts.slice(
+      0,
+      -1).join('.'));
+}
+
 function hasGetMethod(
     value: DataModel
   ): value is DataModel & { get: (path: string) => unknown; }
@@ -32,12 +57,7 @@ function readNestedPath(
   ): unknown
 {
   const parts =
-    path
-    .split('.')
-    .map(
-      part => part.trim())
-    .filter(
-      part => part !== '');
+    splitPath(path);
 
   let current: unknown = source;
 
@@ -56,4 +76,16 @@ function readNestedPath(
   }
 
   return current;
+}
+
+function splitPath(
+    path: string
+  ): string[]
+{
+  return path
+    .split('.')
+    .map(
+      part => part.trim())
+    .filter(
+      part => part !== '');
 }
