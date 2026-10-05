@@ -1,3 +1,5 @@
+import { splitPath }
+  from './read-model-path.js';
 import { BindingTarget,
          EventBindingSpec,
          PipeSpec,
@@ -30,6 +32,8 @@ export function parseValueBindingExpression(
 
   const path = segments[0] ?? '';
 
+  splitPath(path);
+
   const pipes =
     segments
     .slice(1)
@@ -60,6 +64,8 @@ export function parseEventBindingExpression(
 {
   const actionPath =
     expression.trim();
+
+  splitPath(actionPath);
 
   return { kind: 'event',
            eventName,

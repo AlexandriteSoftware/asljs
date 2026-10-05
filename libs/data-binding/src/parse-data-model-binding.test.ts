@@ -227,3 +227,43 @@ test(
         actionPath:
           'activate | preventDefault | stopPropagation' });
   });
+
+test(
+  `${TEST_SUITE}: rejects a path with an empty segment`,
+  () =>
+  {
+    for (const path of [ 'user.',
+                         'user..name',
+                         '.user' ]) {
+      assert.throws(
+        () =>
+          parseValueBindingExpression(
+            { kind: 'text' },
+            `${path} | upper`),
+        TypeError);
+
+      assert.throws(
+        () =>
+          parseEventBindingExpression(
+            'click',
+            path),
+        TypeError);
+    }
+  });
+
+test(
+  `${TEST_SUITE}: accepts spaces around segments and an empty path`,
+  () =>
+  {
+    assert.equal(
+      parseValueBindingExpression(
+        { kind: 'text' },
+        'user . name').path,
+      'user . name');
+
+    assert.equal(
+      parseEventBindingExpression(
+        'click',
+        '').actionPath,
+      '');
+  });

@@ -32,6 +32,10 @@ Type exports:
 - A path is read property by property, `user.name` as `model.user.name`. No
   method on the model is called to resolve it: a model with a `get` method is
   read like any other object.
+- Every segment of a path must be non-empty. `user.`, `user..name` and `.user`
+  throw a `TypeError` when the template is bound, for a value, event or context
+  binding, whether the model is a plain object or observable. Spaces around a
+  segment are ignored.
 - Context bindings switch the model root for a subtree.
 - Pipe arguments are static strings.
 - Event actions are invoked as `(event, model, element)`, with the object that

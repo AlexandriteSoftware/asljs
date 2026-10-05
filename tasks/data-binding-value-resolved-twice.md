@@ -55,12 +55,9 @@ For a conforming model the query has already resolved the path, deduplicated it
 and handed the value over; the second read is a second resolution by a different
 reader. The two readers have disagreed before: `readModelPath` once routed reads
 through a model's `get(path)` method, which the subscription side never knew
-about. That protocol is gone, and both now read properties, but they still
-differ in details:
-
-- a missing path is `null` for `readModelPath` and `undefined` for the query;
-- `readModelPath` trims segments and drops empty ones, the query rejects them
-  (see `data-binding-path-validation-depends-on-model`).
+about. That protocol is gone, both now read properties, and both reject an empty
+segment, but a missing path is still `null` for `readModelPath` and `undefined`
+for the query.
 
 As long as the binding re-reads, the value it renders is not the value the
 subscription reported, and a change in either reader can make the two halves of

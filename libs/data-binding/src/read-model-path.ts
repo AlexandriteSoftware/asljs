@@ -67,14 +67,32 @@ function readNestedPath(
   return current;
 }
 
-function splitPath(
+/**
+ * Splits a binding path into its trimmed segments, by the rule `observe().at()`
+ * in `asljs-observable` applies: every segment must be non-empty, so `user.`,
+ * `user..name` and `.user` throw a `TypeError`. An empty path has no segments.
+ *
+ * The binding parsers call it on every path, so a malformed path fails when
+ * the template is bound, the same way for a plain and an observable model.
+ */
+export function splitPath(
     path: string
   ): string[]
 {
-  return path
+  if (path.trim() === '') {
+    return [ ];
+  }
+
+  const segments =
+    path
     .split('.')
     .map(
-      part => part.trim())
-    .filter(
-      part => part !== '');
+      segment => segment.trim());
+
+  if (segments.includes('')) {
+    throw new TypeError(
+      `Expect path segments to be non-empty: '${path}'.`);
+  }
+
+  return segments;
 }

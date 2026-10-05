@@ -3,7 +3,8 @@ import assert
 import { test }
   from 'node:test';
 import { readModelPath,
-         readModelPathOwner }
+         readModelPathOwner,
+         splitPath }
   from './read-model-path.js';
 
 const TEST_SUITE = 'read-model-path';
@@ -116,4 +117,33 @@ test(
             () => 'not the owner' },
         'user.activate'),
       user);
+  });
+
+test(
+  `${TEST_SUITE}: splitPath trims segments and gives an empty path none`,
+  () =>
+  {
+    assert.deepEqual(
+      splitPath(' user . name '),
+      [ 'user',
+        'name' ]);
+
+    assert.deepEqual(
+      splitPath(''),
+      [ ]);
+  });
+
+test(
+  `${TEST_SUITE}: splitPath rejects an empty segment, as observe().at() does`,
+  () =>
+  {
+    for (const path of [ 'user.',
+                         'user..name',
+                         '.user' ]) {
+      assert.throws(
+        () => splitPath(path),
+        { name: 'TypeError',
+          message:
+            `Expect path segments to be non-empty: '${path}'.` });
+    }
   });

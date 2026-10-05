@@ -1256,6 +1256,40 @@ test(
       false);
   });
 
+test(
+  `${TEST_SUITE}: a malformed path throws the same way for a plain and an observable model`,
+  () =>
+  {
+    const markups =
+      [ '<span data-bind-text="user."></span>',
+        '<button data-bind-on-click="save."></button>',
+        '<div data-bind-context="user..profile"><span></span></div>' ];
+
+    for (const markup of markups) {
+      for (
+        const model of [ { user:
+                             { name: 'Ada' } },
+                         observable(
+                           { user:
+                               { name: 'Ada' } }) ]
+      ) {
+        const dom =
+          new JSDOM(
+            `<div id="root">${markup}</div>`);
+
+        assert.throws(
+          () =>
+            bindDataModel(
+              dom.window.document.getElementById('root') as HTMLElement,
+              model),
+          { name: 'TypeError',
+            message:
+              /Expect path segments to be non-empty/ },
+          markup);
+      }
+    }
+  });
+
 type ReactiveModel =
   & Record<string, unknown>
   & {

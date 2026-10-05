@@ -43,6 +43,10 @@ a change must preserve and how to check it.
 - Paths are read property by property (`readModelPath`); no model method, such
   as `get(path)`, takes part. The subscription side, `observe().at()`, reads
   properties too, and the two must agree.
+- Every path goes through `splitPath` (`src/read-model-path.ts`) when it is
+  parsed or, for a context, before it is bound. It rejects empty segments with a
+  `TypeError`, as `observe().at()` does, so a malformed path fails the same way
+  for a plain and an observable model.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
   observable contract and binds a plain model once, statically. `observe()`

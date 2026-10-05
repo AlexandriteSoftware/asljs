@@ -7,7 +7,8 @@ import { createDisposer }
 import { parseEventBindingExpression,
          parseValueBindingExpression }
   from './parse-data-model-binding.js';
-import { readModelPath }
+import { readModelPath,
+         splitPath }
   from './read-model-path.js';
 import { BindDataModelOptions,
          BindingSpec,
@@ -178,6 +179,9 @@ function bindContextElement(
     nextPrefix: () => string
   ): () => boolean
 {
+  // Checked before anything is bound, like the value and event paths.
+  splitPath(contextPath);
+
   const ownDisposers: Array<() => boolean> = [ ];
 
   bindElementAttributes(
