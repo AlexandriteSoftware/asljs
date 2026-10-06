@@ -1,3 +1,5 @@
+import { eventful }
+  from 'asljs-eventful';
 import { observable }
   from 'asljs-observable';
 import { TmpGlobals }
@@ -1399,3 +1401,180 @@ function createReactiveModel(
 
   return model;
 }
+
+test(
+  `${TEST_SUITE}: a failed bind releases the bindings it had already made`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <span id="a" data-bind-text="a"></span>
+            <span id="b" data-bind-text="b | nope"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { a: 'one',
+          b: 'two' });
+
+    assert.throws(
+      () =>
+        bindDataModel(
+          root,
+          model),
+      /Unknown pipe: nope/);
+
+    model.a = 'changed';
+
+    assert.equal(
+      root.querySelector('#a')?.textContent,
+      'one');
+  });
+
+test(
+  `${TEST_SUITE}: a pipe that throws on the first value leaves no binding behind`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <span id="a" data-bind-text="a"></span>
+            <span id="b" data-bind-text="b | strict"></span>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    const model =
+      observable(
+        { a: 'one',
+          b: 'bad' });
+
+    let strictCalls = 0;
+
+    assert.throws(
+      () =>
+        bindDataModel(
+          root,
+          model,
+          { pipes:
+              { strict:
+                  (
+                      value
+                    ) =>
+                  {
+                strictCalls++;
+
+                if (value === 'bad') {
+                  throw new Error('bad value');
+                }
+
+                return value;
+              } } }),
+      /bad value/);
+
+    model.a = 'changed';
+    model.b = 'good';
+
+    assert.equal(
+      root.querySelector('#a')?.textContent,
+      'one');
+
+    assert.equal(
+      root.querySelector('#b')?.textContent,
+      '');
+
+    assert.equal(
+      strictCalls,
+      1);
+  });
+
+test(
+  `${TEST_SUITE}: data-bind-context releases a rebind that failed partway`,
+  () =>
+  {
+    const dom =
+      new JSDOM(
+        `
+          <div id="root">
+            <div data-bind-context="user">
+              <span id="name" data-bind-text="name"></span>
+              <span id="role" data-bind-text="role | strict"></span>
+            </div>
+          </div>
+        `);
+
+    const root =
+      dom.window.document.getElementById('root') as HTMLElement;
+
+    // A strict emitter rethrows a listener's error from the write that caused
+    // it, instead of reporting it on its own.
+    const model =
+      observable(
+        { user:
+            { name: 'Alice',
+              role: 'admin' } },
+        { deep: true,
+          eventful:
+            value =>
+          eventful(
+            value,
+            { strict: true }) });
+
+    const dispose =
+      bindDataModel(
+        root,
+        model,
+        { pipes:
+            { strict:
+                (
+                    value
+                  ) =>
+                {
+            if (value === 'bad') {
+              throw new Error('bad value');
+            }
+
+            return value;
+          } } });
+
+    const failing =
+      observable(
+        { name: 'Bob',
+          role: 'bad' });
+
+    assert.throws(
+      () =>
+      {
+        model.user = failing;
+      },
+      /bad value/);
+
+    // Bob's name was bound before the role failed, and is released with it.
+    failing.name = 'Bobby';
+
+    assert.equal(
+      root.querySelector('#name')?.textContent,
+      'Bob');
+
+    model.user =
+      observable(
+        { name: 'Carol',
+          role: 'user' });
+
+    assert.equal(
+      root.querySelector('#name')?.textContent,
+      'Carol');
+
+    assert.equal(
+      dispose(),
+      true);
+  });

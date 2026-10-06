@@ -53,6 +53,7 @@
     "dompurify": "^3.4.16"
   },
   "devDependencies": {
+    "asljs-eventful": "^0.4.10",
     "asljs-testing": "^0.1.0",
     "asljs-toolkit": "^0.1.0"
   }

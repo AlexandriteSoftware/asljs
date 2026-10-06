@@ -129,6 +129,43 @@ function bindSubtree(
 {
   const disposers: Array<() => boolean> = [ ];
 
+  const dispose =
+    createDisposer(
+      (): void =>
+      {
+      for (const disposer of disposers) {
+        disposer();
+      }
+    });
+
+  // A binding that fails to set up throws out of the walk, and the caller then
+  // has no disposer: the bindings made so far are released here first.
+  try {
+    bindSubtreeChildren(
+      root,
+      model,
+      options,
+      warnOnce,
+      nextPrefix,
+      disposers);
+  } catch (error) {
+    dispose();
+
+    throw error;
+  }
+
+  return dispose;
+}
+
+function bindSubtreeChildren(
+    root: ParentNode,
+    model: DataModel,
+    options: BindDataModelOptions,
+    warnOnce: WarnOnce,
+    nextPrefix: () => string,
+    disposers: Array<() => boolean>
+  ): void
+{
   for (const child of [ ...root.children ] as HTMLElement[]) {
     const contextPath =
       child.getAttribute(CONTEXT_ATTR);
@@ -160,14 +197,6 @@ function bindSubtree(
           nextPrefix));
     }
   }
-
-  return createDisposer(
-    (): void =>
-    {
-      for (const dispose of disposers) {
-        dispose();
-      }
-    });
 }
 
 function bindContextElement(
@@ -184,15 +213,6 @@ function bindContextElement(
 
   const ownDisposers: Array<() => boolean> = [ ];
 
-  bindElementAttributes(
-    element,
-    model,
-    options,
-    warnOnce,
-    nextPrefix,
-    ownDisposers,
-    CONTEXT_ATTR);
-
   let childDisposer: (() => boolean) | null = null;
 
   const bindChildren =
@@ -201,6 +221,10 @@ function bindContextElement(
       ): void =>
     {
     childDisposer?.();
+
+    // Cleared before rebinding: a rebind that throws leaves no children bound,
+    // and the old disposer has already run.
+    childDisposer = null;
 
     const childModel =
       (contextValue !== null
@@ -220,29 +244,47 @@ function bindContextElement(
 
   let unsubscribe: (() => boolean) | null = null;
 
-  if (contextPath === '') {
-    bindChildren(
-      readModelPath(
-        model,
-        contextPath));
-  } else {
-    unsubscribe =
-      watchModelPath(
-        model,
-        contextPath,
-        bindChildren);
-  }
-
-  return createDisposer(
-    (): void =>
-    {
-      for (const dispose of ownDisposers) {
-        dispose();
+  const dispose =
+    createDisposer(
+      (): void =>
+      {
+      for (const disposer of ownDisposers) {
+        disposer();
       }
 
       childDisposer?.();
       unsubscribe?.();
     });
+
+  try {
+    bindElementAttributes(
+      element,
+      model,
+      options,
+      warnOnce,
+      nextPrefix,
+      ownDisposers,
+      CONTEXT_ATTR);
+
+    if (contextPath === '') {
+      bindChildren(
+        readModelPath(
+          model,
+          contextPath));
+    } else {
+      unsubscribe =
+        watchModelPath(
+          model,
+          contextPath,
+          bindChildren);
+    }
+  } catch (error) {
+    dispose();
+
+    throw error;
+  }
+
+  return dispose;
 }
 
 function bindElementAttributes(

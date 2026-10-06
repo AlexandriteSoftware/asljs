@@ -127,6 +127,11 @@ The output is in the runtime's time zone.
 
 - An unknown pipe throws.
 - An exception thrown by a pipe propagates.
+- When either happens while `bindDataModel` sets up, it releases every binding
+  it had already made before the error propagates, so nothing stays subscribed
+  to the model. The same holds for a `data-bind-context` subtree rebound after
+  its context changed: the old subtree is gone and no part of the new one stays
+  bound.
 
 [BND]: Bindings.md
 [DPF]: https://github.com/cure53/DOMPurify
