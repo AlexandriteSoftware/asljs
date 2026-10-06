@@ -273,3 +273,31 @@ function isUser(
   return msg.role === 'user';
 }
 ```
+
+A generator keeps its `*`, also when it is async:
+
+```ts
+function* numbers(limit: number): Generator<number> {
+  yield limit;
+}
+// ---
+function* numbers(
+    limit: number
+  ): Generator<number>
+{
+  yield limit;
+}
+```
+
+```ts
+async function* lines(source: string): AsyncGenerator<string> {
+  yield source;
+}
+// ---
+async function* lines(
+    source: string
+  ): AsyncGenerator<string>
+{
+  yield source;
+}
+```

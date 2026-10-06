@@ -46,7 +46,10 @@ export function fmtFunctionDeclaration(
     code.push('async ');
   }
 
-  code.push('function ');
+  code.push(
+    node.generator
+      ? 'function* '
+      : 'function ');
 
   if (name) {
     code.push(name);
