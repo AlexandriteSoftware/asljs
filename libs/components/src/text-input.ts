@@ -11,6 +11,8 @@ import { customElement,
   from 'lit/decorators.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
+import { createTemplate }
+  from './text-input.tpl.js';
 import { ComponentsTheme,
          findThemeProvider,
          getDefaultTheme,
@@ -51,7 +53,7 @@ export type TextInputStatus = Converted<{
   dirty: boolean;
 }>;
 
-type TextInputTemplateModel = Converted<{
+export type TextInputTemplateModel = Converted<{
   label: string;
   description: string;
   errorMessage: string;
@@ -978,29 +980,7 @@ function resolveInitialControlInvalidClassName(
 function createDefaultTextInputTemplate(
   ): HTMLTemplateElement
 {
-  const template =
-    document.createElement('template');
-
-  template.innerHTML =
-    `
-      <div>
-        <label
-               data-bind-text="label"
-               data-bind-prop-hidden="hideLabel"
-               data-bind-for="inputId"></label>
-        <div data-role="control-host"></div>
-        <div
-             data-bind-text="description"
-             data-bind-prop-hidden="hideDescription"
-             data-bind-prop-id="descriptionId"></div>
-        <div
-             data-bind-text="errorMessage"
-             data-bind-prop-hidden="hideError"
-             data-bind-prop-id="errorId"></div>
-      </div>
-    `;
-
-  return template;
+  return createTemplate();
 }
 
 function createSingleLineInput(

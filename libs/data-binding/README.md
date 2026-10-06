@@ -85,6 +85,8 @@ actions are called as `(event, model, element)`.
 
 - [Bindings][BND] - the syntax and reactivity rules of each binding family.
 - [Pipes][PIP] - the built-in pipes, custom pipes, locale and error handling.
+- [Templates][TPL] - `*.tpl.html` templates, compiled by `data-bind-compile` so
+  the TypeScript compiler checks their bindings.
 
 Questions and bugs: [asljs/issues][ISS].
 
@@ -104,3 +106,4 @@ MIT License. See [LICENSE][LIC] for details.
 [LIC]: LICENSE.md
 [NPM]: https://www.npmjs.com/package/asljs-data-binding
 [PIP]: docs/Pipes.md
+[TPL]: docs/Templates.md

@@ -9,3 +9,5 @@ build
 *.tmp
 dash.sqlite
 dash.sqlite-*
+# Generated from *.tpl.html by data-bind-compile
+*.tpl.ts

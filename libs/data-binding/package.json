@@ -3,6 +3,7 @@
   "version": "0.2.4",
   "description": "Declarative data-bind-* bindings for DOM elements with value pipes and event middleware.",
   "files": [
+    "bin/**",
     "dist/**",
     "README.md",
     "LICENSE.md"
@@ -26,6 +27,9 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "data-bind-compile": "bin/data-bind-compile.js"
+  },
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -50,11 +54,14 @@
   },
   "dependencies": {
     "asljs-observable": "^0.5.4",
-    "dompurify": "^3.4.16"
+    "dompurify": "^3.4.16",
+    "parse5": "^8.0.1"
   },
   "devDependencies": {
     "asljs-eventful": "^0.4.10",
     "asljs-testing": "^0.1.0",
-    "asljs-toolkit": "^0.1.0"
+    "asljs-tmpdir": "^0.1.13",
+    "asljs-toolkit": "^0.1.0",
+    "typescript": "^6.0.3"
   }
 }

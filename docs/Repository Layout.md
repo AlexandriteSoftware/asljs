@@ -12,7 +12,8 @@ Every workspace package sits under one of two folders:
 
 - `libs/` - the libraries a consumer installs: `components`, `dali`,
   `data-binding`, `eventful`, `locator`, `logging`, `machine`, `money`,
-  `observable`, `testing` and `tmpdir`. None of them has a `bin`.
+  `observable`, `testing` and `tmpdir`. Only `data-binding` has a `bin`,
+  `data-bind-compile`, the build step that compiles its templates.
 - `apps/` - the tools and applications: `app-builder`, `cog`, `dash`, `kb`,
   `part`, `toolkit` and `sfmt`. Each is a command or an application, and `dash`
   and `app-builder` are private to the repository.

@@ -11,6 +11,8 @@ import { customElement,
   from 'lit/decorators.js';
 import { ComponentModelDefinition }
   from './abstractions/model.js';
+import { createTemplate }
+  from './select.tpl.js';
 import { ComponentsTheme,
          findThemeProvider,
          getDefaultTheme,
@@ -53,7 +55,7 @@ export type SelectStatus = Converted<{
   dirty: boolean;
 }>;
 
-type SelectTemplateModel = Converted<{
+export type SelectTemplateModel = Converted<{
   label: string;
   description: string;
   errorMessage: string;
@@ -781,29 +783,14 @@ function createDefaultSelectTemplate(
     slotName: SelectSlotName
   ): HTMLTemplateElement
 {
+  if (slotName === 'template') {
+    return createTemplate();
+  }
+
   const template =
     document.createElement('template');
 
-  template.innerHTML =
-    slotName === 'template'
-    ? `
-          <div>
-            <label
-                   data-bind-text="label"
-                   data-bind-prop-hidden="hideLabel"
-                   data-bind-for="inputId"></label>
-            <div data-role="control-host"></div>
-            <div
-                 data-bind-text="description"
-                 data-bind-prop-hidden="hideDescription"
-                 data-bind-prop-id="descriptionId"></div>
-            <div
-                 data-bind-text="errorMessage"
-                 data-bind-prop-hidden="hideError"
-                 data-bind-prop-id="errorId"></div>
-          </div>
-        `
-    : '<select></select>';
+  template.innerHTML = '<select></select>';
 
   return template;
 }

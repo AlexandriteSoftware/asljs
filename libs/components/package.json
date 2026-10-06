@@ -19,9 +19,9 @@
   "scripts": {
     "flint": "toolkit flint",
     "clean": "toolkit clean",
-    "build": "tsc -p tsconfig.build.json",
-    "build:dist": "tsc -p tsconfig.dist.json",
-    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "build": "data-bind-compile && tsc -p tsconfig.build.json",
+    "build:dist": "data-bind-compile && tsc -p tsconfig.dist.json",
+    "typecheck": "data-bind-compile && tsc -p tsconfig.build.json --noEmit",
     "guard:clean-git": "toolkit ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build && npm run test && npm run build:dist && npm run guard:clean-git",
     "postpublish": "toolkit tag-release-revision",

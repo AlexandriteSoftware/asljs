@@ -366,6 +366,13 @@ Preferred resolution order:
 
 If a local slot template exists, it must continue to win over the active theme.
 
+The default templates and the Bootstrap theme's templates are `*.tpl.html` files
+(`src/text-input.tpl.html`, `src/select.tpl.html`,
+`src/themes/bootstrap-*.tpl.html`). `data-bind-compile` turns each into a
+`*.tpl.ts` module before `tsc` runs, which checks their bindings against
+`TextInputTemplateModel` or `SelectTemplateModel`. Change a template there, not
+in a string; see `asljs-data-binding`'s `docs/Templates.md`.
+
 ### Use row bindings through `asljs-data-binding`
 
 Row binding context fields are:

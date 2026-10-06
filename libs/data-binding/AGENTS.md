@@ -48,6 +48,15 @@ a change must preserve and how to check it.
   parsed or, for a context, before it is bound. It rejects empty segments with a
   `TypeError`, as `observe().at()` does, so a malformed path fails the same way
   for a plain and an observable model.
+- Attribute names become bindings in one place, `src/binding-attribute.ts`
+  (`createBindingSpec`, `isEventSuffix`), which both `bindDataModel` and
+  `data-bind-compile` use, so a compiled template is checked by the rules it is
+  bound by. Do not parse binding attributes anywhere else.
+- `data-bind-compile` (`src/compile-template.ts`,
+  `src/compile-templates-cli.ts`) writes TypeScript and never runs `tsc`, so the
+  package does not depend on `typescript` at run time. Its checks follow the
+  run-time rules in [Templates][TPL]: a check that rejects what the runtime
+  binds correctly is a bug.
 - Path subscriptions go through `watchModelPath` (`src/watch-model-path.ts`),
   which uses `observe(model).at(path)` for a model that conforms to the
   observable contract and binds a plain model once, statically. `observe()`
@@ -65,6 +74,9 @@ a change must preserve and how to check it.
   `readOnly`, and `data-bind-on-key-submit` listening to `key-submit`.
 - If changing value binding, then re-check that watch path subscriptions depend
   only on the main path.
+- If changing a binding family or how values are written, then re-check the
+  check `data-bind-compile` emits for it, in `src/compile-template.ts` and the
+  type-checking tests in `src/compile-template-typecheck.test.ts`.
 
 ## Validation
 
@@ -78,3 +90,4 @@ pipe behavior changes, and `README.md` only when the landing-page usage changes.
 
 [BND]: docs/Bindings.md
 [PIP]: docs/Pipes.md
+[TPL]: docs/Templates.md

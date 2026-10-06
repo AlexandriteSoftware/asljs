@@ -265,6 +265,8 @@ describe different concerns:
 - Keep event handler names on the model.
 - Keep pipe arguments literal unless a custom pipe is designed for string
   arguments.
+- Write a template as a `*.tpl.html` file, so the TypeScript compiler checks its
+  bindings: see [Templates][TPL].
 
 ## Scope
 
@@ -278,3 +280,4 @@ outside that syntax:
 - implicit two-way binding
 
 [PIP]: Pipes.md
+[TPL]: Templates.md
