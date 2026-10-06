@@ -83,6 +83,9 @@ console.log('read once:', shouted.value);
 - `subscribe(fn)` builds the subscriptions, calls back with the current value,
   and returns one disposer that tears them down. The disposer is idempotent: the
   first call returns `true`, later calls `false`.
+- When `fn` throws on that first call, `subscribe` tears down what it has built
+  and rethrows: it either returns a disposer or leaves nothing subscribed. An
+  error from a later call is the emitter's to handle (see [Design][DSG] D18).
 - `.value` evaluates the chain on demand, without subscribing.
 
 ## Combining paths
@@ -251,5 +254,6 @@ equivalent for, and everything else RxJS already does better. See
 [BAT]: batching.md#grouping-is-per-emitter
 [BAT2]: batching.md
 [CON]: contract.md
+[DSG]: Design.md
 [PER]: performance.md
 [RXJ]: rxjs.md

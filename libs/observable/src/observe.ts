@@ -518,110 +518,122 @@ function execute(
 
   const disposers: Array<() => void> = [ ];
 
-  let entry: Emit = sink;
-
-  for (
-    let index = steps.length - 1;
-    index >= 0;
-    index--
-  ) {
-    const stage =
-      makeStage(
-        steps[index],
-        entry);
-
-    disposers.push(stage.dispose);
-
-    entry = stage.accept;
-  }
-
-  if (root.kind === 'source') {
-    entry(root.source);
-  } else {
-    const inputs = root.chains;
-
-    const values: unknown[] =
-      new Array(inputs.length).fill(undefined);
-
-    let initialising = true;
-
-    let lastDelivery = -1;
-
-    const recompute =
-      (): void =>
-      entry(
-        [ ...values ]);
-
-    for (
-      let index = 0;
-      index < inputs.length;
-      index++
-    ) {
-      const position = index;
-
-      const unsubscribe =
-        execute(
-          inputs[position],
-          (
-              value
-            ) =>
-          {
-          values[position] = value;
-
-          if (initialising) {
-            return;
-          }
-
-          if (!inDelivery()) {
-            recompute();
-
-            return;
-          }
-
-          // Two inputs reading from one source are both notified by one
-          // `change`, so the recompute waits for the end of the delivery and
-          // happens once. Without it a subscriber would see the intermediate
-          // tuple before the settled one.
-          const delivery =
-            currentDelivery();
-
-          if (delivery === lastDelivery) {
-            return;
-          }
-
-          lastDelivery = delivery;
-
-          afterCurrentDelivery(recompute);
-        });
-
-      disposers.push(
-        () =>
-        {
-          unsubscribe();
-        });
-    }
-
-    initialising = false;
-
-    recompute();
-  }
-
   let active = true;
 
-  return (): boolean =>
-  {
+  const dispose =
+    (): boolean =>
+    {
     if (!active) {
       return false;
     }
 
     active = false;
 
-    for (const dispose of disposers) {
-      dispose();
+    for (const disposer of disposers) {
+      disposer();
     }
 
     return true;
   };
+
+  // The first delivery happens before the disposer is returned. When it
+  // throws, the caller never gets the disposer, so what is already subscribed
+  // is released here before the error propagates.
+  try {
+    let entry: Emit = sink;
+
+    for (
+      let index = steps.length - 1;
+      index >= 0;
+      index--
+    ) {
+      const stage =
+        makeStage(
+          steps[index],
+          entry);
+
+      disposers.push(stage.dispose);
+
+      entry = stage.accept;
+    }
+
+    if (root.kind === 'source') {
+      entry(root.source);
+    } else {
+      const inputs = root.chains;
+
+      const values: unknown[] =
+        new Array(inputs.length).fill(undefined);
+
+      let initialising = true;
+
+      let lastDelivery = -1;
+
+      const recompute =
+        (): void =>
+        entry(
+          [ ...values ]);
+
+      for (
+        let index = 0;
+        index < inputs.length;
+        index++
+      ) {
+        const position = index;
+
+        const unsubscribe =
+          execute(
+            inputs[position],
+            (
+                value
+              ) =>
+            {
+            values[position] = value;
+
+            if (initialising) {
+              return;
+            }
+
+            if (!inDelivery()) {
+              recompute();
+
+              return;
+            }
+
+            // Two inputs reading from one source are both notified by one
+            // `change`, so the recompute waits for the end of the delivery and
+            // happens once. Without it a subscriber would see the intermediate
+            // tuple before the settled one.
+            const delivery =
+              currentDelivery();
+
+            if (delivery === lastDelivery) {
+              return;
+            }
+
+            lastDelivery = delivery;
+
+            afterCurrentDelivery(recompute);
+          });
+
+        disposers.push(
+          () =>
+          {
+            unsubscribe();
+          });
+      }
+
+      initialising = false;
+
+      recompute();
+    }
+  } catch (error) {
+    dispose();
+
+    throw error;
+  }
+
+  return dispose;
 }
 
 function makeChain<T>(

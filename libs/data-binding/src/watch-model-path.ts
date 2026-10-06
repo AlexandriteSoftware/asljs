@@ -39,7 +39,8 @@ export function watchModelPath(
 
   // `subscribe` makes the first call before it returns its disposer, and an
   // error from that call would leave the subscription attached. The error is
-  // held until the disposer exists.
+  // held until the disposer exists. asljs-observable releases it itself after
+  // 0.5.4; drop this once the dependency requires a release that does.
   let subscribing = true;
 
   let firstError: { error: unknown; } | null = null;

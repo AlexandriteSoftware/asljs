@@ -980,3 +980,63 @@ test(
           [ { at: () => { } } as any ]),
       /Expect an array of queries built by observe\(\.\.\.\)\./);
   });
+
+/**
+ * A listener that throws on its first call, which `subscribe` makes before it
+ * returns, would otherwise leave the subscription attached with no disposer.
+ */
+test(
+  `${TEST_SUITE}: subscribe leaves nothing attached when the first call throws`,
+  () =>
+  {
+    const model =
+      observable(
+        { a: 1,
+          user:
+            { name: 'Ada' } },
+        { deep: true });
+
+    let calls = 0;
+
+    const throwFirst =
+      (): void =>
+      {
+      calls++;
+
+      if (calls === 1) {
+        throw new Error('first');
+      }
+    };
+
+    for (
+      const subscribe of [ () =>
+          observe(model)
+            .at('a')
+            .subscribe(throwFirst),
+                           () =>
+          observe(model)
+            .at('user.name')
+            .subscribe(throwFirst),
+                           () =>
+          combine(
+            [ observe(model).at('a'),
+              observe(model).at('user.name') ])
+            .subscribe(throwFirst) ]
+    ) {
+      calls = 0;
+
+      assert.throws(
+        subscribe,
+        /first/);
+
+      model.a++;
+      model.user.name += '!';
+
+      model.user =
+        { name: 'Grace' };
+
+      assert.equal(
+        calls,
+        1);
+    }
+  });
