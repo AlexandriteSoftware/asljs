@@ -32,6 +32,11 @@ Type exports:
 - A path is read property by property, `user.name` as `model.user.name`. No
   method on the model is called to resolve it: a model with a `get` method is
   read like any other object.
+- A path that does not resolve, because a segment is missing or the value before
+  it is not an object or a function, reads `undefined`, for a plain and an
+  observable model alike.
+- On an observable model, a binding renders the value its subscription delivers
+  and does not read the path again.
 - Every segment of a path must be non-empty. `user.`, `user..name` and `.user`
   throw a `TypeError` when the template is bound, for a value, event or context
   binding, whether the model is a plain object or observable. Spaces around a

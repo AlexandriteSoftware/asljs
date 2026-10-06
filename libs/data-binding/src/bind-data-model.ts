@@ -196,14 +196,11 @@ function bindContextElement(
   let childDisposer: (() => boolean) | null = null;
 
   const bindChildren =
-    (): void =>
+    (
+        contextValue: unknown
+      ): void =>
     {
     childDisposer?.();
-
-    const contextValue =
-      readModelPath(
-        model,
-        contextPath);
 
     const childModel =
       (contextValue !== null
@@ -224,7 +221,10 @@ function bindContextElement(
   let unsubscribe: (() => boolean) | null = null;
 
   if (contextPath === '') {
-    bindChildren();
+    bindChildren(
+      readModelPath(
+        model,
+        contextPath));
   } else {
     unsubscribe =
       watchModelPath(

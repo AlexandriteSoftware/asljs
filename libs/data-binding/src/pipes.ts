@@ -242,7 +242,7 @@ export function createBuiltInPipes(
                ) =>
              {
       // The one built-in that consumes a nullish value: a missing path reads
-      // null, and that is the value a default is for.
+      // undefined, and that is the value a default is for.
       if (
         value === null
         || value === undefined

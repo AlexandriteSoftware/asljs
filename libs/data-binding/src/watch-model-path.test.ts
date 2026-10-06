@@ -113,3 +113,44 @@ test(
         false);
     }
   });
+
+test(
+  `${TEST_SUITE}: calls back with the value at the path, undefined where it does not resolve`,
+  () =>
+  {
+    const model =
+      observable(
+        { user:
+            { name: 'Alice' } as { name: string; } | null },
+        { deep: true });
+
+    const values: unknown[] = [ ];
+
+    watchModelPath(
+      model,
+      'user.name',
+      value => values.push(value));
+
+    model.user = null;
+
+    const plainValues: unknown[] = [ ];
+
+    for (const path of [ 'user.name',
+                         'user.missing' ]) {
+      watchModelPath(
+        { user:
+            { name: 'Alice' } },
+        path,
+        value => plainValues.push(value));
+    }
+
+    assert.deepEqual(
+      values,
+      [ 'Alice',
+        undefined ]);
+
+    assert.deepEqual(
+      plainValues,
+      [ 'Alice',
+        undefined ]);
+  });

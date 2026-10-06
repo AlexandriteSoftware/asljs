@@ -33,13 +33,10 @@ export function bindValueModel(
       pipeRegistry);
 
   const update =
-    (): void =>
+    (
+        rawValue: unknown
+      ): void =>
     {
-    const rawValue =
-      readModelPath(
-        model,
-        spec.path);
-
     const formattedValue =
       applyPipes(
         rawValue,
@@ -52,7 +49,10 @@ export function bindValueModel(
   };
 
   if (spec.path === '') {
-    update();
+    update(
+      readModelPath(
+        model,
+        spec.path));
 
     return createDisposer(
       () => { });

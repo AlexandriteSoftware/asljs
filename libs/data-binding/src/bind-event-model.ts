@@ -1,7 +1,6 @@
 import { createDisposer }
   from './create-disposer.js';
-import { readModelPath,
-         readModelPathOwner }
+import { readModelPathOwner }
   from './read-model-path.js';
 import { DataModel,
          EventBindingSpec }
@@ -33,12 +32,11 @@ export function bindEventModel(
   let currentAction: unknown = null;
 
   const refreshAction =
-    (): void =>
+    (
+        action: unknown
+      ): void =>
     {
-    currentAction =
-      readModelPath(
-        model,
-        spec.actionPath);
+    currentAction = action;
   };
 
   const listener =

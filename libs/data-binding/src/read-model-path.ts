@@ -1,13 +1,20 @@
 import { DataModel }
   from './types.js';
 
+/**
+ * Reads the value at `path` by the rules the `observe().at()` query of
+ * `asljs-observable` reads it, so a plain model renders what an observable one
+ * would: each segment is read from an object or a function, through its
+ * prototype chain, and a path that does not resolve reads `undefined`. An
+ * empty path reads `undefined` too.
+ */
 export function readModelPath(
     model: DataModel,
     path: string
   ): unknown
 {
   if (path === '') {
-    return null;
+    return undefined;
   }
 
   return readNestedPath(
@@ -52,12 +59,10 @@ function readNestedPath(
 
   for (const part of parts) {
     if (
-      typeof current
-      !== 'object'
-      || current === null
+      !isObject(current)
       || !(part in current)
     ) {
-      return null;
+      return undefined;
     }
 
     current =
@@ -65,6 +70,17 @@ function readNestedPath(
   }
 
   return current;
+}
+
+function isObject(
+    value: unknown
+  ): value is object
+{
+  return (
+    typeof value === 'object'
+    && value !== null
+  )
+    || typeof value === 'function';
 }
 
 /**

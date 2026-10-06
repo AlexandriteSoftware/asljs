@@ -51,17 +51,42 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: returns null for missing path`,
+  `${TEST_SUITE}: returns undefined for a path that does not resolve`,
   () =>
   {
-    const value =
-      readModelPath(
-        {},
-        'missing.path');
+    for (
+      const model of [ {},
+                       { missing: null },
+                       { missing: 'text' } ]
+    ) {
+      assert.equal(
+        readModelPath(
+          model,
+          'missing.path'),
+        undefined);
+    }
 
     assert.equal(
-      value,
-      null);
+      readModelPath(
+        {},
+        ''),
+      undefined);
+  });
+
+test(
+  `${TEST_SUITE}: reads a property of a function, as observe does`,
+  () =>
+  {
+    const format =
+      Object.assign(
+        () => '',
+        { label: 'Format' });
+
+    assert.equal(
+      readModelPath(
+        { format },
+        'format.label'),
+      'Format');
   });
 
 test(
@@ -93,14 +118,14 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: owner of a path through a missing object is null`,
+  `${TEST_SUITE}: owner of a path through a missing object is undefined`,
   () =>
   {
     assert.equal(
       readModelPathOwner(
         {},
         'user.activate'),
-      null);
+      undefined);
   });
 
 test(

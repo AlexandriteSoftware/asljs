@@ -118,7 +118,7 @@ The output is in the runtime's time zone.
 - Built-in pipes preserve `null` and `undefined` values, so a later pipe, or the
   binding target, still sees them.
 - `default` is the exception: it is there to replace a missing value. A path
-  that does not resolve reads `null`, so `name | default:unknown` renders
+  that does not resolve reads `undefined`, so `name | default:unknown` renders
   `unknown` when the model has no `name`, has `name: null`, or has `name: ''`.
 - The binding target then decides what a nullish result means, as described in
   [Bindings][BND].

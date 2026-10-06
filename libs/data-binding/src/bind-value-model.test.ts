@@ -1,4 +1,5 @@
-import { observable }
+import { observable,
+         observe }
   from 'asljs-observable';
 import { JSDOM }
   from 'jsdom';
@@ -232,4 +233,71 @@ test(
     assert.equal(
       element.textContent,
       'Carol');
+  });
+
+test(
+  `${TEST_SUITE}: renders the value the watch delivered without reading the path again`,
+  () =>
+  {
+    const dom =
+      new JSDOM('<span></span>');
+
+    const element =
+      dom.window.document.querySelector('span') as HTMLElement;
+
+    let reads = 0;
+
+    // The model is not deep, so the user stays this proxy, which counts the
+    // reads of its name.
+    const user =
+      new Proxy(
+        { name: 'Ada' },
+        { get:
+            (
+                target,
+                property,
+                receiver
+              ) =>
+            {
+          if (property === 'name') {
+            reads++;
+          }
+
+          return Reflect.get(
+            target,
+            property,
+            receiver);
+        } });
+
+    const model =
+      observable(
+        { user });
+
+    // The subscription's own reads, which the binding cannot avoid.
+    observe(model)
+      .at('user.name')
+      .subscribe(
+        () => { })();
+
+    const subscriptionReads = reads;
+
+    reads = 0;
+
+    bindValueModel(
+      element,
+      { kind: 'value',
+        target:
+          { kind: 'text' },
+        path: 'user.name',
+        pipes: [ ] },
+      model,
+      {});
+
+    assert.equal(
+      element.textContent,
+      'Ada');
+
+    assert.equal(
+      reads,
+      subscriptionReads);
   });
