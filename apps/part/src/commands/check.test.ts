@@ -1,7 +1,10 @@
-import { createTestLoggerProvider }
+import { createTestLoggerProvider,
+         TmpEnv }
   from 'asljs-testing';
 import assert
   from 'node:assert/strict';
+import { utimes }
+  from 'node:fs/promises';
 import test
   from 'node:test';
 import { createEnvironment,
@@ -9,7 +12,8 @@ import { createEnvironment,
   from '../environment.js';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
-import { execCheck }
+import { CheckCommandOptions,
+         execCheck }
   from './check.js';
 
 const loggerProvider =
@@ -105,10 +109,9 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -194,10 +197,9 @@ export default () => ({
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('definitions'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('definitions'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -269,10 +271,9 @@ export default () => ({
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -330,10 +331,9 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -388,10 +388,9 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -438,10 +437,9 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -482,7 +480,7 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
+            [ workspace.resolve('artefacts') ],
           project: workspace.path });
 
     const hidden =
@@ -566,10 +564,9 @@ Release rule.
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('artefacts'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execCheck(
       loggerProvider.getLogger('execCheck'),
@@ -604,3 +601,227 @@ function parseRows(
           .filter(
             cell => cell.length > 0));
 }
+
+const COUNTING_PLUGIN =
+  (version: string): string =>
+  `import { appendFileSync } from 'node:fs';
+
+export default context => ({
+  name: 'test',
+  version: '${version}',
+  rules: {
+    Requirement: {
+      RL10: async artefact => {
+        appendFileSync(context.projectPath + '/calls.txt', artefact.name + '\\n');
+        throw new Error('Failed.');
+      },
+      RL11: async () => {}
+    }
+  }
+});
+`;
+
+test(
+  'RQ136: check replays cached results until the artefact, rule text or plugin version changes',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'artefacts/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'plugin-v1.js',
+      COUNTING_PLUGIN('1'));
+
+    await workspace.writeText(
+      'plugin-v2.js',
+      COUNTING_PLUGIN('2'));
+
+    await workspace.writeText(
+      'development/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    const runCheck =
+      async (
+          plugin: string,
+          options: Partial<CheckCommandOptions> = {}
+        ): Promise<Environment> =>
+      {
+      const environment =
+        createEnvironment(
+          { loggerProvider,
+            cwd: workspace.path,
+            definitions:
+              [ workspace.resolve('artefacts'),
+                workspace.resolve(plugin) ],
+            project: workspace.path });
+
+      await execCheck(
+        loggerProvider.getLogger('execCheck'),
+        environment,
+        options);
+
+      return environment;
+    };
+
+    const calls =
+      async (): Promise<number> =>
+      (await workspace.readText('calls.txt'))
+        .split('\n')
+        .filter(
+          line => line !== '')
+        .length;
+
+    await runCheck('plugin-v1.js');
+
+    assert.equal(
+      await calls(),
+      1);
+
+    const replayed =
+      await runCheck('plugin-v1.js');
+
+    assert.equal(
+      await calls(),
+      1);
+
+    assert.match(
+      replayed.stdout.toString(),
+      /\| development\/RQ101 Example\.md \| Requirement_RL10 \| Failed\. \|/);
+
+    assert.equal(
+      replayed.exitCode,
+      1);
+
+    await runCheck(
+      'plugin-v1.js',
+      { forceCheck: true });
+
+    assert.equal(
+      await calls(),
+      2);
+
+    await runCheck('plugin-v2.js');
+
+    assert.equal(
+      await calls(),
+      3);
+
+    const touched =
+      new Date();
+
+    await utimes(
+      workspace.resolve(
+        'development/RQ101 Example.md'),
+      touched,
+      touched);
+
+    await runCheck('plugin-v2.js');
+
+    assert.equal(
+      await calls(),
+      4);
+
+    await workspace.writeText(
+      'artefacts/Requirement.md',
+      REQUIREMENT_DEFINITION.replace(
+        'First rule.',
+        'First rule, reworded.'));
+
+    await runCheck('plugin-v2.js');
+
+    assert.equal(
+      await calls(),
+      5);
+
+    await runCheck('plugin-v2.js');
+
+    assert.equal(
+      await calls(),
+      5);
+  });
+
+test(
+  'RQ137: check sends rules without implementation to the AI agent with --ai',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'artefacts/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'plugin.js',
+      `export default () => ({
+  name: 'test',
+  rules: { Requirement: { RL10: async () => {} } }
+});
+`);
+
+    await workspace.writeText(
+      'agent.mjs',
+      `let input = '';
+process.stdin.setEncoding('utf8');
+for await (const chunk of process.stdin) input += chunk;
+const verdict = input.includes('Second rule.')
+  ? { result: 'Fail', message: 'Second rule fails.' }
+  : { result: 'OK', message: '' };
+console.log(JSON.stringify(verdict));
+`);
+
+    await workspace.writeText(
+      'development/RQ101 Example.md',
+      '# RQ101 Example\n');
+
+    using env =
+      new TmpEnv(
+        { PART_AI_COMMAND:
+            `node "${workspace.resolve('agent.mjs')}"` });
+
+    const environment =
+      createEnvironment(
+        { loggerProvider,
+          cwd: workspace.path,
+          definitions:
+            [ workspace.resolve('artefacts'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
+
+    await execCheck(
+      loggerProvider.getLogger('execCheck'),
+      environment,
+      { ai: 'claude',
+        withPositives: true });
+
+    assert.deepEqual(
+      parseRows(
+        environment.stdout.toString(),
+        '| development/'),
+      [ [ 'development/RQ101 Example.md',
+          'Requirement_RL10',
+          'OK' ],
+        [ 'development/RQ101 Example.md',
+          'Requirement_RL11',
+          'Second rule fails. (AI)' ] ]);
+
+    assert.equal(
+      environment.exitCode,
+      1);
+
+    await assert.rejects(
+      execCheck(
+        loggerProvider.getLogger('execCheck'),
+        createEnvironment(
+          { loggerProvider,
+            cwd: workspace.path,
+            definitions:
+              [ workspace.resolve('artefacts') ],
+            project: workspace.path }),
+        { ai: 'gpt' }),
+      /Unknown AI agent: gpt\. Use claude or copilot\./);
+  });

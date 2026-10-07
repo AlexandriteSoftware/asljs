@@ -16,14 +16,24 @@ import { validate as validateRequirementRL10 }
   from './rules/Requirement_RL10.js';
 
 /**
- * Implements the code-enforced rules of the definitions in this folder. Run
- * with `part check --definitions aftefacts --plugin ./aftefacts/plugin.js`.
+ * Provides the definitions documented in this folder and implements their
+ * code-enforced rules. Run with `part check --definitions aftefacts`.
+ *
+ * Bump `version` when a rule implementation changes, so cached check results
+ * of its rules are discarded.
  *
  * @type { import('asljs-part').PluginFactory }
  */
-export default function asljsArtefacts()
+export default async function asljsArtefacts(
+  context)
 {
+  const definitions =
+    await context.readDefinitions();
+
   return { name: 'asljs-artefacts',
+           version: '1',
+           definitions:
+             async () => definitions,
            data:
              { 'ASLJS Package': getAsljsPackageData },
            rules:

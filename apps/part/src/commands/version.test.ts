@@ -36,7 +36,7 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('definitions') });
+            [ workspace.resolve('definitions') ] });
 
     await execVersion(
       environment);

@@ -12,17 +12,22 @@ definition inspection, and rule checks.
 
 Public behavior at a glance:
 
-- definitions are markdown files in the definitions directory whose level 1
-  heading matches the file name; no other section is required
-- the definitions directory should hold only definitions: any markdown file
-  there with a matching heading becomes one
+- definitions come from the sources given with `--definitions` (repeatable) or
+  `PART_DEFINITIONS`; without either there are no definitions
+- a source is an md-only folder (no `package.json`), a plugin library folder
+  (has `package.json`; its entry is imported), a plugin file, or a package
+  specifier such as `asljs-part/plugins/npm`
+- in an md-only folder, a markdown file is a definition when its level 1 heading
+  matches the file name; no other section is required, so such a folder should
+  hold only definitions
+- a plugin provides all of its definitions; `context.readDefinitions()` reads
+  the `*.md` documents of its folder when it wants them
 - `Location`, `Properties` and `Rules` are optional; definition `Location` paths
   are resolved relative to the definition file
 - a definition with no `Location` and no plugin locator has no artefacts
 - rules are `### <Id>` sections; ids are uppercase letters followed by digits
-- plugins are modules loaded with `--plugin` (repeatable) or `PART_PLUGINS`; the
-  default export is a factory returning `{ name, definitions?, locate?, data?,
-  rules? }`
+- a plugin module's default export is a factory returning `{ name, version?,
+  definitions?, locate?, data?, rules? }`
 - plugin rules, data functions and locators bind by definition name (and rule
   id); a plugin locator replaces the definition's `Location`
 - plugin load failures, unknown bindings and definition name clashes are fatal
@@ -33,7 +38,12 @@ Public behavior at a glance:
   at the project
 - cli command `inventory` shows all matching definitions for each artefact
 - cli command `check` runs all rules from all matching definitions for each
-  artefact; a rule no plugin implements is `Skip`
+  artefact; a rule no plugin implements is `Skip`, or is checked by an AI agent
+  with `--ai`
+- `check` caches results of `file:` artefacts in `.part/check-cache.json`; a
+  rule reruns when the artefact's mtime is newer than the check, the rule text
+  changed, or the implementing plugin's `version` changed; `--force-check`
+  reruns everything
 - cli command `check` shows failures only by default; `--with-positives` adds
   `OK` rows, `--with-skipped` adds `Skip` rows
 - built-in plugins `asljs-part/plugins/npm` and `asljs-part/plugins/git` are
@@ -73,8 +83,12 @@ Do not assume:
   parsing.
 - If changing discovery, then re-check `.gitignore` behavior for both definition
   discovery and artefact locations.
-- If changing plugin loading or binding, then re-check the fatal error cases in
-  `plugin-provider.test.ts`.
+- If changing source loading or binding, then re-check the fatal error cases in
+  `definition-source-provider.test.ts`.
+- If changing the cache or what invalidates it, then re-check the cache test in
+  `check.test.ts`; bump the `version` of `aftefacts/plugin.js` when its rules
+  change.
+- Tests never run a real AI agent; they set `PART_AI_COMMAND` to a stub.
 - If changing rule execution, then re-check `OK`, failure and `Skip` results.
 - If changing CLI output, then re-check `inventory`, `definition`, `definitions`
   and `check` contract tests.
@@ -92,12 +106,12 @@ behavior changes.
 
 ### Global options
 
-- `--definitions <path>` or `PART_DEFINITIONS` - definitions directory.
+- `--definitions <source>` (repeatable) or `PART_DEFINITIONS` (path-delimiter
+  separated) - definition sources. A value that is absolute, starts with `.`, or
+  exists is a path resolved from the working directory; anything else is a
+  package specifier resolved from the project root, then from `asljs-part`. Any
+  `--definitions` replaces `PART_DEFINITIONS`.
 - `--project <path>` or `PART_PROJECT` - project root.
-- `--plugin <module>` (repeatable) or `PART_PLUGINS` (path-delimiter
-  separated) - plugin modules. Paths resolve from the working directory; package
-  specifiers resolve from the project root, then from `asljs-part`. Any
-  `--plugin` replaces `PART_PLUGINS`.
 
 ### version
 
@@ -105,8 +119,8 @@ behavior changes.
 
 ### config
 
-- Prints the definitions path, project path, plugins and the `PART_*`
-  environment variables.
+- Prints the definition sources, project path and the `PART_*` environment
+  variables.
 
 ### inventory
 
@@ -132,4 +146,7 @@ behavior changes.
 - Sets a non-zero exit code when any rule fails; `Skip` does not.
 - Shows only failing rows by default; `--with-positives` includes `OK` rows,
   `--with-skipped` includes `Skip` rows.
+- Replays cached results; `--force-check` runs every rule.
+- `--ai` (Claude) or `--ai=copilot` checks rules without an implementation;
+  `PART_AI_COMMAND` replaces the agent command. AI results end with ` (AI)`.
 - Rows are sorted by location, then by rule.

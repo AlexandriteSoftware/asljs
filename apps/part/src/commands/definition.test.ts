@@ -72,10 +72,10 @@ Requirement passes a second rule.
       createEnvironment(
         { loggerProvider,
           cwd: workspace.path,
-          definitions: workspace.path,
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin/plugin.js') ] });
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin/plugin.js') ],
+          project: workspace.path });
 
     await execDefinition(
       environment,

@@ -39,7 +39,7 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const definition =
       artefactDefinitionProvider.tryParse(
@@ -108,7 +108,7 @@ Hidden definition.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const definitions =
       await artefactDefinitionProvider.getDefinitions();
@@ -172,7 +172,7 @@ Due date must be in the future.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const definition =
       await artefactDefinitionProvider.fromFile(
@@ -252,7 +252,7 @@ A todo item is a task that needs to be done.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const definition =
       await artefactDefinitionProvider.fromFile(
@@ -285,7 +285,7 @@ This file should not be treated as a definition.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const provider =
       providers.artefactDefinitionProvider;

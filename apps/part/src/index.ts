@@ -71,3 +71,7 @@ export {
 export {
   createRuleValidationContext
 } from './rule-validation-function.js';
+
+export {
+  readMarkdownDefinitions
+} from './providers/markdown-definition-reader.js';

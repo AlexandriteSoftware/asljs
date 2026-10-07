@@ -127,7 +127,6 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
         [ pluginPath ]);
 
     const artefacts =
@@ -221,7 +220,6 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
         [ pluginPath ]);
 
     assert.deepEqual(

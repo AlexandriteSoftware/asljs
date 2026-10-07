@@ -11,13 +11,10 @@ export function execConfig(
     'Environment:');
 
   output.push(
-    `  definitions=${environment.definitions}`);
+    `  definitions=${environment.definitions.join(',')}`);
 
   output.push(
     `  project=${environment.project}`);
-
-  output.push(
-    `  plugins=${environment.plugins.join(',')}`);
 
   output.push();
 
@@ -29,8 +26,7 @@ export function execConfig(
     'PART_LOG_FILE',
     'PART_LOG_FORMAT',
     'PART_DEFINITIONS',
-    'PART_PROJECT',
-    'PART_PLUGINS');
+    'PART_PROJECT');
 
   environment.stdout.write(
     output.join('\n'));

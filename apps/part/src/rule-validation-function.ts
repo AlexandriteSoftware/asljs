@@ -42,21 +42,19 @@ export type RuleValidationFunction =
 
 /**
  * Creates the context rules receive, e.g. to call a rule from its tests.
- * `plugins` are module specifiers, as for `--plugin`.
+ * `definitions` are definition sources, as for `--definitions`.
  */
 export function createRuleValidationContext(
     loggerProvider: LoggerProvider,
     projectPath: string,
-    definitionsPath: string,
-    plugins: readonly string[] = [ ]
+    definitions: readonly string[]
   ): RuleValidationContext
 {
   const providers =
     providersFactory(
       loggerProvider,
       projectPath,
-      definitionsPath,
-      plugins);
+      definitions);
 
   return toRuleValidationContext(
     loggerProvider.getLogger(

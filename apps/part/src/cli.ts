@@ -2,6 +2,8 @@ import { createLoggerProvider }
   from 'asljs-logging';
 import { Command }
   from 'commander';
+import { existsSync }
+  from 'node:fs';
 import path
   from 'node:path';
 import { execCheck }
@@ -111,16 +113,13 @@ function createCli(
       '--logformat <format>',
       'Log format: auto, json, text or pretty')
     .option(
-      '--definitions <path>',
-      'Path to artefact definitions directory. Defaults to the current working directory.')
+      '--definitions <source>',
+      'Definition source: an md-only folder, a plugin library folder (has package.json), a plugin file, or a package name. Repeat for several sources.',
+      collectOption,
+      [ ])
     .option(
       '--project <path>',
       'Path to artefact directory. Defaults to the current working directory.')
-    .option(
-      '--plugin <module>',
-      'Plugin module path or package name. Repeat for several plugins.',
-      collectOption,
-      [ ])
     .hook(
       'preAction',
       (
@@ -151,28 +150,18 @@ function createCli(
         environment.loggerProvider = loggerProvider;
 
         const optDefinitions =
-          filterStringOption(
-            options.definitions);
+          (options.definitions as string[])
+          .map(filterStringOption)
+          .filter(
+            value => value !== '');
 
-        if (optDefinitions !== '') {
-          environment.definitions =
-            path.normalize(
-              path.resolve(
-                optDefinitions));
-        } else {
-          const envDefinitions =
-            filterStringOption(
-              process.env.PART_DEFINITIONS);
-
-          if (envDefinitions !== '') {
-            environment.definitions =
-              path.normalize(
-                path.resolve(
-                  envDefinitions));
-          } else {
-            environment.definitions = environment.cwd;
-          }
-        }
+        environment.definitions =
+          (optDefinitions.length > 0
+          ? optDefinitions
+          : splitListVariable(
+            process.env.PART_DEFINITIONS))
+          .map(
+            resolveDefinitionSource);
 
         const optProject =
           filterStringOption(
@@ -197,22 +186,6 @@ function createCli(
             environment.project = environment.cwd;
           }
         }
-
-        const optPlugins =
-          (options.plugin as string[])
-          .map(filterStringOption)
-          .filter(
-            value => value !== '');
-
-        const plugins =
-          optPlugins.length > 0
-          ? optPlugins
-          : splitPluginsVariable(
-            process.env.PART_PLUGINS);
-
-        environment.plugins =
-          plugins.map(
-            resolvePluginSpecifier);
       });
 
   cli.command('inventory')
@@ -305,6 +278,12 @@ function createCli(
     .option(
       '--with-skipped',
       'Show rows of rules no plugin implements')
+    .option(
+      '--force-check',
+      'Run every rule, ignoring results cached in .part/check-cache.json')
+    .option(
+      '--ai [agent]',
+      'Check rules no plugin implements with an AI agent: claude (default) or copilot')
     .action(
       async (
           pattern,
@@ -333,7 +312,14 @@ function createCli(
                 options.checkRules),
             withPositives:
               options.withPositives === true,
-            withSkipped: options.withSkipped === true });
+            withSkipped: options.withSkipped === true,
+            forceCheck: options.forceCheck === true,
+            ai:
+              options.ai === true
+              ? 'claude'
+              : typeof options.ai === 'string'
+              ? options.ai
+              : undefined });
       });
 
   cli.command('version')
@@ -515,10 +501,10 @@ function collectOption(
 }
 
 /**
- * Split `PART_PLUGINS` by the platform path delimiter, ignoring empty
- * entries.
+ * Split a list variable such as `PART_DEFINITIONS` by the platform path
+ * delimiter, ignoring empty entries.
  */
-function splitPluginsVariable(
+function splitListVariable(
     value: unknown
   ): string[]
 {
@@ -531,16 +517,18 @@ function splitPluginsVariable(
 }
 
 /**
- * Paths become absolute, resolved from the working directory; package
- * specifiers are kept for resolution from the project root.
+ * Paths become absolute, resolved from the working directory. A value that is
+ * neither absolute, nor starts with `.`, nor exists is a package specifier,
+ * kept for resolution from the project root.
  */
-function resolvePluginSpecifier(
+function resolveDefinitionSource(
     specifier: string
   ): string
 {
   if (
     path.isAbsolute(specifier)
     || specifier.startsWith('.')
+    || existsSync(specifier)
   ) {
     return path.normalize(
       path.resolve(

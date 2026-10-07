@@ -1,0 +1,7 @@
+{
+  "name": "asljs-artefacts",
+  "private": true,
+  "description": "Artefact definitions of the asljs repository and the plugin that implements their rules.",
+  "type": "module",
+  "main": "plugin.js"
+}

@@ -1,3 +1,5 @@
+import { type Location }
+  from 'asljs-locator';
 import { type Logger }
   from 'asljs-logging';
 import { type ArtefactDataProvidingFunction }
@@ -6,6 +8,8 @@ import { type ArtefactFiles }
   from './location.js';
 import { type ArtefactDefinitionProperty }
   from './model/artefact-definition-property.js';
+import { type ArtefactDefinition }
+  from './model/artefact-definition.js';
 import { type MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
 import { type RuleValidationFunction }
@@ -24,13 +28,23 @@ export interface PluginContext
   projectPath: string;
 
   /**
-   * Absolute path of the definitions directory.
+   * Absolute path of the plugin's folder: the library folder, or the folder
+   * of the plugin file or package entry.
    */
-  definitionsPath: string;
+  folder: string;
 
   markdownDocuments: MarkdownDocumentProvider;
 
   files: ArtefactFiles;
+
+  /**
+   * Definitions documented in the `*.md` files of a folder and its
+   * subfolders. A relative folder is resolved from `folder`; the default is
+   * `folder` itself.
+   */
+  readDefinitions(
+    folder?: string
+  ): Promise<ArtefactDefinition[]>;
 }
 
 /**
@@ -77,7 +91,8 @@ export interface PluginArtefactDefinitionRule
 }
 
 /**
- * Definition provided by a plugin instead of a definition document.
+ * Definition provided by a plugin. Definitions read with `readDefinitions`
+ * fit this shape and keep their `path` and `locations`.
  */
 export interface PluginArtefactDefinition
 {
@@ -85,6 +100,17 @@ export interface PluginArtefactDefinition
   description: string;
   rules?: PluginArtefactDefinitionRule[];
   properties?: ArtefactDefinitionProperty[];
+
+  /**
+   * Definition document path; relative location patterns resolve from its
+   * folder.
+   */
+  path?: string;
+
+  /**
+   * Filesystem locations, as in a definition document's `Location` section.
+   */
+  locations?: Location[];
 }
 
 /**
@@ -95,6 +121,13 @@ export interface PluginArtefactDefinition
 export interface Plugin
 {
   name: string;
+
+  /**
+   * Changing the version invalidates the check results cached for rules this
+   * plugin implements.
+   */
+  version?: string;
+
   definitions?: () => Promise<PluginArtefactDefinition[]>;
   locate?: Record<string, ArtefactLocatingFunction>;
   data?: Record<string, ArtefactDataProvidingFunction>;

@@ -54,7 +54,7 @@ See [Target](./Target.md).
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(
@@ -93,7 +93,7 @@ See [Missing](./Missing.md).
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(
@@ -134,7 +134,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(
@@ -179,7 +179,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(
@@ -226,7 +226,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(
@@ -269,7 +269,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact(

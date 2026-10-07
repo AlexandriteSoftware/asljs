@@ -4,6 +4,12 @@ import { minimatch }
   from 'minimatch';
 import path
   from 'node:path';
+import { AI_AGENTS,
+         AiAgent,
+         AiRunner }
+  from '../ai-runner.js';
+import { CheckCache }
+  from '../check-cache.js';
 import { Environment }
   from '../environment.js';
 import { toPosixPath }
@@ -31,6 +37,16 @@ export interface CheckCommandOptions
   checkRules?: string[];
   withPositives?: boolean;
   withSkipped?: boolean;
+
+  /**
+   * Run every selected rule, ignoring cached results.
+   */
+  forceCheck?: boolean;
+
+  /**
+   * AI agent that checks rules no plugin implements: `claude` or `copilot`.
+   */
+  ai?: string;
 }
 
 export async function execCheck(
@@ -115,10 +131,25 @@ export async function execCheck(
 
   let hasFailures = false;
 
+  const cache =
+    await CheckCache.load(
+      logger,
+      environment.project);
+
   const ruleRunner =
     new RuleRunner(
       logger,
-      providers);
+      providers,
+      { cache,
+        forceCheck: options.forceCheck === true,
+        ai:
+          options.ai === undefined
+        ? undefined
+        : new AiRunner(
+          logger,
+          toAiAgent(options.ai),
+          environment.project,
+          process.env.PART_AI_COMMAND?.trim()) });
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {
@@ -167,10 +198,15 @@ export async function execCheck(
               artefact.location),
           rule: `${rule.name}`,
           result:
-            formatResult(
+            formatResultWithMode(
               ruleResult) });
     }
   }
+
+  await saveCache(
+    cache,
+    providers.artefactProvider.getArtefacts(),
+    definitions);
 
   if (hasFailures) {
     environment.exitCode = 1;
@@ -303,4 +339,59 @@ function formatResult(
     default:
       return result.message;
   }
+}
+
+function formatResultWithMode(
+    result: RuleRunResult
+  ): string
+{
+  const text =
+    formatResult(result);
+
+  return result.mode === 'ai'
+    ? `${text} (AI)`
+    : text;
+}
+
+function toAiAgent(
+    value: string
+  ): AiAgent
+{
+  const agent =
+    AI_AGENTS.find(
+      item => item === value);
+
+  if (!agent) {
+    throw new Error(
+      `Unknown AI agent: ${value}. Use ${AI_AGENTS.join(' or ')}.`);
+  }
+
+  return agent;
+}
+
+/**
+ * Saves the cache, keeping entries of artefacts and rules that still exist.
+ */
+async function saveCache(
+    cache: CheckCache,
+    artefactsPromise: Promise<Artefact[]>,
+    definitions: ArtefactDefinition[]
+  ): Promise<void>
+{
+  const locations =
+    new Set(
+      (await artefactsPromise).map(
+        artefact => artefact.location));
+
+  const ruleNames =
+    new Set(
+      definitions.flatMap(
+        definition =>
+        definition.rules.map(
+          rule => rule.name)));
+
+  await cache.save(
+    (location, ruleName) =>
+      locations.has(location)
+      && ruleNames.has(ruleName));
 }

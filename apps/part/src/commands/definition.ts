@@ -19,7 +19,7 @@ export async function execDefinition(
 {
   const rootDirectory = environment.project;
 
-  const { artefactDefinitionProvider, pluginProvider } =
+  const { artefactDefinitionProvider, definitionSourceProvider } =
     environment
     .getProviders();
 
@@ -36,7 +36,7 @@ export async function execDefinition(
 
   for (const rule of definition.rules) {
     if (
-      await pluginProvider.findRule(
+      await definitionSourceProvider.findRule(
         definition.name,
         rule.id)
     ) {

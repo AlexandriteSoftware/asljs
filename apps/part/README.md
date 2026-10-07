@@ -11,9 +11,9 @@ definition inspection, and rule checks.
 An artefact is any unit of a project: a file, a folder, a package dependency, a
 git tag. An artefact definition describes a class of artefacts: where they are,
 which rules they follow, and which properties they have. Definitions are
-markdown documents in a definitions folder; plugins provide the code that
-implements the rules, reads properties, and finds artefacts outside the
-filesystem.
+markdown documents; plugins provide the code that implements the rules, reads
+properties, and finds artefacts outside the filesystem. Rules without code can
+be checked by an AI agent, and results are cached between runs.
 
 ## Installation
 
@@ -23,8 +23,8 @@ npm install --save-dev asljs-part
 
 ## Usage
 
-Create a definition `artefacts/Todo Item.md`. A markdown file in the definitions
-folder is a definition when its level 1 heading matches its file name.
+Create a definition `artefacts/Todo Item.md`. In a folder of definitions, a
+markdown file is a definition when its level 1 heading matches its file name.
 
 ```markdown
 # Todo Item
@@ -50,7 +50,35 @@ When it needs to be done.
 Due date must be in the future.
 ```
 
-Implement the property and the rule in a plugin, `artefacts/plugin.js`:
+Create an artefact `Todo Items/Review Requirements.md`:
+
+```markdown
+# Review Requirements
+
+- Due: 2030-07-01
+
+Review the project requirements.
+```
+
+List the artefacts, and check the rules with an AI agent:
+
+```bash
+part inventory --definitions artefacts
+part check --definitions artefacts --ai
+```
+
+```text
+| Location                          | Definitions |
+| --------------------------------- | ----------- |
+| Todo Items/Review Requirements.md | Todo Item   |
+```
+
+`--ai` uses Claude; `--ai=copilot` uses Copilot. Without `--ai`, rules with no
+code are reported as `Skip` when `--with-skipped` is given.
+
+To check rules with code, make the folder a plugin library: add
+`artefacts/package.json` with `{ "type": "module", "main": "plugin.js" }` and
+`artefacts/plugin.js`:
 
 ```js
 import { readFile }
@@ -67,16 +95,21 @@ async function getData(artefact, context)
 }
 
 /** @type { import('asljs-part').PluginFactory } */
-export default function todoPlugin()
+export default async function todoPlugin(context)
 {
+  const definitions =
+    await context.readDefinitions();
+
   return { name: 'todo',
+           version: '1',
+           definitions: async () => definitions,
            data: { 'Todo Item': getData },
            rules:
              { 'Todo Item':
-                 { RL1: async (artefact, context) =>
+                 { RL1: async (artefact, ruleContext) =>
                    {
                      const { Due } =
-                       await getData(artefact, context);
+                       await getData(artefact, ruleContext);
 
                      if (!Due || new Date(Due) <= new Date()) {
                        throw new Error('Due date must be in the future.');
@@ -85,37 +118,18 @@ export default function todoPlugin()
 }
 ```
 
-Create an artefact `Todo Items/Review Requirements.md`:
+`part check --definitions artefacts` now runs RL1 as code. `check` prints
+failing rules and exits with a non-zero code when any rule fails.
+`--with-positives` adds passing rows.
 
-```markdown
-# Review Requirements
-
-- Due: 2030-07-01
-
-Review the project requirements.
-```
-
-List the artefacts and check the rules:
-
-```bash
-part inventory --definitions artefacts --plugin ./artefacts/plugin.js
-part check --definitions artefacts --plugin ./artefacts/plugin.js
-```
-
-```text
-| Location                          | Definitions |
-| --------------------------------- | ----------- |
-| Todo Items/Review Requirements.md | Todo Item   |
-```
-
-`check` prints failing rules and exits with a non-zero code when any rule fails.
-`--with-positives` adds passing rows, `--with-skipped` adds rules no plugin
-implements.
+Results are cached in `.part/check-cache.json`: a rule runs again only when the
+file changed after its last check, the rule text changed, or the plugin
+`version` changed. `--force-check` runs everything.
 
 Built-in plugins add definitions for artefacts outside the filesystem:
 
 ```bash
-part inventory --plugin asljs-part/plugins/npm --plugin asljs-part/plugins/git
+part inventory --definitions asljs-part/plugins/npm --definitions asljs-part/plugins/git
 ```
 
 - `asljs-part/plugins/npm` - `Npm Dependency`, one artefact per dependency in

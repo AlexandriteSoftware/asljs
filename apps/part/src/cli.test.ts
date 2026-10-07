@@ -57,7 +57,7 @@ test(
     const environment =
       createEnvironment();
 
-    let definitions = '';
+    let definitions: string[] = [ ];
 
     environment.register(
       execVersion,
@@ -72,20 +72,20 @@ test(
 
     await runCli(
       [ 'version',
-        '--definitions=artefacts' ],
+        '--definitions=./artefacts' ],
       environment);
 
     const definitionsPath =
       path.resolve(
         'artefacts');
 
-    assert.equal(
+    assert.deepEqual(
       environment.definitions,
-      definitionsPath);
+      [ definitionsPath ]);
 
-    assert.equal(
+    assert.deepEqual(
       definitions,
-      definitionsPath);
+      [ definitionsPath ]);
   });
 
 test(
@@ -301,15 +301,39 @@ test(
 
     using env =
       new TmpEnv(
-        { PART_DEFINITIONS: 'artefacts' });
+        { PART_DEFINITIONS:
+            [ './artefacts',
+              'asljs-part/plugins/git' ].join(
+                path.delimiter) });
 
     await runCli(
       [ 'version' ],
       environment);
 
-    assert.equal(
+    assert.deepEqual(
       environment.definitions,
-      path.resolve('artefacts'));
+      [ path.resolve('artefacts'),
+        'asljs-part/plugins/git' ]);
+  });
+
+test(
+  'RQ111: cli has no definition sources without --definitions or PART_DEFINITIONS',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    using env =
+      new TmpEnv(
+        { PART_DEFINITIONS: undefined });
+
+    await runCli(
+      [ 'version' ],
+      environment);
+
+    assert.deepEqual(
+      environment.definitions,
+      [ ]);
   });
 
 test(
@@ -333,7 +357,7 @@ test(
   });
 
 test(
-  'RQ134: cli collects repeated --plugin options and resolves paths',
+  'RQ111: cli collects repeated --definitions and resolves paths',
   async () =>
   {
     const environment =
@@ -341,41 +365,20 @@ test(
 
     using env =
       new TmpEnv(
-        { PART_PLUGINS: 'ignored-plugin' });
+        { PART_DEFINITIONS: 'ignored' });
 
     await runCli(
       [ 'version',
-        '--plugin',
+        '--definitions',
         './plugin.js',
-        '--plugin=asljs-part/plugins/npm' ],
+        '--definitions',
+        'src',
+        '--definitions=asljs-part/plugins/npm' ],
       environment);
 
     assert.deepEqual(
-      environment.plugins,
+      environment.definitions,
       [ path.resolve('plugin.js'),
+        path.resolve('src'),
         'asljs-part/plugins/npm' ]);
-  });
-
-test(
-  'RQ135: cli reads plugins from environment variable PART_PLUGINS',
-  async () =>
-  {
-    const environment =
-      createEnvironment();
-
-    using env =
-      new TmpEnv(
-        { PART_PLUGINS:
-            [ './plugin.js',
-              'asljs-part/plugins/git' ].join(
-                path.delimiter) });
-
-    await runCli(
-      [ 'version' ],
-      environment);
-
-    assert.deepEqual(
-      environment.plugins,
-      [ path.resolve('plugin.js'),
-        'asljs-part/plugins/git' ]);
   });

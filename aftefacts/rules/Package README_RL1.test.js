@@ -50,7 +50,7 @@ async function validateReadme(
     createRuleValidationContext(
       loggerProvider,
       workspace.path,
-      workspace.path);
+      [ workspace.path ]);
 
   const artefact =
     await context.artefacts.tryGetArtefact('README.md');

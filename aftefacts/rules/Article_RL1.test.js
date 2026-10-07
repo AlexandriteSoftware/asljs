@@ -81,7 +81,7 @@ for (const prefix of prefixes) {
           createRuleValidationContext(
             loggerProvider,
             workspace.path,
-            workspace.path);
+            [ workspace.path ]);
 
         const artefact =
           await context.artefacts.tryGetArtefact('Article1.md');
@@ -118,7 +118,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact('Article1.md');
@@ -157,7 +157,7 @@ test(
       createRuleValidationContext(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const artefact =
       await context.artefacts.tryGetArtefact('Article1.md');

@@ -15,8 +15,8 @@ import { LocatedArtefact }
   from '../plugin.js';
 import { ArtefactDefinitionProvider }
   from './artefact-definition-provider.js';
-import { PluginProvider }
-  from './plugin-provider.js';
+import { DefinitionSourceProvider }
+  from './definition-source-provider.js';
 
 /**
  * Provides artefacts based on definitions. Locates the artefacts of every
@@ -31,7 +31,7 @@ export class ArtefactProvider
   constructor(
     private readonly logger: Logger,
     private readonly artefactDefinitionProvider: ArtefactDefinitionProvider,
-    private readonly pluginProvider: PluginProvider,
+    private readonly definitionSourceProvider: DefinitionSourceProvider,
     private readonly projectPath: string
   )
   {
@@ -231,7 +231,7 @@ export class ArtefactProvider
   ): Promise<LocatedArtefact[]>
   {
     const locator =
-      await this.pluginProvider.findLocator(
+      await this.definitionSourceProvider.findLocator(
         definition.name);
 
     if (locator) {

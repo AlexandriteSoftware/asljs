@@ -79,8 +79,8 @@ Not implemented.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
-        [ workspace.resolve('plugin.js') ]);
+        [ workspace.resolve('definitions'),
+          workspace.resolve('plugin.js') ]);
 
     const definition =
       await providers.artefactDefinitionProvider.getDefinition(

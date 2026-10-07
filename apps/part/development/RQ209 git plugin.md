@@ -1,7 +1,7 @@
 # RQ209 git plugin
 
 `asljs-part/plugins/git` is a built-in plugin that provides the `Git Tag`
-definition. It is loaded only when listed, e.g. `--plugin
+definition. It is loaded only when listed, e.g. `--definitions
 asljs-part/plugins/git`.
 
 Artefacts are the tags of the git repository at the project root, listed with

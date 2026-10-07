@@ -1,12 +1,11 @@
 # RQ112 CLI Definitions environment variable
 
-CLI tool searches for definitions by enumerating markdown files in the current
-working directory and checking whether the content of the file matches
-[Artefact Definition][1].
+When environment variable `PART_DEFINITIONS` is set, the CLI loads the
+definition sources it lists. Entries are separated by the platform path
+delimiter: `;` on Windows, `:` elsewhere. Empty entries are ignored. Entries are
+interpreted as described in [RQ111][RQ111].
 
-When environment variable `PART_DEFINITIONS` is set, the CLI uses the path
-specified in the environment variable to look for definitions.
+CLI parameter `--definitions` has higher priority than the environment variable:
+when at least one `--definitions` is given, `PART_DEFINITIONS` is not used.
 
-CLI parameter `--definitions` has higher priority than the environment variable.
-
-[1]: <../artefacts/Artefact Definition.md>
+[RQ111]: <RQ111 CLI Definitions parameter.md>

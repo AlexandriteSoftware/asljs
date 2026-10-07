@@ -66,10 +66,9 @@ This top-level definition should be ignored by the Definitions parameter.
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('definitions'),
-          project: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ] });
+            [ workspace.resolve('definitions'),
+              workspace.resolve('plugin.js') ],
+          project: workspace.path });
 
     await execDefinitions(
       environment);

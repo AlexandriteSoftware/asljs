@@ -56,7 +56,7 @@ async function makeArtefact(
     createRuleValidationContext(
       loggerProvider,
       workspace.path,
-      workspace.path);
+      [ workspace.path ]);
 
   const artefact =
     await context.artefacts.tryGetArtefact(

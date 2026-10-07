@@ -20,20 +20,16 @@ export interface Environment
   register: <T>(type: T, value: T) => void;
 
   /**
-   * Path to the directory containing the artefact definitions.
+   * Definition sources: absolute paths of md-only folders, plugin library
+   * folders or plugin files, or package specifiers. Empty means no
+   * definitions.
    */
-  definitions: string;
+  definitions: string[];
 
   /**
    * Path to the directory containing the artefacts.
    */
   project: string;
-
-  /**
-   * Plugin module specifiers. Paths are absolute; package specifiers are
-   * resolved from the project root.
-   */
-  plugins: string[];
 
   getProviders: () => Providers;
 
@@ -74,17 +70,15 @@ export function createEnvironment(
       registry.set(
         type,
         value),
-      definitions: cwd,
+      definitions: [ ],
       project: cwd,
-      plugins: [ ],
       getProviders:
         function (): Providers
     {
       return providersFactory(
         this.loggerProvider,
         this.project,
-        this.definitions,
-        this.plugins);
+        this.definitions);
     },
       onDispose:
         action => disposeActions.push(action),

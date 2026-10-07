@@ -68,7 +68,7 @@ Requirement.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('artefacts'));
+        [ workspace.resolve('artefacts') ]);
 
     const [requirementDefinition] =
       await artefactDefinitionProvider
@@ -135,7 +135,7 @@ Specification.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     const matchingDefinitions =
       await artefactProvider
@@ -195,7 +195,7 @@ External file.
         providersFactory(
           loggerProvider,
           workspace.path,
-          workspace.path);
+          [ workspace.path ]);
 
       const definitions =
         await artefactDefinitionProvider.getDefinitions();
@@ -265,7 +265,7 @@ External folder.
         providersFactory(
           loggerProvider,
           workspace.path,
-          workspace.path);
+          [ workspace.path ]);
 
       const definitions =
         await artefactDefinitionProvider.getDefinitions();
@@ -314,7 +314,7 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        [ workspace.path ]);
 
     assert.deepEqual(
       await artefactProvider.getArtefacts(),
@@ -357,8 +357,8 @@ A release.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
-        [ workspace.resolve('plugin.js') ]);
+        [ workspace.resolve('definitions'),
+          workspace.resolve('plugin.js') ]);
 
     assert.deepEqual(
       await artefactProvider.getArtefacts(),
@@ -400,7 +400,7 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'));
+        [ workspace.resolve('definitions') ]);
 
     const expected =
       { location: 'file:docs/A.md',

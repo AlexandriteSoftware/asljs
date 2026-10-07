@@ -18,5 +18,6 @@ test(
         'PinoLoggerProviderOptionsBuilder',
         'TmpDir',
         'createRuleValidationContext',
+        'readMarkdownDefinitions',
         'runCli' ]);
   });

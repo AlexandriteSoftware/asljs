@@ -6,10 +6,10 @@ import { createArtefactFiles }
   from '../location.js';
 import { Artefact }
   from '../model/artefact.js';
+import { DefinitionSourceProvider }
+  from './definition-source-provider.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
-import { PluginProvider }
-  from './plugin-provider.js';
 
 /**
  * Provides artefact data through the data functions plugins register for
@@ -20,7 +20,7 @@ export class ArtefactDataProvider
   constructor(
     private readonly logger: Logger,
     private readonly markdownDocumentProvider: MarkdownDocumentProvider,
-    private readonly pluginProvider: PluginProvider,
+    private readonly definitionSourceProvider: DefinitionSourceProvider,
     private readonly projectPath: string
   )
   {
@@ -41,7 +41,7 @@ export class ArtefactDataProvider
       definition);
 
     const getDataFunction =
-      await this.pluginProvider.findData(
+      await this.definitionSourceProvider.findData(
         definition);
 
     if (!getDataFunction) {

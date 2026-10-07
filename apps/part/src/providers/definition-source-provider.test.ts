@@ -4,6 +4,8 @@ import { TmpDir }
   from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
+import { existsSync }
+  from 'node:fs';
 import test
   from 'node:test';
 import { tmpDirFactory }
@@ -41,12 +43,17 @@ async function getDefinitions(
     plugins: string[]
   ): Promise<string[]>
 {
+  const definitionsFolder =
+    workspace.resolve('definitions');
+
   const { artefactDefinitionProvider } =
     providersFactory(
       loggerProvider,
       workspace.path,
-      workspace.resolve('definitions'),
-      plugins);
+      [ ...existsSync(definitionsFolder)
+        ? [ definitionsFolder ]
+        : [ ],
+        ...plugins ]);
 
   const definitions =
     await artefactDefinitionProvider.getDefinitions();
@@ -82,8 +89,8 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
-        [ workspace.resolve('plugin.js') ]);
+        [ workspace.resolve('definitions'),
+          workspace.resolve('plugin.js') ]);
 
     const definitions =
       await artefactDefinitionProvider.getDefinitions();
@@ -161,7 +168,7 @@ test(
       getDefinitions(
         workspace,
         [ workspace.resolve('missing.js') ]),
-      /Failed to load plugin/);
+      /Definitions source not found: /);
 
     await assert.rejects(
       getDefinitions(
@@ -308,4 +315,138 @@ test(
         workspace,
         [ workspace.resolve('plugin.js') ]),
       /invalid id "rl1"/);
+  });
+
+test(
+  'RQ111: a folder without package.json is an md-only source',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'definitions/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'definitions/plugin.js',
+      'throw new Error("An md-only folder does not import scripts.");\n');
+
+    assert.deepEqual(
+      await getDefinitions(
+        workspace,
+        [ ]),
+      [ 'Requirement (markdown)' ]);
+  });
+
+test(
+  'RQ207: a folder with package.json is a plugin library that owns its definitions',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'library/package.json',
+      JSON.stringify(
+        { name: 'library',
+          type: 'module',
+          main: 'plugin.js' }));
+
+    await workspace.writeText(
+      'library/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'library/Ignored.md',
+      '# Ignored\n\nRead only when the plugin asks for it.\n');
+
+    await workspace.writeText(
+      'library/plugin.js',
+      `export default async context => {
+  const documents = await context.readDefinitions();
+
+  return {
+    name: 'library',
+    version: '1',
+    definitions: async () =>
+      documents.filter(definition => definition.name !== 'Ignored'),
+    rules: { Requirement: { RL1: async () => {} } }
+  };
+};
+`);
+
+    const providers =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        [ workspace.resolve('library') ]);
+
+    const definitions =
+      await providers.artefactDefinitionProvider
+      .getDefinitions();
+
+    assert.deepEqual(
+      definitions.map(
+        definition => [ definition.name,
+                        definition.source,
+                        definition.path ]),
+      [ [ 'Requirement',
+          'library',
+          workspace.resolve(
+            'library/Requirement.md') ] ]);
+
+    const binding =
+      await providers.definitionSourceProvider.findRule(
+        'Requirement',
+        'RL1');
+
+    assert.equal(
+      binding?.plugin,
+      'library');
+
+    assert.equal(
+      binding?.version,
+      '1');
+  });
+
+test(
+  'RQ207: a plugin library without an entry is fatal',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'library/package.json',
+      JSON.stringify(
+        { name: 'library' }));
+
+    await assert.rejects(
+      getDefinitions(
+        workspace,
+        [ workspace.resolve('library') ]),
+      /has no entry: package\.json needs "exports" or "main"/);
+  });
+
+test(
+  'RQ201: a definition name in two md-only folders is fatal',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'definitions/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'more/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await assert.rejects(
+      getDefinitions(
+        workspace,
+        [ workspace.resolve('more') ]),
+      /Definition "Requirement" is provided by document .+ and by document /);
   });

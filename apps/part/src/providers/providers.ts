@@ -10,34 +10,42 @@ import { ArtefactDefinitionProvider,
   from './artefact-definition-provider.js';
 import { ArtefactProvider }
   from './artefact-provider.js';
+import { DefinitionSourceProvider }
+  from './definition-source-provider.js';
+import { MarkdownDefinitionReader }
+  from './markdown-definition-reader.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
-import { PluginProvider }
-  from './plugin-provider.js';
 
 export interface Providers
 {
   projectPath: string;
-  definitionsPath: string;
+
+  /**
+   * Definition sources, as given with `--definitions`.
+   */
+  definitions: readonly string[];
+
   readonly loggerProvider: LoggerProvider;
-  readonly pluginProvider: PluginProvider;
+  readonly definitionSourceProvider: DefinitionSourceProvider;
   readonly artefactDefinitionProvider: ArtefactDefinitionProvider;
   readonly artefactDataProvider: ArtefactDataProvider;
   readonly artefactProvider: ArtefactProvider;
   readonly locationResolver: LocationResolver;
   readonly gitIgnore: GitIgnore;
   readonly markdownDocumentProvider: MarkdownDocumentProvider;
+  readonly markdownDefinitionReader: MarkdownDefinitionReader;
 }
 
 /**
- * Creates the providers. `plugins` are module specifiers: absolute or
- * `.`-relative paths, or package specifiers resolved from the project root.
+ * Creates the providers. `definitions` are definition sources: absolute paths
+ * of md-only folders, plugin library folders or plugin files, or package
+ * specifiers resolved from the project root.
  */
 export function providersFactory(
     loggerProvider: LoggerProvider,
     projectPath: string,
-    definitionsPath: string,
-    plugins: readonly string[] = [ ]
+    definitions: readonly string[]
   ): Providers
 {
   const locationResolver =
@@ -56,31 +64,36 @@ export function providersFactory(
       loggerProvider.getLogger(
         'MarkdownDocumentProvider'));
 
-  const pluginProvider =
-    new PluginProvider(
+  const markdownDefinitionReader =
+    new MarkdownDefinitionReader(
       loggerProvider.getLogger(
-        'PluginProvider'),
+        'MarkdownDefinitionReader'),
+      gitIgnore,
+      markdownDocumentProvider);
+
+  const definitionSourceProvider =
+    new DefinitionSourceProvider(
+      loggerProvider.getLogger(
+        'DefinitionSourceProvider'),
       loggerProvider,
-      plugins,
+      definitions,
       projectPath,
-      definitionsPath,
+      markdownDefinitionReader,
       markdownDocumentProvider);
 
   const artefactDefinitionProvider =
     new ArtefactDefinitionProviderImpl(
       loggerProvider.getLogger(
         'ArtefactDefinitionProvider'),
-      gitIgnore,
-      markdownDocumentProvider,
-      pluginProvider,
-      definitionsPath);
+      markdownDefinitionReader,
+      definitionSourceProvider);
 
   const artefactProvider =
     new ArtefactProvider(
       loggerProvider.getLogger(
         'ArtefactProvider'),
       artefactDefinitionProvider,
-      pluginProvider,
+      definitionSourceProvider,
       projectPath);
 
   const artefactDataProvider =
@@ -88,17 +101,18 @@ export function providersFactory(
       loggerProvider.getLogger(
         'ArtefactDataProvider'),
       markdownDocumentProvider,
-      pluginProvider,
+      definitionSourceProvider,
       projectPath);
 
   return { projectPath,
-           definitionsPath,
+           definitions,
            loggerProvider,
-           pluginProvider,
+           definitionSourceProvider,
            artefactDefinitionProvider,
            artefactDataProvider,
            artefactProvider,
            locationResolver,
            gitIgnore,
-           markdownDocumentProvider };
+           markdownDocumentProvider,
+           markdownDefinitionReader };
 }

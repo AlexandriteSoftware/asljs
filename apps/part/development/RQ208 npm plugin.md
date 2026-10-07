@@ -1,7 +1,7 @@
 # RQ208 npm plugin
 
 `asljs-part/plugins/npm` is a built-in plugin that provides the `Npm Dependency`
-definition. It is loaded only when listed, e.g. `--plugin
+definition. It is loaded only when listed, e.g. `--definitions
 asljs-part/plugins/npm`.
 
 Artefacts are the entries of `dependencies`, `devDependencies`,

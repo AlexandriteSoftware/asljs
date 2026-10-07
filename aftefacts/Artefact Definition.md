@@ -56,22 +56,23 @@ programmatically.
   markdown file (without extension).
 - `# <FileName>` is followed by a description of the definition.
 - `## Location` - optional, specifies where the artefacts are located. When not
-  specified, a plugin may provide the locations; otherwise the definition has
-  no artefacts.
-- `## Rules` - optional, specifies rules that apply to the definition. Each
-  rule is a `### <RuleId>` section, optionally followed by ` - <title>`, e.g.
-  `### RL1 - Due date`. The section body is the rule description. A rule id is
+  specified, a plugin may provide the locations; otherwise the definition has no
+  artefacts.
+- `## Rules` - optional, specifies rules that apply to the definition. Each rule
+  is a `### <RuleId>` section, optionally followed by ` - <title>`, e.g. `###
+  RL1 - Due date`. The section body is the rule description. A rule id is
   uppercase letters followed by digits, e.g. `RL1`, unique within the
   definition.
 - `## Properties` - optional, specifies artefact's properties, as returned by
   the data function a plugin provides for the definition.
 
-A markdown file in the definitions directory is a definition when its level 1
-heading matches its file name. No other section is required, so the definitions
-directory should hold only definitions.
+Definitions come from definition sources. In a folder of definition documents,
+a markdown file is a definition when its level 1 heading matches its file name.
+No other section is required, so such a folder should hold only definitions. A
+plugin provides its definitions in code, and may read them from definition
+documents.
 
-Definition names are unique: a definition provided by a plugin cannot have the
-name of a definition document.
+Definition names are unique across all sources.
 
 ## Artefacts Location
 

@@ -68,7 +68,8 @@ I need to buy milk.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path,
           loggerProvider });
 
@@ -147,9 +148,9 @@ export default () => ({ name: 'test', data: { Article: getData } });
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ],
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -232,9 +233,9 @@ export default () => ({ name: 'test', data: { Article: getData } });
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ],
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -295,7 +296,8 @@ Markdown article.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path,
           loggerProvider });
 
@@ -383,9 +385,9 @@ export default () => ({ name: 'test', data: { Article: getData } });
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ],
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -458,7 +460,8 @@ A statement about the system that must be true.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path,
           loggerProvider });
 
@@ -511,7 +514,8 @@ Definition file.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path,
           loggerProvider });
 
@@ -564,7 +568,8 @@ Definition file.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path,
           loggerProvider });
 
@@ -615,7 +620,8 @@ A todo item is a task that needs to be done.
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
+          definitions:
+            [ workspace.path ],
           project: workspace.path });
 
     await execInventory(
@@ -749,9 +755,9 @@ await fs.writeFile(outputPath, svg, 'utf8');
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ],
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -914,9 +920,9 @@ await fs.writeFile(outputPath, svg, 'utf8');
     const environment =
       createEnvironment(
         { cwd: workspace.path,
-          definitions: workspace.path,
-          plugins:
-            [ workspace.resolve('plugin.js') ],
+          definitions:
+            [ workspace.path,
+              workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 

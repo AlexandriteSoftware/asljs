@@ -95,7 +95,6 @@ test(
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.resolve('definitions'),
         [ pluginPath ]);
 
     const artefacts =
