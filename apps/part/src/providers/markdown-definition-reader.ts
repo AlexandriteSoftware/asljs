@@ -1,5 +1,4 @@
-import { GitIgnore,
-         type Location }
+import { type Location }
   from 'asljs-locator';
 import { Logger,
          LoggerProvider,
@@ -48,7 +47,6 @@ export class MarkdownDefinitionReader
 {
   constructor(
     private readonly logger: Logger,
-    private readonly gitIgnore: GitIgnore,
     private readonly markdownDocumentProvider: MarkdownDocumentProvider
   )
   {
@@ -56,7 +54,8 @@ export class MarkdownDefinitionReader
 
   /**
    * Definitions documented in the `*.md` files of the folder and its
-   * subfolders, skipping `.gitignore`d files, sorted by name.
+   * subfolders, sorted by name. Every file is read; `.gitignore` plays no part,
+   * because the folder is named explicitly.
    */
   async readFolder(
     folderPath: string
@@ -74,12 +73,9 @@ export class MarkdownDefinitionReader
           dot: true,
           nodir: true });
 
-    const visibleMarkdownPaths =
-      this.gitIgnore.filter(markdownPaths);
-
     const definitions: ArtefactDefinition[] = [ ];
 
-    for (const markdownPath of visibleMarkdownPaths) {
+    for (const markdownPath of markdownPaths) {
       let content =
         await readFile(
           markdownPath,
@@ -508,9 +504,6 @@ export function readMarkdownDefinitions(
     new MarkdownDefinitionReader(
       loggerProvider.getLogger(
         'MarkdownDefinitionReader'),
-      new GitIgnore(
-        loggerProvider.getLogger(
-          'GitIgnore')),
       new MarkdownDocumentProvider(
         loggerProvider.getLogger(
           'MarkdownDocumentProvider')));

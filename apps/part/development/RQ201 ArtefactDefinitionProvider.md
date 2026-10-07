@@ -5,8 +5,9 @@ definitions.
 
 It returns the definitions of all definition sources, see [RQ111][RQ111]. In an
 md-only source, a markdown file is a definition when its level 1 heading matches
-its file name, see [Artefact Definition][1]; files in `.gitignore` are skipped.
-Plugins provide their definitions in code, see [RQ207][RQ207].
+its file name, see [Artefact Definition][1]; every `*.md` file of the folder is
+read, without `.gitignore` filtering. Plugins provide their definitions in code,
+see [RQ207][RQ207].
 
 A definition name is unique across sources: a clash throws. After collecting the
 definitions, the sources validate plugin bindings and throw on a binding to an

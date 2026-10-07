@@ -32,9 +32,10 @@ Candidates in `aftefacts/` (the private `asljs-artefacts` package):
 
 1. Shipping a definition means shipping its implementation in `asljs-part` and
    the implementation's dependencies, e.g. `dprint` for `Article` `RL3`.
-2. A shared definition cannot locate a project's files except from the project
-   root, see [part-shared-definition-locations][SDL]. `Requirement` and the
-   npm-workspace definitions need the project's folder or workspace list.
+2. A shared definition locates a project's files with `/` patterns, from the
+   project root, or with a plugin locator ([RQ205][R205]). `Requirement` and the
+   npm-workspace definitions need the project's folder or workspace list, which
+   a static `/` pattern cannot know, so they need a locator.
 3. A definition filter takes or drops whole definitions; a project cannot switch
    off one rule, e.g. `Article` `RL3`, except with `--check-rules`.
 
@@ -47,7 +48,7 @@ Candidates in `aftefacts/` (the private `asljs-artefacts` package):
   projects accept as a heading.
 - **`Unit Test File`**, after it has at least one rule; otherwise it adds an
   inventory entry and nothing to check.
-- **`Requirement` and npm workspaces** only after a definition can locate a
+- **`Requirement` and npm workspaces** only with a plugin locator that finds a
   project's folders. `NPM Dependency` already reads the workspace's
   `package.json` files through its plugin locator.
 
@@ -71,4 +72,4 @@ Candidates in `aftefacts/` (the private `asljs-artefacts` package):
 
 [R111]: <../apps/part/development/RQ111 CLI Definitions parameter.md>
 [R210]: <../apps/part/development/RQ210 Package plugin.md>
-[SDL]: part-shared-definition-locations.md
+[R205]: <../apps/part/development/RQ205 Definition Location.md>

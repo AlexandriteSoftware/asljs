@@ -13,8 +13,9 @@ A source is one of:
 
 - a folder without `package.json` - md-only: its `*.md` files and those of its
   subfolders are definitions when their level 1 heading matches the file name
-  (see [Artefact Definition][1]); `.gitignore`d files are skipped. No rule has
-  an implementation;
+  (see [Artefact Definition][1]). Every `*.md` file is read; `.gitignore` is not
+  applied, because the folder is named explicitly. No rule has an
+  implementation;
 - a folder with `package.json` - plugin library: its package entry
   (`exports['.']`, else `main`) is imported as a plugin. A library without an
   entry is an error;

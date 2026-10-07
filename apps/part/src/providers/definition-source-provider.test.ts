@@ -1,3 +1,7 @@
+import { type Logger,
+         type LoggerProvider,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import { createTestLoggerProvider }
   from 'asljs-testing';
 import { TmpDir }
@@ -8,6 +12,8 @@ import { existsSync }
   from 'node:fs';
 import test
   from 'node:test';
+import { format }
+  from 'node:util';
 import { tmpDirFactory }
   from '../testing/tmpDir.js';
 import { providersFactory }
@@ -509,4 +515,145 @@ test(
         'Git Commit',
         'RL1'),
       undefined);
+  });
+
+/**
+ * A logger provider that records warnings and discards everything else.
+ */
+function recordWarnings(
+  ): { provider: LoggerProvider; warnings: string[]; }
+{
+  const warnings: string[] = [ ];
+
+  const nullProvider =
+    new NullLoggerProvider();
+
+  const provider: LoggerProvider =
+    { getLogger:
+        (
+            context?: string
+          ): Logger =>
+        {
+      const logger: Logger =
+        Object.create(
+          nullProvider.getLogger(context));
+
+      logger.warning =
+        (
+            head,
+            ...params
+          ) =>
+        {
+        warnings.push(
+          format(
+            head,
+            ...params));
+      };
+
+      return logger;
+    },
+      dispose:
+        () => nullProvider.dispose(),
+      [Symbol.asyncDispose]:
+        () => nullProvider.dispose() };
+
+  return { provider,
+           warnings };
+}
+
+test(
+  'RQ111: an md-only folder is read whole, whatever .gitignore says',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      '.gitignore',
+      'node_modules\n');
+
+    await workspace.writeText(
+      'node_modules/pkg/.gitignore',
+      'Draft.md\n');
+
+    await workspace.writeText(
+      'node_modules/pkg/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'node_modules/pkg/Draft.md',
+      '# Draft\n\nListed in the folder .gitignore, read anyway.\n');
+
+    assert.deepEqual(
+      await getDefinitions(
+        workspace,
+        [ workspace.resolve('node_modules/pkg') ]),
+      [ 'Draft (markdown)',
+        'Requirement (markdown)' ]);
+  });
+
+test(
+  'RQ205: a shared definition with a relative Location pattern is reported with a warning',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'shared/Shared.md',
+      '# Shared\n\nShared.\n\n## Location\n\n- Pattern: `docs/*.md`\n- Exclude: `docs/Draft.md`\n');
+
+    await workspace.writeText(
+      'shared/Anchored.md',
+      '# Anchored\n\nAnchored.\n\n## Location\n\n- Pattern: `/docs/*.md`\n');
+
+    await workspace.writeText(
+      'project/definitions/Local.md',
+      '# Local\n\nLocal.\n\n## Location\n\n- Pattern: `../docs/*.md`\n');
+
+    await workspace.writeText(
+      'project/node_modules/shared-package/package.json',
+      JSON.stringify(
+        { name: 'shared-package',
+          type: 'module',
+          main: 'plugin.js' }));
+
+    await workspace.writeText(
+      'project/node_modules/shared-package/plugin.js',
+      `export default () => ({
+  name: 'shared-package',
+  definitions: async () => [ {
+    name: 'Packaged',
+    description: 'From a package.',
+    path: 'C:/packaged/Packaged.md',
+    locations: [ { pattern: '**/*.md' } ]
+  } ]
+});
+`);
+
+    const { provider, warnings } =
+      recordWarnings();
+
+    const { artefactDefinitionProvider } =
+      providersFactory(
+        provider,
+        workspace.resolve('project'),
+        [ workspace.resolve('shared'),
+          workspace.resolve(
+            'project/definitions'),
+          'shared-package' ]);
+
+    await artefactDefinitionProvider.getDefinitions();
+
+    assert.equal(
+      warnings.length,
+      2);
+
+    assert.match(
+      warnings[0],
+      /^Definition "Shared" \(.+Shared\.md\) is shared, but its Location pattern "docs\/\*\.md" is relative/);
+
+    assert.match(
+      warnings[1],
+      /^Definition "Packaged" \(.+Packaged\.md\) is shared, but its Location pattern "\*\*\/\*\.md" is relative/);
   });

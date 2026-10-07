@@ -89,8 +89,8 @@ Do not assume:
 
 - If changing definition parsing, then re-check heading validation and location
   parsing.
-- If changing discovery, then re-check `.gitignore` behavior for both definition
-  discovery and artefact locations.
+- If changing discovery, then re-check `.gitignore` behavior for artefact
+  locations; definition folders are read without it.
 - If changing source loading or binding, then re-check the fatal error cases in
   `definition-source-provider.test.ts`.
 - If changing the cache or what invalidates it, then re-check the cache test in

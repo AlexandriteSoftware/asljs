@@ -40,6 +40,19 @@ patterns should end with `/`, e.g. `src/`.
 
 For defining project location see [RQ132] and [RQ133].
 
+## Shared definitions
+
+A shared definition comes from a package source, or its document is outside the
+project. A relative pattern in it resolves next to the shared document, where it
+cannot match the project's files. A shared definition therefore locates its
+artefacts with patterns that start with `/`, resolved from the project root, or
+with a plugin locator, which can look anywhere.
+
+When the definitions are loaded, every relative `Pattern` of a shared definition
+is logged as a warning, naming the definition, its document and the pattern. The
+warning is written through the logger, so it shows with `--loglevel warning` or
+a lower level.
+
 Definition location is defined in [asljs-locator location.ts][2] as follows:
 
 ```ts

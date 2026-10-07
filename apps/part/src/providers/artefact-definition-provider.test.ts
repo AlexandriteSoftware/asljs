@@ -56,7 +56,7 @@ A todo item.
   });
 
 test(
-  'RQ201: DefinitionProvider returns definition markdown files and excludes gitignored files',
+  'RQ201: DefinitionProvider returns definition markdown files, including gitignored ones',
   async () =>
   {
     await using workspace =
@@ -117,6 +117,7 @@ Hidden definition.
       definitions.map(
         definition => definition.name),
       [ 'Abstract',
+        'Hidden Item',
         'Todo Item' ]);
 
     assert.deepEqual(

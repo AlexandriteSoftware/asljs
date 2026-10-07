@@ -176,16 +176,26 @@ export class DefinitionSourceProvider
         await this.#classify(
           specifier);
 
+      const isPackage =
+        !path.isAbsolute(specifier);
+
       if (source.kind === 'markdown') {
-        addDefinitions(
-          loaded.definitions,
+        const definitions =
           (await this.markdownDefinitionReader.readFolder(
             source.folder))
-            .filter(
-              definition =>
-                isDefinitionIncluded(
-                  spec,
-                  definition.name)));
+          .filter(
+            definition =>
+              isDefinitionIncluded(
+                spec,
+                definition.name));
+
+        this.#warnOfRelativeLocations(
+          definitions,
+          isPackage);
+
+        addDefinitions(
+          loaded.definitions,
+          definitions);
 
         continue;
       }
@@ -227,10 +237,17 @@ export class DefinitionSourceProvider
         loaded,
         filteredOut);
 
+      const keptDefinitions =
+        pluginDefinitions.filter(
+          definition => !filteredOut.has(definition.name));
+
+      this.#warnOfRelativeLocations(
+        keptDefinitions,
+        isPackage);
+
       addDefinitions(
         loaded.definitions,
-        pluginDefinitions.filter(
-          definition => !filteredOut.has(definition.name)));
+        keptDefinitions);
     }
 
     loaded.definitions.sort(
@@ -240,6 +257,51 @@ export class DefinitionSourceProvider
       loaded);
 
     return loaded;
+  }
+
+  /**
+   * A shared definition - one from a package source, or whose document is
+   * outside the project - resolves a relative `Location` pattern next to its
+   * document, where it cannot match the project's files. Such patterns get a
+   * warning; shared definitions use `/` patterns or a plugin locator.
+   */
+  #warnOfRelativeLocations(
+    definitions: ArtefactDefinition[],
+    isPackage: boolean
+  ): void
+  {
+    for (const definition of definitions) {
+      if (
+        !definition.path
+        || !isPackage
+           && isInsideFolder(
+             this.projectPath,
+             definition.path)
+      ) {
+        continue;
+      }
+
+      for (const location of definition.locations) {
+        const patterns =
+          [ ...location.pattern === undefined
+            ? [ ]
+            : [ location.pattern ],
+            ...location.patterns
+            ?? [ ] ];
+
+        for (const pattern of patterns) {
+          if (pattern.startsWith('/')) {
+            continue;
+          }
+
+          this.logger.warning(
+            'Definition "%s" (%s) is shared, but its Location pattern "%s" is relative: it resolves next to the definition document, not in the project. Start the pattern with "/" to resolve it from the project root.',
+            definition.name,
+            definition.path,
+            pattern);
+        }
+      }
+    }
   }
 
   async #classify(
@@ -448,6 +510,21 @@ function getPackageEntry(
   return typeof packageJson.main === 'string'
     ? packageJson.main
     : undefined;
+}
+
+function isInsideFolder(
+    folder: string,
+    target: string
+  ): boolean
+{
+  const relativePath =
+    path.relative(
+      folder,
+      target);
+
+  return relativePath !== ''
+    && !relativePath.startsWith('..')
+    && !path.isAbsolute(relativePath);
 }
 
 function addDefinitions(

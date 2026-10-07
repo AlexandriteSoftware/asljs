@@ -68,7 +68,6 @@ export function providersFactory(
     new MarkdownDefinitionReader(
       loggerProvider.getLogger(
         'MarkdownDefinitionReader'),
-      gitIgnore,
       markdownDocumentProvider);
 
   const definitionSourceProvider =
