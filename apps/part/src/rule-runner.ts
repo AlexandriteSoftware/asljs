@@ -278,8 +278,8 @@ export class RuleRunner
   }
 
   /**
-   * Modification time of a `file:` artefact, its own for a folder; `null` for
-   * other artefacts, which are not cached.
+   * Modification time of a `file:` artefact; `null` for other artefacts,
+   * which are not cached.
    */
   async #getModifiedTime(
     artefact: Artefact

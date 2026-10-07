@@ -64,8 +64,9 @@ const belongs = await resolver.check(
 );
 ```
 
-Patterns must be all files or all directories; a directory pattern ends with
-`/`. Mixing them throws, because the two cannot be globbed in one pass.
+Patterns match files only. A pattern ending with `/` would name folders and
+throws; to treat a folder as an item, point at a file inside it, e.g.
+`packages/*/package.json`.
 
 ## Further reading
 

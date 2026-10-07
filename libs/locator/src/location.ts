@@ -58,6 +58,24 @@ export function toPatterns(
   return patterns;
 }
 
+/**
+ * Patterns match files only. A pattern ending with `/` would name folders,
+ * which `resolve` and `check` cannot treat alike, so it is refused.
+ */
+function assertFilePatterns(
+    patterns: readonly string[]
+  ): void
+{
+  const folderPattern =
+    patterns.find(
+      pattern => pattern.endsWith('/'));
+
+  if (folderPattern !== undefined) {
+    throw new Error(
+      `Folder patterns are not supported: "${folderPattern}". Point the pattern at a file, e.g. "${folderPattern}package.json".`);
+  }
+}
+
 function toLocations(
     location: Location | readonly Location[]
   ): readonly Location[]
@@ -170,34 +188,20 @@ export class LocationResolver
       path.normalize(
         path.resolve(basePath));
 
-    const filesOnly =
-      patterns.every(
-        pattern => !pattern.endsWith('/'));
-
-    const directoriesOnly =
-      patterns.every(
-        pattern => pattern.endsWith('/'));
-
-    if (
-      !filesOnly
-      && !directoriesOnly
-    ) {
-      throw new Error(
-        'Patterns must be either all files or all directories');
-    }
+    assertFilePatterns(
+      [ ...patterns,
+        ...exclude ]);
 
     const matches =
       new Set(
         await this.expand(
           patterns,
-          normalisedBasePath,
-          filesOnly));
+          normalisedBasePath));
 
     for (
       const excluded of await this.expand(
         exclude,
-        normalisedBasePath,
-        filesOnly)
+        normalisedBasePath)
     ) {
       matches.delete(excluded);
     }
@@ -233,6 +237,10 @@ export class LocationResolver
     const filters =
       location.filters
       ?? [ ];
+
+    assertFilePatterns(
+      [ ...patterns,
+        ...exclude ]);
 
     const normalisedTargetPath =
       path.normalize(
@@ -299,8 +307,7 @@ export class LocationResolver
    */
   private async expand(
     patterns: readonly string[],
-    basePath: string,
-    filesOnly: boolean
+    basePath: string
   ): Promise<string[]>
   {
     const matches: string[] = [ ];
@@ -319,7 +326,7 @@ export class LocationResolver
           { cwd: this.rootPath,
             absolute: true,
             dot: true,
-            nodir: filesOnly }));
+            nodir: true }));
     }
 
     const basePatterns =
@@ -333,7 +340,7 @@ export class LocationResolver
           { cwd: basePath,
             absolute: true,
             dot: true,
-            nodir: filesOnly }));
+            nodir: true }));
     }
 
     return matches;

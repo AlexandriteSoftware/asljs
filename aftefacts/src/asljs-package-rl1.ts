@@ -85,8 +85,10 @@ export const validate: RuleValidationFunction =
       context
     ) =>
   {
+  // The artefact is the package's package.json.
   const packagePath =
-    context.files.path(artefact);
+    path.dirname(
+      context.files.path(artefact));
 
   const testingDirs =
     await findTestingDirs(

@@ -6,8 +6,9 @@ import { readPackageJSON }
   from 'pkg-types';
 
 /**
- * Data of an `ASLJS Package`: `LocalDeps`, the folders of the `asljs-*`
- * packages it depends on, assumed to be siblings of the package folder.
+ * Data of an `ASLJS Package`, whose artefact is its `package.json`:
+ * `LocalDeps`, the `package.json` of each `asljs-*` package it depends on,
+ * assumed to be in a sibling of the package folder.
  */
 export const getData: ArtefactDataProvidingFunction =
   async (
@@ -15,14 +16,15 @@ export const getData: ArtefactDataProvidingFunction =
       context
     ) =>
   {
-  const packagePath =
+  const packageJsonPath =
     context.files.path(artefact);
 
   const packageJson =
     await readPackageJSON(
-      path.join(
-        packagePath,
-        'package.json'));
+      packageJsonPath);
+
+  const packagePath =
+    path.dirname(packageJsonPath);
 
   const parentPath =
     path.resolve(
@@ -41,7 +43,8 @@ export const getData: ArtefactDataProvidingFunction =
           parentPath,
           item.replace(
             /^asljs-/,
-            '')));
+            ''),
+          'package.json'));
 
   return { LocalDeps: localDeps };
 };

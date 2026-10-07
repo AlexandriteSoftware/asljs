@@ -242,21 +242,40 @@ test(
   });
 
 test(
-  `${TEST_SUITE}: mixing file and directory patterns is refused`,
+  `${TEST_SUITE}: folder patterns are refused`,
   async (): Promise<void> =>
   {
     await using workspace =
       await workspaceWithFiles();
 
+    const resolver =
+      resolverFor(workspace.path);
+
     await assert.rejects(
       () =>
-        resolverFor(workspace.path)
-          .resolve(
-            workspace.path,
-            { patterns:
-                [ '**/*.txt',
-                  'd1/' ] }),
-      /all files or all directories/);
+        resolver.resolve(
+          workspace.path,
+          { patterns:
+              [ 'd1/' ] }),
+      /Folder patterns are not supported: "d1\/"\. Point the pattern at a file, e\.g\. "d1\/package\.json"\./);
+
+    await assert.rejects(
+      () =>
+        resolver.resolve(
+          workspace.path,
+          { patterns:
+              [ '**/*.txt' ],
+            exclude:
+              [ 'd1/' ] }),
+      /Folder patterns are not supported/);
+
+    await assert.rejects(
+      () =>
+        resolver.check(
+          workspace.resolve('d1/a.txt'),
+          workspace.path,
+          { pattern: 'd1/' }),
+      /Folder patterns are not supported/);
   });
 
 test(

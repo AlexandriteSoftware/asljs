@@ -27,8 +27,8 @@ Stable public behaviours:
 - `resolve` takes one location or several, and returns absolute paths,
   deduplicated and sorted with `localeCompare`
 - `check` answers for one path without walking the filesystem
-- patterns must be all files or all directories, a directory pattern ending with
-  `/`; mixing them throws
+- patterns match files only; a pattern or exclude ending with `/` (a folder
+  pattern) throws, in `resolve` and in `check` alike
 - `GitIgnore` is the only filter name implemented, and an unknown name throws
 - `GitIgnore` reads the `.gitignore` of the path's own directory and every
   directory above it, so a nested file applies to its own subtree
@@ -58,7 +58,7 @@ Do not assume:
 ## Change Safety Checklist
 
 - If changing pattern handling, then re-check both anchored and relative cases
-  against a base path below the root.
+  against a base path below the root, and that folder patterns still throw.
 - If changing filters, then re-check that an unknown name still throws.
 - If changing `GitIgnore`, then re-check nested `.gitignore` files, not only a
   root one.

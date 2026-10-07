@@ -99,15 +99,18 @@ Example:
 
 There are three types of the location instructions:
 
-- `Pattern` - includes files or folders matching the glob pattern.
-- `Exclude` - excludes files or folders from the location matching. It is
-  optional and can be used multiple times.
+- `Pattern` - includes files matching the glob pattern.
+- `Exclude` - excludes files from the location matching. It is optional and can
+  be used multiple times.
 - Special filters, e.g. `GitIgnore` - defines location in a special way.
 
 `Pattern` and `Exclude` have a glob pattern as a parameter. The glob pattern is
 either relative to the artefact definition file or absolute, calculated from the
-project root. Absolute patterns start with `/`, e.g. `/src/**/*.js`. Folder
-patterns should end with `/`, e.g. `src/`.
+project root. Absolute patterns start with `/`, e.g. `/src/**/*.js`.
+
+Patterns match files only. A `Pattern` or `Exclude` ending with `/` would name
+folders and is an error; to treat a folder as an artefact, point at a file
+inside it, e.g. `/libs/*/package.json`.
 
 Project root is either the current working directory or directory specified by
 the `--project` CLI option.

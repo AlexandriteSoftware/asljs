@@ -12,8 +12,9 @@ nodes, containers?". The question mark was in the original; the three kinds are
 a suggestion, not a decision.
 
 `part` has no stereotype and no "entity". Its terms are the definition, which
-describes a kind of file or directory, and the artefact, which is a file or
-directory matched by a definition. The diagram ([UMB]) treats them uniformly:
+describes a kind of file, and the artefact, which is a file matched by a
+definition, or a non-file artefact a plugin locates. The diagram ([UMB]) treats
+them uniformly:
 
 - every artefact is a node, labelled with its relative path;
 - every value of an `Artefact` or `Artefact[]` property is an edge from the
@@ -31,10 +32,11 @@ cannot express:
 
 - **Nodes of different kinds.** A package, a requirement and an article all look
   the same. The definition names are in the inventory but not on the diagram.
-- **Containers.** Some artefacts contain others by path. Each `ASLJS Package`
-  directory contains `Article`, `Package README` and `Unit Test File` artefacts,
-  and `libs`/`apps` group the packages. A diagram that mixes them shows a
-  package and its files as unrelated nodes.
+- **Containers.** Some artefacts contain others by path. The folder of each
+  `ASLJS Package` (whose artefact is its `package.json`) contains `Article`,
+  `Package README` and `Unit Test File` artefacts, and `libs`/`apps` group the
+  packages. A diagram that mixes them shows a package and its files as unrelated
+  nodes.
 - **Links as artefacts.** Some files describe a relationship rather than a
   thing, for example a document recording why one package depends on another.
   Drawn as a node it adds two edges where a reader expects one. No definition in
@@ -47,7 +49,8 @@ cannot express:
    - Pro: uses only what `part` already knows; definitions do not change.
    - Pro: Mermaid draws containers as `subgraph` and kinds as `classDef` styles,
      so both fit the current output.
-   - Con: every directory artefact that contains other artefacts on the diagram
+   - Con: artefacts are files, so a container has to be inferred from a file
+     that stands for its folder, such as a `package.json`; and every such file
      becomes a container, wanted or not.
 2. An explicit `## Diagram` section in a definition, for example `- Shape:
    Container` or `- Shape: Link` with the two `Artefact` properties that name

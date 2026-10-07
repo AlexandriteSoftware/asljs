@@ -7,6 +7,8 @@ import { TmpDir }
   from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
+import path
+  from 'node:path';
 import test
   from 'node:test';
 import { validate }
@@ -27,7 +29,8 @@ const tmpDir =
     loggerProvider.getLogger('TmpDir'));
 
 /**
- * A package artefact and a rule context that resolves it to the directory.
+ * A package artefact, the package.json in the directory, and a rule context
+ * that resolves it.
  */
 function packageAt(
     directoryPath: string
@@ -35,9 +38,14 @@ function packageAt(
 {
   const context =
     { files:
-        { path: () => directoryPath } } as unknown as RuleValidationContext;
+        { path:
+            () =>
+        path.join(
+          directoryPath,
+          'package.json') } } as unknown as RuleValidationContext;
 
-  return [ { location: 'file:package',
+  return [ { location:
+               'file:package/package.json',
              name: 'package',
              definitions:
                [ 'ASLJS Package' ] },

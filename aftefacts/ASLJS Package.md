@@ -1,11 +1,12 @@
 # ASLJS Package
 
-ASLJS Package, published to npm.
+ASLJS Package, published to npm. The artefact is the package's `package.json`;
+the package folder is the folder that holds it.
 
 ## Location
 
-- Pattern: `../{libs,apps}/*/`
-- Exclude: `../apps/toolkit/`
+- Pattern: `../{libs,apps}/*/package.json`
+- Exclude: `../apps/toolkit/package.json`
 - GitIgnore
 
 ## Properties
@@ -14,7 +15,7 @@ ASLJS Package, published to npm.
 
 - Type: Artefact[]
 
-Local dependencies.
+The `package.json` of each local `asljs-*` package this package depends on.
 
 ## Rules
 

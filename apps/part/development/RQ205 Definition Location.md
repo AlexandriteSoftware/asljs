@@ -5,7 +5,7 @@ section. When a plugin provides a locator for the definition, the locator
 replaces the `Location` section, see [RQ207][RQ207]. A definition with neither
 has no artefacts.
 
-The resolved files and folders become `file:` locations, see [RQ204][RQ204].
+The resolved files become `file:` locations, see [RQ204][RQ204].
 
 There may be multiple locations defined in the `Location` section. Each location
 is defined by a `Pattern` and optional `Exclude` and special filters.
@@ -28,15 +28,18 @@ Example:
 
 There are three types of the location instructions:
 
-- `Pattern` - includes files or folders matching the glob pattern.
-- `Exclude` - excludes files or folders from the location matching. It is
-  optional and can be used multiple times.
+- `Pattern` - includes files matching the glob pattern.
+- `Exclude` - excludes files from the location matching. It is optional and can
+  be used multiple times.
 - Special filters, e.g. `GitIgnore` - defines location in a special way.
 
 `Pattern` and `Exclude` has glob pattern as a parameter. The glob pattern is
 either relative to the artefact definition file or absolute, calculated from the
-project root. Absolute patterns starts with `/`, e.g. `/src/**/*.js`. Folder
-patterns should end with `/`, e.g. `src/`.
+project root. Absolute patterns starts with `/`, e.g. `/src/**/*.js`.
+
+Patterns match files only. A `Pattern` or `Exclude` ending with `/` would name
+folders and is an error; to treat a folder as an artefact, point at a file
+inside it, e.g. `/libs/*/package.json`.
 
 For defining project location see [RQ132] and [RQ133].
 

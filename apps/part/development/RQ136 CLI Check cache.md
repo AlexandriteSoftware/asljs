@@ -6,8 +6,8 @@ and reuses them. The folder is meant to be gitignored.
 A cached result of a rule for an artefact is reused when all of these hold:
 
 - the artefact is a `file:` artefact, and its modification time is not newer
-  than the time the cached check started. A folder uses its own modification
-  time; changes to files inside it are assumed not to change the result;
+  than the time the cached check started. A rule that reads other files, such as
+  the files next to a `package.json`, is not rerun when only those change;
 - the rule content is unchanged;
 - the result was produced the same way: by the same plugin with the same
   `version`, or by an AI agent (see [RQ137][RQ137]).

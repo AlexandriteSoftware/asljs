@@ -45,7 +45,7 @@ export default async function asljsArtefacts(
       PACKAGE_FOLDER);
 
   return { name: 'asljs-artefacts',
-           version: '3',
+           version: '4',
            definitions:
              async () => definitions,
            data:

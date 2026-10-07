@@ -21,7 +21,7 @@ test.after(
   });
 
 test(
-  'ASLJS Package data lists the folders of local asljs dependencies',
+  'ASLJS Package data lists the package.json of local asljs dependencies',
   async () =>
   {
     await using workspace =
@@ -39,15 +39,18 @@ test(
     const context =
       { files:
           { path:
-              () => workspace.resolve('libs/one') } } as unknown as ArtefactDataProvidingContext;
+              () => workspace.resolve(
+                'libs/one/package.json') } } as unknown as ArtefactDataProvidingContext;
 
     assert.deepEqual(
       await getData(
-        { location: 'file:libs/one',
-          name: 'one',
+        { location:
+            'file:libs/one/package.json',
+          name: 'package',
           definitions:
             [ 'ASLJS Package' ] },
         context),
       { LocalDeps:
-          [ workspace.resolve('libs/two') ] });
+          [ workspace.resolve(
+            'libs/two/package.json') ] });
   });
