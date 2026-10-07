@@ -6,8 +6,6 @@ directories). Links that are longer than 20 characters must be a reference
 link.
 */
 
-import { type RuleValidationFunction }
-  from 'asljs-part';
 import { type Nodes }
   from 'mdast';
 import { access,
@@ -15,6 +13,8 @@ import { access,
   from 'node:fs/promises';
 import path
   from 'node:path';
+import { type RuleValidationFunction }
+  from '../rule-validation-function.js';
 
 interface Resource
 {

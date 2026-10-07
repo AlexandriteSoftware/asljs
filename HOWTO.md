@@ -57,7 +57,7 @@ Build the artefact plugin, then run its rules:
 
 ```pwsh
 npm -w asljs-artefacts run build:dist
-npx part check --definitions aftefacts
+npx part check --definitions aftefacts --definitions "asljs-part;Article,Unit Test File"
 ```
 
 Results are cached in `.part/check-cache.json`; add `--force-check` to run every

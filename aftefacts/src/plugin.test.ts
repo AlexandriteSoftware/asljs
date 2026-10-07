@@ -50,12 +50,8 @@ test(
                         definition.source ]),
       [ [ 'ASLJS Package',
           'asljs-artefacts' ],
-        [ 'Article',
-          'asljs-artefacts' ],
         [ 'Package README',
           'asljs-artefacts' ],
         [ 'Requirement',
-          'asljs-artefacts' ],
-        [ 'Unit Test File',
           'asljs-artefacts' ] ]);
   });

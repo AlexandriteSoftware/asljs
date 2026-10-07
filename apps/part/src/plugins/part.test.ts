@@ -53,10 +53,31 @@ test(
                         definition.source ]),
       [ [ 'Artefact Definition',
           'asljs-part' ],
+        [ 'Article',
+          'asljs-part' ],
         [ 'Git Tag',
           'asljs-part' ],
         [ 'NPM Dependency',
+          'asljs-part' ],
+        [ 'Unit Test File',
           'asljs-part' ] ]);
+
+    for (const ruleId of [ 'RL1',
+                           'RL2',
+                           'RL3' ]) {
+      const binding =
+        await providers.definitionSourceProvider.findRule(
+          'Article',
+          ruleId);
+
+      assert.equal(
+        binding?.plugin,
+        'asljs-part');
+
+      assert.match(
+        binding?.version ?? '',
+        /^\d+\.\d+\.\d+/);
+    }
 
     for (const name of [ 'Git Tag',
                          'NPM Dependency' ]) {

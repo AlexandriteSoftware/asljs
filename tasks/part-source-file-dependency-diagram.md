@@ -56,8 +56,8 @@ cycles. Three things are missing:
    - Pro: no `part` code; the graph goes through the same model as the package
      graph ([DEP]), so it also appears in `--format=json` and rules can use it,
      for example "nothing under `model/` imports from `commands/`".
-   - Con: each project that wants it needs the definition; a preset could carry
-     it ([PRE]).
+   - Con: each project that wants it needs the definition, unless it becomes a
+     built-in definition of `asljs-part` ([RQ210][R210]).
 2. A built-in `part` command that scans imports itself.
    - Pro: works without definitions.
    - Con: puts a TypeScript and JavaScript parser into a tool whose model is
@@ -128,5 +128,5 @@ repeat it.
 
 [UMB]: part-better-diagram-support.md
 [DEP]: part-project-deps-diagram.md
-[PRE]: part-presets.md
+[R210]: <../apps/part/development/RQ210 Package plugin.md>
 [STE]: part-entity-stereotypes.md

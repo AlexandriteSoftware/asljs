@@ -16,8 +16,11 @@ From the repository root:
 
 ```pwsh
 npm -w asljs-artefacts run build:dist
-npx part check --definitions aftefacts
+npx part check --definitions aftefacts --definitions "asljs-part;Article,Unit Test File"
 ```
+
+`Article` and `Unit Test File`, which the rules here also apply to, are built
+into `asljs-part`.
 
 Bump `version` in `src/plugin.ts` when a rule implementation changes, so cached
 check results of its rules are discarded.

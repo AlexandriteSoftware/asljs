@@ -5,14 +5,14 @@ Article start with a level 1 heading, which is the file name without
 extension. Exceptions: when the file name is all caps (e.g., `README.md`).
 */
 
-import { type RuleValidationFunction }
-  from 'asljs-part';
 import { type Heading }
   from 'mdast';
 import { readFile }
   from 'node:fs/promises';
 import path
   from 'node:path';
+import { type RuleValidationFunction }
+  from '../rule-validation-function.js';
 
 export const validate: RuleValidationFunction =
   async (

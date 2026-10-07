@@ -1,5 +1,3 @@
-import { createRuleValidationContext }
-  from 'asljs-part';
 import { createTestLoggerProvider }
   from 'asljs-testing';
 import { TmpDir }
@@ -8,6 +6,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import { createRuleValidationContext }
+  from '../rule-validation-function.js';
 import { validate }
   from './article-rl2.js';
 

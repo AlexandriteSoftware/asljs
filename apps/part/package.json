@@ -56,6 +56,7 @@
     "asljs-locator": "^0.1.0",
     "asljs-logging": "^0.1.0",
     "commander": "^15.0.0",
+    "dprint": "^0.58.0",
     "glob": "^13.0.6",
     "ignore": "^7.0.6",
     "minimatch": "^10.2.5",

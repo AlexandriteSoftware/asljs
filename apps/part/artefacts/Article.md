@@ -1,17 +1,13 @@
 # Article
 
-Markdown article.
+Markdown article: any markdown file in the project that git does not ignore.
+
+A built-in definition of `asljs-part`, which implements its rules. Load it with
+`--definitions "asljs-part;Article"`.
 
 ## Location
 
-Project:
-
 - Pattern: `/**/*.md`
-- GitIgnore
-
-Artefacts:
-
-- Pattern: `**/*.md`
 - GitIgnore
 
 ## Rules

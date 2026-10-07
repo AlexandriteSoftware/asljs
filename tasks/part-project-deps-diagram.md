@@ -122,8 +122,8 @@ is not published), or its edges are left out on purpose. Then regenerate
 `docs/Dependencies.md` with `--format=mermaid` and add the check in option 2 so
 it cannot go stale again.
 
-A reusable npm-workspaces package definition belongs in the presets task
-([PRE]), not in `part`'s code.
+A reusable npm-workspaces package definition would be a built-in definition of
+`asljs-part` with a plugin locator ([RQ210][R210]), not a new `part` command.
 
 ## Points to settle
 
@@ -149,4 +149,4 @@ A reusable npm-workspaces package definition belongs in the presets task
 
 [UMB]: part-better-diagram-support.md
 [STE]: part-entity-stereotypes.md
-[PRE]: part-presets.md
+[R210]: <../apps/part/development/RQ210 Package plugin.md>

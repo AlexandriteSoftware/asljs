@@ -5,12 +5,6 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { validate as validateArticleRL1 }
-  from './article-rl1.js';
-import { validate as validateArticleRL2 }
-  from './article-rl2.js';
-import { validate as validateArticleRL3 }
-  from './article-rl3.js';
 import { validate as validateAsljsPackageRL1 }
   from './asljs-package-rl1.js';
 import { getData as getAsljsPackageData }
@@ -35,7 +29,9 @@ const PACKAGE_FOLDER =
 /**
  * Provides the definitions documented in the package folder and implements
  * their code-enforced rules. Build with `npm -w asljs-artefacts run
- * build:dist`, then run `part check --definitions aftefacts`.
+ * build:dist`, then run `part check --definitions aftefacts --definitions
+ * "asljs-part;Article,Unit Test File"`; `Article` and `Unit Test File` come
+ * from `asljs-part`.
  *
  * Bump `version` when a rule implementation changes, so cached check results
  * of its rules are discarded.
@@ -49,7 +45,7 @@ export default async function asljsArtefacts(
       PACKAGE_FOLDER);
 
   return { name: 'asljs-artefacts',
-           version: '2',
+           version: '3',
            definitions:
              async () => definitions,
            data:
@@ -58,10 +54,6 @@ export default async function asljsArtefacts(
              { 'ASLJS Package':
                  { RL1:
                      validateAsljsPackageRL1 },
-               Article:
-                 { RL1: validateArticleRL1,
-                   RL2: validateArticleRL2,
-                   RL3: validateArticleRL3 },
                'Package README':
                  { RL1:
                      validatePackageReadmeRL1,

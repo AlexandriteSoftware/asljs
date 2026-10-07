@@ -126,9 +126,11 @@ Results are cached in `.part/check-cache.json`: a rule runs again only when the
 file changed after its last check, the rule text changed, or the plugin
 `version` changed. `--force-check` runs everything.
 
-`asljs-part` itself is a definition source with built-in definitions, including
-two for artefacts outside the filesystem:
+`asljs-part` itself is a definition source with built-in definitions:
 
+- `Article` - every markdown file: its heading, its links, and its dprint
+  formatting.
+- `Unit Test File` - every `*.test.ts` file.
 - `NPM Dependency` - one artefact per dependency in every `package.json`.
 - `Git Tag` - one artefact per tag.
 

@@ -30,8 +30,6 @@ take a moment because dprint downloads and caches the markdown plugin
 from `https://plugins.dprint.dev/markdown-0.25.0.wasm`.
 */
 
-import { type RuleValidationFunction }
-  from 'asljs-part';
 import { spawn }
   from 'node:child_process';
 import { mkdtemp,
@@ -45,6 +43,8 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
+import { type RuleValidationFunction }
+  from '../rule-validation-function.js';
 
 const DPRINT_CONFIG =
   { markdown:

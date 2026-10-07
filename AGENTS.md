@@ -42,11 +42,13 @@ when` line.
 
 An artefact definition states where a kind of file lives and what it must
 satisfy. Its rules are executable: `npm -w asljs-artefacts run build:dist`, then
-`part check --definitions aftefacts`, runs them. `aftefacts` is the private
-workspace package `asljs-artefacts`: the definition documents sit in its folder,
+`part check --definitions aftefacts --definitions "asljs-part;Article,Unit Test
+File"`, runs them. `aftefacts` is the private workspace package
+`asljs-artefacts`: the repository's own definition documents sit in its folder,
 and `aftefacts/src/plugin.ts` reads them and wires up the rule implementations
 in `aftefacts/src/`; bump its `version` when a rule implementation changes.
-Results are cached in `.part/check-cache.json`; `--force-check` runs every rule.
+`Article` and `Unit Test File` are built into `asljs-part`. Results are cached
+in `.part/check-cache.json`; `--force-check` runs every rule.
 
 - [ASLJS Package][AFP] - a workspace package published to npm.
 - [Package README][AFR] - the landing page of a package, its heading set and
@@ -127,9 +129,9 @@ Results are cached in `.part/check-cache.json`; `--force-check` runs every rule.
 [SKE]: skills/release.md
 [AFP]: <aftefacts/ASLJS Package.md>
 [AFR]: <aftefacts/Package README.md>
-[AFA]: aftefacts/Article.md
+[AFA]: apps/part/artefacts/Article.md
 [AFQ]: aftefacts/Requirement.md
-[AFU]: <aftefacts/Unit Test File.md>
+[AFU]: <apps/part/artefacts/Unit Test File.md>
 [AFD]: <apps/part/artefacts/Artefact Definition.md>
 [DCC]: CONVENTIONS.md
 [DCH]: HOWTO.md

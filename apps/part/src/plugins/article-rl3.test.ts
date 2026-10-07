@@ -1,7 +1,3 @@
-import { type Artefact,
-         createRuleValidationContext,
-         type RuleValidationContext }
-  from 'asljs-part';
 import { createTestLoggerProvider }
   from 'asljs-testing';
 import { TmpDir }
@@ -10,6 +6,11 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
+import { type Artefact }
+  from '../model/artefact.js';
+import { createRuleValidationContext,
+         type RuleValidationContext }
+  from '../rule-validation-function.js';
 import { validate }
   from './article-rl3.js';
 
