@@ -30,11 +30,6 @@ What remains:
   root, prints an empty table. Packages are reached by name instead
   (`--definitions asljs-part`), which covers the plugin case, but not an md-only
   folder of a package.
-- `aftefacts/Artefact Definition.md` is a copy of `apps/part/artefacts/Artefact
-  Definition.md`. Loading both sources fails: `--definitions aftefacts
-  --definitions asljs-part` reports `Definition "Artefact Definition" is
-  provided by plugin "asljs-part" and by plugin "asljs-artefacts"`. A filter
-  such as `asljs-part;;Artefact Definition` works around it.
 
 ## Options
 
@@ -62,12 +57,6 @@ files in the consumer's definition folders.
 - Read a folder named explicitly in `--definitions` even when git ignores it,
   still filtering what lies inside it through `.gitignore`.
 
-### The duplicated `Artefact Definition`
-
-- Delete `aftefacts/Artefact Definition.md` and point the root `AGENTS.md` link
-  at `apps/part/artefacts/Artefact Definition.md`; load it with `--definitions
-  "asljs-part;Artefact Definition"` where it is needed.
-
 ## Points to settle
 
 - The anchor syntax. It must not collide with a glob or with the `/` anchor.
@@ -83,7 +72,6 @@ files in the consumer's definition folders.
   `path.dirname(definition.path)`.
 - `libs/locator/src/location.ts` - pattern anchoring, if the anchor is added.
 - `apps/part/development/RQ205 Definition Location.md` - the requirement.
-- `aftefacts/Artefact Definition.md` - the copy.
 
 [RQ1]: <../apps/part/development/RQ111 CLI Definitions parameter.md>
 [RQ5]: <../apps/part/development/RQ205 Definition Location.md>

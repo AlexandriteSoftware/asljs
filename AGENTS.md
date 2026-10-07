@@ -130,7 +130,7 @@ Results are cached in `.part/check-cache.json`; `--force-check` runs every rule.
 [AFA]: aftefacts/Article.md
 [AFQ]: aftefacts/Requirement.md
 [AFU]: <aftefacts/Unit Test File.md>
-[AFD]: <aftefacts/Artefact Definition.md>
+[AFD]: <apps/part/artefacts/Artefact Definition.md>
 [DCC]: CONVENTIONS.md
 [DCH]: HOWTO.md
 [DCL]: <docs/Repository Layout.md>

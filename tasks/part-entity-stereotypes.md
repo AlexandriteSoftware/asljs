@@ -87,8 +87,8 @@ would be guessing.
 - `apps/part/src/providers/artefact-definition-provider.ts` -
   `#parseProperties`, where per-property or per-definition diagram settings
   would be read.
-- `apps/part/artefacts/Artefact Definition.md`, `aftefacts/Artefact
-  Definition.md` - the definition format, which option 2 or 3 would extend.
+- `apps/part/artefacts/Artefact Definition.md` - the definition format, which
+  option 2 or 3 would extend.
 
 [UMB]: part-better-diagram-support.md
 [DEP]: part-project-deps-diagram.md

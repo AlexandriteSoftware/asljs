@@ -50,8 +50,6 @@ test(
                         definition.source ]),
       [ [ 'ASLJS Package',
           'asljs-artefacts' ],
-        [ 'Artefact Definition',
-          'asljs-artefacts' ],
         [ 'Article',
           'asljs-artefacts' ],
         [ 'Package README',
