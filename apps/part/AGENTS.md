@@ -79,7 +79,9 @@ Do not assume:
   hand-rolling markdown scans.
 - Use `ArtefactProvider` when you need definition-aware artefact discovery or to
   inspect which definitions apply to an artefact.
-- Use `createRuleValidationContext(...)` to call a rule from its tests.
+- Use `createRuleValidationContext(...)` to call a rule from its tests; take
+  `TmpDir` from `asljs-tmpdir` and the logger from `asljs-testing`, as
+  `aftefacts/src/*.test.ts` does. The package root does not re-export them.
 - Keep stable public usage on the package-root exports and the plugin subpath
   exports; treat other `src/*` files as internal implementation.
 

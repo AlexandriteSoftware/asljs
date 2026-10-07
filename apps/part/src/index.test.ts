@@ -16,7 +16,6 @@ test(
         'NullLoggerProvider',
         'PinoLoggerProvider',
         'PinoLoggerProviderOptionsBuilder',
-        'TmpDir',
         'createRuleValidationContext',
         'default',
         'readMarkdownDefinitions',

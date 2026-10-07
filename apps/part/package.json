@@ -65,6 +65,7 @@
   },
   "devDependencies": {
     "asljs-testing": "^0.1.0",
+    "asljs-tmpdir": "^0.1.13",
     "asljs-toolkit": "^0.1.0"
   }
 }

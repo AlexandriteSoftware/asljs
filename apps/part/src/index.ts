@@ -59,10 +59,6 @@ export {
 } from './providers/markdown-document-provider.js';
 
 export {
-  TmpDir
-} from 'asljs-tmpdir';
-
-export {
   NullLoggerProvider,
   PinoLoggerProvider,
   PinoLoggerProviderOptionsBuilder
