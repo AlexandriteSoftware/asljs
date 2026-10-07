@@ -10,11 +10,12 @@ Package: `part`.
 Moved from `part/TODO.md`, where it listed flowchart, sequence, class, state,
 component, deployment, use case and activity diagrams.
 
-`part` draws one type today: a Mermaid `graph TD` of artefacts and the
-references between them, rendered to SVG ([UMB]). What it knows about an
-artefact is its path, the definitions it matches, and the property values its
-data providers return (`--format=json` shows them all). A property of type
-`Artefact` or `Artefact[]` is the only kind of relationship.
+`part` draws one type today: `part diagram` writes a Mermaid `graph` of
+artefacts and the references between them, shaped by a diagram document (nodes,
+root, per-property edge styles, folder groups), as text or SVG ([DIA]). What it
+knows about an artefact is its path, the definitions it matches, and the
+property values its data providers return (`--format=json` shows them all). A
+property of type `Artefact` or `Artefact[]` is the only kind of relationship.
 
 ## Problem
 
@@ -49,35 +50,34 @@ EdGames does, and no generic rule would turn an inventory into a sequence.
    when Mermaid cannot parse one.
    - Pro: covers every type the list names, authored by hand where they are
      written anyway; `part`'s role stays checking artefacts.
-   - Con: the parse rule needs Mermaid in the rule's process; the CLI that
-     renders it is the dependency [UMB] proposes to make optional.
+   - Con: the parse rule needs Mermaid in the rule's process; the Mermaid CLI is
+     only an optional peer dependency of `asljs-part`.
 3. Let a data provider return diagram text itself, which `part` passes through.
    - Pro: anything is possible.
    - Con: `part` adds nothing; a script would do the same.
 
 ### Recommendation
 
-Narrow the task to option 1's class view, and only once [UMB] has a text output
-to build it on; drop the behavioural types from what `part` generates. Option 2
-is a separate, small idea for whoever first keeps Mermaid diagrams in the
-repository's documents (today only `docs/Dependencies.md` and `RQ121 CLI
-Inventory action.md` contain one), and would be a definition in `aftefacts`, not
-`part` code.
+Narrow the task to option 1's class view, built on the diagram document; drop
+the behavioural types from what `part` generates. Option 2 is a separate, small
+idea for whoever first keeps Mermaid diagrams in the repository's documents
+(today only `docs/Dependencies.md` and `RQ121 CLI Inventory action.md` contain
+one), and would be a definition in `aftefacts`, not `part` code.
 
 ## Points to settle
 
-- How a type is chosen: a new `--format` value per type (`mermaid-class`) or a
-  separate `--diagram <type>` option next to `--format=mermaid|diagram`.
+- How a type is chosen: a `Type` setting under `## Layout` in the diagram
+  document, or a separate document format per type.
 - Which properties appear as class attributes: all, or those named with
   `--with-properties`, as the table format does.
 
 ## Where
 
-- `apps/part/src/commands/inventory.ts` - `getInventoryFormat`,
-  `buildMermaidDiagram`, and `buildJsonInventory`, which already collects the
-  property values a class view would show.
-- `apps/part/development/RQ206 Diagram.md` - the requirement for the one type
-  that exists.
+- `apps/part/src/diagram/` - `buildDiagram`, which collects nodes and edges, and
+  `toMermaid`; `apps/part/src/commands/inventory.ts` - `buildJsonInventory`,
+  which already collects the property values a class view would show.
+- `apps/part/development/RQ206 Diagram document.md` - the requirement for the
+  one type that exists.
 
-[UMB]: part-better-diagram-support.md
+[DIA]: <../apps/part/docs/part diagram.md>
 [STE]: part-entity-stereotypes.md

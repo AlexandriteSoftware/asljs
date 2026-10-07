@@ -10,11 +10,11 @@ Package: `part`.
 Moved from `part/TODO.md`, where it read "diagram editor?" with the question
 mark.
 
-`part` is a command-line tool. Its diagram is generated from the inventory and
-written to standard output as SVG ([UMB]); there is nothing stored to edit, and
-`part` has no user interface. The repository has a user-interface library
-(`libs/components`) and an application builder (`apps/app-builder`), but neither
-is connected to `part`.
+`part` is a command-line tool. `part diagram` generates a diagram from a diagram
+document and prints it as Mermaid text or SVG, or writes the text into the
+document ([DIA]); there is no stored layout to edit, and `part` has no user
+interface. The repository has a user-interface library (`libs/components`) and
+an application builder (`apps/app-builder`), but neither is connected to `part`.
 
 ## Problem
 
@@ -35,8 +35,8 @@ plausible readings are different projects:
 
 1. Drop it.
    - Pro: none of the three readings has a user or a definition that needs it;
-     reading 3 is served by existing tools once [UMB] adds Mermaid text output,
-     which any Mermaid editor can open.
+     reading 3 is served by existing tools, since `part diagram` prints Mermaid
+     text, which any Mermaid editor can open.
    - Con: loses the note, if a real need was behind it.
 2. Keep it, narrowed to one reading, with the user and the artefacts it serves
    stated.
@@ -47,10 +47,10 @@ plausible readings are different projects:
 
 ### Recommendation
 
-Drop it, and note in [UMB] that Mermaid text output is the way into existing
-editors. Reading 2 is the only one that would be specific to `part`; if it comes
-back, it should come back as its own task, starting from a write path for
-property values, which `part` does not have.
+Drop it: Mermaid text output is the way into existing editors. Reading 2 is the
+only one that would be specific to `part`; if it comes back, it should come back
+as its own task, starting from a write path for property values, which `part`
+does not have.
 
 ## Points to settle
 
@@ -60,9 +60,10 @@ property values, which `part` does not have.
 
 ## Where
 
-- `apps/part/src/commands/inventory.ts` - the only diagram code.
+- `apps/part/src/diagram/` and `apps/part/src/commands/diagram.ts` - the diagram
+  code.
 - `apps/part/src/artefact-data-providing-function.ts` - the read-only `getData`
   contract that reading 2 would have to extend.
 
-[UMB]: part-better-diagram-support.md
+[DIA]: <../apps/part/docs/part diagram.md>
 [TYP]: part-diagram-types.md

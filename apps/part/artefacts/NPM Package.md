@@ -39,3 +39,17 @@ Whether the package sets `private` to `true`.
 The packages of the project in `dependencies`: for each entry, the first
 `package.json` under the project root, in path order, with that name. Entries on
 packages outside the project are left out.
+
+### DevDependencies
+
+- Type: Artefact[]
+
+The packages of the project in `devDependencies`, found as for `Dependencies`.
+
+### Workspaces
+
+- Type: Artefact[]
+
+The `package.json` of each folder matched by the `workspaces` globs, an array or
+the `packages` array of an object, relative to this package's folder; a pattern
+starting with `!` excludes. In path order.

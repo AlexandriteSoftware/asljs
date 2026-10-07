@@ -19,17 +19,17 @@ says what would be analysed, for whom, or where it would run. `git log -S
 `part` is a Node.js CLI. What it can output today:
 
 - `part inventory` prints a markdown table of artefacts and the definitions that
-  apply to them. `--format` selects `table`, `diagram` or `json`
-  ([inventory.ts][INV]):
+  apply to them. `--format` selects `table` or `json` ([inventory.ts][INV]):
 
   ```ts
   function getInventoryFormat(
       format: string | undefined
-    ): 'table' | 'diagram' | 'json'
+    ): 'table' | 'json'
   ```
 
-  `diagram` builds a Mermaid graph and renders it to SVG by spawning `mmdc` from
-  the bundled `@mermaid-js/mermaid-cli` ([RQ206][R206]).
+- `part diagram` prints the Mermaid graph a diagram document describes, or
+  renders it to SVG by spawning `mmdc` from `@mermaid-js/mermaid-cli`, an
+  optional peer dependency ([RQ124][R124]).
 - `part check` runs every applicable rule against every artefact and prints only
   a markdown table; it has no `--format` option ([check.ts][CHK]):
 
@@ -141,7 +141,7 @@ item was meant to give, deleting the task is a reasonable outcome too.
 - Audience: the maintainer only, or the public; and whether this repository's
   failing rows may be published.
 - Scope: this repository only, or any repository.
-- Content: check results, inventory, the inventory diagram, or all of them.
+- Content: check results, inventory, diagrams, or all of them.
 - Whether history and trends are required, and if so where results are stored.
 - The machine-readable `check` output: its shape, and whether cached and AI
   results are marked in it.
@@ -152,7 +152,8 @@ item was meant to give, deleting the task is a reasonable outcome too.
 ## Where
 
 - `apps/part/src/commands/check.ts` - the check report, markdown table only.
-- `apps/part/src/commands/inventory.ts` - `table`, `diagram` and `json` formats.
+- `apps/part/src/commands/inventory.ts` - `table` and `json` formats.
+- `apps/part/src/commands/diagram.ts` - Mermaid text and SVG.
 - `apps/part/src/providers/definition-source-provider.ts` - imports plugins.
 - `apps/part/src/rule-runner.ts` - runs plugin rules and AI checks, with the
   cache.
@@ -171,6 +172,6 @@ item was meant to give, deleting the task is a reasonable outcome too.
 [RUN]: ../apps/part/src/rule-runner.ts
 [R136]: <../apps/part/development/RQ136 CLI Check cache.md>
 [R137]: <../apps/part/development/RQ137 CLI AI check.md>
-[R206]: <../apps/part/development/RQ206 Diagram.md>
+[R124]: <../apps/part/development/RQ124 CLI Diagram action.md>
 [WF]: ../.github/workflows/build-app-builder.yml
 [DSH]: ../apps/dash/README.md

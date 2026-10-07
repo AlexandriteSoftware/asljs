@@ -12,11 +12,12 @@ Moved from `part/TODO.md`, where it read "source file dependency diagram".
 `part` has no knowledge of source code. What it has is general enough to carry
 an import graph: a definition can declare an `Artefact[]` property, a plugin's
 data function for it (`data: { [definition]: (artefact, context) => ... }`) can
-compute the value any way it likes, and `part inventory --format=diagram` draws
-one edge per value ([UMB]). A value is either a location, such as
-`file:src/index.ts`, or a path resolved against the artefact's own directory, in
-`resolveReferencedLocation` in `apps/part/src/commands/inventory.ts`, so a data
-function can return an import specifier almost as written.
+compute the value any way it likes, and `part diagram` draws one edge per value
+of a property listed in the diagram document ([DIA]). A value is either a
+location, such as `file:src/index.ts`, or a path resolved against the artefact's
+own directory, in `resolveReferencedLocation` in
+`apps/part/src/artefact-property-values.ts`, so a data function can return an
+import specifier almost as written.
 
 The repository has no definition for source files. There are about 390 non-test
 `.ts` and `.js` files tracked under `libs/` and `apps/`, from 2 in `libs/tmpdir`
@@ -38,13 +39,11 @@ no static scan can see those.
 
 There is no way to see which modules of a package depend on which, for example
 to check that `apps/part/src/model` depends on nothing in `commands`, or to find
-cycles. Three things are missing:
-
-1. a source of import data;
-2. a way to scope the diagram to one package or directory, since `inventory`
-   takes no path argument and a whole-repository graph of ~390 nodes is
-   unreadable in Mermaid;
-3. a text output to keep the result in a document ([UMB]).
+cycles. What is missing is a source of import data. The rest is in place: a
+diagram document scopes the graph with `Exclude` globs or a `Root` to walk from,
+which matters because a whole-repository graph of ~390 nodes is unreadable in
+Mermaid, and `part diagram` prints Mermaid text that `--write` keeps in a
+document.
 
 ## Options
 
@@ -54,8 +53,8 @@ cycles. Three things are missing:
    property, and a data function in `aftefacts/src/` that lists the file's
    relative imports and maps `.js` to `.ts` when the `.ts` file exists.
    - Pro: no `part` code; the graph goes through the same model as the package
-     graph ([DEP]), so it also appears in `--format=json` and rules can use it,
-     for example "nothing under `model/` imports from `commands/`".
+     graph (`NPM Package`), so it also appears in `--format=json` and rules can
+     use it, for example "nothing under `model/` imports from `commands/`".
    - Con: each project that wants it needs the definition, unless it becomes a
      built-in definition of `asljs-part` ([RQ210][R210]).
 2. A built-in `part` command that scans imports itself.
@@ -88,18 +87,19 @@ cycles. Three things are missing:
 
 ### Scope
 
-1. A `[pattern]` argument on `inventory`, as `check` has ([UMB]).
+1. A diagram document with `Exclude` globs, or a `Root` at one entry module with
+   `Follow: Imports`.
 2. One definition per package, or a definition whose `Location` is a single
    package's `src`.
 3. Collapse files to directories, drawing `model` and `commands` as nodes.
 
 ### Recommendation
 
-Option 1 with `ts.preProcessFile`, scoped by the `inventory` `[pattern]`
-argument proposed in [UMB], and Mermaid text output. Draw only relative imports
-inside the scope; an import of `asljs-logging` is a package edge and belongs to
-[DEP]. Test files are left out by the definition's `Location`, which keeps the
-graph to the published code.
+Option 1 with `ts.preProcessFile`, drawn by a diagram document scoped with
+`Root` or `Exclude`. Draw only relative imports inside the scope; an import of
+`asljs-logging` is a package edge and belongs to the package graph in
+`docs/Dependencies.md`. Test files are left out by the definition's `Location`,
+which keeps the graph to the published code.
 
 Reach for dependency-cruiser only if cycle detection or layer rules turn out to
 be the real need; it does both already, and writing them as `part` rules would
@@ -118,15 +118,12 @@ repeat it.
 
 - `aftefacts/` - where a `Source File` definition would go, with its data
   function in `aftefacts/src/` and bound in `aftefacts/src/plugin.ts`.
-- `apps/part/src/commands/inventory.ts` - `resolveReferencedLocation` and
-  `collectDiagramEdges`, which turn property values into edges.
-- `apps/part/src/cli.ts` - the `inventory` command, which has no `[pattern]`
-  argument.
+- `apps/part/src/artefact-property-values.ts` - `resolveReferencedLocation`;
+  `apps/part/src/diagram/diagram-builder.ts` turns property values into edges.
 - `apps/part/src/artefact-data-providing-function.ts` - the data function
   contract.
 - `package.json` - `typescript` in the root `devDependencies`.
 
-[UMB]: part-better-diagram-support.md
-[DEP]: part-project-deps-diagram.md
+[DIA]: <../apps/part/docs/part diagram.md>
 [R210]: <../apps/part/development/RQ210 Package plugin.md>
 [STE]: part-entity-stereotypes.md

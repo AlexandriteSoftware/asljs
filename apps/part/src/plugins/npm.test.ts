@@ -193,6 +193,10 @@ test(
       'package.json',
       JSON.stringify(
         { private: true,
+          workspaces:
+            [ './apps/*',
+              'libs/*',
+              '!apps/dev' ],
           dependencies:
             { lib: '^1.0.0' } }));
 
@@ -211,7 +215,8 @@ test(
             { lib: '^1.0.0',
               ext: '^2.0.0' },
           devDependencies:
-            { dev: '^1.0.0' } }));
+            { dev: '^1.0.0',
+              ext: '^2.0.0' } }));
 
     await workspace.writeText(
       'apps/dev/package.json',
@@ -274,18 +279,29 @@ test(
           Version: '0.1.0',
           Private: false,
           Dependencies:
-            [ 'file:libs/lib/package.json' ] },
+            [ 'file:libs/lib/package.json' ],
+          DevDependencies:
+            [ 'file:apps/dev/package.json' ],
+          Workspaces: [ ] },
         { Name: 'dev',
           Version: null,
           Private: false,
-          Dependencies: [ ] },
+          Dependencies: [ ],
+          DevDependencies: [ ],
+          Workspaces: [ ] },
         { Name: 'lib',
           Version: '1.0.0',
           Private: false,
-          Dependencies: [ ] },
+          Dependencies: [ ],
+          DevDependencies: [ ],
+          Workspaces: [ ] },
         { Name: null,
           Version: null,
           Private: true,
           Dependencies:
-            [ 'file:libs/lib/package.json' ] } ]);
+            [ 'file:libs/lib/package.json' ],
+          DevDependencies: [ ],
+          Workspaces:
+            [ 'file:apps/app/package.json',
+              'file:libs/lib/package.json' ] } ]);
   });

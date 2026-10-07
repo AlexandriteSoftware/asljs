@@ -155,13 +155,13 @@ test(
 
     await runCli(
       [ 'inventory',
-        '--format=diagram',
+        '--format=json',
         '--with-properties' ],
       environment);
 
     assert.equal(
       format,
-      'diagram');
+      'json');
 
     assert.equal(
       withProperties,

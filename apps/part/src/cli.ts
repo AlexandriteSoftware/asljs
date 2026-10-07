@@ -14,6 +14,8 @@ import { execDefinition }
   from './commands/definition.js';
 import { execDefinitions }
   from './commands/definitions.js';
+import { execDiagram }
+  from './commands/diagram.js';
 import { execInventory }
   from './commands/inventory.js';
 import { execVersion }
@@ -196,7 +198,7 @@ function createCli(
       'Comma-separated definition names to get inventory for')
     .option(
       '--format <format>',
-      'Output format: table, diagram or json')
+      'Output format: table or json')
     .option(
       '--with-properties [properties]',
       'Include all definition properties in table output, or only the comma-separated <Definition>.<Property> list provided')
@@ -227,6 +229,47 @@ function createCli(
             withProperties:
               parseWithPropertiesOption(
                 options.withProperties) });
+      });
+
+  cli.command('diagram')
+    .description(
+      'Print the diagram a diagram document describes')
+    .argument(
+      'document')
+    .option(
+      '--format <format>',
+      'Output format: mermaid (default) or svg')
+    .option(
+      '--write',
+      'Write the Mermaid text into the Diagram section of the document')
+    .option(
+      '--check',
+      'Fail when the Diagram section of the document is not current')
+    .action(
+      async (
+          document,
+          options
+        ) =>
+      {
+        const method =
+          environment.resolve(
+            execDiagram);
+
+        const logger =
+          environment
+          .loggerProvider
+          .getLogger(
+            'execDiagram');
+
+        await method(
+          logger,
+          environment,
+          { document,
+            format:
+              filterStringOption(
+                options.format),
+            write: options.write === true,
+            check: options.check === true });
       });
 
   cli.command('definition')

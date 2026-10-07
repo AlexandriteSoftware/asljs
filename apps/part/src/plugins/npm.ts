@@ -2,6 +2,8 @@ import { GitIgnore }
   from 'asljs-locator';
 import { glob }
   from 'glob';
+import { minimatch }
+  from 'minimatch';
 import { readFile }
   from 'node:fs/promises';
 import path
@@ -237,13 +239,47 @@ function getPackageData(
       manifests,
       artefact.location.slice(FILE_SCHEME.length));
 
+  return { Name:
+             getString(
+               manifest.content.name),
+           Version:
+             getString(
+               manifest.content.version),
+           Private:
+             manifest.content.private === true,
+           Dependencies:
+             getProjectDependencies(
+               manifests,
+               manifest,
+               'dependencies'),
+           DevDependencies:
+             getProjectDependencies(
+               manifests,
+               manifest,
+               'devDependencies'),
+           Workspaces:
+             getWorkspaces(
+               manifests,
+               manifest) };
+}
+
+/**
+ * Locations of the project packages named in a dependency section, each the
+ * first `package.json` with that name.
+ */
+function getProjectDependencies(
+    manifests: Manifest[],
+    manifest: Manifest,
+    kind: string
+  ): string[]
+{
   const dependencies: string[] = [ ];
 
   for (
     const name of Object.keys(
       getSection(
         manifest,
-        'dependencies'))
+        kind))
   ) {
     const dependency =
       manifests.find(
@@ -255,15 +291,103 @@ function getPackageData(
     }
   }
 
-  return { Name:
-             getString(
-               manifest.content.name),
-           Version:
-             getString(
-               manifest.content.version),
-           Private:
-             manifest.content.private === true,
-           Dependencies: dependencies };
+  return dependencies;
+}
+
+/**
+ * Locations of the `package.json` files in the folders the `workspaces`
+ * globs match, relative to the manifest's folder. A pattern starting with `!`
+ * excludes.
+ */
+function getWorkspaces(
+    manifests: Manifest[],
+    manifest: Manifest
+  ): string[]
+{
+  const patterns =
+    getWorkspacePatterns(
+      manifest.content.workspaces)
+    .map(
+      pattern =>
+        pattern
+          .replace(
+            /^(!?)\.\//,
+            '$1')
+          .replace(
+            /\/+$/,
+            ''));
+
+  const included =
+    patterns.filter(
+      pattern => !pattern.startsWith('!'));
+
+  const excluded =
+    patterns
+    .filter(
+      pattern => pattern.startsWith('!'))
+    .map(
+      pattern => pattern.slice(1));
+
+  const manifestFolder =
+    path.posix.dirname(
+      manifest.path);
+
+  const workspaces: string[] = [ ];
+
+  for (const item of manifests) {
+    const folder =
+      path.posix.relative(
+        manifestFolder,
+        path.posix.dirname(
+          item.path));
+
+    if (
+      folder === ''
+      || folder.startsWith('..')
+    ) {
+      continue;
+    }
+
+    if (
+      included.some(
+        pattern =>
+          minimatch(
+            folder,
+            pattern))
+      && !excluded.some(
+        pattern =>
+          minimatch(
+            folder,
+            pattern))
+    ) {
+      workspaces.push(
+        `${FILE_SCHEME}${item.path}`);
+    }
+  }
+
+  return workspaces;
+}
+
+/**
+ * The `workspaces` field: an array of globs, or an object with a `packages`
+ * array.
+ */
+function getWorkspacePatterns(
+    value: unknown
+  ): string[]
+{
+  const patterns =
+    Array.isArray(value)
+    ? value
+    : value
+        && typeof value === 'object'
+        && Array.isArray(
+          (value as Record<string, unknown>).packages)
+    ? (value as Record<string, unknown[]>).packages
+    : [ ];
+
+  return patterns.filter(
+    (pattern): pattern is string => typeof pattern === 'string');
 }
 
 function getString(

@@ -41,6 +41,10 @@ Public behavior at a glance:
 - JavaScript rules receive `context.artefacts` as an `ArtefactProvider` rooted
   at the project
 - cli command `inventory` shows all matching definitions for each artefact
+- cli command `diagram <document>` draws the graph a diagram document describes
+  (nodes, root, per-property edges, layout) as Mermaid text, or SVG with the
+  optional peer `@mermaid-js/mermaid-cli`; diagram documents must not sit in an
+  md-only definitions folder
 - cli command `check` runs all rules from all matching definitions for each
   artefact; a rule no plugin implements is `Skip`, or is checked by an AI agent
   with `--ai`
@@ -98,8 +102,10 @@ Do not assume:
   rules change.
 - Tests never run a real AI agent; they set `PART_AI_COMMAND` to a stub.
 - If changing rule execution, then re-check `OK`, failure and `Skip` results.
-- If changing CLI output, then re-check `inventory`, `definition`, `definitions`
-  and `check` contract tests.
+- If changing CLI output, then re-check `inventory`, `definition`,
+  `definitions`, `diagram` and `check` contract tests.
+- If changing an action, then update its page in `docs/`, which documents each
+  action for users; requirements stay in `development/`.
 
 ## Validation
 
@@ -136,6 +142,16 @@ behavior changes.
 - Lists artefacts of the discovered definitions with the printed location
   (relative path for `file:`, full URI otherwise).
 - Shows all definitions that apply to the same artefact.
+
+### diagram
+
+- Reads the diagram document given as the argument, relative to the working
+  directory, and prints Mermaid text; `--format=svg` renders it with `mmdc`
+  (`PART_MMDC_PATH` replaces it).
+- `--write` replaces the first `mermaid` block of the `## Diagram` section;
+  `--check` sets a non-zero exit code when that block is missing or differs.
+- Errors in the document are fatal and name it; references to missing artefacts
+  are logged as warnings.
 
 ### definitions
 

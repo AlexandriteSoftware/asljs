@@ -142,11 +142,38 @@ name patterns (`*` and `?`, case-insensitive), to pick definitions:
 part inventory --definitions "asljs-part;NPM *,GIT *;GIT Commits"
 ```
 
-Other output formats: `part inventory --format=json`, `--format=diagram` (an
-SVG), and `--with-properties` to add property columns.
+`part inventory --format=json` prints the inventory as JSON, and
+`--with-properties` adds property columns.
+
+`part diagram <document>` draws a graph of artefacts as Mermaid text. A diagram
+document picks the definitions whose artefacts are nodes, the root artefacts to
+start from, and the reference properties drawn as edges, each with its own
+style:
+
+```markdown
+# Package Dependencies
+
+## Nodes
+
+- Definitions: NPM Package
+- Label: Name
+
+## Edges
+
+### Dependencies
+
+### DevDependencies
+
+- Style: dotted
+```
+
+`--write` keeps the generated graph in the document's `## Diagram` section, and
+`--check` fails when it is out of date.
 
 ## Further reading
 
+- [Actions][AC] - `inventory`, `check`, `diagram`, `definitions`, `definition`,
+  `config` and `version`, and the [options][OP] they share.
 - [Artefact Definition][AD] - the definition format.
 - [Git Tag][GT], [NPM Package][NP] and [NPM Dependency][ND] - the definitions of
   the built-in plugins.
@@ -158,8 +185,10 @@ SVG), and `--with-properties` to add property columns.
 MIT
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[AC]: docs
 [AD]: <artefacts/Artefact Definition.md>
 [GT]: <artefacts/Git Tag.md>
 [ND]: <artefacts/NPM Dependency.md>
 [NP]: <artefacts/NPM Package.md>
+[OP]: docs/Options.md
 [RQ]: development

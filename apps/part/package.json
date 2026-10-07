@@ -52,7 +52,6 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@mermaid-js/mermaid-cli": "^11.16.0",
     "asljs-locator": "^0.1.0",
     "asljs-logging": "^0.1.0",
     "commander": "^15.0.0",
@@ -63,6 +62,14 @@
     "remark-parse": "^11.0.0",
     "typescript-eslint": "^8.64.0",
     "unified": "^11.0.5"
+  },
+  "peerDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.16.0"
+  },
+  "peerDependenciesMeta": {
+    "@mermaid-js/mermaid-cli": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "asljs-testing": "^0.1.0",

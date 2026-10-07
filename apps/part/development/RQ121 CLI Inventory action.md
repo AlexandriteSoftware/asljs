@@ -8,8 +8,8 @@ Parameters:
 
 - `--inventory-definitions=...` - limit check to specific definitions,
   comma-separated list.
-- `--format=...` - output format, either `table` (default), `diagram`, or
-  `json`.
+- `--format=...` - output format, either `table` (default) or `json`. Diagrams
+  are drawn by the Diagram action, see [RQ124][RQ124].
 - `--with-properties` - optional comma-separated list of definition properties
   `<Definition>.<Property>,...`.
 
@@ -18,6 +18,7 @@ See also:
 - [RQ111 CLI Definitions parameter][1]
 
 [1]: <RQ111 CLI Definitions parameter.md>
+[RQ124]: <RQ124 CLI Diagram action.md>
 [RQ204]: <RQ204 ArtefactProvider.md>
 
 ## Report Properties
@@ -87,19 +88,4 @@ The `json` format produces a JSON array of objects, one per artefact.
   },
   ...
 ]
-```
-
-### `diagram`
-
-The `diagram` format produces a Mermaid diagram, with one node per artefact and
-one edge per `Artefact` property linking to another artefact, if it is on the
-diagram. A property value with a scheme is a location; any other value is a path
-relative to the referencing `file:` artefact.
-
-```mermaid
-graph TD
-  Artefact1
-  Artefact2
-
-  Artefact1 --> Artefact2
 ```

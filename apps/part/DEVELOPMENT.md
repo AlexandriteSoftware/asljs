@@ -28,6 +28,6 @@ npm run test -- --test-name-pattern="Article_RL2"
 node --test --test-name-pattern="Article_RL2"
 ```
 
-Inventory diagram coverage lives in `src/commands/inventory.test.ts` and the
-diagram report emits SVG through `part inventory --format=diagram`. The diagram
-renderer uses the package-local Mermaid CLI dependency.
+Diagram coverage lives in `src/commands/diagram.test.ts`. Its SVG test fakes the
+Mermaid CLI through `PART_MMDC_PATH`, so `@mermaid-js/mermaid-cli`, an optional
+peer dependency, need not be installed.
