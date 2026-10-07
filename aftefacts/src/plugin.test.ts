@@ -48,9 +48,7 @@ test(
       definitions.map(
         definition => [ definition.name,
                         definition.source ]),
-      [ [ 'ASLJS Package',
-          'asljs-artefacts' ],
-        [ 'Package README',
+      [ [ 'Package README',
           'asljs-artefacts' ],
         [ 'Requirement',
           'asljs-artefacts' ] ]);

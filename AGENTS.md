@@ -50,7 +50,6 @@ in `aftefacts/src/`; bump its `version` when a rule implementation changes.
 `Article` and `Unit Test File` are built into `asljs-part`. Results are cached
 in `.part/check-cache.json`; `--force-check` runs every rule.
 
-- [ASLJS Package][AFP] - a workspace package published to npm.
 - [Package README][AFR] - the landing page of a package, its heading set and
   their order.
 - [Article][AFA] - any markdown file: its heading, its links, and its
@@ -127,7 +126,6 @@ in `.part/check-cache.json`; `--force-check` runs every rule.
 [SKC]: skills/documentation.md
 [SKT]: skills/testing.md
 [SKE]: skills/release.md
-[AFP]: <aftefacts/ASLJS Package.md>
 [AFR]: <aftefacts/Package README.md>
 [AFA]: apps/part/artefacts/Article.md
 [AFQ]: aftefacts/Requirement.md

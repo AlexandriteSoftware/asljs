@@ -5,10 +5,6 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { validate as validateAsljsPackageRL1 }
-  from './asljs-package-rl1.js';
-import { getData as getAsljsPackageData }
-  from './asljs-package.js';
 import { validate as validatePackageReadmeRL1 }
   from './package-readme-rl1.js';
 import { validate as validatePackageReadmeRL2 }
@@ -45,16 +41,11 @@ export default async function asljsArtefacts(
       PACKAGE_FOLDER);
 
   return { name: 'asljs-artefacts',
-           version: '4',
+           version: '5',
            definitions:
              async () => definitions,
-           data:
-             { 'ASLJS Package': getAsljsPackageData },
            rules:
-             { 'ASLJS Package':
-                 { RL1:
-                     validateAsljsPackageRL1 },
-               'Package README':
+             { 'Package README':
                  { RL1:
                      validatePackageReadmeRL1,
                    RL2:

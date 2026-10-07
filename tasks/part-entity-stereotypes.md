@@ -32,11 +32,10 @@ cannot express:
 
 - **Nodes of different kinds.** A package, a requirement and an article all look
   the same. The definition names are in the inventory but not on the diagram.
-- **Containers.** Some artefacts contain others by path. The folder of each
-  `ASLJS Package` (whose artefact is its `package.json`) contains `Article`,
-  `Package README` and `Unit Test File` artefacts, and `libs`/`apps` group the
-  packages. A diagram that mixes them shows a package and its files as unrelated
-  nodes.
+- **Containers.** Some artefacts contain others by path. The folder of each `NPM
+  Package` (whose artefact is its `package.json`) contains `Article`, `Package
+  README` and `Unit Test File` artefacts, and `libs`/`apps` group the packages.
+  A diagram that mixes them shows a package and its files as unrelated nodes.
 - **Links as artefacts.** Some files describe a relationship rather than a
   thing, for example a document recording why one package depends on another.
   Drawn as a node it adds two edges where a reader expects one. No definition in
