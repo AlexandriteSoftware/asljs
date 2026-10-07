@@ -1,9 +1,6 @@
-import { Logger,
-         LoggerProvider,
+import { LoggerProvider,
          NullLoggerProvider }
   from 'asljs-logging';
-import { CodeGenerationRequest }
-  from './commands/update.js';
 import { Providers,
          providersFactory }
   from './providers/providers.js';
@@ -32,12 +29,13 @@ export interface Environment
    */
   project: string;
 
-  getProviders: () => Providers;
+  /**
+   * Plugin module specifiers. Paths are absolute; package specifiers are
+   * resolved from the project root.
+   */
+  plugins: string[];
 
-  runCopilotCli?: (
-    logger: Logger,
-    value: CodeGenerationRequest
-  ) => Promise<string>;
+  getProviders: () => Providers;
 
   exitCode?: number;
 
@@ -78,13 +76,15 @@ export function createEnvironment(
         value),
       definitions: cwd,
       project: cwd,
+      plugins: [ ],
       getProviders:
         function (): Providers
     {
       return providersFactory(
         this.loggerProvider,
         this.project,
-        this.definitions);
+        this.definitions,
+        this.plugins);
     },
       onDispose:
         action => disposeActions.push(action),

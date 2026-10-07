@@ -11,9 +11,16 @@ import { ArtefactDefinitionRule }
 export interface ArtefactDefinition
 {
   /**
-   * Artefact definition full path.
+   * Artefact definition document full path. Absent for definitions provided
+   * by plugins.
    */
-  path: string;
+  path?: string;
+
+  /**
+   * Where the definition comes from: `markdown` for definition documents, or
+   * the name of the plugin that provided it.
+   */
+  source: string;
 
   /**
    * Artefact definition name. Usually the name of the artefact definition file

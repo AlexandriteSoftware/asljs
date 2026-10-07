@@ -1,19 +1,21 @@
 import { Logger,
          LoggerProvider }
   from 'asljs-logging';
+import { ArtefactFiles,
+         createArtefactFiles }
+  from './location.js';
 import { Artefact }
   from './model/artefact.js';
 import { ArtefactDataProvider }
   from './providers/artefact-data-provider.js';
 import { ArtefactDefinitionProvider }
   from './providers/artefact-definition-provider.js';
-import { ArtefactDefinitionRuleProvider }
-  from './providers/artefact-definition-rule-provider.js';
 import { ArtefactProvider }
   from './providers/artefact-provider.js';
 import { MarkdownDocumentProvider }
   from './providers/markdown-document-provider.js';
-import { providersFactory }
+import { Providers,
+         providersFactory }
   from './providers/providers.js';
 
 export interface RuleValidationContext
@@ -23,10 +25,14 @@ export interface RuleValidationContext
   artefacts: ArtefactProvider;
   artefactData: ArtefactDataProvider;
   definitions: ArtefactDefinitionProvider;
-  rules: ArtefactDefinitionRuleProvider;
   markdownDocuments: MarkdownDocumentProvider;
+  files: ArtefactFiles;
 }
 
+/**
+ * Completes when the artefact satisfies the rule; throws otherwise. The error
+ * message is the failure message.
+ */
 export type RuleValidationFunction =
   (
     artefact: Artefact,
@@ -34,47 +40,47 @@ export type RuleValidationFunction =
   ) =>
     Promise<void>;
 
+/**
+ * Creates the context rules receive, e.g. to call a rule from its tests.
+ * `plugins` are module specifiers, as for `--plugin`.
+ */
 export function createRuleValidationContext(
     loggerProvider: LoggerProvider,
     projectPath: string,
-    definitionsPath: string
+    definitionsPath: string,
+    plugins: readonly string[] = [ ]
   ): RuleValidationContext
 {
   const providers =
     providersFactory(
       loggerProvider,
       projectPath,
-      definitionsPath);
+      definitionsPath,
+      plugins);
 
-  const artefactDefinitionProvider =
-    providers.artefactDefinitionProvider;
+  return toRuleValidationContext(
+    loggerProvider.getLogger(
+      'RuleValidationContext'),
+    providers);
+}
 
-  const artefactDefinitionRuleProvider =
-    providers.artefactDefinitionRuleProvider;
-
-  const artefactProvider =
-    providers.artefactProvider;
-
-  const artefactDataProvider =
-    providers.artefactDataProvider;
-
-  const markdownDocumentProvider =
-    providers.markdownDocumentProvider;
-
-  const context: RuleValidationContext =
-    { logger:
-        loggerProvider.getLogger(
-          'RuleValidationContext'),
-      rootPath: projectPath,
-      definitions:
-        artefactDefinitionProvider,
-      artefacts: artefactProvider,
-      artefactData:
-        artefactDataProvider,
-      markdownDocuments:
-        markdownDocumentProvider,
-      rules:
-        artefactDefinitionRuleProvider };
-
-  return context;
+export function toRuleValidationContext(
+    logger: Logger,
+    providers: Providers
+  ): RuleValidationContext
+{
+  return { logger,
+           rootPath:
+             providers.projectPath,
+           definitions:
+             providers.artefactDefinitionProvider,
+           artefacts:
+             providers.artefactProvider,
+           artefactData:
+             providers.artefactDataProvider,
+           markdownDocuments:
+             providers.markdownDocumentProvider,
+           files:
+             createArtefactFiles(
+               providers.projectPath) };
 }

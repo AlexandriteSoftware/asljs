@@ -68,7 +68,7 @@ Requirement.
       providersFactory(
         loggerProvider,
         workspace.path,
-        workspace.path);
+        workspace.resolve('artefacts'));
 
     const [requirementDefinition] =
       await artefactDefinitionProvider
@@ -81,9 +81,9 @@ Requirement.
     assert.deepEqual(
       requirementArtefacts
         .map(
-          artefact => artefact.relativePath)
+          artefact => artefact.location)
         .sort(),
-      [ 'development/visible/RQ101 Example.md' ]);
+      [ 'file:development/visible/RQ101 Example.md' ]);
 
     assert.equal(
       await artefactProvider.isArtefactOfDefinition(
@@ -297,4 +297,129 @@ External folder.
         { recursive: true,
           force: true });
     }
+  });
+
+test(
+  'RQ204: ArtefactProvider gives no artefacts to a definition without Location',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'Abstract.md',
+      '# Abstract\n\nNo location.\n');
+
+    const { artefactProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        workspace.path);
+
+    assert.deepEqual(
+      await artefactProvider.getArtefacts(),
+      [ ]);
+  });
+
+test(
+  'RQ204: ArtefactProvider uses a plugin locator instead of the Location section',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'definitions/Release.md',
+      `# Release
+
+A release.
+
+## Location
+
+- Pattern: ../docs/*.md
+`);
+
+    await workspace.writeText(
+      'docs/Ignored.md',
+      '# Ignored\n');
+
+    await workspace.writeText(
+      'plugin.js',
+      `export default () => ({
+  name: 'test',
+  locate: {
+    Release: async () => [ { location: 'test:release/1', name: '1' } ]
+  }
+});
+`);
+
+    const { artefactProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        workspace.resolve('definitions'),
+        [ workspace.resolve('plugin.js') ]);
+
+    assert.deepEqual(
+      await artefactProvider.getArtefacts(),
+      [ { location: 'test:release/1',
+          name: '1',
+          definitions:
+            [ 'Release' ] } ]);
+
+    assert.deepEqual(
+      await artefactProvider.tryGetArtefact(
+        'test:release/1'),
+      { location: 'test:release/1',
+        name: '1',
+        definitions:
+          [ 'Release' ] });
+
+    assert.equal(
+      await artefactProvider.tryGetArtefact(
+        'docs/Ignored.md'),
+      null);
+  });
+
+test(
+  'RQ204: ArtefactProvider finds a file artefact by relative or absolute path',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'definitions/Article.md',
+      '# Article\n\nArticle.\n\n## Location\n\n- Pattern: ../docs/*.md\n');
+
+    await workspace.writeText(
+      'docs/A.md',
+      '# A\n');
+
+    const { artefactProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        workspace.resolve('definitions'));
+
+    const expected =
+      { location: 'file:docs/A.md',
+        name: 'A',
+        definitions:
+          [ 'Article' ] };
+
+    assert.deepEqual(
+      await artefactProvider.tryGetArtefact(
+        'docs/A.md'),
+      expected);
+
+    assert.deepEqual(
+      await artefactProvider.tryGetArtefact(
+        workspace.resolve('docs/A.md')),
+      expected);
+
+    assert.deepEqual(
+      await artefactProvider.tryGetArtefact(
+        'file:docs/A.md'),
+      expected);
   });

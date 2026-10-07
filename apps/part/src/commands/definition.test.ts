@@ -51,20 +51,31 @@ A unique identifier of the requirement.
 
 ## Rules
 
-- RL10 - At least one test file has requirement ID in its content.
-- RL11 - Requirement passes a second rule.
+### RL10
+
+At least one test file has requirement ID in its content.
+
+### RL11
+
+Requirement passes a second rule.
 `);
 
     await workspace.writeText(
-      'parts/Requirement_RL10.js',
-      'export async function validate() { }\n');
+      'plugin/plugin.js',
+      `export default () => ({
+  name: 'test',
+  rules: { Requirement: { RL10: async () => {} } }
+});
+`);
 
     const environment =
       createEnvironment(
         { loggerProvider,
           cwd: workspace.path,
           definitions: workspace.path,
-          project: workspace.path });
+          project: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin/plugin.js') ] });
 
     await execDefinition(
       environment,
@@ -85,4 +96,16 @@ A unique identifier of the requirement.
     assert.match(
       environment.stdout.toString(),
       /- type: string/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /- source: markdown/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /- id: RL10\n\s+- implemented: true/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /- id: RL11\n\s+- implemented: false/);
   });

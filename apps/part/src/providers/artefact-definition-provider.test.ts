@@ -81,9 +81,16 @@ A todo item.
 
     await workspace.writeText(
       'Notes.md',
-      `# Notes
+      `# Meeting Notes
 
-This is not a PART definition.
+The heading does not match the file name, so this is not a definition.
+`);
+
+    await workspace.writeText(
+      'Abstract.md',
+      `# Abstract
+
+A definition needs only the heading; Location is optional.
 `);
 
     await workspace.writeText(
@@ -106,13 +113,19 @@ Hidden definition.
     const definitions =
       await artefactDefinitionProvider.getDefinitions();
 
-    assert.equal(
-      definitions.length,
-      1);
+    assert.deepEqual(
+      definitions.map(
+        definition => definition.name),
+      [ 'Abstract',
+        'Todo Item' ]);
+
+    assert.deepEqual(
+      definitions[0].locations,
+      [ ]);
 
     assert.equal(
-      definitions[0].name,
-      'Todo Item');
+      definitions[0].source,
+      'markdown');
   });
 
 test(
@@ -121,15 +134,6 @@ test(
   {
     await using workspace =
       tmpDir();
-
-    await workspace.writeText(
-      'parts/Todo Item_R1.js',
-      `export async function validate(artefact) {
-  if (!artefact.dueDate || artefact.dueDate < '2030-01-01') {
-    throw new Error('Due date must be in the future.');
-  }
-}
-`);
 
     await workspace.writeText(
       'Todo Item.md',
@@ -144,6 +148,12 @@ A todo item is a task that needs to be done.
 - Type: DateTime
 
 When it needs to be done.
+
+### Tags
+
+- Type: String[]?
+
+Optional labels.
 
 ## Location
 
@@ -184,7 +194,12 @@ Due date must be in the future.
           isList: false,
           isNullable: false,
           description:
-            'When it needs to be done.' } ];
+            'When it needs to be done.' },
+        { name: 'Tags',
+          type: 'String',
+          isList: true,
+          isNullable: true,
+          description: 'Optional labels.' } ];
 
     assert.deepEqual(
       definition.properties,

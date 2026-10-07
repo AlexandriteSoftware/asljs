@@ -1,62 +1,53 @@
 # RQ204 ArtefactProvider
 
 `ArtefactProvider` is a class that given an artefact definition provides a list
-of artefacts that match the definition. E.g., given a definition of `Rule File`
-it returns a list of files that are rule files.
+of artefacts that match the definition. E.g., given a definition of `Article` it
+returns the markdown files that are articles.
+
+An artefact is `{ location, name, definitions }`:
+
+- `location` - a URI string with a scheme. `file:` locations hold the path
+  relative to the project root, e.g. `file:docs/Article.md`; plugins provide
+  other schemes, e.g. `git:tag/v1.0.0`.
+- `name` - for `file:` artefacts, the file name without extension.
+- `definitions` - names of all definitions the artefact matches.
+
+Artefacts of a definition come from its plugin locator when a plugin provides
+one, otherwise from its `Location` section, see [RQ205][RQ205]. The provider
+locates the artefacts of every definition once and caches the result.
+
+Methods taking a location accept a value without a scheme as a file path,
+absolute or relative to the project root.
 
 `ArtefactProvider` is available to JS rules via the `artefacts` property of the
-`context` object.
+`context` object. The path of a `file:` artefact is
+`context.files.path(artefact)`.
 
 ## Example: get list of artefacts
 
 ```js
-const definitions =
-  new DefinitionProvider(
-    createLogger(),
-    projectPath,
-    definitionsPath);
+const article =
+  await context.definitions.getDefinition('Article');
 
-const ruleFile =
-  await definitions.getDefinition('Rule File');
-
-const artefacts =
-  new ArtefactProvider(
-    repositoryPath);
-
-const ruleFiles =
-  await artefacts.getArtefacts([ ruleFile ]);
+const articles =
+  await context.artefacts.getArtefacts([ article ]);
 ```
 
 ## Example: check whether an artefact matches a definition
 
 ```js
-const definitions =
-  new DefinitionProvider(definitionsPath);
-
-const ruleFile =
-  await definitions.getDefinition('Rule File');
-
-const artefacts =
-  new ArtefactProvider(
-    repositoryPath);
-
-const isRuleFile =
-  await artefacts.isArtefactOfDefinition(
-    'parts/Rule File_RL1.js',
-    ruleFile);
+const isArticle =
+  await context.artefacts.isArtefactOfDefinition(
+    'docs/Article.md',
+    article);
 ```
 
 ## Example: get definitions for an artefact
 
 ```js
-const definitions =
-  new DefinitionProvider(definitionsPath);
-
-const artefacts =
-  new ArtefactProvider(
-    repositoryPath);
-
-const definitionsForRuleFile =
-  await artefacts.getDefinitionsForArtefact(
-    'parts/Rule File_RL1.js');
+const definitionsForArticle =
+  await context.artefacts.getDefinitionsForArtefact(
+    'file:docs/Article.md');
 ```
+
+[RQ205]: <RQ205 Definition Location.md>

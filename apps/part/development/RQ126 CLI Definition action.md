@@ -5,27 +5,33 @@ it reads the definition and prints serialised content as markdown list, with
 properties rendered as `- property name: property value`, nested objects
 rendered as nested lists, and arrays rendered as lists of lists.
 
+The output includes the definition `source` (see [RQ122][RQ122]) and, for each
+rule, whether a plugin implements it. `path` is present for definition documents
+only.
+
 Example:
 
 ```json
 {
   "name": "MyDefinition",
+  "source": "markdown",
   "description": "This is a sample definition.",
-  "properties": {
-    "property1": "value1",
-    "property2": "value2"
-  },
+  "location": [ ],
   "rules": [
     {
       "id": "RL1",
-      "description": "This is rule 1.",
-      "filePath": "parts/MyDefinition_RL1.json"
+      "implemented": true,
+      "description": "This is rule 1."
     },
     {
       "id": "RL2",
-      "description": "This is rule 2.",
-      "filePath": "parts/MyDefinition_RL2.json"
+      "implemented": false,
+      "description": "This is rule 2."
     }
-  ]
+  ],
+  "properties": [ ],
+  "path": "artefacts/MyDefinition.md"
 }
 ```
+
+[RQ122]: <RQ122 CLI Definitions action.md>

@@ -22,16 +22,21 @@ export async function execDefinitions(
   const objects =
     definitions.map(
       definition => ({ name: definition.name,
+                       source: definition.source,
                        path:
-                         toPosixPath(
-                           path.relative(
-                             rootDirectory,
-                             definition.path)) }));
+                         definition.path === undefined
+        ? ''
+        : toPosixPath(
+          path.relative(
+            rootDirectory,
+            definition.path)) }));
 
   const markdown =
     renderObjectsToMarkdownTable(
       [ { name: 'Name',
           property: 'name' },
+        { name: 'Source',
+          property: 'source' },
         { name: 'Location',
           property: 'path' } ],
       objects);

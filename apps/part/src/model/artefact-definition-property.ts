@@ -9,9 +9,10 @@ export interface ArtefactDefinitionProperty
   name: string;
 
   /**
-   * Property type.
+   * Property type, without the `[]` and `?` suffixes.
    *
-   * Supported types are: string, number, boolean, array, object.
+   * Documented types are: String, Number, Boolean, Date, DateTime, Timestamp,
+   * Object, Artefact.
    */
   type: string;
 

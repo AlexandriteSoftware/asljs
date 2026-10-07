@@ -1,7 +1,8 @@
 # RQ121 CLI Inventory action
 
-Inventory command enumerates all files and folders in the project folder and for
-each of them lists all artefact definitions that apply to it.
+Inventory command enumerates the artefacts of all definitions and for each of
+them lists all artefact definitions that apply to it. Artefacts are located as
+described in [RQ204][RQ204].
 
 Parameters:
 
@@ -17,12 +18,15 @@ See also:
 - [RQ111 CLI Definitions parameter][1]
 
 [1]: <RQ111 CLI Definitions parameter.md>
+[RQ204]: <RQ204 ArtefactProvider.md>
 
 ## Report Properties
 
 The produced report starts with these columns:
 
-- `Location` - file or folder path, relative to the working directory.
+- `Location` - the printed location: the file or folder path relative to the
+  project root for `file:` artefacts, the full location otherwise, e.g.
+  `git:tag/v1.0.0`.
 - `Definitions` - comma-separated list of all definitions that apply to the
   artefact.
 
@@ -77,12 +81,9 @@ The `json` format produces a JSON array of objects, one per artefact.
 ```json
 [
   {
-    "Location": "...",
-    "Definitions": [ "...", ... ],
-    "Properties": {
-      "Definition1": { "Property1": "...", ... },
-      "Definition2": { "Property1": "...", ... }
-    }
+    "location": "...",
+    "Definition1": { "Property1": "...", ... },
+    "Definition2": { "Property1": "...", ... }
   },
   ...
 ]
@@ -91,7 +92,9 @@ The `json` format produces a JSON array of objects, one per artefact.
 ### `diagram`
 
 The `diagram` format produces a Mermaid diagram, with one node per artefact and
-one edge per property linking to another artefact, if it is on the diagram.
+one edge per `Artefact` property linking to another artefact, if it is on the
+diagram. A property value with a scheme is a location; any other value is a path
+relative to the referencing `file:` artefact.
 
 ```mermaid
 graph TD

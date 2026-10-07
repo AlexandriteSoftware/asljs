@@ -36,7 +36,7 @@ export async function validate(
 {
   const content =
     await readFile(
-      artefact.path,
+      context.files.path(artefact),
       'utf8');
 
   const document =
@@ -177,7 +177,7 @@ export async function validate(
         resourceUrl.startsWith('/')
           ? context.rootPath
           : path.dirname(
-            artefact.path),
+            context.files.path(artefact)),
         resourceUrl.startsWith('/')
           ? resourceUrl.slice(1)
           : resourceUrl);

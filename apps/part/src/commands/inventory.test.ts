@@ -118,8 +118,8 @@ Markdown article.
 `);
 
     await workspace.writeText(
-      'parts/Article.js',
-      `export async function getData(artefact) {
+      'plugin.js',
+      `async function getData(artefact) {
   if (artefact.name === 'A') {
     return {
       primaryArticle: 'B.md',
@@ -132,6 +132,8 @@ Markdown article.
     tags: []
   };
 }
+
+export default () => ({ name: 'test', data: { Article: getData } });
 `);
 
     await workspace.writeText(
@@ -146,6 +148,8 @@ Markdown article.
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -199,8 +203,8 @@ Markdown article.
 `);
 
     await workspace.writeText(
-      'parts/Article.js',
-      `export async function getData(artefact) {
+      'plugin.js',
+      `async function getData(artefact) {
   if (artefact.name === 'A') {
     return {
       primaryArticle: 'B.md',
@@ -213,6 +217,8 @@ Markdown article.
     tags: []
   };
 }
+
+export default () => ({ name: 'test', data: { Article: getData } });
 `);
 
     await workspace.writeText(
@@ -227,6 +233,8 @@ Markdown article.
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -336,8 +344,8 @@ Markdown article.
 `);
 
     await workspace.writeText(
-      'parts/Article.js',
-      `export async function getData(artefact) {
+      'plugin.js',
+      `async function getData(artefact) {
   if (artefact.name === 'A') {
     return {
       primaryArticle: 'B.md',
@@ -356,6 +364,8 @@ Markdown article.
     }
   };
 }
+
+export default () => ({ name: 'test', data: { Article: getData } });
 `);
 
     await workspace.writeText(
@@ -374,6 +384,8 @@ Markdown article.
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -652,8 +664,8 @@ The related articles.
 `);
 
     await workspace.writeText(
-      'parts/Article.js',
-      `export async function getData(artefact) {
+      'plugin.js',
+      `async function getData(artefact) {
   if (artefact.name === 'A') {
     return {
       primaryArticle: 'B.md',
@@ -666,6 +678,8 @@ The related articles.
     relatedArticles: []
   };
 }
+
+export default () => ({ name: 'test', data: { Article: getData } });
 `);
 
     await workspace.writeText(
@@ -736,6 +750,8 @@ await fs.writeFile(outputPath, svg, 'utf8');
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 
@@ -813,8 +829,8 @@ The related articles.
 `);
 
     await workspace.writeText(
-      'parts/Article.js',
-      `export async function getData(artefact) {
+      'plugin.js',
+      `async function getData(artefact) {
   if (artefact.name === 'A') {
     return {
       primaryArticle: 'B.md',
@@ -827,6 +843,8 @@ The related articles.
     relatedArticles: []
   };
 }
+
+export default () => ({ name: 'test', data: { Article: getData } });
 `);
 
     await workspace.writeText(
@@ -897,6 +915,8 @@ await fs.writeFile(outputPath, svg, 'utf8');
       createEnvironment(
         { cwd: workspace.path,
           definitions: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ],
           project: workspace.path,
           loggerProvider });
 

@@ -28,6 +28,8 @@ import { MarkdownDocument }
   from '../model/markdown-document.js';
 import { MarkdownDocumentProvider }
   from './markdown-document-provider.js';
+import { PluginProvider }
+  from './plugin-provider.js';
 
 export interface DefinitionFileParsingContext
 {
@@ -89,6 +91,7 @@ export class ArtefactDefinitionProviderImpl
     private readonly logger: Logger,
     private readonly gitIgnore: GitIgnore,
     private readonly markdownDocumentProvider: MarkdownDocumentProvider,
+    private readonly pluginProvider: PluginProvider,
     private readonly definitionsPath: string
   )
   {
@@ -195,7 +198,7 @@ export class ArtefactDefinitionProviderImpl
     const visibleMarkdownPaths =
       this.gitIgnore.filter(markdownPaths);
 
-    const definitions = [ ];
+    const definitions: ArtefactDefinition[] = [ ];
 
     for (const markdownPath of visibleMarkdownPaths) {
       let content =
@@ -221,8 +224,27 @@ export class ArtefactDefinitionProviderImpl
         artefactDefinition);
     }
 
+    for (const pluginDefinition of await this.pluginProvider.getDefinitions()) {
+      const clash =
+        definitions.find(
+          item => item.name === pluginDefinition.name);
+
+      if (clash) {
+        throw new Error(
+          `Definition "${pluginDefinition.name}" is provided by plugin "${pluginDefinition.source}" and by ${
+            describeSource(clash)
+          }.`);
+      }
+
+      definitions.push(
+        pluginDefinition);
+    }
+
     definitions.sort(
       sortDefinitionsByName);
+
+    await this.pluginProvider.validateBindings(
+      definitions);
 
     this.cache = definitions;
 
@@ -325,26 +347,12 @@ export class ArtefactDefinitionProviderImpl
       .find(
         section => section.heading === 'Location');
 
-    if (!locationSection) {
-      this.logger.trace(
-        'tryParse(...): no location section found in %s',
-        context.path);
-
-      return;
-    }
-
     const locations =
-      this.#parseLocations(
+      locationSection
+      ? this.#parseLocations(
         document,
-        locationSection.nodes);
-
-    if (!locations) {
-      this.logger.warning(
-        'tryParse(...): no locations found in %s',
-        context.path);
-
-      return;
-    }
+        locationSection.nodes)
+      : [ ];
 
     const properties =
       this.#parseProperties(
@@ -404,6 +412,7 @@ export class ArtefactDefinitionProviderImpl
 
     const definition =
       { path: context.path,
+        source: 'markdown',
         name,
         description,
         locations,
@@ -545,7 +554,7 @@ export class ArtefactDefinitionProviderImpl
   #parseLocations(
     document: MarkdownDocument,
     nodes: Node[]
-  ): Location[] | undefined
+  ): Location[]
   {
     const locationLists =
       getLists(nodes);
@@ -607,6 +616,15 @@ export class ArtefactDefinitionProviderImpl
 
     return locations;
   }
+}
+
+function describeSource(
+    definition: ArtefactDefinition
+  ): string
+{
+  return definition.source === 'markdown'
+    ? `document ${definition.path}`
+    : `plugin "${definition.source}"`;
 }
 
 function sortDefinitionsByName(

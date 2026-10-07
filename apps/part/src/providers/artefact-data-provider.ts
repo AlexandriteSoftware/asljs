@@ -1,40 +1,35 @@
 import { Logger }
   from 'asljs-logging';
-import fs
-  from 'node:fs/promises';
-import path
-  from 'node:path';
-import { pathToFileURL }
-  from 'node:url';
-import { ArtefactDataProvidingContext,
-         ArtefactDataProvidingFunction }
+import { ArtefactDataProvidingContext }
   from '../artefact-data-providing-function.js';
-import { MarkdownDocumentProvider }
-  from '../index.js';
+import { createArtefactFiles }
+  from '../location.js';
 import { Artefact }
   from '../model/artefact.js';
+import { MarkdownDocumentProvider }
+  from './markdown-document-provider.js';
+import { PluginProvider }
+  from './plugin-provider.js';
 
 /**
- * Provides artefacts based on definitions. Caches artefacts in memory to avoid
- * redundant file system operations.
+ * Provides artefact data through the data functions plugins register for
+ * definitions.
  */
 export class ArtefactDataProvider
 {
   constructor(
     private readonly logger: Logger,
     private readonly markdownDocumentProvider: MarkdownDocumentProvider,
-    private readonly definitionsPath: string
+    private readonly pluginProvider: PluginProvider,
+    private readonly projectPath: string
   )
   {
-    if (
-      !path.isAbsolute(
-        definitionsPath)
-    ) {
-      throw new Error(
-        `'definitionsPath' must be absolute: ${definitionsPath}`);
-    }
   }
 
+  /**
+   * Data of the artefact for the definition, or `null` when no plugin
+   * provides a data function for the definition or the function fails.
+   */
   async tryGetArtefactData(
     artefact: Artefact,
     definition: string
@@ -42,62 +37,24 @@ export class ArtefactDataProvider
   {
     this.logger.trace(
       'tryGetArtefactData(%s, %s)',
-      artefact.relativePath,
+      artefact.location,
       definition);
 
-    const dataProviderFilePath =
-      path.join(
-        this.definitionsPath,
-        'parts',
-        definition + '.js');
+    const getDataFunction =
+      await this.pluginProvider.findData(
+        definition);
 
-    let fileStat;
-
-    try {
-      fileStat =
-        await fs.stat(
-          dataProviderFilePath);
-    } catch {
+    if (!getDataFunction) {
       return null;
-    }
-
-    if (!fileStat.isFile()) {
-      return null;
-    }
-
-    const importUrl =
-      pathToFileURL(
-        dataProviderFilePath);
-
-    let dataProviderModule;
-
-    try {
-      dataProviderModule =
-        await import(
-        importUrl.href
-      );
-    } catch (error) {
-      this.logger.error(
-        `tryGetArtefactData() { Failed to load data provider module for ${definition}: ${error} }`);
-
-      return null;
-    }
-
-    const getDataFunction: ArtefactDataProvidingFunction =
-      dataProviderModule.getData;
-
-    if (
-      typeof getDataFunction
-      !== 'function'
-    ) {
-      throw new Error(
-        'Data provider module must export getData.');
     }
 
     const context: ArtefactDataProvidingContext =
       { logger: this.logger,
         markdownDocuments:
-          this.markdownDocumentProvider };
+          this.markdownDocumentProvider,
+        files:
+          createArtefactFiles(
+            this.projectPath) };
 
     try {
       return await getDataFunction(
@@ -105,7 +62,7 @@ export class ArtefactDataProvider
         context);
     } catch (error) {
       this.logger.error(
-        `tryGetArtefactData() { Failed to get data for artefact ${artefact.relativePath}: ${error} }`);
+        `tryGetArtefactData() { Failed to get data for artefact ${artefact.location}: ${error} }`);
 
       return null;
     }

@@ -1,5 +1,7 @@
 import { Logger }
   from 'asljs-logging';
+import { ArtefactFiles }
+  from './location.js';
 import { Artefact }
   from './model/artefact.js';
 import { MarkdownDocumentProvider }
@@ -12,6 +14,7 @@ export interface ArtefactDataProvidingContext
 {
   logger: Logger;
   markdownDocuments: MarkdownDocumentProvider;
+  files: ArtefactFiles;
 }
 
 /**

@@ -16,8 +16,11 @@ import path
   from 'node:path';
 import { Environment }
   from './../environment.js';
-import { toPosixPath }
-  from '../formatting.js';
+import { displayLocation,
+         fromFileLocation,
+         hasScheme,
+         toFileLocation }
+  from '../location.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { ArtefactDefinition }
@@ -177,7 +180,7 @@ async function collectInventoryEntries(
     for (const artefact of definitionArtefacts) {
       const existingEntry =
         artefactIndex.get(
-          artefact.relativePath);
+          artefact.location);
 
       const entry =
         existingEntry
@@ -191,7 +194,7 @@ async function collectInventoryEntries(
         (left, right) => left.localeCompare(right));
 
       artefactIndex.set(
-        artefact.relativePath,
+        artefact.location,
         entry);
     }
   }
@@ -200,8 +203,8 @@ async function collectInventoryEntries(
     artefactIndex.values())
     .sort(
       (left, right) =>
-        left.artefact.relativePath.localeCompare(
-          right.artefact.relativePath));
+        left.artefact.location.localeCompare(
+          right.artefact.location));
 }
 
 function getInventoryFormat(
@@ -268,7 +271,8 @@ function buildTableInventory(
       {
       const row: Record<string, string> =
         { location:
-            entry.artefact.relativePath,
+            displayLocation(
+              entry.artefact.location),
           definitions:
             entry.definitions.join(',') };
 
@@ -278,7 +282,7 @@ function buildTableInventory(
 
       const dataByDefinition =
         inventoryData.get(
-          entry.artefact.relativePath)
+          entry.artefact.location)
         ?? [ ];
 
       for (const propertyColumn of propertyColumns) {
@@ -359,11 +363,12 @@ function buildJsonInventory(
     {
       const row: Record<string, unknown> =
         { location:
-            entry.artefact.relativePath };
+            displayLocation(
+              entry.artefact.location) };
 
       const dataByDefinition =
         inventoryData.get(
-          entry.artefact.relativePath)
+          entry.artefact.location)
         ?? [ ];
 
       for (const definitionName of entry.definitions) {
@@ -475,7 +480,7 @@ async function collectInventoryData(
     }
 
     inventoryData.set(
-      entry.artefact.relativePath,
+      entry.artefact.location,
       values);
   }
 
@@ -492,9 +497,10 @@ async function buildInventoryDiagramSvg(
   const nodes =
     entries.map(
       entry => ({ id:
-                    entry.artefact.relativePath,
+                    entry.artefact.location,
                   label:
-                    entry.artefact.relativePath }));
+                    displayLocation(
+                      entry.artefact.location) }));
 
   const nodeById =
     new Map(
@@ -547,7 +553,7 @@ async function collectDiagramEdges(
 
       const definitionData =
         inventoryData.get(
-          entry.artefact.relativePath)
+          entry.artefact.location)
         ?.find(
           item => item.definition.name === definitionName);
 
@@ -569,22 +575,22 @@ async function collectDiagramEdges(
             property.name);
 
         for (const propertyValue of propertyValues) {
-          const referencedPath =
-            resolveReferencedArtefactPath(
+          const referencedLocation =
+            resolveReferencedLocation(
               projectPath,
-              entry.artefact.path,
+              entry.artefact.location,
               propertyValue);
 
-          if (!referencedPath) {
+          if (!referencedLocation) {
             continue;
           }
 
-          if (!nodeById.has(referencedPath)) {
+          if (!nodeById.has(referencedLocation)) {
             continue;
           }
 
           edgeKeys.add(
-            `${entry.artefact.relativePath}=>${referencedPath}`);
+            `${entry.artefact.location}=>${referencedLocation}`);
         }
       }
     }
@@ -673,28 +679,46 @@ function getArtefactPropertyValueRaw(
     ?? record[toPropertyKey(propertyName)];
 }
 
-function resolveReferencedArtefactPath(
+/**
+ * A reference with a scheme is a location. Any other reference is a path
+ * relative to the referencing `file:` artefact.
+ */
+function resolveReferencedLocation(
     projectPath: string,
-    sourceArtefactPath: string,
+    sourceLocation: string,
     reference: string
   ): string | null
 {
+  if (hasScheme(reference)) {
+    return reference;
+  }
+
+  const sourcePath =
+    fromFileLocation(
+      projectPath,
+      sourceLocation);
+
+  if (sourcePath === null) {
+    return null;
+  }
+
   const resolvedPath =
     path.resolve(
-      path.dirname(sourceArtefactPath),
+      path.dirname(sourcePath),
       reference);
 
   const relativePath =
-    toPosixPath(
-      path.relative(
-        projectPath,
-        resolvedPath));
+    path.relative(
+      projectPath,
+      resolvedPath);
 
   if (relativePath.startsWith('..')) {
     return null;
   }
 
-  return relativePath;
+  return toFileLocation(
+    projectPath,
+    resolvedPath);
 }
 
 function toPropertyKey(
@@ -750,12 +774,15 @@ function escapeMermaid(
     '\\"');
 }
 
+/**
+ * Mermaid node id of a location; `file:` locations keep their path-based id.
+ */
 function toMermaidId(
-    value: string
+    location: string
   ): string
 {
   return `n${
-    value.replace(
+    displayLocation(location).replace(
       /[^A-Za-z0-9_]/g,
       '_')
   }`;

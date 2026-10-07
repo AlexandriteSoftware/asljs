@@ -331,3 +331,51 @@ test(
       environment.project,
       path.resolve('project'));
   });
+
+test(
+  'RQ134: cli collects repeated --plugin options and resolves paths',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    using env =
+      new TmpEnv(
+        { PART_PLUGINS: 'ignored-plugin' });
+
+    await runCli(
+      [ 'version',
+        '--plugin',
+        './plugin.js',
+        '--plugin=asljs-part/plugins/npm' ],
+      environment);
+
+    assert.deepEqual(
+      environment.plugins,
+      [ path.resolve('plugin.js'),
+        'asljs-part/plugins/npm' ]);
+  });
+
+test(
+  'RQ135: cli reads plugins from environment variable PART_PLUGINS',
+  async () =>
+  {
+    const environment =
+      createEnvironment();
+
+    using env =
+      new TmpEnv(
+        { PART_PLUGINS:
+            [ './plugin.js',
+              'asljs-part/plugins/git' ].join(
+                path.delimiter) });
+
+    await runCli(
+      [ 'version' ],
+      environment);
+
+    assert.deepEqual(
+      environment.plugins,
+      [ path.resolve('plugin.js'),
+        'asljs-part/plugins/git' ]);
+  });

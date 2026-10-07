@@ -22,6 +22,20 @@ const tmpDir =
   tmpDirFactory(
     loggerProvider);
 
+/**
+ * A package artefact and a rule context that resolves it to the directory.
+ *
+ * @param {string} directoryPath
+ */
+function packageAt(
+  directoryPath)
+{
+  return [ { location: 'file:package',
+             name: 'package',
+             definitions: [ 'ASLJS Package' ] },
+           { files: { path: () => directoryPath } } ];
+}
+
 test(
   'passes when dist holds no testing directory',
   async () => {
@@ -33,7 +47,7 @@ test(
       'export const a = 1;');
 
     await validate(
-      { path: dir.path });
+      ...packageAt(dir.path));
   });
 
 test(
@@ -44,7 +58,7 @@ test(
 
     // Nothing is built, so there is nothing to report.
     await validate(
-      { path: dir.path });
+      ...packageAt(dir.path));
   });
 
 test(
@@ -60,7 +74,7 @@ test(
     await assert.rejects(
       () =>
         validate(
-          { path: dir.path }),
+          ...packageAt(dir.path)),
       /must not contain a testing directory: dist\/testing/);
   });
 
@@ -77,7 +91,7 @@ test(
     await assert.rejects(
       () =>
         validate(
-          { path: dir.path }),
+          ...packageAt(dir.path)),
       /dist\/functions\/testing/);
   });
 
@@ -93,5 +107,5 @@ test(
       'export const a = 1;');
 
     await validate(
-      { path: dir.path });
+      ...packageAt(dir.path));
   });

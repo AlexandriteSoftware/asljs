@@ -1,36 +1,48 @@
 # RQ123 CLI Check action
 
 When CLI is invoked with Check action, it obtains all artefact definitions, gets
-list of artefacts and list of rules per definition, and runs rule function for
-each file and rule. If multiple definitions apply to the same path, it runs
-rules from all of those definitions.
+list of artefacts and list of rules per definition, and runs the rule
+implementation for each artefact and rule. If multiple definitions apply to the
+same artefact, it runs rules from all of those definitions.
+
+A rule implementation is provided by a plugin, see [RQ207][RQ207]. A rule no
+plugin implements is not run; its result is `Skip`.
 
 Parameters:
 
 - `<pattern>` - optional, positional parameter after the `check` command, e.g.
-  `check src/**/*.js`
+  `check src/**/*.js`. A glob matched against the printed location:
+  - a pattern with a scheme, e.g. `git:tag/v*`, matches full locations;
+  - any other pattern is a path relative to the working directory and matches
+    `file:` artefacts only.
 - `--check-definitions=...` - limit check to specific definitions,
   comma-separated list.
 - `--check-rules=...` - limit check to specific rules (in format `<artefact
   definition>_<rule id>`), comma-separated list.
-- `--with-positives` - flag, if set, show all rows including `OK`; otherwise
-  only failing rows are shown.
+- `--with-positives` - flag, if set, show `OK` rows.
+- `--with-skipped` - flag, if set, show `Skip` rows.
+
+Without the flags only failing rows are shown.
 
 Check returns non-zero exit code if any of the rules fails for any of the
-artefacts.
+artefacts. `Skip` does not change the exit code.
 
 It prints a report with these columns:
 
-- `Path` - path to the file or folder.
-- `Rule` - Id of the rule.
-- `Result` - `OK` if the rule passes, message from the rule, if it fails.
+- `Location` - the printed location: the path relative to the project root for
+  `file:` artefacts, the full location otherwise.
+- `Rule` - `<artefact definition>_<rule id>`.
+- `Result` - `OK` if the rule passes, `Skip` if no plugin implements it, the
+  message from the rule if it fails.
 
-One row per path and rule. Sorted by path, then by rule. E.g.,
+One row per location and rule. Sorted by location, then by rule. E.g.,
 
 ```markdown
-| Path           | Rule             | Result            |
-|----------------|------------------|-------------------|
-| src/index.js   | JS File_RL1      | OK                |
-| src/index.js   | JS File_RL2      | Missing semicolon |
-| src/index.js   | Project File_RL1 | No maintainer     |
+| Location     | Rule             | Result            |
+|--------------|------------------|-------------------|
+| src/index.js | JS File_RL1      | OK                |
+| src/index.js | JS File_RL2      | Missing semicolon |
+| src/index.js | Project File_RL1 | Skip              |
 ```
+
+[RQ207]: <RQ207 Plugin.md>

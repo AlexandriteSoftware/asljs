@@ -1,35 +1,90 @@
 # Artefact Definition
 
-Artefact Definition is a markdown file, with the following content:
+> The `Artefact Definition` document is self-describing, i.e., it defines an
+> artefact definition and is an artefact definition itself.
+
+An artefact is a project construction element, such as a file, folder, or any
+other unit within a project. It represents a tangible component of the project
+structure.
+
+An artefact has a description, content, and location. The description provides
+information about the artefact’s purpose and content. The content is the data
+contained within the artefact’s boundary, and the location specifies where the
+artefact is situated within the project.
+
+There are thousands of different artefacts in any non-trivial project. Examples:
+
+- project vision document
+- architecture decision record
+- README file
+- release notes
+- deployed service
+- staging environment database
+- external package reference
+
+Artefact Definition defines a class of artefacts. Artefacts within the class
+share common characteristics, such as description and structure.
+
+Differences in structure within the same class of artefacts are captured by the
+properties defined in the Artefact Definition.
+
+Location uniquely identifies where the artefact is situated within the project
+structure.
+
+Artefact definition and location uniquely identify artefacts within a project.
+E.g., the file `2026.1 Release Notes.md` is both a `Release Notes File` and a
+`Markdown File`, where `Release Notes File` and `Markdown File` are the artefact
+definitions.
+
+Location property structure is not fixed and can vary depending on the artefact
+definition. It can be (but is not limited to):
+
+- file path for the artefact within the project filesystem
+- URL for the artefact if it is hosted remotely
+- database connection string, table, and primary key for the artefact within the
+  database
+
+Artefact definition document is a markdown file that describes an artefact
+description, optionally defines location pattern, rules, and properties.
+
+Artefact definition documents are one source of artefact definitions. The
+application, inspecting projects and locating artefacts, can use other sources
+of artefact definitions as well. E.g., plugins, that inject artefact definitions
+programmatically.
 
 - `# <FileName>` - the name of the definition, should match the name of the
   markdown file (without extension).
 - `# <FileName>` is followed by a description of the definition.
-- `## Location` - required, specifies where the definition is located in the
-  project.
-- `## Rules` - optional, specifies rules that apply to the definition. Has a
-  list of rules, each with an id and description. First token in the rule
-  description should be the rule id. Rule ids has the format
-  `<letters><number>`.
+- `## Location` - optional, specifies where the artefacts are located. When not
+  specified, a plugin may provide the locations; otherwise the definition has no
+  artefacts.
+- `## Rules` - optional, specifies rules that apply to the definition. Each rule
+  is a `### <RuleId>` section, optionally followed by ` - <title>`, e.g. `###
+  RL1 - Due date`. The section body is the rule description. A rule id is
+  uppercase letters followed by digits, e.g. `RL1`, unique within the
+  definition.
 - `## Properties` - optional, specifies artefact's properties, as returned by
-  the artefact's data provider.
+  the data function a plugin provides for the definition.
 
-## Location
+A markdown file in the definitions directory is a definition when its level 1
+heading matches its file name. No other section is required, so the definitions
+directory should hold only definitions.
 
-- Pattern: `**/*.md`
-- GitIgnore
-
-## Rules
-
-### RL1 - Rule File
-
-Each rule in the definition file should have a corresponding rule file that
-implements it. The rule file should be named
-`<DefinitionName>_<RuleId>.<extension>`, for example, `Todo Item_R1.js`.
+Definition names are unique: a definition provided by a plugin cannot have the
+name of a definition document.
 
 ## Artefacts Location
 
-Artefact definition defines location of the artefacts in the `Location` section.
+Artefact definition supports one type of location specification: filesystem.
+Other location types are provided by plugins. A plugin locator for a definition
+replaces its `Location` section.
+
+A location is a URI string with a scheme, e.g. `file:docs/Article.md`,
+`npm:package.json#dependencies/glob` or `git:tag/v1.0.0`. A `file:` location is
+the path relative to the project root, and it is printed without the scheme.
+
+Filesystem artefact location is defined in the `Location` section of the
+artefact definition document.
 
 Example:
 
@@ -48,9 +103,9 @@ There are three types of the location instructions:
   optional and can be used multiple times.
 - Special filters, e.g. `GitIgnore` - defines location in a special way.
 
-`Pattern` and `Exclude` has glob pattern as a parameter. The glob pattern is
+`Pattern` and `Exclude` have a glob pattern as a parameter. The glob pattern is
 either relative to the artefact definition file or absolute, calculated from the
-project root. Absolute patterns starts with `/`, e.g. `/src/**/*.js`. Folder
+project root. Absolute patterns start with `/`, e.g. `/src/**/*.js`. Folder
 patterns should end with `/`, e.g. `src/`.
 
 Project root is either the current working directory or directory specified by
@@ -59,7 +114,8 @@ the `--project` CLI option.
 Definition location is represented in code with the following structure:
 
 ```js
-{ patterns: string[],
+{ pattern?: string,
+  patterns?: string[],
   exclude?: string[],
   filters?: object[] }
 ```
@@ -74,6 +130,18 @@ Special filters:
   collects `.gitignore` files starting from the file's folder and going up to
   the project root until it reaches the repository root (folder with the `.git`
   subfolder) or filesystem root. It caches collected `.gitignore` files.
+
+## Artefact Rules
+
+Artefact rules define the constraints and validations that apply to the
+artefact's properties and structure. Each rule has an id and a description.
+
+Code-enforced rules have their function provided by a plugin, bound to the
+definition name and the rule id.
+
+When a rule is not code-enforced, it serves as a documentation of the constraint
+and may be validated manually or by other means, e.g. through AI agents. `part
+check` reports such a rule as `Skip`.
 
 ## Artefact Properties
 
@@ -95,12 +163,14 @@ Property type can be one of the following:
 - `Date` - a date value (timezone is not specified).
 - `DateTime` - a date and time value (timezone is not specified).
 - `Timestamp` - a date and time value in UTC.
-- `Object` - an object with properties.
-- `Artefact` - a path to the artefact, relative to location of the current
+- `Object` - a JSON-serialisable object with properties.
+- `Artefact` - a reference to another artefact: its location, e.g.
+  `git:tag/v1.0.0`, or, from a file artefact, a path relative to the current
   artefact.
 
 If property type ends with `[]`, e.g. `String[]`, it means that the property is
-an array of values.
+an array of values. If it ends with `?`, e.g. `Date?` or `String[]?`, the
+property may have no value.
 
 Example:
 

@@ -1,13 +1,17 @@
 import { Logger }
   from 'asljs-logging';
-import { glob }
-  from 'glob/raw';
+import { minimatch }
+  from 'minimatch';
 import path
   from 'node:path';
 import { Environment }
   from '../environment.js';
 import { toPosixPath }
   from '../formatting.js';
+import { displayLocation,
+         FILE_SCHEME,
+         hasScheme }
+  from '../location.js';
 import { renderObjectsToMarkdownTable }
   from '../markdown-table.js';
 import { ArtefactDefinitionRule }
@@ -16,7 +20,8 @@ import { ArtefactDefinition }
   from '../model/artefact-definition.js';
 import { Artefact }
   from '../model/artefact.js';
-import { RuleRunner }
+import { RuleRunner,
+         RuleRunResult }
   from '../rule-runner.js';
 
 export interface CheckCommandOptions
@@ -25,6 +30,7 @@ export interface CheckCommandOptions
   checkDefinitions?: string[];
   checkRules?: string[];
   withPositives?: boolean;
+  withSkipped?: boolean;
 }
 
 export async function execCheck(
@@ -37,11 +43,12 @@ export async function execCheck(
     'Check command: start with %s',
     JSON.stringify(options));
 
-  const { artefactDefinitionProvider } =
+  const providers =
     environment.getProviders();
 
   const definitions =
-    await artefactDefinitionProvider.getDefinitions();
+    await providers.artefactDefinitionProvider
+    .getDefinitions();
 
   logger.trace(
     'Check command: found %d definitions',
@@ -89,68 +96,12 @@ export async function execCheck(
     JSON.stringify(
       selectedDefinitionNames));
 
-  const artefactProvider =
-    environment.getProviders().artefactProvider;
-
-  const artefacts: Artefact[] = [ ];
-
-  /**
-   * List of definition names for each artefact path, limited to the requested
-   * definitions.
-   */
-  const definitionNamesForArtefact: Record<string, string[]> = {};
-
-  if (options.pattern) {
-    logger.trace(
-      'Check command: using pattern=%s',
+  const artefacts =
+    filterArtefactsByPattern(
+      environment,
+      await providers.artefactProvider.getArtefacts(
+        selectedDefinitions),
       options.pattern);
-
-    const paths =
-      await glob(
-        options.pattern,
-        { absolute: true,
-          cwd: environment.cwd,
-          dot: true,
-          nodir: true });
-
-    for (const artefactPath of paths) {
-      const artefact =
-        await artefactProvider.tryGetArtefact(
-          artefactPath);
-
-      if (artefact === null) {
-        continue;
-      }
-
-      const artefactSelectedDefinitions =
-        artefact.definitions
-        .filter(
-          definition => selectedDefinitionNames.includes(definition));
-
-      if (artefactSelectedDefinitions.length === 0) {
-        continue;
-      }
-
-      definitionNamesForArtefact[artefact.path] =
-        artefactSelectedDefinitions;
-
-      artefacts.push(artefact);
-    }
-  } else {
-    const definitionArtefacts =
-      await artefactProvider.getArtefacts(
-        selectedDefinitions);
-
-    artefacts.push(
-      ...definitionArtefacts);
-
-    for (const artefact of artefacts) {
-      definitionNamesForArtefact[artefact.path] =
-        artefact.definitions
-        .filter(
-          definition => selectedDefinitionNames.includes(definition));
-    }
-  }
 
   logger.trace(
     'Check command: found %d artefact(s) to check',
@@ -167,21 +118,19 @@ export async function execCheck(
   const ruleRunner =
     new RuleRunner(
       logger,
-      environment.getProviders());
+      providers);
 
   for (const artefact of artefacts) {
     for (const rule of selectedRules) {
-      const artefactDefinitionNames =
-        definitionNamesForArtefact[artefact.path]
-        ?? [ ];
-
       const applicable =
-        artefactDefinitionNames.includes(
+        selectedDefinitionNames.includes(
+          rule.definition)
+        && artefact.definitions.includes(
           rule.definition);
 
       logger.trace(
         'Check command: checking artefact "%s" against rule "%s" (applicable=%s)',
-        artefact.path,
+        artefact.location,
         rule.name,
         applicable);
 
@@ -194,37 +143,37 @@ export async function execCheck(
           rule,
           artefact);
 
-      const relativePath =
-        toPosixPath(
-          path.relative(
-            options.pattern
-            ? environment.cwd
-            : environment.project,
-            artefact.path));
-
-      const isOk = ruleResult.result === 'Ok';
-
-      const row =
-        { location: relativePath,
-          rule: `${rule.name}`,
-          result:
-            isOk
-          ? 'OK'
-          : ruleResult.message };
-
       hasFailures =
         hasFailures
-        || !isOk;
+        || ruleResult.result === 'Fail';
 
       if (
-        !options.withPositives
-        && isOk
+        ruleResult.result === 'Ok'
+        && !options.withPositives
       ) {
         continue;
       }
 
-      results.push(row);
+      if (
+        ruleResult.result === 'Skip'
+        && !options.withSkipped
+      ) {
+        continue;
+      }
+
+      results.push(
+        { location:
+            displayLocation(
+              artefact.location),
+          rule: `${rule.name}`,
+          result:
+            formatResult(
+              ruleResult) });
     }
+  }
+
+  if (hasFailures) {
+    environment.exitCode = 1;
   }
 
   results.sort(
@@ -296,4 +245,62 @@ export function filterRules(
     rule =>
       allowedNames.has(
         rule.name));
+}
+
+/**
+ * Keeps artefacts whose printed location matches the glob. A pattern with a
+ * scheme matches full locations; any other pattern is a path relative to the
+ * working directory and matches `file:` artefacts only.
+ */
+function filterArtefactsByPattern(
+    environment: Environment,
+    artefacts: Artefact[],
+    pattern: string | undefined
+  ): Artefact[]
+{
+  if (!pattern) {
+    return artefacts;
+  }
+
+  if (hasScheme(pattern)) {
+    return artefacts.filter(
+      artefact =>
+        minimatch(
+          artefact.location,
+          pattern,
+          { dot: true }));
+  }
+
+  const projectPattern =
+    toPosixPath(
+      path.relative(
+        environment.project,
+        path.resolve(
+          environment.cwd,
+          pattern)));
+
+  return artefacts.filter(
+    artefact =>
+      artefact.location.startsWith(FILE_SCHEME)
+      && minimatch(
+        displayLocation(
+          artefact.location),
+        projectPattern,
+        { dot: true }));
+}
+
+function formatResult(
+    result: RuleRunResult
+  ): string
+{
+  switch (result.result) {
+    case 'Ok':
+      return 'OK';
+
+    case 'Skip':
+      return 'Skip';
+
+    default:
+      return result.message;
+  }
 }

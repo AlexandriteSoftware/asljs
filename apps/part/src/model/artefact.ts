@@ -4,24 +4,18 @@
 export interface Artefact
 {
   /**
-   * Artefact's name. Usually the name of the artefact file without extension.
+   * Artefact's location, a URI string with a scheme, e.g.
+   * `file:docs/Article.md` or `git:tag/v1.0.0`. Together with a definition it
+   * uniquely identifies the artefact. See [location.ts][1].
+   *
+   * [1]: ../location.ts
+   */
+  location: string;
+
+  /**
+   * Artefact's name. For `file:` artefacts, the file name without extension.
    */
   name: string;
-
-  /**
-   * Artefact's full path.
-   */
-  path: string;
-
-  /**
-   * Artefact's relative path, from the base path.
-   */
-  basePath: string;
-
-  /**
-   * Artefact's base path. Usually the project root path.
-   */
-  relativePath: string;
 
   /**
    * Definition names, this artefact matches. See [ArtefactDefinition][1].

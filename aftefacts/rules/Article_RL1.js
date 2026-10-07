@@ -19,7 +19,7 @@ export async function validate(
 {
   const fileName =
     path.basename(
-      artefact.path,
+      context.files.path(artefact),
       '.md');
 
   if (/^[A-Z]+$/.test(fileName)) {
@@ -29,7 +29,7 @@ export async function validate(
     
   let content =
     await readFile(
-      artefact.path,
+      context.files.path(artefact),
       'utf8');
 
   if (content.startsWith('\uFEFF')) {
@@ -64,9 +64,9 @@ export async function validate(
 
   const expectedHeadingText =
     path.basename(
-      artefact.path,
+      context.files.path(artefact),
       path.extname(
-        artefact.path));
+        context.files.path(artefact)));
     
   const expectedHeading =
     `# ${expectedHeadingText}`;

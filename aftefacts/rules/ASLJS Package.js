@@ -7,12 +7,13 @@ import { readPackageJSON }
  * @type { import('asljs-part').ArtefactDataProvidingFunction }
  */
 export async function getData(
-    artefact
+    artefact,
+    context
   )
 {
   const packageJsonPath =
     path.join(
-      artefact.path,
+      context.files.path(artefact),
       'package.json');
 
   const packageJson =
@@ -25,7 +26,7 @@ export async function getData(
 
   const repositoryRoot =
     path.resolve(
-      artefact.path,
+      context.files.path(artefact),
       '..');
 
   const localDeps =

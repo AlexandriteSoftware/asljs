@@ -41,8 +41,9 @@ when` line.
 ## Artefacts
 
 An artefact definition states where a kind of file lives and what it must
-satisfy. Its rules are executable: `part check --definitions aftefacts` runs
-them.
+satisfy. Its rules are executable: `part check --definitions aftefacts --plugin
+./aftefacts/plugin.js` runs them. The rule implementations live in
+`aftefacts/rules/` and are wired up in `aftefacts/plugin.js`.
 
 - [ASLJS Package][AFP] - a workspace package published to npm.
 - [Package README][AFR] - the landing page of a package, its heading set and
@@ -51,8 +52,8 @@ them.
   formatting.
 - [Requirement][AFQ] - a requirement.
 - [Unit Test File][AFU] - a test file.
-- [Artefact Definition][AFD] and [Rule File][AFF] - how definitions and their
-  rule implementations are written.
+- [Artefact Definition][AFD] - how definitions are written and how plugins
+  implement their rules.
 
 ## Documents
 
@@ -127,7 +128,6 @@ them.
 [AFQ]: aftefacts/Requirement.md
 [AFU]: <aftefacts/Unit Test File.md>
 [AFD]: <aftefacts/Artefact Definition.md>
-[AFF]: <aftefacts/Rule File.md>
 [DCC]: CONVENTIONS.md
 [DCH]: HOWTO.md
 [DCL]: <docs/Repository Layout.md>

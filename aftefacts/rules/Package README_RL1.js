@@ -26,7 +26,7 @@ export async function validate(
 {
   const content =
     await readFile(
-      artefact.path,
+      context.files.path(artefact),
       'utf8');
 
   const unexpected =

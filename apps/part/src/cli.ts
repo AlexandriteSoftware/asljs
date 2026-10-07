@@ -12,12 +12,8 @@ import { execDefinition }
   from './commands/definition.js';
 import { execDefinitions }
   from './commands/definitions.js';
-import { execInit }
-  from './commands/init.js';
 import { execInventory }
   from './commands/inventory.js';
-import { execUpdate }
-  from './commands/update.js';
 import { execVersion }
   from './commands/version.js';
 import { createEnvironment,
@@ -120,6 +116,11 @@ function createCli(
     .option(
       '--project <path>',
       'Path to artefact directory. Defaults to the current working directory.')
+    .option(
+      '--plugin <module>',
+      'Plugin module path or package name. Repeat for several plugins.',
+      collectOption,
+      [ ])
     .hook(
       'preAction',
       (
@@ -196,6 +197,22 @@ function createCli(
             environment.project = environment.cwd;
           }
         }
+
+        const optPlugins =
+          (options.plugin as string[])
+          .map(filterStringOption)
+          .filter(
+            value => value !== '');
+
+        const plugins =
+          optPlugins.length > 0
+          ? optPlugins
+          : splitPluginsVariable(
+            process.env.PART_PLUGINS);
+
+        environment.plugins =
+          plugins.map(
+            resolvePluginSpecifier);
       });
 
   cli.command('inventory')
@@ -272,47 +289,6 @@ function createCli(
           environment);
       });
 
-  cli.command('init')
-    .description(
-      'Initialize an artefact definitions directory')
-    .action(
-      async () =>
-      {
-        const method =
-          environment.resolve(
-            execInit);
-
-        await method(
-          environment);
-      });
-
-  cli.command('update')
-    .description(
-      'Create or refresh JS rule files from artefact definitions')
-    .option(
-      '--dry-run',
-      'Print Copilot prompts without running them or writing files')
-    .action(
-      async (
-          options
-        ) =>
-      {
-        const method =
-          environment.resolve(
-            execUpdate);
-
-        const logger =
-          environment
-          .loggerProvider
-          .getLogger(
-            'execUpdate');
-
-        await method(
-          logger,
-          environment,
-          options);
-      });
-
   cli.command('check')
     .description(
       'Run rules for artefacts matching a pattern')
@@ -326,6 +302,9 @@ function createCli(
     .option(
       '--with-positives',
       'Show passing and failing check rows')
+    .option(
+      '--with-skipped',
+      'Show rows of rules no plugin implements')
     .action(
       async (
           pattern,
@@ -353,7 +332,8 @@ function createCli(
               splitCommaSeparatedOption(
                 options.checkRules),
             withPositives:
-              options.withPositives === true });
+              options.withPositives === true,
+            withSkipped: options.withSkipped === true });
       });
 
   cli.command('version')
@@ -523,6 +503,51 @@ function splitCommaSeparatedOption(
       entry => entry.trim())
     .filter(
       entry => entry.length > 0);
+}
+
+function collectOption(
+    value: string,
+    previous: string[]
+  ): string[]
+{
+  return [ ...previous,
+           value ];
+}
+
+/**
+ * Split `PART_PLUGINS` by the platform path delimiter, ignoring empty
+ * entries.
+ */
+function splitPluginsVariable(
+    value: unknown
+  ): string[]
+{
+  return filterStringOption(value)
+    .split(path.delimiter)
+    .map(
+      entry => entry.trim())
+    .filter(
+      entry => entry.length > 0);
+}
+
+/**
+ * Paths become absolute, resolved from the working directory; package
+ * specifiers are kept for resolution from the project root.
+ */
+function resolvePluginSpecifier(
+    specifier: string
+  ): string
+{
+  if (
+    path.isAbsolute(specifier)
+    || specifier.startsWith('.')
+  ) {
+    return path.normalize(
+      path.resolve(
+        specifier));
+  }
+
+  return specifier;
 }
 
 /**

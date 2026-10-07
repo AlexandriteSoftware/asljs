@@ -53,13 +53,23 @@ This top-level definition should be ignored by the Definitions parameter.
 - Folders: Wrong Items
 `);
 
+    await workspace.writeText(
+      'plugin.js',
+      `export default () => ({
+  name: 'test',
+  definitions: async () => [ { name: 'Release', description: 'A release.' } ]
+});
+`);
+
     const environment =
       createEnvironment(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
             workspace.resolve('definitions'),
-          project: workspace.path });
+          project: workspace.path,
+          plugins:
+            [ workspace.resolve('plugin.js') ] });
 
     await execDefinitions(
       environment);
@@ -70,11 +80,15 @@ This top-level definition should be ignored by the Definitions parameter.
 
     assert.match(
       environment.stdout.toString(),
-      /\| Name\s+\| Location\s+\|/);
+      /\| Name\s+\| Source\s+\| Location\s+\|/);
 
     assert.match(
       environment.stdout.toString(),
-      /\| Todo Item \| definitions\/Todo Item\.md \|/);
+      /\| Todo Item \| markdown \| definitions\/Todo Item\.md \|/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /\| Release\s+\| test\s+\|\s+\|/);
 
     assert.doesNotMatch(
       environment.stdout.toString(),

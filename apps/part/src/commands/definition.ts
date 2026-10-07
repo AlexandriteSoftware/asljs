@@ -19,18 +19,35 @@ export async function execDefinition(
 {
   const rootDirectory = environment.project;
 
-  const { artefactDefinitionProvider } =
-    environment.getProviders();
+  const { artefactDefinitionProvider, pluginProvider } =
+    environment
+    .getProviders();
 
   const definitions =
     await artefactDefinitionProvider.getDefinitions();
 
+  const definition =
+    resolveDefinition(
+      definitions,
+      rootDirectory,
+      options.target);
+
+  const implementedRuleIds = new Set<string>();
+
+  for (const rule of definition.rules) {
+    if (
+      await pluginProvider.findRule(
+        definition.name,
+        rule.id)
+    ) {
+      implementedRuleIds.add(rule.id);
+    }
+  }
+
   const markdown =
     formatDefinitionDetails(
-      resolveDefinition(
-        definitions,
-        rootDirectory,
-        options.target),
+      definition,
+      implementedRuleIds,
       rootDirectory);
 
   environment.stdout.write(
@@ -54,11 +71,13 @@ function resolveDefinition(
   const byPath =
     definitions.find(
       definition =>
-      path.resolve(
+      definition.path !== undefined
+      && path.resolve(
         definition.path) === absoluteTarget)
     ?? definitions.find(
       definition =>
-        toPosixPath(
+        definition.path !== undefined
+        && toPosixPath(
           path.relative(
             rootDirectory,
             definition.path)) === normalizedTarget);
@@ -86,11 +105,13 @@ function resolveDefinition(
 
 function formatDefinitionDetails(
     definition: ArtefactDefinition,
+    implementedRuleIds: Set<string>,
     rootDirectory: string
   ): string
 {
-  return serializeMarkdownList(
+  const details: Record<string, unknown> =
     { name: definition.name,
+      source: definition.source,
       description:
         definition.description,
       location:
@@ -98,14 +119,23 @@ function formatDefinitionDetails(
       rules:
         definition.rules.map(
           rule => ({ id: rule.id,
+                     implemented:
+                       implementedRuleIds.has(
+                         rule.id),
                      description: rule.content })),
       properties:
-        definition.properties,
-      path:
-        toPosixPath(
-          path.relative(
-            rootDirectory,
-            definition.path)) });
+        definition.properties };
+
+  if (definition.path !== undefined) {
+    details.path =
+      toPosixPath(
+        path.relative(
+          rootDirectory,
+          definition.path));
+  }
+
+  return serializeMarkdownList(
+    details);
 }
 
 function serializeMarkdownList(

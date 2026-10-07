@@ -6,124 +6,135 @@
 Markdown-defined project artefact tracing framework with a CLI for inventory,
 definition inspection, and rule checks.
 
-## Quick Start
+## Overview
 
-Create a definition such as `Todo Item.md`:
+An artefact is any unit of a project: a file, a folder, a package dependency, a
+git tag. An artefact definition describes a class of artefacts: where they are,
+which rules they follow, and which properties they have. Definitions are
+markdown documents in a definitions folder; plugins provide the code that
+implements the rules, reads properties, and finds artefacts outside the
+filesystem.
+
+## Installation
+
+```bash
+npm install --save-dev asljs-part
+```
+
+## Usage
+
+Create a definition `artefacts/Todo Item.md`. A markdown file in the definitions
+folder is a definition when its level 1 heading matches its file name.
 
 ```markdown
 # Todo Item
 
 A task that needs to be done.
 
-## Properties
-
-- Due date: when it needs to be done.
-
 ## Location
 
-- Files: ../Todo Items/*.md
+- Pattern: `../Todo Items/*.md`
+
+## Properties
+
+### Due
+
+- Type: Date
+
+When it needs to be done.
 
 ## Rules
 
-- R1 - Due date must be in the future.
+### RL1
+
+Due date must be in the future.
 ```
 
-Crate a data providing function in `parts/Todo Item.js`:
+Implement the property and the rule in a plugin, `artefacts/plugin.js`:
 
 ```js
-export async function getData(artefact, context)
+import { readFile }
+  from 'node:fs/promises';
+
+async function getData(artefact, context)
 {
   const text =
-    await context
-      .markdownDocuments
-      .read(
-        artefact.path);
+    await readFile(
+      context.files.path(artefact),
+      'utf8');
 
-  const dueDate =
-    text.match(/- Due date: (.*)/)[1];
-
-  return { dueDate };
+  return { Due: text.match(/- Due: (.*)/)?.[1] ?? null };
 }
-```
 
-Create a matching rule in `parts/Todo Item_R1.js`:
-
-```js
-export async function validate(artefact, context)
+/** @type { import('asljs-part').PluginFactory } */
+export default function todoPlugin()
 {
-  const artefactData =
-    await context.artefactData.tryGetArtefactData(artefact);
+  return { name: 'todo',
+           data: { 'Todo Item': getData },
+           rules:
+             { 'Todo Item':
+                 { RL1: async (artefact, context) =>
+                   {
+                     const { Due } =
+                       await getData(artefact, context);
 
-  const dueDate =
-    artefactData['Todo Item'].dueDate;
-
-  const now = new Date();
-
-  if (dueDate <= now) {
-    throw new Error('Due date must be in the future.');
-  }
+                     if (!Due || new Date(Due) <= new Date()) {
+                       throw new Error('Due date must be in the future.');
+                     }
+                   } } } };
 }
 ```
 
-Create an artefact in `Todo Items/Review Requirements.md`:
+Create an artefact `Todo Items/Review Requirements.md`:
 
 ```markdown
 # Review Requirements
 
-- Due date: 2026-07-01
+- Due: 2030-07-01
 
 Review the project requirements.
 ```
 
-Run inventory:
+List the artefacts and check the rules:
 
 ```bash
-part inventory
+part inventory --definitions artefacts --plugin ./artefacts/plugin.js
+part check --definitions artefacts --plugin ./artefacts/plugin.js
 ```
-
-Render the inventory as an SVG diagram and save it to a file:
-
-```bash
-part inventory --format=diagram > inventory.svg
-```
-
-Include parsed property values in table output:
-
-```bash
-part inventory --with-properties
-```
-
-Include only selected properties in table output:
-
-```bash
-part inventory --with-properties=Article.Link,Def1.Pro2
-```
-
-Export inventory as JSON:
-
-```bash
-part inventory --format=json
-```
-
-The diagram rendering path uses the local `@mermaid-js/mermaid-cli` dependency
-bundled with this package.
-
-Bootstrap a definitions folder:
-
-```bash
-part init --definitions artefacts
-```
-
-Example output:
 
 ```text
-| File                              | Definitions |
+| Location                          | Definitions |
 | --------------------------------- | ----------- |
 | Todo Items/Review Requirements.md | Todo Item   |
 ```
 
-If you want to embed PART in your own tooling instead of shelling out, import
-the package-root helpers from `asljs-part` and call the report builders or
-`runCli(...)` directly.
+`check` prints failing rules and exits with a non-zero code when any rule fails.
+`--with-positives` adds passing rows, `--with-skipped` adds rules no plugin
+implements.
+
+Built-in plugins add definitions for artefacts outside the filesystem:
+
+```bash
+part inventory --plugin asljs-part/plugins/npm --plugin asljs-part/plugins/git
+```
+
+- `asljs-part/plugins/npm` - `Npm Dependency`, one artefact per dependency in
+  every `package.json`.
+- `asljs-part/plugins/git` - `Git Tag`, one artefact per tag.
+
+Other output formats: `part inventory --format=json`, `--format=diagram` (an
+SVG), and `--with-properties` to add property columns.
+
+## Further reading
+
+- [Artefact Definition][AD] - the definition format.
+- [Requirements][RQ] - the behavior of the CLI, the providers, and the plugin
+  contract.
+
+## License
+
+MIT
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[AD]: <artefacts/Artefact Definition.md>
+[RQ]: development

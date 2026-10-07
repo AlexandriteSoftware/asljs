@@ -36,7 +36,10 @@ test(
         { loggerProvider,
           cwd: workspace.path,
           definitions:
-            workspace.resolve('definitions') });
+            workspace.resolve('definitions'),
+          plugins:
+            [ 'asljs-part/plugins/npm',
+              'asljs-part/plugins/git' ] });
 
     await execConfig(
       environment);
@@ -44,4 +47,12 @@ test(
     assert.match(
       environment.stdout.toString(),
       /Environment:/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /plugins=asljs-part\/plugins\/npm,asljs-part\/plugins\/git/);
+
+    assert.match(
+      environment.stdout.toString(),
+      /PART_PLUGINS=/);
   });

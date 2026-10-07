@@ -67,11 +67,12 @@ const DPRINT_CONFIG =
  * @type { import('asljs-part').RuleValidationFunction }
  */
 export async function validate(
-  artefact)
+  artefact,
+  context)
 {
   const content =
     await readFile(
-      artefact.path,
+      context.files.path(artefact),
       'utf8');
 
   const dprintCommand =
@@ -99,7 +100,7 @@ export async function validate(
       await dprintFormatStdin(
         dprintCommand,
         configPath,
-        artefact.path,
+        context.files.path(artefact),
         content);
 
     if (content !== formatted) {

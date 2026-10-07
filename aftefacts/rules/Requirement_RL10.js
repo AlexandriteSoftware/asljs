@@ -21,7 +21,7 @@ export async function validate(
 
   const fileName =
     path.basename(
-      artefact.path);
+      context.files.path(artefact));
 
   const ctx =
     `Requirement_RL10.validate(${fileName}}): `;
@@ -63,7 +63,7 @@ export async function validate(
   const testFiles =
     testFileArtefacts
       .map(
-        item => item.path);
+        item => context.files.path(item));
 
   logger.trace(
     `${ctx}searching for requirement ID "${requirementId}" in test files.`);

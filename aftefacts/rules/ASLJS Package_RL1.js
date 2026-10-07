@@ -76,17 +76,18 @@ async function findTestingDirs(
  * @type { import('asljs-part').RuleValidationFunction }
  */
 export async function validate(
-  artefact)
+  artefact,
+  context)
 {
   const distPath =
     path.join(
-      artefact.path,
+      context.files.path(artefact),
       'dist');
 
   const testingDirs =
     await findTestingDirs(
       distPath,
-      artefact.path);
+      context.files.path(artefact));
 
   if (testingDirs.length > 0) {
     throw new Error(

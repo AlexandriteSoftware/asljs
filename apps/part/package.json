@@ -1,6 +1,6 @@
 {
   "name": "asljs-part",
-  "version": "0.1.42",
+  "version": "0.2.0",
   "description": "Project artefact tracing framework and CLI for markdown-defined project artefacts.",
   "type": "module",
   "main": "dist/index.js",
@@ -9,14 +9,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./plugins/npm": {
+      "types": "./dist/plugins/npm.d.ts",
+      "default": "./dist/plugins/npm.js"
+    },
+    "./plugins/git": {
+      "types": "./dist/plugins/git.d.ts",
+      "default": "./dist/plugins/git.js"
     }
   },
   "files": [
-    "artefacts/parts/testing/*.js",
-    "artefacts/parts/Artefact Definition*.js",
-    "artefacts/parts/Rule File*.js",
     "artefacts/Artefact Definition.md",
-    "artefacts/Rule File.md",
     "dist/**",
     "bin/**",
     "README.md",
@@ -34,7 +38,7 @@
     "guard:clean-git": "toolkit ensure-clean-working-directory",
     "prepack": "npm run clean && npm run build:dist && npm run build && npm run test && npm run guard:clean-git",
     "postpublish": "toolkit tag-release-revision",
-    "test": "node --test --enable-source-maps build/**/*.test.js artefacts/**/*.test.js",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
     "release:patch": "toolkit release-patch",
     "all": "npm run clean && npm run flint && npm run typecheck && npm run build:dist && npm run build && npm run test"
   },
