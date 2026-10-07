@@ -97,8 +97,14 @@ test(
         workspace.path,
         [ pluginPath ]);
 
+    const dependencyDefinition =
+      await providers.artefactDefinitionProvider
+      .getDefinition(
+        'NPM Dependency');
+
     const artefacts =
-      await providers.artefactProvider.getArtefacts();
+      await providers.artefactProvider.getArtefacts(
+        [ dependencyDefinition ]);
 
     assert.deepEqual(
       artefacts.map(
@@ -126,8 +132,7 @@ test(
           'apps/app/package.json' });
 
     const definition =
-      await providers.artefactDefinitionProvider.getDefinition(
-        'NPM Dependency');
+      dependencyDefinition;
 
     assert.equal(
       definition.source,
@@ -175,4 +180,112 @@ test(
         [ 'npm:package.json#optionalDependencies/lib',
           'Fail',
           'Range "file:libs/lib" of lib is not supported, or version "1.3.0" in libs/lib/package.json is invalid.' ] ]);
+  });
+
+test(
+  'npm plugin locates package.json files and lists their project dependencies',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'package.json',
+      JSON.stringify(
+        { private: true,
+          dependencies:
+            { lib: '^1.0.0' } }));
+
+    await workspace.writeText(
+      'libs/lib/package.json',
+      JSON.stringify(
+        { name: 'lib',
+          version: '1.0.0' }));
+
+    await workspace.writeText(
+      'apps/app/package.json',
+      JSON.stringify(
+        { name: 'app',
+          version: '0.1.0',
+          dependencies:
+            { lib: '^1.0.0',
+              ext: '^2.0.0' },
+          devDependencies:
+            { dev: '^1.0.0' } }));
+
+    await workspace.writeText(
+      'apps/dev/package.json',
+      JSON.stringify(
+        { name: 'dev' }));
+
+    await workspace.writeText(
+      'node_modules/dep/package.json',
+      JSON.stringify(
+        { name: 'dep' }));
+
+    await workspace.writeText(
+      '.gitignore',
+      'ignored/\n');
+
+    await workspace.writeText(
+      'ignored/package.json',
+      JSON.stringify(
+        { name: 'ignored' }));
+
+    const providers =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        [ pluginPath ]);
+
+    const definition =
+      await providers.artefactDefinitionProvider.getDefinition(
+        'NPM Package');
+
+    const artefacts =
+      await providers.artefactProvider.getArtefacts(
+        [ definition ]);
+
+    assert.deepEqual(
+      artefacts.map(
+        artefact => [ artefact.location,
+                      artefact.name ]),
+      [ [ 'file:apps/app/package.json',
+          'app' ],
+        [ 'file:apps/dev/package.json',
+          'dev' ],
+        [ 'file:libs/lib/package.json',
+          'lib' ],
+        [ 'file:package.json',
+          'package.json' ] ]);
+
+    const data = [ ];
+
+    for (const artefact of artefacts) {
+      data.push(
+        await providers.artefactDataProvider.tryGetArtefactData(
+          artefact,
+          'NPM Package'));
+    }
+
+    assert.deepEqual(
+      data,
+      [ { Name: 'app',
+          Version: '0.1.0',
+          Private: false,
+          Dependencies:
+            [ 'file:libs/lib/package.json' ] },
+        { Name: 'dev',
+          Version: null,
+          Private: false,
+          Dependencies: [ ] },
+        { Name: 'lib',
+          Version: '1.0.0',
+          Private: false,
+          Dependencies: [ ] },
+        { Name: null,
+          Version: null,
+          Private: true,
+          Dependencies:
+            [ 'file:libs/lib/package.json' ] } ]);
   });

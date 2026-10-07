@@ -8,6 +8,8 @@ import path
   from 'node:path';
 import { toPosixPath }
   from '../formatting.js';
+import { FILE_SCHEME }
+  from '../location.js';
 import { Artefact }
   from '../model/artefact.js';
 import { LocatedArtefact,
@@ -18,6 +20,8 @@ import { readBuiltInDefinition }
   from './built-in-definition.js';
 
 const NPM_DEPENDENCY_DEFINITION = 'NPM Dependency';
+
+const NPM_PACKAGE_DEFINITION = 'NPM Package';
 
 const SCHEME = 'npm:';
 
@@ -45,10 +49,10 @@ interface DependencyLocation
 }
 
 /**
- * Plugin providing the `NPM Dependency` definition, documented in
- * `artefacts/NPM Dependency.md`: one artefact per entry in
- * the dependency sections of every `package.json` under the project root,
- * outside `node_modules` and `.gitignore`d paths.
+ * Plugin providing the `NPM Package` and `NPM Dependency` definitions,
+ * documented in `artefacts`: one artefact per `package.json` under the project
+ * root, and one per entry in their dependency sections, outside `node_modules`
+ * and `.gitignore`d paths.
  */
 export default function npmPlugin(
     context: PluginContext
@@ -69,14 +73,26 @@ export default function npmPlugin(
            definitions:
              async () => [ await readBuiltInDefinition(
                context,
-               NPM_DEPENDENCY_DEFINITION) ],
+               NPM_PACKAGE_DEFINITION),
+                           await readBuiltInDefinition(
+                             context,
+                             NPM_DEPENDENCY_DEFINITION) ],
            locate:
-             { [NPM_DEPENDENCY_DEFINITION]:
+             { [NPM_PACKAGE_DEFINITION]:
+                 async () =>
+        locatePackages(
+          await getManifests()),
+               [NPM_DEPENDENCY_DEFINITION]:
                  async () =>
         locateDependencies(
           await getManifests()) },
            data:
-             { [NPM_DEPENDENCY_DEFINITION]:
+             { [NPM_PACKAGE_DEFINITION]:
+                 async artefact =>
+        getPackageData(
+          await getManifests(),
+          artefact),
+               [NPM_DEPENDENCY_DEFINITION]:
                  async artefact =>
         getDependencyData(
           await getManifests(),
@@ -144,6 +160,21 @@ async function findManifests(
   return manifests;
 }
 
+function locatePackages(
+    manifests: Manifest[]
+  ): LocatedArtefact[]
+{
+  return manifests.map(
+    manifest => (
+      { location:
+          `${FILE_SCHEME}${manifest.path}`,
+        name:
+          typeof manifest.content.name === 'string'
+          ? manifest.content.name
+          : manifest.path }
+    ));
+}
+
 function locateDependencies(
     manifests: Manifest[]
   ): LocatedArtefact[]
@@ -189,6 +220,59 @@ function getDependencyData(
            Range: range,
            Kind: dependency.kind,
            Manifest: dependency.manifest };
+}
+
+function getPackageData(
+    manifests: Manifest[],
+    artefact: Artefact
+  ): Record<string, unknown>
+{
+  if (!artefact.location.startsWith(FILE_SCHEME)) {
+    throw new Error(
+      `Not an npm package location: ${artefact.location}`);
+  }
+
+  const manifest =
+    findManifest(
+      manifests,
+      artefact.location.slice(FILE_SCHEME.length));
+
+  const dependencies: string[] = [ ];
+
+  for (
+    const name of Object.keys(
+      getSection(
+        manifest,
+        'dependencies'))
+  ) {
+    const dependency =
+      manifests.find(
+        item => item.content.name === name);
+
+    if (dependency) {
+      dependencies.push(
+        `${FILE_SCHEME}${dependency.path}`);
+    }
+  }
+
+  return { Name:
+             getString(
+               manifest.content.name),
+           Version:
+             getString(
+               manifest.content.version),
+           Private:
+             manifest.content.private === true,
+           Dependencies: dependencies };
+}
+
+function getString(
+    value: unknown
+  ): string | null
+{
+  return typeof value === 'string'
+    ? value
+    : null;
 }
 
 async function validateWorkspaceRange(

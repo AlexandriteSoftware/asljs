@@ -131,6 +131,7 @@ file changed after its last check, the rule text changed, or the plugin
 - `Article` - every markdown file: its heading, its links, and its dprint
   formatting.
 - `Unit Test File` - every `*.test.ts` file.
+- `NPM Package` - every `package.json`, with the project packages it depends on.
 - `NPM Dependency` - one artefact per dependency in every `package.json`.
 - `Git Tag` - one artefact per tag.
 
@@ -147,8 +148,8 @@ SVG), and `--with-properties` to add property columns.
 ## Further reading
 
 - [Artefact Definition][AD] - the definition format.
-- [Git Tag][GT] and [NPM Dependency][ND] - the definitions of the built-in
-  plugins.
+- [Git Tag][GT], [NPM Package][NP] and [NPM Dependency][ND] - the definitions of
+  the built-in plugins.
 - [Requirements][RQ] - the behavior of the CLI, the providers, and the plugin
   contract.
 
@@ -160,4 +161,5 @@ MIT
 [AD]: <artefacts/Artefact Definition.md>
 [GT]: <artefacts/Git Tag.md>
 [ND]: <artefacts/NPM Dependency.md>
+[NP]: <artefacts/NPM Package.md>
 [RQ]: development

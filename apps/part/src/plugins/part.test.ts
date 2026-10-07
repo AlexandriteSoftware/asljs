@@ -59,6 +59,8 @@ test(
           'asljs-part' ],
         [ 'NPM Dependency',
           'asljs-part' ],
+        [ 'NPM Package',
+          'asljs-part' ],
         [ 'Unit Test File',
           'asljs-part' ] ]);
 
@@ -89,6 +91,10 @@ test(
           name,
           'RL1'));
     }
+
+    assert.ok(
+      await providers.definitionSourceProvider.findLocator(
+        'NPM Package'));
 
     assert.deepEqual(
       await providers.artefactProvider.getArtefacts(),
