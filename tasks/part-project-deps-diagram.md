@@ -19,23 +19,34 @@ one property:
 - Type: Artefact[]
 ```
 
-`aftefacts/parts/ASLJS Package.js` fills it from `package.json`:
+`aftefacts/src/asljs-package.ts` fills it from `package.json`:
 
-```js
-const repositoryRoot =
-  path.resolve(artefact.path, '..');
+```ts
+const parentPath =
+  path.resolve(
+    packagePath,
+    '..');
 
 const localDeps =
-  Object.keys(dependencies)
-    .filter(item => item.startsWith('asljs-'))
-    .map(item => item.replace(/^asljs-/, ''))
-    .map(item => path.resolve(repositoryRoot, item));
+  Object.keys(
+    packageJson.dependencies
+    ?? {})
+  .filter(
+    item => item.startsWith('asljs-'))
+  .map(
+    item =>
+      path.resolve(
+        parentPath,
+        item.replace(
+          /^asljs-/,
+          '')));
 ```
 
 and `part inventory --format=diagram` draws an edge for each `Artefact[]` value
 ([UMB]). So this already renders:
 
 ```sh
+npm -w asljs-artefacts run build:dist
 npx part inventory --definitions aftefacts \
   --inventory-definitions="ASLJS Package" --format=diagram > deps.svg
 ```
@@ -47,7 +58,7 @@ written by hand.
 
 The generated graph is wrong and the hand-written one is stale.
 
-- `repositoryRoot` is the package's parent, `libs` or `apps`, not the repository
+- `parentPath` is the package's parent, `libs` or `apps`, not the repository
   root. Every app's dependency resolves under `apps/`: `apps/part` gets
   `apps/locator` and `apps/logging`, which do not exist. The diagram drops a
   reference to a missing node without a word, so the rendered graph above has 12
@@ -68,7 +79,7 @@ The generated graph is wrong and the hand-written one is stale.
 
 ### Data source
 
-1. Fix `ASLJS Package.js`: read the workspace list from the root `package.json`,
+1. Fix `asljs-package.ts`: read the workspace list from the root `package.json`,
    map each package's `name` to its directory, resolve `asljs-*` names through
    that map, and add a `LocalDevDeps` property for `devDependencies`.
    - Pro: a fix in this repository's definitions only; no `part` change.
@@ -80,7 +91,15 @@ The generated graph is wrong and the hand-written one is stale.
    - Pro: works in any npm workspace without definitions.
    - Con: bypasses the definition model that every other `part` feature is built
      on, and ties `part` to npm.
-3. Outside `part`: `npm query .workspace` or `npm ls --json --workspaces`, piped
+3. The `NPM Dependency` definition of `asljs-part` (`--definitions
+   "asljs-part;NPM Dependency"`) already lists every dependency of every
+   `package.json`, with `Package`, `Kind` and `Manifest` properties and a rule
+   that checks workspace ranges.
+   - Pro: no new code to read manifests; already handles `devDependencies`.
+   - Con: its artefacts are dependencies, not packages, and `Manifest` is a path
+     string, not an `Artefact` property, so `--format=diagram` draws no
+     package-to-package edges from it yet.
+4. Outside `part`: `npm query .workspace` or `npm ls --json --workspaces`, piped
    through a small script, or a monorepo tool's graph command.
    - Pro: npm resolves the graph itself.
    - Con: a second tool for something the definitions already almost do, and
@@ -120,8 +139,9 @@ A reusable npm-workspaces package definition belongs in the presets task
 
 - `aftefacts/ASLJS Package.md` - the definition, `LocalDeps`, the `apps/toolkit`
   exclusion.
-- `aftefacts/parts/ASLJS Package.js` - `getData`, with the wrong
-  `repositoryRoot`.
+- `aftefacts/src/asljs-package.ts` - `getData`, with the wrong `parentPath`.
+- `apps/part/artefacts/NPM Dependency.md` and `apps/part/src/plugins/npm.ts` -
+  the built-in dependency definition.
 - `package.json` - `workspaces`, the list of package directories.
 - `docs/Dependencies.md` - the hand-written graph to replace.
 - `apps/part/src/commands/inventory.ts` - `collectDiagramEdges`, which drops the

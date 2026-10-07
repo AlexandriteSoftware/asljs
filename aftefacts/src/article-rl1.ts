@@ -5,31 +5,37 @@ Article start with a level 1 heading, which is the file name without
 extension. Exceptions: when the file name is all caps (e.g., `README.md`).
 */
 
-import path
-  from 'node:path';
+import { type RuleValidationFunction }
+  from 'asljs-part';
+import { type Heading }
+  from 'mdast';
 import { readFile }
   from 'node:fs/promises';
+import path
+  from 'node:path';
 
-/**
- * @type { import('asljs-part').RuleValidationFunction }
- */
-export async function validate(
-  artefact,
-  context)
-{
+export const validate: RuleValidationFunction =
+  async (
+      artefact,
+      context
+    ) =>
+  {
+  const articlePath =
+    context.files.path(artefact);
+
   const fileName =
     path.basename(
-      context.files.path(artefact),
-      '.md');
+      articlePath,
+      path.extname(articlePath));
 
   if (/^[A-Z]+$/.test(fileName)) {
     // This is a special file, e.g. README.md, LICENSE.md, etc.
     return;
   }
-    
+
   let content =
     await readFile(
-      context.files.path(artefact),
+      articlePath,
       'utf8');
 
   if (content.startsWith('\uFEFF')) {
@@ -39,43 +45,35 @@ export async function validate(
 
   const document =
     context.markdownDocuments
-      .parse(content);
+    .parse(content);
 
   const heading =
     document.root
-      .children
-      .find(
-        node =>
-          node.type === 'heading'
-          && node.depth === 1);
+    .children
+    .find(
+      (node): node is Heading =>
+        node.type === 'heading'
+        && node.depth === 1);
 
   if (
     !heading
-    || heading.position?.start.offset !== 0)
-  {
+    || heading.position?.start.offset !== 0
+  ) {
     throw new Error(
       'Article must start with a level 1 heading.');
   }
 
-  const headingText =
-    content.substring(
-      heading.position?.start.offset ?? 0,
-      heading.position?.end.offset ?? 0);
-
-  const expectedHeadingText =
-    path.basename(
-      context.files.path(artefact),
-      path.extname(
-        context.files.path(artefact)));
-    
-  const expectedHeading =
-    `# ${expectedHeadingText}`;
-
   const actualHeading =
-    headingText.trim();
+    content
+    .substring(
+      heading.position.start.offset,
+      heading.position.end.offset ?? 0)
+    .trim();
+
+  const expectedHeading = `# ${fileName}`;
 
   if (actualHeading !== expectedHeading) {
     throw new Error(
       `Article heading must be "${expectedHeading}", but was "${actualHeading}".`);
   }
-}
+};

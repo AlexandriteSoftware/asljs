@@ -14,8 +14,10 @@ import { LocatedArtefact,
          Plugin,
          PluginContext }
   from '../plugin.js';
+import { readBuiltInDefinition }
+  from './built-in-definition.js';
 
-const NPM_DEPENDENCY_DEFINITION = 'Npm Dependency';
+const NPM_DEPENDENCY_DEFINITION = 'NPM Dependency';
 
 const SCHEME = 'npm:';
 
@@ -25,13 +27,6 @@ const DEPENDENCY_KINDS =
       'devDependencies',
       'peerDependencies',
       'optionalDependencies' ]);
-
-const RL1_TEXT =
-  'A dependency on a package of the project, a `package.json` under the '
-  + "project root with that name, uses a range that the package's current "
-  + 'version satisfies. Supported range forms are `*`, `x.y.z`, `^x.y.z`, '
-  + '`~x.y.z` and `>=x.y.z`, optionally prefixed with `workspace:`; any other '
-  + 'form fails.';
 
 interface Manifest
 {
@@ -50,7 +45,8 @@ interface DependencyLocation
 }
 
 /**
- * Plugin providing the `Npm Dependency` definition: one artefact per entry in
+ * Plugin providing the `NPM Dependency` definition, documented in
+ * `artefacts/NPM Dependency.md`: one artefact per entry in
  * the dependency sections of every `package.json` under the project root,
  * outside `node_modules` and `.gitignore`d paths.
  */
@@ -71,32 +67,9 @@ export default function npmPlugin(
 
   return { name: 'npm',
            definitions:
-             async () => [ { name:
-                               NPM_DEPENDENCY_DEFINITION,
-                             description:
-                               'A package dependency declared in a `package.json` file.',
-                             properties:
-                               [ property(
-                                 'Package',
-                                 'String',
-                                 'Name of the package depended on.'),
-                                 property(
-                                   'Range',
-                                   'String',
-                                   'Version range of the dependency.'),
-                                 property(
-                                   'Kind',
-                                   'String',
-                                   'Section of the dependency, e.g. `devDependencies`.'),
-                                 property(
-                                   'Manifest',
-                                   'String',
-                                   'Path of the `package.json` file, relative to the project root.') ],
-                             rules:
-                               [ { id: 'RL1',
-                                   heading:
-                                     'RL1 - Workspace range',
-                                   content: RL1_TEXT } ] } ],
+             async () => [ await readBuiltInDefinition(
+               context,
+               NPM_DEPENDENCY_DEFINITION) ],
            locate:
              { [NPM_DEPENDENCY_DEFINITION]:
                  async () =>
@@ -115,25 +88,6 @@ export default function npmPlugin(
           validateWorkspaceRange(
             await getManifests(),
             artefact) } } };
-}
-
-function property(
-    name: string,
-    type: string,
-    description: string
-  ): {
-  name: string;
-  type: string;
-  isList: boolean;
-  isNullable: boolean;
-  description: string;
-}
-{
-  return { name,
-           type,
-           isList: false,
-           isNullable: false,
-           description };
 }
 
 async function findManifests(

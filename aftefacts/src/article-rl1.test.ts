@@ -1,30 +1,33 @@
-import test,
-       { after }
-  from 'node:test';
+import { createRuleValidationContext }
+  from 'asljs-part';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
-import { tmpDirFactory }
-  from './testing/tmpDir.js';
-import { NullLoggerProvider,
-         createRuleValidationContext }
-  from 'asljs-part';
+import test
+  from 'node:test';
 import { validate }
-  from './Article_RL1.js';
+  from './article-rl1.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
-after(
-  () => {
-    loggerProvider.dispose();
+test.after(
+  async () =>
+  {
+    await loggerProvider.dispose();
   });
 
 const tmpDir =
-  tmpDirFactory(
-    loggerProvider);
+  (): TmpDir =>
+  new TmpDir(
+    loggerProvider.getLogger('TmpDir'));
 
 const lineEndings =
-  [ '\n', '\r\n' ];
+  [ '\n',
+    '\r\n' ];
 
 const prefixes =
   [ '',
@@ -33,19 +36,20 @@ const prefixes =
 for (const prefix of prefixes) {
   const prefixDescription =
     prefix === ''
-      ? 'no BOM'
-      : 'BOM';
+    ? 'no BOM'
+    : 'BOM';
 
   for (const lineEnding of lineEndings) {
     const lineEndingDescription =
       lineEnding === '\n'
-        ? 'LF'
-        : 'CRLF';
+      ? 'LF'
+      : 'CRLF';
 
     test(
       'Article_RL1: article starts with Heading1, heading matches '
-      + `the file name (${prefixDescription}, ${lineEndingDescription})`,
-      async () => {
+        + `the file name (${prefixDescription}, ${lineEndingDescription})`,
+      async () =>
+      {
         await using workspace =
           tmpDir();
 
@@ -68,10 +72,10 @@ for (const prefix of prefixes) {
           articleLines.join(lineEnding));
 
         const article1Lines =
-        [ `${prefix}# Article1`,
-          '',
-          'Body.',
-          '' ];
+          [ `${prefix}# Article1`,
+            '',
+            'Body.',
+            '' ];
 
         await workspace.writeText(
           'Article1.md',
@@ -102,7 +106,8 @@ for (const prefix of prefixes) {
 
 test(
   'Article_RL1: fails when the article does not start with Heading1',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -130,18 +135,18 @@ test(
 
     await assert.rejects(
       async () =>
-        {
-          await validate(
-            artefact,
-            context);
-        },
-      /Article must start with a level 1 heading\./,
-    );
+      {
+        await validate(
+          artefact,
+          context);
+      },
+      /Article must start with a level 1 heading\./);
   });
 
 test(
   'Article_RL1: fails when the top-level heading is not a file name',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -168,9 +173,10 @@ test(
     }
 
     await assert.rejects(
-      async () => {
+      async () =>
+      {
         await validate(
           artefact,
           context);
       });
-  });  
+  });

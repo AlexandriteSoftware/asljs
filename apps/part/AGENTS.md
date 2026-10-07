@@ -16,7 +16,11 @@ Public behavior at a glance:
   `PART_DEFINITIONS`; without either there are no definitions
 - a source is an md-only folder (no `package.json`), a plugin library folder
   (has `package.json`; its entry is imported), a plugin file, or a package
-  specifier such as `asljs-part/plugins/npm`
+  specifier such as `asljs-part`
+- a source may be followed by `;<include>;<exclude>`: comma-separated,
+  case-insensitive glob patterns of definition names; empty include keeps all;
+  patterns matching nothing are ignored; a plugin's bindings of its filtered-out
+  definitions are dropped with them
 - in an md-only folder, a markdown file is a definition when its level 1 heading
   matches the file name; no other section is required, so such a folder should
   hold only definitions
@@ -46,8 +50,10 @@ Public behavior at a glance:
   reruns everything
 - cli command `check` shows failures only by default; `--with-positives` adds
   `OK` rows, `--with-skipped` adds `Skip` rows
-- built-in plugins `asljs-part/plugins/npm` and `asljs-part/plugins/git` are
-  opt-in
+- the package root's default export is the `asljs-part` plugin with every
+  definition documented in `artefacts/` and the npm and git implementations
+  (`--definitions asljs-part`, or `--definitions .` inside the package); the
+  individual built-in plugins are not exported
 
 Use this package when:
 
@@ -86,8 +92,8 @@ Do not assume:
 - If changing source loading or binding, then re-check the fatal error cases in
   `definition-source-provider.test.ts`.
 - If changing the cache or what invalidates it, then re-check the cache test in
-  `check.test.ts`; bump the `version` of `aftefacts/plugin.js` when its rules
-  change.
+  `check.test.ts`; bump the `version` of `aftefacts/src/plugin.ts` when its
+  rules change.
 - Tests never run a real AI agent; they set `PART_AI_COMMAND` to a stub.
 - If changing rule execution, then re-check `OK`, failure and `Skip` results.
 - If changing CLI output, then re-check `inventory`, `definition`, `definitions`
@@ -106,10 +112,11 @@ behavior changes.
 
 ### Global options
 
-- `--definitions <source>` (repeatable) or `PART_DEFINITIONS` (path-delimiter
-  separated) - definition sources. A value that is absolute, starts with `.`, or
-  exists is a path resolved from the working directory; anything else is a
-  package specifier resolved from the project root, then from `asljs-part`. Any
+- `--definitions <source>[;<include>[;<exclude>]]` (repeatable) or
+  `PART_DEFINITIONS` (entries separated by newlines or `|`) - definition sources
+  and their name filters. A value that is absolute, starts with `.`, or exists
+  is a path resolved from the working directory; anything else is a package
+  specifier resolved from the project root, then from `asljs-part`. Any
   `--definitions` replaces `PART_DEFINITIONS`.
 - `--project <path>` or `PART_PROJECT` - project root.
 

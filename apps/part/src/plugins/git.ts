@@ -6,6 +6,8 @@ import { LocatedArtefact,
          Plugin,
          PluginContext }
   from '../plugin.js';
+import { readBuiltInDefinition }
+  from './built-in-definition.js';
 
 const GIT_TAG_DEFINITION = 'Git Tag';
 
@@ -19,7 +21,8 @@ interface GitResult
 }
 
 /**
- * Plugin providing the `Git Tag` definition: one artefact per tag of the
+ * Plugin providing the `Git Tag` definition, documented in
+ * `artefacts/Git Tag.md`: one artefact per tag of the
  * repository at the project root. Outside a git repository there are no
  * artefacts.
  */
@@ -37,33 +40,9 @@ export default function gitPlugin(
 
   return { name: 'git',
            definitions:
-             async () => [ { name: GIT_TAG_DEFINITION,
-                             description:
-                               'A tag in the project git repository.',
-                             properties:
-                               [ { name: 'Commit',
-                                   type: 'String',
-                                   isList: false,
-                                   isNullable: false,
-                                   description:
-                                     'Commit the tag points to.' },
-                                 { name: 'Annotated',
-                                   type: 'Boolean',
-                                   isList: false,
-                                   isNullable: false,
-                                   description:
-                                     'Whether the tag is an annotated tag object.' },
-                                 { name: 'Date',
-                                   type: 'DateTime',
-                                   isList: false,
-                                   isNullable: true,
-                                   description:
-                                     'Tagger date of an annotated tag, or commit date otherwise.' } ],
-                             rules:
-                               [ { id: 'RL1',
-                                   heading: 'RL1 - Reachable',
-                                   content:
-                                     'The tag points to a commit reachable from `HEAD`.' } ] } ],
+             async () => [ await readBuiltInDefinition(
+               context,
+               GIT_TAG_DEFINITION) ],
            locate:
              { [GIT_TAG_DEFINITION]:
                  async () =>

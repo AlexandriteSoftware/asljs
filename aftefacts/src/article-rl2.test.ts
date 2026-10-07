@@ -1,31 +1,34 @@
-import test,
-       { after }
-  from 'node:test';
+import { createRuleValidationContext }
+  from 'asljs-part';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
-import { tmpDirFactory }
-  from './testing/tmpDir.js';
-import { NullLoggerProvider,
-         createRuleValidationContext }
-  from 'asljs-part';
+import test
+  from 'node:test';
 import { validate }
-  from './Article_RL2.js';
+  from './article-rl2.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
-after(
-  () => {
-    loggerProvider.dispose();
+test.after(
+  async () =>
+  {
+    await loggerProvider.dispose();
   });
 
 const tmpDir =
-  tmpDirFactory(
-    loggerProvider);
+  (): TmpDir =>
+  new TmpDir(
+    loggerProvider.getLogger('TmpDir'));
 
 test(
   'Article_RL2: passes for existing local links and images',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -74,7 +77,8 @@ See [Target](./Target.md).
 
 test(
   'Article_RL2: fails when a local link does not exist',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -109,13 +113,13 @@ See [Missing](./Missing.md).
         validate(
           artefact,
           context),
-      /points to a non-existent location/,
-    );
+      /points to a non-existent location/);
   });
 
 test(
   'Article_RL2: fails when a local image does not exist',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -150,13 +154,13 @@ test(
         validate(
           artefact,
           context),
-      /points to a non-existent location/,
-    );
+      /points to a non-existent location/);
   });
 
 test(
   'Article_RL2: fails when a long inline link is used',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -195,13 +199,13 @@ test(
         validate(
           artefact,
           context),
-      /must use a reference link/,
-    );
+      /must use a reference link/);
   });
 
 test(
   'Article_RL2: allows a long reference link',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -246,7 +250,8 @@ test(
 
 test(
   'Article_RL2: resolves root-relative links from projectDirectoryPath',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 

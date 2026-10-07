@@ -1,7 +1,7 @@
 # part-source-file-dependency-diagram
 
 Draw the import graph of a package's source files with `part`, by giving source
-files an artefact definition whose data provider reports their imports.
+files an artefact definition whose data function reports their imports.
 
 Package: `part`.
 
@@ -10,13 +10,13 @@ Package: `part`.
 Moved from `part/TODO.md`, where it read "source file dependency diagram".
 
 `part` has no knowledge of source code. What it has is general enough to carry
-an import graph: a definition can declare an `Artefact[]` property, its data
-provider (`parts/<Definition>.js`, exporting `getData(artefact, context)`) can
+an import graph: a definition can declare an `Artefact[]` property, a plugin's
+data function for it (`data: { [definition]: (artefact, context) => ... }`) can
 compute the value any way it likes, and `part inventory --format=diagram` draws
-one edge per value ([UMB]). A value is a path resolved against the artefact's
-own directory, in `resolveReferencedArtefactPath` in
-`apps/part/src/commands/inventory.ts`, so a provider can return an import
-specifier almost as written.
+one edge per value ([UMB]). A value is either a location, such as
+`file:src/index.ts`, or a path resolved against the artefact's own directory, in
+`resolveReferencedLocation` in `apps/part/src/commands/inventory.ts`, so a data
+function can return an import specifier almost as written.
 
 The repository has no definition for source files. There are about 390 non-test
 `.ts` and `.js` files tracked under `libs/` and `apps/`, from 2 in `libs/tmpdir`
@@ -31,7 +31,7 @@ import { ArtefactDefinition }
 ```
 
 A few modules are loaded at run time from a computed URL, such as `await
-import(importUrl.href)` in `apps/part/src/providers/artefact-data-provider.ts`;
+import(source.url)` in `apps/part/src/providers/definition-source-provider.ts`;
 no static scan can see those.
 
 ## Problem
@@ -51,8 +51,8 @@ cycles. Three things are missing:
 ### Where the graph comes from
 
 1. A `Source File` definition in `aftefacts`, with an `Imports: Artefact[]`
-   property, and a data provider that lists the file's relative imports and maps
-   `.js` to `.ts` when the `.ts` file exists.
+   property, and a data function in `aftefacts/src/` that lists the file's
+   relative imports and maps `.js` to `.ts` when the `.ts` file exists.
    - Pro: no `part` code; the graph goes through the same model as the package
      graph ([DEP]), so it also appears in `--format=json` and rules can use it,
      for example "nothing under `model/` imports from `commands/`".
@@ -68,19 +68,19 @@ cycles. Three things are missing:
    - Con: a new development dependency for what may be an occasional need, and
      its rules would live apart from the artefact definitions.
 
-### How the provider reads imports (option 1)
+### How the data function reads imports (option 1)
 
 1. `ts.preProcessFile(text)` from `typescript`, already a development dependency
    at the root.
    - Pro: a real scanner; handles comments, strings, multi-line imports, `export
      ... from` and literal `import('...')`; no type-check and no program, so it
      is fast per file.
-   - Con: no module resolution; the provider maps `.js` to `.ts` and ignores
-     bare specifiers itself.
+   - Con: no module resolution; the data function maps `.js` to `.ts` and
+     ignores bare specifiers itself.
 2. A full `ts.createProgram` with the package's `tsconfig.json`.
    - Pro: exact resolution, including `paths` and package `exports`.
-   - Con: slow, and `getData` runs once per artefact with no shared state, so
-     the program would have to be cached in the module.
+   - Con: slow; the data function runs once per artefact, so the program would
+     have to be built once in the plugin factory and shared.
 3. A regular expression over `from '...'` and `import('...')`.
    - Pro: no dependency.
    - Con: matches text in comments and strings; the repository's split
@@ -116,14 +116,14 @@ repeat it.
 
 ## Where
 
-- `aftefacts/` - where a `Source File` definition and its `parts/Source File.js`
-  provider would go.
-- `apps/part/src/commands/inventory.ts` - `resolveReferencedArtefactPath` and
+- `aftefacts/` - where a `Source File` definition would go, with its data
+  function in `aftefacts/src/` and bound in `aftefacts/src/plugin.ts`.
+- `apps/part/src/commands/inventory.ts` - `resolveReferencedLocation` and
   `collectDiagramEdges`, which turn property values into edges.
 - `apps/part/src/cli.ts` - the `inventory` command, which has no `[pattern]`
   argument.
-- `apps/part/src/artefact-data-providing-function.ts` - the `getData` contract
-  the provider implements.
+- `apps/part/src/artefact-data-providing-function.ts` - the data function
+  contract.
 - `package.json` - `typescript` in the root `devDependencies`.
 
 [UMB]: part-better-diagram-support.md

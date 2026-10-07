@@ -11,7 +11,7 @@ export function execConfig(
     'Environment:');
 
   output.push(
-    `  definitions=${environment.definitions.join(',')}`);
+    `  definitions=${environment.definitions.join('|')}`);
 
   output.push(
     `  project=${environment.project}`);

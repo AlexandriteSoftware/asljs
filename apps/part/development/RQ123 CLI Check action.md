@@ -45,7 +45,7 @@ One row per location and rule. Sorted by location, then by rule. E.g.,
 
 ```markdown
 | Location     | Rule             | Result            |
-|--------------|------------------|-------------------|
+| ------------ | ---------------- | ----------------- |
 | src/index.js | JS File_RL1      | OK                |
 | src/index.js | JS File_RL2      | Missing semicolon |
 | src/index.js | Project File_RL1 | Skip              |

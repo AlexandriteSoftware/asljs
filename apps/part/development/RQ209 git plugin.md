@@ -1,24 +1,13 @@
 # RQ209 git plugin
 
-`asljs-part/plugins/git` is a built-in plugin that provides the `Git Tag`
-definition. It is loaded only when listed, e.g. `--definitions
-asljs-part/plugins/git`.
+`asljs-part` provides the `Git Tag` definition as part of its package plugin,
+see [RQ210][RQ210]. Load it alone with `--definitions "asljs-part;Git Tag"`.
 
-Artefacts are the tags of the git repository at the project root, listed with
-`git tag --list`. Outside a git repository, or when git is not available, there
-are no artefacts.
+The definition, its locations, properties and rules are documented in
+[Git Tag][1]. The plugin reads the definition from that document, as described
+in [RQ208][RQ208], and provides the locator, the data function and the
+implementation of RL1.
 
-Location: `git:tag/<name>`, e.g. `git:tag/v1.0.0`. The artefact name is the tag
-name.
-
-Properties:
-
-- `Commit` - the commit the tag points to.
-- `Annotated` - whether the tag is an annotated tag object.
-- `Date` - tagger date of an annotated tag, or the commit date otherwise.
-
-## Rules
-
-### RL1 - Reachable
-
-The tag points to a commit reachable from `HEAD`.
+[1]: <../artefacts/Git Tag.md>
+[RQ208]: <RQ208 npm plugin.md>
+[RQ210]: <RQ210 Package plugin.md>

@@ -17,6 +17,8 @@ Tools:
 - [kb][KB] - knowledge base CLI and MCP server for markdown libraries.
 - [part][PRT] - defines project artefacts in markdown and validates them with
   rules.
+- [artefacts][ART] - this repository's artefact definitions and the `part`
+  plugin that checks them; private.
 - [sfmt][SFMT] - code formatter for TypeScript.
 
 Libraries:
@@ -49,6 +51,7 @@ Libraries:
 [TDR]: ./libs/tmpdir/README.md
 [COG]: ./apps/cog/README.md
 [KB]: ./apps/kb/README.md
+[ART]: ./aftefacts/README.md
 [PRT]: ./apps/part/README.md
 [SFMT]: ./apps/sfmt/README.md
 [APPS]: ./apps/app-builder/README.md

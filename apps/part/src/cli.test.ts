@@ -302,9 +302,7 @@ test(
     using env =
       new TmpEnv(
         { PART_DEFINITIONS:
-            [ './artefacts',
-              'asljs-part/plugins/git' ].join(
-                path.delimiter) });
+            './artefacts;Article\nasljs-part;NPM *,Git *;Git Commits|./src' });
 
     await runCli(
       [ 'version' ],
@@ -312,8 +310,9 @@ test(
 
     assert.deepEqual(
       environment.definitions,
-      [ path.resolve('artefacts'),
-        'asljs-part/plugins/git' ]);
+      [ `${path.resolve('artefacts')};Article`,
+        'asljs-part;NPM *,Git *;Git Commits',
+        path.resolve('src') ]);
   });
 
 test(
@@ -373,12 +372,12 @@ test(
         './plugin.js',
         '--definitions',
         'src',
-        '--definitions=asljs-part/plugins/npm' ],
+        '--definitions=asljs-part;NPM *,GIT *;GIT Commits' ],
       environment);
 
     assert.deepEqual(
       environment.definitions,
       [ path.resolve('plugin.js'),
         path.resolve('src'),
-        'asljs-part/plugins/npm' ]);
+        'asljs-part;NPM *,GIT *;GIT Commits' ]);
   });

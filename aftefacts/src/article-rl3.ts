@@ -1,4 +1,4 @@
-﻿/*
+/*
 ### RL3
 
 Article must be formatted with dprint with the following configuration:
@@ -30,6 +30,10 @@ take a moment because dprint downloads and caches the markdown plugin
 from `https://plugins.dprint.dev/markdown-0.25.0.wasm`.
 */
 
+import { type RuleValidationFunction }
+  from 'asljs-part';
+import { spawn }
+  from 'node:child_process';
 import { mkdtemp,
          readFile,
          rm,
@@ -41,35 +45,32 @@ import path
   from 'node:path';
 import { fileURLToPath }
   from 'node:url';
-import { spawn }
-  from 'node:child_process';
 
 const DPRINT_CONFIG =
-  {
-    markdown:
-      {
-        lineWidth: 80,
+  { markdown:
+      { lineWidth: 80,
         newLineKind: 'auto',
         textWrap: 'maintainAndWrap',
         emphasisKind: 'underscores',
         strongKind: 'asterisks',
         unorderedListKind: 'dashes',
         headingKind: 'atx',
-        listIndentKind: 'commonMark'
-      },
+        listIndentKind: 'commonMark' },
     plugins:
-      [
-        'https://plugins.dprint.dev/markdown-0.25.0.wasm'
-      ]
-  };
+      [ 'https://plugins.dprint.dev/markdown-0.25.0.wasm' ] };
 
-/**
- * @type { import('asljs-part').RuleValidationFunction }
- */
-export async function validate(
-  artefact,
-  context)
+interface DprintCommand
 {
+  command: string;
+  args: string[];
+}
+
+export const validate: RuleValidationFunction =
+  async (
+      artefact,
+      context
+    ) =>
+  {
   const content =
     await readFile(
       context.files.path(artefact),
@@ -107,23 +108,21 @@ export async function validate(
       throw new Error(
         'Article is not formatted with dprint. See `Article.md` for details.');
     }
-  }
-  finally {
+  } finally {
     await rm(
       tempDir,
       { recursive: true,
         force: true });
   }
-}
+};
 
 /**
  * Resolves the dprint command. Prefer the package-local CLI entry point, but
  * fall back to an OS-discovered executable when dprint is not installed as a
  * dependency of asljs-part.
- *
- * @returns {Promise<{ command: string, args: string[] }>}
  */
-async function resolveDprintCommand()
+async function resolveDprintCommand(
+  ): Promise<DprintCommand>
 {
   try {
     const packageJsonUrl =
@@ -147,53 +146,53 @@ async function resolveDprintCommand()
         packageJson.bin);
 
     const result =
-      { command:
-          process.execPath,
+      { command: process.execPath,
         args:
           [ binPath ] };
-      
+
     return result;
-  }
-  catch {
-    return {
-      command:
-        process.platform === 'win32'
-          ? 'dprint.cmd'
-          : 'dprint',
-      args: [ ]
-    };
+  } catch {
+    return { command:
+               process.platform === 'win32'
+        ? 'dprint.cmd'
+        : 'dprint',
+             args: [ ] };
   }
 }
 
 /**
- * Runs dprint and returns the formatted output. Uses stdin/stdout so the file
- * does not need to reside inside the config directory.
- *
- * @param {{ command: string, args: string[] }} dprintCommand
- * @param {string} configPath
- * @param {string} filePath
- * @param {string} content
- * @returns {Promise<string>}
+ * Runs dprint and returns the formatted output. dprint returns stdin unchanged
+ * for a `--stdin` path outside the config folder, so it runs in that folder
+ * and gets only the file name, which selects the plugin by extension.
  */
 function dprintFormatStdin(
-  dprintCommand,
-  configPath,
-  filePath,
-  content)
+    dprintCommand: DprintCommand,
+    configPath: string,
+    filePath: string,
+    content: string
+  ): Promise<string>
 {
-  return new Promise(
-    (resolve, reject) =>
+  return new Promise<string>(
+    (
+        resolve,
+        reject
+      ) =>
     {
       const proc =
         spawn(
           dprintCommand.command,
-          [
-            ...dprintCommand.args,
+          [ ...dprintCommand.args,
             'fmt',
-            '--config', configPath,
-            '--stdin', filePath
-          ],
-          { stdio: [ 'pipe', 'pipe', 'pipe' ],
+            '--config',
+            configPath,
+            '--stdin',
+            path.basename(filePath) ],
+          { cwd:
+              path.dirname(configPath),
+            stdio:
+              [ 'pipe',
+                'pipe',
+                'pipe' ],
             windowsHide: true });
 
       let stdout = '';
@@ -201,28 +200,33 @@ function dprintFormatStdin(
 
       proc.stdout.on(
         'data',
-        (chunk) =>
+        (
+            chunk
+          ) =>
         {
           stdout += chunk;
         });
 
       proc.stderr.on(
         'data',
-        (chunk) =>
+        (
+            chunk
+          ) =>
         {
           stderr += chunk;
         });
 
       proc.on(
         'close',
-        (code) =>
+        (
+            code
+          ) =>
         {
           if (code !== 0) {
             reject(
               new Error(
                 `dprint exited with code ${code}: ${stderr.trim()}`));
-          }
-          else {
+          } else {
             resolve(stdout);
           }
         });
@@ -236,5 +240,6 @@ function dprintFormatStdin(
         'utf8');
 
       proc.stdin.end();
-    });
+    }
+  );
 }

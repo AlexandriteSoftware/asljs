@@ -75,3 +75,7 @@ export {
 export {
   readMarkdownDefinitions
 } from './providers/markdown-definition-reader.js';
+
+export {
+  default
+} from './plugins/part.js';

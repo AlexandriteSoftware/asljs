@@ -18,6 +18,11 @@ Every workspace package sits under one of two folders:
   `part`, `toolkit` and `sfmt`. Each is a command or an application, and `dash`
   and `app-builder` are private to the repository.
 
+One package is the exception: `aftefacts/`, the private `asljs-artefacts`, sits
+at the repository root, next to the documents that link to its definitions. It
+holds the repository's artefact definitions and the `part` plugin that checks
+them, and follows the common script shape.
+
 The folder is a grouping, not a boundary: a package is still addressed by its
 workspace name, so every `npm -w asljs-<name>` command is the same wherever the
 package lives.

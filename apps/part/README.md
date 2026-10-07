@@ -126,15 +126,18 @@ Results are cached in `.part/check-cache.json`: a rule runs again only when the
 file changed after its last check, the rule text changed, or the plugin
 `version` changed. `--force-check` runs everything.
 
-Built-in plugins add definitions for artefacts outside the filesystem:
+`asljs-part` itself is a definition source with built-in definitions, including
+two for artefacts outside the filesystem:
+
+- `NPM Dependency` - one artefact per dependency in every `package.json`.
+- `Git Tag` - one artefact per tag.
+
+A source can be followed by `;<include>;<exclude>`, comma-separated definition
+name patterns (`*` and `?`, case-insensitive), to pick definitions:
 
 ```bash
-part inventory --definitions asljs-part/plugins/npm --definitions asljs-part/plugins/git
+part inventory --definitions "asljs-part;NPM *,GIT *;GIT Commits"
 ```
-
-- `asljs-part/plugins/npm` - `Npm Dependency`, one artefact per dependency in
-  every `package.json`.
-- `asljs-part/plugins/git` - `Git Tag`, one artefact per tag.
 
 Other output formats: `part inventory --format=json`, `--format=diagram` (an
 SVG), and `--with-properties` to add property columns.
@@ -142,6 +145,8 @@ SVG), and `--with-properties` to add property columns.
 ## Further reading
 
 - [Artefact Definition][AD] - the definition format.
+- [Git Tag][GT] and [NPM Dependency][ND] - the definitions of the built-in
+  plugins.
 - [Requirements][RQ] - the behavior of the CLI, the providers, and the plugin
   contract.
 
@@ -151,4 +156,6 @@ MIT
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
 [AD]: <artefacts/Artefact Definition.md>
+[GT]: <artefacts/Git Tag.md>
+[ND]: <artefacts/NPM Dependency.md>
 [RQ]: development

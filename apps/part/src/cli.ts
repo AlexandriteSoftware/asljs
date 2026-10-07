@@ -114,7 +114,7 @@ function createCli(
       'Log format: auto, json, text or pretty')
     .option(
       '--definitions <source>',
-      'Definition source: an md-only folder, a plugin library folder (has package.json), a plugin file, or a package name. Repeat for several sources.',
+      'Definition source: an md-only folder, a plugin library folder (has package.json), a plugin file, or a package name, optionally followed by ;<include>;<exclude> comma-separated definition name patterns. Repeat for several sources.',
       collectOption,
       [ ])
     .option(
@@ -501,15 +501,15 @@ function collectOption(
 }
 
 /**
- * Split a list variable such as `PART_DEFINITIONS` by the platform path
- * delimiter, ignoring empty entries.
+ * Split `PART_DEFINITIONS` into entries separated by newlines or `|`, ignoring
+ * empty entries. `;` and `,` belong to the definition filter of an entry.
  */
 function splitListVariable(
     value: unknown
   ): string[]
 {
   return filterStringOption(value)
-    .split(path.delimiter)
+    .split(/\r?\n|\|/)
     .map(
       entry => entry.trim())
     .filter(
@@ -517,14 +517,31 @@ function splitListVariable(
 }
 
 /**
- * Paths become absolute, resolved from the working directory. A value that is
- * neither absolute, nor starts with `.`, nor exists is a package specifier,
- * kept for resolution from the project root.
+ * Resolves the source of a `<source>[;<include>[;<exclude>]]` value and keeps
+ * its filter. A source that is absolute, starts with `.`, or exists becomes an
+ * absolute path, resolved from the working directory; any other source is a
+ * package specifier, kept for resolution from the project root.
  */
 function resolveDefinitionSource(
-    specifier: string
+    value: string
   ): string
 {
+  const separatorIndex =
+    value.indexOf(';');
+
+  const specifier =
+    (separatorIndex < 0
+    ? value
+    : value.slice(
+      0,
+      separatorIndex))
+    .trim();
+
+  const filter =
+    separatorIndex < 0
+    ? ''
+    : value.slice(separatorIndex);
+
   if (
     path.isAbsolute(specifier)
     || specifier.startsWith('.')
@@ -532,10 +549,11 @@ function resolveDefinitionSource(
   ) {
     return path.normalize(
       path.resolve(
-        specifier));
+        specifier))
+      + filter;
   }
 
-  return specifier;
+  return specifier + filter;
 }
 
 /**

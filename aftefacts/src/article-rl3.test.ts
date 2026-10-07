@@ -1,27 +1,31 @@
-﻿import test
-  from 'node:test';
+import { type Artefact,
+         createRuleValidationContext,
+         type RuleValidationContext }
+  from 'asljs-part';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
-import { NullLoggerProvider,
-         createRuleValidationContext }
-  from 'asljs-part';
-import { tmpDirFactory }
-  from './testing/tmpDir.js';
+import test
+  from 'node:test';
 import { validate }
-  from './Article_RL3.js';
+  from './article-rl3.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
 test.after(
-  () =>
+  async () =>
   {
-    loggerProvider.dispose();
+    await loggerProvider.dispose();
   });
 
 const tmpDir =
-  tmpDirFactory(
-    loggerProvider);
+  (): TmpDir =>
+  new TmpDir(
+    loggerProvider.getLogger('TmpDir'));
 
 const ARTICLE_DEFINITION =
   `# Article
@@ -40,9 +44,10 @@ Formatted with dprint.
 `;
 
 async function makeArtefact(
-  workspace,
-  fileName,
-  content)
+    workspace: TmpDir,
+    fileName: string,
+    content: string
+  ): Promise<{ artefact: Artefact; context: RuleValidationContext; }>
 {
   await workspace.writeText(
     'Article.md',
@@ -81,8 +86,7 @@ test(
     const content =
       '# Article1\n\nShort paragraph.\n';
 
-    const { artefact,
-            context } =
+    const { artefact, context } =
       await makeArtefact(
         workspace,
         'Article1.md',
@@ -106,8 +110,7 @@ test(
     const content =
       '# Article1\n\nThis is a very very very very very very very very very very very long paragraph that exceeds eighty characters.\n';
 
-    const { artefact,
-            context } =
+    const { artefact, context } =
       await makeArtefact(
         workspace,
         'Article1.md',
@@ -131,8 +134,7 @@ test(
     const content =
       '# Article1\n\n* item one\n* item two\n';
 
-    const { artefact,
-            context } =
+    const { artefact, context } =
       await makeArtefact(
         workspace,
         'Article1.md',
@@ -156,8 +158,7 @@ test(
     const content =
       '# Article1\n\n- item one\n- item two\n';
 
-    const { artefact,
-            context } =
+    const { artefact, context } =
       await makeArtefact(
         workspace,
         'Article1.md',

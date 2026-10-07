@@ -114,6 +114,10 @@ Neither folder is hand-edited.
   through `tsx`, which writes the site to `apps/app-builder/dist/`; Vite serves
   the App Builder demo in `dev` only.
 
+- `aftefacts` sits at the repository root, so its configs extend
+  `../tsconfig.build.json` and `../tsconfig.dist.json` instead of
+  `../../tsconfig.*.json`; otherwise it follows the common pattern.
+
 ### Compiler options
 
 - `components` sets `target: ES2022`, `experimentalDecorators: true` and

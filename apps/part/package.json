@@ -9,18 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./plugins/npm": {
-      "types": "./dist/plugins/npm.d.ts",
-      "default": "./dist/plugins/npm.js"
-    },
-    "./plugins/git": {
-      "types": "./dist/plugins/git.d.ts",
-      "default": "./dist/plugins/git.js"
     }
   },
   "files": [
-    "artefacts/Artefact Definition.md",
+    "artefacts/*.md",
     "dist/**",
     "bin/**",
     "README.md",

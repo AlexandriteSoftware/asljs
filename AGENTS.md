@@ -41,11 +41,12 @@ when` line.
 ## Artefacts
 
 An artefact definition states where a kind of file lives and what it must
-satisfy. Its rules are executable: `part check --definitions aftefacts` runs
-them. `aftefacts` is a plugin library: `aftefacts/plugin.js` reads the
-definitions and wires up the rule implementations in `aftefacts/rules/`; bump its
-`version` when a rule implementation changes. Results are cached in
-`.part/check-cache.json`; `--force-check` runs every rule.
+satisfy. Its rules are executable: `npm -w asljs-artefacts run build:dist`, then
+`part check --definitions aftefacts`, runs them. `aftefacts` is the private
+workspace package `asljs-artefacts`: the definition documents sit in its folder,
+and `aftefacts/src/plugin.ts` reads them and wires up the rule implementations
+in `aftefacts/src/`; bump its `version` when a rule implementation changes.
+Results are cached in `.part/check-cache.json`; `--force-check` runs every rule.
 
 - [ASLJS Package][AFP] - a workspace package published to npm.
 - [Package README][AFR] - the landing page of a package, its heading set and

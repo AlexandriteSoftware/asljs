@@ -202,9 +202,11 @@ function parseVerdict(
 
   return { result: 'Fail',
            message:
-             `AI agent gave no verdict: ${output.trim().slice(
-               0,
-               200)}` };
+             `AI agent gave no verdict: ${
+      output.trim().slice(
+        0,
+        200)
+    }` };
 }
 
 function runCommand(

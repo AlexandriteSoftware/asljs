@@ -1,44 +1,53 @@
-import { NullLoggerProvider }
+import { type Artefact,
+         type RuleValidationContext }
   from 'asljs-part';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
-import test,
-       { after }
+import test
   from 'node:test';
 import { validate }
-  from './ASLJS Package_RL1.js';
-import { tmpDirFactory }
-  from './testing/tmpDir.js';
+  from './asljs-package-rl1.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
-after(
-  () => {
-    loggerProvider.dispose();
+test.after(
+  async () =>
+  {
+    await loggerProvider.dispose();
   });
 
 const tmpDir =
-  tmpDirFactory(
-    loggerProvider);
+  (): TmpDir =>
+  new TmpDir(
+    loggerProvider.getLogger('TmpDir'));
 
 /**
  * A package artefact and a rule context that resolves it to the directory.
- *
- * @param {string} directoryPath
  */
 function packageAt(
-  directoryPath)
+    directoryPath: string
+  ): [Artefact, RuleValidationContext]
 {
+  const context =
+    { files:
+        { path: () => directoryPath } } as unknown as RuleValidationContext;
+
   return [ { location: 'file:package',
              name: 'package',
-             definitions: [ 'ASLJS Package' ] },
-           { files: { path: () => directoryPath } } ];
+             definitions:
+               [ 'ASLJS Package' ] },
+           context ];
 }
 
 test(
-  'passes when dist holds no testing directory',
-  async () => {
+  'ASLJS Package_RL1: passes when dist holds no testing directory',
+  async () =>
+  {
     await using dir =
       tmpDir();
 
@@ -51,8 +60,9 @@ test(
   });
 
 test(
-  'passes when the package has no dist yet',
-  async () => {
+  'ASLJS Package_RL1: passes when the package has no dist yet',
+  async () =>
+  {
     await using dir =
       tmpDir();
 
@@ -62,8 +72,9 @@ test(
   });
 
 test(
-  'fails when dist holds a testing directory',
-  async () => {
+  'ASLJS Package_RL1: fails when dist holds a testing directory',
+  async () =>
+  {
     await using dir =
       tmpDir();
 
@@ -79,8 +90,9 @@ test(
   });
 
 test(
-  'finds a testing directory nested in dist',
-  async () => {
+  'ASLJS Package_RL1: finds a testing directory nested in dist',
+  async () =>
+  {
     await using dir =
       tmpDir();
 
@@ -96,8 +108,9 @@ test(
   });
 
 test(
-  'ignores a testing directory outside dist',
-  async () => {
+  'ASLJS Package_RL1: ignores a testing directory outside dist',
+  async () =>
+  {
     await using dir =
       tmpDir();
 

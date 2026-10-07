@@ -37,8 +37,7 @@ test(
           cwd: workspace.path,
           definitions:
             [ workspace.resolve('definitions'),
-              'asljs-part/plugins/npm',
-              'asljs-part/plugins/git' ] });
+              'asljs-part;NPM *' ] });
 
     await execConfig(
       environment);
@@ -49,7 +48,7 @@ test(
 
     assert.match(
       environment.stdout.toString(),
-      /definitions=.+,asljs-part\/plugins\/npm,asljs-part\/plugins\/git/);
+      /definitions=.+\|asljs-part;NPM \*/);
 
     assert.match(
       environment.stdout.toString(),

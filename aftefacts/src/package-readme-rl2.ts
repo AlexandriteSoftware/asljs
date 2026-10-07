@@ -5,19 +5,20 @@ The level 2 headings appear in that order. A heading may be absent, and no
 heading may repeat.
 */
 
+import { type RuleValidationFunction }
+  from 'asljs-part';
 import { readFile }
   from 'node:fs/promises';
 import { ALLOWED_HEADINGS,
          headingsOf }
-  from './lib/package-readme.js';
+  from './package-readme.js';
 
-/**
- * @type { import('asljs-part').RuleValidationFunction }
- */
-export async function validate(
-  artefact,
-  context)
-{
+export const validate: RuleValidationFunction =
+  async (
+      artefact,
+      context
+    ) =>
+  {
   const content =
     await readFile(
       context.files.path(artefact),
@@ -27,12 +28,11 @@ export async function validate(
   const headings =
     headingsOf(
       content,
-      context)
-      .filter(
-        heading =>
-          ALLOWED_HEADINGS.includes(heading));
+      context.markdownDocuments)
+    .filter(
+      heading => ALLOWED_HEADINGS.includes(heading));
 
-  const seen = new Set();
+  const seen = new Set<string>();
 
   for (const heading of headings) {
     if (seen.has(heading)) {
@@ -45,17 +45,18 @@ export async function validate(
 
   const expected =
     ALLOWED_HEADINGS.filter(
-      heading =>
-        seen.has(heading));
+      heading => seen.has(heading));
 
-  for (let index = 0; index < headings.length; index += 1) {
+  for (
+    let index = 0;
+    index < headings.length;
+    index += 1
+  ) {
     if (headings[index] !== expected[index]) {
       throw new Error(
         `Headings are out of order: expected ${
           expected.join(', ')
-        }, but found ${
-          headings.join(', ')
-        }.`);
+        }, but found ${headings.join(', ')}.`);
     }
   }
-}
+};

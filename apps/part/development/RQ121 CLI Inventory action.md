@@ -70,7 +70,7 @@ per property requested.
 
 ```markdown
 | Location | Definitions | Definition1.Property1 | Definition2.Property1 |
-|----------|-------------|-----------------------|-----------------------|
+| -------- | ----------- | --------------------- | --------------------- |
 | ...      | ...         | ...                   | ...                   |
 ```
 

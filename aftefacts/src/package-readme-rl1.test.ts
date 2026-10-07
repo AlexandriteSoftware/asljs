@@ -1,33 +1,35 @@
-import test,
-       { after }
-  from 'node:test';
+import { createRuleValidationContext }
+  from 'asljs-part';
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import { TmpDir }
+  from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
-import { tmpDirFactory }
-  from './testing/tmpDir.js';
-import { NullLoggerProvider,
-         createRuleValidationContext }
-  from 'asljs-part';
+import test
+  from 'node:test';
 import { validate }
-  from './Package README_RL1.js';
+  from './package-readme-rl1.js';
 
 const loggerProvider =
-  new NullLoggerProvider();
+  createTestLoggerProvider();
 
-after(
-  () => {
-    loggerProvider.dispose();
+test.after(
+  async () =>
+  {
+    await loggerProvider.dispose();
   });
 
 const tmpDir =
-  tmpDirFactory(
-    loggerProvider);
+  (): TmpDir =>
+  new TmpDir(
+    loggerProvider.getLogger('TmpDir'));
 
 /** Write a README, then validate it as the rule sees it. */
 async function validateReadme(
-    workspace,
-    lines
-  )
+    workspace: TmpDir,
+    lines: string[]
+  ): Promise<void>
 {
   // The artefact is only found through a definition, so the workspace carries
   // one whose location is the README under test.
@@ -67,7 +69,8 @@ async function validateReadme(
 
 test(
   'Package README_RL1: passes when every heading is in the agreed set',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -91,7 +94,8 @@ test(
 
 test(
   'Package README_RL1: passes when a section is left out',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -107,7 +111,8 @@ test(
 
 test(
   'Package README_RL1: rejects a heading outside the agreed set',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -129,7 +134,8 @@ test(
 
 test(
   'Package README_RL1: heading matching is case sensitive',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 
@@ -147,7 +153,8 @@ test(
 
 test(
   'Package README_RL1: level 3 headings are not constrained',
-  async () => {
+  async () =>
+  {
     await using workspace =
       tmpDir();
 

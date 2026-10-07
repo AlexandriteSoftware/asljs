@@ -15,6 +15,9 @@ import { fileURLToPath,
   from 'node:url';
 import { ArtefactDataProvidingFunction }
   from '../artefact-data-providing-function.js';
+import { isDefinitionIncluded,
+         parseDefinitionSource }
+  from '../definition-source.js';
 import { createArtefactFiles }
   from '../location.js';
 import { ArtefactDefinition }
@@ -76,7 +79,9 @@ interface LoadedSources
  * Loads the definition sources given with `--definitions` and gives access to
  * the definitions and the plugin bindings. A source is an md-only folder, a
  * plugin library folder (has `package.json`), a plugin file, or a package
- * specifier. Loading happens once, on first use; any failure is fatal.
+ * specifier, optionally followed by `;<include>;<exclude>` name patterns
+ * (see `parseDefinitionSource`). Loading happens once, on first use; any
+ * failure is fatal.
  */
 export class DefinitionSourceProvider
 {
@@ -156,10 +161,16 @@ export class DefinitionSourceProvider
         data: new Map(),
         rules: new Map() };
 
-    for (const specifier of this.sources) {
+    for (const value of this.sources) {
       this.logger.trace(
         '#loadSources() { loading %s }',
-        specifier);
+        value);
+
+      const spec =
+        parseDefinitionSource(
+          value);
+
+      const specifier = spec.source;
 
       const source =
         await this.#classify(
@@ -168,8 +179,13 @@ export class DefinitionSourceProvider
       if (source.kind === 'markdown') {
         addDefinitions(
           loaded.definitions,
-          await this.markdownDefinitionReader.readFolder(
-            source.folder));
+          (await this.markdownDefinitionReader.readFolder(
+            source.folder))
+            .filter(
+              definition =>
+                isDefinitionIncluded(
+                  spec,
+                  definition.name)));
 
         continue;
       }
@@ -189,14 +205,32 @@ export class DefinitionSourceProvider
 
       loaded.plugins.push(plugin);
 
+      const pluginDefinitions =
+        await collectPluginDefinitions(
+          plugin);
+
+      const filteredOut =
+        new Set(
+          pluginDefinitions
+          .filter(
+            definition =>
+              !isDefinitionIncluded(
+                spec,
+                definition.name))
+          .map(
+            definition => definition.name));
+
+      // Bindings of the plugin's own filtered-out definitions are dropped
+      // with them.
       registerBindings(
         plugin,
-        loaded);
+        loaded,
+        filteredOut);
 
       addDefinitions(
         loaded.definitions,
-        await collectPluginDefinitions(
-          plugin));
+        pluginDefinitions.filter(
+          definition => !filteredOut.has(definition.name)));
     }
 
     loaded.definitions.sort(
@@ -522,26 +556,33 @@ async function collectPluginDefinitions(
 
 function registerBindings(
     plugin: Plugin,
-    loaded: LoadedSources
+    loaded: LoadedSources,
+    skipped: ReadonlySet<string>
   ): void
 {
   registerAll(
     plugin,
     'locator',
     plugin.locate,
-    loaded.locators);
+    loaded.locators,
+    skipped);
 
   registerAll(
     plugin,
     'data function',
     plugin.data,
-    loaded.data);
+    loaded.data,
+    skipped);
 
   for (
     const [definitionName, ruleFunctions] of Object.entries(
       plugin.rules
         ?? {})
   ) {
+    if (skipped.has(definitionName)) {
+      continue;
+    }
+
     let ruleBindings =
       loaded.rules.get(
         definitionName);
@@ -583,11 +624,18 @@ function registerAll<T>(
     plugin: Plugin,
     kind: string,
     values: Record<string, T> | undefined,
-    bindings: Map<string, Binding<T>>
+    bindings: Map<string, Binding<T>>,
+    skipped: ReadonlySet<string>
   ): void
 {
-  for (const [definitionName, value] of Object.entries(
-    values ?? {})) {
+  for (
+    const [definitionName, value] of Object.entries(
+      values ?? {})
+  ) {
+    if (skipped.has(definitionName)) {
+      continue;
+    }
+
     const existing =
       bindings.get(
         definitionName);

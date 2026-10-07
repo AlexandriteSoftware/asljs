@@ -33,15 +33,15 @@ $env:ASLJS_TEST_LOG_FILE = 'build/test.log'
 npm -w asljs-part run test
 ```
 
-`ASLJS_TEST_LOG_LEVEL = 'silent'` turns it off. The rules are in
-[Logging][LGG].
+`ASLJS_TEST_LOG_LEVEL = 'silent'` turns it off. The rules are in [Logging][LGG].
 
 ## Check markdown links
 
 [remark-validate-links][RVL] reports links to missing files and headings. Each
 package checks its own markdown files with `flint`, after formatting them; the
 root `flint` checks the repository-level files: the root markdown files and
-`docs`, `skills`, `tasks` and `aftefacts`.
+`docs`, `skills` and `tasks`. `aftefacts` is a workspace package with its own
+`flint`.
 
 ```pwsh
 npm run flint
@@ -50,6 +50,18 @@ npm -w asljs-eventful run flint
 
 The plugin list is in `.remarkrc.json` and the ignored folders in
 `.remarkignore`, both at the repository root, and apply to every package.
+
+## Check repository artefacts
+
+Build the artefact plugin, then run its rules:
+
+```pwsh
+npm -w asljs-artefacts run build:dist
+npx part check --definitions aftefacts
+```
+
+Results are cached in `.part/check-cache.json`; add `--force-check` to run every
+rule, and `--ai` to check the rules that have no implementation.
 
 ## Squash and commit changes
 

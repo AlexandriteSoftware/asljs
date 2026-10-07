@@ -66,9 +66,9 @@ programmatically.
 - `## Properties` - optional, specifies artefact's properties, as returned by
   the data function a plugin provides for the definition.
 
-Definitions come from definition sources. In a folder of definition documents,
-a markdown file is a definition when its level 1 heading matches its file name.
-No other section is required, so such a folder should hold only definitions. A
+Definitions come from definition sources. In a folder of definition documents, a
+markdown file is a definition when its level 1 heading matches its file name. No
+other section is required, so such a folder should hold only definitions. A
 plugin provides its definitions in code, and may read them from definition
 documents.
 

@@ -45,22 +45,23 @@ says what would be analysed, for whom, or where it would run. `git log -S
       results);
   ```
 
-  It exits non-zero when any rule fails and hides `OK` rows unless
-  `--with-positives` is given. [RQ123][R123] names the first column `Path`; the
-  code names it `Location`.
+  It exits non-zero when any rule fails, hides `OK` rows unless
+  `--with-positives` is given and `Skip` rows unless `--with-skipped` is given.
+  Results of file artefacts are cached in `.part/check-cache.json`
+  ([RQ136][R136]), and `--ai` sends rules without an implementation to an AI
+  agent ([RQ137][R137]). [index.ts][IDX] exports `runCli`, the providers, the
+  plugin types and the package plugin; there are no report builders on the
+  public surface.
 
-The README says embedders can "import the package-root helpers from `asljs-part`
-and call the report builders", but [index.ts][IDX] exports only `runCli`, the
-providers and the model types; there are no report builders on the public
-surface.
+Rules are code taken from the analysed repository: definition sources are
+plugins, which [definition-source-provider.ts][DSP] imports with `await
+import(source.url)`, and [rule-runner.ts][RUN] calls their rule functions or
+runs an AI agent command. Discovery uses `node:fs`, `glob` and `.gitignore`
+filtering throughout `src/providers/`.
 
-Rules are code taken from the analysed repository. [rule-runner.ts][RUN] loads a
-JavaScript rule with `await import(importUrl.href)` from a file URL, and runs
-any other rule file as an executable with `spawn(ruleFilePath, ...)`. Discovery
-uses `node:fs`, `glob` and `.gitignore` filtering throughout `src/providers/`.
-
-In this repository, `npx part check --definitions aftefacts` currently reports
-46 failing rows: 41 `Article_RL1` heading mismatches and 5 `Package README_RL1`.
+In this repository, `npx part check --definitions aftefacts` (after `npm -w
+asljs-artefacts run build:dist`) currently reports 46 failing rows: 41
+`Article_RL1` heading mismatches, 4 `Package README_RL1` and 1 `Article_RL3`.
 
 What already exists for hosting and history:
 
@@ -94,12 +95,12 @@ diagram.
 - Pros: closest to the literal words; useful to people who have not installed
   `part`; would also serve as the package's demo.
 - Cons: the largest change by far. File access, globbing and `.gitignore`
-  handling would need a browser abstraction behind the providers. JavaScript
-  rules would have to be imported from in-memory sources, and executable rules
-  cannot run at all. Running another repository's rule code in a visitor's
-  browser needs a sandbox decision. The diagram path depends on `mmdc` and would
-  need Mermaid in the page instead. A server-side variant avoids the browser
-  port but runs untrusted code on a host this repository does not have.
+  handling would need a browser abstraction behind the providers. Plugins would
+  have to be imported from in-memory sources, and AI checks need an agent
+  command that a browser cannot run. Running another repository's rule code in a
+  visitor's browser needs a sandbox decision. The diagram path depends on `mmdc`
+  and would need Mermaid in the page instead. A server-side variant avoids the
+  browser port but runs untrusted code on a host this repository does not have.
 
 **B. A dashboard with history of `part check` results.** Track how many rules
 fail over time, per definition or per rule.
@@ -142,8 +143,8 @@ item was meant to give, deleting the task is a reasonable outcome too.
 - Scope: this repository only, or any repository.
 - Content: check results, inventory, the inventory diagram, or all of them.
 - Whether history and trends are required, and if so where results are stored.
-- The machine-readable `check` output: its shape, and whether the column is
-  `location` (code) or `Path` ([RQ123][R123]).
+- The machine-readable `check` output: its shape, and whether cached and AI
+  results are marked in it.
 - Where rendering lives: a new format in `part`, or a page built by
   `apps/app-builder` from `part` output.
 - When CI runs it: the current site trigger, or its own workflow.
@@ -152,7 +153,9 @@ item was meant to give, deleting the task is a reasonable outcome too.
 
 - `apps/part/src/commands/check.ts` - the check report, markdown table only.
 - `apps/part/src/commands/inventory.ts` - `table`, `diagram` and `json` formats.
-- `apps/part/src/rule-runner.ts` - imports JS rules, spawns executable rules.
+- `apps/part/src/providers/definition-source-provider.ts` - imports plugins.
+- `apps/part/src/rule-runner.ts` - runs plugin rules and AI checks, with the
+  cache.
 - `apps/part/src/providers/` - file discovery on `node:fs` and `glob`.
 - `apps/part/src/index.ts` - the public surface, without report builders.
 - `apps/part/development/RQ123 CLI Check action.md` - the check contract.
@@ -164,8 +167,10 @@ item was meant to give, deleting the task is a reasonable outcome too.
 [INV]: ../apps/part/src/commands/inventory.ts
 [CHK]: ../apps/part/src/commands/check.ts
 [IDX]: ../apps/part/src/index.ts
+[DSP]: ../apps/part/src/providers/definition-source-provider.ts
 [RUN]: ../apps/part/src/rule-runner.ts
-[R123]: <../apps/part/development/RQ123 CLI Check action.md>
+[R136]: <../apps/part/development/RQ136 CLI Check cache.md>
+[R137]: <../apps/part/development/RQ137 CLI AI check.md>
 [R206]: <../apps/part/development/RQ206 Diagram.md>
 [WF]: ../.github/workflows/build-app-builder.yml
 [DSH]: ../apps/dash/README.md

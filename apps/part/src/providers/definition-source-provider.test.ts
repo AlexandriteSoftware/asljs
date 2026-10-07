@@ -450,3 +450,63 @@ test(
         [ workspace.resolve('more') ]),
       /Definition "Requirement" is provided by document .+ and by document /);
   });
+
+test(
+  'RQ111: a source filter keeps included definitions and drops excluded ones with their bindings',
+  async () =>
+  {
+    await using workspace =
+      tmpDir();
+
+    await workspace.writeText(
+      'definitions/Requirement.md',
+      REQUIREMENT_DEFINITION);
+
+    await workspace.writeText(
+      'definitions/Draft.md',
+      '# Draft\n\nA draft.\n');
+
+    await workspace.writeText(
+      'plugin.js',
+      `export default () => ({
+  name: 'test',
+  definitions: async () => [
+    { name: 'Git Tag', description: 'A tag.' },
+    { name: 'Git Commit', description: 'A commit.',
+      rules: [ { id: 'RL1', content: 'Commit rule.' } ] },
+    { name: 'NPM Dependency', description: 'A dependency.' },
+    { name: 'Other', description: 'Not included.' }
+  ],
+  locate: { 'Git Commit': async () => [] },
+  rules: { 'Git Commit': { RL1: async () => {} } }
+});
+`);
+
+    const { artefactDefinitionProvider, definitionSourceProvider } =
+      providersFactory(
+        loggerProvider,
+        workspace.path,
+        [ `${workspace.resolve('definitions')};;draft`,
+          `${workspace.resolve('plugin.js')};NPM *,GIT *;GIT Commit` ]);
+
+    const definitions =
+      await artefactDefinitionProvider.getDefinitions();
+
+    assert.deepEqual(
+      definitions.map(
+        definition => definition.name),
+      [ 'Git Tag',
+        'NPM Dependency',
+        'Requirement' ]);
+
+    assert.equal(
+      await definitionSourceProvider.findLocator(
+        'Git Commit'),
+      undefined);
+
+    assert.equal(
+      await definitionSourceProvider.findRule(
+        'Git Commit',
+        'RL1'),
+      undefined);
+  });

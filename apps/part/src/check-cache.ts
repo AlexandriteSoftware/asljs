@@ -191,10 +191,12 @@ export class CheckCache
 
     await writeFile(
       this.filePath,
-      `${JSON.stringify(
-        content,
-        null,
-        2)}\n`,
+      `${
+        JSON.stringify(
+          content,
+          null,
+          2)
+      }\n`,
       'utf8');
 
     this.logger.trace(

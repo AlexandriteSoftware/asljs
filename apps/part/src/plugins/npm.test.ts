@@ -113,12 +113,12 @@ test(
 
     assert.deepEqual(
       artefacts[1].definitions,
-      [ 'Npm Dependency' ]);
+      [ 'NPM Dependency' ]);
 
     assert.deepEqual(
       await providers.artefactDataProvider.tryGetArtefactData(
         artefacts[1],
-        'Npm Dependency'),
+        'NPM Dependency'),
       { Package: 'lib',
         Range: '~1.2.0',
         Kind: 'devDependencies',
@@ -127,7 +127,7 @@ test(
 
     const definition =
       await providers.artefactDefinitionProvider.getDefinition(
-        'Npm Dependency');
+        'NPM Dependency');
 
     assert.equal(
       definition.source,

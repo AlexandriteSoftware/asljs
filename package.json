@@ -5,12 +5,13 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "type": "module",
   "scripts": {
-    "flint": "toolkit flint --exclude apps --exclude libs",
+    "flint": "toolkit flint --exclude aftefacts --exclude apps --exclude libs",
     "check-packages": "npm outdated || toolkit print-file check-packages.md",
     "remove-local-modules": "toolkit remove-local-modules",
     "all": "toolkit run-all"
   },
   "workspaces": [
+    "aftefacts",
     "apps/app-builder",
     "apps/cog",
     "apps/dash",
