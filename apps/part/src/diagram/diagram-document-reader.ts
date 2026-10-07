@@ -1,5 +1,5 @@
-import { readFile }
-  from 'node:fs/promises';
+import path
+  from 'node:path';
 import { getListItemsAsText,
          getLists,
          getSections,
@@ -10,7 +10,8 @@ import { DiagramDirection,
          DiagramEdgeDirection,
          DiagramEdgeProperty,
          DiagramEdgeStyle,
-         DiagramGrouping }
+         DiagramGrouping,
+         DiagramTarget }
   from '../model/diagram-document.js';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
@@ -42,33 +43,25 @@ const GROUPINGS: readonly DiagramGrouping[] =
  */
 export async function readDiagramDocument(
     markdownDocumentProvider: MarkdownDocumentProvider,
-    documentPath: string
-  ): Promise<{ diagram: DiagramDocument; document: MarkdownDocument; }>
+    documentPath: string,
+    projectPath: string
+  ): Promise<DiagramDocument>
 {
-  let content =
-    await readFile(
-      documentPath,
-      'utf8');
-
-  if (content.startsWith('﻿')) {
-    content =
-      content.slice(1);
-  }
-
-  const document =
-    markdownDocumentProvider.parse(
-      content);
-
-  return { diagram:
-             parseDiagramDocument(
-               document,
-               documentPath),
-           document };
+  return parseDiagramDocument(
+    await markdownDocumentProvider.load(
+      documentPath),
+    documentPath,
+    projectPath);
 }
 
+/**
+ * A relative `Target` path starts from the document's folder; one starting
+ * with `/` from the project root.
+ */
 export function parseDiagramDocument(
     document: MarkdownDocument,
-    documentPath: string
+    documentPath: string,
+    projectPath: string
   ): DiagramDocument
 {
   const sections =
@@ -209,6 +202,18 @@ export function parseDiagramDocument(
       fail)
     : new Map<string, string>();
 
+  const outputSection =
+    findSection('Output');
+
+  const target =
+    outputSection
+    ? readSettings(
+      document,
+      outputSection,
+      [ 'Target' ],
+      fail).get('Target')
+    : undefined;
+
   return { path: documentPath,
            name: title!.heading,
            nodes:
@@ -234,7 +239,77 @@ export function parseDiagramDocument(
                    GROUPINGS,
                    'none',
                    '"Group"',
-                   fail) } };
+                   fail) },
+           target:
+             target === undefined
+      ? null
+      : parseTarget(
+        target,
+        documentPath,
+        projectPath,
+        fail) };
+}
+
+function parseTarget(
+    value: string,
+    documentPath: string,
+    projectPath: string,
+    fail: (message: string) => never
+  ): DiagramTarget
+{
+  const hashIndex =
+    value.indexOf('#');
+
+  const filePart =
+    (hashIndex < 0
+    ? value
+    : value.slice(
+      0,
+      hashIndex)).trim();
+
+  const targetPath =
+    filePart === ''
+    ? documentPath
+    : filePart.startsWith('/')
+    ? path.join(
+      projectPath,
+      filePart.slice(1))
+    : path.resolve(
+      path.dirname(documentPath),
+      filePart);
+
+  const extension =
+    path.extname(targetPath).toLowerCase();
+
+  if (hashIndex >= 0) {
+    const heading =
+      value.slice(hashIndex + 1).trim();
+
+    if (
+      heading === ''
+      || extension !== '.md'
+    ) {
+      fail(
+        `"Target" "${value}" must name a heading of a markdown document, e.g. "Overview.md#Diagram".`);
+    }
+
+    return { kind: 'markdown',
+             path: targetPath,
+             heading };
+  }
+
+  if (extension === '.mmd') {
+    return { kind: 'mermaid',
+             path: targetPath };
+  }
+
+  if (extension === '.svg') {
+    return { kind: 'svg',
+             path: targetPath };
+  }
+
+  return fail(
+    `"Target" "${value}" must be a .mmd or .svg file, or a markdown document and heading, e.g. "Overview.md#Diagram".`);
 }
 
 function readEdges(

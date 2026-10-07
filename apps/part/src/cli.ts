@@ -233,18 +233,18 @@ function createCli(
 
   cli.command('diagram')
     .description(
-      'Print the diagram a diagram document describes')
+      'Save the diagram a diagram document describes to its Target, or print it')
     .argument(
       'document')
     .option(
       '--format <format>',
-      'Output format: mermaid (default) or svg')
+      'Format when printing: mermaid (default) or svg')
     .option(
-      '--write',
-      'Write the Mermaid text into the Diagram section of the document')
+      '--stdout',
+      'Print the diagram instead of saving it to the Target')
     .option(
       '--check',
-      'Fail when the Diagram section of the document is not current')
+      'Fail when the Target is not current, instead of saving it')
     .action(
       async (
           document,
@@ -266,9 +266,10 @@ function createCli(
           environment,
           { document,
             format:
-              filterStringOption(
-                options.format),
-            write: options.write === true,
+              typeof options.format === 'string'
+              ? options.format.trim()
+              : undefined,
+            stdout: options.stdout === true,
             check: options.check === true });
       });
 

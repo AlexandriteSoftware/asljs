@@ -263,101 +263,6 @@ test(
   });
 
 test(
-  'RQ124: diagram writes the Diagram section and checks that it is current',
-  async () =>
-  {
-    await using workspace =
-      await createWorkspace();
-
-    await workspace.writeText(
-      'docs/From D.md',
-      `# From D
-
-How D is built.
-
-## Nodes
-
-- Definitions: Module
-
-## Root
-
-- Artefacts: tools/d/mod.md
-- Depth: 1
-
-## Edges
-
-### Uses
-`);
-
-    const run =
-      async (
-          options: { write?: boolean; check?: boolean; }
-        ): Promise<number | undefined> =>
-      {
-      const environment =
-        createDiagramEnvironment(workspace);
-
-      await execDiagram(
-        logger,
-        environment,
-        { document: 'docs/From D.md',
-          ...options });
-
-      return environment.exitCode;
-    };
-
-    assert.equal(
-      await run(
-        { check: true }),
-      1);
-
-    await run(
-      { write: true });
-
-    const block =
-      [ '```mermaid',
-        'graph TD',
-        '  nlibs_a_mod_md["libs/a/mod.md"]',
-        '  ntools_d_mod_md["tools/d/mod.md"]',
-        '  ntools_d_mod_md --> nlibs_a_mod_md',
-        '```' ].join('\n');
-
-    const written =
-      await workspace.readText(
-        'docs/From D.md');
-
-    assert.ok(
-      written.endsWith(
-        `### Uses\n\n## Diagram\n\n${block}\n`));
-
-    assert.equal(
-      await run(
-        { check: true }),
-      undefined);
-
-    await workspace.writeText(
-      'docs/From D.md',
-      written.replace(
-        block,
-        '```mermaid\ngraph TD\n```\n\nGenerated.'));
-
-    assert.equal(
-      await run(
-        { check: true }),
-      1);
-
-    await run(
-      { write: true });
-
-    assert.equal(
-      await workspace.readText(
-        'docs/From D.md'),
-      written.replace(
-        block,
-        `${block}\n\nGenerated.`));
-  });
-
-test(
   'RQ206: diagram documents are validated',
   async () =>
   {
@@ -394,6 +299,217 @@ test(
     }
   });
 
+const FROM_D =
+  `# From D
+
+How D is built.
+
+## Nodes
+
+- Definitions: Module
+
+## Root
+
+- Artefacts: tools/d/mod.md
+- Depth: 1
+
+## Edges
+
+### Uses
+`;
+
+const FROM_D_MERMAID =
+  [ 'graph TD',
+    '  nlibs_a_mod_md["libs/a/mod.md"]',
+    '  ntools_d_mod_md["tools/d/mod.md"]',
+    '  ntools_d_mod_md --> nlibs_a_mod_md' ].join('\n');
+
+async function runDiagram(
+    workspace: ReturnType<typeof tmpDir>,
+    options: Omit<Parameters<typeof execDiagram>[2], 'document'> = {}
+  ): Promise<ReturnType<typeof createEnvironment>>
+{
+  const environment =
+    createDiagramEnvironment(workspace);
+
+  await execDiagram(
+    logger,
+    environment,
+    { document: 'docs/From D.md',
+      ...options });
+
+  return environment;
+}
+
+test(
+  'RQ124: diagram saves to a markdown Target section and checks that it is current',
+  async () =>
+  {
+    await using workspace =
+      await createWorkspace();
+
+    await workspace.writeText(
+      'docs/From D.md',
+      `${FROM_D}
+## Output
+
+- Target: #Diagram
+
+## Diagram
+
+Generated.
+`);
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { check: true })).exitCode,
+      1);
+
+    const environment =
+      await runDiagram(workspace);
+
+    assert.equal(
+      environment.stdout.toString(),
+      '');
+
+    const block =
+      `\`\`\`mermaid\n${FROM_D_MERMAID}\n\`\`\``;
+
+    const written =
+      await workspace.readText(
+        'docs/From D.md');
+
+    assert.ok(
+      written.endsWith(
+        `## Diagram\n\nGenerated.\n\n${block}\n`));
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { check: true })).exitCode,
+      undefined);
+
+    await workspace.writeText(
+      'docs/From D.md',
+      written.replace(
+        block,
+        '```mermaid\ngraph TD\n```\n\nAfter.'));
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { check: true })).exitCode,
+      1);
+
+    await runDiagram(workspace);
+
+    assert.equal(
+      await workspace.readText(
+        'docs/From D.md'),
+      written.replace(
+        block,
+        `${block}\n\nAfter.`));
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { stdout: true })).stdout.toString(),
+      `${FROM_D_MERMAID}\n`);
+  });
+
+test(
+  'RQ124: diagram saves to a Mermaid file or a section of another document',
+  async () =>
+  {
+    await using workspace =
+      await createWorkspace();
+
+    await workspace.writeText(
+      'docs/From D.md',
+      `${FROM_D}
+## Output
+
+- Target: /out/from-d.mmd
+`);
+
+    await runDiagram(workspace);
+
+    assert.equal(
+      await workspace.readText(
+        'out/from-d.mmd'),
+      `${FROM_D_MERMAID}\n`);
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { check: true })).exitCode,
+      undefined);
+
+    await workspace.writeText(
+      'README.md',
+      '# Readme\n\n## Graph\n\nThe modules.\n\n## Other\n\nText.\n');
+
+    await workspace.writeText(
+      'docs/From D.md',
+      `${FROM_D}
+## Output
+
+- Target: ../README.md#Graph
+`);
+
+    await runDiagram(workspace);
+
+    assert.equal(
+      await workspace.readText(
+        'README.md'),
+      `# Readme\n\n## Graph\n\nThe modules.\n\n\`\`\`mermaid\n${FROM_D_MERMAID}\n\`\`\`\n\n## Other\n\nText.\n`);
+
+    await workspace.writeText(
+      'docs/From D.md',
+      `${FROM_D}
+## Output
+
+- Target: ../README.md#Missing
+`);
+
+    await assert.rejects(
+      runDiagram(workspace),
+      /the Target heading "Missing" is not in the document/);
+
+    await assert.rejects(
+      runDiagram(
+        workspace,
+        { format: 'svg' }),
+      /--format applies to printing/);
+  });
+
+test(
+  'RQ206: diagram Target must name a supported file',
+  async () =>
+  {
+    await using workspace =
+      await createWorkspace();
+
+    for (
+      const target of [ 'out/graph.png',
+                        'out/graph.md',
+                        'out/graph.mmd#Diagram' ]
+    ) {
+      await workspace.writeText(
+        'docs/From D.md',
+        `${FROM_D}
+## Output
+
+- Target: ${target}
+`);
+
+      await assert.rejects(
+        runDiagram(workspace),
+        /"Target" ".+" must/);
+    }
+  });
+
 test(
   'RQ124: diagram renders SVG with the Mermaid CLI',
   async () =>
@@ -413,6 +529,10 @@ test(
 
 - Artefacts: tools/d/mod.md
 - Depth: 0
+
+## Output
+
+- Target: from-d.svg
 `);
 
     await workspace.writeText(
@@ -433,16 +553,26 @@ await fs.writeFile(output, '<svg><desc>' + graph + '</desc></svg>', 'utf8');
             workspace.resolve(
               'tools/mmdc.js') });
 
-    const environment =
-      createDiagramEnvironment(workspace);
+    const svg =
+      '<svg><desc>graph TD\n  ntools_d_mod_md["tools/d/mod.md"]</desc></svg>\n';
 
-    await execDiagram(
-      logger,
-      environment,
-      { document: 'docs/From D.md',
-        format: 'svg' });
+    await runDiagram(workspace);
 
     assert.equal(
-      environment.stdout.toString(),
-      '<svg><desc>graph TD\n  ntools_d_mod_md["tools/d/mod.md"]</desc></svg>\n');
+      await workspace.readText(
+        'docs/from-d.svg'),
+      svg);
+
+    assert.equal(
+      (await runDiagram(
+        workspace,
+        { stdout: true,
+          format: 'svg' })).stdout.toString(),
+      svg);
+
+    await assert.rejects(
+      runDiagram(
+        workspace,
+        { check: true }),
+      /--check cannot compare an SVG target/);
   });

@@ -167,8 +167,10 @@ style:
 - Style: dotted
 ```
 
-`--write` keeps the generated graph in the document's `## Diagram` section, and
-`--check` fails when it is out of date.
+With `- Target: #Diagram` under `## Output`, the graph is saved to the
+document's own `Diagram` section instead of printed; a target can also be
+another document's section, a `.mmd` or a `.svg` file. `--check` fails when the
+target is out of date.
 
 ## Further reading
 

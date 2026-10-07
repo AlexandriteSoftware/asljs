@@ -146,10 +146,12 @@ behavior changes.
 ### diagram
 
 - Reads the diagram document given as the argument, relative to the working
-  directory, and prints Mermaid text; `--format=svg` renders it with `mmdc`
-  (`PART_MMDC_PATH` replaces it).
-- `--write` replaces the first `mermaid` block of the `## Diagram` section;
-  `--check` sets a non-zero exit code when that block is missing or differs.
+  directory, and saves the diagram to its `## Output` `Target`: a `mermaid`
+  block in `<doc>.md#<Heading>`, a `.mmd` file or a `.svg` file (rendered with
+  `mmdc`; `PART_MMDC_PATH` replaces it). Without a target, or with `--stdout`,
+  it prints; `--format=svg` applies to printing only.
+- `--check` saves nothing and sets a non-zero exit code when the target is
+  missing or differs; not for `.svg` targets.
 - Errors in the document are fatal and name it; references to missing artefacts
   are logged as warnings.
 

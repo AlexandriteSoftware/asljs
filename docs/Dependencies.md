@@ -7,10 +7,11 @@ its workspaces:
 
 ```pwsh
 npm -w asljs-part run build:dist
-npx part diagram --definitions "asljs-part;NPM Package" docs/Dependencies.md --write
+npx part diagram --definitions "asljs-part;NPM Package" docs/Dependencies.md
 ```
 
-`--check` in place of `--write` fails when the graph below is out of date.
+The command saves the graph to the `Diagram` section below; `--check` fails
+instead when it is out of date.
 
 ## Nodes
 
@@ -38,6 +39,10 @@ npx part diagram --definitions "asljs-part;NPM Package" docs/Dependencies.md --w
 
 - Direction: LR
 - Group: folder
+
+## Output
+
+- Target: #Diagram
 
 ## Diagram
 

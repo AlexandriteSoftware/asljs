@@ -7,6 +7,15 @@ export type DiagramDirection = 'TD' | 'LR' | 'BT' | 'RL';
 export type DiagramGrouping = 'none' | 'folder';
 
 /**
+ * Where the diagram is saved: a `mermaid` block in a section of a markdown
+ * document, a file of Mermaid text, or an SVG file. Paths are absolute.
+ */
+export type DiagramTarget =
+  | { kind: 'markdown'; path: string; heading: string; }
+  | { kind: 'mermaid'; path: string; }
+  | { kind: 'svg'; path: string; };
+
+/**
  * A property drawn as edges, from a level 3 section under `## Edges`.
  */
 export interface DiagramEdgeProperty
@@ -60,4 +69,9 @@ export interface DiagramDocument
   edges: DiagramEdgeProperty[];
 
   layout: { direction: DiagramDirection; group: DiagramGrouping; };
+
+  /**
+   * From `## Output`; `null` prints the diagram.
+   */
+  target: DiagramTarget | null;
 }

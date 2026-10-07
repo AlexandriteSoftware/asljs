@@ -42,8 +42,7 @@ to check that `apps/part/src/model` depends on nothing in `commands`, or to find
 cycles. What is missing is a source of import data. The rest is in place: a
 diagram document scopes the graph with `Exclude` globs or a `Root` to walk from,
 which matters because a whole-repository graph of ~390 nodes is unreadable in
-Mermaid, and `part diagram` prints Mermaid text that `--write` keeps in a
-document.
+Mermaid, and `part diagram` saves Mermaid text to the `Target` a document.
 
 ## Options
 

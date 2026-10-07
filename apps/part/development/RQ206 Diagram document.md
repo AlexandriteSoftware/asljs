@@ -27,7 +27,12 @@ ignored. Every error names the document.
   `dotted`, `thick` and `invisible`; `Direction` is `forward` or `reverse`.
 - `## Layout` takes `Direction`, one of `TD`, `LR`, `BT` and `RL`, and `Group`,
   `none` or `folder`. Choice values are case-insensitive.
-- `## Diagram` holds the generated text and is not read as settings.
+- `## Output` takes `Target`. A value with `#` names a markdown document and a
+  heading, `<path>#<Heading>`; the path must end with `.md`, and an empty path
+  is the diagram document itself. A value without `#` must end with `.mmd` or
+  `.svg`. A path starting with `/` is relative to the project root, any other to
+  the diagram document's folder. An empty heading or any other form is an error.
+- Other sections, e.g. the one a target heading names, are not read.
 
 Building the diagram:
 

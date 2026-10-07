@@ -2,7 +2,9 @@ import { Logger }
   from 'asljs-logging';
 import { Code }
   from 'mdast';
-import { writeFile }
+import { mkdir,
+         readFile,
+         writeFile }
   from 'node:fs/promises';
 import path
   from 'node:path';
@@ -16,10 +18,15 @@ import { toMermaid }
   from '../diagram/mermaid.js';
 import { Environment }
   from '../environment.js';
-import { getSections }
+import { getSections,
+         Section }
   from '../markdown-document-queries.js';
+import { DiagramTarget }
+  from '../model/diagram-document.js';
 import { MarkdownDocument }
   from '../model/markdown-document.js';
+import { MarkdownDocumentProvider }
+  from '../providers/markdown-document-provider.js';
 
 interface DiagramCommandOptions
 {
@@ -30,17 +37,17 @@ interface DiagramCommandOptions
 
   format?: string;
 
-  write?: boolean;
+  stdout?: boolean;
 
   check?: boolean;
 }
 
-const DIAGRAM_SECTION = 'Diagram';
+type MarkdownTarget = Extract<DiagramTarget, { kind: 'markdown'; }>;
 
 /**
- * Builds the diagram a diagram document describes. Prints Mermaid text or
- * SVG, writes the text into the document's `## Diagram` section, or checks
- * that the section is current.
+ * Builds the diagram a diagram document describes and saves it to the
+ * document's `Target`, or prints it when there is no target or `stdout` is
+ * set. `check` reports a target that is not current instead of saving it.
  */
 export async function execDiagram(
     logger: Logger,
@@ -48,25 +55,12 @@ export async function execDiagram(
     options: DiagramCommandOptions
   ): Promise<void>
 {
-  const format =
-    getDiagramFormat(
-      options.format);
-
   if (
-    options.write
+    options.stdout
     && options.check
   ) {
     throw new Error(
-      '--write and --check cannot be used together.');
-  }
-
-  if (
-    format === 'svg'
-    && (options.write
-        || options.check)
-  ) {
-    throw new Error(
-      '--write and --check work with Mermaid text, not --format=svg.');
+      '--stdout and --check cannot be used together.');
   }
 
   const documentPath =
@@ -77,10 +71,44 @@ export async function execDiagram(
   const providers =
     environment.getProviders();
 
-  const { diagram: diagramDocument, document } =
+  const diagramDocument =
     await readDiagramDocument(
       providers.markdownDocumentProvider,
-      documentPath);
+      documentPath,
+      environment.project);
+
+  const target =
+    options.stdout
+    ? null
+    : diagramDocument.target;
+
+  if (
+    target !== null
+    && options.format !== undefined
+  ) {
+    throw new Error(
+      '--format applies to printing; the Target decides the format it is saved in. Add --stdout to print.');
+  }
+
+  if (
+    options.check
+    && target === null
+  ) {
+    throw new Error(
+      `${
+        display(
+          environment,
+          documentPath)
+      }: --check needs a Target in the "Output" section.`);
+  }
+
+  if (
+    options.check
+    && target?.kind === 'svg'
+  ) {
+    throw new Error(
+      '--check cannot compare an SVG target.');
+  }
 
   const diagram =
     await buildDiagram(
@@ -91,21 +119,36 @@ export async function execDiagram(
   const mermaid =
     toMermaid(diagram);
 
-  const displayPath =
-    path.relative(
-      environment.cwd,
-      documentPath);
+  if (target === null) {
+    const format =
+      getDiagramFormat(
+        options.format);
+
+    environment.stdout.write(
+      format === 'svg'
+        ? `${await renderMermaidToSvg(mermaid)}\n`
+        : `${mermaid}\n`);
+
+    return;
+  }
 
   if (options.check) {
-    const block =
-      findDiagramBlock(document);
-
     if (
-      block?.node.value.trim()
-      !== mermaid
+      !await isTargetCurrent(
+        providers.markdownDocumentProvider,
+        target,
+        mermaid)
     ) {
       environment.stderr.write(
-        `${displayPath}: the diagram is not current; run part diagram "${displayPath}" --write.\n`);
+        `${
+          display(
+            environment,
+            target.path)
+        }: the diagram is not current; run part diagram "${
+          display(
+            environment,
+            documentPath)
+        }".\n`);
 
       environment.exitCode = 1;
     }
@@ -113,31 +156,20 @@ export async function execDiagram(
     return;
   }
 
-  if (options.write) {
-    const content =
-      replaceDiagramBlock(
-        document,
-        mermaid);
+  await writeTarget(
+    providers.markdownDocumentProvider,
+    target,
+    mermaid);
+}
 
-    if (content !== document.content) {
-      await writeFile(
-        documentPath,
-        content,
-        'utf8');
-    }
-
-    return;
-  }
-
-  if (format === 'svg') {
-    environment.stdout.write(
-      `${await renderMermaidToSvg(mermaid)}\n`);
-
-    return;
-  }
-
-  environment.stdout.write(
-    `${mermaid}\n`);
+function display(
+    environment: Environment,
+    filePath: string
+  ): string
+{
+  return path.relative(
+    environment.cwd,
+    filePath);
 }
 
 function getDiagramFormat(
@@ -162,38 +194,140 @@ function getDiagramFormat(
     `Unknown diagram format: ${format}`);
 }
 
+async function readTextOrNull(
+    filePath: string
+  ): Promise<string | null>
+{
+  try {
+    return await readFile(
+      filePath,
+      'utf8');
+  } catch {
+    return null;
+  }
+}
+
+async function isTargetCurrent(
+    markdownDocumentProvider: MarkdownDocumentProvider,
+    target: DiagramTarget,
+    mermaid: string
+  ): Promise<boolean>
+{
+  if (target.kind === 'markdown') {
+    const document =
+      await markdownDocumentProvider.load(
+        target.path);
+
+    return findBlock(
+      document,
+      target)
+      ?.value.trim() === mermaid;
+  }
+
+  return await readTextOrNull(target.path) === `${mermaid}\n`;
+}
+
 /**
- * The first `mermaid` code block of the `## Diagram` section.
+ * Saves the diagram. A file is written only when its content changes.
  */
-function findDiagramBlock(
-    document: MarkdownDocument
-  ): { node: Code; } | null
+async function writeTarget(
+    markdownDocumentProvider: MarkdownDocumentProvider,
+    target: DiagramTarget,
+    mermaid: string
+  ): Promise<void>
+{
+  let current: string | null;
+  let content: string;
+
+  if (target.kind === 'markdown') {
+    const document =
+      await markdownDocumentProvider.load(
+        target.path);
+
+    current = document.content;
+
+    content =
+      replaceBlock(
+        document,
+        target,
+        mermaid);
+  } else {
+    current =
+      await readTextOrNull(
+        target.path);
+
+    content =
+      target.kind === 'svg'
+      ? `${await renderMermaidToSvg(mermaid)}\n`
+      : `${mermaid}\n`;
+  }
+
+  if (content === current) {
+    return;
+  }
+
+  await mkdir(
+    path.dirname(target.path),
+    { recursive: true });
+
+  await writeFile(
+    target.path,
+    content,
+    'utf8');
+}
+
+/**
+ * The first section whose heading, at any level, is the target heading; an
+ * error when the document has none.
+ */
+function findSection(
+    document: MarkdownDocument,
+    target: MarkdownTarget
+  ): Section
 {
   const section =
     getSections(document).find(
       item =>
-      item.level === 2
-      && item.heading === DIAGRAM_SECTION);
+      item.level > 0
+      && item.heading === target.heading);
 
+  if (!section) {
+    throw new Error(
+      `${target.path}: the Target heading "${target.heading}" is not in the document.`);
+  }
+
+  return section;
+}
+
+/**
+ * The first `mermaid` code block of the target section.
+ */
+function findBlock(
+    document: MarkdownDocument,
+    target: MarkdownTarget
+  ): Code | null
+{
   const node =
-    section?.content.nodes.find(
+    findSection(
+      document,
+      target)
+    .content.nodes.find(
       item =>
-      item.type === 'code'
-      && (item as Code).lang === 'mermaid');
+        item.type === 'code'
+        && (item as Code).lang === 'mermaid');
 
   return node
-    ? { node:
-          node as Code }
+    ? node as Code
     : null;
 }
 
 /**
  * The document with the Mermaid text in the first `mermaid` block of the
- * `## Diagram` section. A missing block is added at the end of the section,
- * and a missing section at the end of the document.
+ * target section, or in a block added at the end of the section.
  */
-function replaceDiagramBlock(
+function replaceBlock(
     document: MarkdownDocument,
+    target: MarkdownTarget,
     mermaid: string
   ): string
 {
@@ -203,36 +337,30 @@ function replaceDiagramBlock(
     `\`\`\`mermaid\n${mermaid}\n\`\`\``;
 
   const block =
-    findDiagramBlock(document);
+    findBlock(
+      document,
+      target);
 
   if (block) {
     return content.slice(
       0,
-      block.node.position!.start.offset)
+      block.position!.start.offset)
       + fenced
       + content.slice(
-        block.node.position!.end.offset);
+        block.position!.end.offset);
   }
 
   const section =
-    getSections(document).find(
-      item =>
-      item.level === 2
-      && item.heading === DIAGRAM_SECTION);
+    findSection(
+      document,
+      target);
 
-  if (section) {
-    const last =
-      section.nodes[section.nodes.length - 1];
+  const offset =
+    section.nodes[section.nodes.length - 1].position!.end.offset!;
 
-    const offset =
-      last.position!.end.offset!;
-
-    return `${
-      content.slice(
-        0,
-        offset)
-    }\n\n${fenced}${content.slice(offset)}`;
-  }
-
-  return `${content.trimEnd()}\n\n## ${DIAGRAM_SECTION}\n\n${fenced}\n`;
+  return `${
+    content.slice(
+      0,
+      offset)
+  }\n\n${fenced}${content.slice(offset)}`;
 }

@@ -10,6 +10,8 @@ import test
   from 'node:test';
 import { runCli }
   from './cli.js';
+import { execDiagram }
+  from './commands/diagram.js';
 import { execInventory }
   from './commands/inventory.js';
 import { execVersion }
@@ -380,4 +382,48 @@ test(
       [ path.resolve('plugin.js'),
         path.resolve('src'),
         'asljs-part;NPM *,GIT *;GIT Commits' ]);
+  });
+
+test(
+  'RQ124: cli forwards diagram options, leaving format unset when absent',
+  async () =>
+  {
+    const calls: unknown[] = [ ];
+
+    const environment =
+      createEnvironment();
+
+    environment.register(
+      execDiagram,
+      async (
+          _logger,
+          _environment,
+          options
+        ) =>
+      {
+        calls.push(options);
+      });
+
+    await runCli(
+      [ 'diagram',
+        'docs/Graph.md' ],
+      environment);
+
+    await runCli(
+      [ 'diagram',
+        'docs/Graph.md',
+        '--stdout',
+        '--format=svg' ],
+      environment);
+
+    assert.deepEqual(
+      calls,
+      [ { document: 'docs/Graph.md',
+          format: undefined,
+          stdout: false,
+          check: false },
+        { document: 'docs/Graph.md',
+          format: 'svg',
+          stdout: true,
+          check: false } ]);
   });
