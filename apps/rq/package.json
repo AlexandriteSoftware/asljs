@@ -1,0 +1,67 @@
+{
+  "name": "asljs-rq",
+  "version": "0.1.0",
+  "description": "AI-assisted requirements management: requirements and evidence in markdown, verified and viewed as a graph.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**",
+    "bin/**",
+    "docs/*.md",
+    "skills/*.md",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "bin": {
+    "rq": "bin/rq.js"
+  },
+  "scripts": {
+    "flint": "toolkit flint",
+    "clean": "toolkit clean",
+    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "guard:clean-git": "toolkit ensure-clean-working-directory",
+    "prepack": "npm run clean && npm run build:dist && npm run build && npm run test && npm run guard:clean-git",
+    "postpublish": "toolkit tag-release-revision",
+    "test": "node --test --enable-source-maps build/**/*.test.js",
+    "test:watch": "node --watch --test build/**/*.test.js",
+    "release:patch": "toolkit release-patch",
+    "all": "npm run clean && npm run flint && npm run typecheck && npm run build:dist && npm run build && npm run test"
+  },
+  "keywords": [
+    "requirements",
+    "traceability",
+    "evidence",
+    "markdown",
+    "ai",
+    "cli"
+  ],
+  "homepage": "https://github.com/AlexandriteSoftware/asljs#readme",
+  "bugs": {
+    "url": "https://github.com/AlexandriteSoftware/asljs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexandriteSoftware/asljs.git"
+  },
+  "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^15.0.0",
+    "marked": "^18.0.6",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "asljs-tmpdir": "^0.1.13",
+    "asljs-toolkit": "^0.1.0"
+  }
+}

@@ -17,6 +17,7 @@
     "apps/dash",
     "apps/kb",
     "apps/part",
+    "apps/rq",
     "apps/sfmt",
     "apps/toolkit",
     "libs/components",

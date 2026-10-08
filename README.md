@@ -17,6 +17,8 @@ Tools:
 - [kb][KB] - knowledge base CLI and MCP server for markdown libraries.
 - [part][PRT] - defines project artefacts in markdown and validates them with
   rules.
+- [rq][RQ] - AI-assisted requirements management: verifies requirements and
+  evidence written in markdown, and shows them as a graph.
 - [artefacts][ART] - this repository's artefact definitions and the `part`
   plugin that checks them; private.
 - [sfmt][SFMT] - code formatter for TypeScript.
@@ -53,6 +55,7 @@ Libraries:
 [KB]: ./apps/kb/README.md
 [ART]: ./aftefacts/README.md
 [PRT]: ./apps/part/README.md
+[RQ]: ./apps/rq/README.md
 [SFMT]: ./apps/sfmt/README.md
 [APPS]: ./apps/app-builder/README.md
 [DASH]: ./apps/dash/README.md
