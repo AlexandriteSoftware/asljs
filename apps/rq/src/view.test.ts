@@ -76,7 +76,7 @@ test(
 
       for (
         const text of [ '<title>RQ1 Root</title>',
-                        '<pre class="mermaid">\ngraph TD\n  n0[&quot;RQ1 Root&quot;]',
+                        '<pre class="mermaid">\ngraph LR\n  n0[&quot;RQ1 Root&quot;]',
                         '  n0 --&gt; n1',
                         'click n2 href &quot;/evidence/EV1%20Passes.md&quot;',
                         '<li><a href="/RQ2%20Part.md">RQ2 Part</a></li>',
@@ -153,17 +153,17 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'reqs/A.md',
-      '# A\n\n[Gone](Gone.md) [Up](../Up.md)\n');
+      'reqs/RQ1 A.md',
+      '# RQ1 A\n\n## Implementation\n\n- [Gone](<RQ9 Gone.md>)\n- [Up](<../RQ2 Up.md>)\n');
 
     await dir.writeText(
-      'Up.md',
+      'RQ2 Up.md',
       '# Up\n');
 
     const server =
       await execView(
         createTestIo(dir.path),
-        { target: 'reqs/A.md',
+        { target: 'reqs/RQ1 A.md',
           port: 0 });
 
     try {
@@ -174,14 +174,14 @@ test(
 
       assert.ok(
         index.body.includes(
-          '<h2>Problems</h2>\n<ul>\n<li>A.md: the link to Gone.md points at no file.</li>'));
+          '<h2>Problems</h2>\n<ul>\n<li>RQ1 A.md: the link to RQ9 Gone.md points at no file.</li>'));
 
       assert.ok(
         index.body.includes('<li>Up</li>'));
 
       assert.ok(
         !index.body.includes(
-          'href &quot;/../Up.md'));
+          'href &quot;/../RQ2%20Up.md'));
     } finally {
       await new Promise(
         resolve => server.close(resolve));

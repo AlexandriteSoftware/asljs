@@ -57,10 +57,9 @@ test(
       await dir.readText('reqs/RQ3 Speed.md'),
       '# RQ3 Speed\n\nIt is fast.\n');
 
-    assert.ok(
-      (await dir.readText('reqs/RQ2 Part.md'))
-        .endsWith(
-          '\n## Implementation\n\n- [RQ3 Speed](<RQ3 Speed.md>)\n'));
+    assert.equal(
+      await dir.readText('reqs/RQ2 Part.md'),
+      '# RQ2 Part\n\nA part works.\n\n## Implementation\n\n- [EV2][EV2]\n- [RQ3 Speed](<RQ3 Speed.md>)\n\n[EV2]: <evidence/EV2 Fails.md>\n');
   });
 
 test(
@@ -96,16 +95,28 @@ test(
       { kind: 'evidence',
         parent: 'reqs/RQ2 Part.md',
         name: 'Other',
-        path: 'reqs/custom.md' });
+        path:
+          'reqs/EV7 Custom.md' });
 
     assert.equal(
-      await dir.readText('reqs/custom.md'),
-      '# custom\n\n## Steps\n\n```sh\n```\n');
+      await dir.readText(
+        'reqs/EV7 Custom.md'),
+      '# EV7 Custom\n\n## Steps\n\n```sh\n```\n');
 
     assert.ok(
       (await dir.readText('reqs/RQ2 Part.md'))
-        .endsWith(
-          '- [EV3 Fast run](<evidence/EV3 Fast run.md>)\n- [custom](custom.md)\n'));
+        .includes(
+          '- [EV2][EV2]\n- [EV3 Fast run](<evidence/EV3 Fast run.md>)\n- [EV7 Custom](<EV7 Custom.md>)\n'));
+
+    await assert.rejects(
+      execAdd(
+        io,
+        { kind: 'evidence',
+          parent: 'reqs/RQ2 Part.md',
+          name: 'Other',
+          path:
+            'reqs/RQ8 Not evidence.md' }),
+      /the file name of an evidence must be EV<n> <name>\.md/);
   });
 
 test(
@@ -167,8 +178,8 @@ test(
 
     assert.ok(
       (await dir.readText('reqs/RQ2 Part.md'))
-        .endsWith(
-          '- [EV1 Passes](<evidence/EV1 Passes.md>)\n'));
+        .includes(
+          '- [EV2][EV2]\n- [EV1 Passes](<evidence/EV1 Passes.md>)\n'));
 
     await assert.rejects(
       execLink(
@@ -213,7 +224,7 @@ test(
 
     assert.equal(
       await dir.readText('reqs/RQ2 Part.md'),
-      '# RQ2 Part\n\nA part works. See EV2.\n');
+      '# RQ2 Part\n\nA part works.\n\n## Implementation\n');
 
     await assert.rejects(
       execUnlink(
@@ -253,7 +264,7 @@ test(
 
     assert.equal(
       await dir.readText('reqs/RQ1 Root.md'),
-      '# RQ1 Root\n\nThe tool works.\n\n- [RQ2 Part](<RQ2 Part.md>)\n- EV1 Passes\n- [Website](https://example.com/page.md)\n');
+      '# RQ1 Root\n\nThe tool works. See the [website](https://example.com/page.md) and the\n[notes](notes.md).\n\n## Implementation\n\n- [RQ2 Part](<RQ2 Part.md>)\n');
   });
 
 test(
@@ -267,7 +278,7 @@ test(
 
     await dir.writeText(
       'reqs/RQ3 Shared.md',
-      '# RQ3 Shared\n\n[EV2](<evidence/EV2 Fails.md>)\n');
+      '# RQ3 Shared\n\n## Implementation\n\n- [EV2](<evidence/EV2 Fails.md>)\n');
 
     await dir.writeText(
       'reqs/RQ1 Root.md',
@@ -351,7 +362,7 @@ test(
     assert.equal(
       await dir.readText(
         'reqs/parts/RQ2 Piece.md'),
-      '# RQ2 Piece\n\nA part works. See [EV2][EV2].\n\n[EV2]: <../evidence/EV2 Fails.md>\n');
+      '# RQ2 Piece\n\nA part works.\n\n## Implementation\n\n- [EV2][EV2]\n\n[EV2]: <../evidence/EV2 Fails.md>\n');
 
     assert.ok(
       !await exists(
@@ -382,6 +393,15 @@ test(
         { file:
             'reqs/parts/EV1 Passes.md',
           destination: 'reqs/RQ1 Root.md' }),
+      /the file name of an evidence must be EV<n> <name>\.md/);
+
+    await assert.rejects(
+      execMove(
+        io,
+        { file:
+            'reqs/parts/EV1 Passes.md',
+          destination:
+            'reqs/evidence/EV2 Fails.md' }),
       /the file already exists/);
   });
 

@@ -34,8 +34,9 @@ links to holds, and its statements are fully covered by them.
 ## Scope
 
 - Requirements and evidence are plain markdown files, kept with the code.
-- A link to a local `.md` file is an edge; an evidence is a document with a `##
-  Steps` section.
+- The graph holds requirements, `RQ<n> <name>.md`, and evidence, `EV<n>
+  <name>.md`, and nothing else; its edges are the links in each requirement's
+  `## Implementation` list. Other documents and links are left alone.
 - Steps run in a shell, one line per command; a step that exits with a non-zero
   code fails the evidence.
 - The view loads Mermaid from a CDN to draw the diagram; the documents and their

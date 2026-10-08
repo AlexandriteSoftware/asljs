@@ -16,7 +16,8 @@ import { addImplementationLink,
          rewriteLinks,
          setTitle }
   from './edit.js';
-import { loadGraph,
+import { getNodeKind,
+         loadGraph,
          RqNode }
   from './graph.js';
 import { Io }
@@ -125,13 +126,20 @@ export async function execAdd(
         `${id} ${name}.md`);
   }
 
-  if (!file.toLowerCase().endsWith('.md')) {
+  if (
+    getNodeKind(file)
+    !== options.kind
+  ) {
     throw new Error(
       `${
         display(
           io,
           file)
-      }: a document must be a .md file.`);
+      }: the file name of ${
+        options.kind === 'evidence'
+          ? 'an evidence must be EV<n> <name>.md'
+          : 'a requirement must be RQ<n> <name>.md'
+      }.`);
   }
 
   if (await exists(file)) {
@@ -449,13 +457,20 @@ export async function execMove(
         path.basename(node.path));
   }
 
-  if (!destination.toLowerCase().endsWith('.md')) {
+  if (
+    getNodeKind(destination)
+    !== node.kind
+  ) {
     throw new Error(
       `${
         display(
           io,
           destination)
-      }: a document must be a .md file.`);
+      }: the file name of ${
+        node.kind === 'evidence'
+          ? 'an evidence must be EV<n> <name>.md'
+          : 'a requirement must be RQ<n> <name>.md'
+      }.`);
   }
 
   if (await exists(destination)) {

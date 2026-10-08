@@ -49,12 +49,14 @@ test(
       'reqs/RQ1 Root.md',
       `# RQ1 Root
 
-[Gone](Gone.md)
+See the [notes](notes.md).
 
 ## Implementation
 
 - [RQ2](<RQ2 Leaf.md>)
 - [EV1][ev1]
+- [Gone](<RQ9 Gone.md>)
+- [Notes](notes.md)
 - Just text
 
 Stray paragraph.
@@ -68,7 +70,11 @@ Stray paragraph.
 
     await dir.writeText(
       'reqs/RQ2 Leaf.md',
-      'No heading.\n');
+      'No heading.\n\n## Steps\n\n```\nnode -v\n```\n');
+
+    await dir.writeText(
+      'reqs/notes.md',
+      'Not a requirement, so not checked.\n');
 
     await dir.writeText(
       'reqs/EV1 Proof.md',
@@ -95,12 +101,14 @@ Nothing to run.
 
     assert.equal(
       io.out(),
-      `Error  RQ1 Root.md: the link to Gone.md points at no file.
+      `Error  RQ1 Root.md: the link to RQ9 Gone.md points at no file.
+Error  RQ1 Root.md: the link to notes.md is not a requirement or evidence.
 Error  RQ1 Root.md: the Implementation section holds more than a list.
 Error  RQ1 Root.md: the Implementation item "Just text" links to no requirement or evidence.
 Error  RQ1 Root.md: a requirement has a Log section; only evidence is run.
 Error  RQ2 Leaf.md: no level 1 heading.
 Error  RQ2 Leaf.md: links to no requirement or evidence.
+Error  RQ2 Leaf.md: a requirement has steps; only evidence is run.
 Error  EV1 Proof.md: the Steps section has no commands.
 Error  EV1 Proof.md: the log entry "someday Passed" is not "<time> Passed|Failed[ - <note>]".
 `);

@@ -20,21 +20,31 @@ export async function writeFixture(
     'reqs/RQ1 Root.md',
     `# RQ1 Root
 
-The tool works.
+The tool works. See the [website](https://example.com/page.md) and the
+[notes](notes.md).
+
+## Implementation
 
 - [RQ2 Part](<RQ2 Part.md>)
 - [EV1 Passes](evidence/EV1%20Passes.md#steps)
-- [Website](https://example.com/page.md)
 `);
 
   await dir.writeText(
     'reqs/RQ2 Part.md',
     `# RQ2 Part
 
-A part works. See [EV2][EV2].
+A part works.
+
+## Implementation
+
+- [EV2][EV2]
 
 [EV2]: <evidence/EV2 Fails.md>
 `);
+
+  await dir.writeText(
+    'reqs/notes.md',
+    '# notes\n\nNot a requirement.\n');
 
   await dir.writeText(
     'reqs/evidence/EV1 Passes.md',

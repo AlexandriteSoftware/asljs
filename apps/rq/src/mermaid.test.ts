@@ -23,7 +23,7 @@ test(
 
     await dir.writeText(
       'reqs/RQ2 Part.md',
-      '[EV2][EV2]\n\n[EV2]: <evidence/EV2 Fails.md>\n');
+      '## Implementation\n\n- [EV2][EV2]\n\n[EV2]: <evidence/EV2 Fails.md>\n');
 
     const graph =
       await loadGraph(
@@ -47,7 +47,7 @@ test(
             ? null
             : `/${relative}`;
         }),
-      `graph TD
+      `graph LR
   n0["RQ1 #quot;Root#quot;"]
   n1["RQ2 Part"]
   n2(["EV1 Passes"])

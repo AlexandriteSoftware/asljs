@@ -28,11 +28,6 @@ export interface RqDocument
   title: string | null;
 
   /**
-   * `evidence` when the document has a `## Steps` section.
-   */
-  kind: 'requirement' | 'evidence';
-
-  /**
    * The markdown between the level 1 heading and the first level 2 heading:
    * the statement of a requirement, the description of an evidence.
    */
@@ -43,6 +38,12 @@ export interface RqDocument
    * written, without `#` fragments and with percent-encoding decoded.
    */
   links: string[];
+
+  /**
+   * The targets, in the same form, of the links in the `## Implementation`
+   * list, including references to link definitions elsewhere in the document.
+   */
+  implementation: string[];
 
   /**
    * The commands of the `## Steps` code blocks, one per non-empty line.
@@ -107,16 +108,14 @@ export function parseDocument(
              title
       ? plainText(title)
       : null,
-           kind:
-             stepsSection
-      ? 'evidence'
-      : 'requirement',
            body:
              getBody(
                text,
                root.children),
            links:
              getLocalLinks(root),
+           implementation:
+             getImplementationLinks(root),
            steps,
            log };
 }
@@ -195,6 +194,75 @@ function getBody(
   return text.slice(
     body[0].position!.start.offset,
     body[body.length - 1].position!.end.offset);
+}
+
+function getImplementationLinks(
+    root: ReturnType<typeof parseMarkdown>
+  ): string[]
+{
+  const definitions = new Map<string, string>();
+
+  const collect =
+    (
+        node: RootContent | ReturnType<typeof parseMarkdown>
+      ): void =>
+    {
+    if (node.type === 'definition') {
+      definitions.set(
+        node.identifier,
+        node.url);
+    }
+
+    if ('children' in node) {
+      node.children.forEach(collect);
+    }
+  };
+
+  collect(root);
+
+  const links: string[] = [ ];
+
+  const visit =
+    (
+        node: RootContent
+      ): void =>
+    {
+    const url =
+      node.type === 'link'
+      ? node.url
+      : node.type === 'linkReference'
+      ? definitions.get(node.identifier)
+      : undefined;
+
+    const target =
+      url === undefined
+      ? undefined
+      : splitLocalUrl(url)?.path;
+
+    if (
+      target !== undefined
+      && target.toLowerCase().endsWith('.md')
+      && !links.includes(target)
+    ) {
+      links.push(target);
+    }
+
+    if ('children' in node) {
+      node.children.forEach(visit);
+    }
+  };
+
+  for (
+    const node of getSection(
+      root,
+      'Implementation') ?? [ ]
+  ) {
+    if (node.type === 'list') {
+      visit(node);
+    }
+  }
+
+  return links;
 }
 
 function getLocalLinks(

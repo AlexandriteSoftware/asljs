@@ -8,7 +8,7 @@ import { formatLogEntry,
   from './document.js';
 
 test(
-  'parseDocument reads a requirement: title and local markdown links',
+  'parseDocument reads a requirement: title, local links and Implementation links',
   () =>
   {
     const document =
@@ -19,18 +19,30 @@ Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),
 [img](pic.png), [mail](mailto:a@b.md) and [ref][r]. [a again](<A b.md>)
 
 [r]: ./R.md
+
+## Implementation
+
+- [RQ2](<RQ2 Part.md>)
+- [EV1][ev1] and [web](https://x.org/RQ3.md)
+- [notes](notes.txt)
+
+[ev1]: evidence/EV1.md
 `);
 
     assert.deepEqual(
       document,
       { title: 'RQ1 Root',
-        kind: 'requirement',
         body:
           'Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),\n[img](pic.png), [mail](mailto:a@b.md) and [ref][r]. [a again](<A b.md>)',
         links:
           [ 'A b.md',
             'sub/C d.md',
-            './R.md' ],
+            './R.md',
+            'RQ2 Part.md',
+            'evidence/EV1.md' ],
+        implementation:
+          [ 'RQ2 Part.md',
+            'evidence/EV1.md' ],
         steps: [ ],
         log: [ ] });
   });
@@ -63,10 +75,6 @@ node check.js
 - 2026-01-02T00:00:00.000Z Failed - step 2 exited with code 1
 - not an entry
 `);
-
-    assert.equal(
-      document.kind,
-      'evidence');
 
     assert.deepEqual(
       document.steps,

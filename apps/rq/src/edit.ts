@@ -35,8 +35,9 @@ export interface ResolvedUrl
 }
 
 /**
- * The text with `line` as a new item at the end of the list of a level 2
- * section, adding the section at the end of the document when it is missing.
+ * The text with `line` as a new item at the end of the last list of a level 2
+ * section, or in a list right after the heading when the section has none,
+ * adding the section at the end of the document when it is missing.
  */
 export function appendListItem(
     text: string,
@@ -57,9 +58,9 @@ export function appendListItem(
   }
 
   const last =
-    nodes.length > 0
-    ? nodes[nodes.length - 1]
-    : findSectionHeading(
+    nodes.findLast(
+      node => node.type === 'list')
+    ?? findSectionHeading(
       root,
       section)!;
 

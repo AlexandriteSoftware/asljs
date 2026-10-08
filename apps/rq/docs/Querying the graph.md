@@ -4,9 +4,11 @@ Commands that print the structure of the graph without changing anything. Paths
 are relative to the working directory, and printed the same way, with `/`
 separators.
 
-The text output has one line per document: its kind, `requirement`, `evidence`
-or `missing` for a link to no file, its path, and for an evidence the status of
-its last log entry or `Not run`.
+The text output has one line per document: its kind - `requirement`, `evidence`,
+`other` for an `## Implementation` link to a document that is neither, or
+`missing` for one to no file - its path, and for an evidence the status of its
+last log entry or `Not run`. The commands take only requirement and evidence
+files.
 
 ```text
 requirement  requirements/RQ1 Export.md
@@ -32,7 +34,7 @@ order from the roots. Structure errors are written to standard error.
 rq links <requirement> [--json]
 ```
 
-The requirements and evidence a requirement links to.
+What a requirement's `## Implementation` list links to.
 
 ## rq backlinks
 
@@ -55,5 +57,5 @@ The graph as JSON:
 - `roots` - the paths of the roots, empty when a folder has none;
 - `errors` - the structure errors;
 - `nodes` - every document, from the roots down, with `path`, `kind`, `title`,
-  `body` (the statement or description), `links` (the paths it links to),
-  `steps` and `log` (`{ time, status, note }` items).
+  `body` (the statement or description), `links` (the paths its `##
+  Implementation` links to), `steps` and `log` (`{ time, status, note }` items).

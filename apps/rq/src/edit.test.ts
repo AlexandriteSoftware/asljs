@@ -68,6 +68,25 @@ test(
   });
 
 test(
+  'appendListItem adds to the list before the definitions of a section',
+  () =>
+  {
+    assert.equal(
+      appendListItem(
+        '# RQ1\n\n## Implementation\n\n- [EV1][ev1]\n\n[ev1]: <EV1 A.md>\n',
+        'Implementation',
+        '[RQ2](RQ2.md)'),
+      '# RQ1\n\n## Implementation\n\n- [EV1][ev1]\n- [RQ2](RQ2.md)\n\n[ev1]: <EV1 A.md>\n');
+
+    assert.equal(
+      appendListItem(
+        '# RQ1\n\n## Implementation\n\nSee below.\n',
+        'Implementation',
+        '[RQ2](RQ2.md)'),
+      '# RQ1\n\n## Implementation\n\n- [RQ2](RQ2.md)\n\nSee below.\n');
+  });
+
+test(
   'addImplementationLink adds a relative link to the Implementation list',
   () =>
   {

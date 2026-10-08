@@ -81,16 +81,16 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'reqs/A.md',
-      '# A\n\n[B](B.md) [gone](Gone.md)\n');
+      'reqs/RQ1 A.md',
+      '# RQ1 A\n\n## Implementation\n\n- [RQ2](<RQ2 B.md>)\n- [gone](<RQ9 Gone.md>)\n');
 
     await dir.writeText(
-      'reqs/B.md',
-      '# B\n\n[A](A.md)\n');
+      'reqs/RQ2 B.md',
+      '# RQ2 B\n\n## Implementation\n\n- [RQ1](<RQ1 A.md>)\n');
 
     await dir.writeText(
-      'reqs/C.md',
-      '# C\n');
+      'reqs/RQ3 C.md',
+      '# RQ3 C\n\nSee [RQ1](<RQ1 A.md>).\n');
 
     const io =
       createTestIo(dir.path);
@@ -98,15 +98,15 @@ test(
     assert.equal(
       await execVerify(
         io,
-        { target: 'reqs/A.md' }),
+        { target: 'reqs/RQ1 A.md' }),
       1);
 
     assert.equal(
       io.out(),
-      `Fail  A.md - 1 of 1 links failed
-Fail  B.md - 1 of 1 links failed
-Error  A.md: the link to Gone.md points at no file.
-Error  cycle: A.md -> B.md -> A.md.
+      `Fail  RQ1 A.md - 1 of 1 links failed
+Fail  RQ2 B.md - 1 of 1 links failed
+Error  RQ1 A.md: the link to RQ9 Gone.md points at no file.
+Error  cycle: RQ1 A.md -> RQ2 B.md -> RQ1 A.md.
 `);
 
     const leaf =
@@ -115,12 +115,12 @@ Error  cycle: A.md -> B.md -> A.md.
     assert.equal(
       await execVerify(
         leaf,
-        { target: 'reqs/C.md' }),
+        { target: 'reqs/RQ3 C.md' }),
       1);
 
     assert.equal(
       leaf.out(),
-      'Fail  C.md - links to no requirement or evidence\n');
+      'Fail  RQ3 C.md - links to no requirement or evidence\n');
   });
 
 test(

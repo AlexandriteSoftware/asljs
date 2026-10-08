@@ -20,7 +20,8 @@ number in the scope plus one, a level 1 heading equal to the file name, and the
 statement. Adds a link to it to the parent's `## Implementation` list.
 
 - `<parent>` must be a requirement; `<name>` must not contain `/` or `\`.
-- `--path` gives the new file's path instead; its heading is its file name.
+- `--path` gives the new file's path instead; its name must still start with
+  `RQ<n>` (`EV<n>` for an evidence), and its heading is its file name.
 - An existing file is an error.
 
 ## rq add evidence
@@ -73,7 +74,8 @@ rq move <file> <destination> [--in <folder>]
 ```
 
 Moves or renames a requirement or an evidence. `<destination>` is the new path,
-or an existing folder to move it into; an existing file is an error.
+or an existing folder to move it into; an existing file is an error, and so is a
+name of another kind, e.g. an `RQ` file renamed to `EV` or `notes.md`.
 
 - Links to it from every document of the scope point at the new path, keeping
   their `#` fragments.

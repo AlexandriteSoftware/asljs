@@ -70,23 +70,23 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'A.md',
-      '# A\n\n[B](B.md)\n');
+      'RQ1 A.md',
+      '# RQ1 A\n\n## Implementation\n\n- [RQ2](<RQ2 B.md>)\n');
 
     const io =
       createTestIo(dir.path);
 
     await execList(
       io,
-      { target: 'A.md' });
+      { target: 'RQ1 A.md' });
 
     assert.equal(
       io.err(),
-      'Error  A.md: the link to B.md points at no file.\n');
+      'Error  RQ1 A.md: the link to RQ2 B.md points at no file.\n');
   });
 
 test(
-  'execLinks prints what a requirement links to, missing files included',
+  'execLinks prints what a requirement links to, missing and other files included',
   async () =>
   {
     await using dir =
@@ -96,7 +96,7 @@ test(
 
     await dir.writeText(
       'reqs/RQ2 Part.md',
-      '# RQ2 Part\n\n[EV2](<evidence/EV2 Fails.md>) [Gone](Gone.md)\n');
+      '# RQ2 Part\n\n[RQ1](<RQ1 Root.md>)\n\n## Implementation\n\n- [EV2](<evidence/EV2 Fails.md>)\n- [Gone](<RQ9 Gone.md>)\n- [notes](notes.md)\n');
 
     const io =
       createTestIo(
@@ -108,13 +108,19 @@ test(
 
     assert.equal(
       io.out(),
-      'evidence     evidence/EV2 Fails.md  Not run\nmissing      Gone.md\n');
+      'evidence     evidence/EV2 Fails.md  Not run\nmissing      RQ9 Gone.md\nother        notes.md\n');
 
     await assert.rejects(
       execLinks(
         io,
         { file: 'Nope.md' }),
       /Nope\.md: no such file\./);
+
+    await assert.rejects(
+      execLinks(
+        io,
+        { file: 'notes.md' }),
+      /notes\.md: not a requirement or evidence/);
   });
 
 test(
@@ -191,7 +197,7 @@ test(
         kind: 'requirement',
         title: 'RQ1 Root',
         body:
-          'The tool works.\n\n- [RQ2 Part](<RQ2 Part.md>)\n- [EV1 Passes](evidence/EV1%20Passes.md#steps)\n- [Website](https://example.com/page.md)',
+          'The tool works. See the [website](https://example.com/page.md) and the\n[notes](notes.md).',
         links:
           [ 'reqs/RQ2 Part.md',
             'reqs/evidence/EV1 Passes.md' ],

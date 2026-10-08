@@ -3,9 +3,11 @@
 Use when: writing a requirement, decomposing one into smaller requirements, or
 writing the evidence that shows a requirement holds.
 
-The formats are in [Requirements][RM]. Requirements and evidence are nodes of
-one graph. A requirement nothing links to is a root; every other node is linked
-from at least one requirement.
+The formats are in [Requirements][RM]. Requirements (`RQ<n> <name>.md`) and
+evidence (`EV<n> <name>.md`) are the nodes of one graph, and the links in each
+requirement's `## Implementation` list are its edges. A requirement nothing
+links to is a root; every other node is linked from at least one requirement.
+Other documents, and links in a statement, are references the graph ignores.
 
 ## Text and structure
 

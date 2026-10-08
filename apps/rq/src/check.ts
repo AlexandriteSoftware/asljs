@@ -91,7 +91,7 @@ export function checkDocument(
 
   if (
     node.kind === 'requirement'
-    && node.links.length === 0
+    && node.implementation.length === 0
   ) {
     problems.push(
       'links to no requirement or evidence.');
@@ -103,6 +103,14 @@ export function checkDocument(
   ) {
     problems.push(
       'the Steps section has no commands.');
+  }
+
+  if (
+    node.kind === 'requirement'
+    && node.steps.length > 0
+  ) {
+    problems.push(
+      'a requirement has steps; only evidence is run.');
   }
 
   const definitions = new Map<string, string>();
@@ -244,5 +252,11 @@ function countLabel(
       node => node.kind === 'evidence')
     .length;
 
-  return `${nodes.length - evidence} requirements, ${evidence} evidence`;
+  const requirements = nodes.length - evidence;
+
+  return `${requirements} ${
+    requirements === 1
+      ? 'requirement'
+      : 'requirements'
+  }, ${evidence} evidence`;
 }

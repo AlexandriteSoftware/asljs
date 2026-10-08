@@ -25,7 +25,7 @@ export function toMermaid(
                `n${index}` ]));
 
   const lines =
-    [ 'graph TD' ];
+    [ 'graph LR' ];
 
   for (const [file, node] of graph.nodes) {
     const label =

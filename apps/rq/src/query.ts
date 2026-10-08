@@ -4,7 +4,8 @@ import path
   from 'node:path';
 import { LogEntry }
   from './document.js';
-import { loadGraph,
+import { getNodeKind,
+         loadGraph,
          readNode,
          RqNode }
   from './graph.js';
@@ -21,7 +22,7 @@ import { findBacklinks,
 export interface NodeSummary
 {
   path: string;
-  kind: 'requirement' | 'evidence' | 'missing';
+  kind: 'requirement' | 'evidence' | 'other' | 'missing';
   title: string | null;
 
   /**
@@ -191,8 +192,8 @@ export async function execToJson(
 }
 
 /**
- * Reads a document given relative to the working directory; an error when it
- * is not a file.
+ * Reads a requirement or evidence given relative to the working directory; an
+ * error when it is not a file or not named as one.
  */
 export async function readExisting(
     io: Io,
@@ -207,6 +208,14 @@ export async function readExisting(
   if (!await isFile(filePath)) {
     throw new Error(
       `${file}: no such file.`);
+  }
+
+  if (
+    getNodeKind(filePath)
+    === null
+  ) {
+    throw new Error(
+      `${file}: not a requirement or evidence; the file name must start with RQ<n> or EV<n>.`);
   }
 
   return await readNode(filePath);
@@ -243,7 +252,9 @@ function summarize(
              display(
                io,
                node.path),
-           kind: node.kind,
+           kind:
+             node.kind
+      ?? 'other',
            title: node.title,
            status:
              node.kind === 'evidence'

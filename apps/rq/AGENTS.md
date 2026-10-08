@@ -16,12 +16,15 @@ Its `skills/` tell an AI agent how to write and update requirements.
   verify.md` and `docs/rq view.md`
 - text (statements, descriptions, steps) is edited directly; structure (links,
   `## Implementation` items, `## Log` entries, files) only through the commands
-- a document with a `## Steps` section is an evidence; any other is a
-  requirement
-- every link and link definition from a requirement to a local `.md` file is an
-  edge; links in an evidence are not
-- a file path is the only root; a folder's roots are the documents no other
-  document of the folder links to, and there may be several
+- the file name is the kind (`getNodeKind`): `RQ<n> <name>.md` a requirement,
+  `EV<n> <name>.md` an evidence; any other document is not a node and is ignored
+  by the graph, though `remove` and `move` still fix links in it
+- edges are only the links in a requirement's `## Implementation` list,
+  reference links included (`RqDocument.implementation`); `links` holds every
+  local `.md` link, for rewriting
+- a file path is the only root; a folder's roots are the requirements no other
+  requirement links to, and there may be several
+- the diagram is `graph LR`
 - the change commands only write links into `## Implementation`, but remove and
   rewrite links anywhere; `remove`, `move`, `backlinks` and the id of `add` look
   at every `.md` file under `--in`, the working directory by default

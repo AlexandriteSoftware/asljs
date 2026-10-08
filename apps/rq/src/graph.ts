@@ -8,8 +8,11 @@ import { parseDocument,
          RqDocument }
   from './document.js';
 
+export type NodeKind = 'requirement' | 'evidence';
+
 /**
- * A requirement or an evidence document.
+ * A markdown document: a requirement, an evidence, or, in a scope, any other
+ * document.
  */
 export interface RqNode extends RqDocument
 {
@@ -19,10 +22,40 @@ export interface RqNode extends RqDocument
   path: string;
 
   /**
-   * Absolute paths of the nodes this one is implemented by; empty for
-   * evidence.
+   * From the file name: `RQ<n>` for a requirement, `EV<n>` for an evidence;
+   * `null` for any other document.
+   */
+  kind: NodeKind | null;
+
+  /**
+   * Absolute paths of the documents the `## Implementation` list of a
+   * requirement links to; empty for any other document.
    */
   children: string[];
+}
+
+const NODE_FILE_NAME =
+  /^(RQ|EV)\d+(?:\s.*)?\.md$/;
+
+/**
+ * The kind of document a file name says: `RQ<n> <name>.md` is a requirement,
+ * `EV<n> <name>.md` an evidence; `null` for any other name.
+ */
+export function getNodeKind(
+    file: string
+  ): NodeKind | null
+{
+  const match =
+    NODE_FILE_NAME.exec(
+      path.basename(file));
+
+  if (!match) {
+    return null;
+  }
+
+  return match[1] === 'RQ'
+    ? 'requirement'
+    : 'evidence';
 }
 
 /**
@@ -54,9 +87,9 @@ export interface RqGraph
 }
 
 /**
- * Loads the graph for a requirement file, which is its only root, or for a
- * folder, whose roots are the markdown documents no other document of the
- * folder links to.
+ * Loads the graph for a requirement or evidence file, which is its only root,
+ * or for a folder, whose roots are the requirements of the folder no other
+ * requirement links to. Documents that are neither are ignored.
  */
 export async function loadGraph(
     target: string
@@ -76,6 +109,14 @@ export async function loadGraph(
     const root =
       path.resolve(target);
 
+    if (
+      getNodeKind(root)
+      === null
+    ) {
+      throw new Error(
+        `${target}: not a requirement or evidence; the file name must start with RQ<n> or EV<n>.`);
+    }
+
     return await walk(
       path.dirname(root),
       [ root ],
@@ -86,7 +127,9 @@ export async function loadGraph(
     path.resolve(target);
 
   const files =
-    await findMarkdownFiles(folder);
+    (await findMarkdownFiles(folder))
+    .filter(
+      file => getNodeKind(file) !== null);
 
   const documents = new Map<string, RqNode>();
 
@@ -104,7 +147,9 @@ export async function loadGraph(
 
   const roots =
     files.filter(
-      file => !linked.has(file));
+      file =>
+      !linked.has(file)
+      && getNodeKind(file) === 'requirement');
 
   if (
     roots.length === 0
@@ -114,7 +159,7 @@ export async function loadGraph(
              roots: [ ],
              nodes: new Map(),
              errors:
-               [ `${folder}: no document is a root; every document is linked from another.` ] };
+               [ `${folder}: no requirement is a root; every requirement is linked from another.` ] };
   }
 
   const graph =
@@ -184,7 +229,14 @@ async function walk(
     const existing: string[] = [ ];
 
     for (const child of node.children) {
-      if (await isFile(child)) {
+      const problem =
+        !await isFile(child)
+        ? 'points at no file'
+        : getNodeKind(child) === null
+        ? 'is not a requirement or evidence'
+        : null;
+
+      if (problem === null) {
         existing.push(child);
         queue.push(child);
       } else {
@@ -197,7 +249,7 @@ async function walk(
             display(
               graph,
               child)
-          } points at no file.`);
+          } ${problem}.`);
       }
     }
 
@@ -222,16 +274,20 @@ export async function readNode(
         file,
         'utf8'));
 
+  const kind =
+    getNodeKind(file);
+
   return { ...document,
            path: file,
+           kind,
            children:
-             document.kind === 'evidence'
-      ? [ ]
-      : document.links.map(
+             kind === 'requirement'
+      ? document.implementation.map(
         link =>
           path.resolve(
             path.dirname(file),
-            link)) };
+            link))
+      : [ ] };
 }
 
 function findCycles(
