@@ -25,16 +25,20 @@ Any markdown document without a `## Steps` section.
 - Links with a scheme, e.g. `https:`, and links to other files are not edges.
 - A requirement that links to nothing fails verification: it is neither
   decomposed nor evidenced.
+- The text between the heading and the first section is its statement.
+- `## Implementation` - the list of links the [change commands][CH] write: one
+  item per link, `- [<title>](<path>)`. Links elsewhere are edges too, but the
+  commands only add links to this list.
 
 ```markdown
 # RQ1 Export
 
 The application exports a report as CSV and as PDF.
 
-- [RQ2 CSV export](<RQ2 CSV export.md>)
-- [EV1 PDF export][EV1]
+## Implementation
 
-[EV1]: <evidence/EV1 PDF export.md>
+- [RQ2 CSV export](<RQ2 CSV export.md>)
+- [EV1 PDF export](<evidence/EV1 PDF export.md>)
 ```
 
 ## Evidence
@@ -83,3 +87,19 @@ The commands take a path:
 - A link to a missing file.
 - A cycle.
 - In a folder, no root or several, and documents the root does not reach.
+
+[`rq check`][CK] also reports, per document, a missing level 1 heading, a
+requirement that links to nothing, an evidence without commands, an `##
+Implementation` item without a link to a `.md` file, anything but a list in `##
+Implementation` or `## Log`, a malformed log entry, and a log in a requirement.
+
+## Editing
+
+Text an author or an AI agent writes - a statement, a description, the steps,
+any other section - is edited directly. The structure is changed with the
+[commands][CH]: adding requirements and evidence, linking, unlinking, removing,
+moving and logging. They keep links valid, refuse cycles, and write the `##
+Implementation` and `## Log` lists in the format above.
+
+[CH]: <Changing the graph.md>
+[CK]: <rq check.md>

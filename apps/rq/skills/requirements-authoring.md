@@ -7,14 +7,25 @@ The formats are in [Requirements][RM]. Every requirement is a node of one graph
 with a single root, and every node except the root is linked from at least one
 requirement.
 
+## Text and structure
+
+- Edit text directly: the statement of a requirement, the description and the
+  `## Steps` of an evidence, and any section the commands do not own.
+- Change the structure only with the [commands][CG]: `rq add requirement`, `rq
+  add evidence`, `rq link`, `rq unlink`, `rq move`, `rq remove` and `rq log`. Do
+  not add, change or remove links to requirements or evidence, files, `##
+  Implementation` items or `## Log` entries by editing the text.
+- Read the structure with `rq links`, `rq backlinks`, `rq list` and `rq tojson`
+  rather than by searching the text; `--json` gives a stable shape.
+
 ## Writing a requirement
 
 1. State what must be true of the system, not how it is built. One idea per
    statement, each one checkable.
-2. Name the file `<id> <name>.md`, and make the level 1 heading the same text.
-   Keep the id scheme the folder already uses.
-3. Link it from the requirement it helps implement, so that it is reachable from
-   the root.
+2. Create it under the requirement it helps implement: `rq add requirement
+   <parent> "<name>" --statement "<statement>"`. The command picks the id, names
+   the file, and links it from the parent.
+3. Refine the statement by editing the text when it needs more than a line.
 
 ## Decomposing
 
@@ -24,28 +35,31 @@ show that it holds.
 1. List its statements.
 2. Group them into smaller requirements, each with a narrower scope; a statement
    may also be covered directly by evidence.
-3. Link each smaller requirement and evidence from the requirement.
-4. Check coverage: every statement is implemented by at least one link. A link
-   that implements no statement does not belong.
-5. Do not link back up: a child never links to an ancestor, or the graph gets a
-   cycle. Links in evidence are not edges, so evidence may refer to what it
-   supports.
+3. Create each with `rq add requirement` or `rq add evidence`, or link an
+   existing one with `rq link`.
+4. Check coverage: every statement is implemented by at least one link. Unlink
+   what implements no statement with `rq unlink`.
+5. `rq link` refuses a link back up the graph. Links in evidence are not edges,
+   so evidence may refer to what it supports.
 
 ## Writing evidence
 
-1. Describe in a sentence what the evidence shows.
-2. Add `## Steps` with a code block of commands. Each line runs on its own, in
-   the evidence's folder, so use paths relative to it or `cd` within the line.
+1. Create it: `rq add evidence <requirement> "<name>" --description "<what it
+   shows>" --step "<command>"`, one `--step` per command.
+2. Each step runs on its own, in the evidence's folder, so use paths relative to
+   it or `cd` within the line.
 3. Make the steps deterministic and reproducible: no network services, clocks or
    random data the steps do not control, and no manual actions. Prefer running
    an existing test filtered to the behavior, e.g. `npm test --
    --test-name-pattern="..."`.
-4. Leave `## Log` to `rq verify`; do not write entries by hand.
+4. `rq verify` logs every run. Record a result established another way with `rq
+   log <evidence> --status Passed|Failed --note "<how>"`.
 
 ## Checking
 
-Run `rq verify <path>` on the changed subtree, and `rq verify <path> --ai` when
-the decomposition changed, so that an agent checks coverage. Fix the structure
-errors and failures it reports before finishing.
+Run `rq check <path>` after every change, then `rq verify <path>` on the changed
+subtree, and `rq verify <path> --ai` when the decomposition changed, so that an
+agent checks coverage. Fix what they report before finishing.
 
+[CG]: <../docs/Changing the graph.md>
 [RM]: ../docs/Requirements.md

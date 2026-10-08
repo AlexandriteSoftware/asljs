@@ -2,8 +2,9 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { appendLogEntry,
-         parseDocument }
+import { formatLogEntry,
+         parseDocument,
+         parseLogEntry }
   from './document.js';
 
 test(
@@ -24,6 +25,8 @@ Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),
       document,
       { title: 'RQ1 Root',
         kind: 'requirement',
+        body:
+          'Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),\n[img](pic.png), [mail](mailto:a@b.md) and [ref][r]. [a again](<A b.md>)',
         links:
           [ 'A b.md',
             'sub/C d.md',
@@ -95,43 +98,41 @@ test(
   });
 
 test(
-  'appendLogEntry adds a Log section, then adds to its list',
+  'parseLogEntry reads an entry with a valid time',
   () =>
   {
-    const entry =
+    assert.deepEqual(
+      parseLogEntry(
+        ' 2026-01-01T00:00:00Z Passed - all good '),
       { time:
-          '2026-01-01T00:00:00.000Z',
-        status:
-          'Passed' as const,
-        note: 'two\nlines' };
-
-    const first =
-      appendLogEntry(
-        '# EV1\n\n## Steps\n\n```\nx\n```\n',
-        entry);
+          '2026-01-01T00:00:00Z',
+        status: 'Passed',
+        note: 'all good' });
 
     assert.equal(
-      first,
-      '# EV1\n\n## Steps\n\n```\nx\n```\n\n## Log\n\n- 2026-01-01T00:00:00.000Z Passed - two lines\n');
+      parseLogEntry('yesterday Passed'),
+      null);
 
     assert.equal(
-      appendLogEntry(
-        first,
-        { ...entry,
-          status: 'Failed',
-          note: '' }),
-      `${first}- 2026-01-01T00:00:00.000Z Failed\n`);
+      parseLogEntry('2026-01-01 Done'),
+      null);
   });
 
 test(
-  'appendLogEntry keeps the sections after the Log section',
+  'formatLogEntry writes the note on one line',
   () =>
   {
     assert.equal(
-      appendLogEntry(
-        '# EV1\n\n## Log\n\n## Notes\n\nText.\n',
+      formatLogEntry(
+        { time: 't',
+          status: 'Failed',
+          note: ' a\n b ' }),
+      't Failed - a b');
+
+    assert.equal(
+      formatLogEntry(
         { time: 't',
           status: 'Passed',
-          note: 'ok' }),
-      '# EV1\n\n## Log\n\n- t Passed - ok\n\n## Notes\n\nText.\n');
+          note: '' }),
+      't Passed');
   });

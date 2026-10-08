@@ -213,7 +213,10 @@ async function walk(
   return graph;
 }
 
-async function readNode(
+/**
+ * Reads a document as a node; its children are resolved but not checked.
+ */
+export async function readNode(
     file: string
   ): Promise<RqNode>
 {
@@ -300,7 +303,7 @@ async function isFile(
  * The `.md` files of a folder and its subfolders, sorted, skipping folders
  * whose name starts with `.` and `node_modules`.
  */
-async function findMarkdownFiles(
+export async function findMarkdownFiles(
     folder: string
   ): Promise<string[]>
 {

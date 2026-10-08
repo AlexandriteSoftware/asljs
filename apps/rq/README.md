@@ -19,13 +19,17 @@ The links form a directed graph with no cycles and a single root. A requirement
 holds when everything it links to holds, and its statements are fully covered by
 them.
 
-- `rq verify <path>` checks the graph, runs the evidence steps and logs each run
-  in the evidence file; with `--ai`, an AI agent checks that every requirement
-  is fully covered.
+- Commands add, link, unlink, move and remove requirements and evidence, and log
+  results, keeping every link valid and the graph free of cycles; others list a
+  requirement's links, its backlinks, or the whole graph as JSON.
+- `rq check <path>` checks the structure; `rq verify <path>` checks the graph,
+  runs the evidence steps and logs each run in the evidence file; with `--ai`,
+  an AI agent checks that every requirement is fully covered.
 - `rq view <path>` serves the graph as a clickable diagram, and each document
   rendered as HTML.
 - The [skills][SK] tell an AI agent how to decompose requirements, write
-  evidence, and update the related requirements after a change.
+  evidence, and update the related requirements after a change: it writes the
+  text, and changes the structure with the commands.
 
 ## Scope
 
@@ -45,40 +49,46 @@ npm install asljs-rq
 
 ## Usage
 
-A requirement, `requirements/RQ1 Export.md`:
+Build the graph with the commands, and write the statements, descriptions and
+steps as text:
+
+```bash
+npx rq add requirement "requirements/RQ1 Export.md" "CSV export"   --statement "The report exports as CSV."
+npx rq add evidence "requirements/RQ1 Export.md" "PDF export"   --description "The PDF export test produces a valid PDF."   --step 'npm test -- --test-name-pattern="PDF export"'
+```
+
+The parent, `requirements/RQ1 Export.md`, now lists them:
 
 ```markdown
 # RQ1 Export
 
 The application exports a report as CSV and as PDF.
 
+## Implementation
+
 - [RQ2 CSV export](<RQ2 CSV export.md>)
 - [EV1 PDF export](<evidence/EV1 PDF export.md>)
 ```
 
-An evidence, `requirements/evidence/EV1 PDF export.md`:
-
-````markdown
-# EV1 PDF export
-
-The PDF export test produces a valid PDF.
-
-## Steps
-
-```sh
-npm test -- --test-name-pattern="PDF export"
-```
-````
+Query the structure:
 
 ```bash
+npx rq links "requirements/RQ1 Export.md" --json
+npx rq backlinks "requirements/evidence/EV1 PDF export.md"
+npx rq tojson requirements
+```
+
+Check it, then run the evidence:
+
+```bash
+npx rq check requirements
 npx rq verify requirements
 ```
 
 ```text
-OK    RQ1 Export.md
-OK    RQ2 CSV export.md
+Fail  RQ1 Export.md - 1 of 2 links failed
+Fail  RQ2 CSV export.md - links to no requirement or evidence
 OK    evidence/EV1 PDF export.md - 1 step
-OK    evidence/EV2 CSV export.md - 1 step
 ```
 
 Each run is appended to the evidence's `## Log`:
@@ -89,6 +99,8 @@ Each run is appended to the evidence's `## Log`:
 - 2026-10-08T09:30:00.000Z Passed - 1 step
 ```
 
+Browse the graph and the documents:
+
 ```bash
 npx rq view requirements --port 8080
 ```
@@ -97,7 +109,10 @@ npx rq view requirements --port 8080
 
 - [Requirements][RM] - the requirement and evidence formats, and how the graph
   is built.
-- [rq verify][VF] and [rq view][VW] - the commands.
+- [Querying the graph][QG] and [Changing the graph][CG] - the structural
+  commands.
+- [rq check][CK], [rq verify][VF] and [rq view][VW] - checking, verifying and
+  viewing.
 - [Skills][SK] - the AI skills for managing requirements.
 
 Questions and bugs: [asljs/issues][IS].
@@ -111,7 +126,10 @@ Questions and bugs: [asljs/issues][IS].
 MIT
 
 [#1]: https://github.com/AlexandriteSoftware/asljs
+[CG]: <docs/Changing the graph.md>
+[CK]: <docs/rq check.md>
 [IS]: https://github.com/AlexandriteSoftware/asljs/issues
+[QG]: <docs/Querying the graph.md>
 [RM]: docs/Requirements.md
 [SK]: skills
 [VF]: <docs/rq verify.md>

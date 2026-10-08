@@ -3,9 +3,10 @@ import { readFile,
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { appendLogEntry,
-         LogEntry }
+import { LogEntry }
   from './document.js';
+import { appendLogEntry }
+  from './edit.js';
 import { RqNode }
   from './graph.js';
 import { runCommand }
