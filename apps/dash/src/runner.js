@@ -22,6 +22,7 @@ const readJobs = () =>
     key: counter.key,
     project: counter.project,
     cron: counter.cron,
+    startup: counter.startup,
     command: counter.command,
     cwd: counter.cwd
   }));
@@ -87,9 +88,12 @@ const run = job =>
     });
   });
 
-const tick = async (jobs, date) =>
+/** Runs the jobs due at `date`, and on the first tick also those marked `startup`. */
+const tick = async (jobs, date, first = false) =>
 {
-  const due = jobs.filter(job => cron.matches(job.cron, date));
+  const due = jobs.filter(job =>
+    (first && job.startup) || cron.matches(job.cron, date)
+  );
 
   await Promise.all(due.map(async job =>
   {
@@ -166,7 +170,8 @@ const start = async ({ url, once = false } = {}) =>
     }, delay);
   };
 
-  tick(jobs, new Date()); // run what is due right now, so a restart fills the page
+  // Run what is due right now and what runs at startup, so a restart fills the page.
+  tick(jobs, new Date(), true);
   schedule();
 };
 

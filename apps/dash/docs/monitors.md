@@ -48,6 +48,9 @@ One entry in the project config's `counters`, under the key it feeds:
 - `command` is a command line, handed to the shell as one string. Quoting is the
   config author's business, as in any crontab. It runs with the config file's
   own directory as its working directory, so a relative path is project-local.
+- `startup` is optional. `true` also runs the counter once when the runner
+  starts, whatever its schedule says, so a rare schedule such as `0 6 * * *`
+  still fills its card after a restart. It needs `schedule` and `command`.
 - `samples` is optional; without it the key gets the project's default policy.
 - `schedule` and `command` go together. A counter with neither is a key nothing
   runs for, which is how a value you push in by hand gets a policy of its own.
@@ -89,7 +92,7 @@ One file each in `renderers/`, picked by a card's `render`:
 - `list` — rows from a JSON array. `params`: `fields`, `limit`, `empty`.
 - `status` — a status word plus message, coloured `ok`, `warn` or `error` from a
   `status` field or a bare string. `params`: `labels`.
-- `table` — a JSON array as columns. `params`: `columns`.
+- `table` — a JSON array as columns. `params`: `columns`, `limit`, `empty`.
 - `git` — a git working folder: branch and commit, its position against the
   remote, and what is uncommitted. `params`: `empty`.
 
@@ -113,17 +116,35 @@ all:
 }
 ```
 
-It prints one object: `status`, `branch`, `commit` (short), `upstream`, `ahead`,
-`behind`, `pushed`, `dirty`, `staged`, `changed`, `untracked`, `conflicted` and
-a one-line `message`.
+It prints one object with these fields:
 
-- `staged` counts entries with an index change, `changed` those with a worktree
-  change; a file that is both counts in both.
-- `pushed` is true when the branch has an upstream and is not ahead of it.
-- `status` is `error` on a conflict, `warn` when the folder is dirty, behind, or
-  has nothing to push to, and `ok` otherwise.
-- The path not being a repository is a non-zero exit, so the runner records no
-  sample and logs `git`'s own message.
+- `status` — `error` when something is conflicted, `warn` when the folder is
+  dirty, behind, or not pushed, and `ok` otherwise.
+- `branch` — the checked-out branch, `(detached)` when HEAD is detached.
+- `commit` — the first 7 characters of the HEAD commit id, empty before the
+  first commit.
+- `upstream` — the branch it tracks, such as `origin/main`, empty when it tracks
+  none.
+- `ahead` — commits on the branch that the upstream does not have, that is,
+  commits to push. 0 without an upstream.
+- `behind` — commits on the upstream that the branch does not have, that is,
+  commits to pull. 0 without an upstream.
+- `pushed` — true when there is an upstream and nothing to push. Uncommitted
+  changes do not count; that is `dirty`.
+- `dirty` — true when any of `staged`, `changed`, `untracked` or `conflicted` is
+  not zero.
+- `staged` — tracked files with a change in the index, ready to commit.
+- `changed` — tracked files with a change in the working tree not yet staged. A
+  file changed again after staging counts in both `staged` and `changed`.
+- `untracked` — entries git neither tracks nor ignores. A new folder counts
+  once, however many files it holds.
+- `conflicted` — files with an unresolved merge conflict.
+- `message` — the branch, the commit, then the non-zero counts, `ahead` and
+  `behind`, and `no upstream`, such as `main 1a2b3c4 2 changed, ahead 1`; the
+  last part is `clean` when there is nothing to report.
+
+The path not being a repository is a non-zero exit, so the runner records no
+sample and logs `git`'s own message.
 
 Two renderers read it. `git` draws the full card — branch, commit with a
 trailing `+` when dirty, the remote position, and a row per kind of pending

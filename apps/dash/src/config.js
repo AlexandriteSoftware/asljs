@@ -7,7 +7,8 @@
 //       "db": "dash.sqlite",
 //       "samples": "database, 90*24h, 100k, 100Mb",
 //       "counters": {
-//         "asljs.git": { "schedule": "*/2 * * * *", "command": "pwsh -File a.ps1" }
+//         "asljs.git": { "schedule": "*/2 * * * *", "command": "pwsh -File a.ps1",
+//                        "startup": true }
 //       },
 //       "tabs": [{ "tab": "asljs", "label": "ASLJS", "cards": [] }]
 //     }
@@ -96,6 +97,15 @@ const readCounters = (raw, project, dir, file, errors) =>
       continue;
     }
 
+    if (entry.startup !== undefined && typeof entry.startup !== 'boolean') {
+      errors.push(`${file}: counter ${key}: startup must be true or false`);
+      continue;
+    }
+    if (entry.startup && !hasCommand) {
+      errors.push(`${file}: counter ${key}: startup needs a schedule and command`);
+      continue;
+    }
+
     let policy = null;
     if (entry.samples !== undefined) {
       try {
@@ -125,6 +135,8 @@ const readCounters = (raw, project, dir, file, errors) =>
       project,
       schedule: schedule?.text ?? null,
       cron: schedule?.cron ?? null,
+      // Also run once when the runner starts, whatever the schedule says.
+      startup: entry.startup === true,
       command: hasCommand
         ? entry.command.trim()
         : null,

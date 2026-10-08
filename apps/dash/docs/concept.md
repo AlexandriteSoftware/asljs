@@ -200,6 +200,8 @@ Rules:
     for: it exists to carry a `samples` policy for a value pushed in by hand.
   - The command runs with the config file's own directory as its working
     directory, so a relative path is project-local.
+  - `"startup": true` also runs the counter once when the runner starts, on top
+    of its schedule, so a daily counter fills its card after a restart.
 - `runner.js` reads the same configs as the server, runs commands on schedule,
   and puts stdout to the counter's key.
   - Separate process from the web server, restartable independently. For the
@@ -346,7 +348,7 @@ Geometry is smart: only what you care about is written down.
   `max`.
 - `list` — rows from a JSON array. `params`: `fields`, `limit`, `empty`.
 - `status` — status word plus message, coloured by `status`. `params`: `labels`.
-- `table` — a JSON array as columns. `params`: `columns`.
+- `table` — a JSON array as columns. `params`: `columns`, `limit`, `empty`.
 - `git` — a git working folder: branch, commit, remote position and what is
   uncommitted. `params`: `empty`.
 

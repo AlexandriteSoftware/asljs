@@ -23,6 +23,16 @@
       "schedule": "*/10 * * * *",
       "command": "pwsh -NoProfile -File agents/uptime.ps1"
     },
+    "network": {
+      "schedule": "0 * * * *",
+      "startup": true,
+      "command": "pwsh -NoProfile -File agents/network.ps1"
+    },
+    "windows.updates": {
+      "schedule": "0 6 * * *",
+      "startup": true,
+      "command": "pwsh -NoProfile -File agents/windows.updates.ps1"
+    },
     "notes": { "samples": "database, 365*24h, 1k, 1Mb" }
   },
 
@@ -79,6 +89,29 @@
           "width": 5,
           "height": 4,
           "params": { "field": "days", "unit": "d", "precision": 1 }
+        },
+        {
+          "key": "network",
+          "label": "Network",
+          "render": "table",
+          "width": 13,
+          "height": 5,
+          "params": {
+            "columns": [
+              { "field": "label", "label": "Interface" },
+              { "field": "ip", "label": "IP" },
+              { "field": "gateway", "label": "Gateway" }
+            ],
+            "empty": "no active interface"
+          }
+        },
+        {
+          "key": "windows.updates",
+          "label": "Windows updates",
+          "render": "list",
+          "width": 13,
+          "height": 6,
+          "params": { "fields": ["label", "kb"], "limit": 8, "empty": "up to date" }
         }
       ]
     },
