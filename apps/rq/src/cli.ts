@@ -55,7 +55,7 @@ export async function runCli(
       'Verify a requirement and everything it is implemented by: structure, evidence steps and, with --ai, coverage')
     .argument(
       '<path>',
-      'A requirement file, or a folder whose root requirement is verified')
+      'A requirement file, or a folder whose roots are verified')
     .option(
       '--ai [agent]',
       `Check with an AI agent that each requirement is fully covered: ${
@@ -128,7 +128,7 @@ export async function runCli(
 
   cli.command('list')
     .description(
-      'List the requirements and evidence of the graph, from the root down')
+      'List the requirements and evidence of the graph, from the roots down')
     .argument(
       '<path>',
       'A requirement file, or a folder of requirements')

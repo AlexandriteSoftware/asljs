@@ -29,7 +29,7 @@ test(
       await loadGraph(
         dir.resolve('reqs'));
 
-    graph.nodes.get(graph.root)!.title = 'RQ1 "Root"';
+    graph.nodes.get(graph.roots[0])!.title = 'RQ1 "Root"';
 
     assert.equal(
       toMermaid(

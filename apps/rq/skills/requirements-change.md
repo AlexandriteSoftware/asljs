@@ -36,7 +36,7 @@ For the changed requirement:
 
 ## Verify
 
-Run `rq check` and then `rq verify <path> --ai` on the root, or on the highest
+Run `rq check` and then `rq verify <path> --ai` on the roots, or on the highest
 requirement that changed. Every structure error, failed evidence and uncovered
 statement is a remaining inconsistency; fix it or report it with the reason.
 

@@ -177,9 +177,9 @@ test(
       JSON.parse(
         io.out());
 
-    assert.equal(
-      json.root,
-      'reqs/RQ1 Root.md');
+    assert.deepEqual(
+      json.roots,
+      [ 'reqs/RQ1 Root.md' ]);
 
     assert.deepEqual(
       json.errors,

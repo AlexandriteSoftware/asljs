@@ -15,9 +15,9 @@ requirements and evidence that implement it. An evidence is a markdown file with
 steps that show a requirement holds: deterministic, reproducible commands, and a
 log of their runs.
 
-The links form a directed graph with no cycles and a single root. A requirement
-holds when everything it links to holds, and its statements are fully covered by
-them.
+The links form a directed graph with no cycles; a requirement nothing links to
+is a root, and there may be several. A requirement holds when everything it
+links to holds, and its statements are fully covered by them.
 
 - Commands add, link, unlink, move and remove requirements and evidence, and log
   results, keeping every link valid and the graph free of cycles; others list a

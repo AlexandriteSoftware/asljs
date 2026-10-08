@@ -38,7 +38,7 @@ export interface QueryOptions
 
 /**
  * Prints every node of the graph of a requirement file or folder, in
- * breadth-first order from the root. Structure errors go to standard error.
+ * breadth-first order from the roots. Structure errors go to standard error.
  */
 export async function execList(
     io: Io,
@@ -142,7 +142,7 @@ export async function execBacklinks(
 }
 
 /**
- * Prints the graph as JSON: the root, the structure errors, and every node
+ * Prints the graph as JSON: the roots, the structure errors, and every node
  * with its structural fields.
  */
 export async function execToJson(
@@ -159,12 +159,12 @@ export async function execToJson(
   io.stdout.write(
     `${
       JSON.stringify(
-        { root:
-            graph.root === ''
-            ? null
-            : display(
-              io,
-              graph.root),
+        { roots:
+            graph.roots.map(
+              root =>
+              display(
+                io,
+                root)),
           errors: graph.errors,
           nodes:
             [ ...graph.nodes.values() ].map(

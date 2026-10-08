@@ -26,7 +26,7 @@ export interface RqNode extends RqDocument
 }
 
 /**
- * The requirements graph reachable from a root.
+ * The requirements graph reachable from its roots.
  */
 export interface RqGraph
 {
@@ -36,24 +36,27 @@ export interface RqGraph
    */
   folder: string;
 
-  root: string;
+  /**
+   * Absolute paths of the roots, sorted; empty when a folder has none.
+   */
+  roots: string[];
 
   /**
-   * The nodes in breadth-first order from the root.
+   * The nodes in breadth-first order from the roots.
    */
   nodes: Map<string, RqNode>;
 
   /**
-   * Structure problems: broken links, cycles, a missing or ambiguous root,
-   * and documents of the folder the root does not reach.
+   * Structure problems: broken links, cycles, a folder without a root, and
+   * documents of the folder no root reaches.
    */
   errors: string[];
 }
 
 /**
- * Loads the graph for a requirement file, which is its root, or for a folder,
- * whose root is the one markdown document no other document of the folder
- * links to.
+ * Loads the graph for a requirement file, which is its only root, or for a
+ * folder, whose roots are the markdown documents no other document of the
+ * folder links to.
  */
 export async function loadGraph(
     target: string
@@ -75,7 +78,7 @@ export async function loadGraph(
 
     return await walk(
       path.dirname(root),
-      root,
+      [ root ],
       [ ]);
   }
 
@@ -103,28 +106,21 @@ export async function loadGraph(
     files.filter(
       file => !linked.has(file));
 
-  if (roots.length !== 1) {
+  if (
+    roots.length === 0
+    && files.length > 0
+  ) {
     return { folder,
-             root: '',
+             roots: [ ],
              nodes: new Map(),
              errors:
-               [ roots.length === 0
-          ? `${folder}: no document is the root; every document is linked from another.`
-          : `${folder}: several documents are not linked from any other, so the root is ambiguous: ${
-            roots
-              .map(
-                file =>
-                  path.relative(
-                    folder,
-                    file))
-              .join(', ')
-          }.` ] };
+               [ `${folder}: no document is a root; every document is linked from another.` ] };
   }
 
   const graph =
     await walk(
       folder,
-      roots[0],
+      roots,
       [ ]);
 
   for (const file of files) {
@@ -134,7 +130,7 @@ export async function loadGraph(
           display(
             graph,
             file)
-        }: not reachable from the root.`);
+        }: not reachable from any root.`);
     }
   }
 
@@ -158,18 +154,18 @@ export function display(
 
 async function walk(
     folder: string,
-    root: string,
+    roots: string[],
     errors: string[]
   ): Promise<RqGraph>
 {
   const graph: RqGraph =
     { folder,
-      root,
+      roots,
       nodes: new Map(),
       errors };
 
   const queue =
-    [ root ];
+    [ ...roots ];
 
   while (queue.length > 0) {
     const file = queue.shift()!;
@@ -289,7 +285,11 @@ function findCycles(
       'done');
   };
 
-  visit(graph.root);
+  for (const root of graph.roots) {
+    if (!state.has(root)) {
+      visit(root);
+    }
+  }
 }
 
 async function isFile(

@@ -20,8 +20,8 @@ Its `skills/` tell an AI agent how to write and update requirements.
   requirement
 - every link and link definition from a requirement to a local `.md` file is an
   edge; links in an evidence are not
-- a file path is the root; a folder's root is the one document no other document
-  of the folder links to
+- a file path is the only root; a folder's roots are the documents no other
+  document of the folder links to, and there may be several
 - the change commands only write links into `## Implementation`, but remove and
   rewrite links anywhere; `remove`, `move`, `backlinks` and the id of `add` look
   at every `.md` file under `--in`, the working directory by default
@@ -43,7 +43,7 @@ Its `skills/` tell an AI agent how to write and update requirements.
 - `src/query.ts` - `list`, `links`, `backlinks`, `tojson`
 - `src/change.ts` - `add`, `link`, `unlink`, `remove`, `move`, `log`
 - `src/check.ts` - `check`
-- `src/graph.ts` - finds the root, walks the links, reports structure errors
+- `src/graph.ts` - finds the roots, walks the links, reports structure errors
 - `src/evidence.ts` - runs the steps and logs the run
 - `src/coverage.ts` - the AI coverage check
 - `src/verify.ts`, `src/view.ts` - the commands; `src/cli.ts` wires them

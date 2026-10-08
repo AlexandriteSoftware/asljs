@@ -226,10 +226,17 @@ test(
         io),
       0);
 
-    assert.equal(
-      await runCli(
-        [ 'check',
-          'reqs' ],
-        io),
-      1);
+    const json =
+      createTestIo(dir.path);
+
+    await runCli(
+      [ 'tojson',
+        'reqs' ],
+      json);
+
+    assert.deepEqual(
+      JSON.parse(
+        json.out()).roots,
+      [ 'reqs/RQ1 Root.md',
+        'reqs/RQ2 Part.md' ]);
   });

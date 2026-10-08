@@ -94,8 +94,8 @@ export async function execVerify(
     return result;
   };
 
-  if (graph.root !== '') {
-    await verify(graph.root);
+  for (const root of graph.roots) {
+    await verify(root);
   }
 
   let failed = graph.errors.length > 0;

@@ -229,11 +229,10 @@ function renderIndex(
       : `/${encodeURI(relative)}`;
   };
 
-  const root =
-    graph.nodes.get(graph.root);
-
   const title =
-    root?.title
+    (graph.roots.length === 1
+    ? graph.nodes.get(graph.roots[0])?.title
+    : null)
     ?? 'Requirements';
 
   const items =

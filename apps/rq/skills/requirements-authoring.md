@@ -3,9 +3,9 @@
 Use when: writing a requirement, decomposing one into smaller requirements, or
 writing the evidence that shows a requirement holds.
 
-The formats are in [Requirements][RM]. Every requirement is a node of one graph
-with a single root, and every node except the root is linked from at least one
-requirement.
+The formats are in [Requirements][RM]. Requirements and evidence are nodes of
+one graph. A requirement nothing links to is a root; every other node is linked
+from at least one requirement.
 
 ## Text and structure
 

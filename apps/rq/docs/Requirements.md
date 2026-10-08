@@ -7,7 +7,8 @@ How `rq` reads requirements and evidence, and how it builds the graph from them.
 The model is a directed graph. Its nodes are markdown documents, each either a
 requirement or an evidence. An edge from a requirement to another node says the
 requirement is implemented by implementing that requirement or by providing that
-evidence. The graph has a single root and no cycles.
+evidence. The graph has no cycles. A root is a node nothing links to; a graph
+may have several, e.g. one per product area.
 
 A requirement is fully covered when every statement it makes is implemented by
 at least one of the nodes it links to. A requirement holds when it is fully
@@ -77,16 +78,17 @@ npm test -- --test-name-pattern="PDF export"
 
 The commands take a path:
 
-- a file is the root; the graph is what it reaches through its links;
-- a folder's root is the one `.md` document of the folder and its subfolders
-  that no other of them links to. Folders whose name starts with `.` and
-  `node_modules` are skipped.
+- a file is the only root; the graph is what it reaches through its links;
+- a folder's roots are the `.md` documents of the folder and its subfolders that
+  no other of them links to; the graph is what they reach. Folders whose name
+  starts with `.` and `node_modules` are skipped.
 
 ## Structure errors
 
 - A link to a missing file.
 - A cycle.
-- In a folder, no root or several, and documents the root does not reach.
+- In a folder, no root, and documents no root reaches: both happen only when
+  documents link to each other in a cycle.
 
 [`rq check`][CK] also reports, per document, a missing level 1 heading, a
 requirement that links to nothing, an evidence without commands, an `##

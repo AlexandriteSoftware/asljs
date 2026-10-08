@@ -24,7 +24,7 @@ rq list <path> [--json]
 ```
 
 Every document of the graph of a requirement file or folder, in breadth-first
-order from the root. Structure errors are written to standard error.
+order from the roots. Structure errors are written to standard error.
 
 ## rq links
 
@@ -52,8 +52,8 @@ rq tojson <path>
 
 The graph as JSON:
 
-- `root` - the root's path, or `null` when the folder has none or several;
+- `roots` - the paths of the roots, empty when a folder has none;
 - `errors` - the structure errors;
-- `nodes` - every document, from the root down, with `path`, `kind`, `title`,
+- `nodes` - every document, from the roots down, with `path`, `kind`, `title`,
   `body` (the statement or description), `links` (the paths it links to),
   `steps` and `log` (`{ time, status, note }` items).

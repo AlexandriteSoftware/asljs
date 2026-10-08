@@ -52,7 +52,7 @@ test(
         dir.resolve('reqs'));
 
     const root =
-      graph.nodes.get(graph.root)!;
+      graph.nodes.get(graph.roots[0])!;
 
     assert.deepEqual(
       await checkCoverage(
@@ -112,7 +112,7 @@ test(
 
     await checkCoverage(
       graph,
-      graph.nodes.get(graph.root)!,
+      graph.nodes.get(graph.roots[0])!,
       await writeAgent(
         dir,
         '{"result":"OK"}'));

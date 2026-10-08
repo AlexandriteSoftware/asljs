@@ -41,11 +41,13 @@ test(
       await loadGraph(
         dir.resolve('reqs'));
 
-    assert.equal(
-      display(
-        graph,
-        graph.root),
-      'RQ1 Root.md');
+    assert.deepEqual(
+      graph.roots.map(
+        root =>
+          display(
+            graph,
+            root)),
+      [ 'RQ1 Root.md' ]);
 
     assert.deepEqual(
       shape(graph),
@@ -131,12 +133,12 @@ test(
         dir.resolve('reqs'))).errors,
       [ 'A.md: the link to Missing.md points at no file.',
         'cycle: B.md -> C.md -> B.md.',
-        'F.md: not reachable from the root.',
-        'F2.md: not reachable from the root.' ]);
+        'F.md: not reachable from any root.',
+        'F2.md: not reachable from any root.' ]);
   });
 
 test(
-  'loadGraph needs exactly one root in a folder',
+  'loadGraph takes every unlinked document of a folder as a root',
   async () =>
   {
     await using dir =
@@ -144,23 +146,31 @@ test(
 
     await dir.writeText(
       'reqs/A.md',
-      '# A\n');
+      '# A\n\n[C](C.md)\n');
 
     await dir.writeText(
       'reqs/B.md',
-      '# B\n');
+      '# B\n\n[C](C.md)\n');
+
+    await dir.writeText(
+      'reqs/C.md',
+      '# C\n');
 
     const graph =
       await loadGraph(
         dir.resolve('reqs'));
 
-    assert.equal(
-      graph.nodes.size,
-      0);
+    assert.deepEqual(
+      shape(graph),
+      { 'A.md':
+          [ 'C.md' ],
+        'B.md':
+          [ 'C.md' ],
+        'C.md': [ ] });
 
-    assert.match(
-      graph.errors[0],
-      /several documents are not linked from any other, so the root is ambiguous: A\.md, B\.md\./);
+    assert.deepEqual(
+      graph.errors,
+      [ ]);
 
     await dir.writeText(
       'reqs/A.md',
@@ -168,12 +178,16 @@ test(
 
     await dir.writeText(
       'reqs/B.md',
-      '# B\n\n[A](A.md)\n');
+      '# B\n\n[C](C.md)\n');
+
+    await dir.writeText(
+      'reqs/C.md',
+      '# C\n\n[A](A.md)\n');
 
     assert.match(
       (await loadGraph(
         dir.resolve('reqs'))).errors[0],
-      /no document is the root/);
+      /no document is a root; every document is linked from another\./);
 
     await assert.rejects(
       loadGraph(

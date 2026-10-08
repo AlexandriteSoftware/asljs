@@ -8,9 +8,9 @@ rq verify <path> [--ai [claude|copilot]]
 ```
 
 `<path>` is a requirement file or a folder, relative to the working directory;
-see [Requirements][RM] for how the root is found.
+see [Requirements][RM] for how the roots are found.
 
-For each node, from the root down:
+For each node, from the roots down:
 
 - an evidence: its steps are run and the run is appended to its `## Log`. It
   passes when every step exits with code 0;
@@ -25,7 +25,7 @@ Fail  evidence/EV2 CSV export.md - step 1 exited with code 1: 1 test failed
 Error  RQ2 CSV export.md: the link to RQ3.md points at no file.
 ```
 
-One line per node, in breadth-first order from the root, then one `Error` line
+One line per node, in breadth-first order from the roots, then one `Error` line
 per structure error. A node is run once, however many requirements link to it.
 
 ## Options
