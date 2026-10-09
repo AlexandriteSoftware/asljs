@@ -56,10 +56,12 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "asljs-logging": "^0.1.2",
     "asljs-mdcli": "^0.1.0",
     "commander": "^15.0.0"
   },
   "devDependencies": {
+    "asljs-testing": "^0.1.0",
     "asljs-tmpdir": "^0.1.13",
     "asljs-toolkit": "^0.1.0"
   }

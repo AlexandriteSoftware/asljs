@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { readFile,
          stat,
          writeFile }
@@ -27,6 +30,12 @@ export interface PostProcessIo
 {
   cwd: string;
   stderr: { write(text: string): unknown; };
+
+  /**
+   * Where the command line and its exit code are logged; nothing is logged
+   * when absent.
+   */
+  logger?: Logger;
 }
 
 const written = new Set<string>();
@@ -190,6 +199,14 @@ export async function postProcess(
             .join('/'))) ]
     .join(' ');
 
+  const logger =
+    io.logger ?? new NullLogger();
+
+  logger.debug(
+    { command: line,
+      cwd: found.folder },
+    'post-processing');
+
   const run =
     await runCommand(
       line,
@@ -203,6 +220,10 @@ export async function postProcess(
                 error instanceof Error
           ? error.message
           : String(error) }));
+
+  logger.debug(
+    { code: run.code },
+    'post-processing exited');
 
   if (run.code === 0) {
     return 0;

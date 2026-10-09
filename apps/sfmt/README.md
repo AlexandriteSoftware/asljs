@@ -69,7 +69,9 @@ npx sfmt format "src/**/*.ts"
 ```
 
 `node_modules`, `dist` and `build` are skipped. `sfmt version` prints the
-version.
+version. `--loglevel <level>`, `--logfile <target>` and `--logformat <format>`,
+or `SFMT_LOG_LEVEL`, `SFMT_LOG_FILE` and `SFMT_LOG_FORMAT`, log the files it
+formats and what its rules do; nothing is logged without them.
 
 Use the rules in ESLint, in `eslint.config.js`:
 

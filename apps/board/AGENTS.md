@@ -30,6 +30,15 @@ matching skill before working on a board.
 - markdown writes go through `writeMarkdown`; `runCli` post-processes them with
   `board.json` (`markdownPostProcessing`)
 - code shared with `rq` belongs in `libs/mdcli`, not here
+- logging follows `docs/Logging.md` at the repository root: `main` in
+  `src/cli.ts` (`bin/board.js`) and in `src/mcp.ts` (`bin/board-mcp.js`, with `{
+  allowStdout: false }`) create the provider from `--loglevel`, `--logfile`,
+  `--logformat` and `BOARD_LOG_`, and dispose it last; the parts take a logger
+  from `getLogger(io, 'board.<part>')` of `src/io.ts`, and the mdcli functions
+  they call take it as a parameter; tests get a provider from `createTestIo`
+- `view` returns once it listens and adds its server to `runCli`'s `servers`:
+  `main` waits for it to stop (SIGINT or SIGTERM), and `runMcpServer` closes it
+  when its input ends
 - `dev/rq/` holds the requirements of `board` and the tests that check them, run
   with `rq test .` and `rq coverage .` in that folder
 

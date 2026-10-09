@@ -17,6 +17,12 @@ console output can break that exchange. The logging rules themselves are in
     directory, or a named pipe on Windows, at an address derived from the
     library root (`apps/kb/src/mcp/endpoint.ts`). A client finds a running
     server there without being told where it is.
+- `rq-mcp` (`apps/rq`) and `board-mcp` (`apps/board`) - a tool per command of
+  `rq` and of `board`.
+  - Entry point: `main` in `apps/rq/src/mcp.ts` and `apps/board/src/mcp.ts`; the
+    protocol loop is `serveLines` of `asljs-mdcli` (`libs/mdcli/src/mcp.ts`),
+    which `kb-mcp` uses too.
+  - Started by any MCP client that launches it.
 - The `cog` task server (`apps/cog/src/mcp.ts`), named `asljs-cog-tasks`.
   - Started by Copilot. `apps/cog/src/tasks/copilot/acp-client.ts` registers it
     in the ACP `session/new` request as a command, `node` with the path of
@@ -79,7 +85,7 @@ does depends on the client:
 
 ## Logging
 
-Both servers create their logger provider with `{ allowStdout: false }`:
+Every server creates its logger provider with `{ allowStdout: false }`:
 
 - With no `--loglevel` and no `<APP>_LOG_LEVEL`, nothing is logged, as for every
   tool.
@@ -130,14 +136,16 @@ processes the servers start today keep their stdout piped:
   because it speaks ACP on its own stdio.
 - `kb-mcp` started by the `kb` CLI - stdin and stdout piped for the protocol,
   stderr inherited so the server's log reaches the caller.
+- The commands, test steps and agents that `rq-mcp` and `board-mcp` run -
+  `runCommand` and `runProgram` of `asljs-mdcli` pipe all three streams.
 
 Keep `stdio` piped, or `ignore`, for stdout in any process a server starts.
 
 ## Edge cases
 
-- `kb` logs a warning and skips a request line that is not valid JSON. `cog`
-  parses each line without a guard, so a line that is not valid JSON throws out
-  of the stdin handler and ends the process.
+- `kb`, `rq` and `board` log a warning (`serveLines`) and skip a request line
+  that is not valid JSON. `cog` parses each line without a guard, so a line that
+  is not valid JSON throws out of the stdin handler and ends the process.
 - `kb` ignores `EPIPE` on stdout, because the client closing the pipe on
   shutdown is not a failure. Any other stdout error is rethrown.
 - `cog` is launched with an empty `env` list in the ACP registration, so its log

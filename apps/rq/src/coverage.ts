@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { AgentSpec,
          askAgent,
          getAgentCommand,
@@ -13,7 +16,8 @@ import { parseDocument }
 import { RqGraph,
          RqNode }
   from './graph.js';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { display }
   from './query.js';
@@ -74,9 +78,15 @@ export async function execCoverage(
     options: CoverageOptions
   ): Promise<number>
 {
+  const logger =
+    getLogger(
+      io,
+      'rq.agent');
+
   const command =
     await getAgentCommand(
-      io,
+      { ...io,
+        logger },
       options.ai ?? {},
       'read',
       'RQ_AI_COMMAND');
@@ -111,7 +121,9 @@ export async function execCoverage(
       : await checkCoverage(
         graph,
         node,
-        command);
+        command,
+        logger.scope(
+          { requirement: node.path }));
 
     const coverage =
       { status:
@@ -176,7 +188,8 @@ export async function execCoverage(
 export async function checkCoverage(
     graph: RqGraph,
     node: RqNode,
-    command: string
+    command: string,
+    logger: Logger = new NullLogger()
   ): Promise<CoverageVerdict>
 {
   const verdict =
@@ -185,7 +198,8 @@ export async function checkCoverage(
       graph.folder,
       buildPrompt(
         graph,
-        node));
+        node),
+      logger);
 
   return { covered: verdict.ok,
            message: verdict.message,

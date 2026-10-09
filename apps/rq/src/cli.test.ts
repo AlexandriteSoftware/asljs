@@ -1,10 +1,13 @@
+import { TmpEnv }
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { runCli }
+import { main,
+         runCli }
   from './cli.js';
 import { writeFixture }
   from './testing/fixture.js';
@@ -568,4 +571,93 @@ test(
 
     assert.ok(
       (await dir.stat('reqs/R4 Size.md')).isFile());
+  });
+
+test(
+  'rq --loglevel and --logfile log the command, each test and the commands of its steps',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const io =
+      createTestIo(dir.path);
+
+    const logFile =
+      dir.resolve('rq.log');
+
+    assert.equal(
+      await main(
+        [ '--loglevel',
+          'debug',
+          '--logfile',
+          logFile,
+          'test',
+          'T1' ],
+        io),
+      0);
+
+    const entries =
+      (await dir.readText('rq.log'))
+      .trim()
+      .split('\n')
+      .map(
+        line => JSON.parse(line) as { context: string; msg: string; });
+
+    assert.deepEqual(
+      entries.map(
+        entry => `${entry.context} ${entry.msg}`),
+      [ 'rq command started',
+        'rq.test test started',
+        'rq.test step command started',
+        'rq.test step command exited',
+        'rq.test step command started',
+        'rq.test step command exited',
+        'rq.test test finished',
+        'rq command finished' ]);
+  });
+
+test(
+  'rq reads RQ_LOG_LEVEL, RQ_LOG_FILE and RQ_LOG_FORMAT, and an option overrides its variable',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    using _env =
+      new TmpEnv(
+        { RQ_LOG_LEVEL: 'debug',
+          RQ_LOG_FILE:
+            dir.resolve('env.log'),
+          RQ_LOG_FORMAT: 'text' });
+
+    const io =
+      createTestIo(dir.path);
+
+    for (
+      const args of [ [ ],
+                      [ '--logfile',
+                        dir.resolve('option.log'),
+                        '--logformat',
+                        'json' ] ]
+    ) {
+      await main(
+        [ ...args,
+          'check',
+          'reqs' ],
+        io);
+    }
+
+    assert.deepEqual(
+      (await dir.readText('env.log')).match(/DEBUG: rq: .*/g),
+      [ 'DEBUG: rq: command started',
+        'DEBUG: rq: command finished' ]);
+
+    assert.match(
+      await dir.readText('option.log'),
+      /^\{.*"msg":"command started"/);
   });

@@ -13,8 +13,11 @@ import { DEFAULT_PORT,
          markdownToHtml,
          page,
          serverUrl,
-         startServer }
+         startServer,
+         untilStopped }
   from './server.js';
+import { createRecordingLogger }
+  from './testing/recording-logger.js';
 
 async function get(
     server: Server,
@@ -225,6 +228,100 @@ test(
       await new Promise(
         resolve => server.close(resolve));
     }
+  });
+
+test(
+  'startServer logs that it listens, each request, and a request that failed',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    const { logger, entries } =
+      createRecordingLogger();
+
+    const server =
+      await startServer(
+        { folder: dir.path,
+          index:
+            async () =>
+            {
+          throw new Error('broken');
+        },
+          home: 'Home',
+          port: 0,
+          logger });
+
+    try {
+      assert.equal(
+        (await get(
+          server,
+          '/')).status,
+        500);
+
+      assert.deepEqual(
+        entries.map(
+          entry => [ entry.level,
+                     entry.message ]),
+        [ [ 'information',
+            'listening' ],
+          [ 'trace',
+            'request' ],
+          [ 'error',
+            'request failed' ] ]);
+
+      assert.equal(
+        entries[0].fields.url,
+        serverUrl(server));
+
+      assert.deepEqual(
+        [ entries[1].fields.method,
+          entries[1].fields.url ],
+        [ 'GET',
+          '/' ]);
+    } finally {
+      await new Promise(
+        resolve => server.close(resolve));
+    }
+  });
+
+test(
+  'untilStopped closes the server on a signal and stops listening for it',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    const server =
+      await startServer(
+        { folder: dir.path,
+          index: async () => 'index',
+          home: 'Home',
+          port: 0 });
+
+    const before =
+      process.listenerCount('SIGHUP');
+
+    const stopped =
+      untilStopped(
+        server,
+        [ 'SIGHUP' ]);
+
+    assert.equal(
+      process.listenerCount('SIGHUP'),
+      before + 1);
+
+    process.emit('SIGHUP');
+
+    await stopped;
+
+    assert.equal(
+      server.listening,
+      false);
+
+    assert.equal(
+      process.listenerCount('SIGHUP'),
+      before);
   });
 
 test(

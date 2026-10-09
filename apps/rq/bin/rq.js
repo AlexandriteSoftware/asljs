@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { runCli }
+import { main }
   from '../dist/cli.js';
 
 process.exitCode =
-  await runCli(
+  await main(
     process.argv.slice(2),
     { cwd: process.cwd(),
       env: process.env,

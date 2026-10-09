@@ -1,3 +1,5 @@
+import { createLoggerProvider }
+  from 'asljs-logging';
 import { Command }
   from 'commander';
 import { readFileSync }
@@ -109,12 +111,40 @@ function createCli(
       {
         throw error;
       })
+    .option(
+      '--loglevel <level>',
+      'Log level: trace, debug, information, warning, error')
+    .option(
+      '--logfile <target>',
+      'Where logs go: a file path, stdout or stderr')
+    .option(
+      '--logformat <format>',
+      'Log format: auto, json, text or pretty')
     .hook(
       'preAction',
       () =>
       {
+        const options =
+          cli.opts<{
+          loglevel?: string;
+          logfile?: string;
+          logformat?: string;
+        }>();
+
+        const loggerProvider =
+          createLoggerProvider(
+            'SFMT_LOG_',
+            { level: options.loglevel,
+              file: options.logfile,
+              format: options.logformat });
+
+        environment.loggerProvider = loggerProvider;
+
         environment.onDispose(
-          async (): Promise<void> => { });
+          async (): Promise<void> =>
+          {
+            await loggerProvider.dispose();
+          });
       });
 
   cli

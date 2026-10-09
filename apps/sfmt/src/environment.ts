@@ -1,3 +1,6 @@
+import { type LoggerProvider,
+         NullLoggerProvider }
+  from 'asljs-logging';
 export interface Environment
 {
   cwd: string;
@@ -5,6 +8,13 @@ export interface Environment
   stdout: WritableBuffer;
 
   stderr: WritableBuffer;
+
+  /**
+   * Where formatting logs; nothing is logged until the command line sets it
+   * from `--loglevel`, `--logfile`, `--logformat` and the `SFMT_LOG_`
+   * variables.
+   */
+  loggerProvider: LoggerProvider;
 
   exitCode?: number;
 
@@ -30,6 +40,8 @@ export function createEnvironment(
         createInMemoryWritableBuffer(),
       stderr:
         createInMemoryWritableBuffer(),
+      loggerProvider:
+        new NullLoggerProvider(),
       onDispose:
         action => disposeActions.push(action),
       dispose:

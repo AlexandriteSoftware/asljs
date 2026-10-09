@@ -1,7 +1,5 @@
-import { LoggerProvider,
-         NullLoggerProvider,
-         PinoLoggerProvider,
-         PinoLoggerProviderOptionsBuilder }
+import { type LoggerProvider,
+         NullLoggerProvider }
   from 'asljs-logging';
 import { ESLint,
          Linter }
@@ -70,14 +68,34 @@ export async function format(
             '**/dist/**',
             '**/build/**' ] });
 
+  const logger =
+    environment.loggerProvider.getLogger('sfmt');
+
+  logger.debug(
+    { patterns,
+      files: paths.length },
+    'formatting');
+
   for (const path of paths) {
-    await formatFile(path);
+    const changed =
+      await formatFile(
+        path,
+        environment.loggerProvider);
+
+    logger.debug(
+      { path,
+        changed },
+      'file formatted');
   }
 }
 
+/**
+ * Formats a file in place. Returns whether its text changed.
+ */
 export async function formatFile(
-    path: string
-  ): Promise<void>
+    path: string,
+    loggerProvider: LoggerProvider = new NullLoggerProvider()
+  ): Promise<boolean>
 {
   const text =
     await fs.readFile(
@@ -87,16 +105,21 @@ export async function formatFile(
   const formatted =
     await formatText(
       path,
-      text);
+      text,
+      getFormattersForPath(
+        path,
+        loggerProvider));
 
   if (formatted === text) {
-    return;
+    return false;
   }
 
   await fs.writeFile(
     path,
     formatted,
     'utf8');
+
+  return true;
 }
 
 export async function formatText(
@@ -111,16 +134,17 @@ export async function formatText(
   return applyFormatters(
     normalised,
     path,
-    formatters ?? getFormattersForPath(path));
+    formatters
+      ?? getFormattersForPath(
+        path,
+        new NullLoggerProvider()));
 }
 
 function getFormattersForPath(
-    path: string
+    path: string,
+    loggerProvider: LoggerProvider
   ): FormatterDefinition[]
 {
-  const loggerProvider =
-    createLoggerProvider();
-
   const fileType =
     getFileType(path);
 
@@ -329,23 +353,4 @@ export function getFileType(
   }
 
   return null;
-}
-
-/**
- * Logging is off unless the ASLJS_LOG_ environment variables ask for it.
- */
-function createLoggerProvider(
-  ): LoggerProvider
-{
-  const options =
-    new PinoLoggerProviderOptionsBuilder()
-    .withLevel('silent')
-    .fromEnvironmentVariables()
-    .build();
-
-  if (options.level === 'silent') {
-    return new NullLoggerProvider();
-  }
-
-  return new PinoLoggerProvider(options);
 }

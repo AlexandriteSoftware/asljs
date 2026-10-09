@@ -1,3 +1,7 @@
+import { type Logger,
+         type LoggerProvider,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import { type AiAgent }
   from 'asljs-mdcli';
 
@@ -31,4 +35,25 @@ export interface Io
    * Finds the AI agent to use when none is named; `detectAgent` when absent.
    */
   detectAgent?: () => Promise<AiAgent | null>;
+
+  /**
+   * Where the MCP server, the view and the agent log, by component; nothing
+   * is logged when absent. The entry point creates it from `--loglevel`,
+   * `--logfile`, `--logformat` and the `BOARD_LOG_` variables.
+   */
+  loggerProvider?: LoggerProvider;
+}
+
+const NO_LOGGING =
+  new NullLoggerProvider();
+
+/**
+ * The logger of a component, e.g. `board.mcp`, from the provider of `io`.
+ */
+export function getLogger(
+    io: Io,
+    context: string
+  ): Logger
+{
+  return (io.loggerProvider ?? NO_LOGGING).getLogger(context);
 }

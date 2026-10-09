@@ -1,3 +1,5 @@
+import { TmpEnv }
+  from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -11,6 +13,7 @@ import test
 import { OVERRIDE }
   from './ask.js';
 import { createTools,
+         main,
          runMcpServer,
          serverInfo }
   from './mcp.js';
@@ -155,6 +158,102 @@ test(
     assert.equal(
       io.out(),
       '');
+  });
+
+test(
+  'runMcpServer closes the server of a view call once the input ends',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    const lines: string[] = [ ];
+
+    await runMcpServer(
+      createTestIo(dir.path),
+      Readable.from(
+        [ `${
+          JSON.stringify(
+            { jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params:
+                { name: 'view',
+                  arguments:
+                    { port: '0' } } })
+        }\n` ]),
+      line => lines.push(line));
+
+    const url =
+      /at (http:\S+)/.exec(
+        JSON.parse(lines[0]).result.content[0].text)![1];
+
+    await assert.rejects(
+      fetch(url));
+  });
+
+test(
+  'main refuses a log level that would log to stdout, and logs to the file BOARD_LOG_ variables and options name',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    const lines: string[] = [ ];
+
+    await assert.rejects(
+      main(
+        [ '--loglevel',
+          'debug' ],
+        createTestIo(dir.path),
+        Readable.from([ ]),
+        line => lines.push(line)),
+      /--logfile stderr/);
+
+    using _env =
+      new TmpEnv(
+        { BOARD_LOG_LEVEL: 'debug',
+          BOARD_LOG_FILE:
+            dir.resolve('mcp.log'),
+          BOARD_LOG_FORMAT: 'text' });
+
+    await main(
+      [ '--logformat=json' ],
+      createTestIo(dir.path),
+      Readable.from(
+        [ 'not json\n' ]),
+      line => lines.push(line));
+
+    assert.equal(
+      lines.length,
+      0);
+
+    assert.deepEqual(
+      (await dir.readText('mcp.log'))
+        .trim()
+        .split('\n')
+        .map(
+          (
+              line
+            ) =>
+          {
+            const entry =
+              JSON.parse(line) as { context: string; msg: string; };
+
+            return `${entry.context} ${entry.msg}`;
+          }),
+      [ 'board.mcp ignored a line that is not valid JSON' ]);
+
+    await main(
+      [ `--logfile=${dir.resolve('option.log')}` ],
+      createTestIo(dir.path),
+      Readable.from(
+        [ 'not json\n' ]),
+      line => lines.push(line));
+
+    assert.match(
+      await dir.readText('option.log'),
+      /^\[[\d:.]+\] WARN: board\.mcp: ignored a line that is not valid JSON\n$/);
   });
 
 test(

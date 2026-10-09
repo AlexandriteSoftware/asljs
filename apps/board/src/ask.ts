@@ -6,7 +6,8 @@ import { type AgentMode,
          toDisplayPath,
          verdictInstructions }
   from 'asljs-mdcli';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { FOLDERS,
          Item }
@@ -47,7 +48,11 @@ export async function getCommand(
 {
   const command =
     await getAgentCommand(
-      io,
+      { ...io,
+        logger:
+          getLogger(
+            io,
+            'board.agent') },
       spec ?? {},
       mode,
       OVERRIDE);
@@ -74,7 +79,10 @@ export async function ask(
     await askAgent(
       command,
       io.cwd,
-      prompt);
+      prompt,
+      getLogger(
+        io,
+        'board.agent'));
 
   if (!verdict.ok) {
     throw new Error(

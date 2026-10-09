@@ -1,8 +1,13 @@
+import { createLoggerProvider,
+         readLoggerOptions }
+  from 'asljs-logging';
 import { commandTools,
          type McpServerInfo,
          type McpTool,
          serveLines }
   from 'asljs-mdcli';
+import { Server }
+  from 'node:http';
 import { createRequire }
   from 'node:module';
 import { Readable }
@@ -10,7 +15,8 @@ import { Readable }
 import { createCli,
          runCli }
   from './cli.js';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 
 export const SERVER_NAME = 'asljs-rq';
@@ -20,7 +26,8 @@ export const SERVER_NAME = 'asljs-rq';
  * line in `io.cwd`, or in its `workingDir`, with its output as the result.
  */
 export function createTools(
-    io: Io
+    io: Io,
+    servers: Server[] = [ ]
   ): McpTool[]
 {
   return commandTools(
@@ -54,7 +61,8 @@ export function createTools(
                     ) =>
                   {
               stderr += text;
-            } } });
+            } } },
+          servers);
 
       return { exitCode,
                stdout,
@@ -64,7 +72,8 @@ export function createTools(
 
 /**
  * Serves the `rq` commands as MCP tools over a line-delimited JSON-RPC
- * stream, e.g. standard input and output. Resolves when the input ends.
+ * stream, e.g. standard input and output. Resolves when the input ends,
+ * and closes the servers `view` started.
  */
 export async function runMcpServer(
     io: Io,
@@ -72,15 +81,63 @@ export async function runMcpServer(
     write: (line: string) => void
   ): Promise<void>
 {
-  await serveLines(
-    input,
-    write,
-    createTools(io),
-    serverInfo(),
-    { onInvalidLine:
-        () =>
-        io.stderr.write(
-          'Ignored a line that is not valid JSON.\n') });
+  const servers: Server[] = [ ];
+
+  try {
+    await serveLines(
+      input,
+      write,
+      createTools(
+        io,
+        servers),
+      serverInfo(),
+      { logger:
+          getLogger(
+            io,
+            'rq.mcp') });
+  } finally {
+    for (const server of servers) {
+      await new Promise(
+        (
+            resolve
+          ) =>
+        {
+          server.close(resolve);
+          server.closeAllConnections();
+        });
+    }
+  }
+}
+
+/**
+ * The `rq-mcp` executable: serves the tools with a logger provider made
+ * from `--loglevel`, `--logfile`, `--logformat` and the `RQ_LOG_`
+ * variables, and disposes it once the input ends. Standard output carries the
+ * protocol, so a log level without a log file other than stdout throws here,
+ * before the first request is read.
+ */
+export async function main(
+    args: string[],
+    io: Io,
+    input: Readable,
+    write: (line: string) => void
+  ): Promise<void>
+{
+  const loggerProvider =
+    createLoggerProvider(
+      'RQ_LOG_',
+      readLoggerOptions(args),
+      { allowStdout: false });
+
+  try {
+    await runMcpServer(
+      { ...io,
+        loggerProvider },
+      input,
+      write);
+  } finally {
+    await loggerProvider.dispose();
+  }
 }
 
 /**

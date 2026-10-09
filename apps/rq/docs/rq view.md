@@ -1,6 +1,7 @@
 # rq view
 
-Starts a web server for a requirement file or folder, and runs until stopped.
+Starts a web server for a requirement file or folder, and runs until stopped, by
+SIGINT (Ctrl+C) or SIGTERM.
 
 ```text
 rq view <path> [--port <port>] [--working-dir <folder>]

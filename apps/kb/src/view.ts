@@ -79,7 +79,9 @@ export async function startView(
         (await renderDocument(
           root,
           relative)).html,
-      allow: isServed });
+      allow: isServed,
+      logger:
+        environment.loggerProvider.getLogger('kb.view') });
 }
 
 /**

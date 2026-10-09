@@ -9,6 +9,7 @@ import { Readable }
 import test
   from 'node:test';
 import { createTools,
+         main,
          runMcpServer,
          serverInfo }
   from './mcp.js';
@@ -132,7 +133,108 @@ test(
 
     assert.equal(
       io.err(),
-      'Ignored a line that is not valid JSON.\n');
+      '');
+  });
+
+test(
+  'runMcpServer closes the server of a view call once the input ends',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const lines: string[] = [ ];
+
+    await runMcpServer(
+      createTestIo(dir.path),
+      Readable.from(
+        [ `${
+          JSON.stringify(
+            { jsonrpc: '2.0',
+              id: 1,
+              method: 'tools/call',
+              params:
+                { name: 'view',
+                  arguments:
+                    { path: 'reqs',
+                      port: '0' } } })
+        }\n` ]),
+      line => lines.push(line));
+
+    const url =
+      /at (http:\S+)/.exec(
+        JSON.parse(lines[0]).result.content[0].text)![1];
+
+    await assert.rejects(
+      fetch(url));
+  });
+
+test(
+  'main refuses a log level that would log to stdout, and logs the requests to a log file',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const lines: string[] = [ ];
+
+    await assert.rejects(
+      main(
+        [ '--loglevel',
+          'debug' ],
+        createTestIo(dir.path),
+        Readable.from([ ]),
+        line => lines.push(line)),
+      /--logfile stderr/);
+
+    await main(
+      [ '--loglevel=trace',
+        `--logfile=${dir.resolve('mcp.log')}` ],
+      createTestIo(dir.path),
+      Readable.from(
+        [ `${
+            JSON.stringify(
+              { jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params:
+                  { name: 'check',
+                    arguments:
+                      { path: 'reqs' } } })
+          }\n`,
+          'not json\n' ]),
+      line => lines.push(line));
+
+    assert.equal(
+      lines.length,
+      1);
+
+    const entries =
+      (await dir.readText('mcp.log'))
+      .trim()
+      .split('\n')
+      .map(
+        line => JSON.parse(line) as { context: string; msg: string; });
+
+    assert.deepEqual(
+      entries
+        .filter(
+          entry => entry.context === 'rq.mcp')
+        .map(
+          entry => entry.msg),
+      [ 'request',
+        'tool call',
+        'ignored a line that is not valid JSON' ]);
+
+    assert.ok(
+      entries.some(
+        entry =>
+          entry.context === 'rq'
+          && entry.msg === 'command finished'));
   });
 
 test(

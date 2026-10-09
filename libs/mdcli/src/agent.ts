@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { runCommand }
   from './run-command.js';
 
@@ -36,6 +39,11 @@ export interface AgentSource
    * Finds the agent to use when none is named; `detectAgent` when absent.
    */
   detectAgent?: () => Promise<AiAgent | null>;
+
+  /**
+   * Where the choice of the agent is logged; nothing is logged when absent.
+   */
+  logger?: Logger;
 }
 
 export interface AgentVerdict
@@ -112,7 +120,8 @@ export function parseAgentSpec(
  * does.
  */
 export async function detectAgent(
-    run: typeof runCommand = runCommand
+    run: typeof runCommand = runCommand,
+    logger: Logger = new NullLogger()
   ): Promise<AiAgent | null>
 {
   for (const agent of AI_AGENTS) {
@@ -124,9 +133,15 @@ export async function detectAgent(
         () => null);
 
     if (version?.code === 0) {
+      logger.debug(
+        { agent },
+        'agent detected');
+
       return agent;
     }
   }
+
+  logger.debug('no agent detected');
 
   return null;
 }
@@ -144,15 +159,24 @@ export async function getAgentCommand(
     override: string
   ): Promise<string | null>
 {
+  const logger =
+    io.logger ?? new NullLogger();
+
   const command = io.env[override];
 
   if (command) {
+    logger.debug(
+      { variable: override },
+      'agent command from the environment');
+
     return command;
   }
 
   const agent =
     spec.agent
-    ?? await (io.detectAgent ?? detectAgent)();
+    ?? await detect(
+      io,
+      logger);
 
   if (agent === null) {
     return null;
@@ -169,6 +193,20 @@ export async function getAgentCommand(
   }`;
 }
 
+async function detect(
+    io: AgentSource,
+    logger: Logger
+  ): Promise<AiAgent | null>
+{
+  if (io.detectAgent !== undefined) {
+    return await io.detectAgent();
+  }
+
+  return await detectAgent(
+    runCommand,
+    logger);
+}
+
 /**
  * Runs the agent in `cwd` with the prompt on standard input. The verdict is
  * the last line of its output that is a JSON object with `result` `OK`,
@@ -178,9 +216,22 @@ export async function getAgentCommand(
 export async function askAgent(
     command: string,
     cwd: string,
-    prompt: string
+    prompt: string,
+    logger: Logger = new NullLogger()
   ): Promise<AgentVerdict & { output: string; answer: string; }>
 {
+  logger.debug(
+    { command,
+      cwd },
+    'agent started');
+
+  logger.trace(
+    { prompt },
+    'agent prompt');
+
+  const started =
+    Date.now();
+
   let run;
 
   try {
@@ -190,6 +241,10 @@ export async function askAgent(
         cwd,
         prompt);
   } catch (error) {
+    logger.debug(
+      error as Error,
+      'agent failed to start');
+
     return { ok: false,
              message:
                `AI agent failed to start: ${
@@ -203,6 +258,17 @@ export async function askAgent(
 
   const output =
     `${run.stdout}${run.stderr}`;
+
+  logger.debug(
+    { code: run.code,
+      milliseconds:
+        Date.now() - started },
+    'agent exited');
+
+  logger.trace(
+    { stdout: run.stdout,
+      stderr: run.stderr },
+    'agent output');
 
   if (run.code !== 0) {
     return { ok: false,

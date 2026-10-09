@@ -1,3 +1,7 @@
+import { type Logger,
+         type LoggerProvider,
+         NullLoggerProvider }
+  from 'asljs-logging';
 import { type AiAgent }
   from 'asljs-mdcli';
 import { type Retention,
@@ -46,4 +50,26 @@ export interface Io
    * The limits of the `.rq` folder; `RETENTION` when absent.
    */
   retention?: Readonly<Retention>;
+
+  /**
+   * Where the MCP server, the view, and the runs of tests and agents log,
+   * by component; nothing is logged when absent. The entry point creates it
+   * from `--loglevel`, `--logfile`, `--logformat` and the `RQ_LOG_`
+   * variables.
+   */
+  loggerProvider?: LoggerProvider;
+}
+
+const NO_LOGGING =
+  new NullLoggerProvider();
+
+/**
+ * The logger of a component, e.g. `rq.mcp`, from the provider of `io`.
+ */
+export function getLogger(
+    io: Io,
+    context: string
+  ): Logger
+{
+  return (io.loggerProvider ?? NO_LOGGING).getLogger(context);
 }

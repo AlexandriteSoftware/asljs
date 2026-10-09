@@ -19,6 +19,7 @@ commands, and every command returns a non-zero exit code when it fails.
 - [T22 Command line][T22]
 - [T23 Command documentation][T23]
 - [R33 MCP server][R33]
+- [R34 Logging][R34]
 
 [R2]: <model/R2 Requirements model.md>
 [R7]: <steps/R7 Test documents.md>
@@ -31,6 +32,7 @@ commands, and every command returns a non-zero exit code when it fails.
 [T22]: <tests/T22 Command line.md>
 [T23]: <tests/T23 Command documentation.md>
 [R33]: <R33 MCP server.md>
+[R34]: <R34 Logging.md>
 
 ## Coverage
 

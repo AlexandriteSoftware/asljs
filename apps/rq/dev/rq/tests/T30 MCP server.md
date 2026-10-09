@@ -17,6 +17,12 @@ The tools of rq-mcp, and a call through it.
 - Test: rq-mcp runs the commands in their working folder, and reports failures
   as errors
 
+### runMcpServer closes the server of a view call once the input ends
+
+- Type: javascript
+- File: ../../../build/mcp.test.js
+- Test: runMcpServer closes the server of a view call once the input ends
+
 ### serverInfo names the server and the package version
 
 - Type: javascript
@@ -37,11 +43,12 @@ The tools of rq-mcp, and a call through it.
 - Test: tools/call sends a result as JSON, text as it is, and a failure as an
   error result
 
-### serveLines answers line-delimited requests and reports invalid lines
+### serveLines answers line-delimited requests and logs requests and invalid lines
 
 - Type: javascript
 - File: ../../../../../libs/mdcli/build/mcp.test.js
-- Test: serveLines answers line-delimited requests and reports invalid lines
+- Test: serveLines answers line-delimited requests and logs requests and invalid
+  lines
 
 ### commandTools makes a tool per command, with its arguments and options
 
@@ -58,7 +65,7 @@ The tools of rq-mcp, and a call through it.
 
 ## Status
 
-- Result: PASS - 8 steps
-- Execution: [E17 T30 R33][E17]
+- Result: PASS - 9 steps
+- Execution: [E19 T30 T31][E19]
 
-[E17]: <../.rq/E17 T30 R33.md>
+[E19]: <../.rq/E19 T30 T31.md>

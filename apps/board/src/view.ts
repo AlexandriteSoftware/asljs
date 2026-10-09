@@ -5,7 +5,8 @@ import { escapeHtml,
   from 'asljs-mdcli';
 import { Server }
   from 'node:http';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { FOLDERS,
          ITEM_KINDS,
@@ -61,7 +62,11 @@ export async function execView(
         home: 'Board',
         style: STYLE,
         port: options.port,
-        host: options.host });
+        host: options.host,
+        logger:
+          getLogger(
+            io,
+            'board.view') });
 
   io.stdout.write(
     `Serving ${io.cwd} at ${serverUrl(server)}\n`);

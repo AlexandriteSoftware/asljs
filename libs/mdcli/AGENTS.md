@@ -21,6 +21,9 @@ core. A part that a second tool needs moves here rather than being copied.
   `answer` is what came before it
 - `writeMarkdown` remembers files in a module-level set, emptied by
   `takeWritten`; a tool calls `takeWritten` before and after a command
+- a function that runs something takes an optional `Logger` and defaults to a
+  `NullLogger`; the tool creates the provider, never this package
+  (`docs/Logging.md` at the repository root)
 - the tools consume this package through its `dist`: run `npm -w asljs-mdcli run
   build:dist` after a change, before building them
 

@@ -2,24 +2,33 @@
 
 The exports of `asljs-mdcli`, by module.
 
+## Logging
+
+The functions that run something take an optional `Logger` of `asljs-logging`
+from their caller, and log nothing without one: they never create a provider.
+What they log is listed with each of them.
+
 ## AI agents
 
 - `AI_AGENTS` - `claude` and `copilot`, in the order `detectAgent` tries them.
 - `parseAgentSpec(value)` - reads an `--ai` value: `true` for a bare `--ai`,
   otherwise `[<agent>][:<model>]`, e.g. `claude:fable`, `copilot`, `:fable`. An
   unknown agent is an error.
-- `detectAgent(run?)` - the first agent whose `<agent> --version` runs, or
-  `null`.
+- `detectAgent(run?, logger?)` - the first agent whose `<agent> --version` runs,
+  or `null`; the agent found, or none, at `debug`.
 - `getAgentCommand(source, spec, mode, override)` - the agent's command line:
   the environment variable `override` of `source.env` when set, otherwise the
   agent `spec` names, or `source.detectAgent` (or `detectAgent`), with the
-  model; `null` when none is found. `mode` is what the agent may do:
+  model; `null` when none is found. `source.logger` is given to `detectAgent`,
+  and is told at `debug` when the command comes from `override`. `mode` is what
+  the agent may do:
   - `read` - read and search files;
   - `run` - also run commands, without editing files;
   - `edit` - also edit files.
-- `askAgent(command, cwd, prompt)` - runs the agent in `cwd` with the prompt on
-  standard input. Its verdict is the last line of its output that is a JSON
-  object with `result` `OK`, `Fail` or `Blocked`:
+- `askAgent(command, cwd, prompt, logger?)` - runs the agent in `cwd` with the
+  prompt on standard input. It logs the command and the exit code at `debug`,
+  and the prompt and the output at `trace`. Its verdict is the last line of its
+  output that is a JSON object with `result` `OK`, `Fail` or `Blocked`:
   - `ok` - true for `OK`;
   - `message` - the verdict's `message`;
   - `blocked` - true for `Blocked`, an agent that needs more from the user;
@@ -59,7 +68,8 @@ The exports of `asljs-mdcli`, by module.
 - `postProcess(io, files, name)` - runs the `markdownPostProcessing` command of
   the nearest `name` with the files that still exist, relative to the
   configuration file's folder, where it runs. Returns 1 and writes the output to
-  `io.stderr` when the command fails, 0 otherwise.
+  `io.stderr` when the command fails, 0 otherwise. The command line and its exit
+  code go to `io.logger` at `debug`.
 
 ## Commands
 
@@ -71,13 +81,19 @@ The exports of `asljs-mdcli`, by module.
 ## Server
 
 - `startServer({ folder, index, home, style?, port?, host?, pages?, render?,
-  allow? })` - serves `/` with `index()`, made again on every request; a path of
-  `pages`, e.g. `/search`, with that page of the request URL; a `.md` file of
-  `folder` as HTML - `render(file, relative)`, or `markdownToHtml` of its text -
-  with a link back to `/` labelled `home`; and any other file of `folder` as it
-  is. Nothing outside `folder`, or that `allow(relative)` refuses, is served. It
-  listens on `host`, `127.0.0.1` by default, on `port`, or without one on the
-  first free port from `DEFAULT_PORT`, 3000, up to 3099.
+  allow?, logger? })` - serves `/` with `index()`, made again on every request;
+  a path of `pages`, e.g. `/search`, with that page of the request URL; a `.md`
+  file of `folder` as HTML - `render(file, relative)`, or `markdownToHtml` of
+  its text - with a link back to `/` labelled `home`; and any other file of
+  `folder` as it is. Nothing outside `folder`, or that `allow(relative)`
+  refuses, is served. It listens on `host`, `127.0.0.1` by default, on `port`,
+  or without one on the first free port from `DEFAULT_PORT`, 3000, up to 3099.
+  `logger` is told that it listens, with its URL, at `information`, each request
+  at `trace`, and a request that failed at `error`.
+- `untilStopped(server, signals?)` - resolves once the server has closed; the
+  first of `signals`, `SIGINT` and `SIGTERM` by default, closes it and its open
+  connections. A command that serves awaits it, so that it releases what the
+  server used, such as its logger provider, only after the server.
 - `markdownToHtml(text)` - the HTML of a markdown text, with GitHub-flavoured
   tables, task lists and strikethrough; raw HTML is kept.
 - `serverUrl(server)` - its address, e.g. `http://127.0.0.1:3000/`.
@@ -89,8 +105,10 @@ The exports of `asljs-mdcli`, by module.
 - `handleMessage(message, tools, info)` - the response to one JSON-RPC message:
   `initialize` with `info`'s name and version, `tools/list`, `tools/call`, and a
   method-not-found error otherwise; `null` for a notification.
-- `serveLines(input, write, tools, info, { onInvalidLine, onRequest })` -
-  answers the requests of a stream, one JSON object per line, until it ends.
+- `serveLines(input, write, tools, info, { logger })` - answers the requests of
+  a stream, one JSON object per line, until it ends. A line that is not valid
+  JSON is skipped and logged at `warning`; each request is logged at `trace`,
+  and each tool call, with the tool's name, at `debug`.
 - `readLines(input, onLine)` - calls back once per complete line.
 - `McpTool` - `{ name, description, inputSchema, invoke }`. `invoke`'s result is
   sent as JSON, `<name> completed` for `undefined`, or as it is for a

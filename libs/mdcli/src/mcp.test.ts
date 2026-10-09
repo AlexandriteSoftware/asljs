@@ -13,6 +13,8 @@ import { commandTools,
          serveLines,
          textResult }
   from './mcp.js';
+import { createRecordingLogger }
+  from './testing/recording-logger.js';
 
 const INFO =
   { name: 'asljs-sample',
@@ -182,12 +184,13 @@ test(
   });
 
 test(
-  'serveLines answers line-delimited requests and reports invalid lines',
+  'serveLines answers line-delimited requests and logs requests and invalid lines',
   async () =>
   {
     const lines: string[] = [ ];
 
-    const invalid: string[] = [ ];
+    const { logger, entries } =
+      createRecordingLogger();
 
     await serveLines(
       Readable.from(
@@ -197,8 +200,7 @@ test(
       line => lines.push(line),
       TOOLS,
       INFO,
-      { onInvalidLine:
-          line => invalid.push(line) });
+      { logger });
 
     assert.deepEqual(
       lines.map(
@@ -207,8 +209,19 @@ test(
         2 ]);
 
     assert.deepEqual(
-      invalid,
-      [ 'not json' ]);
+      entries.map(
+        entry => [ entry.level,
+                   entry.message,
+                   entry.fields.method ]),
+      [ [ 'trace',
+          'request',
+          'tools/list' ],
+        [ 'warning',
+          'ignored a line that is not valid JSON',
+          undefined ],
+        [ 'trace',
+          'request',
+          'initialize' ] ]);
   });
 
 function sampleProgram(

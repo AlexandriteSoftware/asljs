@@ -55,5 +55,22 @@ exits with a non-zero code - a failed test, a structure error - is an error
 result that ends with `Exit code: <n>`. Calls run one at a time.
 
 `test` with instruction steps and `coverage` run an AI agent, and can take
-minutes per test or requirement. `view` starts the server inside `rq-mcp`, which
-runs until `rq-mcp` stops.
+minutes per test or requirement. `view` starts the server inside `rq-mcp`; it
+serves until standard input ends, when `rq-mcp` closes it.
+
+## Logging
+
+`rq-mcp` logs nothing unless asked to, with `--loglevel`, `--logfile` and
+`--logformat`, or `RQ_LOG_LEVEL`, `RQ_LOG_FILE` and `RQ_LOG_FORMAT`. Standard
+output carries the protocol, so a level without a log file, or with `--logfile
+stdout`, is refused at startup; log to standard error, which MCP clients show,
+or to a file:
+
+```bash
+rq-mcp --loglevel debug --logfile stderr
+```
+
+At `debug` it logs each tool call and, as `rq` does, each command, test, step
+command, agent and post-processing run; at `trace` also each request, the
+agents' prompts and their output. A line that is not valid JSON is skipped and
+logged as a warning.

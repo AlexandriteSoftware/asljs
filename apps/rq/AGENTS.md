@@ -83,6 +83,15 @@ before working on requirements, here or in `dev/rq`.
   `Io.detectAgent` so no real agent runs
 - `rq view` reloads the graph on every request for `/` and serves only files
   inside the folder
+- logging follows `docs/Logging.md` at the repository root: `main` in
+  `src/cli.ts` (`bin/rq.js`) and in `src/mcp.ts` (`bin/rq-mcp.js`, with `{
+  allowStdout: false }`) create the provider from `--loglevel`, `--logfile`,
+  `--logformat` and `RQ_LOG_`, and dispose it last; the parts take a logger from
+  `getLogger(io, 'rq.<part>')` of `src/io.ts`, and the mdcli functions they call
+  take it as a parameter; tests get a provider from `createTestIo`
+- `view` returns once it listens and adds its server to `runCli`'s `servers`:
+  `main` waits for it to stop (SIGINT or SIGTERM), and `runMcpServer` closes it
+  when its input ends
 
 ## Source map
 

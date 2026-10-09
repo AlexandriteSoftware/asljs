@@ -1,5 +1,10 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { marked }
   from 'marked';
+import { once }
+  from 'node:events';
 import { readFile,
          stat }
   from 'node:fs/promises';
@@ -99,6 +104,13 @@ export interface ServerOptions
    * separators; any file by default. A file it refuses is not found.
    */
   allow?: (relative: string) => boolean;
+
+  /**
+   * Where the server logs that it listens, at `information`, each request, at
+   * `trace`, and a request that failed, at `error`; nothing is logged when
+   * absent.
+   */
+  logger?: Logger;
 }
 
 /**
@@ -125,6 +137,9 @@ export async function startServer(
     options: ServerOptions
   ): Promise<Server>
 {
+  const logger =
+    options.logger ?? new NullLogger();
+
   const server =
     createServer(
       (
@@ -132,6 +147,11 @@ export async function startServer(
           response
         ) =>
       {
+      logger.trace(
+        { method: request.method,
+          url: request.url },
+        'request');
+
       handle(
         options,
         request,
@@ -141,6 +161,11 @@ export async function startServer(
               error: unknown
             ) =>
           {
+            logger.error(
+              { err: error,
+                url: request.url },
+              'request failed');
+
             send(
               response,
               500,
@@ -164,7 +189,53 @@ export async function startServer(
       host);
   }
 
+  logger.information(
+    { url:
+        serverUrl(server) },
+    'listening');
+
   return server;
+}
+
+/**
+ * Resolves once the server has closed. The first of `signals` closes it: it
+ * stops accepting connections and drops the open ones, so that whoever waits
+ * can release what the server used, such as a logger, before the process
+ * exits.
+ */
+export async function untilStopped(
+    server: Server,
+    signals: readonly NodeJS.Signals[] = [ 'SIGINT',
+                                           'SIGTERM' ]
+  ): Promise<void>
+{
+  const closed =
+    once(
+      server,
+      'close');
+
+  const stop =
+    (): void =>
+    {
+    server.close();
+    server.closeAllConnections();
+  };
+
+  for (const signal of signals) {
+    process.once(
+      signal,
+      stop);
+  }
+
+  try {
+    await closed;
+  } finally {
+    for (const signal of signals) {
+      process.off(
+        signal,
+        stop);
+    }
+  }
 }
 
 /**

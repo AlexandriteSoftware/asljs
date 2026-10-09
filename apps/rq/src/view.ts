@@ -9,7 +9,8 @@ import { display,
          loadGraph,
          RqGraph }
   from './graph.js';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { getAppearance,
          toMermaid }
@@ -85,7 +86,11 @@ export async function execView(
         home: 'Requirements',
         style: STYLE,
         port: options.port,
-        host: options.host });
+        host: options.host,
+        logger:
+          getLogger(
+            io,
+            'rq.view') });
 
   io.stdout.write(
     `Serving ${folder} at ${serverUrl(server)}\n`);

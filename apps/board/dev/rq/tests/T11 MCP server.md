@@ -17,6 +17,12 @@ The tools of board-mcp, and calls through it.
 - Test: board-mcp runs the commands with the agent in their working folder, and
   reports failures as errors
 
+### runMcpServer closes the server of a view call once the input ends
+
+- Type: javascript
+- File: ../../../build/mcp.test.js
+- Test: runMcpServer closes the server of a view call once the input ends
+
 ### serverInfo names the server and the package version
 
 - Type: javascript
@@ -37,11 +43,12 @@ The tools of board-mcp, and calls through it.
 - Test: tools/call sends a result as JSON, text as it is, and a failure as an
   error result
 
-### serveLines answers line-delimited requests and reports invalid lines
+### serveLines answers line-delimited requests and logs requests and invalid lines
 
 - Type: javascript
 - File: ../../../../../libs/mdcli/build/mcp.test.js
-- Test: serveLines answers line-delimited requests and reports invalid lines
+- Test: serveLines answers line-delimited requests and logs requests and invalid
+  lines
 
 ### commandTools makes a tool per command, with its arguments and options
 
@@ -58,7 +65,7 @@ The tools of board-mcp, and calls through it.
 
 ## Status
 
-- Result: PASS - 8 steps
-- Execution: [E7 rq][E7]
+- Result: PASS - 9 steps
+- Execution: [E8 T11 T12][E8]
 
-[E7]: <../.rq/E7 rq.md>
+[E8]: <../.rq/E8 T11 T12.md>

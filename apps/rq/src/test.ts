@@ -3,7 +3,8 @@ import { AgentSpec,
   from 'asljs-mdcli';
 import path
   from 'node:path';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { display }
   from './query.js';
@@ -78,10 +79,18 @@ export async function execTest(
     { agent:
         () =>
       agent ??= getAgentCommand(
-        io,
+        { ...io,
+          logger:
+            getLogger(
+              io,
+              'rq.agent') },
         options.ai ?? {},
         'run',
-        'RQ_AI_COMMAND') };
+        'RQ_AI_COMMAND'),
+      logger:
+        getLogger(
+          io,
+          'rq.test') };
 
   const tests: TestResult[] = [ ];
 

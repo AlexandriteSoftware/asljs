@@ -10,6 +10,8 @@ import { type AgentSource,
          getAgentCommand,
          parseAgentSpec }
   from './agent.js';
+import { createRecordingLogger }
+  from './testing/recording-logger.js';
 
 /**
  * An agent source with no agent to detect, and the environment `env`.
@@ -176,6 +178,60 @@ test(
   });
 
 test(
+  'askAgent logs the command and the exit code at debug, the prompt and the output at trace',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await dir.writeText(
+      'agent.cjs',
+      'console.log(\'{"result":"OK"}\')');
+
+    const command =
+      `node "${dir.resolve('agent.cjs')}"`;
+
+    const { logger, entries } =
+      createRecordingLogger();
+
+    await askAgent(
+      command,
+      dir.path,
+      'hello',
+      logger);
+
+    assert.deepEqual(
+      entries.map(
+        entry => [ entry.level,
+                   entry.message ]),
+      [ [ 'debug',
+          'agent started' ],
+        [ 'trace',
+          'agent prompt' ],
+        [ 'debug',
+          'agent exited' ],
+        [ 'trace',
+          'agent output' ] ]);
+
+    assert.deepEqual(
+      entries[0].fields,
+      { command,
+        cwd: dir.path });
+
+    assert.equal(
+      entries[1].fields.prompt,
+      'hello');
+
+    assert.equal(
+      entries[2].fields.code,
+      0);
+
+    assert.equal(
+      entries[3].fields.stdout,
+      '{"result":"OK"}\n');
+  });
+
+test(
   'detectAgent picks the first agent whose command runs, claude before copilot',
   async () =>
   {
@@ -216,10 +272,19 @@ test(
           [ 'copilot' ])),
       'copilot');
 
+    const { logger, entries } =
+      createRecordingLogger();
+
     assert.equal(
       await detectAgent(
-        fake([ ])),
+        fake([ ]),
+        logger),
       null);
+
+    assert.deepEqual(
+      entries.map(
+        entry => entry.message),
+      [ 'no agent detected' ]);
 
     assert.deepEqual(
       runs,

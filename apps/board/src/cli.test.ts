@@ -1,4 +1,5 @@
-import { TmpEnv }
+import { TmpEnv,
+         waitFor }
   from 'asljs-testing';
 import { TmpDir }
   from 'asljs-tmpdir';
@@ -10,7 +11,8 @@ import test
   from 'node:test';
 import { OVERRIDE }
   from './ask.js';
-import { runCli }
+import { main,
+         runCli }
   from './cli.js';
 import { installAgent,
          writeAgent,
@@ -243,4 +245,176 @@ test(
         'Read,Grep,Glob',
         '--model',
         'fable' ]);
+  });
+
+test(
+  'board --loglevel and --logfile log the command and the agent',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const io =
+      createTestIo(
+        dir.path,
+        { [OVERRIDE]:
+            await writeAgent(
+              dir,
+              { 'Write the plan':
+                  '# P20 Restrict kids internet access\n\n## Goal\n\nOffline at night.\n{"result":"OK"}\n' }) });
+
+    assert.equal(
+      await main(
+        [ '--loglevel',
+          'debug',
+          '--logfile',
+          dir.resolve('board.log'),
+          'plan',
+          'I20',
+          '--working-dir',
+          'board' ],
+        io),
+      0,
+      io.err());
+
+    const entries =
+      (await dir.readText('board.log'))
+      .trim()
+      .split('\n')
+      .map(
+        line => JSON.parse(line) as { context: string; msg: string; });
+
+    assert.deepEqual(
+      entries.map(
+        entry => `${entry.context} ${entry.msg}`),
+      [ 'board command started',
+        'board.agent agent command from the environment',
+        'board.agent agent started',
+        'board.agent agent exited',
+        'board command finished' ]);
+  });
+
+test(
+  'board reads BOARD_LOG_LEVEL, BOARD_LOG_FILE and BOARD_LOG_FORMAT, and an option overrides its variable',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    using _env =
+      new TmpEnv(
+        { BOARD_LOG_LEVEL: 'debug',
+          BOARD_LOG_FILE:
+            dir.resolve('env.log'),
+          BOARD_LOG_FORMAT: 'text' });
+
+    const io =
+      createTestIo(dir.path);
+
+    for (
+      const args of [ [ ],
+                      [ '--logfile',
+                        dir.resolve('option.log'),
+                        '--logformat',
+                        'json' ] ]
+    ) {
+      assert.equal(
+        await main(
+          [ ...args,
+            'list',
+            '--working-dir',
+            'board' ],
+          io),
+        0);
+    }
+
+    const text =
+      await dir.readText('env.log');
+
+    assert.deepEqual(
+      text.match(/DEBUG: board: .*/g),
+      [ 'DEBUG: board: command started',
+        'DEBUG: board: command finished' ]);
+
+    assert.match(
+      await dir.readText('option.log'),
+      /^\{.*"msg":"command started"/);
+  });
+
+test(
+  'board view serves until SIGINT or SIGTERM, and logs until it stops',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    for (
+      const signal of [ 'SIGINT',
+                        'SIGTERM' ] as const
+    ) {
+      const io =
+        createTestIo(dir.path);
+
+      const running =
+        main(
+          [ '--loglevel',
+            'trace',
+            '--logfile',
+            dir.resolve(`${signal}.log`),
+            'view',
+            '--port',
+            '0',
+            '--working-dir',
+            'board' ],
+          io);
+
+      await waitFor(
+        () => io.out().includes('Serving'),
+        5000);
+
+      const url =
+        /at (http:\S+)/.exec(
+          io.out())![1];
+
+      assert.equal(
+        (await fetch(url)).status,
+        200);
+
+      process.emit(signal);
+
+      assert.equal(
+        await running,
+        0);
+
+      await assert.rejects(
+        fetch(url));
+
+      assert.deepEqual(
+        (await dir.readText(`${signal}.log`))
+          .trim()
+          .split('\n')
+          .map(
+            (
+                line
+              ) =>
+            {
+              const entry =
+                JSON.parse(line) as {
+                context: string;
+                msg: string;
+              };
+
+              return `${entry.context} ${entry.msg}`;
+            }),
+        [ 'board command started',
+          'board.view listening',
+          'board command finished',
+          'board.view request' ]);
+    }
   });

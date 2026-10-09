@@ -14,6 +14,14 @@ error.
 A command prints the files it created or changed, and exits with a non-zero code
 when it fails.
 
+Every command also takes `--loglevel <level>`, `--logfile <target>` and
+`--logformat <format>`, or `BOARD_LOG_LEVEL`, `BOARD_LOG_FILE` and
+`BOARD_LOG_FORMAT`; nothing is logged without them. At `debug` the log has each
+command, the agent's command line, when it started and its exit code, and the
+post-processing; at `trace` also the prompt and the agent's output, and each
+request to `board view`. `--loglevel debug --logfile stderr` keeps the log out
+of the output.
+
 ## board develop
 
 ```text
@@ -115,7 +123,7 @@ Serves the board on `127.0.0.1`: `/` is a column each for Ideas, Plans, Tasks
 and Results, one card per document with its status and open questions, read
 again on every request; a card opens its document, rendered. Without `--port` it
 takes the first free port from 3000 on; with it, exactly that port, and 0 any
-free one.
+free one. It runs until stopped, by SIGINT (Ctrl+C) or SIGTERM.
 
 ## board-mcp
 
@@ -149,6 +157,12 @@ folder `board-mcp` was started in.
 A call runs that command line and answers what it printed; a non-zero exit code
 makes it an error result ending with `Exit code: <n>`. Calls run one at a time.
 `exec` carries out every task in turn and can take long; `view` starts the
-server inside `board-mcp`.
+server inside `board-mcp`, which closes it when standard input ends.
+
+`board-mcp` takes the logging options and variables of the commands, but refuses
+at startup a level whose log would go to standard output, which carries the
+protocol: use `--logfile stderr`, which MCP clients show, or a file. It also
+logs each tool call at `debug`, each request at `trace`, and a line that is not
+valid JSON, which it skips, as a warning.
 
 [BD]: Board.md

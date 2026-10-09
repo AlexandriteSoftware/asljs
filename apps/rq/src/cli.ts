@@ -1,11 +1,17 @@
+import { createLoggerProvider,
+         readLoggerOptions }
+  from 'asljs-logging';
 import { AI_AGENTS,
          parseAgentSpec,
          postProcess,
-         takeWritten }
+         takeWritten,
+         untilStopped }
   from 'asljs-mdcli';
 import { Command,
          CommanderError }
   from 'commander';
+import { Server }
+  from 'node:http';
 import path
   from 'node:path';
 import { execAdd,
@@ -19,7 +25,8 @@ import { execCheck }
   from './check.js';
 import { execCoverage }
   from './coverage.js';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { execBacklinks,
          execLinks,
@@ -50,7 +57,8 @@ export interface CliState
  */
 export function createCli(
     args: string[],
-    io: Io
+    io: Io,
+    servers: Server[] = [ ]
   ): { cli: Command; state: CliState; }
 {
   const state: CliState =
@@ -79,6 +87,15 @@ export function createCli(
         writeErr:
           value => io.stderr.write(value) })
     .exitOverride()
+    .option(
+      '--loglevel <level>',
+      'Log level: trace, debug, information, warning, error')
+    .option(
+      '--logfile <target>',
+      'Where logs go: a file path, stdout or stderr')
+    .option(
+      '--logformat <format>',
+      'Log format: auto, json, text or pretty')
     .hook(
       'preAction',
       (
@@ -203,10 +220,11 @@ export function createCli(
             `Invalid port: ${options.port}`);
         }
 
-        await execView(
-          state.io,
-          { target,
-            port });
+        servers.push(
+          await execView(
+            state.io,
+            { target,
+              port }));
       });
 
   cli.command('check')
@@ -527,23 +545,35 @@ export function createCli(
 }
 
 /**
- * Runs the `rq` command line and returns the exit code. `rq view` returns
- * once the server listens; the server keeps the process running.
+ * Runs the `rq` command line and returns the exit code. `rq view`
+ * returns once the server listens, and adds it to `servers`; it serves until
+ * whoever passed `servers` closes it.
  */
 export async function runCli(
     args: string[],
-    io: Io
+    io: Io,
+    servers: Server[] = [ ]
   ): Promise<number>
 {
   const { cli, state } =
     createCli(
       args,
-      io);
+      io,
+      servers);
 
   if (args.length === 0) {
     cli.outputHelp();
     return 0;
   }
+
+  const logger =
+    getLogger(
+      io,
+      'rq');
+
+  logger.debug(
+    { args },
+    'command started');
 
   takeWritten();
 
@@ -569,9 +599,18 @@ export async function runCli(
   try {
     const processed =
       await postProcess(
-        state.io,
+        { ...state.io,
+          logger:
+            getLogger(
+              state.io,
+              'rq.post-process') },
         takeWritten(),
         'rq.json');
+
+    logger.debug(
+      { exitCode: state.exitCode,
+        postProcessing: processed },
+      'command finished');
 
     return state.exitCode === 0
       ? processed
@@ -595,4 +634,40 @@ function collect(
 {
   return [ ...previous,
            value ];
+}
+
+/**
+ * The `rq` executable: runs the command line with a logger provider made
+ * from `--loglevel`, `--logfile`, `--logformat` and the `RQ_LOG_`
+ * variables, and disposes it before it returns the exit code. A server that
+ * `view` started serves until SIGINT or SIGTERM first.
+ */
+export async function main(
+    args: string[],
+    io: Io
+  ): Promise<number>
+{
+  const loggerProvider =
+    createLoggerProvider(
+      'RQ_LOG_',
+      readLoggerOptions(args));
+
+  const servers: Server[] = [ ];
+
+  try {
+    const exitCode =
+      await runCli(
+        args,
+        { ...io,
+          loggerProvider },
+        servers);
+
+    for (const server of servers) {
+      await untilStopped(server);
+    }
+
+    return exitCode;
+  } finally {
+    await loggerProvider.dispose();
+  }
 }

@@ -1,5 +1,19 @@
+import { createTestLoggerProvider }
+  from 'asljs-testing';
+import test
+  from 'node:test';
 import { Io }
   from '../io.js';
+
+/**
+ * One provider for every test file that imports this module, configured by
+ * `ASLJS_TEST_LOG_LEVEL`, `ASLJS_TEST_LOG_FILE` and `ASLJS_TEST_LOG_FORMAT`.
+ */
+const loggerProvider =
+  createTestLoggerProvider();
+
+test.after(
+  async () => await loggerProvider.dispose());
 
 export interface TestIo extends Io
 {
@@ -39,6 +53,7 @@ export function createTestIo(
       new Date(
         '2026-01-02T03:04:05.000Z'),
            detectAgent: async () => null,
+           loggerProvider,
            out: () => out,
            err: () => err };
 }

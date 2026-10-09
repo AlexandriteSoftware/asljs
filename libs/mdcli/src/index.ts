@@ -50,6 +50,7 @@ export {
   page,
   serverUrl,
   startServer,
+  untilStopped,
   type ServerOptions
 } from './server.js';
 

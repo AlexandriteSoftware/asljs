@@ -1,5 +1,7 @@
 import { type LoggerOverrides }
   from 'asljs-logging';
+import { untilStopped }
+  from 'asljs-mdcli';
 import { Command }
   from 'commander';
 import { execBacklinks }
@@ -405,10 +407,13 @@ function addView(
           options
         ) =>
       {
-        await environment.resolve(execView)(
-          environment,
-          { port: options.port,
-            host: options.host });
+        // The view serves until it is stopped, so that the environment and
+        // its logger are disposed after the server, not while it serves.
+        await untilStopped(
+          await environment.resolve(execView)(
+            environment,
+            { port: options.port,
+              host: options.host }));
       });
 }
 

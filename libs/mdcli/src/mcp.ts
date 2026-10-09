@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { type Command }
   from 'commander';
 import { Readable }
@@ -171,14 +174,11 @@ export function readLines(
 export interface ServeOptions
 {
   /**
-   * Called for a line that is not valid JSON, which is ignored.
+   * Where a line that is not valid JSON, which is ignored, is logged at
+   * `warning`, each request at `trace`, and each tool call at `debug`;
+   * nothing is logged when absent.
    */
-  onInvalidLine?: (line: string) => void;
-
-  /**
-   * Called with the method of each request.
-   */
-  onRequest?: (method: string) => void;
+  logger?: Logger;
 }
 
 /**
@@ -494,18 +494,32 @@ async function respond(
     options: ServeOptions
   ): Promise<void>
 {
+  const logger =
+    options.logger ?? new NullLogger();
+
   let message: JsonRpcMessage;
 
   try {
     message =
       JSON.parse(line) as JsonRpcMessage;
   } catch {
-    options.onInvalidLine?.(line);
+    logger.warning(
+      'ignored a line that is not valid JSON');
 
     return;
   }
 
-  options.onRequest?.(message.method ?? '');
+  logger.trace(
+    { method: message.method,
+      id: message.id },
+    'request');
+
+  if (message.method === 'tools/call') {
+    logger.debug(
+      { tool:
+          message.params?.name },
+      'tool call');
+  }
 
   const response =
     await handleMessage(

@@ -13,12 +13,14 @@ exits with a non-zero code and says why.
 - [R11 Agents and configuration][R11]
 - [R14 MCP server][R14]
 - [T10 Command line][T10]
+- [R15 Logging][R15]
 
 [R2]: <model/R2 Board model.md>
 [R4]: <commands/R4 Moving documents.md>
 [R11]: <R11 Agents and configuration.md>
 [R14]: <R14 MCP server.md>
 [T10]: <tests/T10 Command line.md>
+[R15]: <R15 Logging.md>
 
 ## Coverage
 

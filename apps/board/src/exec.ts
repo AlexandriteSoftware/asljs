@@ -13,7 +13,8 @@ import { CONVENTIONS,
          describe,
          getCommand }
   from './ask.js';
-import { Io }
+import { getLogger,
+         Io }
   from './io.js';
 import { aKind,
          findItem,
@@ -129,7 +130,12 @@ export async function execExec(
           plan,
           related.idea,
           done,
-          previous));
+          previous),
+        getLogger(
+          io,
+          'board.agent')
+        .scope(
+          { task: task.path }));
 
     const status: ResultStatus =
       verdict.ok

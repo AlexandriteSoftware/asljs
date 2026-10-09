@@ -71,3 +71,63 @@ test(
       environment.stdout.toString(),
       '0.1.16\n');
   });
+
+test(
+  'runCli --loglevel and --logfile log the files it formats',
+  async () =>
+  {
+    await using workspace =
+      new TmpDir();
+
+    await workspace.writeText(
+      'src/sample.ts',
+      "import{readFile}from'node:fs/promises';");
+
+    const environment =
+      createEnvironment(
+        { cwd: workspace.path });
+
+    const exitCode =
+      await runCli(
+        [ '--loglevel',
+          'debug',
+          '--logfile',
+          workspace.resolve('sfmt.log'),
+          'format',
+          'src/**/*.ts' ],
+        environment);
+
+    await environment.dispose();
+
+    assert.strictEqual(
+      exitCode,
+      0);
+
+    const entries =
+      (await workspace.readText('sfmt.log'))
+      .trim()
+      .split('\n')
+      .map(
+        line =>
+          JSON.parse(line) as {
+            context: string;
+            msg: string;
+            files?: number;
+            changed?: boolean;
+          });
+
+    assert.deepEqual(
+      entries
+        .filter(
+          entry => entry.context === 'sfmt')
+        .map(
+          entry => [ entry.context,
+                     entry.msg,
+                     entry.files ?? entry.changed ]),
+      [ [ 'sfmt',
+          'formatting',
+          1 ],
+        [ 'sfmt',
+          'file formatted',
+          true ] ]);
+  });

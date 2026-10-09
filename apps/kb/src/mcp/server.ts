@@ -62,9 +62,6 @@ export async function runMcpServer(
     write: (line: string) => void
   ): Promise<void>
 {
-  const logger =
-    environment.loggerProvider.getLogger();
-
   await serveLines(
     input,
     write,
@@ -72,14 +69,8 @@ export async function runMcpServer(
     { name: SERVER_NAME,
       version:
         packageVersion() },
-    { onInvalidLine:
-        () =>
-        logger.warning(
-          'Ignored a line that is not valid JSON.'),
-      onRequest:
-        method =>
-        logger.trace(
-          `request ${method}`) });
+    { logger:
+        environment.loggerProvider.getLogger('kb.mcp') });
 }
 
 export interface EndpointServer

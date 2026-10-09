@@ -10,6 +10,8 @@ import { findConfig,
          takeWritten,
          writeMarkdown }
   from './post-process.js';
+import { createRecordingLogger }
+  from './testing/recording-logger.js';
 
 /**
  * Where `postProcess` reports, collecting what it writes to standard error.
@@ -170,4 +172,31 @@ test(
     assert.match(
       io.err(),
       /^Post-processing failed: node .* exited with code 2\nprocessed\n$/);
+
+    const { logger, entries } =
+      createRecordingLogger();
+
+    await postProcess(
+      { ...io,
+        logger },
+      files,
+      'rq.json');
+
+    assert.deepEqual(
+      entries.map(
+        entry => [ entry.level,
+                   entry.message ]),
+      [ [ 'debug',
+          'post-processing' ],
+        [ 'debug',
+          'post-processing exited' ] ]);
+
+    assert.match(
+      String(
+        entries[0].fields.command),
+      /^node .* "reqs\/R1 A\.md"$/);
+
+    assert.equal(
+      entries[1].fields.code,
+      2);
   });

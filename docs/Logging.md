@@ -52,11 +52,18 @@ precedence over the default.
 
 The prefixes in use:
 
+- `board` and `board-mcp` - `BOARD_LOG_`
 - `cog` - `COG_LOG_`
-- `kb` - `KB_LOG_`
+- `kb` and `kb-mcp` - `KB_LOG_`
 - `part` - `PART_LOG_`
+- `rq` and `rq-mcp` - `RQ_LOG_`
+- `sfmt` - `SFMT_LOG_`
 - `toolkit` - `TOOLKIT_LOG_`
 - `asljs-logging` used directly, without a prefix of its own - `ASLJS_LOG_`
+
+`dash` is outside these rules. It is a private JavaScript application with
+`express` as its only dependency: it writes to the console with `console.log`
+and `console.error`, and takes its port from `PORT`.
 
 ## Levels
 
@@ -165,13 +172,16 @@ its own tests use an identical private copy, because `asljs-testing` depends on
 ## Rules for code
 
 - A library takes a `Logger` from its caller and never creates a provider. When
-  the caller gives none, it uses a `NullLogger`, as `TmpDir` does.
+  the caller gives none, it uses a `NullLogger`, as `TmpDir` and `asljs-mdcli`
+  do.
 - An application creates one `LoggerProvider` at its entry point with
   `createLoggerProvider('<APP>_LOG_', readLoggerOptions(argv))`, passing `{
   allowStdout: false }` when its stdout carries a protocol. It hands
   `getLogger(context)` to the parts it builds, and awaits `dispose()` before it
   exits, so buffered entries are written. That includes exits from fatal error
-  handlers.
+  handlers, and a command that serves until it is stopped, such as `view`: it
+  waits for the server to close (`untilStopped` of `asljs-mdcli`, on SIGINT or
+  SIGTERM) before the provider is disposed.
 - The context names the component, for example `TmpDir`, `cog.mcp` or `http`.
 - Fields shared by a unit of work, such as a request id, go on a scoped logger
   (`logger.scope({ requestId })`) passed to the code doing that work, rather

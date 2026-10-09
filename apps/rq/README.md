@@ -65,6 +65,10 @@ npm install asljs-rq
 
 ## Usage
 
+Every command takes `--loglevel <level>`, `--logfile <target>` and `--logformat
+<format>`, or `RQ_LOG_LEVEL`, `RQ_LOG_FILE` and `RQ_LOG_FORMAT`, to log what it
+does, e.g. `--loglevel debug --logfile stderr`; nothing is logged without them.
+
 Build the graph with the commands, and write the statements, descriptions and
 steps as text:
 

@@ -1,3 +1,6 @@
+import { type Logger,
+         NullLogger }
+  from 'asljs-logging';
 import { askAgent,
          CommandRun,
          runCommand,
@@ -29,6 +32,12 @@ export interface RunContext
    * Runs `node` and `dotnet`; `runProgram` when absent.
    */
   program?: typeof runProgram;
+
+  /**
+   * Where the test, each command it runs and its agent are logged; nothing
+   * is logged when absent.
+   */
+  logger?: Logger;
 }
 
 interface StepOutcome
@@ -50,15 +59,36 @@ export async function runTest(
 {
   const output: string[] = [ ];
 
+  const logger =
+    (context.logger ?? new NullLogger())
+    .scope(
+      { test: node.path });
+
+  const scoped =
+    { ...context,
+      logger };
+
+  logger.debug(
+    { steps: node.steps.length },
+    'test started');
+
   const result =
     (
-    status: TestResult['status'],
-    note: string
-  ): TestResult => ({ file: node.path,
-                      status,
-                      note,
-                      output:
-                        output.join('') });
+        status: TestResult['status'],
+        note: string
+      ): TestResult =>
+    {
+    logger.debug(
+      { status,
+        note },
+      'test finished');
+
+    return { file: node.path,
+             status,
+             note,
+             output:
+               output.join('') };
+  };
 
   if (node.stepProblems.length > 0) {
     return result(
@@ -82,7 +112,7 @@ export async function runTest(
       await runStep(
         node,
         step,
-        context,
+        scoped,
         output);
 
     if (!outcome.ok) {
@@ -168,6 +198,9 @@ async function runStep(
   const cwd =
     path.dirname(node.path);
 
+  const logger =
+    context.logger ?? new NullLogger();
+
   switch (step.type) {
     case 'shell':
       for (const command of step.commands) {
@@ -178,7 +211,8 @@ async function runStep(
             runCommand(
               command,
               cwd),
-            output);
+            output,
+            logger);
 
         if (!outcome.ok) {
           return outcome;
@@ -204,7 +238,8 @@ async function runStep(
             cwd,
             withoutTestContext()
           ),
-          output);
+          output,
+          logger);
 
       return outcome.ok
           && ranNoNodeTest(
@@ -229,7 +264,8 @@ async function runStep(
             args,
             cwd
           ),
-          output);
+          output,
+          logger);
 
       return outcome.ok
           && ranNoDotnetTest(
@@ -255,16 +291,25 @@ async function runStep(
 async function run(
     command: string,
     start: () => Promise<CommandRun>,
-    output: string[]
+    output: string[],
+    logger: Logger
   ): Promise<StepOutcome>
 {
   let text = `$ ${command}\n`;
+
+  logger.debug(
+    { command },
+    'step command started');
 
   let commandRun;
 
   try {
     commandRun = await start();
   } catch (error) {
+    logger.debug(
+      error as Error,
+      'step command failed to start');
+
     output.push(text);
 
     return { ok: false,
@@ -286,6 +331,10 @@ async function run(
   }
 
   output.push(text);
+
+  logger.debug(
+    { code: commandRun.code },
+    'step command exited');
 
   if (commandRun.code === 0) {
     return { ok: true,
@@ -363,7 +412,8 @@ async function instruct(
         ...verdictInstructions(
           'why the step failed') ]
       .join('\n')
-      + '\n');
+      + '\n',
+      context.logger);
 
   output.push(
     verdict.output === '' || verdict.output.endsWith('\n')
