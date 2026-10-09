@@ -1,11 +1,11 @@
-import { type Heading,
-         type RootContent }
-  from 'mdast';
 import { getSection,
          parseMarkdown,
          plainText,
          splitLocalUrl }
-  from './markdown.js';
+  from 'asljs-mdcli';
+import { type Heading,
+         type RootContent }
+  from 'mdast';
 import { readStatus,
          type StatusSection }
   from './status-section.js';

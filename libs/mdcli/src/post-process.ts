@@ -4,24 +4,29 @@ import { readFile,
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { Io }
-  from './io.js';
 import { runCommand }
   from './run-command.js';
 
 /**
- * The project configuration file, looked for in the working folder and its
- * parents.
+ * What a tool's configuration file, e.g. `rq.json`, says.
  */
-export const CONFIG_FILE = 'rq.json';
-
-export interface RqConfig
+export interface ToolConfig
 {
   /**
-   * A command line run, in the folder of `rq.json`, with the markdown files a
-   * command wrote as arguments, e.g. a project's formatter and linter.
+   * A command line run, in the folder of the configuration file, with the
+   * markdown files a command wrote as arguments, e.g. a project's formatter
+   * and linter.
    */
   markdownPostProcessing?: string;
+}
+
+/**
+ * Where `postProcess` reports a failure.
+ */
+export interface PostProcessIo
+{
+  cwd: string;
+  stderr: { write(text: string): unknown; };
 }
 
 const written = new Set<string>();
@@ -58,12 +63,13 @@ export function takeWritten(
 }
 
 /**
- * The nearest `rq.json` of `folder` or a parent, and its folder; `null` when
- * there is none.
+ * The nearest configuration file named `name`, e.g. `rq.json`, of `folder` or
+ * a parent, and its folder; `null` when there is none.
  */
 export async function findConfig(
-    folder: string
-  ): Promise<{ folder: string; config: RqConfig; } | null>
+    folder: string,
+    name: string
+  ): Promise<{ folder: string; config: ToolConfig; } | null>
 {
   let current: string | null =
     path.resolve(folder);
@@ -72,7 +78,7 @@ export async function findConfig(
     const file =
       path.join(
         current,
-        CONFIG_FILE);
+        name);
 
     if ((await stat(file).catch(() => null))?.isFile()) {
       return { folder: current,
@@ -94,7 +100,7 @@ export async function findConfig(
 
 async function readConfig(
     file: string
-  ): Promise<RqConfig>
+  ): Promise<ToolConfig>
 {
   let config: unknown;
 
@@ -114,7 +120,7 @@ async function readConfig(
   }
 
   const command =
-    (config as RqConfig | null)?.markdownPostProcessing;
+    (config as ToolConfig | null)?.markdownPostProcessing;
 
   if (
     typeof config
@@ -128,18 +134,20 @@ async function readConfig(
       `${file}: "markdownPostProcessing" must be a command line.`);
   }
 
-  return config as RqConfig;
+  return config as ToolConfig;
 }
 
 /**
- * Runs the `markdownPostProcessing` command of the nearest `rq.json` with the
- * markdown files a command wrote and that still exist, relative to the folder
- * of `rq.json`, where it runs. Returns 1 and reports the output when the
- * command fails, 0 otherwise or when there is nothing to do.
+ * Runs the `markdownPostProcessing` command of the nearest configuration file
+ * named `config`, e.g. `rq.json`, with the markdown files a command wrote and
+ * that still exist, relative to the folder of the configuration file, where it
+ * runs. Returns 1 and reports the output when the command fails, 0 otherwise
+ * or when there is nothing to do.
  */
 export async function postProcess(
-    io: Io,
-    files: readonly string[]
+    io: PostProcessIo,
+    files: readonly string[],
+    config: string
   ): Promise<number>
 {
   const existing: string[] = [ ];
@@ -155,7 +163,9 @@ export async function postProcess(
   }
 
   const found =
-    await findConfig(io.cwd);
+    await findConfig(
+      io.cwd,
+      config);
 
   const command =
     found?.config.markdownPostProcessing?.trim();

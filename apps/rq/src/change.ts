@@ -1,3 +1,5 @@
+import { writeMarkdown }
+  from 'asljs-mdcli';
 import { mkdir,
          readFile,
          rm,
@@ -16,8 +18,6 @@ import { getNodeKind,
   from './graph.js';
 import { Io }
   from './io.js';
-import { writeMarkdown }
-  from './post-process.js';
 import { display,
          readExisting }
   from './query.js';

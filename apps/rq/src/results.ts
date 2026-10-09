@@ -1,3 +1,9 @@
+import { findMarkdownFiles,
+         parseMarkdown,
+         plainText,
+         runCommand,
+         writeMarkdown }
+  from 'asljs-mdcli';
 import { mkdir,
          readdir,
          readFile,
@@ -7,16 +13,8 @@ import { mkdir,
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { findMarkdownFiles,
-         getNodeId }
+import { getNodeId }
   from './graph.js';
-import { parseMarkdown,
-         plainText }
-  from './markdown.js';
-import { writeMarkdown }
-  from './post-process.js';
-import { runCommand }
-  from './run-command.js';
 
 export type TestStatus = 'PASS' | 'FAIL';
 

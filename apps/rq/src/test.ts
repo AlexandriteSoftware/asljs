@@ -1,8 +1,8 @@
-import path
-  from 'node:path';
 import { AgentSpec,
          getAgentCommand }
-  from './agent.js';
+  from 'asljs-mdcli';
+import path
+  from 'node:path';
 import { Io }
   from './io.js';
 import { display }
@@ -80,7 +80,8 @@ export async function execTest(
       agent ??= getAgentCommand(
         io,
         options.ai ?? {},
-        'run') };
+        'run',
+        'RQ_AI_COMMAND') };
 
   const tests: TestResult[] = [ ];
 

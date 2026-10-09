@@ -36,6 +36,12 @@ rq coverage asks the agent and records the verdict.
 - File: ../../../build/coverage-section.test.js
 - Test: writeCoverageSection adds the section before the Status, or replaces it
 
+### writeCoverageSection replaces the links of the analysis by their text
+
+- Type: javascript
+- File: ../../../build/coverage-section.test.js
+- Test: writeCoverageSection replaces the links of the analysis by their text
+
 ### execTest writes the status of each test and of the requirements above it
 
 - Type: javascript
@@ -44,7 +50,7 @@ rq coverage asks the agent and records the verdict.
 
 ## Status
 
-- Result: PASS - 6 steps
-- Execution: [E9 rq][E9]
+- Result: PASS - 7 steps
+- Execution: [E16 rq][E16]
 
-[E9]: <../.rq/E9 rq.md>
+[E16]: <../.rq/E16 rq.md>

@@ -1,10 +1,11 @@
-import { readFile }
-  from 'node:fs/promises';
 import { AgentSpec,
          askAgent,
          getAgentCommand,
-         verdictInstructions }
-  from './agent.js';
+         verdictInstructions,
+         writeMarkdown }
+  from 'asljs-mdcli';
+import { readFile }
+  from 'node:fs/promises';
 import { writeCoverageSection }
   from './coverage-section.js';
 import { parseDocument }
@@ -14,8 +15,6 @@ import { RqGraph,
   from './graph.js';
 import { Io }
   from './io.js';
-import { writeMarkdown }
-  from './post-process.js';
 import { display }
   from './query.js';
 import { writeStatus }
@@ -79,7 +78,8 @@ export async function execCoverage(
     await getAgentCommand(
       io,
       options.ai ?? {},
-      'read');
+      'read',
+      'RQ_AI_COMMAND');
 
   if (command === null) {
     throw new Error(
@@ -212,7 +212,8 @@ function buildPrompt(
         child => `- ${child} (${graph.nodes.get(child)?.kind ?? 'requirement'})`),
       '',
       'Read the files and decide. First write your analysis, in markdown',
-      'without headings, for the people who maintain the requirement:',
+      'without headings or links - name requirements and tests by their id -,',
+      'for the people who maintain the requirement:',
       '',
       '- when it is fully covered, for each statement, the requirement or test',
       '  that covers it;',

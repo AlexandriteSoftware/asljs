@@ -1,16 +1,15 @@
+import { askAgent,
+         CommandRun,
+         runCommand,
+         runProgram,
+         verdictInstructions }
+  from 'asljs-mdcli';
 import path
   from 'node:path';
-import { askAgent,
-         verdictInstructions }
-  from './agent.js';
 import { RqNode }
   from './graph.js';
 import { TestResult }
   from './results.js';
-import { CommandRun,
-         runCommand,
-         runProgram }
-  from './run-command.js';
 import { DotnetStep,
          InstructionStep,
          JavaScriptStep,

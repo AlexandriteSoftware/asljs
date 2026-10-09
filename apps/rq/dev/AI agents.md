@@ -2,6 +2,7 @@
 
 How an AI agent is chosen and asked.
 
+- The agent code is in `asljs-mdcli` (`libs/mdcli`), shared with `board`.
 - `getAgentCommand` picks `RQ_AI_COMMAND`, else the agent `--ai` names, else the
   first of `claude` and `copilot` whose `--version` runs (`detectAgent`). Tests
   replace detection with `Io.detectAgent`, so no real agent runs.

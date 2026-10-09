@@ -1,5 +1,3 @@
-import { Io }
-  from './io.js';
 import { runCommand }
   from './run-command.js';
 
@@ -22,14 +20,40 @@ export interface AgentSpec
 
 /**
  * What the agent may do: `read` - read and search files; `run` - also run
- * commands, still without editing files.
+ * commands, still without editing files; `edit` - also edit files.
  */
-export type AgentMode = 'read' | 'run';
+export type AgentMode = 'read' | 'run' | 'edit';
+
+/**
+ * Where `getAgentCommand` looks: the environment, for the override, and how
+ * to detect an agent when none is named.
+ */
+export interface AgentSource
+{
+  env: Record<string, string | undefined>;
+
+  /**
+   * Finds the agent to use when none is named; `detectAgent` when absent.
+   */
+  detectAgent?: () => Promise<AiAgent | null>;
+}
 
 export interface AgentVerdict
 {
   ok: boolean;
   message: string;
+
+  /**
+   * The agent could not finish without more from the user: its verdict was
+   * `Blocked`. `ok` is then false.
+   */
+  blocked?: boolean;
+
+  /**
+   * The verdict line as it was parsed, with any other fields the prompt asked
+   * for, e.g. `questions`.
+   */
+  data?: Record<string, unknown>;
 }
 
 const AGENT_COMMANDS: Readonly<Record<AiAgent, Record<AgentMode, string>>> =
@@ -38,12 +62,16 @@ const AGENT_COMMANDS: Readonly<Record<AiAgent, Record<AgentMode, string>>> =
         { read:
             'claude -p --allowedTools Read,Grep,Glob',
           run:
-            'claude -p --allowedTools Read,Grep,Glob,Bash --disallowedTools Edit,Write,NotebookEdit' },
+            'claude -p --allowedTools Read,Grep,Glob,Bash --disallowedTools Edit,Write,NotebookEdit',
+          edit:
+            'claude -p --allowedTools Read,Grep,Glob,Bash,Edit,Write' },
       copilot:
         { read:
             'copilot -s --no-ask-user --allow-all-tools --deny-tool=write --deny-tool=shell',
           run:
-            'copilot -s --no-ask-user --allow-all-tools --deny-tool=write' } });
+            'copilot -s --no-ask-user --allow-all-tools --deny-tool=write',
+          edit:
+            'copilot -s --no-ask-user --allow-all-tools' } });
 
 /**
  * Reads an `--ai` value: `true` for a bare `--ai`, otherwise
@@ -104,21 +132,22 @@ export async function detectAgent(
 }
 
 /**
- * The command line of the agent: `RQ_AI_COMMAND` when set, otherwise the
- * agent the spec names, or the detected one, with its model. `null` when no
- * agent is named and none is found.
+ * The command line of the agent: the `override` environment variable when
+ * set, e.g. `RQ_AI_COMMAND`, otherwise the agent the spec names, or the
+ * detected one, with its model. `null` when no agent is named and none is
+ * found.
  */
 export async function getAgentCommand(
-    io: Io,
+    io: AgentSource,
     spec: AgentSpec,
-    mode: AgentMode
+    mode: AgentMode,
+    override: string
   ): Promise<string | null>
 {
-  const override =
-    io.env.RQ_AI_COMMAND;
+  const command = io.env[override];
 
-  if (override) {
-    return override;
+  if (command) {
+    return command;
   }
 
   const agent =
@@ -142,8 +171,8 @@ export async function getAgentCommand(
 
 /**
  * Runs the agent in `cwd` with the prompt on standard input. The verdict is
- * the last line of its output that is a JSON object with `result` `OK` or
- * `Fail`; `output` is everything it printed, and `answer` what it wrote to
+ * the last line of its output that is a JSON object with `result` `OK`,
+ * `Fail` or `Blocked`; `output` is everything it printed, and `answer` what it wrote to
  * standard output before the verdict.
  */
 export async function askAgent(
@@ -226,7 +255,8 @@ function isVerdict(
       JSON.parse(line);
 
     return value?.result === 'OK'
-      || value?.result === 'Fail';
+      || value?.result === 'Fail'
+      || value?.result === 'Blocked';
   } catch {
     return false;
   }
@@ -271,16 +301,26 @@ function parseVerdict(
 
     if (value?.result === 'OK') {
       return { ok: true,
-               message: '' };
+               message: '',
+               data: value };
     }
 
-    if (value?.result === 'Fail') {
+    if (
+      value?.result === 'Fail'
+      || value?.result === 'Blocked'
+    ) {
       return { ok: false,
                message:
                  typeof value.message === 'string'
             && value.message !== ''
           ? value.message
-          : 'The agent reported a failure.' };
+          : value.result === 'Blocked'
+          ? 'The agent needs more from the user.'
+          : 'The agent reported a failure.',
+               ...value.result === 'Blocked'
+          ? { blocked: true }
+          : {},
+               data: value };
     }
   }
 

@@ -31,6 +31,6 @@ The command line prints help and returns exit codes.
 ## Status
 
 - Result: PASS - 4 steps
-- Execution: [E9 rq][E9]
+- Execution: [E16 rq][E16]
 
-[E9]: <../.rq/E9 rq.md>
+[E16]: <../.rq/E16 rq.md>

@@ -4,17 +4,28 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { runCli }
-  from './cli.js';
 import { findConfig,
          postProcess,
+         type PostProcessIo,
          takeWritten,
          writeMarkdown }
   from './post-process.js';
-import { writeFixture }
-  from './testing/fixture.js';
-import { createTestIo }
-  from './testing/test-io.js';
+
+/**
+ * Where `postProcess` reports, collecting what it writes to standard error.
+ */
+function createIo(
+    cwd: string
+  ): PostProcessIo & { err(): string; }
+{
+  let err = '';
+
+  return { cwd,
+           stderr:
+             { write:
+                 (text: string) => err += text },
+           err: () => err };
+}
 
 /**
  * A post-processing script that appends its arguments, one per line, to
@@ -47,7 +58,8 @@ test(
 
     assert.equal(
       await findConfig(
-        dir.resolve('a')),
+        dir.resolve('a'),
+        'rq.json'),
       null);
 
     await dir.writeText(
@@ -60,7 +72,8 @@ test(
 
     assert.deepEqual(
       await findConfig(
-        dir.resolve('a/b')),
+        dir.resolve('a/b'),
+        'rq.json'),
       { folder: dir.path,
         config:
           { markdownPostProcessing: 'toolkit flint' } });
@@ -71,7 +84,8 @@ test(
 
     await assert.rejects(
       findConfig(
-        dir.resolve('a/b')),
+        dir.resolve('a/b'),
+        'rq.json'),
       /"markdownPostProcessing" must be a command line/);
 
     await dir.writeText(
@@ -80,7 +94,8 @@ test(
 
     await assert.rejects(
       findConfig(
-        dir.resolve('a/b')),
+        dir.resolve('a/b'),
+        'rq.json'),
       /rq\.json: not valid JSON/);
   });
 
@@ -109,13 +124,14 @@ test(
       [ ]);
 
     const io =
-      createTestIo(
+      createIo(
         dir.resolve('reqs'));
 
     assert.equal(
       await postProcess(
         io,
-        files),
+        files,
+        'rq.json'),
       0);
 
     await dir.writeText(
@@ -128,7 +144,8 @@ test(
       await postProcess(
         io,
         [ ...files,
-          dir.resolve('reqs/Gone.md') ]),
+          dir.resolve('reqs/Gone.md') ],
+        'rq.json'),
       0);
 
     assert.equal(
@@ -146,86 +163,11 @@ test(
     assert.equal(
       await postProcess(
         io,
-        files),
+        files,
+        'rq.json'),
       1);
 
     assert.match(
       io.err(),
       /^Post-processing failed: node .* exited with code 2\nprocessed\n$/);
-  });
-
-test(
-  'rq post-processes the markdown files a command wrote',
-  async () =>
-  {
-    await using dir =
-      new TmpDir();
-
-    await writeFixture(dir);
-
-    await dir.writeText(
-      'rq.json',
-      JSON.stringify(
-        { markdownPostProcessing:
-            await writeProcessor(dir) }));
-
-    const io =
-      createTestIo(dir.path);
-
-    assert.equal(
-      await runCli(
-        [ 'add',
-          'requirement',
-          'R2',
-          'Speed' ],
-        io),
-      0);
-
-    assert.deepEqual(
-      (await dir.readText('args.txt'))
-        .trim()
-        .split('\n')
-        .sort(),
-      [ 'reqs/R2 Part.md',
-        'reqs/R3 Speed.md' ]);
-
-    assert.equal(
-      await runCli(
-        [ 'list',
-          'reqs' ],
-        io),
-      0);
-
-    assert.equal(
-      (await dir.readText('args.txt'))
-        .trim()
-        .split('\n').length,
-      2);
-
-    await dir.writeText(
-      'rq.json',
-      JSON.stringify(
-        { markdownPostProcessing:
-            await writeProcessor(
-              dir,
-              3) }));
-
-    const failing =
-      createTestIo(dir.path);
-
-    assert.equal(
-      await runCli(
-        [ 'add',
-          'requirement',
-          'R2',
-          'Size' ],
-        failing),
-      1);
-
-    assert.match(
-      failing.err(),
-      /^Post-processing failed: node .* exited with code 3\n/);
-
-    assert.ok(
-      (await dir.stat('reqs/R4 Size.md')).isFile());
   });

@@ -1,9 +1,10 @@
+import { findMarkdownFiles }
+  from 'asljs-mdcli';
 import { stat }
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { findMarkdownFiles,
-         getNodeId,
+import { getNodeId,
          readNode,
          RqNode }
   from './graph.js';

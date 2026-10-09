@@ -1,12 +1,12 @@
+import { getSection,
+         plainText }
+  from 'asljs-mdcli';
 import { type Code,
          type Heading,
          type List,
          type Root,
          type RootContent }
   from 'mdast';
-import { getSection,
-         plainText }
-  from './markdown.js';
 
 export type StepType = 'shell' | 'javascript' | 'dotnet' | 'instruction';
 
@@ -82,8 +82,9 @@ export interface ParsedSteps
   problems: string[];
 }
 
+// A value may be wrapped over several lines, as a formatter leaves it.
 const FIELD =
-  /^(Type|File|Test|Project|Filter):\s*(.*)$/i;
+  /^(Type|File|Test|Project|Filter):\s*([\s\S]*)$/i;
 
 const TYPE_NAMES: ReadonlyMap<string, StepType> =
   new Map(
@@ -240,7 +241,11 @@ function parseStep(
 
     fields.set(
       match[1].toLowerCase(),
-      match[2].trim());
+      match[2]
+        .replace(
+          /\s+/g,
+          ' ')
+        .trim());
   }
 
   const code =

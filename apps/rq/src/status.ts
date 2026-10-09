@@ -1,3 +1,5 @@
+import { writeMarkdown }
+  from 'asljs-mdcli';
 import { readFile }
   from 'node:fs/promises';
 import path
@@ -9,8 +11,6 @@ import { relativeUrl }
 import { loadGraph,
          RqGraph }
   from './graph.js';
-import { writeMarkdown }
-  from './post-process.js';
 import { Status,
          TestResult }
   from './results.js';

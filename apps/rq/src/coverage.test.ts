@@ -134,6 +134,7 @@ test(
             'reqs/tests/T1 Passes.md')
         } (test)`,
                       'First write your analysis',
+                      'without headings or links - name requirements and tests by their id',
                       'for each statement, the requirement or test',
                       'each statement nothing covers, and what to do to cover',
                       'a test to add and what it should check, a sub-requirement to add',

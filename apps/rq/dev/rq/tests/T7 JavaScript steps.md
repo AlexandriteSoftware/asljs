@@ -13,7 +13,7 @@ JavaScript steps run node --test with a caption.
 ### runProgram passes the arguments without a shell
 
 - Type: javascript
-- File: ../../../build/run-command.test.js
+- File: ../../../../../libs/mdcli/build/run-command.test.js
 - Test: runProgram passes the arguments without a shell
 
 ### the JavaScript and .NET arguments and their no-test checks
@@ -25,6 +25,6 @@ JavaScript steps run node --test with a caption.
 ## Status
 
 - Result: PASS - 3 steps
-- Execution: [E9 rq][E9]
+- Execution: [E16 rq][E16]
 
-[E9]: <../.rq/E9 rq.md>
+[E16]: <../.rq/E16 rq.md>

@@ -28,8 +28,10 @@ INCOMPLETE  requirements/R2 CSV export.md - Nothing covers quoting of commas.
   complete, which requirement or test covers each statement; when it is not,
   each statement nothing covers and what to do - a test to add and what it
   should check, a sub-requirement to add and its statement, or a change to make.
-  It is rewritten on every check, placed before `## Status`; a heading the agent
-  writes is escaped so the section stays one section.
+  The agent is asked to name requirements and tests by their id; a link it
+  writes anyway is replaced by its text. It is rewritten on every check, placed
+  before `## Status`; a heading the agent writes is escaped so the section stays
+  one section.
 
 ```markdown
 ## Coverage

@@ -53,6 +53,6 @@ Statuses follow the latest results and propagate up.
 ## Status
 
 - Result: PASS - 7 steps
-- Execution: [E10 T8 T10 T12 T27][E10]
+- Execution: [E16 rq][E16]
 
-[E10]: <../.rq/E10 T8 T10 T12 T27.md>
+[E16]: <../.rq/E16 rq.md>

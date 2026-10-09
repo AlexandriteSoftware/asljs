@@ -1,3 +1,5 @@
+import { runCommand }
+  from 'asljs-mdcli';
 import { TmpDir }
   from 'asljs-tmpdir';
 import assert
@@ -13,8 +15,6 @@ import { type Execution,
          RETENTION,
          writeExecution }
   from './results.js';
-import { runCommand }
-  from './run-command.js';
 import { TEST_TREE }
   from './testing/test-io.js';
 

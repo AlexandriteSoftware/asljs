@@ -1,9 +1,9 @@
+import { parseMarkdown }
+  from 'asljs-mdcli';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { parseMarkdown }
-  from './markdown.js';
 import { readStatus,
          writeStatus }
   from './status-section.js';

@@ -13,12 +13,14 @@ Applications:
 
 Tools:
 
+- [board][BRD] - a planning board in markdown: develops ideas into plans and
+  tasks, and carries the tasks out with an AI agent.
 - [cog][COG] - AI agents context manager.
 - [kb][KB] - knowledge base CLI and MCP server for markdown libraries.
 - [part][PRT] - defines project artefacts in markdown and validates them with
   rules.
-- [rq][RQ] - AI-assisted requirements management: verifies requirements and
-  evidence written in markdown, and shows them as a graph.
+- [rq][RQ] - AI-assisted requirements management: runs the tests of requirements
+  written in markdown, checks their coverage, and shows them as a graph.
 - [artefacts][ART] - this repository's artefact definitions and the `part`
   plugin that checks them; private.
 - [sfmt][SFMT] - code formatter for TypeScript.
@@ -33,6 +35,8 @@ Libraries:
 - [logging][LOG] - provides logging utilities.
 - [machine][MCH] - provides a state-machine framework for organizing control
   flow.
+- [mdcli][MDC] - building blocks for command-line tools that manage markdown
+  documents with AI agents.
 - [money][MNY] - provides utilities for handling monetary values.
 - [observable][OBS] - makes any object emit events on property changes.
 - [testing][TST] - test helpers: temporary environment variables and globals,
@@ -47,10 +51,12 @@ Libraries:
 [LOC]: ./libs/locator/README.md
 [LOG]: ./libs/logging/README.md
 [MCH]: ./libs/machine/README.md
+[MDC]: ./libs/mdcli/README.md
 [MNY]: ./libs/money/README.md
 [OBS]: ./libs/observable/README.md
 [TST]: ./libs/testing/README.md
 [TDR]: ./libs/tmpdir/README.md
+[BRD]: ./apps/board/README.md
 [COG]: ./apps/cog/README.md
 [KB]: ./apps/kb/README.md
 [ART]: ./aftefacts/README.md

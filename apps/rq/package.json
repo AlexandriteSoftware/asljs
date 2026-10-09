@@ -55,10 +55,8 @@
   "author": "\"Alex Netkachov\" <alex.netkachov@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "commander": "^15.0.0",
-    "marked": "^18.0.6",
-    "remark-parse": "^11.0.0",
-    "unified": "^11.0.5"
+    "asljs-mdcli": "^0.1.0",
+    "commander": "^15.0.0"
   },
   "devDependencies": {
     "asljs-tmpdir": "^0.1.13",

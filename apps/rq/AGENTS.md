@@ -86,7 +86,10 @@ before working on requirements, here or in `dev/rq`.
 
 ## Source map
 
-- `src/markdown.ts` - mdast helpers: sections, plain text, local link targets
+Running commands, the agents, markdown helpers, finding files, post-processing
+and the document server are in `asljs-mdcli` (`libs/mdcli`), shared with
+`board`; a change there needs `npm -w asljs-mdcli run build:dist`.
+
 - `src/document.ts` - parses a document
 - `src/edit.ts` - structural text edits by mdast positions: list items, link
   removal and rewriting, the heading
@@ -97,15 +100,11 @@ before working on requirements, here or in `dev/rq`.
 - `src/graph.ts` - finds the roots, walks the links, reports structure errors
 - `src/steps.ts` - parses the steps of a test
 - `src/run-test.ts` - runs the steps and collects their output
-- `src/agent.ts` - the `--ai` spec, agent detection and command lines, asking an
-  agent for a verdict
 - `src/results.ts` - the execution files: the git working directory, writing,
   reading the latest result of each test
 - `src/status.ts` - the status of every node from the documents, and writing it
 - `src/status-section.ts` - reads and writes the `## Status` section
 - `src/targets.ts` - the nodes the targets of `test` and `coverage` select
-- `src/post-process.ts` - `rq.json`, remembering written markdown, and running
-  the post-processing command
 - `src/coverage.ts` - `coverage`, the AI coverage check
 - `src/coverage-section.ts` - writes the `## Coverage` analysis
 - `src/test.ts`, `src/view.ts` - the commands; `src/cli.ts` wires them

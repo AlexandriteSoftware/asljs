@@ -1,11 +1,13 @@
-import { parseMarkdown }
-  from './markdown.js';
+import { type MarkdownNode,
+         parseMarkdown }
+  from 'asljs-mdcli';
 
 /**
  * The text with its `## Coverage` section, which `rq coverage` owns, set to
  * `analysis`: in place when there is one, otherwise before `## Status`, or
  * at the end. A line of the analysis that would start a heading is escaped,
- * so that the analysis stays inside the section.
+ * so that the analysis stays inside the section, and an inline link is
+ * replaced by its text, so that the document needs no link definitions.
  */
 export function writeCoverageSection(
     text: string,
@@ -14,8 +16,8 @@ export function writeCoverageSection(
 {
   const section =
     `## Coverage\n\n${
-    analysis
-      .trim()
+    removeLinks(
+      analysis.trim())
       .replace(
         /^(\s{0,3})#/gm,
         '$1\\#')
@@ -53,6 +55,68 @@ export function writeCoverageSection(
     text,
     section,
     '');
+}
+
+/**
+ * The text with every inline link replaced by its text.
+ */
+function removeLinks(
+    text: string
+  ): string
+{
+  const links: { start: number; end: number; label: string; }[] = [ ];
+
+  const visit =
+    (
+        node: MarkdownNode
+      ): void =>
+    {
+    if (node.type === 'link') {
+      const first =
+        node.children.at(0)?.position?.start.offset;
+
+      const last =
+        node.children.at(-1)?.position?.end.offset;
+
+      links.push(
+        { start:
+            node.position!.start.offset!,
+          end:
+            node.position!.end.offset!,
+          label:
+            first === undefined
+              || last === undefined
+            ? ''
+            : text.slice(
+              first,
+              last) });
+
+      return;
+    }
+
+    if ('children' in node) {
+      for (const child of node.children) {
+        visit(child);
+      }
+    }
+  };
+
+  visit(
+    parseMarkdown(text));
+
+  return links
+    .reverse()
+    .reduce(
+      (
+        result,
+        link
+      ) =>
+        result.slice(
+          0,
+          link.start)
+        + link.label
+        + result.slice(link.end),
+      text);
 }
 
 /**

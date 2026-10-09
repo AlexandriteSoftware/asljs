@@ -37,3 +37,14 @@ test(
     assert.ok(
       !hasCoverageSection('# R1\n'));
   });
+
+test(
+  'writeCoverageSection replaces the links of the analysis by their text',
+  () =>
+  {
+    assert.equal(
+      writeCoverageSection(
+        '# R1\n',
+        'Covered by [T9 View](<../tests/T9 View.md>) and\n[the **R2** part](R2.md), see https://example.com.'),
+      '# R1\n\n## Coverage\n\nCovered by T9 View and\nthe **R2** part, see https://example.com.\n');
+  });

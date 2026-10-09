@@ -1,9 +1,9 @@
+import { parseMarkdown }
+  from 'asljs-mdcli';
 import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { parseMarkdown }
-  from './markdown.js';
 import { parseSteps,
          splitCommands }
   from './steps.js';
@@ -157,4 +157,18 @@ test(
       [ 'npm ci',
         'node -e "console.log(1)"',
         'npm test' ]);
+  });
+
+test(
+  'parseSteps reads a field value wrapped over several lines',
+  () =>
+  {
+    assert.deepEqual(
+      parse(
+        '# T1\n\n## Steps\n\n### Unit\n\n- Type: javascript\n- File: build/a.test.js\n- Test: a long caption that a formatter\n  wrapped onto the next line\n').steps,
+      [ { type: 'javascript',
+          title: 'Unit',
+          file: 'build/a.test.js',
+          test:
+            'a long caption that a formatter wrapped onto the next line' } ]);
   });

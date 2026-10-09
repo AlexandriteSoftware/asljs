@@ -1,3 +1,8 @@
+import { getSection,
+         MarkdownNode,
+         parseMarkdown,
+         plainText }
+  from 'asljs-mdcli';
 import { readFile }
   from 'node:fs/promises';
 import path
@@ -11,11 +16,6 @@ import { display,
   from './graph.js';
 import { Io }
   from './io.js';
-import { getSection,
-         MarkdownNode,
-         parseMarkdown,
-         plainText }
-  from './markdown.js';
 import { resolveTarget }
   from './scope.js';
 import { readStatus }

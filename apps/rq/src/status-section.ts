@@ -1,13 +1,13 @@
+import { findSectionHeading,
+         formatUrl,
+         parseMarkdown,
+         plainText }
+  from 'asljs-mdcli';
 import { type Root,
          type RootContent }
   from 'mdast';
 import { freeLabel }
   from './edit.js';
-import { findSectionHeading,
-         formatUrl,
-         parseMarkdown,
-         plainText }
-  from './markdown.js';
 import { type Status }
   from './results.js';
 

@@ -11,6 +11,28 @@ import { writeFixture }
 import { createTestIo }
   from './testing/test-io.js';
 
+/**
+ * A post-processing script that appends its arguments, one per line, to
+ * `args.txt` in its working folder and exits with `code`.
+ */
+async function writeProcessor(
+    dir: TmpDir,
+    code = 0
+  ): Promise<string>
+{
+  await dir.writeText(
+    'processor.cjs',
+    `require('node:fs').appendFileSync('args.txt', process.argv.slice(2).join('\\n') + '\\n');
+console.log('processed');
+process.exitCode = ${code};
+`);
+
+  return `node ${
+    JSON.stringify(
+      dir.resolve('processor.cjs'))
+  }`;
+}
+
 test(
   'rq without arguments prints help',
   async () =>
@@ -470,4 +492,80 @@ test(
     assert.equal(
       coverage.out(),
       'COMPLETE    R2 Part.md\n');
+  });
+
+test(
+  'rq post-processes the markdown files a command wrote',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    await dir.writeText(
+      'rq.json',
+      JSON.stringify(
+        { markdownPostProcessing:
+            await writeProcessor(dir) }));
+
+    const io =
+      createTestIo(dir.path);
+
+    assert.equal(
+      await runCli(
+        [ 'add',
+          'requirement',
+          'R2',
+          'Speed' ],
+        io),
+      0);
+
+    assert.deepEqual(
+      (await dir.readText('args.txt'))
+        .trim()
+        .split('\n')
+        .sort(),
+      [ 'reqs/R2 Part.md',
+        'reqs/R3 Speed.md' ]);
+
+    assert.equal(
+      await runCli(
+        [ 'list',
+          'reqs' ],
+        io),
+      0);
+
+    assert.equal(
+      (await dir.readText('args.txt'))
+        .trim()
+        .split('\n').length,
+      2);
+
+    await dir.writeText(
+      'rq.json',
+      JSON.stringify(
+        { markdownPostProcessing:
+            await writeProcessor(
+              dir,
+              3) }));
+
+    const failing =
+      createTestIo(dir.path);
+
+    assert.equal(
+      await runCli(
+        [ 'add',
+          'requirement',
+          'R2',
+          'Size' ],
+        failing),
+      1);
+
+    assert.match(
+      failing.err(),
+      /^Post-processing failed: node .* exited with code 3\n/);
+
+    assert.ok(
+      (await dir.stat('reqs/R4 Size.md')).isFile());
   });

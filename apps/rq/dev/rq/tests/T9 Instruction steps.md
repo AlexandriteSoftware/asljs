@@ -10,16 +10,16 @@ Instruction steps ask an agent and fail without one.
 - File: ../../../build/run-test.test.js
 - Test: runTest asks the agent to carry out an instruction step
 
-### getAgentCommand lets an agent read and run commands, but not edit files, in run mode
+### getAgentCommand lets an agent read and run commands in run mode, and also edit in edit mode
 
 - Type: javascript
-- File: ../../../build/agent.test.js
-- Test: getAgentCommand lets an agent read and run commands, but not edit files,
-  in run mode
+- File: ../../../../../libs/mdcli/build/agent.test.js
+- Test: getAgentCommand lets an agent read and run commands in run mode, and
+  also edit in edit mode
 
 ## Status
 
 - Result: PASS - 2 steps
-- Execution: [E9 rq][E9]
+- Execution: [E16 rq][E16]
 
-[E9]: <../.rq/E9 rq.md>
+[E16]: <../.rq/E16 rq.md>

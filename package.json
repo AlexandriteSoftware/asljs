@@ -13,6 +13,7 @@
   "workspaces": [
     "aftefacts",
     "apps/app-builder",
+    "apps/board",
     "apps/cog",
     "apps/dash",
     "apps/kb",
@@ -26,6 +27,7 @@
     "libs/eventful",
     "libs/locator",
     "libs/logging",
+    "libs/mdcli",
     "libs/machine",
     "libs/money",
     "libs/observable",

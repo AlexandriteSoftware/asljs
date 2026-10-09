@@ -1,3 +1,10 @@
+import { findSectionHeading,
+         formatUrl,
+         getSection,
+         MarkdownNode,
+         parseMarkdown,
+         splitLocalUrl }
+  from 'asljs-mdcli';
 import { type Definition,
          type Image,
          type Link,
@@ -8,13 +15,6 @@ import path
   from 'node:path';
 import { getNodeId }
   from './graph.js';
-import { findSectionHeading,
-         formatUrl,
-         getSection,
-         MarkdownNode,
-         parseMarkdown,
-         splitLocalUrl }
-  from './markdown.js';
 
 interface Change
 {

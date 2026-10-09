@@ -1,5 +1,5 @@
 import { type AiAgent }
-  from './agent.js';
+  from 'asljs-mdcli';
 import { type Retention,
          type WorkingTree }
   from './results.js';

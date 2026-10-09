@@ -1,5 +1,6 @@
-import { readdir,
-         readFile,
+import { findMarkdownFiles }
+  from 'asljs-mdcli';
+import { readFile,
          stat }
   from 'node:fs/promises';
 import path
@@ -466,40 +467,4 @@ async function isFile(
   ): Promise<boolean>
 {
   return (await stat(file).catch(() => null))?.isFile() === true;
-}
-
-/**
- * The `.md` files of a folder and its subfolders, sorted, skipping folders
- * whose name starts with `.` and `node_modules`.
- */
-export async function findMarkdownFiles(
-    folder: string
-  ): Promise<string[]>
-{
-  const files: string[] = [ ];
-
-  for (
-    const entry of await readdir(
-      folder,
-      { withFileTypes: true })
-  ) {
-    const entryPath =
-      path.join(
-        folder,
-        entry.name);
-
-    if (entry.isDirectory()) {
-      if (
-        !entry.name.startsWith('.')
-        && entry.name !== 'node_modules'
-      ) {
-        files.push(
-          ...await findMarkdownFiles(entryPath));
-      }
-    } else if (entry.name.toLowerCase().endsWith('.md')) {
-      files.push(entryPath);
-    }
-  }
-
-  return files.sort();
 }

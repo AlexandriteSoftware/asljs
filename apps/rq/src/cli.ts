@@ -1,11 +1,13 @@
+import { AI_AGENTS,
+         parseAgentSpec,
+         postProcess,
+         takeWritten }
+  from 'asljs-mdcli';
 import { Command,
          CommanderError }
   from 'commander';
 import path
   from 'node:path';
-import { AI_AGENTS,
-         parseAgentSpec }
-  from './agent.js';
 import { execAdd,
          execLink,
          execLog,
@@ -19,9 +21,6 @@ import { execCoverage }
   from './coverage.js';
 import { Io }
   from './io.js';
-import { postProcess,
-         takeWritten }
-  from './post-process.js';
 import { execBacklinks,
          execLinks,
          execList,
@@ -543,7 +542,8 @@ export async function runCli(
     const processed =
       await postProcess(
         commandIo,
-        takeWritten());
+        takeWritten(),
+        'rq.json');
 
     return exitCode === 0
       ? processed
