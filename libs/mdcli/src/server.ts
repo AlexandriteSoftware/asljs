@@ -37,6 +37,8 @@ const CONTENT_TYPES: ReadonlyMap<string, string> =
         'text/javascript; charset=utf-8' ],
       [ '.json',
         'application/json; charset=utf-8' ],
+      [ '.pdf',
+        'application/pdf' ],
       [ '.png',
         'image/png' ],
       [ '.svg',
@@ -79,12 +81,45 @@ export interface ServerOptions
   port?: number;
 
   host?: string;
+
+  /**
+   * Pages other than `/`, by path, e.g. `/search`: the HTML of the page for
+   * the request URL, with its query.
+   */
+  pages?: Readonly<Record<string, (url: URL) => Promise<string>>>;
+
+  /**
+   * The body HTML of a `.md` file, by its absolute path and its path relative
+   * to `folder` with `/` separators; `markdownToHtml` of its text by default.
+   */
+  render?: (file: string, relative: string) => Promise<string>;
+
+  /**
+   * Whether a file may be served, by its path relative to `folder` with `/`
+   * separators; any file by default. A file it refuses is not found.
+   */
+  allow?: (relative: string) => boolean;
 }
 
 /**
- * Starts a web server for a folder: `/` is `index`, a `.md` file of the
- * folder is shown rendered, and any other file of the folder as it is;
- * nothing outside the folder is served. Returns once it listens.
+ * The HTML of a markdown text, with GitHub-flavoured tables, task lists and
+ * strikethrough. Raw HTML in the text is kept.
+ */
+export function markdownToHtml(
+    text: string
+  ): string
+{
+  return marked.parse(
+    text,
+    { async: false,
+      gfm: true });
+}
+
+/**
+ * Starts a web server for a folder: `/` is `index`, a path of `pages` that
+ * page, a `.md` file of the folder is shown rendered, and any other file of
+ * the folder as it is; nothing outside the folder, or that `allow` refuses,
+ * is served. Returns once it listens.
  */
 export async function startServer(
     options: ServerOptions
@@ -269,12 +304,13 @@ async function handle(
     response: ServerResponse
   ): Promise<void>
 {
+  const url =
+    new URL(
+      request.url ?? '/',
+      'http://localhost');
+
   const pathname =
-    decodeURIComponent(
-      new URL(
-        request.url ?? '/',
-        'http://localhost')
-      .pathname);
+    decodeURIComponent(url.pathname);
 
   if (pathname === '/') {
     send(
@@ -282,6 +318,24 @@ async function handle(
       200,
       'text/html; charset=utf-8',
       await options.index());
+
+    return;
+  }
+
+  const pageOf =
+    options.pages !== undefined
+      && Object.hasOwn(
+        options.pages,
+        pathname)
+    ? options.pages[pathname]
+    : undefined;
+
+  if (pageOf !== undefined) {
+    send(
+      response,
+      200,
+      'text/html; charset=utf-8',
+      await pageOf(url));
 
     return;
   }
@@ -299,6 +353,10 @@ async function handle(
   if (
     relative.startsWith('..')
     || path.isAbsolute(relative)
+    || options.allow?.(
+        relative.split(path.sep).join('/')
+      )
+       === false
     || !(await stat(file).catch(() => null))?.isFile()
   ) {
     send(
@@ -319,11 +377,14 @@ async function handle(
         path.basename(file),
         `<p><a href="/">${escapeHtml(options.home)}</a></p>
 ${
-          marked.parse(
-            await readFile(
+          options.render === undefined
+            ? markdownToHtml(
+              await readFile(
+                file,
+                'utf8'))
+            : await options.render(
               file,
-              'utf8'),
-            { async: false })
+              relative.split(path.sep).join('/'))
         }`,
         options.style));
 

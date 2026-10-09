@@ -10,6 +10,7 @@ import test
   from 'node:test';
 import { DEFAULT_PORT,
          escapeHtml,
+         markdownToHtml,
          page,
          serverUrl,
          startServer }
@@ -162,4 +163,83 @@ test(
     assert.equal(
       escapeHtml('<a href="x">&</a>'),
       '&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;');
+  });
+
+test(
+  'startServer serves its pages, renders markdown with render, and refuses what allow refuses',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await dir.writeText(
+      'notes/a.md',
+      '# A\n');
+
+    await dir.writeText(
+      '.git/config',
+      'secret');
+
+    const server =
+      await startServer(
+        { folder: dir.path,
+          index: async () => 'index',
+          home: 'Home',
+          port: 0,
+          pages:
+            { '/search':
+                async url => `searched ${url.searchParams.get('q') ?? ''}` },
+          render:
+            async (
+          _file,
+          relative
+        ) => `<p>rendered ${relative}</p>`,
+          allow:
+            relative => !relative.startsWith('.git/') });
+
+    try {
+      assert.equal(
+        (await get(
+          server,
+          '/search?q=budget%20plan')).body,
+        'searched budget plan');
+
+      assert.match(
+        (await get(
+          server,
+          '/notes/a.md')).body,
+        /<p><a href="\/">Home<\/a><\/p>\n<p>rendered notes\/a\.md<\/p>/);
+
+      assert.equal(
+        (await get(
+          server,
+          '/.git/config')).status,
+        404);
+
+      assert.equal(
+        (await get(
+          server,
+          '/toString')).status,
+        404);
+    } finally {
+      await new Promise(
+        resolve => server.close(resolve));
+    }
+  });
+
+test(
+  'markdownToHtml renders tables and task lists',
+  () =>
+  {
+    const html =
+      markdownToHtml(
+        '| a | b |\n| - | - |\n| 1 | 2 |\n\n- [x] done\n');
+
+    assert.match(
+      html,
+      /<table>/);
+
+    assert.match(
+      html,
+      /<input checked="" disabled="" type="checkbox">/);
   });

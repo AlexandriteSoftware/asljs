@@ -70,12 +70,16 @@ The exports of `asljs-mdcli`, by module.
 
 ## Server
 
-- `startServer({ folder, index, home, style?, port?, host? })` - serves `/` with
-  `index()`, made again on every request, a `.md` file of `folder` rendered as
-  HTML with a link back to `/` labelled `home`, and any other file of `folder`
-  as it is; nothing outside `folder`. It listens on `host`, `127.0.0.1` by
-  default, on `port`, or without one on the first free port from `DEFAULT_PORT`,
-  3000, up to 3099.
+- `startServer({ folder, index, home, style?, port?, host?, pages?, render?,
+  allow? })` - serves `/` with `index()`, made again on every request; a path of
+  `pages`, e.g. `/search`, with that page of the request URL; a `.md` file of
+  `folder` as HTML - `render(file, relative)`, or `markdownToHtml` of its text -
+  with a link back to `/` labelled `home`; and any other file of `folder` as it
+  is. Nothing outside `folder`, or that `allow(relative)` refuses, is served. It
+  listens on `host`, `127.0.0.1` by default, on `port`, or without one on the
+  first free port from `DEFAULT_PORT`, 3000, up to 3099.
+- `markdownToHtml(text)` - the HTML of a markdown text, with GitHub-flavoured
+  tables, task lists and strikethrough; raw HTML is kept.
 - `serverUrl(server)` - its address, e.g. `http://127.0.0.1:3000/`.
 - `page(title, body, style?)` - an HTML page with the shared style and `style`.
 - `escapeHtml(text)` - the text with `&`, `<`, `>` and `"` escaped.

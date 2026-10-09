@@ -28,8 +28,10 @@ knowledge base server is treated as no server.
 A server started for one command is started without an index, because building
 one to answer a single question costs more than the question.
 
-Two commands do not go through a server, because they describe the tool rather
-than the library: the version, and the configuration.
+Three commands do not go through a server. The version and the configuration
+describe the tool rather than the library. The view serves the library in a
+browser for as long as it runs, so it reads the library itself, with the same
+functions the tools use, rather than holding a server connection open.
 
 ## Library
 
@@ -267,11 +269,43 @@ Backlinks are answered from the index when a host keeps one, and by a direct
 scan otherwise. Both paths apply the same resolution rules and return the same
 answers.
 
+## Rendering
+
+A markdown document renders to HTML without its front matter, with GitHub
+flavoured tables, task lists and strikethrough. A `[[wiki link]]` outside code
+becomes a link relative to the document: a bare name to the first markdown
+document of the library, by path, with that name; a name with a slash to that
+path from the library root. One that matches no document is kept as its text,
+marked as a missing link. The title is the front matter `title`, else the first
+level 1 heading, else the file name.
+
+A rendered document prints to a PDF file of the library, by default the
+document's path with `.pdf` for its extension, through a Chromium browser
+running headless: `KB_BROWSER`, else the first Chrome, Chromium or Edge
+installed where the platform installs it or found on `PATH`. Relative links and
+images resolve from the document's folder. An existing PDF file is replaced only
+when asked; with no browser, printing fails and says how to name one.
+
+## View
+
+`kb view` serves the library over HTTP on `127.0.0.1`, on the first free port
+from 3000 unless one is given, and runs until stopped:
+
+- `/` lists the markdown documents, grouped by folder, with a search form;
+- `/search` searches the text of every readable document as `kb_search` does,
+  with a regular expression and a case-sensitive option, and lists the matches
+  by document, at most 200;
+- a markdown document is shown rendered, and any other file as it is;
+- nothing outside the library, no dot file or folder, and nothing in
+  `node_modules` is served.
+
+The library is read on every request, so the view shows the files as they are.
+
 ## Command Line Interface
 
-The CLI is `kb`. Commands are `list`, `read`, `write`, `new`, `mkdir`, `move`,
-`rename`, `copy`, `remove`, `search`, `backlinks`, `graph`, `format`, `extract`,
-`info`, `config` and `version`.
+The CLI is `kb`. Commands are `list`, `read`, `render`, `pdf`, `view`, `write`,
+`new`, `mkdir`, `move`, `rename`, `copy`, `remove`, `search`, `backlinks`,
+`graph`, `format`, `extract`, `info`, `config` and `version`.
 
 Output format is `text` or `json`, chosen with the global `--format` option.
 `extract` defaults to `json`, because its result is structured data; every other
@@ -286,8 +320,8 @@ Exit codes:
 - `1` from `format --check` when at least one file needs formatting.
 
 Logging follows the repository's logging rules: silent by default, and
-`--loglevel`, `--logfile` and `--logformat` take precedence over
-`KB_LOG_LEVEL`, `KB_LOG_FILE` and `KB_LOG_FORMAT`.
+`--loglevel`, `--logfile` and `--logformat` take precedence over `KB_LOG_LEVEL`,
+`KB_LOG_FILE` and `KB_LOG_FORMAT`.
 
 ## MCP Server
 
@@ -302,10 +336,11 @@ input ends; one that listens outlives it and stops on SIGINT or SIGTERM.
 A socket file outlives the process that listened on it, so one left by a
 previous run is cleared before listening and removed on shutdown.
 
-The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`, `kb_move`,
-`kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
-`kb_format`, `kb_extract` and `kb_info`. Each declares a JSON Schema for its
-arguments, validates them, and returns its result as JSON text.
+The tools are `kb_list`, `kb_read`, `kb_render`, `kb_pdf`, `kb_write`, `kb_new`,
+`kb_mkdir`, `kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`,
+`kb_backlinks`, `kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each
+declares a JSON Schema for its arguments, validates them, and returns its result
+as JSON text.
 
 The server indexes the library before serving its first request, and watches it
 afterwards, so link questions are answered from memory.
@@ -313,8 +348,7 @@ afterwards, so link questions are answered from memory.
 A tool failure is reported as a successful response carrying `isError`, as the
 protocol requires. Only an unknown method produces a JSON-RPC error.
 
-Standard output carries the protocol, so the server refuses to log there: a
-log level with no log file, or with `stdout`, stops it at startup. A server
-the CLI starts for one command logs to the stderr it shares with the CLI when a
-level is set without a file. A line that is not valid JSON is
-ignored.
+Standard output carries the protocol, so the server refuses to log there: a log
+level with no log file, or with `stdout`, stops it at startup. A server the CLI
+starts for one command logs to the stderr it shares with the CLI when a level is
+set without a file. A line that is not valid JSON is ignored.

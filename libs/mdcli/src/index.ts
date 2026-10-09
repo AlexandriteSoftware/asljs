@@ -46,6 +46,7 @@ export {
 export {
   DEFAULT_PORT,
   escapeHtml,
+  markdownToHtml,
   page,
   serverUrl,
   startServer,

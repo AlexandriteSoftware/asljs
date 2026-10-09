@@ -128,6 +128,11 @@ File and folder operations:
 - `kb list [pattern]` - list entries matching a glob pattern; `--kind` limits
   the result to `file` or `folder`.
 - `kb read <path>` - print the text of a document.
+- `kb render <path>` - print a markdown document rendered as HTML.
+- `kb pdf <path>` - print a markdown document to a PDF file; `--output` names
+  the file, `--overwrite` replaces it.
+- `kb view` - serve the library in a browser, with a search page; `--port` and
+  `--host` choose where.
 - `kb write <path>` - write a text file; the content comes from `--content` or
   from standard input.
 - `kb new <path>` - create a markdown note with front matter; `.md` is added
@@ -172,6 +177,37 @@ Exit codes are `0` on success and `1` on failure. Three commands report a
 negative outcome with `1` as well: `search` when nothing matches, `backlinks`
 when nothing links to the entry, and `format --check` when at least one file
 needs formatting.
+
+## Rendering And Viewing
+
+`kb render` turns a markdown document into HTML: the front matter is left out,
+tables, task lists and strikethrough are rendered, and each `[[wiki link]]`
+outside code becomes a link relative to the document - a bare name to the first
+markdown document of the library with that name, a name with a slash to that
+path from the library root. A wiki link that matches no document is kept as its
+text.
+
+`kb pdf` prints that HTML to a PDF file of the library, next to the document by
+default (`notes/plan.md` gives `notes/plan.pdf`), with an installed Chrome,
+Chromium or Edge running headless. Relative links and images resolve from the
+document's folder. Set `KB_BROWSER` to the browser's executable when it is not
+installed in the usual place.
+
+```bash
+kb render notes/plan.md
+kb pdf notes/plan.md --output print/plan.pdf
+```
+
+`kb view` serves the library on `127.0.0.1`, from port 3000 on: `/` lists the
+markdown documents by folder, `/search` searches the text of every readable
+document as `kb search` does, and a markdown document opens rendered as `kb
+render` renders it. Other files are served as they are; dot files and folders
+and `node_modules` are not served. Unlike the other commands, it reads the
+library itself rather than through an MCP server, and it runs until stopped.
+
+```bash
+kb view --library ~/kb
+```
 
 ## Moving And Copying
 
@@ -381,10 +417,11 @@ preserved verbatim, because re-printing YAML would lose comments and key order.
 }
 ```
 
-The tools are `kb_list`, `kb_read`, `kb_write`, `kb_new`, `kb_mkdir`, `kb_move`,
-`kb_rename`, `kb_copy`, `kb_remove`, `kb_search`, `kb_backlinks`, `kb_graph`,
-`kb_format`, `kb_extract` and `kb_info`. Each returns its result as JSON text,
-and reports a failure as an error result rather than as a protocol error.
+The tools are `kb_list`, `kb_read`, `kb_render`, `kb_pdf`, `kb_write`, `kb_new`,
+`kb_mkdir`, `kb_move`, `kb_rename`, `kb_copy`, `kb_remove`, `kb_search`,
+`kb_backlinks`, `kb_graph`, `kb_format`, `kb_extract` and `kb_info`. Each
+returns its result as JSON text, and reports a failure as an error result rather
+than as a protocol error.
 
 The server indexes the library at startup and watches it for changes, so
 `kb_backlinks` and `kb_graph` answer from memory. `kb_graph` reports `live`,

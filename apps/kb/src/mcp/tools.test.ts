@@ -51,6 +51,8 @@ test(
           tools.map(tool => tool.name),
           [ 'kb_list',
             'kb_read',
+            'kb_render',
+            'kb_pdf',
             'kb_write',
             'kb_new',
             'kb_mkdir',

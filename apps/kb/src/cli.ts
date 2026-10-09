@@ -26,16 +26,22 @@ import { execMove }
   from './commands/move.js';
 import { execNew }
   from './commands/new.js';
+import { execPdf }
+  from './commands/pdf.js';
 import { execRead }
   from './commands/read.js';
 import { execRemove }
   from './commands/remove.js';
 import { execRename }
   from './commands/rename.js';
+import { execRender }
+  from './commands/render.js';
 import { execSearch }
   from './commands/search.js';
 import { execVersion }
   from './commands/version.js';
+import { execView }
+  from './commands/view.js';
 import { execWrite }
   from './commands/write.js';
 import { createEnvironment,
@@ -247,6 +253,18 @@ function addLibraryCommands(
     cli,
     environment);
 
+  addRender(
+    cli,
+    environment);
+
+  addPdf(
+    cli,
+    environment);
+
+  addView(
+    cli,
+    environment);
+
   addWrite(
     cli,
     environment);
@@ -316,6 +334,82 @@ function addRead(
           { path: value,
             format:
               formatOption(command) }));
+}
+
+function addRender(
+    cli: Command,
+    environment: Environment
+  ): void
+{
+  cli.command('render')
+    .description(
+      'Print a markdown document rendered as HTML')
+    .argument(
+      '<path>',
+      'Library-relative path of the markdown document')
+    .action(
+      async (value, _, command) =>
+        await through(
+          environment,
+          execRender,
+          { path: value,
+            format:
+              formatOption(command) }));
+}
+
+function addPdf(
+    cli: Command,
+    environment: Environment
+  ): void
+{
+  cli.command('pdf')
+    .description(
+      'Print a markdown document to a PDF file with a headless Chrome or Edge')
+    .argument(
+      '<path>',
+      'Library-relative path of the markdown document')
+    .option(
+      '--output <path>',
+      'Library-relative path of the PDF file. Defaults to the document path with .pdf')
+    .option(
+      '--overwrite',
+      'Replace the PDF file when it already exists')
+    .action(
+      async (value, options, command) =>
+        await through(
+          environment,
+          execPdf,
+          { path: value,
+            output: options.output,
+            overwrite: options.overwrite === true,
+            format:
+              formatOption(command) }));
+}
+
+function addView(
+    cli: Command,
+    environment: Environment
+  ): void
+{
+  cli.command('view')
+    .description(
+      'Serve the library in a browser: documents rendered, and a search page')
+    .option(
+      '--port <port>',
+      'Port to listen on, exactly; 0 picks a free one. By default the first free port from 3000 on')
+    .option(
+      '--host <host>',
+      'Address to listen on. Defaults to 127.0.0.1')
+    .action(
+      async (
+          options
+        ) =>
+      {
+        await environment.resolve(execView)(
+          environment,
+          { port: options.port,
+            host: options.host });
+      });
 }
 
 function addWrite(

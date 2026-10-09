@@ -7,8 +7,10 @@ Use this file as AI-facing guidance for `asljs-kb`.
 This package manages a markdown knowledge base: file and folder operations, full
 text search, formatting, and structured data extraction.
 
-There is one way in: the MCP server. The `kb` CLI is a client of it, not a
-second implementation.
+There is one way in for library operations: the MCP server. The `kb` CLI is a
+client of it, not a second implementation. The exception is `kb view`, a web
+server that reads the library itself, through the same functions the tools call
+(`renderDocument`, `searchLibrary`, `listEntries`).
 
 ## AI Quick Reference
 
@@ -22,8 +24,13 @@ Public behavior at a glance:
   stops on SIGINT or SIGTERM
 - `--no-index` starts a server without an index, which is what the CLI does for
   a server it starts for one command
-- `version` and `config` are the only CLI commands that do not go through a
-  server, because they describe the tool rather than the library
+- `version` and `config` do not go through a server, because they describe the
+  tool rather than the library, and neither does `view`, which serves the
+  library in a browser for as long as it runs
+- rendering is one function, `renderDocument` in `src/render.ts`, behind
+  `kb_render`, `kb_pdf` (`src/pdf.ts`, a headless Chromium browser,
+  `KB_BROWSER`) and the view (`src/view.ts`); tests replace `printToPdf` with
+  `environment.register`
 - argument validation belongs to the tools, so the CLI passes values through and
   reports what the server rejects
 - every operation happens inside one library root, resolved from `--library`,

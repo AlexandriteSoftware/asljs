@@ -29,9 +29,13 @@ import { createNote,
          isMarkdown,
          summarizeDocument }
   from '../notes.js';
+import { writePdf }
+  from '../pdf.js';
 import { relocateEntry,
          renameEntry }
   from '../relocate.js';
+import { renderDocument }
+  from '../render.js';
 import { searchLibrary }
   from '../search.js';
 import { optionalBoolean,
@@ -66,6 +70,8 @@ export function createTools(
 {
   return [ listTool(environment),
            readTool(environment),
+           renderTool(environment),
+           pdfTool(environment),
            writeTool(environment),
            newTool(environment),
            mkdirTool(environment),
@@ -142,6 +148,69 @@ function readTool(
         requireString(
           args,
           'path')) };
+}
+
+function renderTool(
+    environment: Environment
+  ): McpTool
+{
+  return { name: 'kb_render',
+           description:
+             'Render a markdown document as HTML, without its front matter, '
+      + 'with its wiki links turned into links. Returns its path, title and '
+      + 'HTML.',
+           inputSchema:
+             objectSchema(
+               { path:
+                   stringProperty(
+                     'Library-relative path of the markdown document.') },
+               [ 'path' ]),
+           invoke:
+             async args =>
+      await renderDocument(
+        environment.library,
+        requireString(
+          args,
+          'path')) };
+}
+
+function pdfTool(
+    environment: Environment
+  ): McpTool
+{
+  return { name: 'kb_pdf',
+           description:
+             'Print a markdown document, rendered as kb_render renders it, to a '
+      + 'PDF file of the library with a headless Chrome or Edge. Returns the '
+      + 'paths of the document and of the PDF file.',
+           inputSchema:
+             objectSchema(
+               { path:
+                   stringProperty(
+                     'Library-relative path of the markdown document.'),
+                 output:
+                   stringProperty(
+                     'Library-relative path of the PDF file. Defaults to the '
+            + 'document path with a .pdf extension.'),
+                 overwrite:
+                   booleanProperty(
+                     'Replace the PDF file when it already exists.') },
+               [ 'path' ]),
+           invoke:
+             async args =>
+      await writePdf(
+        environment,
+        requireString(
+          args,
+          'path'),
+        { output:
+            optionalString(
+              args,
+              'output'),
+          overwrite:
+            optionalBoolean(
+              args,
+              'overwrite') }) };
 }
 
 async function readDocument(
