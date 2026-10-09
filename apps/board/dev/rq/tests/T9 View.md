@@ -13,6 +13,6 @@ The board is served in columns.
 ## Status
 
 - Result: PASS - 1 step
-- Execution: [E6 rq][E6]
+- Execution: [E7 rq][E7]
 
-[E6]: <../.rq/E6 rq.md>
+[E7]: <../.rq/E7 rq.md>

@@ -40,7 +40,9 @@ matching skill before working on a board.
 - `src/ask.ts` - choosing and asking the agent, and the shared prompt text
 - `src/develop.ts`, `src/plan.ts`, `src/tasks.ts`, `src/exec.ts`,
   `src/archive.ts`, `src/list.ts`, `src/view.ts` - the commands; `src/cli.ts`
-  wires them
+  wires them (`createCli` builds the program, `runCli` runs it)
+- `src/mcp.ts` - `board-mcp`: a tool per command of `createCli`, through
+  `commandTools` of `asljs-mdcli`
 
 ## Tests
 

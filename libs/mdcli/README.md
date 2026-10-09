@@ -21,6 +21,8 @@ The tools of this repository that keep their data in markdown - `asljs-rq` and
   project's formatter on them, named in the tool's configuration file.
 - **Server** - serve a folder: an index page, markdown rendered as HTML, and the
   other files as they are, on the first free port from 3000.
+- **MCP** - serve tools over line-delimited JSON-RPC, and make a tool of each
+  command of a commander program.
 
 ## Scope
 
@@ -66,6 +68,8 @@ console.log(verdict.ok, verdict.message, verdict.answer);
 
 - `asljs-rq` manages requirements in markdown.
 - `asljs-board` keeps a planning board in markdown.
+- `asljs-kb` manages a markdown knowledge base; its MCP server is built on this
+  package.
 
 ## License
 

@@ -1,3 +1,5 @@
+import { type McpTool }
+  from 'asljs-mdcli';
 import { findBacklinks }
   from '../backlinks.js';
 import { Environment }
@@ -48,21 +50,9 @@ import { booleanProperty,
          transferSchema }
   from './schema.js';
 
-export interface McpTool
-{
-  name: string;
-
-  description: string;
-
-  /**
-   * JSON Schema of the tool arguments, as sent in `tools/list`.
-   */
-  inputSchema: Record<string, unknown>;
-
-  invoke: (
-    args: Record<string, unknown>
-  ) => Promise<unknown>;
-}
+export type {
+  McpTool
+};
 
 /**
  * Create the tools the server exposes.

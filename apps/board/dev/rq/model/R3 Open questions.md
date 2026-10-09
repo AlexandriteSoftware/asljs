@@ -12,34 +12,34 @@ question without an answer is open, and the open questions are counted.
 
 ## Coverage
 
-R3 is fully covered. It has no sub-requirements; its only link is T2. I judged
-coverage from what T2's two JavaScript steps (in questions.test.js) actually
-assert, not just from their titles.
+R3 is fully covered by T2. Both of T2's steps run tests in `questions.test.js`,
+built from `src/questions.test.ts`, and together those tests check every
+statement of R3.
 
-- **Unsettled matters go in a document's Open questions section, one list item
-  per question.** Covered by T2's step "addQuestions adds to the Open questions
-  section, or adds the section". It adds questions to an existing section,
-  keeping the section that follows it. It adds the section when the document has
-  none, and fills a section that is empty. Each question becomes one list item,
-  and a question written over several lines is joined into one item. Adding no
-  questions leaves the document unchanged.
-- **The user answers with a nested Answer item.** Covered by T2's step
-  "readQuestions reads each question and its answer". It reads a question with a
-  nested Answer item, including an answer that runs over two lines. It also
-  checks that list items under a different heading are not read as questions.
-- **A question without an answer is open.** Covered by the same readQuestions
-  step. It checks that a question with no nested item and a question with an
-  empty Answer item both read as having no answer.
-- **The open questions are counted.** Covered by the same step. It checks that
-  the count is 2 for a section with one answered and two unanswered questions,
-  and 0 for a document with no Open questions section.
+- **"What is not settled goes in a document's `## Open questions` section, one
+  list item per question":** covered by T2's step "addQuestions adds to the Open
+  questions section, or adds the section". It checks three cases. The section is
+  created at the end of a document that has none. A new item is added after the
+  existing list, leaving the following sections alone. An item is added under a
+  heading that has no list yet. It also checks that each question becomes
+  exactly one list item, even when the question text spans several lines. The
+  first step adds that a list in another section (`## Notes`) is not read as
+  questions.
+- **"which the user answers with a nested `- Answer:` item":** covered by T2's
+  step "readQuestions reads each question and its answer". It reads a nested `-
+  Answer:` item as the answer, joining an answer that runs over several lines
+  into one.
+- **"A question without an answer is open":** covered by the same step. A
+  question with no nested item, and one with an empty `- Answer:`, both come
+  back with no answer, meaning open.
+- **"the open questions are counted":** covered by the same step. It also checks
+  `countOpen`: 2 for the sample document (two open questions, one answered), and
+  0 for a document with no `## Open questions` section. The step's title does
+  not mention counting, but T2's description ("read, counted and added") does. A
+  maintainer may want to name counting in the step title so the link is visible
+  from the requirement side, but that is not needed for coverage.
 
-A small suggestion: T2's own description is brief and doesn't mention that a
-question with an empty Answer item counts as open. Saying so in T2 would make
-that edge case visible without opening the test source. Coverage is complete
-without it.
-
-Verdict: OK — T2 covers every statement of R3.
+Verdict: fully covered.
 
 ## Status
 

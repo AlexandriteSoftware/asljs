@@ -52,6 +52,6 @@ The command line, the agent and the configuration.
 ## Status
 
 - Result: PASS - 7 steps
-- Execution: [E6 rq][E6]
+- Execution: [E7 rq][E7]
 
-[E6]: <../.rq/E6 rq.md>
+[E7]: <../.rq/E7 rq.md>

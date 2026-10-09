@@ -68,6 +68,9 @@ Public behavior at a glance:
   when nothing links to the entry, and `kb format --check` exits with 1 when a
   file needs formatting
 - the MCP server reports tool failures as error results, not protocol errors
+- the JSON-RPC handling, line reading and schema builders come from
+  `asljs-mdcli`, shared with `rq-mcp` and `board-mcp`; `src/mcp/server.ts` adds
+  the `kb` name and version, the endpoint and logging
 
 Use this package when:
 

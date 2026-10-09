@@ -152,6 +152,7 @@ npx rq view requirements --port 8080
   commands.
 - [rq check][CK], [rq test][TS], [rq coverage][CV] and [rq view][VW] - checking,
   testing, checking coverage and viewing.
+- [rq-mcp][MC] - the MCP server with a tool per command.
 - [Skills][SK] - the AI skills for managing requirements.
 
 Questions and bugs: [asljs/issues][IS].
@@ -169,6 +170,7 @@ MIT
 [CK]: <docs/rq check.md>
 [CV]: <docs/rq coverage.md>
 [IS]: https://github.com/AlexandriteSoftware/asljs/issues
+[MC]: docs/rq-mcp.md
 [QG]: <docs/Querying the graph.md>
 [RM]: docs/Requirements.md
 [SK]: skills

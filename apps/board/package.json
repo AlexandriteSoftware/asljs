@@ -20,7 +20,8 @@
     "LICENSE.md"
   ],
   "bin": {
-    "board": "bin/board.js"
+    "board": "bin/board.js",
+    "board-mcp": "bin/board-mcp.js"
   },
   "scripts": {
     "flint": "toolkit flint",

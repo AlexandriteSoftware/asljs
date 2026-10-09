@@ -26,6 +26,6 @@ The tasks of a plan are written from the agent.
 ## Status
 
 - Result: PASS - 3 steps
-- Execution: [E6 rq][E6]
+- Execution: [E7 rq][E7]
 
-[E6]: <../.rq/E6 rq.md>
+[E7]: <../.rq/E7 rq.md>

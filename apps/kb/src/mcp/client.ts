@@ -1,3 +1,5 @@
+import { readLines }
+  from 'asljs-mdcli';
 import { spawn }
   from 'node:child_process';
 import { connect,
@@ -12,8 +14,6 @@ import { Environment }
   from '../environment.js';
 import { endpointFor }
   from './endpoint.js';
-import { readLines }
-  from './lines.js';
 import { handleMessage,
          SERVER_NAME }
   from './server.js';

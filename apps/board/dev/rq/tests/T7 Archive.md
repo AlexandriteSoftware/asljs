@@ -21,6 +21,6 @@ An idea and what came of it move to the archive.
 ## Status
 
 - Result: PASS - 2 steps
-- Execution: [E6 rq][E6]
+- Execution: [E7 rq][E7]
 
-[E6]: <../.rq/E6 rq.md>
+[E7]: <../.rq/E7 rq.md>

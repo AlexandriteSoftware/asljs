@@ -13,35 +13,43 @@ as JSON with `--json`; it reports misplaced and duplicate documents.
 
 ## Coverage
 
-Every statement of R10 is covered by T8. Both of its steps run `execList` from
-`src/list.test.ts` on the standard fixture board.
+R10 is fully covered by T8. Each statement maps to a step of T8 as follows:
 
-- **Documents printed column by column:** T8 step 1 checks the full output. It
-  shows the headings Ideas, Plans, Tasks and Results in that order, with each
-  document's path under its column.
-- **Idea status `NEW` or `PLANNED`:** T8 step 1. I19, which has plan P19, shows
-  as `PLANNED`, and I20, which has no plan, shows as `NEW`.
-- **Plan status `NEW` or `TASKS`:** T8 step 1 shows P19, which has tasks, as
-  `TASKS`. T8 step 2 adds P20 with no tasks and checks that it shows as `NEW`.
-- **Task status `TODO` or its result's status:** T8 step 1. T19-1, which has
-  result R19-1, shows `DONE`, the status of that result. T19-2, which has no
-  result, shows `TODO`.
-- **A result's own status:** T8 step 1 shows R19-1 as `DONE`.
-- **Open questions:** T8 step 1 shows I20 with "1 open questions" in the text
-  output and `openQuestions: 1` in the JSON.
-- **The same data as JSON with `--json`:** T8 step 1 runs `execList` again with
-  `json: true`. It checks that the columns are `idea`, `plan`, `task` and
-  `result` in order, and checks the full record for I20: id, kind, subject,
-  path, status and open-question count.
-- **Misplaced documents reported:** T8 step 1 puts P9 in Ideas and checks the
-  error "a plan in Ideas; move it to Plans".
-- **Duplicate documents reported:** T8 step 2 adds a second T19-1 and checks the
-  error "ids must be unique".
+- **Columns in order.** "`board list` prints the documents column by column" is
+  covered by T8 step 1 ("execList prints the columns with the status and open
+  questions of each item"). It checks the exact text output, with the headings
+  Ideas, Plans, Tasks and Results in that order and each document under its
+  column.
+- **Idea status.** "`NEW` or `PLANNED` for an idea" is covered by T8 step 1. I19
+  has plan P19 and shows `PLANNED`. I20 has no plan and shows `NEW`.
+- **Plan status.** "`NEW` or `TASKS` for a plan" is covered by both steps of T8.
+  In step 1, P19 has tasks and shows `TASKS`. In step 2 ("execList shows a plan
+  without tasks as NEW, and reports an id used twice"), P20 has no tasks and
+  shows `NEW`.
+- **Task status.** "`TODO` or its result's status for a task" is covered by T8
+  step 1. T19-2 has no result and shows `TODO`. T19-1 has result R19-1 and shows
+  `DONE`, which is that result's status.
+  - One weak spot: the fixture only uses `DONE`, so a version that printed a
+    fixed `DONE` for any task with a result would also pass.
+  - To make it stronger, a result with a different status (for example
+    `Blocked`) could be added, with a check that its task shows that status.
+    Coverage does not depend on this.
+- **Result status.** "Its status for a result" is covered by T8 step 1, where
+  R19-1 shows `DONE`.
+- **Open questions.** "And its open questions" is covered by T8 step 1. I20 is
+  printed with "- 1 open questions", and its JSON entry has `openQuestions: 1`.
+- **JSON output.** "Or the same as JSON with `--json`" is covered by T8 step 1.
+  It runs with `json: true` and checks:
+  - the column keys `idea`, `plan`, `task` and `result`, in that order;
+  - the full JSON entry for I20, including its id, kind, subject, path, status
+    and open-question count.
+- **Misplaced documents.** "It reports misplaced documents" is covered by T8
+  step 1. `Ideas/P9 Misplaced.md` produces the error "a plan in Ideas; move it
+  to Plans".
+- **Duplicate documents.** "It reports duplicate documents" is covered by T8
+  step 2. A second T19-1 file produces the error "ids must be unique".
 
-The tests only show a task taking its result's status for a `DONE` result. That
-still satisfies the statement as written, so nothing is missing.
-
-Verdict: R10 is fully covered by T8.
+**Verdict:** every statement of R10 is covered by T8.
 
 ## Status
 

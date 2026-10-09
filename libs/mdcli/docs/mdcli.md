@@ -79,3 +79,25 @@ The exports of `asljs-mdcli`, by module.
 - `serverUrl(server)` - its address, e.g. `http://127.0.0.1:3000/`.
 - `page(title, body, style?)` - an HTML page with the shared style and `style`.
 - `escapeHtml(text)` - the text with `&`, `<`, `>` and `"` escaped.
+
+## MCP
+
+- `handleMessage(message, tools, info)` - the response to one JSON-RPC message:
+  `initialize` with `info`'s name and version, `tools/list`, `tools/call`, and a
+  method-not-found error otherwise; `null` for a notification.
+- `serveLines(input, write, tools, info, { onInvalidLine, onRequest })` -
+  answers the requests of a stream, one JSON object per line, until it ends.
+- `readLines(input, onLine)` - calls back once per complete line.
+- `McpTool` - `{ name, description, inputSchema, invoke }`. `invoke`'s result is
+  sent as JSON, `<name> completed` for `undefined`, or as it is for a
+  `textResult(text, isError)`; a thrown error is an error result.
+- `commandTools(program, run, { skip })` - a tool per command of a commander
+  program, subcommands joined with `_`, e.g. `add_test`. Its properties are the
+  arguments, variadic ones as arrays, and the options by attribute name, e.g.
+  `workingDir`: boolean for a flag, string for a value, `""` for an optional
+  value left out. A call runs `run` with the command line - options as
+  `--name=value`, then `--` and the arguments - one call at a time, and answers
+  the output as text, an error result for a non-zero exit code. An unknown
+  property or a missing required argument is an error.
+- `objectSchema`, `stringProperty`, `booleanProperty`, `numberProperty`,
+  `stringArrayProperty`, `enumProperty` - JSON Schema builders.

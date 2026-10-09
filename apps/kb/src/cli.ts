@@ -1,3 +1,5 @@
+import { type LoggerOverrides }
+  from 'asljs-logging';
 import { Command }
   from 'commander';
 import { execBacklinks }
@@ -47,8 +49,6 @@ import { resolveLibraryRoot }
   from './library.js';
 import { createLoggerProvider }
   from './logger.js';
-import { type LoggerOverrides }
-  from 'asljs-logging';
 import { McpClient,
          openClient }
   from './mcp/client.js';

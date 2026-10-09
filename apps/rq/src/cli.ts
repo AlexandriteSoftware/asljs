@@ -35,15 +35,27 @@ const WORKING_DIR =
   'The folder to work in: paths resolve against it, ids and .md names are searched for in it, and its .rq folder holds the results; the current directory by default';
 
 /**
- * Runs the `rq` command line and returns the exit code. `rq view` returns
- * once the server listens; the server keeps the process running.
+ * What a run of the command line leaves: its exit code, and the Io of the
+ * command, with `--working-dir` applied.
  */
-export async function runCli(
+export interface CliState
+{
+  exitCode: number;
+  io: Io;
+}
+
+/**
+ * The `rq` command line, not yet run: the program, and the state its
+ * actions set.
+ */
+export function createCli(
     args: string[],
     io: Io
-  ): Promise<number>
+  ): { cli: Command; state: CliState; }
 {
-  let exitCode = 0;
+  const state: CliState =
+    { exitCode: 0,
+      io };
 
   const command =
     [ 'rq',
@@ -53,8 +65,6 @@ export async function runCli(
           ? arg
           : JSON.stringify(arg)) ]
     .join(' ');
-
-  let commandIo = io;
 
   const cli =
     new Command();
@@ -79,7 +89,7 @@ export async function runCli(
         const folder =
           action.opts().workingDir as string | undefined;
 
-        commandIo =
+        state.io =
           folder === undefined
           ? io
           : { ...io,
@@ -116,9 +126,9 @@ export async function runCli(
         }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execTest(
-            commandIo,
+            state.io,
             { targets,
               recurse: options.recurse,
               name: options.name,
@@ -152,9 +162,9 @@ export async function runCli(
         }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execCoverage(
-            commandIo,
+            state.io,
             { targets,
               recurse: options.recurse,
               ai:
@@ -194,7 +204,7 @@ export async function runCli(
         }
 
         await execView(
-          commandIo,
+          state.io,
           { target,
             port });
       });
@@ -210,9 +220,9 @@ export async function runCli(
           target: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execCheck(
-            commandIo,
+            state.io,
             { target });
       });
 
@@ -231,9 +241,9 @@ export async function runCli(
           options: { json?: boolean; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execList(
-            commandIo,
+            state.io,
             { target,
               json: options.json });
       });
@@ -253,9 +263,9 @@ export async function runCli(
           options: { json?: boolean; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execLinks(
-            commandIo,
+            state.io,
             { file,
               json: options.json });
       });
@@ -275,9 +285,9 @@ export async function runCli(
           options: { json?: boolean; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execBacklinks(
-            commandIo,
+            state.io,
             { file,
               json: options.json });
       });
@@ -293,9 +303,9 @@ export async function runCli(
           target: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execToJson(
-            commandIo,
+            state.io,
             { target });
       });
 
@@ -326,9 +336,9 @@ export async function runCli(
           options: { statement?: string; path?: string; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execAdd(
-            commandIo,
+            state.io,
             { kind: 'requirement',
               parent,
               name,
@@ -367,9 +377,9 @@ export async function runCli(
         }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execAdd(
-            commandIo,
+            state.io,
             { kind: 'test',
               parent,
               name,
@@ -393,9 +403,9 @@ export async function runCli(
           child: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execLink(
-            commandIo,
+            state.io,
             { parent,
               child });
       });
@@ -415,9 +425,9 @@ export async function runCli(
           child: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execUnlink(
-            commandIo,
+            state.io,
             { parent,
               child });
       });
@@ -437,9 +447,9 @@ export async function runCli(
           options: { recursive?: boolean; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execRemove(
-            commandIo,
+            state.io,
             { file,
               recursive: options.recursive });
       });
@@ -459,9 +469,9 @@ export async function runCli(
           destination: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execMove(
-            commandIo,
+            state.io,
             { file,
               destination });
       });
@@ -491,9 +501,9 @@ export async function runCli(
         }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execLog(
-            commandIo,
+            state.io,
             { file,
               status: options.status,
               note: options.note,
@@ -511,6 +521,24 @@ export async function runCli(
         WORKING_DIR);
     }
   }
+
+  return { cli,
+           state };
+}
+
+/**
+ * Runs the `rq` command line and returns the exit code. `rq view` returns
+ * once the server listens; the server keeps the process running.
+ */
+export async function runCli(
+    args: string[],
+    io: Io
+  ): Promise<number>
+{
+  const { cli, state } =
+    createCli(
+      args,
+      io);
 
   if (args.length === 0) {
     cli.outputHelp();
@@ -535,19 +563,19 @@ export async function runCli(
           : String(error)
       }\n`);
 
-    exitCode = 1;
+    state.exitCode = 1;
   }
 
   try {
     const processed =
       await postProcess(
-        commandIo,
+        state.io,
         takeWritten(),
         'rq.json');
 
-    return exitCode === 0
+    return state.exitCode === 0
       ? processed
-      : exitCode;
+      : state.exitCode;
   } catch (error) {
     io.stderr.write(
       `${

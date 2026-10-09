@@ -51,3 +51,26 @@ export {
   startServer,
   type ServerOptions
 } from './server.js';
+
+export {
+  booleanProperty,
+  commandTools,
+  enumProperty,
+  handleMessage,
+  numberProperty,
+  objectSchema,
+  PROTOCOL_VERSION,
+  readLines,
+  serveLines,
+  stringArrayProperty,
+  stringProperty,
+  textResult,
+  type CommandOutput,
+  type CommandToolsOptions,
+  type JsonRpcMessage,
+  type JsonRpcResponse,
+  type McpServerInfo,
+  type McpTool,
+  type ServeOptions,
+  type TextResult
+} from './mcp.js';

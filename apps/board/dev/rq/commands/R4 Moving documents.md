@@ -35,44 +35,56 @@ is told not to ask the user anything: what it cannot settle goes to a document's
 
 ## Coverage
 
-Every statement in R4 is covered by a linked requirement or test.
+R4 is fully covered by what it links to. Each statement and what covers it:
 
 - **`plan`, `tasks` and `exec` write the next column's documents.** R6 covers
-  `plan` writing `Plans/P<n> <subject>.md`. R7 covers `tasks` writing
-  `Tasks/T<n>-<m> <subject>.md`. R8 covers `exec` writing `Results/R<n>-<m>
-  <subject>.md`. T4, T5 and T6 test these.
-- **`develop` elaborates a document in its column.** R5 covers rewriting an
-  idea, plan or task under the same heading, and T3 tests it.
-- **`archive` takes an idea and what came of it off the board.** R9 covers
-  moving the idea with its plan, tasks and results to `Archive/I<n> <subject>/`.
-- **`list` and `view` show the board.** R10 covers `list` and R13 covers `view`.
+  `plan`, which writes `Plans/P<n> <subject>.md` from an idea. R7 covers
+  `tasks`, which writes `Tasks/T<n>-<m> <subject>.md` from a plan. R8 covers
+  `exec`, which writes `Results/R<n>-<m> <subject>.md` for each task. The tests
+  are T4 ("execPlan writes the plan of an idea from the agent"), T5 ("execTasks
+  writes the tasks of a plan from the agent, in order") and T6 ("execExec
+  carries out the tasks in order, skipping done ones, and writes their
+  results").
+- **`develop` elaborates a document in its column.** R5 says the agent rewrites
+  an idea, plan or task under the same heading. T3 checks this with "execDevelop
+  rewrites an idea from the agent…", "execDevelop rewrites a plan with its idea
+  for context" and "toDocument … checks its heading".
+- **`archive` takes an idea and what came of it off the board.** R9 says it
+  moves the idea, its plan, tasks and results to `Archive/I<n> <subject>/`.
+- **`list` and `view` show the board.** R10 covers `list`, which prints the
+  documents column by column with status and open questions. R13 covers `view`,
+  which serves the columns and cards in a browser.
 - **`develop`, `plan`, `tasks` and `exec` ask an AI agent.** R5, R6, R7 and R8
-  each state that the command uses an agent. T3, T4, T5 and T6 run each command
-  against the fake agent. T6 also checks that `exec` runs the detected agent
-  with permission to edit files and run commands.
-- **The agent is told not to ask the user anything.** None of R5 to R8 states
-  this. The linked tests do check it: each asserts that the prompt contains
-  "Nobody answers while you work: do not ask the user anything." T3 checks it in
-  its first step, T4 in its first step and T5 in its "execTasks writes the tasks
-  of a plan from the agent" step. T6 checks it in its `exec` prompt.
+  each describe their command as working from an agent. T3, T4, T5 and T6 test
+  each one with the fake agent. T6's "execExec runs the detected agent with its
+  model, allowed to edit files and run commands" also covers how the agent is
+  chosen for `exec`.
+- **The agent is told not to ask the user anything.** None of the linked
+  requirements says this. The steps of T3, T4, T5 and T6 do check it: the tests
+  behind them (`develop.test.ts`, `plan.test.ts`, `tasks.test.ts` and
+  `exec.test.ts`) each assert that the prompt contains "Nobody answers while you
+  work: do not ask the user anything." So all four agent commands are covered by
+  their tests.
 - **What the agent cannot settle goes to a document's `## Open questions`.** R6
-  lists open questions as part of the plan. R5 keeps the open questions and adds
-  the ones the agent cannot settle. R8 adds a blocked task's questions to the
-  task. T3 checks the prompt tells the agent to add questions it cannot settle.
-  T4 checks the written plan keeps its `## Open questions`. T6 checks that a
-  blocked task's questions are added to it.
-- **Questions are answered in the file before the command runs again.** R5 folds
-  the answered questions into the rewrite, and T3 checks the prompt says to fold
-  in every answered question. R8 says a later run carries on from the blocked
-  task. T6 checks the blocked task is run again after its questions are added.
+  says a plan includes open questions. R5 says the open questions are kept. R8
+  says a blocked task's questions are added to the task. T4's plan test expects
+  an `## Open questions` section in the written plan. T5's "readTasks reads a
+  task per level 2 heading, with its headings a level up" turns a task's `###
+  Open questions` into that task's `## Open questions`. T6's "execExec stops at
+  a blocked task, asks its questions, and runs it again later" checks that the
+  questions are added to the task.
+- **The questions are answered in the file before the command runs again.** R5
+  says answered questions are folded in on the next `develop`. R8 says a later
+  run carries on from the blocked task. T6's blocked-task test runs that task
+  again. T3's develop test rewrites from the document as it is in the file,
+  answers included.
 
-One weak spot: the "do not ask the user" rule is covered only by tests, not by
-any sub-requirement. It is still covered, so this is optional. If you want it
-stated as a requirement too, add it to R5 to R8 or add a small sub-requirement
-such as "the agent's prompt tells it not to ask the user anything, and to put
-what it cannot settle in `## Open questions`".
+One possible improvement, not needed for coverage: the "told not to ask the
+user" rule is only covered through test assertions. A sentence in R5–R8, or a
+link from R4 to R3, would make the requirements themselves state it.
 
-Verdict: R4 is fully covered.
+Verdict: every statement of R4 is covered by its linked sub-requirements and
+tests.
 
 ## Status
 

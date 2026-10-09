@@ -117,4 +117,38 @@ again on every request; a card opens its document, rendered. Without `--port` it
 takes the first free port from 3000 on; with it, exactly that port, and 0 any
 free one.
 
+## board-mcp
+
+```text
+board-mcp
+```
+
+An MCP server with a tool per command: `develop`, `plan`, `tasks`, `exec`,
+`archive`, `list` and `view`. It reads JSON-RPC requests from standard input,
+one per line, and writes the responses to standard output, as the Model Context
+Protocol's stdio transport does, until standard input ends. In a Claude Code
+`.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "board": {
+      "command": "npx",
+      "args": [ "board-mcp" ]
+    }
+  }
+}
+```
+
+A tool's arguments are the command's arguments and options, by name, e.g. `{
+"idea": "I19", "guidance": "keep it simple", "workingDir": "Tasks" }` for
+`plan`; an option without a value is a boolean, and `ai` takes a string, empty
+for `--ai` without a value. `workingDir` is the board folder, by default the
+folder `board-mcp` was started in.
+
+A call runs that command line and answers what it printed; a non-zero exit code
+makes it an error result ending with `Exit code: <n>`. Calls run one at a time.
+`exec` carries out every task in turn and can take long; `view` starts the
+server inside `board-mcp`.
+
 [BD]: Board.md

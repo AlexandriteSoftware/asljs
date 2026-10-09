@@ -4,10 +4,10 @@
 
 Use this file as AI-facing guidance for `asljs-mdcli`.
 
-This library holds the parts that `asljs-rq` and `asljs-board` share: asking an
-AI agent, markdown helpers, finding markdown files, post-processing what a
-command wrote, and the document server. A part that a second tool needs moves
-here rather than being copied.
+This library holds the parts that `asljs-rq`, `asljs-board` and `asljs-kb`
+share: asking an AI agent, markdown helpers, finding markdown files,
+post-processing what a command wrote, the document server, and the MCP server
+core. A part that a second tool needs moves here rather than being copied.
 
 ## AI Quick Reference
 
@@ -32,3 +32,6 @@ here rather than being copied.
 - `src/post-process.ts` - remembering written files and post-processing them
 - `src/run-command.ts` - running commands and programs
 - `src/server.ts` - the document server
+- `src/mcp.ts` - the MCP server core shared with `kb`: JSON-RPC handling over
+  lines, the schema builders, and `commandTools`, a tool per command of a
+  commander program

@@ -30,6 +30,9 @@ an AI agent, `claude` or `copilot`:
 - `board list` and `board view` show the board, the second as a web page with a
   column per stage.
 
+`board-mcp` is an MCP server with a tool per command, for an AI agent to work
+the board without a shell.
+
 The agent never asks you anything directly. What it cannot settle it writes to
 the document's `## Open questions`; you answer there, under the question, and
 run the command again.

@@ -42,17 +42,27 @@ const AI =
 }][:<model>], e.g. claude:fable; the first installed agent by default, ${OVERRIDE} replaces it`;
 
 /**
- * Runs the `board` command line and returns the exit code. `board view`
- * returns once the server listens; the server keeps the process running.
+ * What a run of the command line leaves: its exit code, and the Io of the
+ * command, with `--working-dir` applied.
  */
-export async function runCli(
+export interface CliState
+{
+  exitCode: number;
+  io: Io;
+}
+
+/**
+ * The `board` command line, not yet run: the program, and the state its
+ * actions set.
+ */
+export function createCli(
     args: string[],
     io: Io
-  ): Promise<number>
+  ): { cli: Command; state: CliState; }
 {
-  let exitCode = 0;
-
-  let commandIo = io;
+  const state: CliState =
+    { exitCode: 0,
+      io };
 
   const cli =
     new Command();
@@ -77,7 +87,7 @@ export async function runCli(
         const folder =
           action.opts().workingDir as string | undefined;
 
-        commandIo =
+        state.io =
           folder === undefined
           ? io
           : { ...io,
@@ -106,9 +116,9 @@ export async function runCli(
           options: { ai?: string | true; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execDevelop(
-            commandIo,
+            state.io,
             { target,
               guidance,
               ai:
@@ -134,9 +144,9 @@ export async function runCli(
           options: { ai?: string | true; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execPlan(
-            commandIo,
+            state.io,
             { target,
               guidance,
               ai:
@@ -158,9 +168,9 @@ export async function runCli(
           options: { ai?: string | true; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execTasks(
-            commandIo,
+            state.io,
             { target,
               ai:
                 toSpec(options.ai) });
@@ -181,9 +191,9 @@ export async function runCli(
           options: { ai?: string | true; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execExec(
-            commandIo,
+            state.io,
             { target,
               ai:
                 toSpec(options.ai) });
@@ -200,9 +210,9 @@ export async function runCli(
           target: string
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execArchive(
-            commandIo,
+            state.io,
             { target });
       });
 
@@ -217,9 +227,9 @@ export async function runCli(
           options: { json?: boolean; }
         ) =>
       {
-        exitCode =
+        state.exitCode =
           await execList(
-            commandIo,
+            state.io,
             { json: options.json });
       });
 
@@ -250,7 +260,7 @@ export async function runCli(
         }
 
         await execView(
-          commandIo,
+          state.io,
           { port });
       });
 
@@ -259,6 +269,24 @@ export async function runCli(
       '--working-dir <folder>',
       WORKING_DIR);
   }
+
+  return { cli,
+           state };
+}
+
+/**
+ * Runs the `board` command line and returns the exit code. `board view`
+ * returns once the server listens; the server keeps the process running.
+ */
+export async function runCli(
+    args: string[],
+    io: Io
+  ): Promise<number>
+{
+  const { cli, state } =
+    createCli(
+      args,
+      io);
 
   if (args.length === 0) {
     cli.outputHelp();
@@ -283,19 +311,19 @@ export async function runCli(
           : String(error)
       }\n`);
 
-    exitCode = 1;
+    state.exitCode = 1;
   }
 
   try {
     const processed =
       await postProcess(
-        commandIo,
+        state.io,
         takeWritten(),
         CONFIG_FILE);
 
-    return exitCode === 0
+    return state.exitCode === 0
       ? processed
-      : exitCode;
+      : state.exitCode;
   } catch (error) {
     io.stderr.write(
       `${

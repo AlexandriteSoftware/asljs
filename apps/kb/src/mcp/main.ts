@@ -1,3 +1,5 @@
+import { readLoggerOptions }
+  from 'asljs-logging';
 import { createEnvironment,
          Environment }
   from '../environment.js';
@@ -7,8 +9,6 @@ import { createLinkGraph }
   from '../graph.js';
 import { resolveLibraryRoot }
   from '../library.js';
-import { readLoggerOptions }
-  from 'asljs-logging';
 import { createLoggerProvider }
   from '../logger.js';
 import { watchLibrary }

@@ -11,47 +11,47 @@ exits with a non-zero code and says why.
 - [R2 Board model][R2]
 - [R4 Moving documents][R4]
 - [R11 Agents and configuration][R11]
+- [R14 MCP server][R14]
 - [T10 Command line][T10]
 
 [R2]: <model/R2 Board model.md>
 [R4]: <commands/R4 Moving documents.md>
 [R11]: <R11 Agents and configuration.md>
+[R14]: <R14 MCP server.md>
 [T10]: <tests/T10 Command line.md>
 
 ## Coverage
 
-R1 makes five statements. Each one is covered by a linked requirement or by T10.
+R1 makes five statements. Each one is covered by at least one requirement or
+test it links to.
 
-1. "`board` keeps a planning board in markdown: ideas become plans, plans become
-   tasks." R2 covers this. It defines the board as a folder of markdown
-   documents with one folder per stage (`Ideas/I<n>`, `Plans/P<n>`,
-   `Tasks/T<n>-<m>`, `Results/R<n>-<m>`), and the plan, tasks and results of
-   idea n share its number. R4 covers the progression from one column to the
-   next: `plan` and `tasks` write the documents of the next column.
+- **A planning board kept in markdown.** R2 covers this. It defines the board as
+  a folder of markdown documents, with one folder per stage: `Ideas`, `Plans`,
+  `Tasks`, `Results` and `Archive`.
+- **Ideas become plans, and plans become tasks.** R4 covers this through the
+  `plan` and `tasks` commands, which write the next column's documents. R2 adds
+  that a plan and its tasks share the idea's number.
+- **An AI agent elaborates each document, carries the tasks out, and writes the
+  results next to them.** R4 covers this. `develop` elaborates a document in its
+  own column. `exec` carries the tasks out and writes the `Results` documents,
+  which R2 places in the `Results` column under the same numbers. R11 covers how
+  the agent is chosen and run.
+- **Every operation is a subcommand of `board`.** R4 lists the operations as the
+  commands `develop`, `plan`, `tasks`, `exec`, `archive`, `list` and `view`. R11
+  gives the options every command takes. T10's step "board without arguments
+  prints help with every command" checks that they are all `board` subcommands.
+- **`board` without arguments prints help listing the subcommands.** T10's step
+  "board without arguments prints help with every command" covers this.
+- **A failing command exits with a non-zero code and says why.** T10's step
+  "board returns 1 and says why when a command fails" covers this.
 
-2. "An AI agent elaborates each of them and carries the tasks out, with the
-   results written next to them." R4 covers this. `develop` elaborates a
-   document within its column, `plan`, `tasks` and `exec` ask an AI agent, and
-   `exec` writes the next column's documents, which are the Results. R2 puts
-   those Results beside the Tasks on the board. R11 covers how the agent is
-   chosen and invoked, and T10 checks the `--ai` handling, agent detection and
-   `BOARD_AI_COMMAND`.
+One link goes beyond the statement. R1 links to R14 (the `board-mcp` server),
+but its text never mentions an MCP server. This is not a coverage gap. To keep
+the requirement and its links aligned, the maintainers could add a sentence to
+R1's statement, for example: "`board-mcp` serves the same commands as MCP
+tools."
 
-3. "Every operation is a subcommand of `board`." R4 lists the operations as the
-   subcommands `plan`, `tasks`, `exec`, `develop`, `archive`, `list` and `view`.
-   T10's step "board without arguments prints help with every command" checks
-   that each of them is offered as a subcommand.
-
-4. "`board` without arguments prints help listing them." T10's step "board
-   without arguments prints help with every command" covers this.
-
-5. "A command that fails exits with a non-zero code and says why." T10's step
-   "board returns 1 and says why when a command fails" covers this. T10's step
-   "getCommand takes BOARD_AI_COMMAND, and fails without an agent" adds a
-   specific failure case.
-
-R1 is fully covered by R2, R4, R11 and T10, so nothing needs to be added or
-changed.
+Verdict: fully covered.
 
 ## Status
 

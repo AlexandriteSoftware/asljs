@@ -1,5 +1,10 @@
-import { Logger }
-  from 'asljs-logging';
+import { handleMessage as handleRpcMessage,
+         type JsonRpcMessage,
+         type JsonRpcResponse,
+         type McpTool,
+         PROTOCOL_VERSION,
+         serveLines }
+  from 'asljs-mdcli';
 import fs
   from 'node:fs/promises';
 import { createServer,
@@ -11,40 +16,24 @@ import { packageVersion }
   from '../commands/version.js';
 import { Environment }
   from '../environment.js';
-import { messageOf }
-  from '../formatting.js';
 import { endpointIsFile }
   from './endpoint.js';
-import { readLines }
-  from './lines.js';
-import { createTools,
-         McpTool }
+import { createTools }
   from './tools.js';
 
-export const PROTOCOL_VERSION = '2024-11-05';
+export {
+  PROTOCOL_VERSION
+};
+
+export type {
+  JsonRpcMessage,
+  JsonRpcResponse
+};
 
 export const SERVER_NAME = 'asljs-kb';
 
-export interface JsonRpcMessage
-{
-  jsonrpc?: string;
-  id?: number | string;
-  method?: string;
-  params?: Record<string, unknown>;
-}
-
-export interface JsonRpcResponse
-{
-  jsonrpc: '2.0';
-  id: number | string;
-  result?: unknown;
-  error?: { code: number; message: string; };
-}
-
-const METHOD_NOT_FOUND = -32601;
-
 /**
- * Handle one JSON-RPC message.
+ * Handle one JSON-RPC message, as the `kb` server.
  *
  * Returns `null` for notifications, which carry no id and expect no response.
  * Tool failures are reported as a successful response with `isError`, as the
@@ -55,49 +44,12 @@ export async function handleMessage(
     tools: McpTool[]
   ): Promise<JsonRpcResponse | null>
 {
-  if (message.id === undefined) {
-    return null;
-  }
-
-  if (message.method === 'initialize') {
-    return { jsonrpc: '2.0',
-             id: message.id,
-             result:
-               { protocolVersion: PROTOCOL_VERSION,
-                 capabilities:
-                   { tools: {} },
-                 serverInfo:
-                   { name: SERVER_NAME,
-                     version:
-                       packageVersion() } } };
-  }
-
-  if (message.method === 'tools/list') {
-    return { jsonrpc: '2.0',
-             id: message.id,
-             result:
-               { tools:
-                   tools.map(
-                     tool => ({ name: tool.name,
-                                description: tool.description,
-                                inputSchema: tool.inputSchema })) } };
-  }
-
-  if (message.method === 'tools/call') {
-    return { jsonrpc: '2.0',
-             id: message.id,
-             result:
-               await callTool(
-                 message.params ?? {},
-                 tools) };
-  }
-
-  return { jsonrpc: '2.0',
-           id: message.id,
-           error:
-             { code: METHOD_NOT_FOUND,
-               message:
-                 `Method not found: ${message.method ?? ''}` } };
+  return handleRpcMessage(
+    message,
+    tools,
+    { name: SERVER_NAME,
+      version:
+        packageVersion() });
 }
 
 /**
@@ -110,40 +62,24 @@ export async function runMcpServer(
     write: (line: string) => void
   ): Promise<void>
 {
-  const tools =
-    createTools(environment);
-
   const logger =
     environment.loggerProvider.getLogger();
 
-  const pending: Promise<void>[] = [ ];
-
-  readLines(
+  await serveLines(
     input,
-    (
-        line
-      ) =>
-    {
-      if (line.trim() === '') {
-        return;
-      }
-
-      pending.push(
-        respond(
-          line,
-          tools,
-          write,
-          logger));
-    });
-
-  await new Promise<void>(
-    resolve =>
-      input.on(
-        'end',
-        resolve)
-  );
-
-  await Promise.all(pending);
+    write,
+    createTools(environment),
+    { name: SERVER_NAME,
+      version:
+        packageVersion() },
+    { onInvalidLine:
+        () =>
+        logger.warning(
+          'Ignored a line that is not valid JSON.'),
+      onRequest:
+        method =>
+        logger.trace(
+          `request ${method}`) });
 }
 
 export interface EndpointServer
@@ -231,113 +167,4 @@ async function removeStaleEndpoint(
   await fs.rm(
     endpoint,
     { force: true });
-}
-
-async function respond(
-    line: string,
-    tools: McpTool[],
-    write: (line: string) => void,
-    logger: Logger
-  ): Promise<void>
-{
-  let message: JsonRpcMessage;
-
-  try {
-    message =
-      JSON.parse(line) as JsonRpcMessage;
-  } catch {
-    logger.warning(
-      'Ignored a line that is not valid JSON.');
-
-    return;
-  }
-
-  logger.trace(
-    `request ${message.method ?? ''}`);
-
-  const response =
-    await handleMessage(
-      message,
-      tools);
-
-  if (!response) {
-    return;
-  }
-
-  write(
-    `${JSON.stringify(response)}\n`);
-}
-
-async function callTool(
-    params: Record<string, unknown>,
-    tools: McpTool[]
-  ): Promise<Record<string, unknown>>
-{
-  const name = params.name;
-
-  const tool =
-    tools.find(
-      candidate => candidate.name === name);
-
-  if (!tool) {
-    return toolError(
-      `Tool is not registered: ${String(name)}`);
-  }
-
-  const args =
-    params.arguments ?? {};
-
-  if (
-    typeof args
-    !== 'object'
-    || args === null
-    || Array.isArray(args)
-  ) {
-    return toolError(
-      'tools/call arguments must be an object');
-  }
-
-  try {
-    const result =
-      await tool.invoke(
-        args as Record<string, unknown>);
-
-    return { content:
-               [ { type: 'text',
-                   text:
-                     describeResult(
-                       tool.name,
-                       result) } ] };
-  } catch (error) {
-    return toolError(
-      messageOf(error));
-  }
-}
-
-/**
- * A tool that answers with nothing says so, rather than sending no text.
- */
-function describeResult(
-    name: string,
-    result: unknown
-  ): string
-{
-  if (result === undefined) {
-    return `${name} completed`;
-  }
-
-  return JSON.stringify(
-    result,
-    null,
-    2);
-}
-
-function toolError(
-    message: string
-  ): Record<string, unknown>
-{
-  return { content:
-             [ { type: 'text',
-                 text: message } ],
-           isError: true };
 }

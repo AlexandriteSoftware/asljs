@@ -12,43 +12,41 @@ a plan, or anything but an idea, is refused.
 
 ## Coverage
 
-R6 is fully covered. It has no sub-requirements, so all of its coverage comes
-from its one test, T4, and both of T4's steps run real tests in
-`src/plan.test.ts`.
+R6 is fully covered by T4.
 
-- **`board plan <idea> [guidance]` takes an idea and optional guidance.** The
-  first step of T4 calls `execPlan` with the target `I20` and the guidance "keep
-  it simple". It checks that the prompt sent to the agent names the idea file
-  (`Ideas/I20 Restrict kids internet access.md`) and passes the guidance on
-  ("The user asks: keep it simple").
-- **It writes `Plans/P<n> <subject>.md` for the idea.** The first step checks
-  that `Plans/P20 Restrict kids internet access.md` is created. The number comes
-  from the idea (I20 gives P20) and the subject is the idea's. It also checks
-  the "Created …" output line.
-- **The plan comes from an agent.** The first step uses the fake agent. It
-  checks that the file's content is exactly the markdown the agent returned, and
-  that the prompt says the agent must not ask the user anything.
-- **The plan has a goal, an approach, steps and open questions.** The first step
-  checks that the prompt asks for `## Goal`, `## Approach`, `## Steps` and `##
-  Open questions`. It also checks that the agent's open question ends up in the
-  written file and is counted in the output.
-- **An idea that already has a plan is refused.** The second step of T4 checks
-  that `I19` is rejected with "I19 already has a plan, Plans/P19 …; develop it
-  with board develop P19."
-- **Anything but an idea is refused.** The second step checks that the task
-  `T19-1` is rejected with "T19-1 is a task; a plan is made from an idea."
+R6 makes these statements, each covered by T4:
 
-There are two small gaps. Neither leaves a statement uncovered:
+- `board plan <idea> [guidance]` takes an idea and optional guidance. The step
+  "execPlan writes the plan of an idea from the agent" calls `execPlan` with
+  target `I20` and guidance `keep it simple`. It checks that the prompt names
+  the idea file (`The idea: Ideas/I20 Restrict kids internet access.md`) and
+  passes the guidance on (`The user asks: keep it simple`). The test calls
+  `execPlan` directly, not through the command line. Wiring the `plan` command
+  to `execPlan` is the general job of the command-line requirement and T10, so
+  it isn't counted as a gap here.
+- It writes `Plans/P<n> <subject>.md`. The same step checks that
+  `board/Plans/P20 Restrict kids internet access.md` is created, has the agent's
+  text, and is reported as `Created Plans/P20 Restrict kids internet access.md`.
+- The plan comes from an agent and has a goal, an approach, steps and open
+  questions. The same step uses the fake agent and checks that the written file
+  is the agent's markdown. It also checks that the prompt asks for the heading
+  `# P20 Restrict kids internet access` and for the sections `## Goal`, `##
+  Approach`, `## Steps` and `## Open questions`. The fake agent's answer has no
+  `## Approach` section. That is acceptable: the requirement says the plan comes
+  from the agent, and the test checks that the agent is asked for all four
+  parts.
+- An idea that already has a plan is refused. The step "execPlan refuses an idea
+  with a plan, and anything but an idea" checks that `I19` is rejected with the
+  message pointing to `Plans/P19 Track how fresh articles are.md` and `board
+  develop P19`.
+- Anything but an idea is refused. The same step checks that `T19-1` is rejected
+  with "T19-1 is a task; a plan is made from an idea." Only a task is tried, not
+  a plan or a result. The code (`plan.ts`) refuses every kind other than an idea
+  in one check, so this is enough. If maintainers want it tested explicitly, a
+  `P<n>` or `R<n>-<m>` target could be added to the refusal step, but it isn't
+  required.
 
-- **Only a task is tested as a non-idea.** Plans and results are not. If you
-  want each kind covered, extend the second step of T4 to also check that a plan
-  id (for example `P19`) and a result id are refused.
-- **The command-line syntax is not tested directly.** T4 calls `execPlan` with
-  the options already split out; it does not parse `board plan <idea>
-  [guidance]`. The options match the syntax one to one, but a T4 step that runs
-  the CLI would cover the parsing too.
-
-Verdict: every statement of R6 is covered by T4.
+Nothing in R6 is left uncovered.
 
 ## Status
 

@@ -39,6 +39,6 @@ An idea, plan or task is rewritten from the agent.
 ## Status
 
 - Result: PASS - 5 steps
-- Execution: [E6 rq][E6]
+- Execution: [E7 rq][E7]
 
-[E6]: <../.rq/E6 rq.md>
+[E7]: <../.rq/E7 rq.md>

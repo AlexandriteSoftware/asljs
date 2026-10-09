@@ -108,6 +108,10 @@ and the document server are in `asljs-mdcli` (`libs/mdcli`), shared with
 - `src/coverage.ts` - `coverage`, the AI coverage check
 - `src/coverage-section.ts` - writes the `## Coverage` analysis
 - `src/test.ts`, `src/view.ts` - the commands; `src/cli.ts` wires them
+  (`createCli` builds the program, `runCli` runs it)
+- `src/mcp.ts` - `rq-mcp`: a tool per command of `createCli`, through
+  `commandTools` of `asljs-mdcli`; a new command or option becomes a tool
+  argument with no change here
 - `src/mermaid.ts` - the diagram of the graph
 
 ## Tests
