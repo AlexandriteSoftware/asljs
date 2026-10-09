@@ -1,7 +1,7 @@
 # kb
 
 > Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
-> JavaScript libraries for everyday use.
+> JavaScript libraries and tools for everyday use.
 
 Knowledge base tooling for a markdown library: file and folder operations, full
 text search, formatting, and structured data extraction, available both as a CLI

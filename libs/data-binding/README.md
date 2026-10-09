@@ -1,7 +1,7 @@
 # data-binding
 
 > Part of [Alexandrite Software Library][#1] - a set of high-quality, performant
-> JavaScript libraries for everyday use.
+> JavaScript libraries and tools for everyday use.
 
 ## Overview
 

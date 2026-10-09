@@ -1,7 +1,7 @@
 {
   "project": "asljs",
   "label": "ASLJS",
-  "db": "dash.sqlite",
+  "db": ".dash/dash.sqlite",
 
   "counters": {
     "asljs.git": {

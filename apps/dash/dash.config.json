@@ -1,7 +1,7 @@
 {
   "project": "machine",
   "label": "Machine",
-  "db": "dash.sqlite",
+  "db": ".dash/dash.sqlite",
   "samples": "database, 90*24h, 100k, 100Mb",
 
   "counters": {
