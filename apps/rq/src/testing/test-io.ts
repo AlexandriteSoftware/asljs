@@ -1,5 +1,7 @@
 import { Io }
   from '../io.js';
+import { WorkingTree }
+  from '../results.js';
 
 export interface TestIo extends Io
 {
@@ -14,8 +16,17 @@ export interface TestIo extends Io
   err(): string;
 }
 
+export const TEST_TREE: WorkingTree =
+  Object.freeze(
+    { commit: '0123abc',
+      branch: 'main',
+      changes:
+        Object.freeze(
+          [ 'M reqs/R1 Root.md' ]) as string[] });
+
 /**
- * An `Io` that collects output and stamps log entries with a fixed time.
+ * An `Io` that collects output, stamps executions with a fixed time, and
+ * records `TEST_TREE` as the working directory.
  */
 export function createTestIo(
     cwd: string,
@@ -37,6 +48,9 @@ export function createTestIo(
              () =>
       new Date(
         '2026-01-02T03:04:05.000Z'),
+           workingTree:
+             async () => TEST_TREE,
+           detectAgent: async () => null,
            out: () => out,
            err: () => err };
 }

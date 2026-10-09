@@ -1,7 +1,7 @@
 {
   "name": "asljs-rq",
   "version": "0.1.0",
-  "description": "AI-assisted requirements management: requirements and evidence in markdown, verified and viewed as a graph.",
+  "description": "AI-assisted requirements management: requirements and tests in markdown, verified and viewed as a graph.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -39,7 +39,7 @@
   "keywords": [
     "requirements",
     "traceability",
-    "evidence",
+    "test",
     "markdown",
     "ai",
     "cli"

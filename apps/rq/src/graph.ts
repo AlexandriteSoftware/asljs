@@ -8,10 +8,10 @@ import { parseDocument,
          RqDocument }
   from './document.js';
 
-export type NodeKind = 'requirement' | 'evidence';
+export type NodeKind = 'requirement' | 'test';
 
 /**
- * A markdown document: a requirement, an evidence, or, in a scope, any other
+ * A markdown document: a requirement, a test, or, in a scope, any other
  * document.
  */
 export interface RqNode extends RqDocument
@@ -22,7 +22,7 @@ export interface RqNode extends RqDocument
   path: string;
 
   /**
-   * From the file name: `RQ<n>` for a requirement, `EV<n>` for an evidence;
+   * From the file name: `R<n>` for a requirement, `T<n>` for a test;
    * `null` for any other document.
    */
   kind: NodeKind | null;
@@ -35,11 +35,25 @@ export interface RqNode extends RqDocument
 }
 
 const NODE_FILE_NAME =
-  /^(RQ|EV)\d+(?:\s.*)?\.md$/;
+  /^((R|T)\d+)(?:\s.*)?\.md$/;
 
 /**
- * The kind of document a file name says: `RQ<n> <name>.md` is a requirement,
- * `EV<n> <name>.md` an evidence; `null` for any other name.
+ * The id a file name starts with, e.g. `T12` for `T12 PDF export.md`; `null`
+ * for a document that is not a requirement or test.
+ */
+export function getNodeId(
+    file: string
+  ): string | null
+{
+  return NODE_FILE_NAME.exec(
+    path.basename(file))
+    ?.[1]
+    ?? null;
+}
+
+/**
+ * The kind of document a file name says: `R<n> <name>.md` is a requirement,
+ * `T<n> <name>.md` a test; `null` for any other name.
  */
 export function getNodeKind(
     file: string
@@ -53,9 +67,9 @@ export function getNodeKind(
     return null;
   }
 
-  return match[1] === 'RQ'
+  return match[2] === 'R'
     ? 'requirement'
-    : 'evidence';
+    : 'test';
 }
 
 /**
@@ -80,14 +94,15 @@ export interface RqGraph
   nodes: Map<string, RqNode>;
 
   /**
-   * Structure problems: broken links, cycles, a folder without a root, and
-   * documents of the folder no root reaches.
+   * Structure problems: broken links, cycles, requirements with several
+   * parents, a folder without a root, and documents of the folder no root
+   * reaches.
    */
   errors: string[];
 }
 
 /**
- * Loads the graph for a requirement or evidence file, which is its only root,
+ * Loads the graph for a requirement or test file, which is its only root,
  * or for a folder, whose roots are the requirements of the folder no other
  * requirement links to. Documents that are neither are ignored.
  */
@@ -114,7 +129,7 @@ export async function loadGraph(
       === null
     ) {
       throw new Error(
-        `${target}: not a requirement or evidence; the file name must start with RQ<n> or EV<n>.`);
+        `${target}: not a requirement or test; the file name must start with R<n> or T<n>.`);
     }
 
     return await walk(
@@ -151,22 +166,34 @@ export async function loadGraph(
       !linked.has(file)
       && getNodeKind(file) === 'requirement');
 
+  const errors =
+    findDuplicateIds(
+      folder,
+      files);
+
   if (
     roots.length === 0
     && files.length > 0
   ) {
-    return { folder,
-             roots: [ ],
-             nodes: new Map(),
-             errors:
-               [ `${folder}: no requirement is a root; every requirement is linked from another.` ] };
+    // Walk from every requirement so that the cycles still show.
+    const graph =
+      await walk(
+        folder,
+        files.filter(
+          file => getNodeKind(file) === 'requirement'),
+        [ 'no requirement is a root; every requirement is linked from another.',
+          ...errors ]);
+
+    graph.roots = [ ];
+
+    return graph;
   }
 
   const graph =
     await walk(
       folder,
       roots,
-      [ ]);
+      errors);
 
   for (const file of files) {
     if (!graph.nodes.has(file)) {
@@ -175,11 +202,53 @@ export async function loadGraph(
           display(
             graph,
             file)
-        }: not reachable from any root.`);
+        }: not reachable from any root; link it from a requirement with rq link.`);
     }
   }
 
   return graph;
+}
+
+/**
+ * An error for each id that more than one document of a folder has: ids
+ * name documents in commands and execution files, so they must be unique.
+ */
+function findDuplicateIds(
+    folder: string,
+    files: readonly string[]
+  ): string[]
+{
+  const byId = new Map<string, string[]>();
+
+  for (const file of files) {
+    const id = getNodeId(file)!;
+
+    byId.set(
+      id,
+      [ ...byId.get(id) ?? [ ],
+        file ]);
+  }
+
+  return [ ...byId ]
+    .filter(
+      (
+        [, same]
+      ) => same.length > 1)
+    .map(
+      (
+        [id, same]
+      ) =>
+        `${id}: several documents have this id: ${
+          same
+            .map(
+              file =>
+                path.relative(
+                  folder,
+                  file)
+                  .split(path.sep)
+                  .join('/'))
+            .join(', ')
+        }; ids must be unique.`);
 }
 
 /**
@@ -233,7 +302,7 @@ async function walk(
         !await isFile(child)
         ? 'points at no file'
         : getNodeKind(child) === null
-        ? 'is not a requirement or evidence'
+        ? 'is not a requirement or test'
         : null;
 
       if (problem === null) {
@@ -257,8 +326,52 @@ async function walk(
   }
 
   findCycles(graph);
+  findSharedRequirements(graph);
 
   return graph;
+}
+
+/**
+ * Reports every requirement linked from more than one requirement: a
+ * requirement has a single parent, a test may have several.
+ */
+function findSharedRequirements(
+    graph: RqGraph
+  ): void
+{
+  const parents = new Map<string, string[]>();
+
+  for (const node of graph.nodes.values()) {
+    for (const child of node.children) {
+      if (
+        getNodeKind(child)
+        === 'requirement'
+      ) {
+        parents.set(
+          child,
+          [ ...parents.get(child) ?? [ ],
+            node.path ]);
+      }
+    }
+  }
+
+  for (const [child, from] of parents) {
+    if (from.length > 1) {
+      graph.errors.push(
+        `${
+          display(
+            graph,
+            child)
+        }: linked from ${from.length} requirements, ${
+          from.map(
+            file =>
+              display(
+                graph,
+                file))
+            .join(', ')
+        }; a requirement has one parent.`);
+    }
+  }
 }
 
 /**

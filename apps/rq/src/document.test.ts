@@ -2,9 +2,7 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { formatLogEntry,
-         parseDocument,
-         parseLogEntry }
+import { parseDocument }
   from './document.js';
 
 test(
@@ -13,7 +11,7 @@ test(
   {
     const document =
       parseDocument(
-        `# RQ1 Root
+        `# R1 Root
 
 Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),
 [img](pic.png), [mail](mailto:a@b.md) and [ref][r]. [a again](<A b.md>)
@@ -22,77 +20,65 @@ Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),
 
 ## Implementation
 
-- [RQ2](<RQ2 Part.md>)
-- [EV1][ev1] and [web](https://x.org/RQ3.md)
+- [R2](<R2 Part.md>)
+- [T1][t1] and [web](https://x.org/R3.md)
 - [notes](notes.txt)
 
-[ev1]: evidence/EV1.md
+[t1]: tests/T1.md
 `);
 
     assert.deepEqual(
       document,
-      { title: 'RQ1 Root',
+      { title: 'R1 Root',
         body:
           'Uses [a](<A b.md>), [c](sub/C%20d.md#part), [web](https://x.org/y.md),\n[img](pic.png), [mail](mailto:a@b.md) and [ref][r]. [a again](<A b.md>)',
         links:
           [ 'A b.md',
             'sub/C d.md',
             './R.md',
-            'RQ2 Part.md',
-            'evidence/EV1.md' ],
+            'R2 Part.md',
+            'tests/T1.md' ],
         implementation:
-          [ 'RQ2 Part.md',
-            'evidence/EV1.md' ],
+          [ 'R2 Part.md',
+            'tests/T1.md' ],
         steps: [ ],
-        log: [ ] });
+        stepProblems: [ ],
+        status:
+          { result: null,
+            coverage: null,
+            execution: null } });
   });
 
 test(
-  'parseDocument reads an evidence: steps and log',
+  'parseDocument reads the steps of a test',
   () =>
   {
     const document =
       parseDocument(
-        `# EV1 Works
+        `# T1 Works
 
 ## Steps
 
+### Test
+
 \`\`\`sh
 npm test
-
-npm run lint
 \`\`\`
 
-Then:
+### Look
 
-\`\`\`
-node check.js
-\`\`\`
-
-## Log
-
-- 2026-01-01T00:00:00.000Z Passed - 3 steps
-- 2026-01-02T00:00:00.000Z Failed - step 2 exited with code 1
-- not an entry
+Check the output.
 `);
 
     assert.deepEqual(
       document.steps,
-      [ 'npm test',
-        'npm run lint',
-        'node check.js' ]);
-
-    assert.deepEqual(
-      document.log,
-      [ { time:
-            '2026-01-01T00:00:00.000Z',
-          status: 'Passed',
-          note: '3 steps' },
-        { time:
-            '2026-01-02T00:00:00.000Z',
-          status: 'Failed',
-          note:
-            'step 2 exited with code 1' } ]);
+      [ { type: 'shell',
+          title: 'Test',
+          commands:
+            [ 'npm test' ] },
+        { type: 'instruction',
+          title: 'Look',
+          text: 'Check the output.' } ]);
   });
 
 test(
@@ -103,44 +89,4 @@ test(
       parseDocument(
         '## Only a section\n').title,
       null);
-  });
-
-test(
-  'parseLogEntry reads an entry with a valid time',
-  () =>
-  {
-    assert.deepEqual(
-      parseLogEntry(
-        ' 2026-01-01T00:00:00Z Passed - all good '),
-      { time:
-          '2026-01-01T00:00:00Z',
-        status: 'Passed',
-        note: 'all good' });
-
-    assert.equal(
-      parseLogEntry('yesterday Passed'),
-      null);
-
-    assert.equal(
-      parseLogEntry('2026-01-01 Done'),
-      null);
-  });
-
-test(
-  'formatLogEntry writes the note on one line',
-  () =>
-  {
-    assert.equal(
-      formatLogEntry(
-        { time: 't',
-          status: 'Failed',
-          note: ' a\n b ' }),
-      't Failed - a b');
-
-    assert.equal(
-      formatLogEntry(
-        { time: 't',
-          status: 'Passed',
-          note: '' }),
-      't Passed');
   });

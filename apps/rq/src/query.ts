@@ -2,8 +2,6 @@ import { stat }
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { LogEntry }
-  from './document.js';
 import { getNodeKind,
          loadGraph,
          readNode,
@@ -11,9 +9,16 @@ import { getNodeKind,
   from './graph.js';
 import { Io }
   from './io.js';
+import { Status }
+  from './results.js';
 import { findBacklinks,
-         loadScope }
+         loadScope,
+         resolveTarget }
   from './scope.js';
+import { type CoverageStatus }
+  from './status-section.js';
+import { getStatuses }
+  from './status.js';
 
 /**
  * A node as the query commands print it. `path` is relative to the working
@@ -22,14 +27,21 @@ import { findBacklinks,
 export interface NodeSummary
 {
   path: string;
-  kind: 'requirement' | 'evidence' | 'other' | 'missing';
+  kind: 'requirement' | 'test' | 'other' | 'missing';
   title: string | null;
 
   /**
-   * The status of the last log entry of an evidence; `null` for an evidence
-   * never run and for a requirement.
+   * The status its document records, or for a requirement that records
+   * none the one that follows from its links; `null` for a
+   * document that is not a requirement or test.
    */
-  status: LogEntry['status'] | null;
+  status: Status | null;
+
+  /**
+   * The `rq coverage` verdict of a requirement; `null` for one never checked
+   * and for any other document.
+   */
+  coverage: CoverageStatus | null;
 }
 
 export interface QueryOptions
@@ -48,7 +60,7 @@ export async function execList(
 {
   const graph =
     await loadGraph(
-      path.resolve(
+      await resolveTarget(
         io.cwd,
         options.target));
 
@@ -57,20 +69,24 @@ export async function execList(
       `Error  ${error}\n`);
   }
 
+  const statuses =
+    getStatuses(graph);
+
   print(
     io,
     [ ...graph.nodes.values() ].map(
       node =>
         summarize(
           io,
-          node)),
+          node,
+          statuses.get(node.path)!.status)),
     options);
 
   return 0;
 }
 
 /**
- * Prints the requirements and evidence a requirement links to.
+ * Prints the requirements and tests a requirement links to.
  */
 export async function execLinks(
     io: Io,
@@ -89,14 +105,16 @@ export async function execLinks(
       await isFile(child)
         ? summarize(
           io,
-          await readNode(child))
+          await readNode(child),
+          await getStatus(child))
         : { path:
               display(
                 io,
                 child),
             kind: 'missing',
             title: null,
-            status: null });
+            status: null,
+            coverage: null });
   }
 
   print(
@@ -108,12 +126,12 @@ export async function execLinks(
 }
 
 /**
- * Prints the requirements that link to a requirement or an evidence, looked
- * for in the `in` folder, the working directory by default.
+ * Prints the requirements that link to a requirement or a test, looked
+ * for in the working folder.
  */
 export async function execBacklinks(
     io: Io,
-    options: QueryOptions & { file: string; in?: string; }
+    options: QueryOptions & { file: string; }
   ): Promise<number>
 {
   const node =
@@ -122,21 +140,25 @@ export async function execBacklinks(
       options.file);
 
   const scope =
-    await loadScope(
-      path.resolve(
-        io.cwd,
-        options.in ?? '.'));
+    await loadScope(io.cwd);
+
+  const backlinks: NodeSummary[] = [ ];
+
+  for (
+    const file of findBacklinks(
+      scope,
+      node.path)
+  ) {
+    backlinks.push(
+      summarize(
+        io,
+        scope.get(file)!,
+        await getStatus(file)));
+  }
 
   print(
     io,
-    findBacklinks(
-      scope,
-      node.path)
-      .map(
-        file =>
-          summarize(
-            io,
-            scope.get(file)!)),
+    backlinks,
     options);
 
   return 0;
@@ -144,7 +166,7 @@ export async function execBacklinks(
 
 /**
  * Prints the graph as JSON: the roots, the structure errors, and every node
- * with its structural fields.
+ * with its structural fields and its status.
  */
 export async function execToJson(
     io: Io,
@@ -153,9 +175,12 @@ export async function execToJson(
 {
   const graph =
     await loadGraph(
-      path.resolve(
+      await resolveTarget(
         io.cwd,
         options.target));
+
+  const statuses =
+    getStatuses(graph);
 
   io.stdout.write(
     `${
@@ -183,7 +208,11 @@ export async function execToJson(
                     io,
                     child)),
                          steps: node.steps,
-                         log: node.log })) },
+                         status:
+                           statuses.get(node.path)!.status,
+                         coverage:
+                           node.status.coverage?.status
+                ?? null })) },
         null,
         2)
     }\n`);
@@ -192,8 +221,9 @@ export async function execToJson(
 }
 
 /**
- * Reads a requirement or evidence given relative to the working directory; an
- * error when it is not a file or not named as one.
+ * Reads a requirement or test, a path, `.md` name or id in the working
+ * folder (`resolveTarget`); an error when it is not a file or not named as
+ * one.
  */
 export async function readExisting(
     io: Io,
@@ -201,7 +231,7 @@ export async function readExisting(
   ): Promise<RqNode>
 {
   const filePath =
-    path.resolve(
+    await resolveTarget(
       io.cwd,
       file);
 
@@ -215,7 +245,7 @@ export async function readExisting(
     === null
   ) {
     throw new Error(
-      `${file}: not a requirement or evidence; the file name must start with RQ<n> or EV<n>.`);
+      `${file}: not a requirement or test; the file name must start with R<n> or T<n>.`);
   }
 
   return await readNode(filePath);
@@ -243,9 +273,25 @@ export async function isFile(
   return (await stat(file).catch(() => null))?.isFile() === true;
 }
 
+/**
+ * The status of a requirement or test from the graph below it; `null` for
+ * any other document.
+ */
+async function getStatus(
+    file: string
+  ): Promise<Status | null>
+{
+  return getNodeKind(file) === null
+    ? null
+    : getStatuses(
+      await loadGraph(file))
+      .get(file)!.status;
+}
+
 function summarize(
     io: Io,
-    node: RqNode
+    node: RqNode,
+    status: Status | null
   ): NodeSummary
 {
   return { path:
@@ -257,8 +303,12 @@ function summarize(
       ?? 'other',
            title: node.title,
            status:
-             node.kind === 'evidence'
-      ? node.log.at(-1)?.status ?? null
+             node.kind === null
+      ? null
+      : status,
+           coverage:
+             node.kind === 'requirement'
+      ? node.status.coverage?.status ?? null
       : null };
 }
 
@@ -283,9 +333,13 @@ function print(
   for (const node of nodes) {
     io.stdout.write(
       `${node.kind.padEnd(11)}  ${node.path}${
-        node.kind === 'evidence'
-          ? `  ${node.status ?? 'Not run'}`
-          : ''
+        node.status === null
+          ? ''
+          : `  ${node.status}`
+      }${
+        node.coverage === null
+          ? ''
+          : `  ${node.coverage}`
       }\n`);
   }
 }

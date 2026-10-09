@@ -1,17 +1,84 @@
 import path
   from 'node:path';
-import { RqGraph }
+import { RqGraph,
+         RqNode }
   from './graph.js';
+import { NodeStatus }
+  from './status.js';
 
 /**
- * The graph as Mermaid text: requirements as boxes, evidence as rounded
- * boxes coloured by the status of its last log entry, and an edge from each
- * requirement to what implements it. `href` gives the link a node opens, or
- * `null` for none.
+ * How a node is drawn: `neutral` not run, `green` passed, `red` a failed
+ * test, `amber` a requirement failing because of what it links to.
+ */
+export type BorderColour = 'neutral' | 'green' | 'red' | 'amber';
+
+/**
+ * `solid` - a test, or a requirement its links fully cover; `dashed` - a
+ * requirement they do not; `dotted` - a requirement never checked.
+ */
+export type BorderStyle = 'solid' | 'dashed' | 'dotted';
+
+export interface Appearance
+{
+  colour: BorderColour;
+  style: BorderStyle;
+}
+
+const COLOURS: Readonly<Record<BorderColour, string>> =
+  Object.freeze(
+    { neutral: '#9e9e9e',
+      green: '#2e7d32',
+      red: '#c62828',
+      amber: '#ef8f00' });
+
+const DASHES: Readonly<Record<BorderStyle, string>> =
+  Object.freeze(
+    { solid: '',
+      dashed:
+        ',stroke-dasharray:6 4',
+      dotted:
+        ',stroke-dasharray:2 3' });
+
+/**
+ * The border of a node from its status and, for a requirement, its
+ * coverage.
+ */
+export function getAppearance(
+    node: RqNode,
+    status: NodeStatus | undefined
+  ): Appearance
+{
+  const colour: BorderColour =
+    status?.status === 'PASS'
+    ? 'green'
+    : status?.status === 'FAIL'
+    ? node.kind === 'test'
+      ? 'red'
+      : 'amber'
+    : 'neutral';
+
+  const coverage =
+    node.status.coverage?.status;
+
+  return { colour,
+           style:
+             node.kind !== 'requirement' || coverage === 'COMPLETE'
+      ? 'solid'
+      : coverage === 'INCOMPLETE'
+      ? 'dashed'
+      : 'dotted' };
+}
+
+/**
+ * The graph as Mermaid text: requirements as boxes and tests as rounded
+ * boxes, with borders by `getAppearance`, and an edge from each requirement
+ * to what implements it. `href` gives the link a node opens, or `null` for
+ * none.
  */
 export function toMermaid(
     graph: RqGraph,
-    href: (file: string) => string | null
+    href: (file: string) => string | null,
+    statuses: ReadonlyMap<string, NodeStatus>
   ): string
 {
   const ids =
@@ -36,7 +103,7 @@ export function toMermaid(
           '.md'));
 
     lines.push(
-      node.kind === 'evidence'
+      node.kind === 'test'
         ? `  ${ids.get(file)}(["${label}"])`
         : `  ${ids.get(file)}["${label}"]`);
   }
@@ -57,21 +124,16 @@ export function toMermaid(
         `  click ${ids.get(file)} href "${escape(link)}"`);
     }
 
-    const status =
-      node.log.at(-1)?.status;
+    const { colour, style } =
+      getAppearance(
+        node,
+        statuses.get(file));
 
-    if (
-      node.kind === 'evidence'
-      && status
-    ) {
-      lines.push(
-        `  class ${ids.get(file)} ${status.toLowerCase()}`);
-    }
+    lines.push(
+      `  style ${ids.get(file)} stroke:${COLOURS[colour]},stroke-width:2px${
+        DASHES[style]
+      }`);
   }
-
-  lines.push(
-    '  classDef passed fill:#d7f5d7,stroke:#2e7d32',
-    '  classDef failed fill:#f8d7d7,stroke:#c62828');
 
   return lines.join('\n');
 }

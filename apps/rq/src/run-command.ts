@@ -17,6 +17,43 @@ export function runCommand(
     input = ''
   ): Promise<CommandRun>
 {
+  return run(
+    command,
+    [ ],
+    true,
+    cwd,
+    input);
+}
+
+/**
+ * Runs a program with arguments, without a shell, in a folder; `env`
+ * replaces the environment when given.
+ */
+export function runProgram(
+    program: string,
+    args: readonly string[],
+    cwd: string,
+    env?: NodeJS.ProcessEnv
+  ): Promise<CommandRun>
+{
+  return run(
+    program,
+    args,
+    false,
+    cwd,
+    '',
+    env);
+}
+
+function run(
+    command: string,
+    args: readonly string[],
+    shell: boolean,
+    cwd: string,
+    input: string,
+    env?: NodeJS.ProcessEnv
+  ): Promise<CommandRun>
+{
   return new Promise(
     (
         resolve,
@@ -26,8 +63,10 @@ export function runCommand(
       const child =
         spawn(
           command,
+          args,
           { cwd,
-            shell: true,
+            env,
+            shell,
             windowsHide: true,
             stdio:
               [ 'pipe',

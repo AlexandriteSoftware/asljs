@@ -6,7 +6,6 @@ import test
   from 'node:test';
 import { addImplementationLink,
          appendListItem,
-         appendLogEntry,
          relativeUrl,
          removeLinks,
          resolveUrl,
@@ -27,32 +26,25 @@ function at(
 }
 
 test(
-  'appendLogEntry adds a Log section, then adds to its list',
+  'appendListItem adds a missing section, then adds to its list',
   () =>
   {
-    const entry =
-      { time:
-          '2026-01-01T00:00:00.000Z',
-        status:
-          'Passed' as const,
-        note: 'two\nlines' };
-
     const first =
-      appendLogEntry(
-        '# EV1\n\n## Steps\n\n```\nx\n```\n',
-        entry);
+      appendListItem(
+        '# R1\n\nStatement.\n',
+        'Implementation',
+        'a');
 
     assert.equal(
       first,
-      '# EV1\n\n## Steps\n\n```\nx\n```\n\n## Log\n\n- 2026-01-01T00:00:00.000Z Passed - two lines\n');
+      '# R1\n\nStatement.\n\n## Implementation\n\n- a\n');
 
     assert.equal(
-      appendLogEntry(
+      appendListItem(
         first,
-        { ...entry,
-          status: 'Failed',
-          note: '' }),
-      `${first}- 2026-01-01T00:00:00.000Z Failed\n`);
+        'Implementation',
+        'b'),
+      `${first}- b\n`);
   });
 
 test(
@@ -61,10 +53,10 @@ test(
   {
     assert.equal(
       appendListItem(
-        '# EV1\n\n## Log\n\n## Notes\n\nText.\n',
+        '# T1\n\n## Log\n\n## Notes\n\nText.\n',
         'Log',
         't Passed - ok'),
-      '# EV1\n\n## Log\n\n- t Passed - ok\n\n## Notes\n\nText.\n');
+      '# T1\n\n## Log\n\n- t Passed - ok\n\n## Notes\n\nText.\n');
   });
 
 test(
@@ -73,17 +65,17 @@ test(
   {
     assert.equal(
       appendListItem(
-        '# RQ1\n\n## Implementation\n\n- [EV1][ev1]\n\n[ev1]: <EV1 A.md>\n',
+        '# R1\n\n## Implementation\n\n- [T1][t1]\n\n[t1]: <T1 A.md>\n',
         'Implementation',
-        '[RQ2](RQ2.md)'),
-      '# RQ1\n\n## Implementation\n\n- [EV1][ev1]\n- [RQ2](RQ2.md)\n\n[ev1]: <EV1 A.md>\n');
+        '[R2](R2.md)'),
+      '# R1\n\n## Implementation\n\n- [T1][t1]\n- [R2](R2.md)\n\n[t1]: <T1 A.md>\n');
 
     assert.equal(
       appendListItem(
-        '# RQ1\n\n## Implementation\n\nSee below.\n',
+        '# R1\n\n## Implementation\n\nSee below.\n',
         'Implementation',
-        '[RQ2](RQ2.md)'),
-      '# RQ1\n\n## Implementation\n\n- [RQ2](RQ2.md)\n\nSee below.\n');
+        '[R2](R2.md)'),
+      '# R1\n\n## Implementation\n\n- [R2](R2.md)\n\nSee below.\n');
   });
 
 test(
@@ -92,23 +84,31 @@ test(
   {
     const text =
       addImplementationLink(
-        '# RQ1\n\nStatement.\n',
-        at('RQ1.md'),
+        '# R1\n\nStatement.\n',
+        at('R1.md'),
         at(
-          'evidence/EV1 [x].md'),
-        'EV1 [x]');
+          'tests/T1 [x].md'),
+        'T1 [x]');
 
     assert.equal(
       text,
-      '# RQ1\n\nStatement.\n\n## Implementation\n\n- [EV1 \\[x\\]](<evidence/EV1 [x].md>)\n');
+      '# R1\n\nStatement.\n\n## Implementation\n\n- [T1 \\[x\\]][T1]\n\n[T1]: <tests/T1 [x].md>\n');
 
     assert.equal(
       addImplementationLink(
         text,
-        at('RQ1.md'),
-        at('../RQ2.md'),
-        'RQ2'),
-      `${text}- [RQ2](../RQ2.md)\n`);
+        at('R1.md'),
+        at('../R2.md'),
+        'R2'),
+      '# R1\n\nStatement.\n\n## Implementation\n\n- [T1 \\[x\\]][T1]\n- [R2][R2]\n\n[T1]: <tests/T1 [x].md>\n[R2]: ../R2.md\n');
+
+    assert.equal(
+      addImplementationLink(
+        '# R1\n\n## Implementation\n\n- [Other][T1]\n\n[T1]: other.md\n\n## Notes\n\nKept.\n',
+        at('R1.md'),
+        at('T1 A.md'),
+        'T1 A'),
+      '# R1\n\n## Implementation\n\n- [Other][T1]\n- [T1 A][T1-2]\n\n[T1]: other.md\n[T1-2]: <T1 A.md>\n\n## Notes\n\nKept.\n');
   });
 
 test(
@@ -116,32 +116,32 @@ test(
   () =>
   {
     const text =
-      `# RQ1
+      `# R1
 
-See [RQ2](<RQ2.md#a>) and [RQ2 again][r2], not [RQ3](RQ3.md).
+See [R2](<R2.md#a>) and [R2 again][r2], not [R3](R3.md).
 
 ## Implementation
 
-- [RQ2](RQ2.md)
-- [RQ3](RQ3.md)
+- [R2](R2.md)
+- [R3](R3.md)
 
 ## Notes
 
-[r2]: <./RQ2.md>
+[r2]: <./R2.md>
 `;
 
     assert.equal(
       removeLinks(
         text,
-        at('RQ1.md'),
-        target => target === at('RQ2.md')),
-      `# RQ1
+        at('R1.md'),
+        target => target === at('R2.md')),
+      `# R1
 
-See RQ2 and RQ2 again, not [RQ3](RQ3.md).
+See R2 and R2 again, not [R3](R3.md).
 
 ## Implementation
 
-- [RQ3](RQ3.md)
+- [R3](R3.md)
 
 ## Notes
 `);
@@ -152,37 +152,37 @@ test(
   () =>
   {
     const text =
-      `# RQ1
+      `# R1
 
-[old](<old/RQ2 a.md#part> "Title") ![pic](pic.png) [web](https://x.org/RQ2.md)
+[old](<old/R2 a.md#part> "Title") ![pic](pic.png) [web](https://x.org/R2.md)
 
 ## Implementation
 
-- [RQ2 a](<old/RQ2 a.md>)
+- [R2 a](<old/R2 a.md>)
 
-[d]: old/RQ2%20a.md
+[d]: old/R2%20a.md
 `;
 
     assert.equal(
       rewriteLinks(
         text,
-        at('RQ1.md'),
-        at('RQ1.md'),
+        at('R1.md'),
+        at('R1.md'),
         target =>
-          target === at('old/RQ2 a.md')
-            ? at('new/RQ2 b.md')
+          target === at('old/R2 a.md')
+            ? at('new/R2 b.md')
             : null,
-        { oldTitle: 'RQ2 a',
-          newTitle: 'RQ2 b' }),
-      `# RQ1
+        { oldTitle: 'R2 a',
+          newTitle: 'R2 b' }),
+      `# R1
 
-[old](<new/RQ2 b.md#part> "Title") ![pic](pic.png) [web](https://x.org/RQ2.md)
+[old](<new/R2 b.md#part> "Title") ![pic](pic.png) [web](https://x.org/R2.md)
 
 ## Implementation
 
-- [RQ2 b](<new/RQ2 b.md>)
+- [R2 b](<new/R2 b.md>)
 
-[d]: <new/RQ2 b.md>
+[d]: <new/R2 b.md>
 `);
   });
 
@@ -192,11 +192,11 @@ test(
   {
     assert.equal(
       rewriteLinks(
-        '# RQ2\n\n[RQ1](RQ1.md) ![pic](img/pic.png)\n',
-        at('RQ2.md'),
-        at('sub/RQ2.md'),
+        '# R2\n\n[R1](R1.md) ![pic](img/pic.png)\n',
+        at('R2.md'),
+        at('sub/R2.md'),
         target => target),
-      '# RQ2\n\n[RQ1](../RQ1.md) ![pic](../img/pic.png)\n');
+      '# R2\n\n[R1](../R1.md) ![pic](../img/pic.png)\n');
   });
 
 test(
@@ -222,21 +222,21 @@ test(
   {
     assert.deepEqual(
       resolveUrl(
-        at('RQ1.md'),
-        'sub/RQ%202.md#x'),
+        at('R1.md'),
+        'sub/R%202.md#x'),
       { path:
-          at('sub/RQ 2.md'),
+          at('sub/R 2.md'),
         fragment: '#x' });
 
     assert.equal(
       resolveUrl(
-        at('RQ1.md'),
+        at('R1.md'),
         'https://x.org/a.md'),
       null);
 
     assert.equal(
       relativeUrl(
-        at('a/RQ1.md'),
-        at('b/RQ2.md')),
-      '../b/RQ2.md');
+        at('a/R1.md'),
+        at('b/R2.md')),
+      '../b/R2.md');
   });

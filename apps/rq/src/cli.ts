@@ -1,6 +1,11 @@
 import { Command,
          CommanderError }
   from 'commander';
+import path
+  from 'node:path';
+import { AI_AGENTS,
+         parseAgentSpec }
+  from './agent.js';
 import { execAdd,
          execLink,
          execLog,
@@ -10,20 +15,25 @@ import { execAdd,
   from './change.js';
 import { execCheck }
   from './check.js';
-import { AI_AGENTS,
-         AiAgent }
+import { execCoverage }
   from './coverage.js';
 import { Io }
   from './io.js';
+import { postProcess,
+         takeWritten }
+  from './post-process.js';
 import { execBacklinks,
          execLinks,
          execList,
          execToJson }
   from './query.js';
-import { execVerify }
-  from './verify.js';
+import { execTest }
+  from './test.js';
 import { execView }
   from './view.js';
+
+const WORKING_DIR =
+  'The folder to work in: paths resolve against it, ids and .md names are searched for in it, and its .rq folder holds the results; the current directory by default';
 
 /**
  * Runs the `rq` command line and returns the exit code. `rq view` returns
@@ -36,43 +46,122 @@ export async function runCli(
 {
   let exitCode = 0;
 
+  const command =
+    [ 'rq',
+      ...args.map(
+        arg =>
+        /^[\w./:=@+-]+$/.test(arg)
+          ? arg
+          : JSON.stringify(arg)) ]
+    .join(' ');
+
+  let commandIo = io;
+
   const cli =
     new Command();
 
   cli.name('rq')
     .description(
-      'AI-assisted requirements management: verify and view requirements and evidence written in markdown.')
+      'AI-assisted requirements management: test and view requirements and tests written in markdown.')
     .helpCommand(false)
     .configureOutput(
       { writeOut:
           value => io.stdout.write(value),
         writeErr:
           value => io.stderr.write(value) })
-    .exitOverride();
+    .exitOverride()
+    .hook(
+      'preAction',
+      (
+          _cli,
+          action
+        ) =>
+      {
+        const folder =
+          action.opts().workingDir as string | undefined;
 
-  cli.command('verify')
+        commandIo =
+          folder === undefined
+          ? io
+          : { ...io,
+              cwd:
+                path.resolve(
+                  io.cwd,
+                  folder) };
+      });
+
+  cli.command('test')
     .description(
-      'Verify a requirement and everything it is implemented by: structure, evidence steps and, with --ai, coverage')
+      'Run the tests of requirements and tests, record the results in .rq/E<n> <slug>.md, and report their status')
     .argument(
-      '<path>',
-      'A requirement file, or a folder whose roots are verified')
+      '<targets...>',
+      'Requirement or test files, folders, .md names, or ids such as R10 or T12')
+    .option(
+      '--recurse',
+      'Also run the tests of every requirement below a requirement target')
+    .option(
+      '--name <slug>',
+      'The slug of the results file; the targets by default')
     .option(
       '--ai [agent]',
-      `Check with an AI agent that each requirement is fully covered: ${
-        AI_AGENTS.join(' or ')
-      }; claude when omitted`)
+      `The AI agent and model, [${
+        AI_AGENTS.join('|')
+      }][:<model>], e.g. claude:fable, for instruction steps; the first installed agent by default`)
     .action(
       async (
-          target: string,
-          options: { ai?: string | true; }
+          targets: string[],
+          options: {
+          recurse?: boolean;
+          name?: string;
+          ai?: string | true;
+        }
         ) =>
       {
         exitCode =
-          await execVerify(
-            io,
-            { target,
+          await execTest(
+            commandIo,
+            { targets,
+              recurse: options.recurse,
+              name: options.name,
+              command,
               ai:
-                parseAgent(options.ai) });
+                options.ai === undefined
+              ? undefined
+              : parseAgentSpec(options.ai) });
+      });
+
+  cli.command('coverage')
+    .description(
+      'Ask an AI agent whether the sub-requirements and tests of each requirement fully cover it, and record the verdict in its Status')
+    .argument(
+      '<targets...>',
+      'Requirement files, folders, .md names, or ids such as R10')
+    .option(
+      '--recurse',
+      'Also check every requirement below a requirement target')
+    .option(
+      '--ai [agent]',
+      `The AI agent and model, [${
+        AI_AGENTS.join('|')
+      }][:<model>], e.g. claude:fable; the first installed agent by default`)
+    .action(
+      async (
+          targets: string[],
+          options: {
+          recurse?: boolean;
+          ai?: string | true;
+        }
+        ) =>
+      {
+        exitCode =
+          await execCoverage(
+            commandIo,
+            { targets,
+              recurse: options.recurse,
+              ai:
+                options.ai === undefined
+              ? undefined
+              : parseAgentSpec(options.ai) });
       });
 
   cli.command('view')
@@ -83,28 +172,30 @@ export async function runCli(
       'A requirement file, or a folder of requirements')
     .option(
       '--port <port>',
-      'Port to listen on; 0 picks a free one',
-      '3000')
+      'Port to listen on, exactly; 0 picks a free one. By default the first free port from 3000 on')
     .action(
       async (
           target: string,
-          options: { port: string; }
+          options: { port?: string; }
         ) =>
       {
         const port =
-          Number(options.port);
+          options.port === undefined
+          ? undefined
+          : Number(options.port);
 
         if (
-          !Number.isInteger(port)
-          || port < 0
-          || port > 65535
+          port !== undefined
+          && (!Number.isInteger(port)
+              || port < 0
+              || port > 65535)
         ) {
           throw new Error(
             `Invalid port: ${options.port}`);
         }
 
         await execView(
-          io,
+          commandIo,
           { target,
             port });
       });
@@ -122,13 +213,13 @@ export async function runCli(
       {
         exitCode =
           await execCheck(
-            io,
+            commandIo,
             { target });
       });
 
   cli.command('list')
     .description(
-      'List the requirements and evidence of the graph, from the roots down')
+      'List the requirements and tests of the graph, from the roots down')
     .argument(
       '<path>',
       'A requirement file, or a folder of requirements')
@@ -143,14 +234,14 @@ export async function runCli(
       {
         exitCode =
           await execList(
-            io,
+            commandIo,
             { target,
               json: options.json });
       });
 
   cli.command('links')
     .description(
-      'List the requirements and evidence a requirement links to')
+      'List the requirements and tests a requirement links to')
     .argument(
       '<file>',
       'A requirement')
@@ -165,40 +256,36 @@ export async function runCli(
       {
         exitCode =
           await execLinks(
-            io,
+            commandIo,
             { file,
               json: options.json });
       });
 
   cli.command('backlinks')
     .description(
-      'List the requirements that link to a requirement or an evidence')
+      'List the requirements that link to a requirement or a test')
     .argument(
       '<file>',
-      'A requirement or an evidence')
-    .option(
-      '--in <folder>',
-      'The folder to look in; the working directory by default')
+      'A requirement or a test')
     .option(
       '--json',
       'Print JSON')
     .action(
       async (
           file: string,
-          options: { in?: string; json?: boolean; }
+          options: { json?: boolean; }
         ) =>
       {
         exitCode =
           await execBacklinks(
-            io,
+            commandIo,
             { file,
-              in: options.in,
               json: options.json });
       });
 
   cli.command('tojson')
     .description(
-      'Print the graph as JSON with the structural fields of every document')
+      'Print the graph as JSON with the structural fields and the status of every document')
     .argument(
       '<path>',
       'A requirement file, or a folder of requirements')
@@ -209,18 +296,18 @@ export async function runCli(
       {
         exitCode =
           await execToJson(
-            io,
+            commandIo,
             { target });
       });
 
   const add =
     cli.command('add')
     .description(
-      'Create a requirement or an evidence and link it from a requirement');
+      'Create a requirement or a test and link it from a requirement');
 
   add.command('requirement')
     .description(
-      'Create RQ<n> <name>.md next to the parent and link it from the parent')
+      'Create R<n> <name>.md next to the parent and link it from the parent')
     .argument(
       '<parent>',
       'The requirement it implements')
@@ -232,31 +319,27 @@ export async function runCli(
       'The statement of the requirement')
     .option(
       '--path <file>',
-      'The path of the new document, instead of RQ<n> <name>.md')
-    .option(
-      '--in <folder>',
-      'The folder the next id is looked for in; the working directory by default')
+      'The path of the new document, instead of R<n> <name>.md')
     .action(
       async (
           parent: string,
           name: string,
-          options: { statement?: string; path?: string; in?: string; }
+          options: { statement?: string; path?: string; }
         ) =>
       {
         exitCode =
           await execAdd(
-            io,
+            commandIo,
             { kind: 'requirement',
               parent,
               name,
               body: options.statement,
-              path: options.path,
-              in: options.in });
+              path: options.path });
       });
 
-  add.command('evidence')
+  add.command('test')
     .description(
-      'Create evidence/EV<n> <name>.md next to the parent and link it from the parent')
+      'Create tests/T<n> <name>.md next to the parent and link it from the parent')
     .argument(
       '<parent>',
       'The requirement it shows to hold')
@@ -265,18 +348,15 @@ export async function runCli(
       'The name after the id')
     .option(
       '--description <text>',
-      'What the evidence shows')
+      'What the test shows')
     .option(
       '--step <command>',
-      'A command of its steps; repeat for several',
+      'A shell step running the command; repeat for several',
       collect,
       [ ])
     .option(
       '--path <file>',
-      'The path of the new document, instead of evidence/EV<n> <name>.md')
-    .option(
-      '--in <folder>',
-      'The folder the next id is looked for in; the working directory by default')
+      'The path of the new document, instead of tests/T<n> <name>.md')
     .action(
       async (
           parent: string,
@@ -285,31 +365,29 @@ export async function runCli(
           description?: string;
           step: string[];
           path?: string;
-          in?: string;
         }
         ) =>
       {
         exitCode =
           await execAdd(
-            io,
-            { kind: 'evidence',
+            commandIo,
+            { kind: 'test',
               parent,
               name,
               body: options.description,
               steps: options.step,
-              path: options.path,
-              in: options.in });
+              path: options.path });
       });
 
   cli.command('link')
     .description(
-      'Link an existing requirement or evidence from a requirement')
+      'Link an existing requirement or test from a requirement')
     .argument(
       '<parent>',
       'The requirement')
     .argument(
       '<child>',
-      'The requirement or evidence that implements it')
+      'The requirement or test that implements it')
     .action(
       async (
           parent: string,
@@ -318,20 +396,20 @@ export async function runCli(
       {
         exitCode =
           await execLink(
-            io,
+            commandIo,
             { parent,
               child });
       });
 
   cli.command('unlink')
     .description(
-      'Remove the links from a requirement to a requirement or evidence')
+      'Remove the links from a requirement to a requirement or test')
     .argument(
       '<parent>',
       'The requirement')
     .argument(
       '<child>',
-      'The requirement or evidence it links to')
+      'The requirement or test it links to')
     .action(
       async (
           parent: string,
@@ -340,73 +418,64 @@ export async function runCli(
       {
         exitCode =
           await execUnlink(
-            io,
+            commandIo,
             { parent,
               child });
       });
 
   cli.command('remove')
     .description(
-      'Delete a requirement or an evidence and the links to it')
+      'Delete a requirement or a test and the links to it')
     .argument(
       '<file>',
-      'A requirement or an evidence')
+      'A requirement or a test')
     .option(
       '--recursive',
       'Also delete what it links to that nothing else links to')
-    .option(
-      '--in <folder>',
-      'The folder whose links to it are removed; the working directory by default')
     .action(
       async (
           file: string,
-          options: { recursive?: boolean; in?: string; }
+          options: { recursive?: boolean; }
         ) =>
       {
         exitCode =
           await execRemove(
-            io,
+            commandIo,
             { file,
-              recursive: options.recursive,
-              in: options.in });
+              recursive: options.recursive });
       });
 
   cli.command('move')
     .description(
-      'Move or rename a requirement or an evidence and rewrite the links to it')
+      'Move or rename a requirement or a test and rewrite the links to it')
     .argument(
       '<file>',
-      'A requirement or an evidence')
+      'A requirement or a test')
     .argument(
       '<destination>',
       'The new path, or a folder to move it into')
-    .option(
-      '--in <folder>',
-      'The folder whose links to it are rewritten; the working directory by default')
     .action(
       async (
           file: string,
-          destination: string,
-          options: { in?: string; }
+          destination: string
         ) =>
       {
         exitCode =
           await execMove(
-            io,
+            commandIo,
             { file,
-              destination,
-              in: options.in });
+              destination });
       });
 
   cli.command('log')
     .description(
-      'Append an entry to the Log of an evidence')
+      'Record a result established another way in .rq/E<n> <test>.md')
     .argument(
-      '<file>',
-      'An evidence')
+      '<test>',
+      'A test file, .md name or id, e.g. T12')
     .requiredOption(
       '--status <status>',
-      'Passed or Failed')
+      'PASS or FAIL')
     .option(
       '--note <text>',
       'A short note')
@@ -416,22 +485,40 @@ export async function runCli(
     .action(
       async (
           file: string,
-          options: { status: string; note?: string; time?: string; }
+          options: {
+          status: string;
+          note?: string;
+          time?: string;
+        }
         ) =>
       {
         exitCode =
           await execLog(
-            io,
+            commandIo,
             { file,
               status: options.status,
               note: options.note,
-              time: options.time });
+              time: options.time,
+              command });
       });
+
+  for (
+    const command of [ ...cli.commands,
+                       ...add.commands ]
+  ) {
+    if (command !== add) {
+      command.option(
+        '--working-dir <folder>',
+        WORKING_DIR);
+    }
+  }
 
   if (args.length === 0) {
     cli.outputHelp();
     return 0;
   }
+
+  takeWritten();
 
   try {
     await cli.parseAsync(
@@ -449,33 +536,28 @@ export async function runCli(
           : String(error)
       }\n`);
 
+    exitCode = 1;
+  }
+
+  try {
+    const processed =
+      await postProcess(
+        commandIo,
+        takeWritten());
+
+    return exitCode === 0
+      ? processed
+      : exitCode;
+  } catch (error) {
+    io.stderr.write(
+      `${
+        error instanceof Error
+          ? error.message
+          : String(error)
+      }\n`);
+
     return 1;
   }
-
-  return exitCode;
-}
-
-function parseAgent(
-    value: string | true | undefined
-  ): AiAgent | undefined
-{
-  if (value === undefined) {
-    return undefined;
-  }
-
-  if (value === true) {
-    return 'claude';
-  }
-
-  const agent =
-    value.trim() as AiAgent;
-
-  if (!AI_AGENTS.includes(agent)) {
-    throw new Error(
-      `Unknown AI agent: ${value}. Use ${AI_AGENTS.join(' or ')}.`);
-  }
-
-  return agent;
 }
 
 function collect(

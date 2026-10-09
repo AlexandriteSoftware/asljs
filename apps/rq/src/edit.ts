@@ -6,9 +6,8 @@ import { type Definition,
   from 'mdast';
 import path
   from 'node:path';
-import { formatLogEntry,
-         LogEntry }
-  from './document.js';
+import { getNodeId }
+  from './graph.js';
 import { findSectionHeading,
          formatUrl,
          getSection,
@@ -82,20 +81,11 @@ export function appendListItem(
       : rest);
 }
 
-export function appendLogEntry(
-    text: string,
-    entry: LogEntry
-  ): string
-{
-  return appendListItem(
-    text,
-    'Log',
-    formatLogEntry(entry));
-}
-
 /**
  * The text of the document at `from` with a link to `to` added to its `##
- * Implementation` list.
+ * Implementation` list, as a reference link: `- [<title>][<label>]` and a
+ * `[<label>]: <path>` definition at the end of the section. The label is the
+ * id of `to`, with a number added when the document already uses it.
  */
 export function addImplementationLink(
     text: string,
@@ -104,15 +94,121 @@ export function addImplementationLink(
     title: string
   ): string
 {
-  return appendListItem(
-    text,
+  const label =
+    freeLabel(
+      text,
+      getNodeId(to)
+      ?? path.basename(
+        to,
+        path.extname(to)));
+
+  return appendDefinition(
+    appendListItem(
+      text,
+      'Implementation',
+      `[${escapeLinkText(title)}][${label}]`),
     'Implementation',
-    `[${escapeLinkText(title)}](${
-      formatUrl(
-        relativeUrl(
-          from,
-          to))
-    })`);
+    label,
+    formatUrl(
+      relativeUrl(
+        from,
+        to)));
+}
+
+/**
+ * The text with `[<label>]: <url>` added at the end of a level 2 section,
+ * after a blank line unless the section already ends with definitions.
+ */
+export function appendDefinition(
+    text: string,
+    section: string,
+    label: string,
+    url: string
+  ): string
+{
+  const root =
+    parseMarkdown(text);
+
+  const heading =
+    findSectionHeading(
+      root,
+      section);
+
+  const line =
+    `[${label}]: ${url}`;
+
+  if (!heading) {
+    return `${text.trimEnd()}\n\n${line}\n`;
+  }
+
+  const nodes =
+    getSection(
+      root,
+      section)!;
+
+  const last =
+    nodes.at(-1)
+    ?? heading;
+
+  const offset =
+    last.position!.end.offset!;
+
+  const rest =
+    text.slice(offset);
+
+  return text.slice(
+    0,
+    offset)
+    + (last.type === 'definition'
+      ? '\n'
+      : '\n\n')
+    + line
+    + (rest === ''
+      ? '\n'
+      : rest);
+}
+
+/**
+ * `label`, or `label-2`, `label-3`... when a link definition of the text
+ * already uses it; labels are compared case-insensitively, as in markdown.
+ */
+export function freeLabel(
+    text: string,
+    label: string
+  ): string
+{
+  const used = new Set<string>();
+
+  const visit =
+    (
+        node: MarkdownNode
+      ): void =>
+    {
+    if (node.type === 'definition') {
+      used.add(
+        node.identifier.toLowerCase());
+    }
+
+    if ('children' in node) {
+      node.children.forEach(visit);
+    }
+  };
+
+  visit(
+    parseMarkdown(text));
+
+  let candidate = label;
+
+  for (
+    let index = 2;
+    used.has(
+      candidate.toLowerCase());
+    index += 1
+  ) {
+    candidate = `${label}-${index}`;
+  }
+
+  return candidate;
 }
 
 /**
@@ -350,6 +446,63 @@ export function rewriteLinks(
         end:
           node.position!.end.offset!,
         text: source });
+  }
+
+  if (titles) {
+    const definitions =
+      new Map(
+        collect<Definition>(
+        root,
+        'definition'
+      )
+        .map(
+          node => [ node.identifier,
+                    node.url ]));
+
+    for (
+      const node of (getSection(
+        root,
+        'Implementation') ?? [ ])
+        .flatMap(
+          item =>
+            collect<LinkReference>(
+              item,
+              'linkReference'
+            ))
+    ) {
+      const url =
+        definitions.get(node.identifier);
+
+      const target =
+        url === undefined
+        ? null
+        : resolveUrl(
+          file,
+          url);
+
+      if (
+        node.referenceType !== 'full'
+        || target === null
+        || rewrite(target.path)
+           === null
+        || childrenSource(
+          text,
+          node)
+           !== escapeLinkText(titles.oldTitle)
+      ) {
+        continue;
+      }
+
+      changes.push(
+        { start:
+            node.position!.start.offset!,
+          end:
+            node.position!.end.offset!,
+          text:
+            `[${escapeLinkText(titles.newTitle)}][${
+            node.label ?? node.identifier
+          }]` });
+    }
   }
 
   return apply(

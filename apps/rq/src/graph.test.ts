@@ -48,17 +48,17 @@ test(
           display(
             graph,
             root)),
-      [ 'RQ1 Root.md' ]);
+      [ 'R1 Root.md' ]);
 
     assert.deepEqual(
       shape(graph),
-      { 'RQ1 Root.md':
-          [ 'RQ2 Part.md',
-            'evidence/EV1 Passes.md' ],
-        'RQ2 Part.md':
-          [ 'evidence/EV2 Fails.md' ],
-        'evidence/EV1 Passes.md': [ ],
-        'evidence/EV2 Fails.md': [ ] });
+      { 'R1 Root.md':
+          [ 'R2 Part.md',
+            'tests/T1 Passes.md' ],
+        'R2 Part.md':
+          [ 'tests/T2 Fails.md' ],
+        'tests/T1 Passes.md': [ ],
+        'tests/T2 Fails.md': [ ] });
 
     assert.deepEqual(
       graph.errors,
@@ -76,13 +76,13 @@ test(
 
     const graph =
       await loadGraph(
-        dir.resolve('reqs/RQ2 Part.md'));
+        dir.resolve('reqs/R2 Part.md'));
 
     assert.deepEqual(
       Object.keys(
         shape(graph)),
-      [ 'RQ2 Part.md',
-        'evidence/EV2 Fails.md' ]);
+      [ 'R2 Part.md',
+        'tests/T2 Fails.md' ]);
   });
 
 /**
@@ -102,32 +102,32 @@ function requirement(
 }
 
 test(
-  'loadGraph follows only Implementation links to requirements and evidence',
+  'loadGraph follows only Implementation links to requirements and tests',
   async () =>
   {
     await using dir =
       new TmpDir();
 
     await dir.writeText(
-      'reqs/RQ1 A.md',
+      'reqs/R1 A.md',
       `${
         requirement(
-          'RQ1 A',
-          'RQ2 B.md',
+          'R1 A',
+          'R2 B.md',
           'notes.md')
-      }\nSee [RQ3](<RQ3 C.md>).\n`);
+      }\nSee [R3](<R3 C.md>).\n`);
 
     await dir.writeText(
-      'reqs/RQ2 B.md',
-      requirement('RQ2 B'));
+      'reqs/R2 B.md',
+      requirement('R2 B'));
 
     await dir.writeText(
-      'reqs/RQ3 C.md',
-      requirement('RQ3 C'));
+      'reqs/R3 C.md',
+      requirement('R3 C'));
 
     await dir.writeText(
       'reqs/notes.md',
-      '# notes\n\n[RQ1](<RQ1 A.md>)\n');
+      '# notes\n\n[R1](<R1 A.md>)\n');
 
     const graph =
       await loadGraph(
@@ -135,19 +135,19 @@ test(
 
     assert.deepEqual(
       shape(graph),
-      { 'RQ1 A.md':
-          [ 'RQ2 B.md' ],
-        'RQ3 C.md': [ ],
-        'RQ2 B.md': [ ] });
+      { 'R1 A.md':
+          [ 'R2 B.md' ],
+        'R3 C.md': [ ],
+        'R2 B.md': [ ] });
 
     assert.deepEqual(
       graph.errors,
-      [ 'RQ1 A.md: the link to notes.md is not a requirement or evidence.' ]);
+      [ 'R1 A.md: the link to notes.md is not a requirement or test.' ]);
 
     await assert.rejects(
       loadGraph(
         dir.resolve('reqs/notes.md')),
-      /notes\.md: not a requirement or evidence; the file name must start with RQ<n> or EV<n>\./);
+      /notes\.md: not a requirement or test; the file name must start with R<n> or T<n>\./);
   });
 
 test(
@@ -158,67 +158,69 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'reqs/RQ1 A.md',
+      'reqs/R1 A.md',
       requirement(
-        'RQ1 A',
-        'RQ2 B.md',
-        'RQ9 Missing.md'));
+        'R1 A',
+        'R2 B.md',
+        'R9 Missing.md'));
 
     await dir.writeText(
-      'reqs/RQ2 B.md',
+      'reqs/R2 B.md',
       requirement(
-        'RQ2 B',
-        'RQ3 C.md'));
+        'R2 B',
+        'R3 C.md'));
 
     await dir.writeText(
-      'reqs/RQ3 C.md',
+      'reqs/R3 C.md',
       requirement(
-        'RQ3 C',
-        'RQ2 B.md'));
+        'R3 C',
+        'R2 B.md'));
 
     await dir.writeText(
-      'reqs/.hidden/RQ4 D.md',
-      requirement('RQ4 D'));
+      'reqs/.hidden/R4 D.md',
+      requirement('R4 D'));
 
     const graph =
       await loadGraph(
-        dir.resolve('reqs/RQ1 A.md'));
+        dir.resolve('reqs/R1 A.md'));
 
     assert.deepEqual(
       graph.errors,
-      [ 'RQ1 A.md: the link to RQ9 Missing.md points at no file.',
-        'cycle: RQ2 B.md -> RQ3 C.md -> RQ2 B.md.' ]);
+      [ 'R1 A.md: the link to R9 Missing.md points at no file.',
+        'cycle: R2 B.md -> R3 C.md -> R2 B.md.',
+        'R2 B.md: linked from 2 requirements, R1 A.md, R3 C.md; a requirement has one parent.' ]);
 
     await dir.writeText(
-      'reqs/RQ5 E.md',
+      'reqs/R5 E.md',
       requirement(
-        'RQ5 E',
-        'RQ1 A.md'));
+        'R5 E',
+        'R1 A.md'));
 
     await dir.writeText(
-      'reqs/RQ6 F.md',
+      'reqs/R6 F.md',
       requirement(
-        'RQ6 F',
-        'RQ7 G.md'));
+        'R6 F',
+        'R7 G.md'));
 
     await dir.writeText(
-      'reqs/RQ7 G.md',
+      'reqs/R7 G.md',
       requirement(
-        'RQ7 G',
-        'RQ6 F.md'));
+        'R7 G',
+        'R6 F.md'));
 
     await dir.writeText(
-      'reqs/EV1 Orphan.md',
-      '# EV1 Orphan\n\n## Steps\n\n```\nnode -v\n```\n');
+      'reqs/T1 Orphan.md',
+      '# T1 Orphan\n\n## Steps\n\n```\nnode -v\n```\n');
 
     assert.deepEqual(
       (await loadGraph(
         dir.resolve('reqs'))).errors,
-      [ 'RQ1 A.md: the link to RQ9 Missing.md points at no file.',
-        'cycle: RQ2 B.md -> RQ3 C.md -> RQ2 B.md.',
-        'EV1 Orphan.md: not reachable from any root.',
-        'RQ6 F.md: not reachable from any root.',
-        'RQ7 G.md: not reachable from any root.' ]);
+      [ 'R1 A.md: the link to R9 Missing.md points at no file.',
+        'cycle: R2 B.md -> R3 C.md -> R2 B.md.',
+        'R2 B.md: linked from 2 requirements, R1 A.md, R3 C.md; a requirement has one parent.',
+        'R6 F.md: not reachable from any root; link it from a requirement with rq link.',
+        'R7 G.md: not reachable from any root; link it from a requirement with rq link.',
+        'T1 Orphan.md: not reachable from any root; link it from a requirement with rq link.' ]);
   });
 
 test(
@@ -229,20 +231,20 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'reqs/RQ1 A.md',
+      'reqs/R1 A.md',
       requirement(
-        'RQ1 A',
-        'RQ3 C.md'));
+        'R1 A',
+        'T1 C.md'));
 
     await dir.writeText(
-      'reqs/RQ2 B.md',
+      'reqs/R2 B.md',
       requirement(
-        'RQ2 B',
-        'RQ3 C.md'));
+        'R2 B',
+        'T1 C.md'));
 
     await dir.writeText(
-      'reqs/RQ3 C.md',
-      requirement('RQ3 C'));
+      'reqs/T1 C.md',
+      '# T1 C\n\n## Steps\n\n```\nnode -v\n```\n');
 
     const graph =
       await loadGraph(
@@ -250,27 +252,33 @@ test(
 
     assert.deepEqual(
       shape(graph),
-      { 'RQ1 A.md':
-          [ 'RQ3 C.md' ],
-        'RQ2 B.md':
-          [ 'RQ3 C.md' ],
-        'RQ3 C.md': [ ] });
+      { 'R1 A.md':
+          [ 'T1 C.md' ],
+        'R2 B.md':
+          [ 'T1 C.md' ],
+        'T1 C.md': [ ] });
 
     assert.deepEqual(
       graph.errors,
       [ ]);
 
     await dir.writeText(
-      'reqs/RQ1 A.md',
+      'reqs/R1 A.md',
       requirement(
-        'RQ1 A',
-        'RQ2 B.md'));
+        'R1 A',
+        'R2 B.md'));
 
     await dir.writeText(
-      'reqs/RQ3 C.md',
+      'reqs/R2 B.md',
       requirement(
-        'RQ3 C',
-        'RQ1 A.md'));
+        'R2 B',
+        'R3 C.md'));
+
+    await dir.writeText(
+      'reqs/R3 C.md',
+      requirement(
+        'R3 C',
+        'R1 A.md'));
 
     assert.match(
       (await loadGraph(
@@ -284,27 +292,173 @@ test(
   });
 
 test(
+  'loadGraph reports a requirement linked from several requirements',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await dir.writeText(
+      'reqs/R1 A.md',
+      requirement(
+        'R1 A',
+        'R3 C.md'));
+
+    await dir.writeText(
+      'reqs/R2 B.md',
+      requirement(
+        'R2 B',
+        'R3 C.md'));
+
+    await dir.writeText(
+      'reqs/R3 C.md',
+      requirement('R3 C'));
+
+    assert.deepEqual(
+      (await loadGraph(
+        dir.resolve('reqs'))).errors,
+      [ 'R3 C.md: linked from 2 requirements, R1 A.md, R2 B.md; a requirement has one parent.' ]);
+  });
+
+test(
   'getNodeKind reads the kind from the file name',
   () =>
   {
     assert.equal(
-      getNodeKind('/x/RQ12 Export.md'),
+      getNodeKind('/x/R12 Export.md'),
       'requirement');
 
     assert.equal(
-      getNodeKind('/x/EV3.md'),
-      'evidence');
+      getNodeKind('/x/T3.md'),
+      'test');
 
     for (
       const file of [ '/x/notes.md',
-                      '/x/RQ Export.md',
+                      '/x/R Export.md',
                       '/x/rq1 export.md',
-                      '/x/RQ1Export.md',
-                      '/x/RQ1 Export.txt' ]
+                      '/x/R1Export.md',
+                      '/x/R1 Export.txt' ]
     ) {
       assert.equal(
         getNodeKind(file),
         null,
         file);
     }
+  });
+
+test(
+  'loadGraph makes no edges from the links of a test',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await dir.writeText(
+      'R1 A.md',
+      requirement(
+        'R1 A',
+        'T1 B.md',
+        'T2 D.md'));
+
+    await dir.writeText(
+      'T2 D.md',
+      '# T2 D\n\n## Steps\n\n### Run\n\n```sh\nnode -v\n```\n');
+
+    await dir.writeText(
+      'R2 C.md',
+      '# R2 C\n\nNot linked from R1.\n\n## Implementation\n\n- [T1](<T1 B.md>)\n');
+
+    await dir.writeText(
+      'T1 B.md',
+      '# T1 B\n\nChecks [R1](<R1 A.md>) and [R2](<R2 C.md>).\n\n## Implementation\n\n- [R2](<R2 C.md>)\n\n## Steps\n\n### Run\n\n```sh\nnode -v\n```\n');
+
+    const graph =
+      await loadGraph(
+        dir.path);
+
+    assert.deepEqual(
+      shape(graph),
+      { 'R1 A.md':
+          [ 'T1 B.md',
+            'T2 D.md' ],
+        'R2 C.md':
+          [ 'T1 B.md' ],
+        'T1 B.md': [ ],
+        'T2 D.md': [ ] });
+
+    assert.deepEqual(
+      graph.roots.map(
+        root =>
+          display(
+            graph,
+            root)),
+      [ 'R1 A.md',
+        'R2 C.md' ]);
+
+    assert.deepEqual(
+      graph.errors,
+      [ ]);
+  });
+
+test(
+  'loadGraph reports duplicate ids, and the cycles of a folder without a root',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await dir.writeText(
+      'R1 A.md',
+      requirement(
+        'R1 A',
+        'a/T1 A.md',
+        'b/T1 B.md'));
+
+    await dir.writeText(
+      'a/T1 A.md',
+      '# T1 A\n');
+
+    await dir.writeText(
+      'b/T1 B.md',
+      '# T1 B\n');
+
+    assert.deepEqual(
+      (await loadGraph(dir.path)).errors,
+      [ 'T1: several documents have this id: a/T1 A.md, b/T1 B.md; ids must be unique.' ]);
+
+    await using loop =
+      new TmpDir();
+
+    await loop.writeText(
+      'R1 A.md',
+      requirement(
+        'R1 A',
+        'R2 B.md'));
+
+    await loop.writeText(
+      'R2 B.md',
+      requirement(
+        'R2 B',
+        'R1 A.md',
+        'R3 C.md'));
+
+    await loop.writeText(
+      'R3 C.md',
+      requirement(
+        'R3 C',
+        'R2 B.md'));
+
+    const graph =
+      await loadGraph(loop.path);
+
+    assert.deepEqual(
+      graph.roots,
+      [ ]);
+
+    assert.deepEqual(
+      graph.errors,
+      [ 'no requirement is a root; every requirement is linked from another.',
+        'cycle: R1 A.md -> R2 B.md -> R1 A.md.',
+        'cycle: R2 B.md -> R3 C.md -> R2 B.md.',
+        'R2 B.md: linked from 2 requirements, R1 A.md, R3 C.md; a requirement has one parent.' ]);
   });

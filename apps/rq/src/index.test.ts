@@ -11,7 +11,10 @@ test(
   {
     assert.deepEqual(
       Object.keys(rq).sort(),
-      [ 'loadGraph',
+      [ 'getStatuses',
+        'loadGraph',
+        'loadResults',
         'parseDocument',
+        'parseExecution',
         'runCli' ]);
   });

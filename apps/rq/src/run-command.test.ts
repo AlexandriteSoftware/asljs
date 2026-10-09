@@ -2,7 +2,8 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { runCommand }
+import { runCommand,
+         runProgram }
   from './run-command.js';
 
 test(
@@ -22,4 +23,25 @@ test(
       { code: 2,
         stdout: 'hello',
         stderr: 'e' });
+  });
+
+test(
+  'runProgram passes the arguments without a shell',
+  async () =>
+  {
+    const run =
+      await runProgram(
+        process.execPath,
+        [ '-e',
+          'console.log(process.argv[1])',
+          'a "b" $c %d%' ],
+        process.cwd());
+
+    assert.deepEqual(
+      { ...run,
+        stdout:
+          run.stdout.trim() },
+      { code: 0,
+        stdout: 'a "b" $c %d%',
+        stderr: '' });
   });

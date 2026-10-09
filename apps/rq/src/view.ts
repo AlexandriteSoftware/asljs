@@ -18,8 +18,14 @@ import { display,
   from './graph.js';
 import { Io }
   from './io.js';
-import { toMermaid }
+import { getAppearance,
+         toMermaid }
   from './mermaid.js';
+import { resolveTarget }
+  from './scope.js';
+import { getStatuses,
+         NodeStatus }
+  from './status.js';
 
 export interface ViewOptions
 {
@@ -29,10 +35,24 @@ export interface ViewOptions
    */
   target: string;
 
-  port: number;
+  /**
+   * The port to listen on, exactly; 0 picks a free one. When absent, the
+   * first free port from `DEFAULT_PORT` on.
+   */
+  port?: number;
 
   host?: string;
 }
+
+/**
+ * The first port `rq view` tries without `--port`.
+ */
+export const DEFAULT_PORT = 3000;
+
+/**
+ * How many ports from `DEFAULT_PORT` on `rq view` tries.
+ */
+const PORT_ATTEMPTS = 100;
 
 const MERMAID_MODULE =
   'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -63,8 +83,10 @@ const STYLE =
 pre { overflow-x: auto; }
 pre:not(.mermaid) { background: #f4f4f4; padding: 0.75rem; }
 code { font-family: ui-monospace, monospace; }
-.passed { color: #2e7d32; }
-.failed { color: #c62828; }`;
+.neutral { color: #757575; }
+.green { color: #2e7d32; }
+.red { color: #c62828; }
+.amber { color: #b26a00; }`;
 
 /**
  * Starts a web server for a requirement file or folder. `/` shows the graph,
@@ -78,7 +100,7 @@ export async function execView(
   ): Promise<Server>
 {
   const target =
-    path.resolve(
+    await resolveTarget(
       io.cwd,
       options.target);
 
@@ -112,22 +134,18 @@ export async function execView(
           });
     });
 
-  await new Promise<void>(
-    (
-        resolve,
-        reject
-      ) =>
-    {
-      server.once(
-        'error',
-        reject);
+  const host = options.host ?? '127.0.0.1';
 
-      server.listen(
-        options.port,
-        options.host ?? '127.0.0.1',
-        () => resolve());
-    }
-  );
+  if (options.port === undefined) {
+    await listenOnFreePort(
+      server,
+      host);
+  } else {
+    await listen(
+      server,
+      options.port,
+      host);
+  }
 
   const address =
     server.address() as AddressInfo;
@@ -136,6 +154,78 @@ export async function execView(
     `Serving ${folder} at http://${address.address}:${address.port}/\n`);
 
   return server;
+}
+
+function listen(
+    server: Server,
+    port: number,
+    host: string
+  ): Promise<void>
+{
+  return new Promise<void>(
+    (
+        resolve,
+        reject
+      ) =>
+    {
+      const fail =
+        (
+        error: Error
+      ): void => reject(error);
+
+      server.once(
+        'error',
+        fail);
+
+      server.listen(
+        port,
+        host,
+        () =>
+        {
+          server.off(
+            'error',
+            fail);
+
+          resolve();
+        });
+    }
+  );
+}
+
+/**
+ * Listens on the first port from `DEFAULT_PORT` on that is not in use.
+ */
+async function listenOnFreePort(
+    server: Server,
+    host: string
+  ): Promise<void>
+{
+  for (
+    let offset = 0;
+    offset < PORT_ATTEMPTS;
+    offset += 1
+  ) {
+    try {
+      await listen(
+        server,
+        DEFAULT_PORT + offset,
+        host);
+
+      return;
+    } catch (error) {
+      if (
+        (error as NodeJS.ErrnoException).code
+        !== 'EADDRINUSE'
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error(
+    `No free port from ${DEFAULT_PORT} to ${
+      DEFAULT_PORT + PORT_ATTEMPTS - 1
+    }; give one with --port.`);
 }
 
 async function handle(
@@ -153,12 +243,16 @@ async function handle(
       .pathname);
 
   if (pathname === '/') {
+    const graph =
+      await loadGraph(target);
+
     send(
       response,
       200,
       'text/html; charset=utf-8',
       renderIndex(
-        await loadGraph(target)));
+        graph,
+        getStatuses(graph)));
 
     return;
   }
@@ -211,7 +305,8 @@ async function handle(
 }
 
 function renderIndex(
-    graph: RqGraph
+    graph: RqGraph,
+    statuses: ReadonlyMap<string, NodeStatus>
   ): string
 {
   const href =
@@ -252,24 +347,23 @@ function renderIndex(
               graph,
               file));
 
-        const status =
-          node.kind === 'evidence'
-          ? node.log.at(-1)?.status ?? 'Not run'
-          : null;
+        const { status } = statuses.get(file)!;
+
+        const { colour } =
+          getAppearance(
+            node,
+            statuses.get(file));
+
+        const coverage =
+          node.kind === 'requirement'
+          ? `, ${node.status.coverage?.status ?? 'NOT CHECKED'}`
+          : '';
 
         return `<li>${
           link === null
             ? label
             : `<a href="${escapeHtml(link)}">${label}</a>`
-        }${
-          status === null
-            ? ''
-            : ` <span class="${
-              status.toLowerCase().replace(
-                ' ',
-                '-')
-            }">(evidence, ${status})</span>`
-        }</li>`;
+        } <span class="${colour}">(${node.kind}, ${status}${coverage})</span></li>`;
       });
 
   const problems =
@@ -294,7 +388,8 @@ ${
       escapeHtml(
         toMermaid(
           graph,
-          href))
+          href,
+          statuses))
     }
 </pre>
 ${problems}<h2>Documents</h2>

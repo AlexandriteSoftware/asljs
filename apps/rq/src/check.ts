@@ -2,8 +2,6 @@ import { readFile }
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { parseLogEntry }
-  from './document.js';
 import { resolveUrl }
   from './edit.js';
 import { display,
@@ -18,12 +16,18 @@ import { getSection,
          parseMarkdown,
          plainText }
   from './markdown.js';
+import { resolveTarget }
+  from './scope.js';
+import { readStatus }
+  from './status-section.js';
+import { parseSteps }
+  from './steps.js';
 
 /**
  * Checks the structure of the graph of a requirement file or folder without
  * running anything: the graph errors, and in each document its heading, its
- * links or steps, its `## Implementation` list and its `## Log`. Returns the
- * exit code.
+ * links or steps, its `## Implementation` list, and a leftover `## Log`.
+ * Returns the exit code.
  */
 export async function execCheck(
     io: Io,
@@ -32,7 +36,7 @@ export async function execCheck(
 {
   const graph =
     await loadGraph(
-      path.resolve(
+      await resolveTarget(
         io.cwd,
         options.target));
 
@@ -94,23 +98,43 @@ export function checkDocument(
     && node.implementation.length === 0
   ) {
     problems.push(
-      'links to no requirement or evidence.');
+      'links to no requirement or test.');
   }
 
-  if (
-    node.kind === 'evidence'
-    && node.steps.length === 0
-  ) {
-    problems.push(
-      'the Steps section has no commands.');
+  const steps =
+    getSection(
+      root,
+      'Steps');
+
+  if (node.kind === 'test') {
+    if (steps === null) {
+      problems.push(
+        'has no Steps section.');
+    } else {
+      problems.push(
+        ...parseSteps(
+          root,
+          text).problems);
+    }
   }
 
   if (
     node.kind === 'requirement'
-    && node.steps.length > 0
+    && steps !== null
   ) {
     problems.push(
-      'a requirement has steps; only evidence is run.');
+      'a requirement has steps; only tests are run.');
+  }
+
+  if (
+    node.kind === 'test'
+    && getSection(
+      root,
+      'Implementation')
+       !== null
+  ) {
+    problems.push(
+      'a test has an Implementation section; only a requirement links to requirements and tests.');
   }
 
   const definitions = new Map<string, string>();
@@ -151,37 +175,44 @@ export function checkDocument(
       problems.push(
         `the Implementation item "${
           plainText(item).trim()
-        }" links to no requirement or evidence.`);
-    }
-  }
-
-  for (
-    const item of listItems(
-      getSection(
-        root,
-        'Log'),
-      () =>
-        problems.push(
-          'the Log section holds more than a list.'))
-  ) {
-    const text =
-      plainText(item).trim();
-
-    if (
-      parseLogEntry(text)
-      === null
-    ) {
-      problems.push(
-        `the log entry "${text}" is not "<time> Passed|Failed[ - <note>]".`);
+        }" links to no requirement or test.`);
     }
   }
 
   if (
-    node.kind === 'requirement'
-    && node.log.length > 0
+    getSection(
+      root,
+      'Log')
+    !== null
   ) {
     problems.push(
-      'a requirement has a Log section; only evidence is run.');
+      'has a Log section; results are kept in .rq/E<n> files.');
+  }
+
+  const status =
+    readStatus(
+      root,
+      text);
+
+  problems.push(...status.problems);
+
+  if (
+    node.kind === 'test'
+    && status.coverage !== null
+  ) {
+    problems.push(
+      'a test has a Coverage status; only a requirement is checked for coverage.');
+  }
+
+  if (
+    node.kind === 'test'
+    && getSection(
+      root,
+      'Coverage')
+       !== null
+  ) {
+    problems.push(
+      'a test has a Coverage section; only a requirement is checked for coverage.');
   }
 
   return problems;
@@ -247,16 +278,20 @@ function countLabel(
   const nodes =
     [ ...graph.nodes.values() ];
 
-  const evidence =
+  const tests =
     nodes.filter(
-      node => node.kind === 'evidence')
+      node => node.kind === 'test')
     .length;
 
-  const requirements = nodes.length - evidence;
+  const requirements = nodes.length - tests;
 
   return `${requirements} ${
     requirements === 1
       ? 'requirement'
       : 'requirements'
-  }, ${evidence} evidence`;
+  }, ${tests} ${
+    tests === 1
+      ? 'test'
+      : 'tests'
+  }`;
 }

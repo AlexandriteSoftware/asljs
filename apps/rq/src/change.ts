@@ -1,17 +1,11 @@
 import { mkdir,
          readFile,
          rm,
-         stat,
-         writeFile }
+         stat }
   from 'node:fs/promises';
 import path
   from 'node:path';
-import { formatLogEntry,
-         LogEntry,
-         LogStatus }
-  from './document.js';
 import { addImplementationLink,
-         appendLogEntry,
          removeLinks,
          rewriteLinks,
          setTitle }
@@ -22,19 +16,29 @@ import { getNodeKind,
   from './graph.js';
 import { Io }
   from './io.js';
+import { writeMarkdown }
+  from './post-process.js';
 import { display,
          readExisting }
   from './query.js';
+import { pruneExecutions,
+         readWorkingTree,
+         TestResult,
+         writeExecution }
+  from './results.js';
 import { findBacklinks,
          findReferrers,
          loadScope,
          nextId,
+         resolveTarget,
          Scope }
   from './scope.js';
+import { writeStatuses }
+  from './status.js';
 
 export interface AddOptions
 {
-  kind: 'requirement' | 'evidence';
+  kind: 'requirement' | 'test';
 
   /**
    * The requirement the new document is linked from.
@@ -42,17 +46,17 @@ export interface AddOptions
   parent: string;
 
   /**
-   * The name after the id, e.g. `CSV export` for `RQ12 CSV export.md`.
+   * The name after the id, e.g. `CSV export` for `R12 CSV export.md`.
    */
   name: string;
 
   /**
-   * The statement of a requirement, the description of an evidence.
+   * The statement of a requirement, the description of a test.
    */
   body?: string;
 
   /**
-   * The commands of an evidence.
+   * The commands of a test.
    */
   steps?: string[];
 
@@ -61,19 +65,13 @@ export interface AddOptions
    * the name.
    */
   path?: string;
-
-  /**
-   * The folder the next id is looked for in; the working directory by
-   * default.
-   */
-  in?: string;
 }
 
 /**
- * Creates a requirement or an evidence and links it from the `##
+ * Creates a requirement or a test and links it from the `##
  * Implementation` list of a requirement. A requirement is created in the
- * parent's folder as `RQ<n> <name>.md`, an evidence in its `evidence`
- * subfolder as `EV<n> <name>.md`, with the next free number.
+ * parent's folder as `R<n> <name>.md`, a test in its `tests`
+ * subfolder as `T<n> <name>.md`, with the next free number.
  */
 export async function execAdd(
     io: Io,
@@ -105,23 +103,20 @@ export async function execAdd(
         options.path);
   } else {
     const scope =
-      await loadScope(
-        path.resolve(
-          io.cwd,
-          options.in ?? '.'));
+      await loadScope(io.cwd);
 
     const id =
       nextId(
         scope,
-        options.kind === 'evidence'
-        ? 'EV'
-        : 'RQ');
+        options.kind === 'test'
+        ? 'T'
+        : 'R');
 
     file =
       path.join(
         path.dirname(parent.path),
-        ...options.kind === 'evidence'
-        ? [ 'evidence' ]
+        ...options.kind === 'test'
+        ? [ 'tests' ]
         : [ ],
         `${id} ${name}.md`);
   }
@@ -136,9 +131,9 @@ export async function execAdd(
           io,
           file)
       }: the file name of ${
-        options.kind === 'evidence'
-          ? 'an evidence must be EV<n> <name>.md'
-          : 'a requirement must be RQ<n> <name>.md'
+        options.kind === 'test'
+          ? 'a test must be T<n> <name>.md'
+          : 'a requirement must be R<n> <name>.md'
       }.`);
   }
 
@@ -166,23 +161,27 @@ export async function execAdd(
     sections.push(body);
   }
 
-  if (options.kind === 'evidence') {
+  if (options.kind === 'test') {
     sections.push(
       '## Steps',
-      [ '```sh',
-        ...options.steps ?? [ ],
-        '```' ]
-        .join('\n'));
+      ...(options.steps ?? [ ]).flatMap(
+        (
+          step,
+          index
+        ) => [ `### Step ${index + 1}`,
+               [ '```sh',
+                 step,
+                 '```' ]
+            .join('\n') ]));
   }
 
   await mkdir(
     path.dirname(file),
     { recursive: true });
 
-  await writeFile(
+  await writeMarkdown(
     file,
-    `${sections.join('\n\n')}\n`,
-    'utf8');
+    `${sections.join('\n\n')}\n`);
 
   await writeText(
     parent.path,
@@ -209,12 +208,15 @@ export async function execAdd(
         file)
     }\n`);
 
+  await refreshStatuses(io);
+
   return 0;
 }
 
 /**
- * Links an existing requirement or evidence from the `## Implementation` list
- * of a requirement. A link that would make a cycle is refused.
+ * Links an existing requirement or test from the `## Implementation` list
+ * of a requirement. A link that would make a cycle, or give a requirement a
+ * second parent in the working folder, is refused.
  */
 export async function execLink(
     io: Io,
@@ -242,6 +244,29 @@ export async function execLink(
           io,
           child.path)
       }.`);
+  }
+
+  if (child.kind === 'requirement') {
+    const scope =
+      await loadScope(io.cwd);
+
+    const [other] =
+      findBacklinks(
+        scope,
+        child.path);
+
+    if (other !== undefined) {
+      throw new Error(
+        `${
+          display(
+            io,
+            child.path)
+        } is already linked from ${
+          display(
+            io,
+            other)
+        }; a requirement has one parent.`);
+    }
   }
 
   const reachable =
@@ -287,11 +312,13 @@ export async function execLink(
         child.path)
     }\n`);
 
+  await refreshStatuses(io);
+
   return 0;
 }
 
 /**
- * Removes every link from a requirement to a requirement or evidence; an
+ * Removes every link from a requirement to a requirement or test; an
  * `## Implementation` item with the link goes with it.
  */
 export async function execUnlink(
@@ -304,10 +331,16 @@ export async function execUnlink(
       io,
       options.parent);
 
+  // A link to a file that no longer exists is still unlinked by its path.
   const child =
-    path.resolve(
+    await resolveTarget(
       io.cwd,
-      options.child);
+      options.child)
+    .catch(
+      () =>
+        path.resolve(
+          io.cwd,
+          options.child));
 
   if (!parent.children.includes(child)) {
     throw new Error(
@@ -342,18 +375,20 @@ export async function execUnlink(
         child)
     }\n`);
 
+  await refreshStatuses(io);
+
   return 0;
 }
 
 /**
- * Deletes a requirement or an evidence and removes the links to it from the
- * documents of the `in` folder. A requirement that links to anything is kept
+ * Deletes a requirement or a test and removes the links to it from the
+ * documents of the working folder. A requirement that links to anything is kept
  * unless `recursive` is set; then the documents it links to that no other
  * requirement links to are deleted too, down the graph.
  */
 export async function execRemove(
     io: Io,
-    options: { file: string; recursive?: boolean; in?: string; }
+    options: { file: string; recursive?: boolean; }
   ): Promise<number>
 {
   const node =
@@ -370,14 +405,11 @@ export async function execRemove(
         display(
           io,
           node.path)
-      } links to ${node.children.length} requirements or evidence; unlink them first, or remove it with --recursive.`);
+      } links to ${node.children.length} requirements or tests; unlink them first, or remove it with --recursive.`);
   }
 
   const scope =
-    await loadScope(
-      path.resolve(
-        io.cwd,
-        options.in ?? '.'));
+    await loadScope(io.cwd);
 
   scope.set(
     node.path,
@@ -426,18 +458,20 @@ export async function execRemove(
       }\n`);
   }
 
+  await refreshStatuses(io);
+
   return 0;
 }
 
 /**
- * Moves or renames a requirement or an evidence, and rewrites the links to it
- * in the documents of the `in` folder and its own relative links. A level 1
+ * Moves or renames a requirement or a test, and rewrites the links to it
+ * in the documents of the working folder and its own relative links. A level 1
  * heading that is the old file name becomes the new one, and so does the text
  * of `## Implementation` links that is the old heading.
  */
 export async function execMove(
     io: Io,
-    options: { file: string; destination: string; in?: string; }
+    options: { file: string; destination: string; }
   ): Promise<number>
 {
   const node =
@@ -467,9 +501,9 @@ export async function execMove(
           io,
           destination)
       }: the file name of ${
-        node.kind === 'evidence'
-          ? 'an evidence must be EV<n> <name>.md'
-          : 'a requirement must be RQ<n> <name>.md'
+        node.kind === 'test'
+          ? 'a test must be T<n> <name>.md'
+          : 'a requirement must be R<n> <name>.md'
       }.`);
   }
 
@@ -500,10 +534,7 @@ export async function execMove(
     : undefined;
 
   const scope =
-    await loadScope(
-      path.resolve(
-        io.cwd,
-        options.in ?? '.'));
+    await loadScope(io.cwd);
 
   for (
     const referrer of findReferrers(
@@ -565,10 +596,9 @@ export async function execMove(
     path.dirname(destination),
     { recursive: true });
 
-  await writeFile(
+  await writeMarkdown(
     destination,
-    text,
-    'utf8');
+    text);
 
   await rm(node.path);
 
@@ -583,15 +613,25 @@ export async function execMove(
         destination)
     }\n`);
 
+  await refreshStatuses(io);
+
   return 0;
 }
 
 /**
- * Appends an entry to the `## Log` of an evidence.
+ * Records a result established another way: writes an execution with the
+ * one test to `.rq/E<n> <test>.md` in the working folder, then the
+ * statuses that follow (`writeStatuses`).
  */
 export async function execLog(
     io: Io,
-    options: { file: string; status: string; note?: string; time?: string; }
+    options: {
+    file: string;
+    status: string;
+    note?: string;
+    time?: string;
+    command?: string;
+  }
   ): Promise<number>
 {
   const node =
@@ -599,21 +639,21 @@ export async function execLog(
       io,
       options.file);
 
-  if (node.kind !== 'evidence') {
+  if (node.kind !== 'test') {
     throw new Error(
       `${
         display(
           io,
           node.path)
-      } is a requirement; only evidence has a log.`);
+      } is a requirement; only a test has a result.`);
   }
 
   if (
-    options.status !== 'Passed'
-    && options.status !== 'Failed'
+    options.status !== 'PASS'
+    && options.status !== 'FAIL'
   ) {
     throw new Error(
-      `Invalid status: "${options.status}"; use Passed or Failed.`);
+      `Invalid status: "${options.status}"; use PASS or FAIL.`);
   }
 
   const time =
@@ -628,26 +668,70 @@ export async function execLog(
       `Invalid time: "${time}"; use ISO 8601, e.g. 2026-01-02T03:04:05Z.`);
   }
 
-  const entry: LogEntry =
-    { time,
-      status:
-        options.status as LogStatus,
-      note: options.note ?? '' };
+  const result: TestResult =
+    { file: node.path,
+      status: options.status,
+      note: options.note ?? '',
+      output: '' };
 
-  await writeText(
-    node.path,
-    appendLogEntry(
-      await readFile(
+  const execution =
+    await writeExecution(
+      io.cwd,
+      path.basename(
         node.path,
-        'utf8'),
-      entry));
+        '.md'),
+      { date: time,
+        command:
+          options.command
+        ?? `rq log ${options.file} --status ${options.status}`,
+        tree:
+          await (io.workingTree ?? readWorkingTree)(io.cwd),
+        tests:
+          [ result ] });
 
   io.stdout.write(
     `Logged ${
       display(
         io,
         node.path)
-    }: ${formatLogEntry(entry)}\n`);
+    }: ${result.status}${
+      result.note === ''
+        ? ''
+        : ` - ${result.note}`
+    }\nResults  ${
+      display(
+        io,
+        execution)
+    }\n`);
+
+  for (
+    const file of await writeStatuses(
+      io.cwd,
+      await loadGraph(node.path),
+      { results:
+          [ { ...result,
+              execution } ] })
+  ) {
+    io.stdout.write(
+      `Updated  ${
+        display(
+          io,
+          file)
+      }\n`);
+  }
+
+  for (
+    const file of await pruneExecutions(
+      io.cwd,
+      io.retention)
+  ) {
+    io.stdout.write(
+      `Removed  ${
+        display(
+          io,
+          file)
+      }\n`);
+  }
 
   return 0;
 }
@@ -668,7 +752,7 @@ async function readRequirement(
         display(
           io,
           node.path)
-      } is an evidence; only a requirement links to requirements and evidence.`);
+      } is a test; only a requirement links to requirements and tests.`);
   }
 
   return node;
@@ -719,10 +803,9 @@ async function writeText(
     text: string
   ): Promise<void>
 {
-  await writeFile(
+  await writeMarkdown(
     file,
-    text,
-    'utf8');
+    text);
 }
 
 async function exists(
@@ -730,4 +813,31 @@ async function exists(
   ): Promise<boolean>
 {
   return (await stat(file).catch(() => null)) !== null;
+}
+
+/**
+ * Brings the `## Status` results that a structural change may have made
+ * stale up to date, in the documents that have one.
+ */
+async function refreshStatuses(
+    io: Io
+  ): Promise<void>
+{
+  for (
+    const file of await writeStatuses(
+      io.cwd,
+      { folder: io.cwd,
+        roots: [ ],
+        nodes: new Map(),
+        errors: [ ] },
+      { changed: 'all',
+        existingOnly: true })
+  ) {
+    io.stdout.write(
+      `Updated ${
+        display(
+          io,
+          file)
+      }\n`);
+  }
 }

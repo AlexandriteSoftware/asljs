@@ -1,6 +1,9 @@
+import { stat }
+  from 'node:fs/promises';
 import path
   from 'node:path';
 import { findMarkdownFiles,
+         getNodeId,
          readNode,
          RqNode }
   from './graph.js';
@@ -42,7 +45,7 @@ export function findBacklinks(
 }
 
 /**
- * The documents, requirements or evidence, with a link to any of `targets`.
+ * The documents, requirements or tests, with a link to any of `targets`.
  */
 export function findReferrers(
     scope: Scope,
@@ -74,8 +77,8 @@ export function getReferences(
 }
 
 /**
- * The next free id with the prefix, e.g. `RQ12` when the highest file name
- * that starts with `RQ<number>` is `RQ11 ...`.
+ * The next free id with the prefix, e.g. `R12` when the highest file name
+ * that starts with `R<number>` is `R11 ...`.
  */
 export function nextId(
     scope: Scope,
@@ -102,4 +105,76 @@ export function nextId(
   }
 
   return `${prefix}${highest + 1}`;
+}
+
+const NODE_ID = /^[RT]\d+$/;
+
+/**
+ * The absolute path a target names, in the working folder `cwd`:
+ *
+ * - an id such as `R10` or `T12` - the requirement or test with that id;
+ * - a `.md` name - the file at that path when there is one, otherwise the
+ *   file with that name;
+ * - anything else - a path.
+ *
+ * Ids and names are searched for in `cwd` and its subfolders. An error when
+ * one matches no document, or several.
+ */
+export async function resolveTarget(
+    cwd: string,
+    target: string
+  ): Promise<string>
+{
+  const isId =
+    NODE_ID.test(target);
+
+  const resolved =
+    path.resolve(
+      cwd,
+      target);
+
+  if (
+    !isId
+    && (!target.toLowerCase().endsWith('.md')
+        || await stat(resolved).then(
+          () => true,
+          () => false))
+  ) {
+    return resolved;
+  }
+
+  const name =
+    path.basename(target)
+    .toLowerCase();
+
+  const matches =
+    (await findMarkdownFiles(cwd))
+    .filter(
+      file =>
+        isId
+          ? getNodeId(file) === target
+          : path.basename(file).toLowerCase() === name);
+
+  if (matches.length !== 1) {
+    throw new Error(
+      matches.length === 0
+        ? `${target}: no ${
+          isId
+            ? 'requirement or test has this id'
+            : 'such file'
+        } in ${cwd}.`
+        : `${target}: several documents match: ${
+          matches
+            .map(
+              file =>
+                path.relative(
+                  cwd,
+                  file)
+                  .split(path.sep)
+                  .join('/'))
+            .join(', ')
+        }.`);
+  }
+
+  return matches[0];
 }

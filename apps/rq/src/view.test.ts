@@ -12,7 +12,8 @@ import { writeFixture }
   from './testing/fixture.js';
 import { createTestIo }
   from './testing/test-io.js';
-import { execView }
+import { DEFAULT_PORT,
+         execView }
   from './view.js';
 
 async function get(
@@ -75,13 +76,15 @@ test(
         'text/html; charset=utf-8');
 
       for (
-        const text of [ '<title>RQ1 Root</title>',
-                        '<pre class="mermaid">\ngraph LR\n  n0[&quot;RQ1 Root&quot;]',
+        const text of [ '<title>R1 Root</title>',
+                        '<pre class="mermaid">\ngraph LR\n  n0[&quot;R1 Root&quot;]',
                         '  n0 --&gt; n1',
-                        'click n2 href &quot;/evidence/EV1%20Passes.md&quot;',
-                        '<li><a href="/RQ2%20Part.md">RQ2 Part</a></li>',
-                        '<a href="/evidence/EV1%20Passes.md">EV1 Passes</a> <span class="failed">(evidence, Failed)</span>',
-                        '<span class="not-run">(evidence, Not run)</span>',
+                        'click n2 href &quot;/tests/T1%20Passes.md&quot;',
+                        '<li><a href="/R2%20Part.md">R2 Part</a> <span class="neutral">(requirement, NOT RUN, NOT CHECKED)</span></li>',
+                        '<span class="amber">(requirement, FAIL, NOT CHECKED)</span>',
+                        '  style n0 stroke:#ef8f00,stroke-width:2px,stroke-dasharray:2 3',
+                        '<a href="/tests/T1%20Passes.md">T1 Passes</a> <span class="red">(test, FAIL)</span>',
+                        '<span class="neutral">(test, NOT RUN)</span>',
                         'mermaid.esm.min.mjs' ]
       ) {
         assert.ok(
@@ -92,18 +95,18 @@ test(
       const document =
         await get(
           server,
-          '/RQ2%20Part.md');
+          '/R2%20Part.md');
 
       assert.equal(
         document.status,
         200);
 
       assert.ok(
-        document.body.includes('<h1>RQ2 Part</h1>'));
+        document.body.includes('<h1>R2 Part</h1>'));
 
       assert.ok(
         document.body.includes(
-          '<a href="evidence/EV2%20Fails.md">EV2</a>'));
+          '<a href="tests/T2%20Fails.md">T2</a>'));
 
       assert.deepEqual(
         await get(
@@ -132,13 +135,13 @@ test(
         404);
 
       await dir.writeText(
-        'reqs/RQ2 Part.md',
-        '# RQ2 Renamed\n\n[EV2][EV2]\n\n[EV2]: <evidence/EV2 Fails.md>\n');
+        'reqs/R2 Part.md',
+        '# R2 Renamed\n\n[T2][T2]\n\n[T2]: <tests/T2 Fails.md>\n');
 
       assert.ok(
         (await get(
           server,
-          '/')).body.includes('RQ2 Renamed'));
+          '/')).body.includes('R2 Renamed'));
     } finally {
       await new Promise(
         resolve => server.close(resolve));
@@ -153,17 +156,17 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'reqs/RQ1 A.md',
-      '# RQ1 A\n\n## Implementation\n\n- [Gone](<RQ9 Gone.md>)\n- [Up](<../RQ2 Up.md>)\n');
+      'reqs/R1 A.md',
+      '# R1 A\n\n## Implementation\n\n- [Gone](<R9 Gone.md>)\n- [Up](<../R2 Up.md>)\n');
 
     await dir.writeText(
-      'RQ2 Up.md',
+      'R2 Up.md',
       '# Up\n');
 
     const server =
       await execView(
         createTestIo(dir.path),
-        { target: 'reqs/RQ1 A.md',
+        { target: 'reqs/R1 A.md',
           port: 0 });
 
     try {
@@ -174,16 +177,111 @@ test(
 
       assert.ok(
         index.body.includes(
-          '<h2>Problems</h2>\n<ul>\n<li>RQ1 A.md: the link to RQ9 Gone.md points at no file.</li>'));
+          '<h2>Problems</h2>\n<ul>\n<li>R1 A.md: the link to R9 Gone.md points at no file.</li>'));
 
       assert.ok(
-        index.body.includes('<li>Up</li>'));
+        index.body.includes(
+          '<li>Up <span class="amber">(requirement, FAIL, NOT CHECKED)</span></li>'));
 
       assert.ok(
         !index.body.includes(
-          'href &quot;/../RQ2%20Up.md'));
+          'href &quot;/../R2%20Up.md'));
     } finally {
       await new Promise(
         resolve => server.close(resolve));
+    }
+  });
+
+test(
+  'execView takes an id in the working folder and reads the recorded statuses',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    await dir.writeText(
+      'reqs/tests/T2 Fails.md',
+      `${await dir.readText(
+        'reqs/tests/T2 Fails.md')}\n## Status\n\n- Result: PASS\n`);
+
+    const server =
+      await execView(
+        createTestIo(
+          dir.resolve('reqs')),
+        { target: 'R2',
+          port: 0 });
+
+    try {
+      const index =
+        await get(
+          server,
+          '/');
+
+      assert.ok(
+        index.body.includes(
+          '<title>R2 Part</title>'),
+        index.body);
+
+      assert.ok(
+        index.body.includes(
+          '<span class="green">(test, PASS)</span>'),
+        index.body);
+    } finally {
+      await new Promise(
+        resolve => server.close(resolve));
+    }
+  });
+
+test(
+  'execView takes the first free port from 3000 on unless a port is given',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const io =
+      createTestIo(dir.path);
+
+    const first =
+      await execView(
+        io,
+        { target: 'reqs' });
+
+    const second =
+      await execView(
+        io,
+        { target: 'reqs' });
+
+    try {
+      const firstPort =
+        (first.address() as AddressInfo).port;
+
+      const secondPort =
+        (second.address() as AddressInfo).port;
+
+      assert.ok(
+        firstPort >= DEFAULT_PORT,
+        String(firstPort));
+
+      assert.ok(
+        secondPort > firstPort,
+        `${firstPort} ${secondPort}`);
+
+      await assert.rejects(
+        execView(
+          io,
+          { target: 'reqs',
+            port: firstPort }),
+        /EADDRINUSE/);
+    } finally {
+      for (const server of [ first,
+                             second ]) {
+        await new Promise(
+          resolve => server.close(resolve));
+      }
     }
   });

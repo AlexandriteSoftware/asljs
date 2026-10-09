@@ -1,5 +1,4 @@
-import { type Code,
-         type Heading,
+import { type Heading,
          type RootContent }
   from 'mdast';
 import { getSection,
@@ -7,18 +6,15 @@ import { getSection,
          plainText,
          splitLocalUrl }
   from './markdown.js';
-
-export type LogStatus = 'Passed' | 'Failed';
-
-export interface LogEntry
-{
-  time: string;
-  status: LogStatus;
-  note: string;
-}
+import { readStatus,
+         type StatusSection }
+  from './status-section.js';
+import { parseSteps,
+         type TestStep }
+  from './steps.js';
 
 /**
- * What a requirement or evidence document says, read from its markdown.
+ * What a requirement or test document says, read from its markdown.
  */
 export interface RqDocument
 {
@@ -29,7 +25,7 @@ export interface RqDocument
 
   /**
    * The markdown between the level 1 heading and the first level 2 heading:
-   * the statement of a requirement, the description of an evidence.
+   * the statement of a requirement, the description of a test.
    */
   body: string;
 
@@ -46,18 +42,20 @@ export interface RqDocument
   implementation: string[];
 
   /**
-   * The commands of the `## Steps` code blocks, one per non-empty line.
+   * The steps of a test, one per `###` heading of its `## Steps` section.
    */
-  steps: string[];
+  steps: TestStep[];
 
   /**
-   * The entries of the `## Log` section.
+   * What is wrong with the `## Steps` section; a test with any fails.
    */
-  log: LogEntry[];
-}
+  stepProblems: string[];
 
-const LOG_ENTRY =
-  /^(\S+)\s+(Passed|Failed)(?:\s+-\s+(.*))?$/;
+  /**
+   * The `## Status` section the commands write.
+   */
+  status: StatusSection;
+}
 
 export function parseDocument(
     text: string
@@ -72,37 +70,15 @@ export function parseDocument(
       node.type === 'heading'
       && node.depth === 1);
 
-  const stepsSection =
-    getSection(
+  const { steps, problems: stepProblems } =
+    parseSteps(
       root,
-      'Steps');
+      text);
 
-  const steps =
-    (stepsSection ?? [ ])
-    .filter(
-      (node): node is Code => node.type === 'code')
-    .flatMap(
-      node => node.value.split(/\r?\n/))
-    .map(
-      line => line.trim())
-    .filter(
-      line => line !== '');
-
-  const log =
-    (getSection(
+  const { result, coverage, execution } =
+    readStatus(
       root,
-      'Log') ?? [ ])
-    .flatMap(
-      node =>
-        node.type === 'list'
-          ? node.children
-          : [ ])
-    .map(
-      item =>
-        parseLogEntry(
-          plainText(item)))
-    .filter(
-      entry => entry !== null);
+      text);
 
   return { title:
              title
@@ -117,51 +93,11 @@ export function parseDocument(
            implementation:
              getImplementationLinks(root),
            steps,
-           log };
-}
-
-/**
- * A `## Log` list item's text as an entry: `<time> Passed|Failed[ - <note>]`
- * with a time `Date` can read; `null` for any other text.
- */
-export function parseLogEntry(
-    text: string
-  ): LogEntry | null
-{
-  const match =
-    LOG_ENTRY.exec(
-      text.trim());
-
-  if (
-    !match
-    || Number.isNaN(
-      Date.parse(match[1]))
-  ) {
-    return null;
-  }
-
-  return { time: match[1],
+           stepProblems,
            status:
-             match[2] as LogStatus,
-           note: match[3] ?? '' };
-}
-
-export function formatLogEntry(
-    entry: LogEntry
-  ): string
-{
-  const note =
-    entry.note
-    .replace(
-      /\s+/g,
-      ' ')
-    .trim();
-
-  return `${entry.time} ${entry.status}${
-    note === ''
-      ? ''
-      : ` - ${note}`
-  }`;
+             { result,
+               coverage,
+               execution } };
 }
 
 function getBody(

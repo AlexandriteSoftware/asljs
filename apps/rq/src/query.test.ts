@@ -34,10 +34,10 @@ test(
 
     assert.equal(
       io.out(),
-      `requirement  reqs/RQ1 Root.md
-requirement  reqs/RQ2 Part.md
-evidence     reqs/evidence/EV1 Passes.md  Failed
-evidence     reqs/evidence/EV2 Fails.md  Not run
+      `requirement  reqs/R1 Root.md  FAIL
+requirement  reqs/R2 Part.md  NOT RUN
+test         reqs/tests/T1 Passes.md  FAIL
+test         reqs/tests/T2 Fails.md  NOT RUN
 `);
 
     const json =
@@ -45,21 +45,23 @@ evidence     reqs/evidence/EV2 Fails.md  Not run
 
     await execList(
       json,
-      { target: 'reqs/RQ2 Part.md',
+      { target: 'reqs/R2 Part.md',
         json: true });
 
     assert.deepEqual(
       JSON.parse(
         json.out()),
-      [ { path: 'reqs/RQ2 Part.md',
+      [ { path: 'reqs/R2 Part.md',
           kind: 'requirement',
-          title: 'RQ2 Part',
-          status: null },
+          title: 'R2 Part',
+          status: 'NOT RUN',
+          coverage: null },
         { path:
-            'reqs/evidence/EV2 Fails.md',
-          kind: 'evidence',
-          title: 'EV2 Fails',
-          status: null } ]);
+            'reqs/tests/T2 Fails.md',
+          kind: 'test',
+          title: 'T2 Fails',
+          status: 'NOT RUN',
+          coverage: null } ]);
   });
 
 test(
@@ -70,19 +72,19 @@ test(
       new TmpDir();
 
     await dir.writeText(
-      'RQ1 A.md',
-      '# RQ1 A\n\n## Implementation\n\n- [RQ2](<RQ2 B.md>)\n');
+      'R1 A.md',
+      '# R1 A\n\n## Implementation\n\n- [R2](<R2 B.md>)\n');
 
     const io =
       createTestIo(dir.path);
 
     await execList(
       io,
-      { target: 'RQ1 A.md' });
+      { target: 'R1 A.md' });
 
     assert.equal(
       io.err(),
-      'Error  RQ1 A.md: the link to RQ2 B.md points at no file.\n');
+      'Error  R1 A.md: the link to R2 B.md points at no file.\n');
   });
 
 test(
@@ -95,8 +97,8 @@ test(
     await writeFixture(dir);
 
     await dir.writeText(
-      'reqs/RQ2 Part.md',
-      '# RQ2 Part\n\n[RQ1](<RQ1 Root.md>)\n\n## Implementation\n\n- [EV2](<evidence/EV2 Fails.md>)\n- [Gone](<RQ9 Gone.md>)\n- [notes](notes.md)\n');
+      'reqs/R2 Part.md',
+      '# R2 Part\n\n[R1](<R1 Root.md>)\n\n## Implementation\n\n- [T2](<tests/T2 Fails.md>)\n- [Gone](<R9 Gone.md>)\n- [notes](notes.md)\n');
 
     const io =
       createTestIo(
@@ -104,23 +106,23 @@ test(
 
     await execLinks(
       io,
-      { file: 'RQ2 Part.md' });
+      { file: 'R2 Part.md' });
 
     assert.equal(
       io.out(),
-      'evidence     evidence/EV2 Fails.md  Not run\nmissing      RQ9 Gone.md\nother        notes.md\n');
+      'test         tests/T2 Fails.md  NOT RUN\nmissing      R9 Gone.md\nother        notes.md\n');
 
     await assert.rejects(
       execLinks(
         io,
         { file: 'Nope.md' }),
-      /Nope\.md: no such file\./);
+      /Nope\.md: no such file in /);
 
     await assert.rejects(
       execLinks(
         io,
         { file: 'notes.md' }),
-      /notes\.md: not a requirement or evidence/);
+      /notes\.md: not a requirement or test/);
   });
 
 test(
@@ -138,25 +140,25 @@ test(
     await execBacklinks(
       io,
       { file:
-          'reqs/evidence/EV2 Fails.md',
+          'reqs/tests/T2 Fails.md',
         json: true });
 
     assert.deepEqual(
       JSON.parse(
         io.out()),
-      [ { path: 'reqs/RQ2 Part.md',
+      [ { path: 'reqs/R2 Part.md',
           kind: 'requirement',
-          title: 'RQ2 Part',
-          status: null } ]);
+          title: 'R2 Part',
+          status: 'NOT RUN',
+          coverage: null } ]);
 
     const outside =
-      createTestIo(dir.path);
+      createTestIo(
+        dir.resolve('reqs/tests'));
 
     await execBacklinks(
       outside,
-      { file:
-          'reqs/evidence/EV2 Fails.md',
-        in: 'reqs/evidence' });
+      { file: 'T2' });
 
     assert.equal(
       outside.out(),
@@ -185,7 +187,7 @@ test(
 
     assert.deepEqual(
       json.roots,
-      [ 'reqs/RQ1 Root.md' ]);
+      [ 'reqs/R1 Root.md' ]);
 
     assert.deepEqual(
       json.errors,
@@ -193,22 +195,19 @@ test(
 
     assert.deepEqual(
       json.nodes[0],
-      { path: 'reqs/RQ1 Root.md',
+      { path: 'reqs/R1 Root.md',
         kind: 'requirement',
-        title: 'RQ1 Root',
+        title: 'R1 Root',
         body:
           'The tool works. See the [website](https://example.com/page.md) and the\n[notes](notes.md).',
         links:
-          [ 'reqs/RQ2 Part.md',
-            'reqs/evidence/EV1 Passes.md' ],
+          [ 'reqs/R2 Part.md',
+            'reqs/tests/T1 Passes.md' ],
         steps: [ ],
-        log: [ ] });
+        status: 'FAIL',
+        coverage: null });
 
-    assert.deepEqual(
-      json.nodes[2].log,
-      [ { time:
-            '2025-12-31T00:00:00.000Z',
-          status: 'Failed',
-          note:
-            'step 1 exited with code 1' } ]);
+    assert.equal(
+      json.nodes[2].status,
+      'FAIL');
   });

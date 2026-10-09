@@ -9,8 +9,6 @@ export {
 
 export {
   parseDocument,
-  type LogEntry,
-  type LogStatus,
   type RqDocument
 } from './document.js';
 
@@ -19,3 +17,18 @@ export {
   type RqGraph,
   type RqNode
 } from './graph.js';
+
+export {
+  loadResults,
+  parseExecution,
+  type Execution,
+  type Status,
+  type TestResult,
+  type TestStatus,
+  type WorkingTree
+} from './results.js';
+
+export {
+  getStatuses,
+  type NodeStatus
+} from './status.js';

@@ -2,12 +2,13 @@ import assert
   from 'node:assert/strict';
 import test
   from 'node:test';
-import { createTestIo }
+import { createTestIo,
+         TEST_TREE }
   from './test-io.js';
 
 test(
-  'createTestIo collects output and has a fixed clock',
-  () =>
+  'createTestIo collects output and has a fixed clock and working tree',
+  async () =>
   {
     const io =
       createTestIo('/work');
@@ -27,4 +28,8 @@ test(
     assert.equal(
       io.now!().toISOString(),
       '2026-01-02T03:04:05.000Z');
+
+    assert.equal(
+      await io.workingTree!('/work'),
+      TEST_TREE);
   });

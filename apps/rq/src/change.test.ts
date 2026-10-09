@@ -44,26 +44,26 @@ test(
       await execAdd(
         io,
         { kind: 'requirement',
-          parent: 'reqs/RQ2 Part.md',
+          parent: 'reqs/R2 Part.md',
           name: 'Speed',
           body: 'It is fast.' }),
       0);
 
     assert.equal(
       io.out(),
-      'Created reqs/RQ3 Speed.md\nLinked reqs/RQ2 Part.md -> reqs/RQ3 Speed.md\n');
+      'Created reqs/R3 Speed.md\nLinked reqs/R2 Part.md -> reqs/R3 Speed.md\n');
 
     assert.equal(
-      await dir.readText('reqs/RQ3 Speed.md'),
-      '# RQ3 Speed\n\nIt is fast.\n');
+      await dir.readText('reqs/R3 Speed.md'),
+      '# R3 Speed\n\nIt is fast.\n');
 
     assert.equal(
-      await dir.readText('reqs/RQ2 Part.md'),
-      '# RQ2 Part\n\nA part works.\n\n## Implementation\n\n- [EV2][EV2]\n- [RQ3 Speed](<RQ3 Speed.md>)\n\n[EV2]: <evidence/EV2 Fails.md>\n');
+      await dir.readText('reqs/R2 Part.md'),
+      '# R2 Part\n\nA part works.\n\n## Implementation\n\n- [T2][T2]\n- [R3 Speed][R3]\n\n[T2]: <tests/T2 Fails.md>\n[R3]: <R3 Speed.md>\n');
   });
 
 test(
-  'execAdd creates an evidence with steps in the evidence folder',
+  'execAdd creates a test with steps in the tests folder',
   async () =>
   {
     await using dir =
@@ -76,8 +76,8 @@ test(
 
     await execAdd(
       io,
-      { kind: 'evidence',
-        parent: 'reqs/RQ2 Part.md',
+      { kind: 'test',
+        parent: 'reqs/R2 Part.md',
         name: 'Fast run',
         body:
           'The benchmark is under a second.',
@@ -87,40 +87,39 @@ test(
 
     assert.equal(
       await dir.readText(
-        'reqs/evidence/EV3 Fast run.md'),
-      '# EV3 Fast run\n\nThe benchmark is under a second.\n\n## Steps\n\n```sh\nnpm run bench\nnode check.js\n```\n');
+        'reqs/tests/T3 Fast run.md'),
+      '# T3 Fast run\n\nThe benchmark is under a second.\n\n## Steps\n\n### Step 1\n\n```sh\nnpm run bench\n```\n\n### Step 2\n\n```sh\nnode check.js\n```\n');
 
     await execAdd(
       io,
-      { kind: 'evidence',
-        parent: 'reqs/RQ2 Part.md',
+      { kind: 'test',
+        parent: 'reqs/R2 Part.md',
         name: 'Other',
-        path:
-          'reqs/EV7 Custom.md' });
+        path: 'reqs/T7 Custom.md' });
 
     assert.equal(
       await dir.readText(
-        'reqs/EV7 Custom.md'),
-      '# EV7 Custom\n\n## Steps\n\n```sh\n```\n');
+        'reqs/T7 Custom.md'),
+      '# T7 Custom\n\n## Steps\n');
 
     assert.ok(
-      (await dir.readText('reqs/RQ2 Part.md'))
+      (await dir.readText('reqs/R2 Part.md'))
         .includes(
-          '- [EV2][EV2]\n- [EV3 Fast run](<evidence/EV3 Fast run.md>)\n- [EV7 Custom](<EV7 Custom.md>)\n'));
+          '- [T2][T2]\n- [T3 Fast run][T3]\n- [T7 Custom][T7]\n\n[T2]: <tests/T2 Fails.md>\n[T3]: <tests/T3 Fast run.md>\n[T7]: <T7 Custom.md>\n'));
 
     await assert.rejects(
       execAdd(
         io,
-        { kind: 'evidence',
-          parent: 'reqs/RQ2 Part.md',
+        { kind: 'test',
+          parent: 'reqs/R2 Part.md',
           name: 'Other',
           path:
-            'reqs/RQ8 Not evidence.md' }),
-      /the file name of an evidence must be EV<n> <name>\.md/);
+            'reqs/R8 Not test.md' }),
+      /the file name of a test must be T<n> <name>\.md/);
   });
 
 test(
-  'execAdd refuses an evidence parent, a bad name and an existing file',
+  'execAdd refuses a test parent, a bad name and an existing file',
   async () =>
   {
     await using dir =
@@ -136,15 +135,15 @@ test(
         io,
         { kind: 'requirement',
           parent:
-            'reqs/evidence/EV1 Passes.md',
+            'reqs/tests/T1 Passes.md',
           name: 'X' }),
-      /is an evidence; only a requirement links/);
+      /is a test; only a requirement links/);
 
     await assert.rejects(
       execAdd(
         io,
         { kind: 'requirement',
-          parent: 'reqs/RQ1 Root.md',
+          parent: 'reqs/R1 Root.md',
           name: 'a/b' }),
       /Invalid name/);
 
@@ -152,14 +151,14 @@ test(
       execAdd(
         io,
         { kind: 'requirement',
-          parent: 'reqs/RQ1 Root.md',
+          parent: 'reqs/R1 Root.md',
           name: 'X',
-          path: 'reqs/RQ2 Part.md' }),
+          path: 'reqs/R2 Part.md' }),
       /the file already exists/);
   });
 
 test(
-  'execLink links an existing node and refuses duplicates and cycles',
+  'execLink links an existing node and refuses duplicates, cycles and a second parent',
   async () =>
   {
     await using dir =
@@ -172,36 +171,62 @@ test(
 
     await execLink(
       io,
-      { parent: 'reqs/RQ2 Part.md',
+      { parent: 'reqs/R2 Part.md',
         child:
-          'reqs/evidence/EV1 Passes.md' });
+          'reqs/tests/T1 Passes.md' });
 
     assert.ok(
-      (await dir.readText('reqs/RQ2 Part.md'))
+      (await dir.readText('reqs/R2 Part.md'))
         .includes(
-          '- [EV2][EV2]\n- [EV1 Passes](<evidence/EV1 Passes.md>)\n'));
+          '- [T2][T2]\n- [T1 Passes][T1]\n\n[T2]: <tests/T2 Fails.md>\n[T1]: <tests/T1 Passes.md>\n'));
 
     await assert.rejects(
       execLink(
         io,
-        { parent: 'reqs/RQ2 Part.md',
+        { parent: 'reqs/R2 Part.md',
           child:
-            'reqs/evidence/EV1 Passes.md' }),
+            'reqs/tests/T1 Passes.md' }),
       /already links to/);
 
     await assert.rejects(
       execLink(
         io,
-        { parent: 'reqs/RQ2 Part.md',
-          child: 'reqs/RQ1 Root.md' }),
+        { parent: 'reqs/R2 Part.md',
+          child: 'reqs/R1 Root.md' }),
       /the link would make a cycle/);
 
     await assert.rejects(
       execLink(
         io,
-        { parent: 'reqs/RQ1 Root.md',
-          child: 'reqs/RQ1 Root.md' }),
+        { parent: 'reqs/R1 Root.md',
+          child: 'reqs/R1 Root.md' }),
       /the link would make a cycle/);
+
+    await dir.writeText(
+      'reqs/R3 Other.md',
+      '# R3 Other\n\n## Implementation\n\n- [T2](<tests/T2 Fails.md>)\n');
+
+    await assert.rejects(
+      execLink(
+        io,
+        { parent: 'reqs/R3 Other.md',
+          child: 'reqs/R2 Part.md' }),
+      /R2 Part\.md is already linked from reqs\/R1 Root\.md; a requirement has one parent/);
+
+    await assert.rejects(
+      execLink(
+        createTestIo(
+          dir.resolve('reqs')),
+        { parent: 'R3',
+          child: 'R2' }),
+      /R2 Part\.md is already linked from R1 Root\.md/);
+
+    await assert.doesNotReject(
+      execLink(
+        createTestIo(
+          dir.resolve('reqs/tests')),
+        { parent: '../R3 Other.md',
+          child: '../R2 Part.md' }));
   });
 
 test(
@@ -218,20 +243,20 @@ test(
 
     await execUnlink(
       io,
-      { parent: 'reqs/RQ2 Part.md',
+      { parent: 'reqs/R2 Part.md',
         child:
-          'reqs/evidence/EV2 Fails.md' });
+          'reqs/tests/T2 Fails.md' });
 
     assert.equal(
-      await dir.readText('reqs/RQ2 Part.md'),
-      '# RQ2 Part\n\nA part works.\n\n## Implementation\n');
+      await dir.readText('reqs/R2 Part.md'),
+      '# R2 Part\n\nA part works.\n\n## Implementation\n');
 
     await assert.rejects(
       execUnlink(
         io,
-        { parent: 'reqs/RQ2 Part.md',
+        { parent: 'reqs/R2 Part.md',
           child:
-            'reqs/evidence/EV2 Fails.md' }),
+            'reqs/tests/T2 Fails.md' }),
       /does not link to/);
   });
 
@@ -250,21 +275,21 @@ test(
     await assert.rejects(
       execRemove(
         io,
-        { file: 'reqs/RQ1 Root.md' }),
-      /links to 2 requirements or evidence; unlink them first, or remove it with --recursive/);
+        { file: 'reqs/R1 Root.md' }),
+      /links to 2 requirements or tests; unlink them first, or remove it with --recursive/);
 
     await execRemove(
       io,
       { file:
-          'reqs/evidence/EV1 Passes.md' });
+          'reqs/tests/T1 Passes.md' });
 
     assert.equal(
       io.out(),
-      'Updated reqs/RQ1 Root.md\nRemoved reqs/evidence/EV1 Passes.md\n');
+      'Updated reqs/R1 Root.md\nRemoved reqs/tests/T1 Passes.md\n');
 
     assert.equal(
-      await dir.readText('reqs/RQ1 Root.md'),
-      '# RQ1 Root\n\nThe tool works. See the [website](https://example.com/page.md) and the\n[notes](notes.md).\n\n## Implementation\n\n- [RQ2 Part](<RQ2 Part.md>)\n');
+      await dir.readText('reqs/R1 Root.md'),
+      '# R1 Root\n\nThe tool works. See the [website](https://example.com/page.md) and the\n[notes](notes.md).\n\n## Implementation\n\n- [R2 Part](<R2 Part.md>)\n');
   });
 
 test(
@@ -277,39 +302,39 @@ test(
     await writeFixture(dir);
 
     await dir.writeText(
-      'reqs/RQ3 Shared.md',
-      '# RQ3 Shared\n\n## Implementation\n\n- [EV2](<evidence/EV2 Fails.md>)\n');
+      'reqs/R3 Shared.md',
+      '# R3 Shared\n\n## Implementation\n\n- [T2](<tests/T2 Fails.md>)\n');
 
     await dir.writeText(
-      'reqs/RQ1 Root.md',
-      '# RQ1 Root\n\n## Implementation\n\n- [RQ2 Part](<RQ2 Part.md>)\n- [RQ3 Shared](<RQ3 Shared.md>)\n');
+      'reqs/R1 Root.md',
+      '# R1 Root\n\n## Implementation\n\n- [R2 Part](<R2 Part.md>)\n- [R3 Shared](<R3 Shared.md>)\n');
 
     const io =
       createTestIo(dir.path);
 
     await execRemove(
       io,
-      { file: 'reqs/RQ2 Part.md',
+      { file: 'reqs/R2 Part.md',
         recursive: true });
 
     assert.ok(
       await exists(
         dir,
-        'reqs/evidence/EV2 Fails.md'));
+        'reqs/tests/T2 Fails.md'));
 
     assert.equal(
-      await dir.readText('reqs/RQ1 Root.md'),
-      '# RQ1 Root\n\n## Implementation\n\n- [RQ3 Shared](<RQ3 Shared.md>)\n');
+      await dir.readText('reqs/R1 Root.md'),
+      '# R1 Root\n\n## Implementation\n\n- [R3 Shared](<R3 Shared.md>)\n');
 
     await execRemove(
       io,
-      { file: 'reqs/RQ1 Root.md',
+      { file: 'reqs/R1 Root.md',
         recursive: true });
 
     for (
-      const file of [ 'reqs/RQ1 Root.md',
-                      'reqs/RQ3 Shared.md',
-                      'reqs/evidence/EV2 Fails.md' ]
+      const file of [ 'reqs/R1 Root.md',
+                      'reqs/R3 Shared.md',
+                      'reqs/tests/T2 Fails.md' ]
     ) {
       assert.ok(
         !await exists(
@@ -321,12 +346,12 @@ test(
     assert.ok(
       await exists(
         dir,
-        'reqs/evidence/EV1 Passes.md'));
+        'reqs/tests/T1 Passes.md'));
 
     assert.ok(
       !(await dir.readText(
-        'reqs/evidence/EV1 Passes.md')).includes(
-          'RQ1 Root.md'));
+        'reqs/tests/T1 Passes.md')).includes(
+          'R1 Root.md'));
   });
 
 test(
@@ -342,44 +367,44 @@ test(
       createTestIo(dir.path);
 
     await dir.writeText(
-      'reqs/RQ1 Root.md',
-      '# RQ1 Root\n\n## Implementation\n\n- [RQ2 Part](<RQ2 Part.md>)\n- [EV1 Passes](<evidence/EV1 Passes.md>)\n');
+      'reqs/R1 Root.md',
+      '# R1 Root\n\n## Implementation\n\n- [R2 Part](<R2 Part.md>)\n- [T1 Passes](<tests/T1 Passes.md>)\n');
 
     await execMove(
       io,
-      { file: 'reqs/RQ2 Part.md',
+      { file: 'reqs/R2 Part.md',
         destination:
-          'reqs/parts/RQ2 Piece.md' });
+          'reqs/parts/R2 Piece.md' });
 
     assert.equal(
       io.out(),
-      'Updated reqs/RQ1 Root.md\nMoved reqs/RQ2 Part.md -> reqs/parts/RQ2 Piece.md\n');
+      'Updated reqs/R1 Root.md\nMoved reqs/R2 Part.md -> reqs/parts/R2 Piece.md\n');
 
     assert.equal(
-      await dir.readText('reqs/RQ1 Root.md'),
-      '# RQ1 Root\n\n## Implementation\n\n- [RQ2 Piece](<parts/RQ2 Piece.md>)\n- [EV1 Passes](<evidence/EV1 Passes.md>)\n');
+      await dir.readText('reqs/R1 Root.md'),
+      '# R1 Root\n\n## Implementation\n\n- [R2 Piece](<parts/R2 Piece.md>)\n- [T1 Passes](<tests/T1 Passes.md>)\n');
 
     assert.equal(
       await dir.readText(
-        'reqs/parts/RQ2 Piece.md'),
-      '# RQ2 Piece\n\nA part works.\n\n## Implementation\n\n- [EV2][EV2]\n\n[EV2]: <../evidence/EV2 Fails.md>\n');
+        'reqs/parts/R2 Piece.md'),
+      '# R2 Piece\n\nA part works.\n\n## Implementation\n\n- [T2][T2]\n\n[T2]: <../tests/T2 Fails.md>\n');
 
     assert.ok(
       !await exists(
         dir,
-        'reqs/RQ2 Part.md'));
+        'reqs/R2 Part.md'));
 
     await execMove(
       io,
       { file:
-          'reqs/evidence/EV1 Passes.md',
+          'reqs/tests/T1 Passes.md',
         destination: 'reqs/parts' });
 
     assert.ok(
       (await dir.readText(
-        'reqs/parts/EV1 Passes.md'))
+        'reqs/parts/T1 Passes.md'))
         .includes(
-          '[RQ1](<../RQ1 Root.md>)'));
+          '[R1](<../R1 Root.md>)'));
 
     assert.equal(
       await execCheck(
@@ -391,22 +416,98 @@ test(
       execMove(
         io,
         { file:
-            'reqs/parts/EV1 Passes.md',
-          destination: 'reqs/RQ1 Root.md' }),
-      /the file name of an evidence must be EV<n> <name>\.md/);
+            'reqs/parts/T1 Passes.md',
+          destination: 'reqs/R1 Root.md' }),
+      /the file name of a test must be T<n> <name>\.md/);
 
     await assert.rejects(
       execMove(
         io,
         { file:
-            'reqs/parts/EV1 Passes.md',
+            'reqs/parts/T1 Passes.md',
           destination:
-            'reqs/evidence/EV2 Fails.md' }),
+            'reqs/tests/T2 Fails.md' }),
       /the file already exists/);
   });
 
 test(
-  'execLog appends an entry to an evidence only',
+  'execLog records a result of a test only, in an execution file',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
+
+    await writeFixture(dir);
+
+    const before =
+      await dir.readText(
+        'reqs/tests/T2 Fails.md');
+
+    const io =
+      createTestIo(dir.path);
+
+    await execLog(
+      io,
+      { file:
+          'reqs/tests/T2 Fails.md',
+        status: 'PASS',
+        note: 'checked by hand' });
+
+    await execLog(
+      io,
+      { file: 'T2',
+        status: 'FAIL',
+        time:
+          '2026-02-01T00:00:00Z',
+        command:
+          'rq log T2 --status FAIL' });
+
+    assert.equal(
+      io.out(),
+      'Logged reqs/tests/T2 Fails.md: PASS - checked by hand\nResults  .rq/E2 T2 Fails.md\nUpdated  reqs/R1 Root.md\nUpdated  reqs/R2 Part.md\nUpdated  reqs/tests/T2 Fails.md\nLogged reqs/tests/T2 Fails.md: FAIL\nResults  .rq/E3 T2 Fails.md\nUpdated  reqs/R1 Root.md\nUpdated  reqs/R2 Part.md\nUpdated  reqs/tests/T2 Fails.md\n');
+
+    assert.equal(
+      await dir.readText(
+        '.rq/E3 T2 Fails.md'),
+      '# E3 T2 Fails\n\n- Date: 2026-02-01T00:00:00Z\n- Command: `rq log T2 --status FAIL`\n- Result: FAIL - 0 of 1 tests passed\n- Commit: 0123abc\n- Branch: main\n- Changed files:\n  - `M reqs/R1 Root.md`\n\n## T2 Fails\n\n- File: <reqs/tests/T2 Fails.md>\n- Result: FAIL\n');
+
+    assert.match(
+      await dir.readText(
+        '.rq/E2 T2 Fails.md'),
+      /\n- Result: PASS - checked by hand\n$/);
+
+    assert.ok(
+      (await dir.readText(
+        'reqs/tests/T2 Fails.md'))
+        .startsWith(before));
+
+    await assert.rejects(
+      execLog(
+        io,
+        { file: 'reqs/R1 Root.md',
+          status: 'PASS' }),
+      /is a requirement; only a test has a result/);
+
+    await assert.rejects(
+      execLog(
+        io,
+        { file:
+            'reqs/tests/T2 Fails.md',
+          status: 'Passed' }),
+      /Invalid status: "Passed"; use PASS or FAIL/);
+
+    await assert.rejects(
+      execLog(
+        io,
+        { file:
+            'reqs/tests/T2 Fails.md',
+          status: 'PASS',
+          time: 'soon' }),
+      /Invalid time/);
+  });
+
+test(
+  'execUnlink takes ids, execMove retitles reference links, and both refresh statuses',
   async () =>
   {
     await using dir =
@@ -417,52 +518,141 @@ test(
     const io =
       createTestIo(dir.path);
 
-    await execLog(
+    await execAdd(
       io,
-      { file:
-          'reqs/evidence/EV2 Fails.md',
-        status: 'Passed',
-        note: 'checked by hand' });
+      { kind: 'test',
+        parent: 'R2',
+        name: 'Fast run',
+        steps:
+          [ 'node -v' ] });
 
-    await execLog(
+    await execMove(
       io,
-      { file:
-          'reqs/evidence/EV2 Fails.md',
-        status: 'Failed',
-        time:
-          '2026-02-01T00:00:00Z' });
-
-    assert.equal(
-      io.out(),
-      'Logged reqs/evidence/EV2 Fails.md: 2026-01-02T03:04:05.000Z Passed - checked by hand\nLogged reqs/evidence/EV2 Fails.md: 2026-02-01T00:00:00Z Failed\n');
+      { file: 'T3',
+        destination:
+          'reqs/tests/T3 Quick run.md' });
 
     assert.ok(
-      (await dir.readText(
-        'reqs/evidence/EV2 Fails.md'))
+      (await dir.readText('reqs/R2 Part.md'))
+        .includes(
+          '- [T3 Quick run][T3]\n'));
+
+    await dir.writeText(
+      'reqs/R2 Part.md',
+      `${await dir.readText('reqs/R2 Part.md')}\n## Status\n\n- Result: PASS\n`);
+
+    const unlink =
+      createTestIo(dir.path);
+
+    await execUnlink(
+      unlink,
+      { parent: 'R2',
+        child: 'T2' });
+
+    await execUnlink(
+      unlink,
+      { parent: 'R2',
+        child: 'T3 Quick run.md' });
+
+    assert.match(
+      unlink.out(),
+      /Updated reqs\/R2 Part\.md\n/);
+
+    assert.ok(
+      (await dir.readText('reqs/R2 Part.md'))
         .endsWith(
-          '## Log\n\n- 2026-01-02T03:04:05.000Z Passed - checked by hand\n- 2026-02-01T00:00:00Z Failed\n'));
+          '## Status\n\n- Result: FAIL - links to no requirement or test\n'));
+  });
 
-    await assert.rejects(
-      execLog(
-        io,
-        { file: 'reqs/RQ1 Root.md',
-          status: 'Passed' }),
-      /is a requirement; only evidence has a log/);
+test(
+  'execAdd, execLink, execRemove and execMove refresh the statuses they make stale',
+  async () =>
+  {
+    await using dir =
+      new TmpDir();
 
-    await assert.rejects(
-      execLog(
-        io,
-        { file:
-            'reqs/evidence/EV2 Fails.md',
-          status: 'OK' }),
-      /Invalid status/);
+    await writeFixture(dir);
 
-    await assert.rejects(
-      execLog(
-        io,
-        { file:
-            'reqs/evidence/EV2 Fails.md',
-          status: 'Passed',
-          time: 'soon' }),
-      /Invalid time/);
+    const withStatus =
+      async (
+          file: string,
+          result: string
+        ): Promise<void> =>
+      {
+      await dir.writeText(
+        file,
+        `${await dir.readText(file)}\n## Status\n\n- Result: ${result}\n`);
+    };
+
+    await withStatus(
+      'reqs/R1 Root.md',
+      'PASS');
+
+    await withStatus(
+      'reqs/R2 Part.md',
+      'PASS');
+
+    const add =
+      createTestIo(dir.path);
+
+    await execAdd(
+      add,
+      { kind: 'test',
+        parent: 'R2',
+        name: 'New',
+        steps:
+          [ 'node -v' ] });
+
+    assert.match(
+      add.out(),
+      /\nUpdated reqs\/R2 Part\.md\n/);
+
+    assert.ok(
+      (await dir.readText('reqs/R2 Part.md'))
+        .includes(
+          '- Result: NOT RUN - 2 of 2 links not run'));
+
+    await dir.writeText(
+      'reqs/R3 Extra.md',
+      '# R3 Extra\n\n## Implementation\n\n- [T2](<tests/T2 Fails.md>)\n');
+
+    const link =
+      createTestIo(dir.path);
+
+    await execLink(
+      link,
+      { parent: 'R1',
+        child: 'R3' });
+
+    assert.match(
+      link.out(),
+      /\nUpdated reqs\/R1 Root\.md\n/);
+
+    const move =
+      createTestIo(dir.path);
+
+    await execMove(
+      move,
+      { file: 'R3',
+        destination: 'reqs/R3 More.md' });
+
+    assert.match(
+      move.out(),
+      /Moved reqs\/R3 Extra\.md -> reqs\/R3 More\.md\n/);
+
+    const remove =
+      createTestIo(dir.path);
+
+    await execRemove(
+      remove,
+      { file: 'T3' });
+
+    assert.match(
+      remove.out(),
+      /\nUpdated reqs\/R2 Part\.md\n/);
+
+    assert.ok(
+      (await dir.readText('reqs/R2 Part.md'))
+        .includes(
+          '- Result: NOT RUN - 1 of 1 links not run'));
   });
