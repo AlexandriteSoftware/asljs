@@ -22,13 +22,19 @@ import { serveEndpoint }
 const FILES =
   { 'notes/budget.md': '# Budget\n' };
 
+/**
+ * An endpoint of its own for a test: a socket file in the test's directory, or
+ * on Windows, which has no socket files, a named pipe named after it.
+ */
 function endpointIn(
     directory: string
   ): string
 {
-  return path.join(
-    directory,
-    'kb.sock');
+  return process.platform === 'win32'
+    ? `\\\\.\\pipe\\asljs-kb-test-${path.basename(directory)}`
+    : path.join(
+      directory,
+      'kb.sock');
 }
 
 test(
@@ -196,6 +202,9 @@ test(
 
 test(
   'a server listening again replaces the socket left by the last one',
+  { skip:
+      process.platform === 'win32'
+      && 'a named pipe leaves no file behind' },
   async () =>
   {
     await withLibrary(
