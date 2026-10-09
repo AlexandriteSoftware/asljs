@@ -28,7 +28,9 @@ Key modules, all under `src/`:
 - `samples.js` — the policy syntax only; which policy applies is `config.js`
 - `cron.js` — the cron expression: parse, match, and the next and previous
   minute a schedule fires
-- `runner.js` — counter execution and putting stdout
+- `runner.js` — counter execution and putting stdout; `server.js` exports
+  `createApp()` and listens only when run as the entry point, as `runner.js`
+  starts only then
 - `dash.js`, `layout.js`, `renderers/*.js` — the page, served as written
 
 ## Source Of Truth Map
@@ -112,12 +114,32 @@ ask before proceeding rather than changing the design silently.
 - If a new environment variable is added, then document it in
   `docs/operations.md`.
 
+## Tests
+
+Every source file has a `node:test` file beside it, `<name>.test.js`, and
+`agents/git.test.js` runs the git agent against temporary repositories when
+`pwsh` is installed.
+
+- `config.js` keeps the loaded configs in module state, so a test writes its
+  configs to a `TmpDir` and calls `config.load([ '--config', file ])`; the
+  memory store and the database connections are module state too, so every test
+  uses keys of its own.
+- An open SQLite file cannot be deleted on Windows: a test closes the store
+  (`store.close()`) before its folder is removed.
+- The server and the runner are tested over HTTP, with `createApp()` on port 0.
+  Time-dependent behavior mocks `Date` (`t.mock.timers`), never the sockets.
+- The page modules run in Node against a jsdom document: `src/testing/dom.js`
+  for a renderer, and `src/dash.test.js`, which loads a fresh copy of the page
+  per test from the real `index.html`, with `fetch` answered from a table and
+  its polling intervals mocked.
+- `dev/rq/` holds the requirements of dash and the tests that check them, run
+  with `rq test .` and `rq coverage .` in that folder. Keep them in line with a
+  behavior change; a requirement test step names a test of the files above.
+
 ## Validation
 
-There is no automated test suite in this package yet. Validate changes with:
-
-- `npm -w asljs-dash run flint`, which formats the JSON and markdown files and
-  lints the scripts with eslint and the markdown with remark
+- `npm -w asljs-dash run all`, which cleans, formats and lints (eslint for the
+  scripts, remark for the markdown), and runs the tests
 - `npm -w asljs-dash run start`, then exercise the endpoints with curl
 - `npm -w asljs-dash run once` to run every counter and confirm samples land
 

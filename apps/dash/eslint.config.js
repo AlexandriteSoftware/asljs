@@ -7,6 +7,7 @@ export default [
   ...config,
   {
     files: [
+      'src/cron.js',
       'src/server.js',
       'src/runner.js',
       'src/store.js',
@@ -18,5 +19,10 @@ export default [
   {
     files: ['src/dash.js', 'src/layout.js', 'src/renderers/*.js'],
     languageOptions: { globals: globals.browser }
+  },
+  // The tests run in Node, the page's included, against a jsdom document.
+  {
+    files: ['src/**/*.test.js', 'src/testing/*.js', 'agents/*.test.js'],
+    languageOptions: { globals: globals.node }
   }
 ];

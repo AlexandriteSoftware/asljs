@@ -12,12 +12,16 @@
     "start:with-runner": "node src/server.js --with-runner --config dash.config.json --config ../../dash.config.json",
     "runner": "node src/runner.js --config dash.config.json --config ../../dash.config.json",
     "once": "node src/runner.js --once --config dash.config.json --config ../../dash.config.json",
-    "all": "npm run clean && npm run flint"
+    "test": "node --test \"src/**/*.test.js\" \"agents/*.test.js\"",
+    "all": "npm run clean && npm run flint && npm run test"
   },
   "dependencies": {
     "express": "^5.1.0"
   },
   "devDependencies": {
-    "asljs-toolkit": "^0.1.0"
+    "asljs-testing": "^0.1.0",
+    "asljs-tmpdir": "^0.1.13",
+    "asljs-toolkit": "^0.1.0",
+    "jsdom": "^30.1.1"
   }
 }

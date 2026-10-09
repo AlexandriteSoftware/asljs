@@ -216,7 +216,11 @@ const get = (key, now = Date.now()) =>
 
   const statements = statementsFor(key);
   trimDatabase(statements, key, policy, now);
-  return statements.newest.get(key) ?? null;
+  const current = statements.newest.get(key);
+  // The same shape as memory's: the row id is the database's, not the caller's.
+  return current
+    ? { ts: current.ts, seen: current.seen, value: current.value }
+    : null;
 };
 
 const history = (key, { limit = 500, since = 0, now = Date.now() } = {}) =>
@@ -271,7 +275,20 @@ const sweep = (now = Date.now()) =>
   }
 };
 
+/**
+ * Close every open database, so its files can be moved or deleted. The next use of
+ * a key opens its database again. The memory store is kept.
+ */
+const close = () =>
+{
+  for (const { db } of connections.values()) {
+    db.close();
+  }
+  connections.clear();
+};
+
 export {
+  close,
   get,
   history,
   keys,

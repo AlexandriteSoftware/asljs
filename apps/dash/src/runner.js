@@ -12,7 +12,8 @@ import * as cron from './cron.js';
 
 let baseUrl = process.env.DASH_URL
   || `http://localhost:${Number(process.env.PORT) || 3000}`;
-const timeoutMs = Number(process.env.DASH_TIMEOUT) || 60000;
+// Read at each run, like the command's own environment.
+const timeoutMs = () => Number(process.env.DASH_TIMEOUT) || 60000;
 
 // --- counters -------------------------------------------------------------
 
@@ -59,7 +60,7 @@ const run = job =>
 
     let out = '';
     let err = '';
-    const timer = setTimeout(() => child.kill(), timeoutMs);
+    const timer = setTimeout(() => child.kill(), timeoutMs());
 
     child.stdout.on('data', chunk =>
     {

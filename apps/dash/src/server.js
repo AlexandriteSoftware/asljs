@@ -4,10 +4,7 @@ import * as config from './config.js';
 import * as runner from './runner.js';
 import * as store from './store.js';
 
-const app = express();
 const port = Number(process.env.PORT) || 3000;
-
-app.use(express.text({ type: '*/*', limit: '4mb' }));
 
 const handlePut = (req, res) =>
 {
@@ -24,58 +21,6 @@ const handlePut = (req, res) =>
     value
   );
 };
-
-app.put('/api/put/:key', handlePut);
-app.post('/api/put/:key', handlePut);
-app.post('/api/set/:key', handlePut); // deprecated alias
-app.put('/api/set/:key', handlePut);
-
-app.get('/api/get/:keys', (req, res) =>
-{
-  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
-
-  if (keys.length === 1) {
-    const sample = store.get(keys[0]);
-    return res.type('text/plain').send(
-      sample
-        ? sample.value
-        : ''
-    );
-  }
-
-  const values = Object.fromEntries(keys.map(key =>
-  {
-    const sample = store.get(key);
-    return [
-      key,
-      sample
-        ? sample.value
-        : null
-    ];
-  }));
-
-  res.json(values);
-});
-
-// Companion of /api/get: the same keys with their ts/seen, for freshness and change detection.
-app.get('/api/meta/:keys', (req, res) =>
-{
-  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
-  res.json(Object.fromEntries(keys.map(key => [key, store.get(key)])));
-});
-
-app.get('/api/history/:key', (req, res) =>
-{
-  const key = req.params.key;
-  if (!config.isKey(key)) {
-    return res.status(400).json({ error: 'invalid key' });
-  }
-
-  res.json(store.history(key, {
-    limit: Math.min(Number(req.query.limit) || 500, 5000),
-    since: Number(req.query.since) || 0
-  }));
-});
 
 // A scheduled minute that has passed without the key being written is first "due",
 // and "stale" once it has stayed unwritten for longer than this.
@@ -112,69 +57,150 @@ const waitFor = (key, now) =>
   return { state: 'wait', ms: Math.max(0, next - at) };
 };
 
-// The countdown in the bar: per key, how long until its counter next writes it.
-app.get('/api/next/:keys', (req, res) =>
+/**
+ * The HTTP surface: the API and the page's assets. The stores and the configs are
+ * the modules' own; `config.load()` comes first.
+ */
+const createApp = () =>
 {
-  const now = new Date();
-  const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
-  res.json(Object.fromEntries(keys.map(key => [key, waitFor(key, now)])));
-});
+  const app = express();
 
-app.get('/api/keys', (req, res) => res.json(store.keys()));
+  app.use(express.text({ type: '*/*', limit: '4mb' }));
 
-// Projects and their tabs, so the page does not embed its own config. Database
-// paths and counter commands stay on the server.
-app.get('/api/dashboards', (req, res) =>
-{
-  res.json({
-    projects: config.projects().map(({ project, label }) => ({
-      project,
-      label
-    })),
-    tabs: config.tabs(),
-    errors: config.errors()
+  app.put('/api/put/:key', handlePut);
+  app.post('/api/put/:key', handlePut);
+  app.post('/api/set/:key', handlePut); // deprecated alias
+  app.put('/api/set/:key', handlePut);
+
+  app.get('/api/get/:keys', (req, res) =>
+  {
+    const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
+
+    if (keys.length === 1) {
+      const sample = store.get(keys[0]);
+      return res.type('text/plain').send(
+        sample
+          ? sample.value
+          : ''
+      );
+    }
+
+    const values = Object.fromEntries(keys.map(key =>
+    {
+      const sample = store.get(key);
+      return [
+        key,
+        sample
+          ? sample.value
+          : null
+      ];
+    }));
+
+    res.json(values);
   });
-});
 
-// Only the page assets are served. The stores, the agents and the configs stay off the wire.
-const sendAsset = file => (req, res) =>
-  res.sendFile(path.join(import.meta.dirname, file));
+  // Companion of /api/get: the same keys with their ts/seen, for freshness and change detection.
+  app.get('/api/meta/:keys', (req, res) =>
+  {
+    const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
+    res.json(Object.fromEntries(keys.map(key => [key, store.get(key)])));
+  });
 
-app.get('/', sendAsset('index.html'));
-app.get('/dash.js', sendAsset('dash.js'));
-app.get('/layout.js', sendAsset('layout.js'));
-app.use(
-  '/renderers',
-  express.static(path.join(import.meta.dirname, 'renderers'), {
-    extensions: ['js']
-  })
-);
+  app.get('/api/history/:key', (req, res) =>
+  {
+    const key = req.params.key;
+    if (!config.isKey(key)) {
+      return res.status(400).json({ error: 'invalid key' });
+    }
 
-// Configs are read once here and then reloaded whenever one of them changes.
-config.load();
-config.watch(() => store.openAll());
+    res.json(store.history(key, {
+      limit: Math.min(Number(req.query.limit) || 500, 5000),
+      since: Number(req.query.since) || 0
+    }));
+  });
 
-// Open every configured database at startup, so a bad path fails now and not on
-// the first put.
-store.openAll();
+  // The countdown in the bar: per key, how long until its counter next writes it.
+  app.get('/api/next/:keys', (req, res) =>
+  {
+    const now = new Date();
+    const keys = req.params.keys.split(',').filter(Boolean).filter(config.isKey);
+    res.json(Object.fromEntries(keys.map(key => [key, waitFor(key, now)])));
+  });
 
-// Retention is a clock rule, not a write rule: sweep keys nobody is writing to.
-const sweep = setInterval(() => store.sweep(), 60000);
-sweep.unref();
+  app.get('/api/keys', (req, res) => res.json(store.keys()));
 
-app.listen(port, () =>
+  // Projects and their tabs, so the page does not embed its own config. Database
+  // paths and counter commands stay on the server.
+  app.get('/api/dashboards', (req, res) =>
+  {
+    res.json({
+      projects: config.projects().map(({ project, label }) => ({
+        project,
+        label
+      })),
+      tabs: config.tabs(),
+      errors: config.errors()
+    });
+  });
+
+  // Only the page assets are served. The stores, the agents and the configs stay off the wire.
+  const sendAsset = file => (req, res) =>
+    res.sendFile(path.join(import.meta.dirname, file));
+
+  app.get('/', sendAsset('index.html'));
+  app.get('/dash.js', sendAsset('dash.js'));
+  app.get('/layout.js', sendAsset('layout.js'));
+  app.use(
+    '/renderers',
+    // The renderers' tests sit beside them, and are not page assets.
+    (req, res, next) =>
+      /\.test(\.js)?$/.test(req.path)
+        ? res.status(404).end()
+        : next(),
+    express.static(path.join(import.meta.dirname, 'renderers'), {
+      extensions: ['js']
+    })
+  );
+
+  return app;
+};
+
+const main = () =>
 {
-  console.log(`dash server on http://localhost:${port}`);
-  for (const project of config.projects()) {
-    console.log(`  ${project.project} -> ${project.db}`);
-  }
-  for (const file of config.files()) {
-    console.log(`  config ${file}`);
-  }
+  // Configs are read once here and then reloaded whenever one of them changes.
+  config.load();
+  config.watch(() => store.openAll());
 
-  // The simple setup: one process. The runner still puts through /api/put, to
-  // this server, so a value takes the same path whoever runs the counters.
-  if (process.argv.includes('--with-runner')) {
-    runner.start({ url: `http://localhost:${port}` });
-  }
-});
+  // Open every configured database at startup, so a bad path fails now and not on
+  // the first put.
+  store.openAll();
+
+  // Retention is a clock rule, not a write rule: sweep keys nobody is writing to.
+  const sweep = setInterval(() => store.sweep(), 60000);
+  sweep.unref();
+
+  createApp().listen(port, () =>
+  {
+    console.log(`dash server on http://localhost:${port}`);
+    for (const project of config.projects()) {
+      console.log(`  ${project.project} -> ${project.db}`);
+    }
+    for (const file of config.files()) {
+      console.log(`  config ${file}`);
+    }
+
+    // The simple setup: one process. The runner still puts through /api/put, to
+    // this server, so a value takes the same path whoever runs the counters.
+    if (process.argv.includes('--with-runner')) {
+      runner.start({ url: `http://localhost:${port}` });
+    }
+  });
+};
+
+if (import.meta.main) {
+  main();
+}
+
+export {
+  createApp
+};
